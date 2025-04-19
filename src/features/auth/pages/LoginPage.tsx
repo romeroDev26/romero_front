@@ -60,9 +60,13 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-4xl font-bold text-primary mb-6">Transportes Romero</h1>
           <div className="max-w-md">
             <p className="text-gray-700 text-lg mb-8">
-              Sistema integrado de gestión y facturación electrónica para optimizar sus operaciones logísticas
+              Sistema integrado de gestión y facturación electrónica.
             </p>
-            <div className="w-full h-64 bg-white/20 rounded-lg shadow-xl backdrop-blur-sm" />
+            <img 
+              src="/icon_romero.png" 
+              alt="Logo Transportes Romero" 
+              className="w-48 h-48 mx-auto mb-8"
+            />
           </div>
         </div>
       </div>

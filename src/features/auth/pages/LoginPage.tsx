@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
-import api from '../../../config/api';
 
 const loginSchema = z.object({
   email: z.string().email('Ingrese un email válido'),
@@ -15,7 +14,6 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -28,28 +26,23 @@ export const LoginPage: React.FC = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await api.post('/auth/login', data);
-      
-      // Guardar token en localStorage
-      localStorage.setItem('authToken', response.data.token);
-      
-      // Guardar información del usuario si es necesario
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // Redireccionar al dashboard
-      navigate('/');
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || 
-        'Error al iniciar sesión. Por favor, intente nuevamente.'
-      );
-    } finally {
+    setIsLoading(true);
+    
+    // TODO: Implementar autenticación en el futuro
+    // try {
+    //   const response = await api.post('/auth/login', data);
+    //   localStorage.setItem('authToken', response.data.token);
+    //   localStorage.setItem('user', JSON.stringify(response.data.user));
+    // } catch (err: any) {
+    //   setError(err.response?.data?.message || 'Error al iniciar sesión');
+    //   return;
+    // }
+
+    // Por ahora, solo simulamos un pequeño delay y redireccionamos
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      navigate('/');
+    }, 500);
   };
 
   return (
@@ -78,12 +71,6 @@ export const LoginPage: React.FC = () => {
             <h2 className="text-2xl font-semibold text-gray-800">Bienvenido</h2>
             <p className="text-gray-600 mt-2">Ingrese sus credenciales para continuar</p>
           </div>
-
-          {error && (
-            <div className="bg-error/10 border border-error/30 text-error px-4 py-3 rounded-lg mb-6">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <Input

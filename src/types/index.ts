@@ -129,3 +129,36 @@ export interface InvoiceItem {
   subtotal: number;
   total_line: number;
 }
+
+// Tipo para documento de identidad
+export type DocType = '1' | '4' | '6' | '7' | '0';
+
+// Interface actualizada para Cliente según la BD
+export interface Client {
+  id: number;
+  doc_type: string;
+  doc_number: string;
+  name: string;
+  address?: string;
+  ubigeo?: string;
+  email?: string;
+  phone?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Interface actualizada para Proveedor según la BD
+export interface Supplier {
+  id: number;
+  doc_type: string;
+  doc_number: string;
+  name: string;
+  address?: string;
+  ubigeo?: string;
+  email?: string;
+  phone?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

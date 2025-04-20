@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { 
   HomeIcon, 
-  UserGroupIcon, 
+  UserGroupIcon,
+  BuildingOfficeIcon,
   ShoppingCartIcon, 
   DocumentTextIcon,
   CreditCardIcon,
@@ -37,7 +38,7 @@ export const Dashboard: React.FC = () => {
       title: 'Gestión de Clientes y Proveedores',
       items: [
         { name: 'Clientes', path: '/clients', icon: UserGroupIcon },
-        { name: 'Proveedores', path: '/suppliers', icon: UserGroupIcon }
+        { name: 'Proveedores', path: '/suppliers', icon: BuildingOfficeIcon }
       ]
     },
     {

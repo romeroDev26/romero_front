@@ -4,6 +4,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+import { ClientsListPage } from "./features/clients/pages/ClientsListPage";
+import { ClientFormPage } from "./features/clients/pages/ClientFormPage";
+import { SuppliersListPage } from "./features/suppliers/pages/SuppliersListPage";
+import { SupplierFormPage } from "./features/suppliers/pages/SupplierFormPage";
 import { Dashboard } from './components/layout/Dashboard';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { authService } from './services/auth.service';
@@ -65,12 +69,12 @@ function App() {
             <Route index element={<DashboardPage />} />
             
             {/* Clientes */}
-            <Route path="clients" element={<div>Lista de Clientes</div>} />
-            <Route path="clients/:id" element={<div>Detalle/Edición de Cliente</div>} />
+            <Route path="clients" element={<ClientsListPage />} />
+            <Route path="clients/:id" element={<ClientFormPage />} />
             
             {/* Proveedores */}
-            <Route path="suppliers" element={<div>Lista de Proveedores</div>} />
-            <Route path="suppliers/:id" element={<div>Detalle/Edición de Proveedor</div>} />
+            <Route path="suppliers" element={<SuppliersListPage />} />
+            <Route path="suppliers/:id" element={<SupplierFormPage />} />
             
             {/* Productos y Servicios */}
             <Route path="products" element={<ProductsListPage />} />

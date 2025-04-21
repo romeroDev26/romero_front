@@ -162,3 +162,59 @@ export interface Supplier {
   created_at: string;
   updated_at: string;
 }
+
+// Tipos para inventario
+export interface Warehouse {
+  id: number;
+  name: string;
+  address?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InventoryStock {
+  id: number;
+  product_id: number;
+  product?: ProductService; // Relación con producto
+  warehouse_id: number;
+  warehouse?: Warehouse; // Relación con almacén
+  quantity: number;
+  last_updated_at: string;
+}
+
+export type InventoryMovementType = 
+  | 'PURCHASE_ENTRY'
+  | 'SALE_EXIT'
+  | 'INITIAL_STOCK'
+  | 'ADJUSTMENT_IN'
+  | 'ADJUSTMENT_OUT'
+  | 'TRANSFER_IN'
+  | 'TRANSFER_OUT';
+
+export interface InventoryMovement {
+  id: number;
+  product_id: number;
+  product?: ProductService;
+  warehouse_id: number;
+  warehouse?: Warehouse;
+  movement_date: string;
+  movement_type: InventoryMovementType;
+  quantity: number;
+  unit_cost?: number;
+  balance_quantity?: number;
+  balance_cost?: number;
+  reference_doc_type?: string;
+  reference_doc_id?: number;
+  notes?: string;
+  created_at: string;
+}
+
+// Tipo para ajuste de inventario
+export interface InventoryAdjustment {
+  product_id: number;
+  warehouse_id: number;
+  quantity: number; // Cantidad del ajuste (positiva o negativa)
+  reason: string;
+  notes?: string;
+}

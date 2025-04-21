@@ -30,6 +30,13 @@ import { RemissionGuideFormPage } from './features/remissionGuides/pages/Remissi
 // Páginas de productos
 import { ProductsListPage } from './features/products/pages/ProductsListPage';
 import { ProductFormPage } from './features/products/pages/ProductFormPage';
+
+// Páginas de inventario
+import { InventoryDashboardPage } from './features/inventory/pages/InventoryDashboardPage';
+import { StockListPage } from './features/inventory/pages/StockListPage';
+import { InventoryMovementsPage } from './features/inventory/pages/InventoryMovementsPage';
+import { InventoryMovementFormPage } from './features/inventory/pages/InventoryMovementFormPage';
+
 import { JSX } from 'react';
 
 // Crear cliente para React Query
@@ -81,7 +88,17 @@ function App() {
             <Route path="products/:id" element={<ProductFormPage />} />
             
             {/* Inventario */}
-            <Route path="inventory" element={<div>Inventario</div>} />
+            <Route path="inventory">
+              <Route index element={<InventoryDashboardPage />} />
+              <Route path="stock" element={<StockListPage />} />
+              <Route path="movements" element={<InventoryMovementsPage />} />
+              <Route path="movement/new" element={<InventoryMovementFormPage />} />
+              <Route path="warehouses" element={<div>Almacenes</div>} />
+              <Route path="adjustment" element={<div>Ajuste de Inventario</div>} />
+              <Route path="alerts" element={<div>Alertas de Stock</div>} />
+              <Route path="valuation" element={<div>Valorización de Inventario</div>} />
+              <Route path="product/:id" element={<div>Detalle de Producto</div>} />
+            </Route>
             
             {/* Ventas */}
             <Route path="sales">

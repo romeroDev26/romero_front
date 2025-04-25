@@ -118,9 +118,9 @@ export const Dashboard: React.FC = () => {
             </nav>
           </div>
           
-          <div className="p-4 border-t border-primary/30">
+          <div className="p-2 border-t border-primary/30">
             <button
-              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-primary/80 rounded-md"
+              className="flex items-center w-full px-3 py-1.5 text-[13px] text-white hover:bg-primary/80 rounded"
               onClick={handleLogout}
             >
               <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
@@ -133,8 +133,8 @@ export const Dashboard: React.FC = () => {
       {/* Sidebar para escritorio */}
       <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}`}>
         <div className="flex flex-col w-full bg-primary text-white">
-          <div className="flex items-center h-16 px-4 border-b border-primary/30 justify-between">
-            {!isCollapsed && <h1 className="text-xl font-bold">Transportes Romero</h1>}
+          <div className="flex items-center h-14 px-3 border-b border-primary/30 justify-between">
+            {!isCollapsed && <h1 className="text-lg font-semibold">Transportes Romero</h1>}
             <button 
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="p-1 rounded-full hover:bg-primary/80"
@@ -143,22 +143,22 @@ export const Dashboard: React.FC = () => {
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto">
-            <nav className="px-2 py-4">
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary-dark scrollbar-track-transparent">
+            <nav className="px-1 py-2">
               {navGroups.map((group, idx) => (
-                <div key={idx} className="mb-4">
+                <div key={idx} className="mb-2">
                   {!isCollapsed && (
-                    <h2 className="px-4 text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">
+                    <h2 className="px-3 text-[11px] font-medium text-white/60 uppercase tracking-wider mb-1">
                       {group.title}
                     </h2>
                   )}
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {group.items.map((item) => (
                       <NavLink
                         key={item.path}
                         to={item.path}
                         className={({ isActive }) =>
-                          `flex items-center px-4 py-2 text-sm rounded-md ${
+                          `flex items-center px-3 py-1.5 text-[13px] rounded ${
                             isActive 
                               ? 'bg-secondary text-white' 
                               : 'text-white hover:bg-primary/80'
@@ -176,9 +176,9 @@ export const Dashboard: React.FC = () => {
             </nav>
           </div>
           
-          <div className="p-4 border-t border-primary/30">
+          <div className="p-2 border-t border-primary/30">
             <button
-              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-primary/80 rounded-md"
+              className="flex items-center w-full px-3 py-1.5 text-[13px] text-white hover:bg-primary/80 rounded"
               onClick={handleLogout}
               title={isCollapsed ? "Cerrar Sesión" : undefined}
             >

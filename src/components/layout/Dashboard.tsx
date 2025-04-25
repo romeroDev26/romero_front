@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import Breadcrumbs from '../common/Breadcrumbs';
 import { 
   HomeIcon, 
   UserGroupIcon,
@@ -146,27 +147,23 @@ export const Dashboard: React.FC = () => {
           <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary-dark scrollbar-track-transparent">
             <nav className="px-1 py-2">
               {navGroups.map((group, idx) => (
-                <div key={idx} className="mb-2">
+                <div key={idx} className="mb-4">
                   {!isCollapsed && (
-                    <h2 className="px-3 text-[11px] font-medium text-white/60 uppercase tracking-wider mb-1">
+                    <h2 className="px-3 text-[13px] font-medium text-white/60 uppercase tracking-wider mb-2">
                       {group.title}
                     </h2>
                   )}
-                  <div className="space-y-0.5">
+                  <div className={`space-y-1 ${isCollapsed ? 'border-b border-primary/30 pb-4' : ''}`}>
                     {group.items.map((item) => (
                       <NavLink
                         key={item.path}
                         to={item.path}
                         className={({ isActive }) =>
-                          `flex items-center px-3 py-1.5 text-[13px] rounded ${
-                            isActive 
-                              ? 'bg-secondary text-white' 
-                              : 'text-white hover:bg-primary/80'
-                          }`
+                          `flex items-center ${isCollapsed ? 'justify-center' : ''} px-3 py-2 text-[14px] rounded ${isActive ? 'bg-secondary text-white' : 'text-white hover:bg-primary/80'}`
                         }
                         title={isCollapsed ? item.name : undefined}
                       >
-                        <item.icon className={`w-5 h-5 ${!isCollapsed && 'mr-3'}`} />
+                        <item.icon className={`w-6 h-6 ${!isCollapsed && 'mr-3'}`} />
                         {!isCollapsed && <span>{item.name}</span>}
                       </NavLink>
                     ))}
@@ -209,6 +206,9 @@ export const Dashboard: React.FC = () => {
         
         {/* Área de contenido */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100">
+          <div className="px-6">
+            <Breadcrumbs />
+          </div>
           <Outlet />
         </main>
       </div>

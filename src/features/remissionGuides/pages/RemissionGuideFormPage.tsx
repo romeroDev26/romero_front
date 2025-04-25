@@ -222,10 +222,10 @@ export const RemissionGuideFormPage: React.FC = () => {
       
       if (sender && sender.address) {
         // Aquí podrías asignar también el ubigeo si está disponible en tus datos
-        setValue('origin_address', sender.address);
+        setValue('origin_address', sender.address, { shouldDirty: true });
       }
     }
-  }, [senderType, senderId, setValue, suppliers, clients]);
+  }, [senderId]);
   
   // Actualizar dirección del destinatario al cambiar
   const recipientId = watch('recipient_client_id');
@@ -236,10 +236,10 @@ export const RemissionGuideFormPage: React.FC = () => {
       
       if (recipient && recipient.address) {
         // Aquí podrías asignar también el ubigeo si está disponible en tus datos
-        setValue('destination_address', recipient.address);
+        setValue('destination_address', recipient.address, { shouldDirty: true });
       }
     }
-  }, [recipientId, setValue, clients]);
+  }, [recipientId]);
   
   // Agregar nuevo item
   const handleAddItem = () => {

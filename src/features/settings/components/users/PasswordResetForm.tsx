@@ -19,12 +19,7 @@ interface PasswordResetFormProps {
 const passwordResetSchema = z.object({
   password: z.string()
     .min(6, 'La contraseña debe tener al menos 6 caracteres')
-    .max(100, 'La contraseña es demasiado larga'),
-  confirm_password: z.string()
-    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
-}).refine((data) => data.password === data.confirm_password, {
-  message: 'Las contraseñas no coinciden',
-  path: ['confirm_password'],
+    .max(100, 'La contraseña es demasiado larga')
 });
 
 type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
@@ -37,40 +32,28 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<PasswordResetFormData>({
     resolver: zodResolver(passwordResetSchema),
   });
 
-  // En un proyecto real, usarías esta mutación - Actualizada para React Query v5
-  // const resetPassword = useMutation({
-  //   mutationFn: (data: ResetPasswordData) => usersService.resetPassword(data),
-  //   onSuccess: () => {
-  //     toast.success('Contraseña actualizada correctamente');
-  //     onClose();
-  //   },
-  //   onError: (error: any) => {
-  //     toast.error(error.response?.data?.message || 'Error al actualizar contraseña');
-  //   },
-  // });
-
-  const onSubmit = (data: PasswordResetFormData) => {
-    // Simular el reseteo de contraseña
-    console.log('Reseteando contraseña para usuario:', userId);
-    console.log('Nueva contraseña:', data.password);
-    
-    // Simular success
-    setTimeout(() => {
+  // Mutación para restablecer contraseña
+  const resetPasswordMutation = useMutation({
+    mutationFn: (data: ResetPasswordData) => usersService.resetPassword(data),
+    onSuccess: () => {
       toast.success('Contraseña actualizada correctamente');
       onClose();
-    }, 1000);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Error al actualizar contraseña');
+    },
+  });
 
-    // En un proyecto real, usarías:
-    // resetPassword.mutate({
-    //   id: userId,
-    //   password: data.password,
-    //   confirm_password: data.confirm_password,
-    // });
+  const onSubmit = (data: PasswordResetFormData) => {
+    resetPasswordMutation.mutate({
+      id: userId,
+      password: data.password,
+    });
   };
 
   return (
@@ -86,13 +69,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
           error={errors.password?.message}
           {...register('password')}
         />
-        
-        <Input
-          label="Confirmar Contraseña *"
-          type="password"
-          error={errors.confirm_password?.message}
-          {...register('confirm_password')}
-        />
       </div>
       
       <div className="flex justify-end space-x-3">
@@ -105,7 +81,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
         </Button>
         <Button
           type="submit"
-          isLoading={isSubmitting}
+          isLoading={resetPasswordMutation.isPending}
         >
           Actualizar Contraseña
         </Button>

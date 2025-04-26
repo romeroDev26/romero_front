@@ -1,3 +1,4 @@
+// src/features/auth/pages/LoginPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -5,9 +6,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
+import { authService } from '../../../services/auth.service';
+import { toast } from 'react-toastify';
 
 const loginSchema = z.object({
-  email: z.string().email('Ingrese un email válido'),
+  username: z.string().email('Ingrese un email válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
@@ -28,21 +31,16 @@ export const LoginPage: React.FC = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     
-    // TODO: Implementar autenticación en el futuro
-    // try {
-    //   const response = await api.post('/auth/login', data);
-    //   localStorage.setItem('authToken', response.data.token);
-    //   localStorage.setItem('user', JSON.stringify(response.data.user));
-    // } catch (err: any) {
-    //   setError(err.response?.data?.message || 'Error al iniciar sesión');
-    //   return;
-    // }
-
-    // Por ahora, solo simulamos un pequeño delay y redireccionamos
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      await authService.login(data);
+      toast.success('¡Bienvenido al sistema!');
       navigate('/');
-    }, 500);
+    } catch (err: any) {
+      // El mensaje de error ya se muestra en el interceptor
+      console.error('Error al iniciar sesión:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -59,6 +57,10 @@ export const LoginPage: React.FC = () => {
               src="/icon_romero.png" 
               alt="Logo Transportes Romero" 
               className="w-48 h-48 mx-auto mb-8"
+              onError={(e) => {
+                // Si la imagen no existe, mostrar un placeholder
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/192x192?text=Logo';
+              }}
             />
           </div>
         </div>
@@ -77,9 +79,9 @@ export const LoginPage: React.FC = () => {
               label="Correo Electrónico"
               type="email"
               placeholder="correo@ejemplo.com"
-              error={errors.email?.message}
+              error={errors.username?.message}
               className="bg-gray-50"
-              {...register('email')}
+              {...register('username')}
             />
 
             <Input

@@ -1,8 +1,7 @@
 // src/features/settings/pages/UsersPage.tsx
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PencilIcon, TrashIcon, PlusIcon, KeyIcon } from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 import { Spinner } from '../../../components/common/Spinner';
@@ -15,6 +14,7 @@ import { usersService } from '../../../services/users.service';
 import { User } from '../../../types';
 
 export const UsersPage: React.FC = () => {
+  const queryClient = useQueryClient();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -27,84 +27,43 @@ export const UsersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
-  // En un proyecto real, estos datos vendrían de una API - Actualizado para React Query v5
-  // const { data, isLoading } = useQuery({
-  //   queryKey: ['users', { q: searchTerm, role_id: roleFilter !== 'ALL' ? roleFilter : undefined, is_active: statusFilter !== 'ALL' ? statusFilter === 'ACTIVE' : undefined }],
-  //   queryFn: () => usersService.search({ 
-  //     q: searchTerm, 
-  //     role_id: roleFilter !== 'ALL' ? roleFilter : undefined, 
-  //     is_active: statusFilter !== 'ALL' ? statusFilter === 'ACTIVE' : undefined 
-  //   })
-  // });
+  // Fetch de usuarios
+  const { data: users = [], isLoading, error } = useQuery({
+    queryKey: ['users'],
+    queryFn: usersService.getAll,
+  });
   
-  // const users = data?.data || [];
-  
-  // Datos simulados para el ejemplo
-  const users = [
-    { 
-      id: '1', 
-      email: 'admin@transportesromero.com',
-      full_name: 'Administrador Principal',
-      role: { id: 1, name: 'admin', description: 'Administrador del Sistema' },
-      role_id: 1,
-      is_active: true,
-      created_at: '2025-01-01T00:00:00-05:00',
-      updated_at: '2025-01-01T00:00:00-05:00'
+  // Mutación para cambiar el estado del usuario
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => {
+      return usersService.toggleActiveStatus(id, isActive);
     },
-    { 
-      id: '2', 
-      email: 'ventas@transportesromero.com',
-      full_name: 'Usuario de Ventas',
-      role: { id: 2, name: 'sales', description: 'Personal de Ventas' },
-      role_id: 2,
-      is_active: true,
-      created_at: '2025-01-02T00:00:00-05:00',
-      updated_at: '2025-01-02T00:00:00-05:00'
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Estado del usuario actualizado correctamente');
     },
-    { 
-      id: '3', 
-      email: 'almacen@transportesromero.com',
-      full_name: 'Usuario de Almacén',
-      role: { id: 3, name: 'warehouse', description: 'Personal de Almacén' },
-      role_id: 3,
-      is_active: true,
-      created_at: '2025-01-03T00:00:00-05:00',
-      updated_at: '2025-01-03T00:00:00-05:00'
-    },
-    { 
-      id: '4', 
-      email: 'contabilidad@transportesromero.com',
-      full_name: 'Usuario de Contabilidad',
-      role: { id: 5, name: 'accountant', description: 'Contador' },
-      role_id: 5,
-      is_active: false,
-      created_at: '2025-01-04T00:00:00-05:00',
-      updated_at: '2025-01-04T00:00:00-05:00'
-    },
-    { 
-      id: '5', 
-      email: 'despacho@transportesromero.com',
-      full_name: 'Usuario de Despacho',
-      role: { id: 4, name: 'dispatcher', description: 'Personal de Despacho' },
-      role_id: 4,
-      is_active: true,
-      created_at: '2025-01-05T00:00:00-05:00',
-      updated_at: '2025-01-05T00:00:00-05:00'
-    },
-    { 
-      id: '6', 
-      email: 'conductor@transportesromero.com',
-      full_name: 'Conductor Principal',
-      role: { id: 6, name: 'driver', description: 'Conductor/Tripulante' },
-      role_id: 6,
-      is_active: true,
-      created_at: '2025-01-06T00:00:00-05:00',
-      updated_at: '2025-01-06T00:00:00-05:00'
+    onError: (error: any) => {
+      toast.error('Error al actualizar el estado del usuario');
+      console.error('Error:', error);
     }
-  ];
+  });
   
-  const isLoading = false;
-  
+  // Mutación para eliminar un usuario
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: string) => {
+      return usersService.toggleActiveStatus(id, false); // No hay endpoint para eliminar, solo desactivamos
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Usuario eliminado correctamente');
+      setIsDeleteModalOpen(false);
+    },
+    onError: (error: any) => {
+      toast.error('Error al eliminar el usuario');
+      console.error('Error:', error);
+    }
+  });
+
   // Filtrar usuarios según criterios
   let filteredUsers = users;
   
@@ -148,40 +107,32 @@ export const UsersPage: React.FC = () => {
   };
   
   const handleToggleUserStatus = (user: User) => {
-    // En un proyecto real, llamarías a una API
-    // usersService.toggleActiveStatus(user.id, !user.is_active);
-    
-    const newStatus = !user.is_active;
-    console.log(`Cambiando estado de usuario ${user.id} a ${newStatus ? 'Activo' : 'Inactivo'}`);
-    
-    toast.success(`Usuario ${newStatus ? 'activado' : 'desactivado'} correctamente`);
+    toggleUserStatusMutation.mutate({ id: user.id, isActive: !user.is_active });
   };
   
   const confirmDeleteUser = () => {
     if (!selectedUser) return;
-    
-    // En un proyecto real, llamarías a una API
-    // usersService.delete(selectedUser.id);
-    
-    console.log('Eliminando usuario:', selectedUser.id);
-    
-    toast.success('Usuario eliminado correctamente');
-    setIsDeleteModalOpen(false);
+    deleteUserMutation.mutate(selectedUser.id);
   };
   
   if (isLoading) return <Spinner />;
+  
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-red-600 mb-4">Error al cargar usuarios</p>
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['users'] })}>
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Usuarios del Sistema</h1>
         <div className="flex space-x-2">
-          <Link 
-            to="/settings/roles"
-            className="bg-secondary text-white py-2 px-4 rounded-md font-medium hover:bg-secondary/90 transition-colors duration-200 inline-flex items-center"
-          >
-            Gestionar Roles
-          </Link>
           <Button
             onClick={handleCreateUser}
             className="flex items-center"
@@ -237,7 +188,7 @@ export const UsersPage: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {user.role?.description || user.role?.name || 'Sin rol'}
+                    {user.role?.name || 'Sin rol'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -333,6 +284,7 @@ export const UsersPage: React.FC = () => {
             <Button
               variant="danger"
               onClick={confirmDeleteUser}
+              isLoading={deleteUserMutation.isPending}
             >
               Eliminar
             </Button>

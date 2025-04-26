@@ -1,9 +1,10 @@
 // src/features/settings/components/UserForm.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'react-toastify';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
@@ -11,41 +12,28 @@ import { RoleSelector } from './users/RoleSelector';
 import { User } from '../../../types';
 import { usersService } from '../../../services/users.service';
 
+// Schema base para usuarios
 const baseUserSchema = z.object({
   email: z.string().email('Email inválido'),
   full_name: z.string().min(3, 'Nombre completo es requerido'),
   role_id: z.number({
     required_error: 'Rol es requerido',
   }).min(1, 'Debe seleccionar un rol válido'),
-  is_active: z.boolean(),
-  password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres').optional(),
-  confirm_password: z.string().optional(),
+  is_active: z.boolean().default(true),
 });
 
-type UserFormData = {
-  email: string;
-  full_name: string;
-  role_id: number;
-  is_active: boolean;
-  password?: string;
-  confirm_password?: string;
-};
+// Schema para crear un usuario (password requerido)
+const createUserSchema = baseUserSchema.extend({
+  password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres'),
+});
 
-interface CreateUserData {
-  email: string;
-  full_name: string;
-  role_id: number;
-  is_active: boolean;
-  password: string;
-}
+// Schema para actualizar un usuario (password opcional)
+const updateUserSchema = baseUserSchema.extend({
+  password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres').optional(),
+});
 
-interface UpdateUserData {
-  email: string;
-  full_name: string;
-  role_id: number;
-  is_active: boolean;
-  password?: string;
-}
+type CreateUserFormData = z.infer<typeof createUserSchema>;
+type UpdateUserFormData = z.infer<typeof updateUserSchema>;
 
 interface UserFormProps {
   initialData?: User;
@@ -54,78 +42,80 @@ interface UserFormProps {
 }
 
 export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCreate }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
-  const form = useForm<UserFormData>({
-    resolver: zodResolver(baseUserSchema),
-    defaultValues: {
-      email: initialData?.email ?? '',
-      full_name: initialData?.full_name ?? '',
-      role_id: initialData?.role_id ?? initialData?.role?.id ?? 0,
-      is_active: initialData?.is_active ?? true,
-      password: '',
-      confirm_password: '',
-    },
+  const formSchema = isCreate ? createUserSchema : updateUserSchema;
+
+  // Valores iniciales para el formulario
+  const defaultValues = {
+    email: initialData?.email || '',
+    full_name: initialData?.full_name || '',
+    role_id: initialData?.role_id || 0,
+    is_active: initialData?.is_active ?? true,
+    password: '',
+  };
+
+  // Configuración del formulario
+  const { 
+    register, 
+    handleSubmit, 
+    formState: { errors, isSubmitting },
+    setValue,
+    watch 
+  } = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = form;
-
-  const roleId = watch('role_id');
-
-  const handleRoleChange = React.useCallback((value: number) => {
-    setValue('role_id', value, { shouldValidate: true });
-  }, [setValue]);
-
-  const onSubmit = handleSubmit(async (formData: UserFormData) => {
-    setIsSubmitting(true);
-    
-    try {
-      if (isCreate) {
-        if (!formData.password) {
-          toast.error('La contraseña es requerida para crear un usuario');
-          setIsSubmitting(false);
-          return;
-        }
-        
-        const createData: CreateUserData = {
-          email: formData.email,
-          full_name: formData.full_name,
-          role_id: formData.role_id,
-          is_active: formData.is_active,
-          password: formData.password
-        };
-        
-        await usersService.create(createData);
-        toast.success('Usuario creado correctamente');
-      } else if (initialData?.id) {
-        const updateData: UpdateUserData = {
-          email: formData.email,
-          full_name: formData.full_name,
-          role_id: formData.role_id,
-          is_active: formData.is_active,
-          ...(formData.password ? { password: formData.password } : {})
-        };
-        
-        await usersService.update(initialData.id, updateData);
-        toast.success('Usuario actualizado correctamente');
-      }
-      
+  // Mutación para crear usuario
+  const createUserMutation = useMutation({
+    mutationFn: (data: CreateUserFormData) => usersService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Usuario creado correctamente');
       onClose();
-    } catch (error) {
-      toast.error('Ocurrió un error al guardar el usuario');
-    } finally {
-      setIsSubmitting(false);
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Error al crear usuario');
     }
   });
-  
+
+  // Mutación para actualizar usuario
+  const updateUserMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateUserFormData }) => 
+      usersService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Usuario actualizado correctamente');
+      onClose();
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Error al actualizar usuario');
+    }
+  });
+
+  // Manejar cambio de rol
+  const roleId = watch('role_id');
+  const handleRoleChange = (value: number) => {
+    setValue('role_id', value, { shouldValidate: true });
+  };
+
+  // Manejar envío del formulario
+  const onSubmit = (data: CreateUserFormData | UpdateUserFormData) => {
+    if (isCreate) {
+      createUserMutation.mutate(data as CreateUserFormData);
+    } else if (initialData?.id) {
+      // Si es actualización, eliminar password si está vacío
+      const updateData = { ...data };
+      if (!updateData.password) {
+        delete (updateData as any).password;
+      }
+      updateUserMutation.mutate({ id: initialData.id, data: updateData as UpdateUserFormData });
+    }
+  };
+
   return (
-    <form onSubmit={onSubmit} className="p-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Email */}
         <Input
@@ -165,24 +155,13 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
           </label>
         </div>
         
-        {/* Contraseña (solo en creación) */}
-        {isCreate && (
-          <>
-            <Input
-              label="Contraseña *"
-              type="password"
-              error={errors.password?.message}
-              {...register('password')}
-            />
-            
-            <Input
-              label="Confirmar Contraseña *"
-              type="password"
-              error={errors.confirm_password?.message}
-              {...register('confirm_password')}
-            />
-          </>
-        )}
+        {/* Contraseña (obligatoria en creación, opcional en edición) */}
+        <Input
+          label={isCreate ? "Contraseña *" : "Contraseña (Dejar en blanco para no cambiar)"}
+          type="password"
+          error={errors.password?.message}
+          {...register('password')}
+        />
       </div>
       
       <div className="mt-8 flex justify-end space-x-3">
@@ -195,7 +174,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         </Button>
         <Button
           type="submit"
-          isLoading={isSubmitting}
+          isLoading={isSubmitting || createUserMutation.isPending || updateUserMutation.isPending}
         >
           {isCreate ? 'Crear Usuario' : 'Actualizar Usuario'}
         </Button>

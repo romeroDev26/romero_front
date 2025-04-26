@@ -10,7 +10,7 @@ import { SuppliersListPage } from "./features/suppliers/pages/SuppliersListPage"
 import { SupplierFormPage } from "./features/suppliers/pages/SupplierFormPage";
 import { Dashboard } from './components/layout/Dashboard';
 import { LoginPage } from './features/auth/pages/LoginPage';
-import { authService } from './services/auth.service';
+import { PrivateRoute } from './components/auth/PrivateRoute';
 
 // Páginas del dashboard
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
@@ -19,7 +19,7 @@ import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { CompanySettingsPage } from './features/settings/pages/CompanySettingsPage';
 import { UsersPage } from './features/settings/pages/UsersPage';
 import { RolesPage } from './features/settings/pages/RolesPage'; 
-import SettingsIndexPage from './features/settings/pages/SettingslndexPage'; // Componente de redirección
+import SettingsIndexPage from './features/settings/pages/SettingslndexPage';
 
 // Páginas de ventas
 import { QuotationsListPage } from './features/sales/pages/QuotationsListPage';
@@ -39,28 +39,16 @@ import { StockListPage } from './features/inventory/pages/StockListPage';
 import { InventoryMovementsPage } from './features/inventory/pages/InventoryMovementsPage';
 import { InventoryMovementFormPage } from './features/inventory/pages/InventoryMovementFormPage';
 
-import { JSX } from 'react';
-
 // Crear cliente para React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutos
     },
   },
 });
-
-// Componente para proteger rutas
-const PrivateRoute = ({ children }: { children: JSX.Element }) => {
-  // TODO: Implementar validación de autenticación en el futuro
-  // const isAuthenticated = authService.isAuthenticated();
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" />;
-  // }
-  
-  return children;
-};
 
 function App() {
   return (
@@ -79,14 +67,17 @@ function App() {
             
             {/* Clientes */}
             <Route path="clients" element={<ClientsListPage />} />
+            <Route path="clients/new" element={<ClientFormPage />} />
             <Route path="clients/:id" element={<ClientFormPage />} />
             
             {/* Proveedores */}
             <Route path="suppliers" element={<SuppliersListPage />} />
+            <Route path="suppliers/new" element={<SupplierFormPage />} />
             <Route path="suppliers/:id" element={<SupplierFormPage />} />
             
             {/* Productos y Servicios */}
             <Route path="products" element={<ProductsListPage />} />
+            <Route path="products/new" element={<ProductFormPage />} />
             <Route path="products/:id" element={<ProductFormPage />} />
             
             {/* Inventario */}
@@ -106,6 +97,7 @@ function App() {
             <Route path="sales">
               <Route index element={<div>Menú de Ventas</div>} />
               <Route path="quotations" element={<QuotationsListPage />} />
+              <Route path="quotations/new" element={<QuotationFormPage />} />
               <Route path="quotations/:id" element={<QuotationFormPage />} />
               <Route path="orders" element={<div>Órdenes de Venta</div>} />
               <Route path="orders/:id" element={<div>Detalle/Edición de Orden</div>} />
@@ -125,6 +117,7 @@ function App() {
             
             {/* Guías de Remisión */}
             <Route path="remission-guides" element={<RemissionGuidesListPage />} />
+            <Route path="remission-guides/new" element={<RemissionGuideFormPage />} />
             <Route path="remission-guides/:id" element={<RemissionGuideFormPage />} />
             
             {/* Reportes SUNAT */}
@@ -140,7 +133,7 @@ function App() {
             
             {/* Configuración */}
             <Route path="settings">
-              <Route index element={<SettingsIndexPage />} /> {/* Ahora redirecciona a usuarios */}
+              <Route index element={<SettingsIndexPage />} /> 
               <Route path="company" element={<CompanySettingsPage />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="roles" element={<RolesPage />} />
@@ -148,7 +141,7 @@ function App() {
           </Route>
           
           {/* Ruta para manejar páginas no encontradas */}
-          <Route path="*" element={<div>Página no encontrada</div>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
         <ToastContainer position="top-right" autoClose={3000} />

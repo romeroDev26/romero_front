@@ -18,34 +18,12 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
   error,
   disabled = false
 }) => {
-  // Datos simulados para el ejemplo
-  const simulatedRoles: Role[] = [
-    { id: 1, name: 'admin', description: 'Administrador del Sistema' },
-    { id: 2, name: 'sales', description: 'Personal de Ventas y Pasajes' },
-    { id: 3, name: 'warehouse', description: 'Personal de Almacén/Recepción Carga' },
-    { id: 4, name: 'dispatcher', description: 'Personal de Despacho/Encomiendas' },
-    { id: 5, name: 'accountant', description: 'Contador' },
-    { id: 6, name: 'driver', description: 'Conductor/Tripulante' }
-  ];
-  
-  // Configuración de React Query para obtener roles
+  // Obtener roles desde la API
   const { data: roles, isLoading, isError } = useQuery({
     queryKey: ['roles'],
-    queryFn: async () => {
-      try {
-        return await rolesService.getAll();
-      } catch (error) {
-        console.error('Error al cargar roles:', error);
-        return simulatedRoles; // Fallback a datos simulados en caso de error
-      }
-    },
-    retry: 1, // Intentar una vez más en caso de fallo
-    staleTime: 5 * 60 * 1000, // Datos considerados frescos por 5 minutos
-    gcTime: 30 * 60 * 1000, // Mantener en caché por 30 minutos (antes cacheTime)
+    queryFn: rolesService.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutos
   });
-  
-  // Usar roles simulados por ahora
-  const availableRoles = roles || simulatedRoles;
   
   if (isLoading) {
     return (
@@ -74,7 +52,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         } ${disabled ? 'bg-gray-100' : ''}`}
       >
         <option value="">Seleccione un rol</option>
-        {availableRoles && availableRoles.map((role) => (
+        {roles && roles.map((role) => (
           <option key={role.id} value={role.id}>
             {role.description || role.name}
           </option>

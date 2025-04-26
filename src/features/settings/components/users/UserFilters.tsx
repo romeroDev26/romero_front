@@ -26,24 +26,12 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
   showAdvancedFilters,
   setShowAdvancedFilters,
 }) => {
-  // Datos simulados para el ejemplo
-  const simulatedRoles: Role[] = [
-    { id: 1, name: 'admin', description: 'Administrador del Sistema' },
-    { id: 2, name: 'sales', description: 'Personal de Ventas y Pasajes' },
-    { id: 3, name: 'warehouse', description: 'Personal de Almacén/Recepción Carga' },
-    { id: 4, name: 'dispatcher', description: 'Personal de Despacho/Encomiendas' },
-    { id: 5, name: 'accountant', description: 'Contador' },
-    { id: 6, name: 'driver', description: 'Conductor/Tripulante' }
-  ];
-  
-  // En un proyecto real, estos datos vendrían de una API - Actualizado para React Query v5
-  // const { data: roles } = useQuery({
-  //   queryKey: ['roles'],
-  //   queryFn: rolesService.getAll
-  // });
-  
-  // Usar datos simulados por ahora
-  const roles = simulatedRoles;
+  // Obtener roles desde la API
+  const { data: roles, isLoading } = useQuery({
+    queryKey: ['roles'],
+    queryFn: rolesService.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
   
   return (
     <div className="space-y-4">
@@ -81,9 +69,10 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
                 className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
                 value={roleFilter === 'ALL' ? 'ALL' : roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
+                disabled={isLoading}
               >
                 <option value="ALL">Todos los roles</option>
-                {roles.map((role) => (
+                {roles && roles.map((role) => (
                   <option key={role.id} value={role.id}>
                     {role.description || role.name}
                   </option>

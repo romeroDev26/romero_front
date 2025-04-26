@@ -1,7 +1,9 @@
+// src/config/api.ts
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Definir la URL base de la API
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const baseURL = import.meta.env.VITE_API_URL || 'https://facturacionromero-production.up.railway.app';
 
 // Crear instancia de axios con configuración personalizada
 const api = axios.create({
@@ -33,14 +35,27 @@ api.interceptors.response.use(
   (error) => {
     // Si no hay conexión con el servidor
     if (!error.response) {
-      console.error('Error de red');
+      toast.error('Error de conexión con el servidor');
       return Promise.reject(error);
     }
 
     // Si hay respuesta pero es un error
     if (error.response.status === 401) {
       localStorage.removeItem('authToken');
-      window.location.href = '/login';
+      localStorage.removeItem('user');
+      
+      // Solo redirigir si no estamos ya en la página de login
+      if (window.location.pathname !== '/login') {
+        toast.error('Sesión expirada. Por favor inicie sesión nuevamente.');
+        window.location.href = '/login';
+      }
+    } else if (error.response.status === 403) {
+      toast.error('No tiene permisos para realizar esta acción');
+    } else if (error.response.status === 500) {
+      toast.error('Error en el servidor. Contacte al administrador.');
+    } else if (error.response.data && error.response.data.detail) {
+      // Mostrar el mensaje de error que viene del backend
+      toast.error(error.response.data.detail);
     }
 
     return Promise.reject(error);

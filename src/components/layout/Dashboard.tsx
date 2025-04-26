@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+// src/components/layout/Dashboard.tsx
+import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
 import { 
   HomeIcon, 
@@ -19,15 +21,26 @@ import {
   UsersIcon,
   KeyIcon
 } from '@heroicons/react/24/outline';
+import { authService } from '../../services/auth.service';
+import { usersService } from '../../services/users.service';
+import { Spinner } from '../common/Spinner';
+import { User } from '../../types';
 
 export const Dashboard: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
   
+  // Obtener datos del usuario actual
+  const { data: currentUser, isLoading } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: usersService.getCurrentUser,
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+  
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    navigate('/login');
+    authService.logout();
   };
   
   const navGroups = [
@@ -82,6 +95,14 @@ export const Dashboard: React.FC = () => {
       ]
     }
   ];
+  
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
   
   return (
     <div className="flex h-screen bg-gray-100">
@@ -208,7 +229,10 @@ export const Dashboard: React.FC = () => {
             </button>
             
             <div className="ml-4 lg:ml-0">
-              <span className="text-sm text-gray-600">Usuario: Admin</span>
+              <span className="text-sm text-gray-600">
+                Usuario: {currentUser?.full_name || 'Usuario'}
+                {currentUser?.role?.name && ` (${currentUser.role.name})`}
+              </span>
             </div>
           </div>
         </header>

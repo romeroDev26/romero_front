@@ -11,8 +11,8 @@ import { Client, DocType } from '../../../types';
 // import { clientsService } from '../../../services/clients.service';
 
 // Función helper para obtener el texto del tipo de documento
-const getDocTypeDisplay = (type: DocType): string => {
-  switch (type) {
+const getDocTypeDisplay = (type: string): string => {
+  switch (type as DocType) {
     case '1': return 'DNI';
     case '4': return 'Carnet de Extranjería';
     case '6': return 'RUC';

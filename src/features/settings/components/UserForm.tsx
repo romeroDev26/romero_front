@@ -1,70 +1,106 @@
 // src/features/settings/components/UserForm.tsx
-import React from 'react';
-import { useForm } from 'react-hook-form';
+import React, { useState } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { toast } from 'react-toastify';
+
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
+import { RoleSelector } from './users/RoleSelector';
+import { User } from '../../../types';
+import { usersService } from '../../../services/users.service';
 
-// Este servicio tendría que ser implementado
-// import { usersService } from '../../../services/users.service';
-
+// Esquema base para ambos casos
 const userSchema = z.object({
   email: z.string().email('Email inválido'),
   full_name: z.string().min(3, 'Nombre completo es requerido'),
   role_id: z.number({
     required_error: 'Rol es requerido',
-  }),
+  }).min(1, 'Debe seleccionar un rol válido'),
   is_active: z.boolean().default(true),
   password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres').optional(),
   confirm_password: z.string().optional(),
-}).refine((data) => !data.password || data.password === data.confirm_password, {
+})
+.refine(data => (!data.password && !data.confirm_password) || (data.password === data.confirm_password), {
   message: 'Las contraseñas no coinciden',
   path: ['confirm_password'],
 });
 
-type UserFormData = z.infer<typeof userSchema>;
-
 interface UserFormProps {
-  initialData?: any;
+  initialData?: User;
   onClose: () => void;
   isCreate: boolean;
 }
 
 export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCreate }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<UserFormData>({
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
-    defaultValues: initialData ? {
+    defaultValues: {
       ...initialData,
-      role_id: initialData.role?.id,
-    } : {
-      is_active: true,
-      role_id: 0,
+      role_id: initialData?.role_id ?? initialData?.role?.id,
+      is_active: initialData?.is_active ?? true,
+      email: initialData?.email ?? '',
+      full_name: initialData?.full_name ?? '',
     },
+    mode: 'onChange',
   });
   
-  const onSubmit = (data: UserFormData) => {
-    // En un proyecto real, llamarías a una API
-    // if (isCreate) {
-    //   usersService.create(data);
-    // } else {
-    //   usersService.update(initialData.id, data);
-    // }
-    console.log('Guardando usuario:', data);
-    onClose();
-  };
+  const roleId = watch('role_id');
   
-  // Datos simulados para los roles
-  const roles = [
-    { id: 1, name: 'admin', description: 'Administrador del Sistema' },
-    { id: 2, name: 'sales', description: 'Personal de Ventas' },
-    { id: 3, name: 'warehouse', description: 'Personal de Almacén' },
-    { id: 4, name: 'accountant', description: 'Contador' },
-  ];
+  const handleRoleChange = React.useCallback((value: number) => {
+    setValue('role_id', value, { shouldValidate: true });
+  }, [setValue]);
+  
+  const onSubmit: SubmitHandler<z.infer<typeof userSchema>> = (data) => {
+    setIsSubmitting(true);
+    
+    // Verificar contraseñas si es creación
+    if (isCreate && (!data.password || !data.confirm_password)) {
+      toast.error('La contraseña es requerida para crear un usuario');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    // Simular el proceso de guardado
+    setTimeout(() => {
+      console.log('Datos del formulario:', data);
+      
+      if (isCreate) {
+        // En un proyecto real, llamarías al servicio:
+        // usersService.create({
+        //   email: data.email,
+        //   full_name: data.full_name,
+        //   role_id: data.role_id,
+        //   password: data.password!,
+        //   is_active: data.is_active
+        // });
+        
+        toast.success('Usuario creado correctamente');
+      } else {
+        // En un proyecto real, llamarías al servicio:
+        // usersService.update(initialData!.id, {
+        //   email: data.email,
+        //   full_name: data.full_name,
+        //   role_id: data.role_id,
+        //   is_active: data.is_active
+        // });
+        
+        toast.success('Usuario actualizado correctamente');
+      }
+      
+      setIsSubmitting(false);
+      onClose();
+    }, 1000);
+  };
   
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
@@ -87,23 +123,11 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         
         {/* Rol */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Rol *
-          </label>
-          <select
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-            {...register('role_id', { valueAsNumber: true })}
-          >
-            <option value={0}>Seleccione un rol</option>
-            {roles.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.description}
-              </option>
-            ))}
-          </select>
-          {errors.role_id && (
-            <p className="mt-1 text-sm text-red-600">{errors.role_id.message}</p>
-          )}
+          <RoleSelector
+            value={roleId}
+            onChange={handleRoleChange}
+            error={errors.role_id?.message}
+          />
         </div>
         
         {/* Estado */}
@@ -119,7 +143,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
           </label>
         </div>
         
-        {/* Contraseña (solo en creación o reset) */}
+        {/* Contraseña (solo en creación) */}
         {isCreate && (
           <>
             <Input

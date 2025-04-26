@@ -15,7 +15,9 @@ import {
   XMarkIcon,
   Bars3Icon,
   ArrowRightOnRectangleIcon,
-  ChevronLeftIcon
+  ChevronLeftIcon,
+  UsersIcon,
+  KeyIcon
 } from '@heroicons/react/24/outline';
 
 export const Dashboard: React.FC = () => {
@@ -66,10 +68,17 @@ export const Dashboard: React.FC = () => {
       ]
     },
     {
-      title: 'Finanzas y Configuración',
+      title: 'Finanzas',
       items: [
-        { name: 'Finanzas', path: '/finance', icon: CreditCardIcon },
-        { name: 'Configuración', path: '/settings', icon: CogIcon }
+        { name: 'Finanzas', path: '/finance', icon: CreditCardIcon }
+      ]
+    },
+    {
+      title: 'Administración del Sistema',
+      items: [
+        { name: 'Usuarios', path: '/settings/users', icon: UsersIcon },
+        { name: 'Roles', path: '/settings/roles', icon: KeyIcon },
+        { name: 'Configuración', path: '/settings/company', icon: CogIcon }
       ]
     }
   ];

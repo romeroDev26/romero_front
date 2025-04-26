@@ -18,6 +18,8 @@ import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 // Páginas de configuración
 import { CompanySettingsPage } from './features/settings/pages/CompanySettingsPage';
 import { UsersPage } from './features/settings/pages/UsersPage';
+import { RolesPage } from './features/settings/pages/RolesPage'; 
+import SettingsIndexPage from './features/settings/pages/SettingslndexPage'; // Componente de redirección
 
 // Páginas de ventas
 import { QuotationsListPage } from './features/sales/pages/QuotationsListPage';
@@ -138,9 +140,10 @@ function App() {
             
             {/* Configuración */}
             <Route path="settings">
-              <Route index element={<div>Menú de Configuración</div>} />
+              <Route index element={<SettingsIndexPage />} /> {/* Ahora redirecciona a usuarios */}
               <Route path="company" element={<CompanySettingsPage />} />
               <Route path="users" element={<UsersPage />} />
+              <Route path="roles" element={<RolesPage />} />
             </Route>
           </Route>
           

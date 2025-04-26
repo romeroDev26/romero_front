@@ -14,6 +14,9 @@ const routeNameMap: { [key: string]: string } = {
   'sunat-reports': 'Reportes SUNAT',
   'finance': 'Finanzas',
   'settings': 'Configuración',
+  'users': 'Usuarios',
+  'roles': 'Roles',
+  'company': 'Empresa',
   'new': 'Nuevo',
   'edit': 'Editar',
   'view': 'Ver'

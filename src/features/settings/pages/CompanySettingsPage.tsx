@@ -1,5 +1,5 @@
 // src/features/settings/pages/CompanySettingsPage.tsx
-import React from 'react';
+import React, { useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,9 +8,7 @@ import { toast } from 'react-toastify';
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
-
-// Este servicio tendría que ser implementado
-// import { settingsService } from '../../../services/settings.service';
+import { settingsService } from '../../../services/settings.service';
 
 const companySchema = z.object({
   ruc: z.string().length(11, "RUC debe tener 11 dígitos"),
@@ -21,37 +19,21 @@ const companySchema = z.object({
   phone: z.string().optional(),
   email: z.string().email("Email inválido").optional().or(z.literal('')),
   sunat_username: z.string().min(3, "Usuario SOL es requerido"),
-  beta_mode: z.boolean().default(true),
+  beta_mode: z.boolean(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
 
 export const CompanySettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const certificateInputRef = useRef<HTMLInputElement>(null);
+  const [certificatePassword, setCertificatePassword] = React.useState('');
   
-  // En un proyecto real, estos datos vendrían de una API
-  // const { data: company, isLoading, error } = useQuery(
-  //   ['company'], 
-  //   settingsService.getCompany
-  // );
-  
-  // Datos simulados para el ejemplo
-  const company = {
-    id: 1,
-    ruc: '20123456789',
-    business_name: 'Transportes Romero S.A.C.',
-    trade_name: 'Transportes Romero',
-    address: 'Av. Principal 123, Iquitos',
-    ubigeo: '160101',
-    phone: '065-234567',
-    email: 'administracion@transportesromero.com',
-    logo_url: '',
-    sunat_username: 'MODDATOS',
-    beta_mode: true,
-  };
-  
-  const isLoading = false;
-  const error = null;
+  const { data: company, isLoading, error } = useQuery({
+    queryKey: ['company'],
+    queryFn: settingsService.getCompany
+  });
   
   const {
     register,
@@ -59,28 +41,72 @@ export const CompanySettingsPage: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
-    defaultValues: company,
+    defaultValues: company || {
+      beta_mode: true,
+      ruc: '',
+      business_name: '',
+      address: '',
+      ubigeo: '',
+      sunat_username: '',
+    },
   });
   
-  // En un proyecto real, usarías una mutación para actualizar los datos
-  // const mutation = useMutation(
-  //   (data: CompanyFormData) => settingsService.updateCompany(company.id, data),
-  //   {
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries(['company']);
-  //       toast.success('Información de empresa actualizada');
-  //     },
-  //     onError: () => {
-  //       toast.error('Error al actualizar información de empresa');
-  //     }
-  //   }
-  // );
+  const mutation = useMutation({
+    mutationFn: (data: CompanyFormData) => settingsService.updateCompany(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['company'] });
+      toast.success('Información de empresa actualizada');
+    },
+    onError: () => {
+      toast.error('Error al actualizar información de empresa');
+    }
+  });
+
+  const logoMutation = useMutation({
+    mutationFn: settingsService.uploadCompanyLogo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['company'] });
+      toast.success('Logo actualizado correctamente');
+    },
+    onError: () => {
+      toast.error('Error al actualizar el logo');
+    }
+  });
+
+  const certificateMutation = useMutation({
+    mutationFn: (data: { file: File; password: string }) => 
+      settingsService.uploadCertificate(data.file, data.password),
+    onSuccess: () => {
+      toast.success('Certificado digital actualizado correctamente');
+      setCertificatePassword('');
+    },
+    onError: () => {
+      toast.error('Error al actualizar el certificado digital');
+    }
+  });
   
   const onSubmit = (data: CompanyFormData) => {
-    // mutation.mutate(data);
-    // Simulación para el ejemplo
-    console.log('Datos a enviar:', data);
-    toast.success('Información de empresa actualizada');
+    mutation.mutate(data);
+  };
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB
+        toast.error('El archivo es demasiado grande. Máximo 2MB');
+        return;
+      }
+      logoMutation.mutate(file);
+    }
+  };
+
+  const handleCertificateUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && certificatePassword) {
+      certificateMutation.mutate({ file, password: certificatePassword });
+    } else if (!certificatePassword) {
+      toast.error('Debe ingresar la contraseña del certificado');
+    }
   };
   
   if (isLoading) return <Spinner />;
@@ -184,6 +210,9 @@ export const CompanySettingsPage: React.FC = () => {
                 <div className="mt-1 flex items-center">
                   <input
                     type="file"
+                    ref={certificateInputRef}
+                    onChange={handleCertificateUpload}
+                    accept=".pfx,.p12"
                     className="block w-full text-sm text-gray-500
                       file:mr-4 file:py-2 file:px-4
                       file:rounded-md file:border-0
@@ -203,6 +232,8 @@ export const CompanySettingsPage: React.FC = () => {
                 </label>
                 <input
                   type="password"
+                  value={certificatePassword}
+                  onChange={(e) => setCertificatePassword(e.target.value)}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
                   placeholder="••••••••"
                 />
@@ -219,7 +250,7 @@ export const CompanySettingsPage: React.FC = () => {
               </label>
               <div className="mt-1 flex items-center">
                 <span className="inline-block h-12 w-12 rounded-md overflow-hidden bg-gray-100">
-                  {company.logo_url ? (
+                  {company?.logo_url ? (
                     <img src={company.logo_url} alt="Logo" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gray-300 text-gray-500">
@@ -229,6 +260,8 @@ export const CompanySettingsPage: React.FC = () => {
                 </span>
                 <input
                   type="file"
+                  ref={logoInputRef}
+                  onChange={handleLogoUpload}
                   className="ml-5 block text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4
                     file:rounded-md file:border-0
@@ -247,7 +280,7 @@ export const CompanySettingsPage: React.FC = () => {
           <div className="flex justify-end">
             <Button
               type="submit"
-              isLoading={isSubmitting}
+              isLoading={isSubmitting || mutation.isPending}
             >
               Guardar Cambios
             </Button>

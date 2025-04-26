@@ -31,7 +31,7 @@ const clientSchema = z.object({
     .optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   phone: z.string().max(50, 'Teléfono muy largo').optional(),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean(),
 });
 
 type ClientFormData = z.infer<typeof clientSchema>;

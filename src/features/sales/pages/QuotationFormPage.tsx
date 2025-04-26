@@ -1,23 +1,38 @@
 // src/features/sales/pages/QuotationFormPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { es } from 'date-fns/locale';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
-import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
 
-// Estos servicios tendrían que ser implementados
-// import { clientsService } from '../../../services/clients.service';
-// import { productsService } from '../../../services/products.service';
-// import { quotationsService } from '../../../services/quotations.service';
+// Definir interfaces para mejor tipado
+interface QuotationItem {
+  product_id: number;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  discount: number;
+  subtotal?: number;
+  tax_amount?: number;
+  total_line?: number;
+}
+
+interface QuotationFormData {
+  client_id: number;
+  series: string;
+  issue_date: Date;
+  currency_code: string;
+  expiry_date?: Date;
+  items: QuotationItem[];
+  notes?: string;
+}
 
 const quotationItemSchema = z.object({
   product_id: z.number({
@@ -26,7 +41,7 @@ const quotationItemSchema = z.object({
   description: z.string().min(3, 'Descripción es requerida'),
   quantity: z.number().positive('Cantidad debe ser mayor a 0'),
   unit_price: z.number().positive('Precio unitario debe ser mayor a 0'),
-  discount: z.number().min(0, 'Descuento no puede ser negativo').default(0),
+  discount: z.number().min(0, 'Descuento no puede ser negativo'),
   subtotal: z.number().optional(),
   tax_amount: z.number().optional(),
   total_line: z.number().optional(),
@@ -40,13 +55,54 @@ const quotationSchema = z.object({
   issue_date: z.date({
     required_error: 'Fecha de emisión es requerida',
   }),
+  currency_code: z.string().min(1, 'Moneda es requerida'),
   expiry_date: z.date().optional(),
-  currency_code: z.string().default('PEN'),
   items: z.array(quotationItemSchema).min(1, 'Debe agregar al menos un ítem'),
   notes: z.string().optional(),
 });
 
-type QuotationFormData = z.infer<typeof quotationSchema>;
+const company = {
+  ruc: '20123456789',
+  business_name: 'Transportes Romero S.A.C.',
+  trade_name: 'Transportes Romero',
+  address: 'Av. Principal 123, Iquitos',
+  phone: '065-234567',
+  email: 'administracion@transportesromero.com',
+};
+
+const QuotationTotals: React.FC<{
+  currencyCode: string;
+  totals: {
+    subtotal: number;
+    tax_amount: number;
+    total_amount: number;
+  };
+  className?: string;
+}> = ({ currencyCode, totals, className = 'w-72' }) => (
+  <div className={`${className} bg-gray-50 p-4 rounded-md`}>
+    <div className="flex justify-between py-1">
+      <span>Subtotal:</span>
+      <span className="font-medium">
+        {currencyCode === 'PEN' ? 'S/ ' : '$ '}
+        {totals.subtotal.toFixed(2)}
+      </span>
+    </div>
+    <div className="flex justify-between py-1">
+      <span>IGV (18%):</span>
+      <span className="font-medium">
+        {currencyCode === 'PEN' ? 'S/ ' : '$ '}
+        {totals.tax_amount.toFixed(2)}
+      </span>
+    </div>
+    <div className="flex justify-between py-1 border-t border-gray-300 mt-1 pt-2">
+      <span className="font-semibold">TOTAL:</span>
+      <span className="font-bold">
+        {currencyCode === 'PEN' ? 'S/ ' : '$ '}
+        {totals.total_amount.toFixed(2)}
+      </span>
+    </div>
+  </div>
+);
 
 export const QuotationFormPage: React.FC = () => {
   const { id } = useParams();
@@ -124,6 +180,25 @@ export const QuotationFormPage: React.FC = () => {
   const isLoadingProducts = false;
   const isLoadingQuotation = false;
   
+  const defaultValues: QuotationFormData = {
+    client_id: 0, // Cambiado de undefined a 0
+    series: 'COT',
+    issue_date: new Date(),
+    expiry_date: new Date(new Date().setDate(new Date().getDate() + 15)),
+    currency_code: 'PEN',
+    items: [{
+      product_id: 0,
+      description: '',
+      quantity: 1,
+      unit_price: 0,
+      discount: 0, // Aseguramos que siempre tenga un valor
+      subtotal: 0,
+      tax_amount: 0,
+      total_line: 0,
+    }],
+    notes: '',
+  };
+
   const {
     control,
     register,
@@ -134,22 +209,7 @@ export const QuotationFormPage: React.FC = () => {
     formState: { errors, isSubmitting },
   } = useForm<QuotationFormData>({
     resolver: zodResolver(quotationSchema),
-    defaultValues: {
-      series: 'COT',
-      issue_date: new Date(),
-      expiry_date: new Date(new Date().setDate(new Date().getDate() + 15)),
-      currency_code: 'PEN',
-      items: [{
-        product_id: 0,
-        description: '',
-        quantity: 1,
-        unit_price: 0,
-        discount: 0,
-        subtotal: 0,
-        tax_amount: 0,
-        total_line: 0,
-      }],
-    },
+    defaultValues,
   });
   
   // Field array para manejar los items
@@ -166,7 +226,7 @@ export const QuotationFormPage: React.FC = () => {
         series: quotation.series,
         issue_date: new Date(quotation.issue_date),
         expiry_date: quotation.expiry_date ? new Date(quotation.expiry_date) : undefined,
-        currency_code: quotation.currency_code,
+        currency_code: quotation.currency_code ?? 'PEN',
         notes: quotation.notes,
         items: quotation.items.map(item => ({
           product_id: item.product_id,
@@ -248,25 +308,28 @@ export const QuotationFormPage: React.FC = () => {
       total_line: 0,
     });
   };
-  
   // Enviar formulario
-  const onSubmit = (data: QuotationFormData) => {
-    const completeData = {
-      ...data,
-      total_amount: calculatedTotals.total_amount,
-    };
-    
-    // En un proyecto real, llamarías a una API
-    // if (isEditing) {
-    //   quotationsService.update(Number(id), completeData);
-    // } else {
-    //   quotationsService.create(completeData);
-    // }
-    
-    console.log('Guardando cotización:', completeData);
-    navigate('/sales/quotations');
+  const onSubmit = async (data: QuotationFormData) => {
+    try {
+      const completeData = {
+        ...data,
+        total_amount: calculatedTotals.total_amount,
+      };
+      
+      console.log('Guardando cotización:', completeData);
+      navigate('/sales/quotations');
+    } catch (error) {
+      console.error('Error al guardar la cotización:', error);
+    }
   };
-  
+
+  // Variables de estado de carga y edición (deben estar aquí, no dentro de onSubmit)
+  // Ya están declaradas arriba:
+  // const isEditing = !!id && id !== 'new';
+  // const isLoadingClients = false;
+  // const isLoadingProducts = false;
+  // const isLoadingQuotation = false;
+
   // Mostrar loading si se están cargando datos
   if (isLoadingClients || isLoadingProducts || (isEditing && isLoadingQuotation)) {
     return <Spinner />;
@@ -281,7 +344,7 @@ export const QuotationFormPage: React.FC = () => {
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit as SubmitHandler<QuotationFormData>)} className="space-y-6">
           {/* Sección de cabecera */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Serie-Número */}
@@ -567,29 +630,10 @@ export const QuotationFormPage: React.FC = () => {
           
           {/* Sección de Totales */}
           <div className="mt-6 flex justify-end">
-            <div className="w-72 bg-gray-50 p-4 rounded-md">
-              <div className="flex justify-between py-1">
-                <span>Subtotal:</span>
-                <span className="font-medium">
-                  {currencyCode === 'PEN' ? 'S/ ' : '$ '}
-                  {calculatedTotals.subtotal.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span>IGV (18%):</span>
-                <span className="font-medium">
-                  {currencyCode === 'PEN' ? 'S/ ' : '$ '}
-                  {calculatedTotals.tax_amount.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-t border-gray-300 mt-1 pt-2">
-                <span className="font-semibold">TOTAL:</span>
-                <span className="font-bold">
-                  {currencyCode === 'PEN' ? 'S/ ' : '$ '}
-                  {calculatedTotals.total_amount.toFixed(2)}
-                </span>
-              </div>
-            </div>
+            <QuotationTotals 
+              currencyCode={currencyCode} 
+              totals={calculatedTotals} 
+            />
           </div>
           
           {/* Sección de Notas */}
@@ -728,8 +772,9 @@ export const QuotationFormPage: React.FC = () => {
           )}
           
           <div className="text-center text-sm text-gray-500 mt-6 border-t border-gray-200 pt-4">
-            <p>Transportes Romero S.A.C. - RUC 20123456789</p>
-            <p>Av. Principal 123, Iquitos - Teléfono: 065-234567</p>
+            <p>{company.business_name} - RUC {company.ruc}</p>
+            <p>{company.address} - Teléfono: {company.phone}</p>
+            <p>{company.email}</p>
           </div>
         </div>
       </Modal>

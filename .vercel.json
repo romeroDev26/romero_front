@@ -1,0 +1,6 @@
+{
+    "buildCommand": "tsc -b --noEmit && vite build",
+    "rewrites": [
+      { "source": "/(.*)", "destination": "/index.html" }
+    ]
+  }

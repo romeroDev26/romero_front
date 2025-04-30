@@ -52,11 +52,17 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
         password: data.password
       });
       
-      toast.success('Contraseña actualizada correctamente');
+      toast.success('Contraseña actualizada exitosamente');
       onClose();
     } catch (error: any) {
       console.error('Error al restablecer contraseña:', error);
-      toast.error(error.response?.data?.detail || 'Error al actualizar contraseña');
+      if (error.response?.status === 404) {
+        toast.error('Usuario no encontrado');
+      } else if (error.response?.data?.detail) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error('Error al actualizar la contraseña. Por favor, intente nuevamente');
+      }
     } finally {
       setIsSubmitting(false);
     }

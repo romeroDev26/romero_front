@@ -49,7 +49,7 @@ export const usersService = {
   },
   
   resetPassword: async (data: ResetPasswordData): Promise<void> => {
-    await api.post(`/users/${data.id}/reset-password`, {
+    await api.patch(`/api/v1/users/${data.id}`, {
       password: data.password
     });
   },

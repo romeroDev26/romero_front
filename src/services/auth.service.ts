@@ -3,56 +3,68 @@ import api from '../config/api';
 import { User } from '../types';
 
 interface LoginCredentials {
-  username: string; 
+  email: string;
   password: string;
 }
 
-interface TokenResponse {
+interface LoginResponse {
   access_token: string;
   token_type: string;
+  user?: User;
 }
 
 export const authService = {
-  login: async (credentials: LoginCredentials): Promise<TokenResponse> => {
-    // Usamos FormData para enviar las credenciales como espera el endpoint
-    const formData = new FormData();
-    formData.append('username', credentials.username);
-    formData.append('password', credentials.password);
-    
-    // Convertimos FormData a URLSearchParams para envío correcto
-    const params = new URLSearchParams();
-    params.append('username', credentials.username);
-    params.append('password', credentials.password);
-    
-    const response = await api.post<TokenResponse>('/login/access-token', params, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    });
-    
-    // Guardamos el token en localStorage
-    if (response.data.access_token) {
+  login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
+    try {
+      // Utilizamos la forma de autenticación de OAuth2 que requiere la API
+      const formData = new URLSearchParams();
+      formData.append('username', credentials.email); // La API espera 'username' como correo
+      formData.append('password', credentials.password);
+      
+      const response = await api.post<LoginResponse>('/auth/token', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      
+      // Guardamos el token en localStorage
       localStorage.setItem('authToken', response.data.access_token);
+      
+      try {
+        // Obtenemos los datos del usuario actual
+        const userResponse = await api.get('/auth/me');
+        localStorage.setItem('user', JSON.stringify(userResponse.data));
+        
+        return {
+          ...response.data,
+          user: userResponse.data
+        };
+      } catch (userError) {
+        // Continuamos con el token aunque no se pueda obtener datos del usuario
+        return response.data;
+      }
+    } catch (error) {
+      throw error;
     }
-    
-    return response.data;
   },
   
-  logout: (): void => {
+  logout: async (): Promise<void> => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-    // Redirigir a la página de login
-    window.location.href = '/login';
   },
   
-  getCurrentUser: async (): Promise<User> => {
-    const response = await api.get<User>('/users/me');
-    // Guardamos el usuario en localStorage para uso offline
-    localStorage.setItem('user', JSON.stringify(response.data));
-    return response.data;
+  getCurrentUser: (): User | null => {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
   },
   
   isAuthenticated: (): boolean => {
     return !!localStorage.getItem('authToken');
+  },
+  
+  // Obtener el perfil del usuario actual
+  getProfile: async (): Promise<User> => {
+    const response = await api.get('/auth/me');
+    return response.data;
   }
 };

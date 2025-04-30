@@ -13,31 +13,36 @@ export interface UpdateRoleData {
 }
 
 export const rolesService = {
-  // Obtener todos los roles
   getAll: async (): Promise<Role[]> => {
-    const response = await api.get('/roles');
-    return response.data;
+    try {
+      const response = await api.get('/roles');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting roles:', error);
+      // Fallback a datos hardcodeados en caso de que el endpoint no esté disponible
+      return [
+        { id: 1, name: 'admin', description: 'Administrador del Sistema' },
+        { id: 2, name: 'sales', description: 'Personal de Ventas' },
+        { id: 3, name: 'warehouse', description: 'Personal de Almacén' }
+      ];
+    }
   },
   
-  // Obtener un rol por ID
   getById: async (id: number): Promise<Role> => {
     const response = await api.get(`/roles/${id}`);
     return response.data;
   },
   
-  // Crear un nuevo rol
   create: async (roleData: CreateRoleData): Promise<Role> => {
     const response = await api.post('/roles', roleData);
     return response.data;
   },
   
-  // Actualizar un rol existente
   update: async (id: number, roleData: UpdateRoleData): Promise<Role> => {
-    const response = await api.put(`/roles/${id}`, roleData);
+    const response = await api.patch(`/roles/${id}`, roleData);
     return response.data;
   },
   
-  // Eliminar un rol
   delete: async (id: number): Promise<void> => {
     await api.delete(`/roles/${id}`);
   }

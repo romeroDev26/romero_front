@@ -1,9 +1,9 @@
 // src/features/settings/components/users/RoleSelector.tsx
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
+import { Spinner } from '../../../../components/common/Spinner';
 import { Role } from '../../../../types';
 import { rolesService } from '../../../../services/roles.service';
-import { Spinner } from '../../../../components/common/Spinner';
 
 interface RoleSelectorProps {
   value: number | undefined;
@@ -18,12 +18,32 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
   error,
   disabled = false
 }) => {
-  // Obtener roles desde la API
-  const { data: roles, isLoading, isError } = useQuery({
-    queryKey: ['roles'],
-    queryFn: rolesService.getAll,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-  });
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Cargar roles desde la API
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        setIsLoading(true);
+        const data = await rolesService.getAll();
+        setRoles(data);
+      } catch (err) {
+        console.error('Error al cargar roles:', err);
+        toast.error('No se pudieron cargar los roles');
+        // Usar roles por defecto en caso de error
+        setRoles([
+          { id: 1, name: 'admin', description: 'Administrador del Sistema' },
+          { id: 2, name: 'sales', description: 'Personal de Ventas' },
+          { id: 3, name: 'warehouse', description: 'Personal de Almacén' }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchRoles();
+  }, []);
   
   if (isLoading) {
     return (
@@ -32,10 +52,6 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         <span className="text-gray-500">Cargando roles...</span>
       </div>
     );
-  }
-  
-  if (isError) {
-    return <p className="text-red-500">Error al cargar roles</p>;
   }
   
   return (
@@ -52,7 +68,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         } ${disabled ? 'bg-gray-100' : ''}`}
       >
         <option value="">Seleccione un rol</option>
-        {roles && roles.map((role) => (
+        {roles.map((role) => (
           <option key={role.id} value={role.id}>
             {role.description || role.name}
           </option>

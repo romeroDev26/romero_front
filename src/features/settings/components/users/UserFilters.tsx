@@ -1,9 +1,9 @@
 // src/features/settings/components/users/UserFilters.tsx
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { rolesService } from '../../../../services/roles.service';
 import { Role } from '../../../../types';
+import { toast } from 'react-toastify';
 
 interface UserFiltersProps {
   searchTerm: string;
@@ -26,12 +26,27 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
   showAdvancedFilters,
   setShowAdvancedFilters,
 }) => {
-  // Obtener roles desde la API
-  const { data: roles, isLoading } = useQuery({
-    queryKey: ['roles'],
-    queryFn: rolesService.getAll,
-    staleTime: 5 * 60 * 1000, // 5 minutos
-  });
+  const [roles, setRoles] = useState<Role[]>([]);
+  
+  // Cargar roles para filtrar
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const data = await rolesService.getAll();
+        setRoles(data);
+      } catch (err) {
+        console.error('Error al cargar roles para filtros:', err);
+        // Si falla, usar unos valores por defecto
+        setRoles([
+          { id: 1, name: 'admin', description: 'Administrador del Sistema' },
+          { id: 2, name: 'sales', description: 'Personal de Ventas' },
+          { id: 3, name: 'warehouse', description: 'Personal de Almacén' }
+        ]);
+      }
+    };
+    
+    fetchRoles();
+  }, []);
   
   return (
     <div className="space-y-4">
@@ -69,10 +84,9 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
                 className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
                 value={roleFilter === 'ALL' ? 'ALL' : roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
-                disabled={isLoading}
               >
                 <option value="ALL">Todos los roles</option>
-                {roles && roles.map((role) => (
+                {roles.map((role) => (
                   <option key={role.id} value={role.id}>
                     {role.description || role.name}
                   </option>

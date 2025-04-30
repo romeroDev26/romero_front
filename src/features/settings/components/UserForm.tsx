@@ -1,119 +1,141 @@
 // src/features/settings/components/UserForm.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'react-toastify';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { RoleSelector } from './users/RoleSelector';
 import { User } from '../../../types';
-import { usersService } from '../../../services/users.service';
+import { usersService, CreateUserData, UpdateUserData } from '../../../services/users.service';
 
-// Schema base para usuarios
-const baseUserSchema = z.object({
+// Esquema de validación para creación de usuario
+const createUserSchema = z.object({
   email: z.string().email('Email inválido'),
   full_name: z.string().min(3, 'Nombre completo es requerido'),
   role_id: z.number({
     required_error: 'Rol es requerido',
   }).min(1, 'Debe seleccionar un rol válido'),
   is_active: z.boolean().default(true),
-});
-
-// Schema para crear un usuario (password requerido)
-const createUserSchema = baseUserSchema.extend({
   password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres'),
+  confirm_password: z.string().min(6, 'Confirme su contraseña'),
+}).refine(data => data.password === data.confirm_password, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirm_password"],
 });
 
-// Schema para actualizar un usuario (password opcional)
-const updateUserSchema = baseUserSchema.extend({
-  password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres').optional(),
+// Esquema de validación para actualización de usuario
+const updateUserSchema = z.object({
+  email: z.string().email('Email inválido'),
+  full_name: z.string().min(3, 'Nombre completo es requerido'),
+  role_id: z.number({
+    required_error: 'Rol es requerido',
+  }).min(1, 'Debe seleccionar un rol válido'),
+  is_active: z.boolean().default(true),
+  password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres').optional().or(z.literal('')),
+  confirm_password: z.string().min(6, 'Confirme su contraseña').optional().or(z.literal('')),
+}).refine(data => !data.password || data.password === data.confirm_password, {
+  message: "Las contraseñas no coinciden",
+  path: ["confirm_password"],
 });
 
-type CreateUserFormData = z.infer<typeof createUserSchema>;
-type UpdateUserFormData = z.infer<typeof updateUserSchema>;
+type BaseUserFormData = {
+  email: string;
+  full_name: string;
+  role_id: number;
+  is_active: boolean;
+};
+
+type CreateUserFormData = BaseUserFormData & {
+  password: string;
+  confirm_password: string;
+};
+
+type UpdateUserFormData = BaseUserFormData & {
+  password?: string;
+  confirm_password?: string;
+};
 
 interface UserFormProps {
   initialData?: User;
-  onClose: () => void;
+  onClose: (shouldRefresh?: boolean) => void;
   isCreate: boolean;
 }
 
 export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCreate }) => {
-  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formSchema = isCreate ? createUserSchema : updateUserSchema;
-
-  // Valores iniciales para el formulario
-  const defaultValues = {
-    email: initialData?.email || '',
-    full_name: initialData?.full_name || '',
-    role_id: initialData?.role_id || 0,
-    is_active: initialData?.is_active ?? true,
-    password: '',
-  };
-
-  // Configuración del formulario
   const { 
     register, 
     handleSubmit, 
-    formState: { errors, isSubmitting },
-    setValue,
+    formState: { errors }, 
+    setValue, 
     watch 
-  } = useForm({
-    resolver: zodResolver(formSchema),
-    defaultValues
+  } = useForm<CreateUserFormData | UpdateUserFormData>({
+    resolver: zodResolver(isCreate ? createUserSchema : updateUserSchema) as any,
+    defaultValues: {
+      email: initialData?.email || '',
+      full_name: initialData?.full_name || '',
+      role_id: initialData?.role_id || 0,
+      is_active: initialData?.is_active ?? true,
+      password: '',
+      confirm_password: '',
+    },
   });
 
-  // Mutación para crear usuario
-  const createUserMutation = useMutation({
-    mutationFn: (data: CreateUserFormData) => usersService.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Usuario creado correctamente');
-      onClose();
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al crear usuario');
-    }
-  });
-
-  // Mutación para actualizar usuario
-  const updateUserMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateUserFormData }) => 
-      usersService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Usuario actualizado correctamente');
-      onClose();
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al actualizar usuario');
-    }
-  });
+  const roleId = watch('role_id');
 
   // Manejar cambio de rol
-  const roleId = watch('role_id');
   const handleRoleChange = (value: number) => {
     setValue('role_id', value, { shouldValidate: true });
   };
 
-  // Manejar envío del formulario
-  const onSubmit = (data: CreateUserFormData | UpdateUserFormData) => {
-    if (isCreate) {
-      createUserMutation.mutate(data as CreateUserFormData);
-    } else if (initialData?.id) {
-      // Si es actualización, eliminar password si está vacío
-      const updateData = { ...data };
-      if (!updateData.password) {
-        delete (updateData as any).password;
+  // Enviar formulario
+  const onSubmit = async (formData: CreateUserFormData | UpdateUserFormData) => {
+    setIsSubmitting(true);
+    
+    try {
+      if (isCreate) {
+        // Crear nuevo usuario
+        const createData: CreateUserData = {
+          email: formData.email,
+          full_name: formData.full_name,
+          role_id: formData.role_id,
+          is_active: formData.is_active,
+          password: formData.password as string,
+        };
+        
+        await usersService.create(createData);
+        toast.success('Usuario creado correctamente');
+        onClose(true); // Cerrar y refrescar la lista
+      } else if (initialData?.id) {
+        // Actualizar usuario existente
+        const updateData: UpdateUserData = {
+          email: formData.email,
+          full_name: formData.full_name,
+          role_id: formData.role_id,
+          is_active: formData.is_active,
+        };
+        
+        // Incluir contraseña solo si fue proporcionada
+        if (formData.password) {
+          updateData.password = formData.password;
+        }
+        
+        await usersService.update(initialData.id, updateData);
+        toast.success('Usuario actualizado correctamente');
+        onClose(true); // Cerrar y refrescar la lista
       }
-      updateUserMutation.mutate({ id: initialData.id, data: updateData as UpdateUserFormData });
+    } catch (error: any) {
+      console.error('Error al guardar usuario:', error);
+      toast.error(error.response?.data?.detail || 'Ocurrió un error al guardar el usuario');
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
+  
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -155,12 +177,20 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
           </label>
         </div>
         
-        {/* Contraseña (obligatoria en creación, opcional en edición) */}
+        {/* Contraseña */}
         <Input
-          label={isCreate ? "Contraseña *" : "Contraseña (Dejar en blanco para no cambiar)"}
+          label={isCreate ? "Contraseña *" : "Contraseña (dejar en blanco para mantener actual)"}
           type="password"
           error={errors.password?.message}
           {...register('password')}
+        />
+        
+        {/* Confirmar Contraseña */}
+        <Input
+          label={isCreate ? "Confirmar Contraseña *" : "Confirmar Contraseña"}
+          type="password"
+          error={errors.confirm_password?.message}
+          {...register('confirm_password')}
         />
       </div>
       
@@ -168,13 +198,13 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         <Button
           type="button"
           variant="outline"
-          onClick={onClose}
+          onClick={() => onClose()}
         >
           Cancelar
         </Button>
         <Button
           type="submit"
-          isLoading={isSubmitting || createUserMutation.isPending || updateUserMutation.isPending}
+          isLoading={isSubmitting}
         >
           {isCreate ? 'Crear Usuario' : 'Actualizar Usuario'}
         </Button>

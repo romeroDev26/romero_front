@@ -1,5 +1,5 @@
 // src/components/layout/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
@@ -22,8 +22,7 @@ import {
   KeyIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
-import { usersService } from '../../services/users.service';
-import { Spinner } from '../common/Spinner';
+import { toast } from 'react-toastify';
 import { User } from '../../types';
 
 export const Dashboard: React.FC = () => {
@@ -31,16 +30,27 @@ export const Dashboard: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
   
-  // Obtener datos del usuario actual
-  const { data: currentUser, isLoading } = useQuery({
+  const { data: currentUser, isLoading } = useQuery<User>({
     queryKey: ['currentUser'],
-    queryFn: usersService.getCurrentUser,
-    retry: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    queryFn: async (): Promise<User> => {
+      try {
+        const data = await authService.getProfile();
+        return data;
+      } catch (error: any) {
+        console.error('Error al obtener el perfil del usuario:', error);
+        toast.error('No se pudo cargar la información del usuario');
+        if (error.response?.status === 401) {
+          handleLogout();
+        }
+        throw error;
+      }
+    },
+    staleTime: 1000 * 60 * 5 // 5 minutos
   });
   
   const handleLogout = () => {
     authService.logout();
+    navigate('/login');
   };
   
   const navGroups = [
@@ -95,14 +105,6 @@ export const Dashboard: React.FC = () => {
       ]
     }
   ];
-  
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spinner />
-      </div>
-    );
-  }
   
   return (
     <div className="flex h-screen bg-gray-100">
@@ -229,10 +231,15 @@ export const Dashboard: React.FC = () => {
             </button>
             
             <div className="ml-4 lg:ml-0">
-              <span className="text-sm text-gray-600">
-                Usuario: {currentUser?.full_name || 'Usuario'}
-                {currentUser?.role?.name && ` (${currentUser.role.name})`}
-              </span>
+              {isLoading ? (
+                <span className="text-sm text-gray-500">Cargando usuario...</span>
+              ) : currentUser ? (
+                <span className="text-sm text-gray-600">
+                  Usuario: <strong>{currentUser.full_name}</strong> ({currentUser.role?.description || currentUser.role?.name || 'Sin rol'})
+                </span>
+              ) : (
+                <span className="text-sm text-gray-500">Usuario no disponible</span>
+              )}
             </div>
           </div>
         </header>

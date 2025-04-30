@@ -4,13 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'react-toastify';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { authService } from '../../../services/auth.service';
-import { toast } from 'react-toastify';
 
 const loginSchema = z.object({
-  username: z.string().email('Ingrese un email válido'),
+  email: z.string().email('Ingrese un email válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
@@ -33,11 +33,21 @@ export const LoginPage: React.FC = () => {
     
     try {
       await authService.login(data);
-      toast.success('¡Bienvenido al sistema!');
+      toast.success('Inicio de sesión exitoso');
       navigate('/');
     } catch (err: any) {
-      // El mensaje de error ya se muestra en el interceptor
-      console.error('Error al iniciar sesión:', err);
+      // Mostrar mensaje específico según el tipo de error
+      if (err.response) {
+        if (err.response.status === 401) {
+          toast.error('Credenciales incorrectas. Verifique su email y contraseña.');
+        } else {
+          toast.error(`Error ${err.response.status}: ${err.response?.data?.detail || 'Error en el servidor'}`);
+        }
+      } else if (err.request) {
+        toast.error('No se pudo conectar con el servidor. Verifique su conexión a internet.');
+      } else {
+        toast.error(`Error al iniciar sesión: ${err.message}`);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -57,10 +67,6 @@ export const LoginPage: React.FC = () => {
               src="/icon_romero.png" 
               alt="Logo Transportes Romero" 
               className="w-48 h-48 mx-auto mb-8"
-              onError={(e) => {
-                // Si la imagen no existe, mostrar un placeholder
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/192x192?text=Logo';
-              }}
             />
           </div>
         </div>
@@ -79,9 +85,9 @@ export const LoginPage: React.FC = () => {
               label="Correo Electrónico"
               type="email"
               placeholder="correo@ejemplo.com"
-              error={errors.username?.message}
+              error={errors.email?.message}
               className="bg-gray-50"
-              {...register('username')}
+              {...register('email')}
             />
 
             <Input

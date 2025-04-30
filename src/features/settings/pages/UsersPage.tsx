@@ -1,8 +1,8 @@
 // src/features/settings/pages/UsersPage.tsx
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PencilIcon, TrashIcon, PlusIcon, KeyIcon } from '@heroicons/react/24/outline';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
+import { PencilIcon, TrashIcon, PlusIcon, KeyIcon } from '@heroicons/react/24/outline';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
@@ -27,65 +27,54 @@ export const UsersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
-  // Fetch de usuarios
-  const { data: users = [], isLoading, error } = useQuery({
+  // Consulta para obtener usuarios
+  const { data: users, isLoading, error, refetch } = useQuery({
     queryKey: ['users'],
-    queryFn: usersService.getAll,
+    queryFn: () => usersService.getAll(),
   });
   
-  // Mutación para cambiar el estado del usuario
-  const toggleUserStatusMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => {
-      return usersService.toggleActiveStatus(id, isActive);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('Estado del usuario actualizado correctamente');
-    },
-    onError: (error: any) => {
-      toast.error('Error al actualizar el estado del usuario');
-      console.error('Error:', error);
-    }
-  });
-  
-  // Mutación para eliminar un usuario
+  // Mutación para eliminar usuario
   const deleteUserMutation = useMutation({
-    mutationFn: (id: string) => {
-      return usersService.toggleActiveStatus(id, false); // No hay endpoint para eliminar, solo desactivamos
-    },
+    mutationFn: (id: string) => usersService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success('Usuario eliminado correctamente');
       setIsDeleteModalOpen(false);
     },
-    onError: (error: any) => {
+    onError: () => {
       toast.error('Error al eliminar el usuario');
-      console.error('Error:', error);
     }
   });
-
+  
+  // Mutación para cambiar estado del usuario
+  const toggleStatusMutation = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => 
+      usersService.toggleActiveStatus(id, isActive),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('Estado del usuario actualizado correctamente');
+    },
+    onError: () => {
+      toast.error('Error al actualizar el estado del usuario');
+    }
+  });
+  
   // Filtrar usuarios según criterios
-  let filteredUsers = users;
-  
-  // Filtrar por rol
-  if (roleFilter !== 'ALL') {
-    filteredUsers = filteredUsers.filter(user => user.role_id === roleFilter);
-  }
-  
-  // Filtrar por estado
-  if (statusFilter !== 'ALL') {
-    filteredUsers = filteredUsers.filter(
-      user => statusFilter === 'ACTIVE' ? user.is_active : !user.is_active
-    );
-  }
-  
-  // Filtrar por búsqueda
-  if (searchTerm) {
-    filteredUsers = filteredUsers.filter(user => 
+  const filteredUsers = users ? users.filter(user => {
+    // Filtro por búsqueda
+    const matchesSearch = searchTerm === '' || 
       user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filtro por rol
+    const matchesRole = roleFilter === 'ALL' || user.role_id === roleFilter;
+    
+    // Filtro por estado
+    const matchesStatus = statusFilter === 'ALL' || 
+      (statusFilter === 'ACTIVE' ? user.is_active : !user.is_active);
+    
+    return matchesSearch && matchesRole && matchesStatus;
+  }) : [];
   
   const handleCreateUser = () => {
     setIsCreateModalOpen(true);
@@ -107,7 +96,10 @@ export const UsersPage: React.FC = () => {
   };
   
   const handleToggleUserStatus = (user: User) => {
-    toggleUserStatusMutation.mutate({ id: user.id, isActive: !user.is_active });
+    toggleStatusMutation.mutate({ 
+      id: user.id, 
+      isActive: !user.is_active 
+    });
   };
   
   const confirmDeleteUser = () => {
@@ -115,18 +107,14 @@ export const UsersPage: React.FC = () => {
     deleteUserMutation.mutate(selectedUser.id);
   };
   
-  if (isLoading) return <Spinner />;
-  
-  if (error) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-red-600 mb-4">Error al cargar usuarios</p>
-        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ['users'] })}>
-          Reintentar
-        </Button>
-      </div>
-    );
-  }
+  const handleFormClose = (shouldRefresh: boolean = false) => {
+    setIsCreateModalOpen(false);
+    setIsEditModalOpen(false);
+    
+    if (shouldRefresh) {
+      refetch();
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -155,97 +143,111 @@ export const UsersPage: React.FC = () => {
         setShowAdvancedFilters={setShowAdvancedFilters}
       />
       
-      {/* Tabla de usuarios */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Rol
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredUsers.map((user) => (
-              <tr key={user.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium text-gray-900">{user.full_name}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                  {user.email}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {user.role?.name || 'Sin rol'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <span className={`h-2.5 w-2.5 rounded-full mr-2 ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                    <button
-                      onClick={() => handleToggleUserStatus(user)}
-                      className={`text-sm ${user.is_active ? 'text-green-800 hover:text-green-900' : 'text-red-800 hover:text-red-900'}`}
-                    >
-                      {user.is_active ? 'Activo' : 'Inactivo'}
-                    </button>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleResetPassword(user)}
-                    className="text-gray-600 hover:text-gray-900 mr-3"
-                    title="Cambiar contraseña"
-                  >
-                    <KeyIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => handleEditUser(user)}
-                    className="text-primary hover:text-primary/80 mr-3"
-                  >
-                    <PencilIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteUser(user)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            
-            {filteredUsers.length === 0 && (
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          Error al cargar usuarios. Por favor, intente nuevamente.
+        </div>
+      )}
+      
+      {/* Loading spinner */}
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      ) : (
+        /* Tabla de usuarios */
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  No se encontraron usuarios
-                </td>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Email
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Rol
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-gray-900">{user.full_name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
+                      {user.email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {user.role_name}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <span className={`h-2.5 w-2.5 rounded-full mr-2 ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                        <button
+                          onClick={() => handleToggleUserStatus(user)}
+                          className={`text-sm ${user.is_active ? 'text-green-800 hover:text-green-900' : 'text-red-800 hover:text-red-900'}`}
+                        >
+                          {user.is_active ? 'Activo' : 'Inactivo'}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <button
+                        onClick={() => handleResetPassword(user)}
+                        className="text-gray-600 hover:text-gray-900 mr-3"
+                        title="Cambiar contraseña"
+                      >
+                        <KeyIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleEditUser(user)}
+                        className="text-primary hover:text-primary/80 mr-3"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(user)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No se encontraron usuarios
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
       
       {/* Modal para crear usuario */}
       <Modal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => handleFormClose(false)}
         title="Nuevo Usuario"
         maxWidth="lg"
       >
         <UserForm 
-          onClose={() => setIsCreateModalOpen(false)} 
+          onClose={(refresh) => handleFormClose(refresh)} 
           isCreate={true}
         />
       </Modal>
@@ -253,13 +255,13 @@ export const UsersPage: React.FC = () => {
       {/* Modal para editar usuario */}
       <Modal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onClose={() => handleFormClose(false)}
         title="Editar Usuario"
         maxWidth="lg"
       >
         <UserForm 
           initialData={selectedUser || undefined}
-          onClose={() => setIsEditModalOpen(false)}
+          onClose={(refresh) => handleFormClose(refresh)}
           isCreate={false}
         />
       </Modal>

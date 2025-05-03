@@ -19,71 +19,74 @@ export const RolesPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [roleName, setRoleName] = useState('');
   const [roleDescription, setRoleDescription] = useState('');
+  const [roleIsActive, setRoleIsActive] = useState(true);
   const [roleNameError, setRoleNameError] = useState('');
   
-  // En un proyecto real, estos datos vendrían de una API
-  // const { data: roles, isLoading } = useQuery(['roles'], rolesService.getAll);
+  // Query para obtener todos los roles
+  const { data: roles, isLoading, error } = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => rolesService.getAll(),
+    retry: 1
+  });
   
-  // Datos simulados para el ejemplo
-  const roles: Role[] = [
-    { id: 1, name: 'admin', description: 'Administrador del Sistema' },
-    { id: 2, name: 'sales', description: 'Personal de Ventas y Pasajes' },
-    { id: 3, name: 'warehouse', description: 'Personal de Almacén/Recepción Carga' },
-    { id: 4, name: 'dispatcher', description: 'Personal de Despacho/Encomiendas' },
-    { id: 5, name: 'accountant', description: 'Contador' },
-    { id: 6, name: 'driver', description: 'Conductor/Tripulante' }
-  ];
+  // Mutación para crear rol
+  const createRoleMutation = useMutation({
+    mutationFn: (data: CreateRoleData) => rolesService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      toast.success('Rol creado correctamente');
+      setIsCreateModalOpen(false);
+      resetForm();
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 409) {
+        setRoleNameError('Ya existe un rol con este nombre');
+      } else {
+        toast.error(error.response?.data?.detail || 'Error al crear rol');
+      }
+    }
+  });
   
-  const isLoading = false;
+  // Mutación para actualizar rol
+  const updateRoleMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateRoleData }) => 
+      rolesService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      toast.success('Rol actualizado correctamente');
+      setIsEditModalOpen(false);
+      resetForm();
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 409) {
+        setRoleNameError('Ya existe un rol con este nombre');
+      } else {
+        toast.error(error.response?.data?.detail || 'Error al actualizar rol');
+      }
+    }
+  });
   
-  // En un proyecto real, usarías estas mutaciones
-  // const createRoleMutation = useMutation(
-  //   (data: CreateRoleData) => rolesService.create(data),
-  //   {
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries(['roles']);
-  //       toast.success('Rol creado correctamente');
-  //       setIsCreateModalOpen(false);
-  //       resetForm();
-  //     },
-  //     onError: (error: any) => {
-  //       toast.error(error.response?.data?.message || 'Error al crear rol');
-  //     }
-  //   }
-  // );
-  
-  // const updateRoleMutation = useMutation(
-  //   ({ id, data }: { id: number; data: UpdateRoleData }) => rolesService.update(id, data),
-  //   {
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries(['roles']);
-  //       toast.success('Rol actualizado correctamente');
-  //       setIsEditModalOpen(false);
-  //       resetForm();
-  //     },
-  //     onError: (error: any) => {
-  //       toast.error(error.response?.data?.message || 'Error al actualizar rol');
-  //     }
-  //   }
-  // );
-  
-  // const deleteRoleMutation = useMutation(
-  //   (id: number) => rolesService.delete(id),
-  //   {
-  //     onSuccess: () => {
-  //       queryClient.invalidateQueries(['roles']);
-  //       toast.success('Rol eliminado correctamente');
-  //       setIsDeleteModalOpen(false);
-  //     },
-  //     onError: (error: any) => {
-  //       toast.error(error.response?.data?.message || 'Error al eliminar rol');
-  //     }
-  //   }
-  // );
+  // Mutación para desactivar rol
+  const deleteRoleMutation = useMutation({
+    mutationFn: (id: number) => rolesService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['roles'] });
+      toast.success('Rol desactivado correctamente');
+      setIsDeleteModalOpen(false);
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 409) {
+        toast.error('No se puede desactivar el rol porque está asignado a usuarios activos');
+      } else {
+        toast.error(error.response?.data?.detail || 'Error al desactivar rol');
+      }
+    }
+  });
   
   const resetForm = () => {
     setRoleName('');
     setRoleDescription('');
+    setRoleIsActive(true);
     setRoleNameError('');
   };
   
@@ -96,6 +99,7 @@ export const RolesPage: React.FC = () => {
     setSelectedRole(role);
     setRoleName(role.name);
     setRoleDescription(role.description || '');
+    setRoleIsActive(role.is_active ?? true);
     setIsEditModalOpen(true);
   };
   
@@ -105,63 +109,53 @@ export const RolesPage: React.FC = () => {
   };
   
   const validateForm = (): boolean => {
+    setRoleNameError('');
+    
     if (!roleName.trim()) {
       setRoleNameError('El nombre del rol es requerido');
       return false;
     }
     
-    setRoleNameError('');
     return true;
   };
   
   const handleCreateRole = () => {
     if (!validateForm()) return;
     
-    // Simulación para el ejemplo
-    console.log('Creando rol:', { name: roleName, description: roleDescription });
-    setTimeout(() => {
-      toast.success('Rol creado correctamente');
-      setIsCreateModalOpen(false);
-      resetForm();
-    }, 1000);
-    
-    // En un proyecto real, usarías:
-    // createRoleMutation.mutate({ name: roleName, description: roleDescription });
+    createRoleMutation.mutate({ 
+      name: roleName, 
+      description: roleDescription || undefined,
+      is_active: roleIsActive 
+    });
   };
   
   const handleUpdateRole = () => {
     if (!validateForm() || !selectedRole) return;
     
-    // Simulación para el ejemplo
-    console.log('Actualizando rol:', { id: selectedRole.id, name: roleName, description: roleDescription });
-    setTimeout(() => {
-      toast.success('Rol actualizado correctamente');
-      setIsEditModalOpen(false);
-      resetForm();
-    }, 1000);
-    
-    // En un proyecto real, usarías:
-    // updateRoleMutation.mutate({ 
-    //   id: selectedRole.id, 
-    //   data: { name: roleName, description: roleDescription } 
-    // });
+    updateRoleMutation.mutate({ 
+      id: selectedRole.id, 
+      data: { 
+        name: roleName, 
+        description: roleDescription || undefined,
+        is_active: roleIsActive 
+      } 
+    });
   };
   
   const handleDeleteRole = () => {
     if (!selectedRole) return;
-    
-    // Simulación para el ejemplo
-    console.log('Eliminando rol:', selectedRole.id);
-    setTimeout(() => {
-      toast.success('Rol eliminado correctamente');
-      setIsDeleteModalOpen(false);
-    }, 1000);
-    
-    // En un proyecto real, usarías:
-    // deleteRoleMutation.mutate(selectedRole.id);
+    deleteRoleMutation.mutate(selectedRole.id);
   };
   
   if (isLoading) return <Spinner />;
+  
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Error al cargar los roles. Por favor, intente nuevamente.</p>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
@@ -189,13 +183,16 @@ export const RolesPage: React.FC = () => {
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Descripción
               </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {roles.map((role) => (
+            {roles?.map((role) => (
               <tr key={role.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{role.id}</div>
@@ -205,6 +202,13 @@ export const RolesPage: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-500">{role.description || '-'}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    role.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {role.is_active ? 'Activo' : 'Inactivo'}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <button
@@ -216,6 +220,7 @@ export const RolesPage: React.FC = () => {
                   <button
                     onClick={() => handleOpenDeleteModal(role)}
                     className="text-red-600 hover:text-red-900"
+                    disabled={!role.is_active}
                   >
                     <TrashIcon className="h-5 w-5" />
                   </button>
@@ -223,9 +228,9 @@ export const RolesPage: React.FC = () => {
               </tr>
             ))}
             
-            {roles.length === 0 && (
+            {(!roles || roles.length === 0) && (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                   No hay roles disponibles
                 </td>
               </tr>
@@ -247,7 +252,10 @@ export const RolesPage: React.FC = () => {
               label="Nombre del Rol *"
               type="text"
               value={roleName}
-              onChange={(e) => setRoleName(e.target.value)}
+              onChange={(e) => {
+                setRoleName(e.target.value);
+                setRoleNameError('');
+              }}
               error={roleNameError}
               placeholder="ej. admin, vendedor, almacenero"
             />
@@ -264,6 +272,19 @@ export const RolesPage: React.FC = () => {
                 placeholder="Descripción del rol y sus funciones"
               />
             </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="is_active_create"
+                checked={roleIsActive}
+                onChange={(e) => setRoleIsActive(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="is_active_create" className="ml-2 text-sm text-gray-700">
+                Rol Activo
+              </label>
+            </div>
           </div>
           
           <div className="flex justify-end space-x-3 mt-6">
@@ -277,6 +298,7 @@ export const RolesPage: React.FC = () => {
             <Button
               type="button"
               onClick={handleCreateRole}
+              isLoading={createRoleMutation.isPending}
             >
               Crear Rol
             </Button>
@@ -297,7 +319,10 @@ export const RolesPage: React.FC = () => {
               label="Nombre del Rol *"
               type="text"
               value={roleName}
-              onChange={(e) => setRoleName(e.target.value)}
+              onChange={(e) => {
+                setRoleName(e.target.value);
+                setRoleNameError('');
+              }}
               error={roleNameError}
               placeholder="ej. admin, vendedor, almacenero"
             />
@@ -314,6 +339,19 @@ export const RolesPage: React.FC = () => {
                 placeholder="Descripción del rol y sus funciones"
               />
             </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="is_active_edit"
+                checked={roleIsActive}
+                onChange={(e) => setRoleIsActive(e.target.checked)}
+                className="rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label htmlFor="is_active_edit" className="ml-2 text-sm text-gray-700">
+                Rol Activo
+              </label>
+            </div>
           </div>
           
           <div className="flex justify-end space-x-3 mt-6">
@@ -327,6 +365,7 @@ export const RolesPage: React.FC = () => {
             <Button
               type="button"
               onClick={handleUpdateRole}
+              isLoading={updateRoleMutation.isPending}
             >
               Actualizar Rol
             </Button>
@@ -338,13 +377,13 @@ export const RolesPage: React.FC = () => {
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
-        title="Confirmar Eliminación"
+        title="Confirmar Desactivación"
         maxWidth="sm"
       >
         <div className="p-6">
           <p className="mb-6">
-            ¿Está seguro que desea eliminar el rol <strong>{selectedRole?.name}</strong>?
-            Este cambio no se puede deshacer.
+            ¿Está seguro que desea desactivar el rol <strong>{selectedRole?.name}</strong>?
+            Este rol no podrá ser asignado a nuevos usuarios.
           </p>
           
           <div className="flex justify-end space-x-3">
@@ -359,8 +398,9 @@ export const RolesPage: React.FC = () => {
               type="button"
               variant="danger"
               onClick={handleDeleteRole}
+              isLoading={deleteRoleMutation.isPending}
             >
-              Eliminar
+              Desactivar
             </Button>
           </div>
         </div>

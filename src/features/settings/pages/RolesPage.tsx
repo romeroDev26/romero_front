@@ -22,6 +22,10 @@ export const RolesPage: React.FC = () => {
   const [roleIsActive, setRoleIsActive] = useState(true);
   const [roleNameError, setRoleNameError] = useState('');
   
+  const formatRoleName = (name: string): string => {
+    return name.toLowerCase().trim().replace(/\s+/g, '_');
+  };
+
   // Query para obtener todos los roles
   const { data: roles, isLoading, error } = useQuery({
     queryKey: ['roles'],
@@ -115,6 +119,10 @@ export const RolesPage: React.FC = () => {
       setRoleNameError('El nombre del rol es requerido');
       return false;
     }
+
+    // Formatear el nombre automáticamente
+    const formattedName = formatRoleName(roleName);
+    setRoleName(formattedName);
     
     return true;
   };
@@ -123,7 +131,7 @@ export const RolesPage: React.FC = () => {
     if (!validateForm()) return;
     
     createRoleMutation.mutate({ 
-      name: roleName, 
+      name: formatRoleName(roleName), 
       description: roleDescription || undefined,
       is_active: roleIsActive 
     });
@@ -135,7 +143,7 @@ export const RolesPage: React.FC = () => {
     updateRoleMutation.mutate({ 
       id: selectedRole.id, 
       data: { 
-        name: roleName, 
+        name: formatRoleName(roleName), 
         description: roleDescription || undefined,
         is_active: roleIsActive 
       } 
@@ -248,17 +256,27 @@ export const RolesPage: React.FC = () => {
       >
         <div className="p-6">
           <div className="space-y-4">
-            <Input
-              label="Nombre del Rol *"
-              type="text"
-              value={roleName}
-              onChange={(e) => {
-                setRoleName(e.target.value);
-                setRoleNameError('');
-              }}
-              error={roleNameError}
-              placeholder="ej. admin, vendedor, almacenero"
-            />
+            <div>
+              <Input
+                label="Nombre del Rol *"
+                type="text"
+                value={roleName}
+                onChange={(e) => {
+                  setRoleName(e.target.value);
+                  setRoleNameError('');
+                }}
+                error={roleNameError}
+                placeholder="ej. admin, vendedor, almacenero"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                El nombre se convertirá automáticamente a minúsculas y los espacios se reemplazarán por guiones bajos (_)
+              </p>
+              {roleName && roleName !== formatRoleName(roleName) && (
+                <p className="mt-1 text-sm text-blue-600">
+                  Se guardará como: {formatRoleName(roleName)}
+                </p>
+              )}
+            </div>
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -315,17 +333,27 @@ export const RolesPage: React.FC = () => {
       >
         <div className="p-6">
           <div className="space-y-4">
-            <Input
-              label="Nombre del Rol *"
-              type="text"
-              value={roleName}
-              onChange={(e) => {
-                setRoleName(e.target.value);
-                setRoleNameError('');
-              }}
-              error={roleNameError}
-              placeholder="ej. admin, vendedor, almacenero"
-            />
+            <div>
+              <Input
+                label="Nombre del Rol *"
+                type="text"
+                value={roleName}
+                onChange={(e) => {
+                  setRoleName(e.target.value);
+                  setRoleNameError('');
+                }}
+                error={roleNameError}
+                placeholder="ej. admin, vendedor, almacenero"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                El nombre se convertirá automáticamente a minúsculas y los espacios se reemplazarán por guiones bajos (_)
+              </p>
+              {roleName && roleName !== formatRoleName(roleName) && (
+                <p className="mt-1 text-sm text-blue-600">
+                  Se guardará como: {formatRoleName(roleName)}
+                </p>
+              )}
+            </div>
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">

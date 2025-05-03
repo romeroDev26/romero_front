@@ -35,7 +35,7 @@ const updateUserSchema = z.object({
   }).min(1, 'Debe seleccionar un rol válido'),
   is_active: z.boolean().default(true),
   password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres').optional().or(z.literal('')),
-  confirm_password: z.string().min(6, 'Confirme su contraseña').optional().or(z.literal('')),
+  confirm_password: z.string().optional().or(z.literal('')),
 }).refine(data => !data.password || data.password === data.confirm_password, {
   message: "Las contraseñas no coinciden",
   path: ["confirm_password"],
@@ -87,12 +87,10 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
 
   const roleId = watch('role_id');
 
-  // Manejar cambio de rol
   const handleRoleChange = (value: number) => {
     setValue('role_id', value, { shouldValidate: true });
   };
 
-  // Enviar formulario
   const onSubmit = async (formData: CreateUserFormData | UpdateUserFormData) => {
     setIsSubmitting(true);
     
@@ -109,9 +107,9 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         
         await usersService.create(createData);
         toast.success('Usuario creado correctamente');
-        onClose(true); // Cerrar y refrescar la lista
+        onClose(true);
       } else if (initialData?.id) {
-        // Actualizar usuario existente
+        // Actualizar usuario existente usando PATCH
         const updateData: UpdateUserData = {
           email: formData.email,
           full_name: formData.full_name,
@@ -120,17 +118,31 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         };
         
         // Incluir contraseña solo si fue proporcionada
-        if (formData.password) {
+        if (formData.password && formData.password.length > 0) {
           updateData.password = formData.password;
         }
         
         await usersService.update(initialData.id, updateData);
         toast.success('Usuario actualizado correctamente');
-        onClose(true); // Cerrar y refrescar la lista
+        onClose(true);
       }
     } catch (error: any) {
       console.error('Error al guardar usuario:', error);
-      toast.error(error.response?.data?.detail || 'Ocurrió un error al guardar el usuario');
+      
+      if (error.response?.status === 422) {
+        // Error de validación
+        const detail = error.response.data?.detail;
+        if (Array.isArray(detail)) {
+          const message = detail.map(err => err.msg).join(', ');
+          toast.error(message);
+        } else if (typeof detail === 'string') {
+          toast.error(detail);
+        } else {
+          toast.error('Error de validación');
+        }
+      } else {
+        toast.error(error.response?.data?.detail || 'Ocurrió un error al guardar el usuario');
+      }
     } finally {
       setIsSubmitting(false);
     }

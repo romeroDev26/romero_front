@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 
 import { Button } from '../../../../components/common/Button';
 import { Input } from '../../../../components/common/Input';
-import { usersService, ResetPasswordData } from '../../../../services/users.service';
+import { usersService } from '../../../../services/users.service';
 
 interface PasswordResetFormProps {
   userId: string;
@@ -49,8 +49,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
     setApiError(null);
     
     try {
-      // Usamos el método update en lugar de resetPassword
-      // Esto asegura que usemos la misma ruta validada que para otras actualizaciones
+      // Usamos el método update con PATCH para actualizar la contraseña
       await usersService.update(userId, {
         password: data.password
       });
@@ -60,7 +59,6 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
     } catch (error: any) {
       console.error('Error al restablecer contraseña:', error);
       
-      // Manejo de errores mejorado
       if (error.response) {
         if (error.response.status === 404) {
           setApiError('Usuario no encontrado');
@@ -68,16 +66,30 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
         } else if (error.response.status === 403) {
           setApiError('No tienes permiso para realizar esta acción');
           toast.error('No tienes permiso para realizar esta acción');
+        } else if (error.response.status === 422) {
+          // Error de validación
+          const detail = error.response.data?.detail;
+          if (Array.isArray(detail)) {
+            const message = detail.map(err => err.msg).join(', ');
+            setApiError(message);
+            toast.error(message);
+          } else if (typeof detail === 'string') {
+            setApiError(detail);
+            toast.error(detail);
+          } else {
+            setApiError('Error de validación');
+            toast.error('Error de validación');
+          }
         } else if (error.response.data?.detail) {
           setApiError(error.response.data.detail);
           toast.error(error.response.data.detail);
         } else {
           setApiError('Error al actualizar la contraseña');
-          toast.error('Error al actualizar la contraseña. Por favor, intente nuevamente');
+          toast.error('Error al actualizar la contraseña');
         }
       } else {
-        setApiError('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
-        toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
+        setApiError('Error de conexión. Verifica tu conexión a internet.');
+        toast.error('Error de conexión');
       }
     } finally {
       setIsSubmitting(false);

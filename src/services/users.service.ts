@@ -18,11 +18,6 @@ export interface UpdateUserData {
   password?: string;
 }
 
-export interface ResetPasswordData {
-  id: string;
-  password: string;
-}
-
 export const usersService = {
   getAll: async (skip: number = 0, limit: number = 100): Promise<User[]> => {
     const response = await api.get('/users/', { params: { skip, limit } });
@@ -40,6 +35,7 @@ export const usersService = {
   },
   
   update: async (id: string, userData: UpdateUserData): Promise<User> => {
+    // Usando correctamente PATCH según el endpoint documentado
     const response = await api.patch(`/users/${id}`, userData);
     return response.data;
   },
@@ -48,19 +44,17 @@ export const usersService = {
     await api.delete(`/users/${id}`);
   },
   
-  // Este método debería usar el método update en lugar de una ruta diferente
-  resetPassword: async (data: ResetPasswordData): Promise<User> => {
-    // Usar el método update para mantener consistencia con el backend
-    return await usersService.update(data.id, { password: data.password });
+  // Este método ahora es redundante - removerlo o usar solo update
+  resetPassword: async (id: string, password: string): Promise<User> => {
+    // Simplemente usa el método update para cambiar contraseña
+    return await usersService.update(id, { password });
   },
   
-  // Cambiar estado de activo/inactivo
   toggleActiveStatus: async (id: string, isActive: boolean): Promise<User> => {
     const response = await api.patch(`/users/${id}`, { is_active: isActive });
     return response.data;
   },
   
-  // Buscar usuarios con filtros
   search: async (params: {
     q?: string;
     role_id?: number;

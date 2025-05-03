@@ -30,27 +30,54 @@ export const Dashboard: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
   
-  const { data: currentUser, isLoading } = useQuery<User>({
+  const { data: currentUser, isLoading, error } = useQuery<User>({
     queryKey: ['currentUser'],
     queryFn: async (): Promise<User> => {
       try {
         const data = await authService.getProfile();
+        console.log('Datos del usuario:', data); // Para depuración
         return data;
       } catch (error: any) {
         console.error('Error al obtener el perfil del usuario:', error);
-        toast.error('No se pudo cargar la información del usuario');
         if (error.response?.status === 401) {
           handleLogout();
+        } else {
+          toast.error('No se pudo cargar la información del usuario');
         }
         throw error;
       }
     },
-    staleTime: 1000 * 60 * 5 // 5 minutos
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    retry: 1
   });
   
   const handleLogout = () => {
     authService.logout();
     navigate('/login');
+  };
+  
+  // Función para obtener el nombre del rol formateado
+  const getRoleDisplay = (user: User | undefined) => {
+    if (!user) return '';
+    
+    // Primero intentamos usar role_name (que es lo que devuelve el backend)
+    if (user.role_name) {
+      // Si role_name es un string, lo usamos directamente
+      if (typeof user.role_name === 'string') {
+        return user.role_name;
+      }
+    }
+    
+    // Si no hay role_name, intentamos usar el objeto role
+    if (user.role?.description) {
+      return user.role.description;
+    }
+    
+    if (user.role?.name) {
+      return user.role.name;
+    }
+    
+    return 'Sin rol';
   };
   
   const navGroups = [
@@ -151,6 +178,16 @@ export const Dashboard: React.FC = () => {
             </nav>
           </div>
           
+          {/* Información del usuario en el sidebar móvil */}
+          {currentUser && (
+            <div className="p-4 border-t border-primary/30">
+              <div className="text-sm text-white/80 mb-2">
+                <div className="font-medium">{currentUser.full_name}</div>
+                <div className="text-xs text-white/60">{getRoleDisplay(currentUser)}</div>
+              </div>
+            </div>
+          )}
+          
           <div className="p-2 border-t border-primary/30">
             <button
               className="flex items-center w-full px-3 py-1.5 text-[13px] text-white hover:bg-primary/80 rounded"
@@ -205,6 +242,16 @@ export const Dashboard: React.FC = () => {
             </nav>
           </div>
           
+          {/* Información del usuario en el sidebar desktop */}
+          {currentUser && !isCollapsed && (
+            <div className="p-3 border-t border-primary/30">
+              <div className="text-sm text-white/80">
+                <div className="font-medium">{currentUser.full_name}</div>
+                <div className="text-xs text-white/60">{getRoleDisplay(currentUser)}</div>
+              </div>
+            </div>
+          )}
+          
           <div className="p-2 border-t border-primary/30">
             <button
               className="flex items-center w-full px-3 py-1.5 text-[13px] text-white hover:bg-primary/80 rounded"
@@ -232,15 +279,30 @@ export const Dashboard: React.FC = () => {
             
             <div className="ml-4 lg:ml-0">
               {isLoading ? (
-                <span className="text-sm text-gray-500">Cargando usuario...</span>
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
+                  <span className="text-sm text-gray-500">Cargando usuario...</span>
+                </div>
+              ) : error ? (
+                <span className="text-sm text-red-500">Error al cargar usuario</span>
               ) : currentUser ? (
-                <span className="text-sm text-gray-600">
-                  Usuario: <strong>{currentUser.full_name}</strong> ({currentUser.role?.description || currentUser.role?.name || 'Sin rol'})
-                </span>
+                <div className="flex items-center space-x-4">
+                  <div>
+                    <span className="text-sm text-gray-600">
+                      Usuario: <strong>{currentUser.full_name}</strong>
+                    </span>
+                    <span className="mx-2 text-gray-400">|</span>
+                    <span className="text-sm text-gray-600">
+                      Rol: <strong>{getRoleDisplay(currentUser)}</strong>
+                    </span>
+                  </div>
+                </div>
               ) : (
                 <span className="text-sm text-gray-500">Usuario no disponible</span>
               )}
             </div>
+            
+            {/* Puedes agregar más elementos en el header aquí, como notificaciones, etc. */}
           </div>
         </header>
         

@@ -1,8 +1,7 @@
-import { ReactNode } from "react";
 
 // Tipos para authentication
 export interface User {
-  role_name: ReactNode;
+  role_name: String;
   id: string;
   email: string;
   full_name: string;

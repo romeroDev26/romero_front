@@ -34,6 +34,7 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
   onClose,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const {
     register,
@@ -45,10 +46,12 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
 
   const onSubmit = async (data: PasswordResetFormData) => {
     setIsSubmitting(true);
+    setApiError(null);
     
     try {
-      await usersService.resetPassword({
-        id: userId,
+      // Usamos el método update en lugar de resetPassword
+      // Esto asegura que usemos la misma ruta validada que para otras actualizaciones
+      await usersService.update(userId, {
         password: data.password
       });
       
@@ -56,12 +59,25 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
       onClose();
     } catch (error: any) {
       console.error('Error al restablecer contraseña:', error);
-      if (error.response?.status === 404) {
-        toast.error('Usuario no encontrado');
-      } else if (error.response?.data?.detail) {
-        toast.error(error.response.data.detail);
+      
+      // Manejo de errores mejorado
+      if (error.response) {
+        if (error.response.status === 404) {
+          setApiError('Usuario no encontrado');
+          toast.error('Usuario no encontrado');
+        } else if (error.response.status === 403) {
+          setApiError('No tienes permiso para realizar esta acción');
+          toast.error('No tienes permiso para realizar esta acción');
+        } else if (error.response.data?.detail) {
+          setApiError(error.response.data.detail);
+          toast.error(error.response.data.detail);
+        } else {
+          setApiError('Error al actualizar la contraseña');
+          toast.error('Error al actualizar la contraseña. Por favor, intente nuevamente');
+        }
       } else {
-        toast.error('Error al actualizar la contraseña. Por favor, intente nuevamente');
+        setApiError('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
+        toast.error('Error de conexión. Verifica tu conexión a internet e intenta nuevamente.');
       }
     } finally {
       setIsSubmitting(false);
@@ -74,6 +90,12 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
         <p className="text-gray-700 mb-4">
           Establecer nueva contraseña para: <strong>{userName}</strong>
         </p>
+        
+        {apiError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded">
+            {apiError}
+          </div>
+        )}
         
         <Input
           label="Nueva Contraseña *"

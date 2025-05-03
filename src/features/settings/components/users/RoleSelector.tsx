@@ -12,6 +12,13 @@ interface RoleSelectorProps {
   disabled?: boolean;
 }
 
+// Roles por defecto que se usarán en caso de error
+const DEFAULT_ROLES: Role[] = [
+  { id: 1, name: 'admin', description: 'Administrador del Sistema' },
+  { id: 2, name: 'sales', description: 'Personal de Ventas' },
+  { id: 3, name: 'warehouse', description: 'Personal de Almacén' }
+];
+
 export const RoleSelector: React.FC<RoleSelectorProps> = ({ 
   value, 
   onChange, 
@@ -20,30 +27,51 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
 }) => {
   const [roles, setRoles] = useState<Role[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   
   // Cargar roles desde la API
   useEffect(() => {
     const fetchRoles = async () => {
       try {
         setIsLoading(true);
+        setHasError(false);
         const data = await rolesService.getAll();
-        setRoles(data);
+        
+        // Verificar si se obtuvo una respuesta válida
+        if (Array.isArray(data) && data.length > 0) {
+          setRoles(data);
+        } else {
+          console.warn('La respuesta de roles no tiene el formato esperado, usando valores por defecto');
+          setRoles(DEFAULT_ROLES);
+          setHasError(true);
+        }
       } catch (err) {
         console.error('Error al cargar roles:', err);
-        toast.error('No se pudieron cargar los roles');
+        // Notificar solo una vez y de manera menos intrusiva
+        if (!hasError) {
+          toast.warning('Usando roles por defecto debido a un problema de conexión', {
+            autoClose: 3000
+          });
+        }
         // Usar roles por defecto en caso de error
-        setRoles([
-          { id: 1, name: 'admin', description: 'Administrador del Sistema' },
-          { id: 2, name: 'sales', description: 'Personal de Ventas' },
-          { id: 3, name: 'warehouse', description: 'Personal de Almacén' }
-        ]);
+        setRoles(DEFAULT_ROLES);
+        setHasError(true);
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchRoles();
-  }, []);
+  }, [hasError]);
+  
+  // Selección correcta de valor inicial
+  useEffect(() => {
+    // Si no hay valor seleccionado, hay roles disponibles y no estamos en modo deshabilitado
+    if ((!value || value === 0) && roles.length > 0 && !disabled && !isLoading) {
+      // Sugerir seleccionar un valor pero no forzar una selección automática
+      console.log('Roles disponibles para selección:', roles.map(r => `${r.id}: ${r.name}`).join(', '));
+    }
+  }, [value, roles, disabled, isLoading]);
   
   if (isLoading) {
     return (
@@ -59,6 +87,11 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
       <label className="block text-sm font-medium text-gray-700 mb-1">
         Rol *
       </label>
+      {hasError && (
+        <div className="text-xs text-amber-600 mb-1">
+          Usando información de roles almacenada localmente
+        </div>
+      )}
       <select
         value={value || ''}
         onChange={(e) => onChange(Number(e.target.value))}

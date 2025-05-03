@@ -48,10 +48,10 @@ export const usersService = {
     await api.delete(`/users/${id}`);
   },
   
-  resetPassword: async (data: ResetPasswordData): Promise<void> => {
-    await api.patch(`/api/v1/users/${data.id}`, {
-      password: data.password
-    });
+  // Este método debería usar el método update en lugar de una ruta diferente
+  resetPassword: async (data: ResetPasswordData): Promise<User> => {
+    // Usar el método update para mantener consistencia con el backend
+    return await usersService.update(data.id, { password: data.password });
   },
   
   // Cambiar estado de activo/inactivo

@@ -221,3 +221,42 @@ export interface InventoryAdjustment {
   reason: string;
   notes?: string;
 }
+
+// Interfaz Company
+export interface Company {
+  id: number;
+  ruc: string;
+  business_name: string;
+  trade_name?: string;
+  address: string;
+  ubigeo: string;
+  phone?: string;
+  email?: string;
+  logo_url?: string;
+  sunat_username: string;
+  certificate_path?: string;
+  beta_mode: boolean;
+  detraccion_account?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Tipo para actualizar empresa
+export interface CompanyUpdate {
+  ruc?: string;
+  business_name?: string;
+  trade_name?: string;
+  address?: string;
+  ubigeo?: string;
+  phone?: string;
+  email?: string;
+  logo_url?: string;
+  sunat_username?: string;
+  certificate_path?: string;
+  beta_mode?: boolean;
+  detraccion_account?: string;
+  is_active?: boolean;
+  sunat_password_sol?: string;
+  certificate_password?: string;
+}

@@ -35,7 +35,6 @@ export const Dashboard: React.FC = () => {
     queryFn: async (): Promise<User> => {
       try {
         const data = await authService.getProfile();
-        console.log('Datos del usuario:', data); // Para depuración
         return data;
       } catch (error: any) {
         console.error('Error al obtener el perfil del usuario:', error);

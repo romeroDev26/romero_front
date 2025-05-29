@@ -4,15 +4,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
-import { DocType, Client } from '../../../types';
-
-// Este servicio tendría que ser implementado
-// import { clientsService } from '../../../services/clients.service';
+import { clientsService, CreateClientData, UpdateClientData } from '../../../services/clients.service';
+import { DocType } from '../../../types';
 
 const clientSchema = z.object({
   doc_type: z.enum(['1', '4', '6', '7', '0'], {
@@ -28,7 +27,8 @@ const clientSchema = z.object({
   ubigeo: z.string()
     .length(6, 'Ubigeo debe tener 6 caracteres')
     .regex(/^\d{6}$/, 'Ubigeo debe ser numérico')
-    .optional(),
+    .optional()
+    .or(z.literal('')),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   phone: z.string().max(50, 'Teléfono muy largo').optional(),
   is_active: z.boolean(),
@@ -51,31 +51,20 @@ const getDocTypeDisplay = (type: DocType): string => {
 export const ClientFormPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const isEditing = !!id && id !== 'new';
   
-  // En un proyecto real, estos datos vendrían de una API
-  // const { data: client, isLoading: isLoadingClient } = useQuery(
-  //   ['client', id],
-  //   () => clientsService.getById(Number(id)),
-  //   { enabled: isEditing }
-  // );
-  
-  // Datos simulados para el ejemplo
-  const client = isEditing ? {
-    id: 1,
-    doc_type: '6' as DocType,
-    doc_number: '20123456789',
-    name: 'Empresa ABC S.A.C.',
-    address: 'Av. Comercio 123, Lima',
-    ubigeo: '150101',
-    email: 'contacto@empresaabc.com',
-    phone: '01-1234567',
-    is_active: true,
-    created_at: '2025-01-01T00:00:00-05:00',
-    updated_at: '2025-01-01T00:00:00-05:00',
-  } : null;
-  
-  const isLoadingClient = false;
+  // Query para obtener datos del cliente (solo si estamos editando)
+  const { 
+    data: client, 
+    isLoading: isLoadingClient,
+    error: clientError 
+  } = useQuery({
+    queryKey: ['client', id],
+    queryFn: () => clientsService.getById(Number(id)),
+    enabled: isEditing,
+    retry: 1,
+  });
   
   const {
     register,
@@ -92,17 +81,69 @@ export const ClientFormPage: React.FC = () => {
     },
   });
   
+  // Mutación para crear cliente
+  const createClientMutation = useMutation({
+    mutationFn: (data: CreateClientData) => clientsService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      toast.success('Cliente creado correctamente');
+      navigate('/clients');
+    },
+    onError: (error: any) => {
+      console.error('Error creando cliente:', error);
+      if (error.response?.status === 422) {
+        const detail = error.response.data?.detail;
+        if (Array.isArray(detail)) {
+          const message = detail.map(err => err.msg).join(', ');
+          toast.error(message);
+        } else {
+          toast.error('Error de validación en los datos');
+        }
+      } else {
+        toast.error(error.response?.data?.detail || 'Error al crear cliente');
+      }
+    }
+  });
+  
+  // Mutación para actualizar cliente
+  const updateClientMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateClientData }) => 
+      clientsService.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      queryClient.invalidateQueries({ queryKey: ['client', id] });
+      toast.success('Cliente actualizado correctamente');
+      navigate('/clients');
+    },
+    onError: (error: any) => {
+      console.error('Error actualizando cliente:', error);
+      if (error.response?.status === 422) {
+        const detail = error.response.data?.detail;
+        if (Array.isArray(detail)) {
+          const message = detail.map(err => err.msg).join(', ');
+          toast.error(message);
+        } else {
+          toast.error('Error de validación en los datos');
+        }
+      } else if (error.response?.status === 404) {
+        toast.error('Cliente no encontrado');
+      } else {
+        toast.error(error.response?.data?.detail || 'Error al actualizar cliente');
+      }
+    }
+  });
+  
   // Cargar datos para edición
   useEffect(() => {
     if (isEditing && client) {
       reset({
-        doc_type: client.doc_type,
+        doc_type: client.doc_type as DocType,
         doc_number: client.doc_number,
         name: client.name,
-        address: client.address,
-        ubigeo: client.ubigeo,
-        email: client.email,
-        phone: client.phone,
+        address: client.address || '',
+        ubigeo: client.ubigeo || '',
+        email: client.email || '',
+        phone: client.phone || '',
         is_active: client.is_active,
       });
     }
@@ -113,46 +154,103 @@ export const ClientFormPage: React.FC = () => {
   
   // Validar número de documento según el tipo
   useEffect(() => {
-    const docNumber = watch('doc_number');
-    if (!docNumber) return;
+    const subscription = watch((value, { name }) => {
+      if (name === 'doc_number' && value.doc_number) {
+        const docNumber = value.doc_number;
+        
+        switch (docType) {
+          case '1': // DNI
+            if (docNumber.length > 8) {
+              setValue('doc_number', docNumber.slice(0, 8).replace(/\D/g, ''));
+            }
+            break;
+          case '6': // RUC
+            if (docNumber.length > 11) {
+              setValue('doc_number', docNumber.slice(0, 11).replace(/\D/g, ''));
+            }
+            break;
+          case '4': // Carnet de Extranjería
+          case '7': // Pasaporte
+          case '0': // Otros
+            if (docNumber.length > 20) {
+              setValue('doc_number', docNumber.slice(0, 20));
+            }
+            break;
+        }
+      }
+    });
     
-    switch (docType) {
-      case '1': // DNI
-        if (docNumber.length !== 8) {
-          setValue('doc_number', docNumber.slice(0, 8).replace(/\D/g, ''));
-        }
-        break;
-      case '6': // RUC
-        if (docNumber.length !== 11) {
-          setValue('doc_number', docNumber.slice(0, 11).replace(/\D/g, ''));
-        }
-        break;
-      case '4': // Carnet de Extranjería
-      case '7': // Pasaporte
-      case '0': // Otros
-        if (docNumber.length > 20) {
-          setValue('doc_number', docNumber.slice(0, 20));
-        }
-        break;
-    }
-  }, [docType, watch, setValue]);
+    return () => subscription.unsubscribe();
+  }, [docType, setValue, watch]);
   
   // Enviar formulario
   const onSubmit = (data: ClientFormData) => {
-    // En un proyecto real, llamarías a una API
-    // if (isEditing) {
-    //   clientsService.update(Number(id), data);
-    // } else {
-    //   clientsService.create(data);
-    // }
+    // Limpiar campos vacíos
+    const cleanData = {
+      ...data,
+      address: data.address || undefined,
+      ubigeo: data.ubigeo || undefined,
+      email: data.email || undefined,
+      phone: data.phone || undefined,
+    };
     
-    console.log('Guardando cliente:', data);
-    navigate('/clients');
+    if (isEditing && id) {
+      updateClientMutation.mutate({ 
+        id: Number(id), 
+        data: cleanData 
+      });
+    } else {
+      createClientMutation.mutate(cleanData);
+    }
   };
+  
+  // Manejo de errores
+  if (clientError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
+          </h1>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Error al cargar cliente
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>No se pudo cargar la información del cliente.</p>
+              </div>
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/clients')}
+                >
+                  Volver a la lista
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   // Mostrar loading si se están cargando datos
   if (isLoadingClient) {
-    return <Spinner />;
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
+          </h1>
+        </div>
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -319,7 +417,7 @@ export const ClientFormPage: React.FC = () => {
             </Button>
             <Button
               type="submit"
-              isLoading={isSubmitting}
+              isLoading={isSubmitting || createClientMutation.isPending || updateClientMutation.isPending}
             >
               {isEditing ? 'Actualizar' : 'Guardar'}
             </Button>

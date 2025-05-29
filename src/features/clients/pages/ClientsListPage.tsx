@@ -1,14 +1,15 @@
 // src/features/clients/pages/ClientsListPage.tsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-toastify';
+
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
+import { Modal } from '../../../components/common/Modal';
+import { clientsService } from '../../../services/clients.service';
 import { Client, DocType } from '../../../types';
-
-// Este servicio tendría que ser implementado
-// import { clientsService } from '../../../services/clients.service';
 
 // Función helper para obtener el texto del tipo de documento
 const getDocTypeDisplay = (type: string): string => {
@@ -24,117 +25,143 @@ const getDocTypeDisplay = (type: string): string => {
 
 export const ClientsListPage: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  // Estados para filtros y modales
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDocType, setFilterDocType] = useState<DocType | 'ALL'>('ALL');
   const [filterActive, setFilterActive] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   
-  // En un proyecto real, estos datos vendrían de una API
-  // const { data: clients, isLoading } = useQuery(['clients'], clientsService.getAll);
+  // Query para obtener clientes
+  const { 
+    data: clients, 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuery({
+    queryKey: ['clients'],
+    queryFn: clientsService.getAll,
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
   
-  // Datos simulados para el ejemplo
-  const clients: Client[] = [
-    { 
-      id: 1, 
-      doc_type: '6',
-      doc_number: '20123456789',
-      name: 'Empresa ABC S.A.C.',
-      address: 'Av. Comercio 123, Lima',
-      ubigeo: '150101',
-      email: 'contacto@empresaabc.com',
-      phone: '01-1234567',
-      is_active: true,
-      created_at: '2025-01-01T00:00:00-05:00',
-      updated_at: '2025-01-01T00:00:00-05:00'
+  // Mutación para eliminar cliente
+  const deleteClientMutation = useMutation({
+    mutationFn: (id: number) => clientsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      toast.success('Cliente eliminado correctamente');
+      setIsDeleteModalOpen(false);
+      setSelectedClient(null);
     },
-    { 
-      id: 2, 
-      doc_type: '1',
-      doc_number: '12345678',
-      name: 'Juan Pérez García',
-      address: 'Jr. Las Flores 456, Iquitos',
-      ubigeo: '160101',
-      email: 'juan.perez@email.com',
-      phone: '965123456',
-      is_active: true,
-      created_at: '2025-01-02T00:00:00-05:00',
-      updated_at: '2025-01-02T00:00:00-05:00'
-    },
-    { 
-      id: 3, 
-      doc_type: '6',
-      doc_number: '20987654321',
-      name: 'Distribuidora XYZ E.I.R.L.',
-      address: 'Av. Industrial 789, Tarapoto',
-      ubigeo: '220601',
-      email: 'ventas@distxyz.com',
-      phone: '042-123456',
-      is_active: false,
-      created_at: '2025-01-03T00:00:00-05:00',
-      updated_at: '2025-01-03T00:00:00-05:00'
-    },
-    { 
-      id: 4, 
-      doc_type: '4',
-      doc_number: 'CE123456',
-      name: 'María Rodríguez',
-      address: 'Calle Mayor 789, Pucallpa',
-      ubigeo: '250101',
-      email: 'maria.rodriguez@email.com',
-      phone: '961987654',
-      is_active: true,
-      created_at: '2025-01-04T00:00:00-05:00',
-      updated_at: '2025-01-04T00:00:00-05:00'
+    onError: (error: any) => {
+      console.error('Error eliminando cliente:', error);
+      if (error.response?.status === 403) {
+        toast.error('No tienes permisos para eliminar clientes');
+      } else if (error.response?.status === 404) {
+        toast.error('Cliente no encontrado');
+      } else {
+        toast.error(error.response?.data?.detail || 'Error al eliminar cliente');
+      }
     }
-  ];
-  
-  const isLoading = false;
+  });
   
   // Filtrar clientes según criterios
-  let filteredClients = clients;
-  
-  // Filtrar por tipo de documento
-  if (filterDocType !== 'ALL') {
-    filteredClients = filteredClients.filter(client => client.doc_type === filterDocType);
-  }
-  
-  // Filtrar por estado
-  if (filterActive !== 'ALL') {
-    filteredClients = filteredClients.filter(
-      client => filterActive === 'ACTIVE' ? client.is_active : !client.is_active
-    );
-  }
-  
-  // Filtrar por búsqueda
-  if (searchTerm) {
-    filteredClients = filteredClients.filter(client => 
+  const filteredClients = clients ? clients.filter(client => {
+    // Filtro por tipo de documento
+    const matchesDocType = filterDocType === 'ALL' || client.doc_type === filterDocType;
+    
+    // Filtro por estado
+    const matchesActive = filterActive === 'ALL' || 
+      (filterActive === 'ACTIVE' ? client.is_active : !client.is_active);
+    
+    // Filtro por búsqueda
+    const matchesSearch = searchTerm === '' || 
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.doc_number.includes(searchTerm) ||
       (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.phone && client.phone.includes(searchTerm))
-    );
-  }
+      (client.phone && client.phone.includes(searchTerm)) ||
+      (client.address_line && client.address_line.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.department && client.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.province && client.province.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (client.district && client.district.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesDocType && matchesActive && matchesSearch;
+  }) : [];
   
-  const handleDelete = (id: number) => {
-    if (window.confirm('¿Está seguro de eliminar este cliente?')) {
-      // En un proyecto real, llamarías a una API
-      // clientsService.delete(id);
-      console.log('Eliminando cliente:', id);
+  const handleDelete = (client: Client) => {
+    setSelectedClient(client);
+    setIsDeleteModalOpen(true);
+  };
+  
+  const confirmDelete = () => {
+    if (selectedClient) {
+      deleteClientMutation.mutate(selectedClient.id);
     }
   };
   
-  if (isLoading) return <Spinner />;
+  const handleRefresh = () => {
+    refetch();
+  };
+  
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
+          <Button onClick={handleRefresh}>
+            Reintentar
+          </Button>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Error al cargar clientes
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>No se pudieron cargar los clientes. Por favor, intente nuevamente.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
+        </div>
+        <div className="flex justify-center py-8">
+          <Spinner />
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
-        <Button
-          onClick={() => navigate('/clients/new')}
-          className="flex items-center"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Nuevo Cliente
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+          >
+            Actualizar
+          </Button>
+          <Button
+            onClick={() => navigate('/clients/new')}
+            className="flex items-center"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Nuevo Cliente
+          </Button>
+        </div>
       </div>
       
       {/* Filtros y búsqueda */}
@@ -146,7 +173,7 @@ export const ClientsListPage: React.FC = () => {
           <input
             type="text"
             className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-            placeholder="Buscar por nombre, documento, email o teléfono..."
+            placeholder="Buscar por nombre, documento, email, teléfono o dirección..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -217,8 +244,15 @@ export const ClientsListPage: React.FC = () => {
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-gray-900">{client.name}</div>
-                  {client.address && (
-                    <div className="text-gray-500 text-sm">{client.address}</div>
+                  {(client.address_line || client.department || client.province || client.district) && (
+                    <div className="text-gray-500 text-sm">
+                      {[
+                        client.address_line,
+                        client.district,
+                        client.province,
+                        client.department
+                      ].filter(Boolean).join(', ')}
+                    </div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -238,12 +272,14 @@ export const ClientsListPage: React.FC = () => {
                   <button
                     onClick={() => navigate(`/clients/${client.id}`)}
                     className="text-primary hover:text-primary/80 mr-4"
+                    title="Editar cliente"
                   >
                     <PencilIcon className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => handleDelete(client.id)}
+                    onClick={() => handleDelete(client)}
                     className="text-red-600 hover:text-red-900"
+                    title="Eliminar cliente"
                   >
                     <TrashIcon className="h-5 w-5" />
                   </button>
@@ -254,13 +290,50 @@ export const ClientsListPage: React.FC = () => {
             {filteredClients.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                  No se encontraron clientes
+                  {clients && clients.length > 0 
+                    ? 'No se encontraron clientes con los filtros aplicados'
+                    : 'No hay clientes registrados'
+                  }
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      
+      {/* Modal de confirmación para eliminar */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Confirmar Eliminación"
+        maxWidth="sm"
+      >
+        <div className="p-6">
+          <p className="text-gray-700 mb-4">
+            ¿Está seguro que desea eliminar el cliente{' '}
+            <strong>{selectedClient?.name}</strong>?
+          </p>
+          <p className="text-gray-600 text-sm mb-6">
+            Esta acción desactivará el cliente en el sistema.
+          </p>
+          
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmDelete}
+              isLoading={deleteClientMutation.isPending}
+            >
+              Eliminar
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

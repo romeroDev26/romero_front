@@ -2,40 +2,89 @@
 import api from '../config/api';
 import { Client } from '../types';
 
+export interface CreateClientData {
+  doc_type: string;
+  doc_number: string;
+  name: string;
+  address_line?: string; 
+  department?: string;   
+  province?: string;    
+  district?: string;    
+  country_code?: string;  
+  ubigeo?: string;
+  email?: string;
+  phone?: string;
+  is_active?: boolean;
+}
+
+export interface UpdateClientData {
+  doc_type?: string;
+  doc_number?: string;
+  name?: string;
+  address_line?: string;  
+  department?: string;    
+  province?: string;      
+  district?: string;      
+  country_code?: string;  
+  ubigeo?: string;
+  email?: string;
+  phone?: string;
+  is_active?: boolean;
+}
+
 export const clientsService = {
+  // Obtener todos los clientes
   getAll: async (): Promise<Client[]> => {
-    const response = await api.get('/clients');
-    return response.data;
+    try {
+      const response = await api.get('/clients/');
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo clientes:', error);
+      throw error;
+    }
   },
   
+  // Obtener cliente por ID
   getById: async (id: number): Promise<Client> => {
-    const response = await api.get(`/clients/${id}`);
-    return response.data;
+    try {
+      const response = await api.get(`/clients/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error obteniendo cliente ${id}:`, error);
+      throw error;
+    }
   },
   
-  create: async (client: Omit<Client, 'id' | 'created_at' | 'updated_at'>): Promise<Client> => {
-    const response = await api.post('/clients', client);
-    return response.data;
+  // Crear nuevo cliente
+  create: async (clientData: CreateClientData): Promise<Client> => {
+    try {
+      const response = await api.post('/clients/', clientData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creando cliente:', error);
+      throw error;
+    }
   },
   
-  update: async (id: number, client: Partial<Client>): Promise<Client> => {
-    const response = await api.put(`/clients/${id}`, client);
-    return response.data;
+  // Actualizar cliente existente
+  update: async (id: number, clientData: UpdateClientData): Promise<Client> => {
+    try {
+      const response = await api.patch(`/clients/${id}`, clientData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error actualizando cliente ${id}:`, error);
+      throw error;
+    }
   },
   
-  delete: async (id: number): Promise<void> => {
-    await api.delete(`/clients/${id}`);
-  },
-  
-  // Método adicional para búsqueda avanzada
-  search: async (params: {
-    q?: string;
-    doc_type?: string;
-    is_active?: boolean;
-    page?: number;
-    limit?: number;
-  }): Promise<{ data: Client[]; total: number }> => {
-    const response = await api.get('/clients/search', { params });
-    return response.data;
+  // Eliminar (desactivar) cliente
+  delete: async (id: number): Promise<Client> => {
+    try {
+      const response = await api.delete(`/clients/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error eliminando cliente ${id}:`, error);
+      throw error;
+    }
   }
 };

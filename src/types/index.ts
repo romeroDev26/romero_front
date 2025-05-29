@@ -19,21 +19,6 @@ export interface Role {
   is_active?: boolean; 
 }
 
-// Tipos para clientes
-export interface Client {
-  id: number;
-  doc_type: string;
-  doc_number: string;
-  name: string;
-  address?: string;
-  ubigeo?: string;
-  email?: string;
-  phone?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
 // Tipos para productos/servicios
 export interface ProductService {
   id: number;
@@ -138,11 +123,16 @@ export type DocType = '1' | '4' | '6' | '7' | '0';
 
 // Interface actualizada para Cliente según la BD
 export interface Client {
+  address: string;
   id: number;
   doc_type: string;
   doc_number: string;
   name: string;
-  address?: string;
+  address_line?: string; 
+  department?: string;     
+  province?: string;       
+  district?: string;       
+  country_code?: string;  
   ubigeo?: string;
   email?: string;
   phone?: string;

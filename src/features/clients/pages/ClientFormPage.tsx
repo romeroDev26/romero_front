@@ -10,8 +10,10 @@ import { toast } from 'react-toastify';
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
+import { LocationSelector } from '../../../components/common/LocationSelector';
 import { clientsService, CreateClientData, UpdateClientData } from '../../../services/clients.service';
 import { DocType } from '../../../types';
+import { useLocation } from '../../../hooks/useLocation';
 
 const clientSchema = z.object({
   doc_type: z.enum(['1', '4', '6', '7', '0'], {
@@ -55,18 +57,21 @@ const getDocTypeDisplay = (type: DocType): string => {
   }
 };
 
-// Lista de países comunes para el selector
-const COUNTRIES = [
-  { code: 'PE', name: 'Perú' },
-  { code: 'CO', name: 'Colombia' },
-  { code: 'EC', name: 'Ecuador' },
-  { code: 'BO', name: 'Bolivia' },
-  { code: 'BR', name: 'Brasil' },
-  { code: 'AR', name: 'Argentina' },
-  { code: 'CL', name: 'Chile' },
-  { code: 'US', name: 'Estados Unidos' },
-  { code: 'ES', name: 'España' },
-];
+// Funciones helper para manejar los cambios de ubicación
+const handleLocationChange = (setValue: any) => ({
+  onCountryChange: (countryCode: string, countryName: string) => {
+    setValue('country_code', countryCode);
+  },
+  onDepartmentChange: (department: string) => {
+    setValue('department', department);
+  },
+  onProvinceChange: (province: string) => {
+    setValue('province', province);
+  },
+  onDistrictChange: (district: string) => {
+    setValue('district', district);
+  },
+});
 
 export const ClientFormPage: React.FC = () => {
   const { id } = useParams();
@@ -100,6 +105,17 @@ export const ClientFormPage: React.FC = () => {
       country_code: 'PE', // Por defecto Perú
       is_active: true,
     },
+  });
+  
+  // Hook personalizado para manejo de ubicación
+  const { handleLocationChange } = useLocation({ 
+    setValue,
+    initialData: isEditing && client ? {
+      country_code: client.country_code,
+      department: client.department,
+      province: client.province,
+      district: client.district,
+    } : undefined
   });
   
   // Mutación para crear cliente
@@ -398,32 +414,26 @@ export const ClientFormPage: React.FC = () => {
           <div className="border-b border-gray-200 pb-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Información de Dirección</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* País */}
+            {/* Selector de Ubicación Dinámico */}
+            <LocationSelector
+              countryCode={watch('country_code')}
+              department={watch('department')}
+              province={watch('province')}
+              district={watch('district')}
+              {...handleLocationChange}
+              errors={{
+                country_code: errors.country_code?.message,
+                department: errors.department?.message,
+                province: errors.province?.message,
+                district: errors.district?.message,
+              }}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              {/* Ubigeo - mantener el campo manual para casos especiales */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  País
-                </label>
-                <select
-                  {...register('country_code')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                >
-                  <option value="">Seleccione un país</option>
-                  {COUNTRIES.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.country_code && (
-                  <p className="mt-1 text-sm text-red-600">{errors.country_code.message}</p>
-                )}
-              </div>
-              
-              {/* Ubigeo */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ubigeo
+                  Ubigeo (Opcional)
                 </label>
                 <input
                   type="text"
@@ -432,56 +442,11 @@ export const ClientFormPage: React.FC = () => {
                   placeholder="Código de 6 dígitos"
                   maxLength={6}
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Código UBIGEO si se conoce específicamente
+                </p>
                 {errors.ubigeo && (
                   <p className="mt-1 text-sm text-red-600">{errors.ubigeo.message}</p>
-                )}
-              </div>
-              
-              {/* Departamento */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Departamento
-                </label>
-                <input
-                  type="text"
-                  {...register('department')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                  placeholder="Ej: Lima, Loreto, San Martín"
-                />
-                {errors.department && (
-                  <p className="mt-1 text-sm text-red-600">{errors.department.message}</p>
-                )}
-              </div>
-              
-              {/* Provincia */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Provincia
-                </label>
-                <input
-                  type="text"
-                  {...register('province')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                  placeholder="Ej: Lima, Maynas, San Martín"
-                />
-                {errors.province && (
-                  <p className="mt-1 text-sm text-red-600">{errors.province.message}</p>
-                )}
-              </div>
-              
-              {/* Distrito */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Distrito
-                </label>
-                <input
-                  type="text"
-                  {...register('district')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                  placeholder="Ej: Miraflores, Iquitos, Tarapoto"
-                />
-                {errors.district && (
-                  <p className="mt-1 text-sm text-red-600">{errors.district.message}</p>
                 )}
               </div>
               
@@ -494,8 +459,11 @@ export const ClientFormPage: React.FC = () => {
                   type="text"
                   {...register('address_line')}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                  placeholder="Av/Jr/Calle, número, referencia, etc."
+                  placeholder="Av/Jr/Calle, número, referencia, interior, etc."
                 />
+                <p className="mt-1 text-xs text-gray-500">
+                  Dirección específica: calle, número, interior, referencias
+                </p>
                 {errors.address_line && (
                   <p className="mt-1 text-sm text-red-600">{errors.address_line.message}</p>
                 )}

@@ -23,7 +23,14 @@ const clientSchema = z.object({
   name: z.string()
     .min(1, 'Nombre es requerido')
     .max(255, 'Nombre debe tener máximo 255 caracteres'),
-  address: z.string().max(255, 'Dirección muy larga').optional(),
+  
+  // Campos de dirección actualizados
+  address_line: z.string().max(255, 'Dirección muy larga').optional(),
+  department: z.string().max(50, 'Departamento muy largo').optional(),
+  province: z.string().max(50, 'Provincia muy larga').optional(),
+  district: z.string().max(50, 'Distrito muy largo').optional(),
+  country_code: z.string().max(5, 'Código de país muy largo').optional(),
+  
   ubigeo: z.string()
     .length(6, 'Ubigeo debe tener 6 caracteres')
     .regex(/^\d{6}$/, 'Ubigeo debe ser numérico')
@@ -47,6 +54,19 @@ const getDocTypeDisplay = (type: DocType): string => {
     default: return 'Desconocido';
   }
 };
+
+// Lista de países comunes para el selector
+const COUNTRIES = [
+  { code: 'PE', name: 'Perú' },
+  { code: 'CO', name: 'Colombia' },
+  { code: 'EC', name: 'Ecuador' },
+  { code: 'BO', name: 'Bolivia' },
+  { code: 'BR', name: 'Brasil' },
+  { code: 'AR', name: 'Argentina' },
+  { code: 'CL', name: 'Chile' },
+  { code: 'US', name: 'Estados Unidos' },
+  { code: 'ES', name: 'España' },
+];
 
 export const ClientFormPage: React.FC = () => {
   const { id } = useParams();
@@ -77,6 +97,7 @@ export const ClientFormPage: React.FC = () => {
     resolver: zodResolver(clientSchema),
     defaultValues: {
       doc_type: '6', // Por defecto RUC para empresa de transporte
+      country_code: 'PE', // Por defecto Perú
       is_active: true,
     },
   });
@@ -140,7 +161,11 @@ export const ClientFormPage: React.FC = () => {
         doc_type: client.doc_type as DocType,
         doc_number: client.doc_number,
         name: client.name,
-        address: client.address || '',
+        address_line: client.address_line || '',
+        department: client.department || '',
+        province: client.province || '',
+        district: client.district || '',
+        country_code: client.country_code || 'PE',
         ubigeo: client.ubigeo || '',
         email: client.email || '',
         phone: client.phone || '',
@@ -188,7 +213,11 @@ export const ClientFormPage: React.FC = () => {
     // Limpiar campos vacíos
     const cleanData = {
       ...data,
-      address: data.address || undefined,
+      address_line: data.address_line || undefined,
+      department: data.department || undefined,
+      province: data.province || undefined,
+      district: data.district || undefined,
+      country_code: data.country_code || undefined,
       ubigeo: data.ubigeo || undefined,
       email: data.email || undefined,
       phone: data.phone || undefined,
@@ -263,136 +292,219 @@ export const ClientFormPage: React.FC = () => {
       
       <div className="bg-white rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Tipo de Documento */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tipo de Documento *
-              </label>
-              <select
-                {...register('doc_type')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-              >
-                <option value="6">RUC</option>
-                <option value="1">DNI</option>
-                <option value="4">Carnet de Extranjería</option>
-                <option value="7">Pasaporte</option>
-                <option value="0">Otros</option>
-              </select>
-              {errors.doc_type && (
-                <p className="mt-1 text-sm text-red-600">{errors.doc_type.message}</p>
-              )}
-            </div>
+          {/* Información básica */}
+          <div className="border-b border-gray-200 pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Información Básica</h3>
             
-            {/* Número de Documento */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Número de Documento *
-              </label>
-              <input
-                type="text"
-                {...register('doc_number')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                placeholder={
-                  docType === '1' ? 'Ingrese 8 dígitos' :
-                  docType === '6' ? 'Ingrese 11 dígitos' :
-                  'Ingrese número de documento'
-                }
-                maxLength={
-                  docType === '1' ? 8 :
-                  docType === '6' ? 11 :
-                  20
-                }
-              />
-              {errors.doc_number && (
-                <p className="mt-1 text-sm text-red-600">{errors.doc_number.message}</p>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Tipo de Documento */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipo de Documento *
+                </label>
+                <select
+                  {...register('doc_type')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                >
+                  <option value="6">RUC</option>
+                  <option value="1">DNI</option>
+                  <option value="4">Carnet de Extranjería</option>
+                  <option value="7">Pasaporte</option>
+                  <option value="0">Otros</option>
+                </select>
+                {errors.doc_type && (
+                  <p className="mt-1 text-sm text-red-600">{errors.doc_type.message}</p>
+                )}
+              </div>
+              
+              {/* Número de Documento */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Número de Documento *
+                </label>
+                <input
+                  type="text"
+                  {...register('doc_number')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder={
+                    docType === '1' ? 'Ingrese 8 dígitos' :
+                    docType === '6' ? 'Ingrese 11 dígitos' :
+                    'Ingrese número de documento'
+                  }
+                  maxLength={
+                    docType === '1' ? 8 :
+                    docType === '6' ? 11 :
+                    20
+                  }
+                />
+                {errors.doc_number && (
+                  <p className="mt-1 text-sm text-red-600">{errors.doc_number.message}</p>
+                )}
+              </div>
+              
+              {/* Nombre o Razón Social */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {docType === '6' ? 'Razón Social' : 'Nombre Completo'} *
+                </label>
+                <input
+                  type="text"
+                  {...register('name')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder={
+                    docType === '6' ? 'Ingrese razón social' : 'Ingrese nombre completo'
+                  }
+                />
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                )}
+              </div>
+              
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  {...register('email')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder="correo@ejemplo.com"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                )}
+              </div>
+              
+              {/* Teléfono */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono
+                </label>
+                <input
+                  type="text"
+                  {...register('phone')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder="Ingrese teléfono"
+                />
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                )}
+              </div>
             </div>
+          </div>
+          
+          {/* Información de Dirección */}
+          <div className="border-b border-gray-200 pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Información de Dirección</h3>
             
-            {/* Nombre o Razón Social */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {docType === '6' ? 'Razón Social' : 'Nombre Completo'} *
-              </label>
-              <input
-                type="text"
-                {...register('name')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                placeholder={
-                  docType === '6' ? 'Ingrese razón social' : 'Ingrese nombre completo'
-                }
-              />
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* País */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  País
+                </label>
+                <select
+                  {...register('country_code')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                >
+                  <option value="">Seleccione un país</option>
+                  {COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.country_code && (
+                  <p className="mt-1 text-sm text-red-600">{errors.country_code.message}</p>
+                )}
+              </div>
+              
+              {/* Ubigeo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ubigeo
+                </label>
+                <input
+                  type="text"
+                  {...register('ubigeo')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder="Código de 6 dígitos"
+                  maxLength={6}
+                />
+                {errors.ubigeo && (
+                  <p className="mt-1 text-sm text-red-600">{errors.ubigeo.message}</p>
+                )}
+              </div>
+              
+              {/* Departamento */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Departamento
+                </label>
+                <input
+                  type="text"
+                  {...register('department')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder="Ej: Lima, Loreto, San Martín"
+                />
+                {errors.department && (
+                  <p className="mt-1 text-sm text-red-600">{errors.department.message}</p>
+                )}
+              </div>
+              
+              {/* Provincia */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Provincia
+                </label>
+                <input
+                  type="text"
+                  {...register('province')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder="Ej: Lima, Maynas, San Martín"
+                />
+                {errors.province && (
+                  <p className="mt-1 text-sm text-red-600">{errors.province.message}</p>
+                )}
+              </div>
+              
+              {/* Distrito */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Distrito
+                </label>
+                <input
+                  type="text"
+                  {...register('district')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder="Ej: Miraflores, Iquitos, Tarapoto"
+                />
+                {errors.district && (
+                  <p className="mt-1 text-sm text-red-600">{errors.district.message}</p>
+                )}
+              </div>
+              
+              {/* Dirección Específica */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Dirección Completa
+                </label>
+                <input
+                  type="text"
+                  {...register('address_line')}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  placeholder="Av/Jr/Calle, número, referencia, etc."
+                />
+                {errors.address_line && (
+                  <p className="mt-1 text-sm text-red-600">{errors.address_line.message}</p>
+                )}
+              </div>
             </div>
-            
-            {/* Dirección */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dirección
-              </label>
-              <input
-                type="text"
-                {...register('address')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                placeholder="Ingrese dirección completa"
-              />
-              {errors.address && (
-                <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
-              )}
-            </div>
-            
-            {/* Ubigeo */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ubigeo
-              </label>
-              <input
-                type="text"
-                {...register('ubigeo')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                placeholder="Código de 6 dígitos"
-                maxLength={6}
-              />
-              {errors.ubigeo && (
-                <p className="mt-1 text-sm text-red-600">{errors.ubigeo.message}</p>
-              )}
-            </div>
-            
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                {...register('email')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                placeholder="correo@ejemplo.com"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
-            </div>
-            
-            {/* Teléfono */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono
-              </label>
-              <input
-                type="text"
-                {...register('phone')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                placeholder="Ingrese teléfono"
-              />
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-              )}
-            </div>
-            
-            {/* Estado */}
+          </div>
+          
+          {/* Estado */}
+          <div>
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"

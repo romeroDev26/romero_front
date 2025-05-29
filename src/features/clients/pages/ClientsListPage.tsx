@@ -23,6 +23,44 @@ const getDocTypeDisplay = (type: string): string => {
   }
 };
 
+// Función helper para formatear la dirección completa
+const formatAddress = (client: Client): string => {
+  const addressParts: string[] = [];
+  
+  if (client.address_line) {
+    addressParts.push(client.address_line);
+  }
+  
+  // Construir la dirección administrativa
+  const administrativeParts: string[] = [];
+  if (client.district) administrativeParts.push(client.district);
+  if (client.province) administrativeParts.push(client.province);
+  if (client.department) administrativeParts.push(client.department);
+  
+  if (administrativeParts.length > 0) {
+    addressParts.push(administrativeParts.join(', '));
+  }
+  
+  return addressParts.join(' - ') || '-';
+};
+
+// Función helper para obtener el nombre del país
+const getCountryName = (countryCode?: string): string => {
+  const countries: { [key: string]: string } = {
+    'PE': 'Perú',
+    'CO': 'Colombia',
+    'EC': 'Ecuador',
+    'BO': 'Bolivia',
+    'BR': 'Brasil',
+    'AR': 'Argentina',
+    'CL': 'Chile',
+    'US': 'Estados Unidos',
+    'ES': 'España',
+  };
+  
+  return countryCode ? countries[countryCode] || countryCode : '';
+};
+
 export const ClientsListPage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -31,6 +69,7 @@ export const ClientsListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDocType, setFilterDocType] = useState<DocType | 'ALL'>('ALL');
   const [filterActive, setFilterActive] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+  const [filterCountry, setFilterCountry] = useState<string>('ALL');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   
@@ -67,6 +106,13 @@ export const ClientsListPage: React.FC = () => {
     }
   });
   
+  // Obtener países únicos para el filtro
+  const uniqueCountries = clients ? Array.from(new Set(
+    clients
+      .map(client => client.country_code)
+      .filter(Boolean)
+  )).sort() : [];
+  
   // Filtrar clientes según criterios
   const filteredClients = clients ? clients.filter(client => {
     // Filtro por tipo de documento
@@ -75,6 +121,9 @@ export const ClientsListPage: React.FC = () => {
     // Filtro por estado
     const matchesActive = filterActive === 'ALL' || 
       (filterActive === 'ACTIVE' ? client.is_active : !client.is_active);
+    
+    // Filtro por país
+    const matchesCountry = filterCountry === 'ALL' || client.country_code === filterCountry;
     
     // Filtro por búsqueda
     const matchesSearch = searchTerm === '' || 
@@ -87,7 +136,7 @@ export const ClientsListPage: React.FC = () => {
       (client.province && client.province.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (client.district && client.district.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesDocType && matchesActive && matchesSearch;
+    return matchesDocType && matchesActive && matchesCountry && matchesSearch;
   }) : [];
   
   const handleDelete = (client: Client) => {
@@ -179,7 +228,7 @@ export const ClientsListPage: React.FC = () => {
           />
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <select
             className="rounded-md border-gray-300 shadow-sm p-2 border"
             value={filterDocType}
@@ -202,103 +251,165 @@ export const ClientsListPage: React.FC = () => {
             <option value="ACTIVE">Activos</option>
             <option value="INACTIVE">Inactivos</option>
           </select>
+          
+          {uniqueCountries.length > 0 && (
+            <select
+              className="rounded-md border-gray-300 shadow-sm p-2 border"
+              value={filterCountry}
+              onChange={(e) => setFilterCountry(e.target.value)}
+            >
+              <option value="ALL">Todos los países</option>
+              {uniqueCountries.map((countryCode) => (
+                <option key={countryCode} value={countryCode}>
+                  {getCountryName(countryCode)}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
       
+      {/* Estadísticas rápidas */}
+      {clients && (
+        <div className="bg-white rounded-lg shadow-sm p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{clients.length}</div>
+              <div className="text-sm text-gray-500">Total</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {clients.filter(c => c.is_active).length}
+              </div>
+              <div className="text-sm text-gray-500">Activos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">
+                {clients.filter(c => !c.is_active).length}
+              </div>
+              <div className="text-sm text-gray-500">Inactivos</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {clients.filter(c => c.doc_type === '6').length}
+              </div>
+              <div className="text-sm text-gray-500">Empresas (RUC)</div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Tabla de clientes */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tipo Doc.
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Número Doc.
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre / Razón Social
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Email
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Teléfono
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredClients.map((client) => (
-              <tr key={client.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getDocTypeDisplay(client.doc_type)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {client.doc_number}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-gray-900">{client.name}</div>
-                  {(client.address_line || client.department || client.province || client.district) && (
-                    <div className="text-gray-500 text-sm">
-                      {[
-                        client.address_line,
-                        client.district,
-                        client.province,
-                        client.department
-                      ].filter(Boolean).join(', ')}
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {client.email || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {client.phone || '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    client.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {client.is_active ? 'Activo' : 'Inactivo'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => navigate(`/clients/${client.id}`)}
-                    className="text-primary hover:text-primary/80 mr-4"
-                    title="Editar cliente"
-                  >
-                    <PencilIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(client)}
-                    className="text-red-600 hover:text-red-900"
-                    title="Eliminar cliente"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-            
-            {filteredClients.length === 0 && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                  {clients && clients.length > 0 
-                    ? 'No se encontraron clientes con los filtros aplicados'
-                    : 'No hay clientes registrados'
-                  }
-                </td>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tipo Doc.
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Número Doc.
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nombre / Razón Social
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Dirección
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contacto
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  País
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredClients.map((client) => (
+                <tr key={client.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      {getDocTypeDisplay(client.doc_type)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap font-mono">
+                    {client.doc_number}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-gray-900 font-medium">{client.name}</div>
+                    {client.ubigeo && (
+                      <div className="text-gray-500 text-xs">Ubigeo: {client.ubigeo}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 max-w-xs">
+                      {formatAddress(client)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm">
+                      {client.email && (
+                        <div className="text-gray-900">{client.email}</div>
+                      )}
+                      {client.phone && (
+                        <div className="text-gray-500">{client.phone}</div>
+                      )}
+                      {!client.email && !client.phone && (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {getCountryName(client.country_code) || '-'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      client.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {client.is_active ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button
+                      onClick={() => navigate(`/clients/${client.id}`)}
+                      className="text-primary hover:text-primary/80 mr-4"
+                      title="Editar cliente"
+                    >
+                      <PencilIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(client)}
+                      className="text-red-600 hover:text-red-900"
+                      title="Eliminar cliente"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              
+              {filteredClients.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                    {clients && clients.length > 0 
+                      ? 'No se encontraron clientes con los filtros aplicados'
+                      : 'No hay clientes registrados'
+                    }
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       
       {/* Modal de confirmación para eliminar */}

@@ -32,18 +32,16 @@ import { SalesPointPage } from './features/fluvial/pages/SalesPointPage';
 import { FluvialDashboardPage } from './features/fluvial/pages/FluvialDashboardPage';
 import { CitiesPortsPage } from './features/fluvial/pages/CitiesPortsPage';
 import { VesselsPage } from './features/fluvial/pages/VesselsPage';
+import { FaresPage } from './features/fluvial/pages/FaresPage';
+import { RoutesPage } from './features/fluvial/pages/RoutesPage';
+import { SeatTypesPage } from './features/fluvial/pages/SeatTypesPage';
 
-// Configuración Fluvial (páginas restantes como placeholders)
-const RoutesPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Rutas</h1><p>Gestión de rutas fluviales</p></div>;
-const FaresPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Tarifas</h1><p>Gestión de tarifas por tramo</p></div>;
-const SeatTypesPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Tipos de Asiento</h1><p>Gestión de tipos de asiento</p></div>;
-
-// Operaciones Fluviales
+// Operaciones Fluviales (pendientes de implementar)
 const ScheduleTripsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Programar Viajes</h1><p>Programación de viajes y itinerarios</p></div>;
 const ReservationsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Gestionar Reservas</h1><p>Gestión de reservas y separaciones</p></div>;
 const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
 
-// Reportes Fluviales
+// Reportes Fluviales (pendientes de implementar)
 const FluvialReportsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Reportes Fluviales</h1><p>Reportes específicos del transporte fluvial</p></div>;
 
 // Páginas de finanzas

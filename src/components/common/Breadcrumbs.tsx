@@ -2,10 +2,8 @@ import { ChevronRightIcon, HomeIcon } from '@heroicons/react/24/solid';
 import { Link, useLocation } from 'react-router-dom';
 
 const routeNameMap: { [key: string]: string } = {
-  'products': 'Productos',
+  // Rutas base
   'clients': 'Clientes',
-  'suppliers': 'Proveedores',
-  'inventory': 'Inventario',
   'sales': 'Ventas',
   'invoices': 'Facturas',
   'credit-notes': 'Notas de Crédito',
@@ -14,9 +12,42 @@ const routeNameMap: { [key: string]: string } = {
   'sunat-reports': 'Reportes SUNAT',
   'finance': 'Finanzas',
   'settings': 'Configuración',
+  
+  // Sistema Fluvial
+  'fluvial': 'Sistema Fluvial',
+  'dashboard': 'Dashboard',
+  'config': 'Configuración',
+  'operations': 'Operaciones',
+  'reports': 'Reportes',
+  
+  // Configuración Fluvial
+  'cities-ports': 'Ciudades y Puertos',
+  'vessels': 'Embarcaciones',
+  'routes': 'Rutas',
+  'fares': 'Tarifas',
+  'seat-types': 'Tipos de Asiento',
+  
+  // Operaciones Fluviales
+  'schedule-trips': 'Programar Viajes',
+  'sales-point': 'Punto de Ventas',
+  'reservations': 'Gestionar Reservas',
+  'manifests': 'Manifiestos',
+  
+  // Finanzas
+  'receivables': 'Cuentas por Cobrar',
+  'expenses': 'Gastos',
+  'payables': 'Cuentas por Pagar',
+  
+  // Ventas
+  'quotations': 'Cotizaciones',
+  'orders': 'Órdenes de Venta',
+  
+  // Configuración
   'users': 'Usuarios',
   'roles': 'Roles',
   'company': 'Empresa',
+  
+  // Acciones comunes
   'new': 'Nuevo',
   'edit': 'Editar',
   'view': 'Ver'

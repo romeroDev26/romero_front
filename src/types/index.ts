@@ -1,43 +1,136 @@
+// src/types/index.ts
 
-// Tipos para authentication
-export interface User {
-  role_name: String;
-  id: string;
-  email: string;
-  full_name: string;
-  role_id: number;
-  role?: Role;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+// ========================================
+// ENUMS Y TIPOS BASE
+// ========================================
+
+export type SunatDocumentStatus = 
+  | 'PENDING' | 'GENERATED' | 'SIGNED' | 'SENT' 
+  | 'ACCEPTED' | 'REJECTED' | 'OBSERVED' | 'VOIDED' | 'ERROR';
+
+export type InventoryMovementType = 
+  | 'PURCHASE_ENTRY' | 'SALE_EXIT' | 'INITIAL_STOCK' 
+  | 'ADJUSTMENT_IN' | 'ADJUSTMENT_OUT' | 'TRANSFER_IN' | 'TRANSFER_OUT';
+
+export type ReservationStatus = 
+  | 'RESERVED' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
+
+export type FareType = 
+  | 'FULL_ROUTE' | 'PARTIAL_SEGMENT' | 'SPECIAL';
+
+export type ServiceCategory = 
+  | 'PASAJES' | 'ENCOMIENDA_PEQUENA' | 'ENCOMIENDA_MEDIANA' 
+  | 'ENCOMIENDA_GRANDE' | 'CARGA_GENERAL_KGM' | 'CARGA_GENERAL_VOL' | 'OTROS';
+
+export type TripStatus = 
+  | 'SCHEDULED' | 'BOARDING' | 'DEPARTED' | 'ARRIVED' | 'COMPLETED' | 'CANCELLED';
+
+export type SeatAssignmentStatus = 
+  | 'CONFIRMED' | 'BOARDED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+
+// ========================================
+// ENTIDADES BÁSICAS
+// ========================================
+
+export interface Currency {
+  code: string;
+  name: string;
+  symbol?: string;
 }
 
 export interface Role {
   id: number;
   name: string;
   description?: string;
-  is_active?: boolean; 
+  is_active: boolean;
 }
 
-// Tipos para productos/servicios
-export interface ProductService {
-  id: number;
-  internal_code?: string;
-  name: string;
-  description?: string;
-  item_type: 'PRODUCT' | 'SERVICE';
-  unit_code: string;
-  purchase_price?: number;
-  sale_price: number;
-  currency_code: string;
-  tax_category_code: string;
-  unspcs_code?: string;
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  role_id: number;
+  role?: Role;
+  role_name?: string;
+  default_branch_office_id?: number;
+  current_city_id?: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
 
-// Tipos para proveedores
+export interface City {
+  id: number;
+  name: string;
+  code?: string;
+  ubigeo?: string;
+  department?: string;
+  province?: string;
+  country_code: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Company {
+  id: number;
+  ruc: string;
+  business_name: string;
+  trade_name?: string;
+  address?: string;
+  ubigeo?: string;
+  phone?: string;
+  email?: string;
+  logo_url?: string;
+  sunat_username?: string;
+  sunat_password_hash?: string;
+  certificate_path?: string;
+  certificate_password_hash?: string;
+  beta_mode: boolean;
+  detraccion_account?: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CompanyUpdate {
+  ruc?: string;
+  business_name?: string;
+  trade_name?: string;
+  address?: string;
+  ubigeo?: string;
+  phone?: string;
+  email?: string;
+  logo_url?: string;
+  sunat_username?: string;
+  certificate_path?: string;
+  beta_mode?: boolean;
+  detraccion_account?: string;
+  is_active?: boolean;
+  sunat_password_sol?: string;
+  certificate_password?: string;
+}
+
+export interface Client {
+  id: number;
+  doc_type: string;
+  doc_number: string;
+  name: string;
+  address_line?: string;
+  ubigeo?: string;
+  department?: string;
+  province?: string;
+  district?: string;
+  country_code?: string;
+  email?: string;
+  phone?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Para compatibilidad con código existente
+  address?: string;
+}
+
 export interface Supplier {
   id: number;
   doc_type: string;
@@ -52,7 +145,327 @@ export interface Supplier {
   updated_at: string;
 }
 
-// Tipos para facturas
+// ========================================
+// SISTEMA FLUVIAL - CONFIGURACIÓN
+// ========================================
+
+export interface Port {
+  id: number;
+  name: string;
+  ubigeo: string;
+  address?: string;
+  city_id?: number;
+  city?: City;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Vessel {
+  id: number;
+  registration_number: string;
+  name: string;
+  capacity_weight_kg?: number;
+  capacity_packages?: number;
+  capacity_passengers?: number;
+  company_id: number;
+  company?: Company;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeatType {
+  id: number;
+  name: string;
+  code: string;
+  description?: string;
+  price_multiplier: number;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}
+
+export interface VesselSeatConfiguration {
+  id: number;
+  vessel_id: number;
+  vessel?: Vessel;
+  seat_type_id: number;
+  seat_type?: SeatType;
+  total_seats: number;
+  deck_level: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Route {
+  id: number;
+  name: string;
+  origin_port_id: number;
+  origin_port?: Port;
+  destination_port_id: number;
+  destination_port?: Port;
+  estimated_duration?: string; // Interval como string
+  estimated_duration_hours?: number;
+  company_id?: number;
+  company?: Company;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RouteStop {
+  id: number;
+  route_id: number;
+  route?: Route;
+  port_id: number;
+  port?: Port;
+  stop_order: number;
+  estimated_duration_from_origin?: string; // Interval como string
+  is_boarding_allowed: boolean;
+  is_disembarking_allowed: boolean;
+  notes?: string;
+  created_at: string;
+}
+
+export interface Fare {
+  id: number;
+  company_id: number;
+  company?: Company;
+  origin_port_id: number;
+  origin_port?: Port;
+  destination_port_id: number;
+  destination_port?: Port;
+  service_category: ServiceCategory;
+  price: number;
+  currency_code: string;
+  currency?: Currency;
+  tax_category_code: string;
+  description?: string;
+  fare_type: FareType;
+  route_id?: number;
+  route?: Route;
+  is_active: boolean;
+  effective_date: string;
+  expiration_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ScheduledRouteTemplate {
+  id: number;
+  company_id: number;
+  company?: Company;
+  route_id: number;
+  route?: Route;
+  template_name: string;
+  day_of_week: number; // 1=Lunes, 7=Domingo
+  departure_time: string; // Time como string
+  vessel_id?: number;
+  vessel?: Vessel;
+  is_active: boolean;
+  auto_generate_trips: boolean;
+  generate_weeks_ahead: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================================
+// VIAJES Y OPERACIONES
+// ========================================
+
+export interface Trip {
+  id: number;
+  company_id: number;
+  company?: Company;
+  route_id: number;
+  route?: Route;
+  vessel_id: number;
+  vessel?: Vessel;
+  template_id?: number;
+  template?: ScheduledRouteTemplate;
+  trip_name?: string;
+  departure_datetime: string;
+  estimated_arrival_datetime?: string;
+  actual_departure_datetime?: string;
+  actual_arrival_datetime?: string;
+  status: TripStatus;
+  captain_user_id?: string;
+  captain?: User;
+  max_passengers?: number;
+  max_cargo_weight_kg?: number;
+  can_sell_tickets: boolean;
+  sales_closed_at?: string;
+  auto_closed: boolean;
+  manifest_generated: boolean;
+  notes?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TripStop {
+  id: number;
+  trip_id: number;
+  trip?: Trip;
+  port_id: number;
+  port?: Port;
+  stop_order: number;
+  estimated_arrival_time?: string;
+  estimated_departure_time?: string;
+  actual_arrival_time?: string;
+  actual_departure_time?: string;
+  notes?: string;
+}
+
+export interface TripSeatAvailability {
+  id: number;
+  trip_id: number;
+  trip?: Trip;
+  seat_type_id: number;
+  seat_type?: SeatType;
+  total_seats: number;
+  reserved_seats: number;
+  confirmed_seats: number;
+  blocked_seats: number;
+  available_seats: number; // Calculado
+  last_updated_at: string;
+}
+
+export interface SeatReservation {
+  id: number;
+  trip_id: number;
+  trip?: Trip;
+  seat_type_id: number;
+  seat_type?: SeatType;
+  boarding_stop_id: number;
+  boarding_stop?: TripStop;
+  disembarking_stop_id: number;
+  disembarking_stop?: TripStop;
+  customer_name: string;
+  customer_doc_type: string;
+  customer_doc_number: string;
+  customer_phone?: string;
+  customer_email?: string;
+  total_price: number;
+  advance_amount: number;
+  remaining_amount: number; // Calculado
+  currency_code: string;
+  currency?: Currency;
+  status: ReservationStatus;
+  reserved_at: string;
+  expires_at?: string;
+  reserved_by: string;
+  reserved_by_user?: User;
+  seat_number?: string;
+  special_notes?: string;
+  payment_reference?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SeatAssignment {
+  id: number;
+  trip_id: number;
+  trip?: Trip;
+  invoice_item_id?: number;
+  invoice_item?: InvoiceItem;
+  seat_reservation_id?: number;
+  seat_reservation?: SeatReservation;
+  client_id: number;
+  client?: Client;
+  seat_type_id: number;
+  seat_type?: SeatType;
+  boarding_stop_id: number;
+  boarding_stop?: TripStop;
+  disembarking_stop_id: number;
+  disembarking_stop?: TripStop;
+  passenger_name: string;
+  passenger_doc_type: string;
+  passenger_doc_number: string;
+  seat_number?: string;
+  status: SeatAssignmentStatus;
+  special_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================================
+// MANIFIESTOS
+// ========================================
+
+export interface TripManifest {
+  id: number;
+  trip_id: number;
+  trip?: Trip;
+  manifest_number: string;
+  generation_date: string;
+  generated_by: string;
+  generated_by_user?: User;
+  printed_at?: string;
+  printed_by?: string;
+  printed_by_user?: User;
+  status: string;
+  total_passengers: number;
+  total_cargo_weight_kg: number;
+  observations?: string;
+  pdf_file_path?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ManifestItem {
+  id: number;
+  manifest_id: number;
+  manifest?: TripManifest;
+  item_type: 'PASSENGER' | 'CARGO' | 'PACKAGE';
+  seat_assignment_id?: number;
+  seat_assignment?: SeatAssignment;
+  invoice_item_id?: number;
+  invoice_item?: InvoiceItem;
+  item_order: number;
+  passenger_name?: string;
+  passenger_doc_type?: string;
+  passenger_doc_number?: string;
+  boarding_port_name?: string;
+  disembarking_port_name?: string;
+  seat_type_name?: string;
+  seat_number?: string;
+  cargo_description?: string;
+  cargo_weight_kg?: number;
+  special_notes?: string;
+  created_at: string;
+}
+
+// ========================================
+// PRODUCTOS Y SERVICIOS
+// ========================================
+
+export interface ProductService {
+  id: number;
+  internal_code?: string;
+  name: string;
+  description?: string;
+  item_type: 'PRODUCT' | 'SERVICE';
+  service_category?: ServiceCategory;
+  unit_code: string;
+  purchase_price?: number;
+  sale_price: number;
+  currency_code: string;
+  tax_category_code: string;
+  unspcs_code?: string;
+  specific_route_id?: number;
+  specific_route?: Route;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================================
+// FACTURACIÓN (MANTENEMOS LOS EXISTENTES)
+// ========================================
+
 export interface Invoice {
   id: number;
   company_id: number;
@@ -65,7 +478,7 @@ export interface Invoice {
   issue_date: string;
   issue_time?: string;
   due_date?: string;
-  operation_type_code: string;
+  operation_type_code?: string;
   currency_code: string;
   exchange_rate?: number;
   total_taxable: number;
@@ -78,7 +491,7 @@ export interface Invoice {
   total_other_taxes: number;
   total_payable: number;
   total_in_words?: string;
-  sunat_status: string;
+  sunat_status: SunatDocumentStatus;
   sunat_ticket?: string;
   sunat_response_code?: string;
   sunat_response_description?: string;
@@ -100,7 +513,7 @@ export interface InvoiceItem {
   id: number;
   invoice_id: number;
   item_order: number;
-  product_id: number;
+  product_id?: number;
   product?: ProductService;
   quantity: number;
   unit_code: string;
@@ -116,47 +529,23 @@ export interface InvoiceItem {
   other_tax_amount?: number;
   subtotal: number;
   total_line: number;
+  // Campos específicos para pasajes
+  trip_id?: number;
+  trip?: Trip;
+  fare_id?: number;
+  fare?: Fare;
+  seat_type_id?: number;
+  seat_type?: SeatType;
+  boarding_trip_stop_id?: number;
+  boarding_trip_stop?: TripStop;
+  disembarking_trip_stop_id?: number;
+  disembarking_trip_stop?: TripStop;
 }
 
-// Tipo para documento de identidad
-export type DocType = '1' | '4' | '6' | '7' | '0';
+// ========================================
+// INVENTARIO (SIMPLIFICADO PARA CASOS ESPECIALES)
+// ========================================
 
-// Interface actualizada para Cliente según la BD
-export interface Client {
-  address: string;
-  id: number;
-  doc_type: string;
-  doc_number: string;
-  name: string;
-  address_line?: string; 
-  department?: string;     
-  province?: string;       
-  district?: string;       
-  country_code?: string;  
-  ubigeo?: string;
-  email?: string;
-  phone?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// Interface actualizada para Proveedor según la BD
-export interface Supplier {
-  id: number;
-  doc_type: string;
-  doc_number: string;
-  name: string;
-  address?: string;
-  ubigeo?: string;
-  email?: string;
-  phone?: string;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// Tipos para inventario
 export interface Warehouse {
   id: number;
   name: string;
@@ -169,21 +558,12 @@ export interface Warehouse {
 export interface InventoryStock {
   id: number;
   product_id: number;
-  product?: ProductService; // Relación con producto
+  product?: ProductService;
   warehouse_id: number;
-  warehouse?: Warehouse; // Relación con almacén
+  warehouse?: Warehouse;
   quantity: number;
   last_updated_at: string;
 }
-
-export type InventoryMovementType = 
-  | 'PURCHASE_ENTRY'
-  | 'SALE_EXIT'
-  | 'INITIAL_STOCK'
-  | 'ADJUSTMENT_IN'
-  | 'ADJUSTMENT_OUT'
-  | 'TRANSFER_IN'
-  | 'TRANSFER_OUT';
 
 export interface InventoryMovement {
   id: number;
@@ -203,50 +583,93 @@ export interface InventoryMovement {
   created_at: string;
 }
 
-// Tipo para ajuste de inventario
 export interface InventoryAdjustment {
   product_id: number;
   warehouse_id: number;
-  quantity: number; // Cantidad del ajuste (positiva o negativa)
+  quantity: number;
   reason: string;
   notes?: string;
 }
 
-// Interfaz Company
-export interface Company {
-  id: number;
-  ruc: string;
-  business_name: string;
-  trade_name?: string;
-  address: string;
-  ubigeo: string;
-  phone?: string;
-  email?: string;
-  logo_url?: string;
-  sunat_username: string;
-  certificate_path?: string;
-  beta_mode: boolean;
-  detraccion_account?: string;
-  is_active: boolean;
-  created_at?: string;
-  updated_at?: string;
+// ========================================
+// VISTAS Y DTOs PARA LA INTERFAZ
+// ========================================
+
+export interface AvailableTrip {
+  trip_id: number;
+  trip_name?: string;
+  route_name: string;
+  origin_city?: string;
+  destination_city?: string;
+  vessel_name: string;
+  departure_datetime: string;
+  estimated_arrival_datetime?: string;
+  status: TripStatus;
+  can_sell_tickets: boolean;
+  auto_closed: boolean;
+  total_available_seats: number;
+  total_reserved_seats: number;
+  total_confirmed_seats: number;
+  total_capacity: number;
+  sales_status: 'DISPONIBLE' | 'URGENTE' | 'AGOTADO' | 'CERRADO';
 }
 
-// Tipo para actualizar empresa
-export interface CompanyUpdate {
-  ruc?: string;
-  business_name?: string;
-  trade_name?: string;
-  address?: string;
-  ubigeo?: string;
-  phone?: string;
-  email?: string;
-  logo_url?: string;
-  sunat_username?: string;
-  certificate_path?: string;
-  beta_mode?: boolean;
-  detraccion_account?: string;
-  is_active?: boolean;
-  sunat_password_sol?: string;
-  certificate_password?: string;
+export interface FareMatrix {
+  route_id?: number;
+  route_name?: string;
+  origin_port_name: string;
+  origin_city_name?: string;
+  destination_port_name: string;
+  destination_city_name?: string;
+  service_category: ServiceCategory;
+  base_fare_price: number;
+  currency_code: string;
+  tax_category_code: string;
+  seat_type_name: string;
+  seat_type_code: string;
+  price_multiplier: number;
+  final_seat_price_no_tax: number;
 }
+
+// ========================================
+// TIPOS PARA FORMULARIOS Y APIS
+// ========================================
+
+export interface CreateClientData {
+  doc_type: string;
+  doc_number: string;
+  name: string;
+  address_line?: string;
+  department?: string;
+  province?: string;
+  district?: string;
+  country_code?: string;
+  ubigeo?: string;
+  email?: string;
+  phone?: string;
+  is_active?: boolean;
+}
+
+export interface UpdateClientData extends Partial<CreateClientData> {}
+
+export interface SalesPointFormData {
+  trip_id: number;
+  client_id: number;
+  boarding_stop_id: number;
+  disembarking_stop_id: number;
+  seat_type_id: number;
+  passenger_name: string;
+  passenger_doc_type: string;
+  passenger_doc_number: string;
+  special_notes?: string;
+}
+
+export interface ReservationFormData extends SalesPointFormData {
+  advance_amount: number;
+  customer_phone?: string;
+  customer_email?: string;
+  expires_at?: string;
+}
+
+// Tipo para documento de identidad
+export type DocType = '1' | '4' | '6' | '7' | '0';

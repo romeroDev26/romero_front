@@ -12,6 +12,9 @@ export type InventoryMovementType =
   | 'PURCHASE_ENTRY' | 'SALE_EXIT' | 'INITIAL_STOCK' 
   | 'ADJUSTMENT_IN' | 'ADJUSTMENT_OUT' | 'TRANSFER_IN' | 'TRANSFER_OUT';
 
+export type SummaryItemStatus = 
+  | 'ADD' | 'MODIFY' | 'VOID';
+
 export type ReservationStatus = 
   | 'RESERVED' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED';
 
@@ -27,6 +30,9 @@ export type TripStatus =
 
 export type SeatAssignmentStatus = 
   | 'CONFIRMED' | 'BOARDED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+
+export type ManifestItemType = 
+  | 'PASSENGER' | 'CARGO' | 'PACKAGE';
 
 // ========================================
 // ENTIDADES BÁSICAS
@@ -109,6 +115,26 @@ export interface CompanyUpdate {
   is_active?: boolean;
   sunat_password_sol?: string;
   certificate_password?: string;
+}
+
+export interface BranchOffice {
+  id: number;
+  company_id: number;
+  company?: Company;
+  name: string;
+  code?: string;
+  address_line?: string;
+  ubigeo?: string;
+  department?: string;
+  province?: string;
+  district?: string;
+  country_code: string;
+  phone?: string;
+  email?: string;
+  is_main_office: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Client {
@@ -419,7 +445,7 @@ export interface ManifestItem {
   id: number;
   manifest_id: number;
   manifest?: TripManifest;
-  item_type: 'PASSENGER' | 'CARGO' | 'PACKAGE';
+  item_type: ManifestItemType;
   seat_assignment_id?: number;
   seat_assignment?: SeatAssignment;
   invoice_item_id?: number;
@@ -463,7 +489,7 @@ export interface ProductService {
 }
 
 // ========================================
-// FACTURACIÓN (MANTENEMOS LOS EXISTENTES)
+// FACTURACIÓN
 // ========================================
 
 export interface Invoice {
@@ -475,6 +501,7 @@ export interface Invoice {
   document_type_code: string;
   series: string;
   number: number;
+  ubl_version?: string;
   issue_date: string;
   issue_time?: string;
   due_date?: string;
@@ -500,8 +527,14 @@ export interface Invoice {
   signed_xml_file_path?: string;
   zip_file_path?: string;
   cdr_file_path?: string;
+  pdf_file_path?: string;
   related_gre_series_number?: string;
   payment_terms?: string;
+  payment_method_code?: string;
+  detraccion_code?: string;
+  detraccion_percentage?: number;
+  detraccion_amount?: number;
+  detraccion_account?: string;
   notes?: string;
   created_by?: string;
   created_at: string;
@@ -519,10 +552,12 @@ export interface InvoiceItem {
   unit_code: string;
   unit_price: number;
   price_with_tax?: number;
+  price_type_code?: string;
   discount: number;
   tax_category_code: string;
   igv_percentage: number;
   igv_amount: number;
+  isc_type_code?: string;
   isc_percentage?: number;
   isc_amount?: number;
   other_tax_percentage?: number;
@@ -540,6 +575,304 @@ export interface InvoiceItem {
   boarding_trip_stop?: TripStop;
   disembarking_trip_stop_id?: number;
   disembarking_trip_stop?: TripStop;
+}
+
+// ========================================
+// NOTAS DE CRÉDITO
+// ========================================
+
+export interface CreditNote {
+  id: number;
+  company_id: number;
+  company?: Company;
+  client_id: number;
+  client?: Client;
+  ubl_version?: string;
+  document_type_code: string;
+  series: string;
+  number: number;
+  issue_date: string;
+  currency_code: string;
+  affected_document_type_code: string;
+  affected_document_series_number: string;
+  credit_note_type_code: string;
+  reason: string;
+  total_taxable: number;
+  total_exonerated: number;
+  total_unaffected: number;
+  total_free: number;
+  total_discount: number;
+  total_igv: number;
+  total_isc: number;
+  total_other_taxes: number;
+  total_payable: number;
+  total_in_words?: string;
+  sunat_status: SunatDocumentStatus;
+  sunat_ticket?: string;
+  sunat_response_code?: string;
+  sunat_response_description?: string;
+  sunat_observations?: string;
+  xml_file_path?: string;
+  signed_xml_file_path?: string;
+  zip_file_path?: string;
+  cdr_file_path?: string;
+  pdf_file_path?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  items?: CreditNoteItem[];
+}
+
+export interface CreditNoteItem {
+  id: number;
+  credit_note_id: number;
+  item_order: number;
+  product_id: number;
+  product?: ProductService;
+  quantity: number;
+  unit_code: string;
+  unit_price: number;
+  price_with_tax?: number;
+  price_type_code?: string;
+  discount: number;
+  tax_category_code: string;
+  igv_percentage: number;
+  igv_amount: number;
+  isc_type_code?: string;
+  isc_percentage?: number;
+  isc_amount?: number;
+  other_tax_percentage?: number;
+  other_tax_amount?: number;
+  subtotal: number;
+  total_line: number;
+}
+
+// ========================================
+// NOTAS DE DÉBITO
+// ========================================
+
+export interface DebitNote {
+  id: number;
+  company_id: number;
+  company?: Company;
+  client_id: number;
+  client?: Client;
+  ubl_version?: string;
+  document_type_code: string;
+  series: string;
+  number: number;
+  issue_date: string;
+  currency_code: string;
+  affected_document_type_code: string;
+  affected_document_series_number: string;
+  debit_note_type_code: string;
+  reason: string;
+  total_taxable: number;
+  total_exonerated: number;
+  total_unaffected: number;
+  total_igv: number;
+  total_isc: number;
+  total_other_taxes: number;
+  total_payable: number;
+  total_in_words?: string;
+  sunat_status: SunatDocumentStatus;
+  sunat_ticket?: string;
+  sunat_response_code?: string;
+  sunat_response_description?: string;
+  sunat_observations?: string;
+  xml_file_path?: string;
+  signed_xml_file_path?: string;
+  zip_file_path?: string;
+  cdr_file_path?: string;
+  pdf_file_path?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  items?: DebitNoteItem[];
+}
+
+export interface DebitNoteItem {
+  id: number;
+  debit_note_id: number;
+  item_order: number;
+  product_id: number;
+  product?: ProductService;
+  quantity: number;
+  unit_code: string;
+  unit_price: number;
+  price_with_tax?: number;
+  price_type_code?: string;
+  tax_category_code: string;
+  igv_percentage: number;
+  igv_amount: number;
+  isc_type_code?: string;
+  isc_percentage?: number;
+  isc_amount?: number;
+  other_tax_percentage?: number;
+  other_tax_amount?: number;
+  subtotal: number;
+  total_line: number;
+}
+
+// ========================================
+// GUÍAS DE REMISIÓN
+// ========================================
+
+export interface RemissionGuideTransportista {
+  id: number;
+  company_id: number;
+  company?: Company;
+  ubl_version?: string;
+  document_type_code: string;
+  series: string;
+  number: number;
+  issue_date: string;
+  trip_id?: number;
+  trip?: Trip;
+  shipment_start_date: string;
+  observation?: string;
+  total_gross_weight: number;
+  weight_unit_code: string;
+  number_of_packages?: number;
+  sender_doc_type: string;
+  sender_doc_number: string;
+  sender_name: string;
+  recipient_doc_type: string;
+  recipient_doc_number: string;
+  recipient_name: string;
+  origin_ubigeo: string;
+  origin_address: string;
+  destination_ubigeo: string;
+  destination_address: string;
+  boarding_trip_stop_id?: number;
+  boarding_trip_stop?: TripStop;
+  disembarking_trip_stop_id?: number;
+  disembarking_trip_stop?: TripStop;
+  transport_mode_code: string;
+  vessel_id?: number;
+  vessel?: Vessel;
+  driver_doc_type: string;
+  driver_doc_number: string;
+  driver_name?: string;
+  driver_license?: string;
+  related_doc_type?: string;
+  related_doc_number?: string;
+  sunat_status: SunatDocumentStatus;
+  sunat_ticket?: string;
+  sunat_response_code?: string;
+  sunat_response_description?: string;
+  sunat_observations?: string;
+  xml_file_path?: string;
+  signed_xml_file_path?: string;
+  zip_file_path?: string;
+  cdr_file_path?: string;
+  pdf_file_path?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  items?: RemissionGuideTransportistaItem[];
+}
+
+export interface RemissionGuideTransportistaItem {
+  id: number;
+  remission_guide_id: number;
+  item_order: number;
+  quantity: number;
+  unit_code: string;
+  description: string;
+  internal_code?: string;
+  invoice_item_id?: number;
+  invoice_item?: InvoiceItem;
+}
+
+// ========================================
+// DOCUMENTOS SUNAT RESÚMENES Y BAJAS
+// ========================================
+
+export interface SunatDailySummary {
+  id: number;
+  company_id: number;
+  company?: Company;
+  issue_date: string;
+  generation_date: string;
+  identifier: string;
+  sunat_status: SunatDocumentStatus;
+  sunat_ticket?: string;
+  sunat_response_code?: string;
+  sunat_response_description?: string;
+  sunat_observations?: string;
+  xml_file_path?: string;
+  signed_xml_file_path?: string;
+  zip_file_path?: string;
+  cdr_file_path?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  items?: SunatSummaryItem[];
+}
+
+export interface SunatSummaryItem {
+  id: number;
+  summary_id: number;
+  item_line: number;
+  document_type_code: string;
+  series_number: string;
+  invoice_id?: number;
+  invoice?: Invoice;
+  credit_note_id?: number;
+  credit_note?: CreditNote;
+  debit_note_id?: number;
+  debit_note?: DebitNote;
+  client_doc_type?: string;
+  client_doc_number?: string;
+  affected_document_type_code?: string;
+  affected_document_series_number?: string;
+  currency_code: string;
+  total_taxable?: number;
+  total_exonerated?: number;
+  total_unaffected?: number;
+  total_isc?: number;
+  total_igv?: number;
+  total_other_taxes?: number;
+  total_payable?: number;
+  status: SummaryItemStatus;
+}
+
+export interface SunatVoidedDocument {
+  id: number;
+  company_id: number;
+  company?: Company;
+  generation_date: string;
+  identifier: string;
+  sunat_status: SunatDocumentStatus;
+  sunat_ticket?: string;
+  sunat_response_code?: string;
+  sunat_response_description?: string;
+  sunat_observations?: string;
+  xml_file_path?: string;
+  signed_xml_file_path?: string;
+  zip_file_path?: string;
+  cdr_file_path?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  items?: SunatVoidedItem[];
+}
+
+export interface SunatVoidedItem {
+  id: number;
+  voided_document_id: number;
+  item_line: number;
+  document_type_code: string;
+  series: string;
+  number: number;
+  reason: string;
+  invoice_id?: number;
+  invoice?: Invoice;
+  credit_note_id?: number;
+  credit_note?: CreditNote;
+  debit_note_id?: number;
+  debit_note?: DebitNote;
 }
 
 // ========================================

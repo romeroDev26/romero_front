@@ -1,162 +1,153 @@
 // src/features/fluvial/pages/VesselsPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, PresentationChartBarIcon, CogIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
+import { Spinner } from '../../../components/common/Spinner';
+import { useConfirmDelete } from '../../../components/common/DataTable';
 import { Vessel, VesselSeatConfiguration, SeatType } from '../../../types';
+import {
+  useVessels,
+  useVessel,
+  useCreateVessel,
+  useUpdateVessel,
+  useDeleteVessel,
+  useAddSeatConfiguration
+} from '../hooks/useVesselsData';
+import { useSeatTypes } from '../hooks/useSeatTypesData';
+import { 
+  VesselCreateData, 
+  SeatConfigurationCreateData,
+  vesselHelpers,
+  vesselValidations,
+  VesselWithConfigurations
+} from '../../../services/vessels.service';
 
-// Datos estáticos simulados
-const SEAT_TYPES: SeatType[] = [
-  { 
-    id: 1, 
-    name: 'Común', 
-    code: 'COM', 
-    price_multiplier: 1.0, 
-    is_active: true, 
-    display_order: 1,
-    created_at: '2025-01-01T00:00:00Z'
-  },
-  { 
-    id: 2, 
-    name: 'Premium', 
-    code: 'PREM', 
-    price_multiplier: 1.5, 
-    is_active: true, 
-    display_order: 2,
-    created_at: '2025-01-01T00:00:00Z'
-  },
-  { 
-    id: 3, 
-    name: 'Auxiliar', 
-    code: 'AUX', 
-    price_multiplier: 0.8, 
-    is_active: true, 
-    display_order: 3,
-    created_at: '2025-01-01T00:00:00Z'
-  }
-];
-
-const VESSELS_DATA: (Vessel & { seat_configurations?: VesselSeatConfiguration[] })[] = [
-  {
-    id: 1,
-    registration_number: 'FL-001-2024',
-    name: 'Expreso Amazonas',
-    capacity_weight_kg: 15000,
-    capacity_packages: 200,
-    capacity_passengers: 35,
-    company_id: 1,
-    is_active: true,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    seat_configurations: [
-      { id: 1, vessel_id: 1, seat_type_id: 1, seat_type: SEAT_TYPES[0], total_seats: 20, deck_level: 1, notes: 'Cubierta principal', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-      { id: 2, vessel_id: 1, seat_type_id: 2, seat_type: SEAT_TYPES[1], total_seats: 10, deck_level: 2, notes: 'Cubierta superior', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-      { id: 3, vessel_id: 1, seat_type_id: 3, seat_type: SEAT_TYPES[2], total_seats: 5, deck_level: 1, notes: 'Asientos auxiliares', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-    ]
-  },
-  {
-    id: 2,
-    registration_number: 'FL-002-2024',
-    name: 'Río Grande',
-    capacity_weight_kg: 12000,
-    capacity_packages: 150,
-    capacity_passengers: 25,
-    company_id: 1,
-    is_active: true,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    seat_configurations: [
-      { id: 4, vessel_id: 2, seat_type_id: 1, seat_type: SEAT_TYPES[0], total_seats: 18, deck_level: 1, notes: 'Cubierta principal', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-      { id: 5, vessel_id: 2, seat_type_id: 2, seat_type: SEAT_TYPES[1], total_seats: 7, deck_level: 2, notes: 'Cubierta superior', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-    ]
-  },
-  {
-    id: 3,
-    registration_number: 'FL-003-2023',
-    name: 'Selva Express',
-    capacity_weight_kg: 18000,
-    capacity_packages: 250,
-    capacity_passengers: 40,
-    company_id: 1,
-    is_active: true,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    seat_configurations: [
-      { id: 6, vessel_id: 3, seat_type_id: 1, seat_type: SEAT_TYPES[0], total_seats: 25, deck_level: 1, notes: 'Cubierta principal', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-      { id: 7, vessel_id: 3, seat_type_id: 2, seat_type: SEAT_TYPES[1], total_seats: 15, deck_level: 2, notes: 'Cubierta superior', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-    ]
-  },
-  {
-    id: 4,
-    registration_number: 'FL-004-2023',
-    name: 'Amazonía I',
-    capacity_weight_kg: 10000,
-    capacity_packages: 120,
-    capacity_passengers: 30,
-    company_id: 1,
-    is_active: true,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    seat_configurations: [
-      { id: 8, vessel_id: 4, seat_type_id: 1, seat_type: SEAT_TYPES[0], total_seats: 25, deck_level: 1, notes: 'Cubierta única', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-      { id: 9, vessel_id: 4, seat_type_id: 3, seat_type: SEAT_TYPES[2], total_seats: 5, deck_level: 1, notes: 'Asientos auxiliares', created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-    ]
-  }
-];
-
-// Formulario para embarcaciones
-interface VesselFormData {
-  registration_number: string;
-  name: string;
-  capacity_weight_kg: number;
-  capacity_packages: number;
-  capacity_passengers: number;
-}
-
-interface SeatConfigFormData {
-  seat_type_id: number;
-  total_seats: number;
-  deck_level: number;
-  notes: string;
-}
-
-const VesselFormModal: React.FC<{
+// ========================================
+// FORMULARIO PARA EMBARCACIONES
+// ========================================
+interface VesselFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: VesselFormData) => void;
   vessel?: Vessel;
-}> = ({ isOpen, onClose, onSubmit, vessel }) => {
-  const [formData, setFormData] = useState<VesselFormData>({
-    registration_number: vessel?.registration_number || '',
-    name: vessel?.name || '',
-    capacity_weight_kg: vessel?.capacity_weight_kg || 0,
-    capacity_packages: vessel?.capacity_packages || 0,
-    capacity_passengers: vessel?.capacity_passengers || 0
+}
+
+const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, vessel }) => {
+  const createVessel = useCreateVessel();
+  const updateVessel = useUpdateVessel();
+  
+  const [formData, setFormData] = useState<VesselCreateData>({
+    registration_number: '',
+    name: '',
+    capacity_weight_kg: 0,
+    capacity_packages: 0,
+    capacity_passengers: 0,
+    company_id: vesselHelpers.getCurrentCompanyId(), // AGREGADO
+    is_active: true
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (vessel) {
+      setFormData({
+        registration_number: vessel.registration_number,
+        name: vessel.name,
+        capacity_weight_kg: vessel.capacity_weight_kg || 0,
+        capacity_packages: vessel.capacity_packages || 0,
+        capacity_passengers: vessel.capacity_passengers || 0,
+        company_id: vessel.company_id || vesselHelpers.getCurrentCompanyId(),
+        is_active: vessel.is_active
+      });
+    } else {
+      // Generar número de matrícula automático para nuevas embarcaciones
+      setFormData({
+        registration_number: vesselHelpers.generateRegistrationNumber(),
+        name: '',
+        capacity_weight_kg: 0,
+        capacity_packages: 0,
+        capacity_passengers: 0,
+        company_id: vesselHelpers.getCurrentCompanyId(),
+        is_active: true
+      });
+    }
+    setErrors({});
+  }, [vessel, isOpen]);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'El nombre es requerido';
+    }
+    
+    if (!vesselValidations.validateRegistrationNumber(formData.registration_number)) {
+      newErrors.registration_number = 'Formato inválido (XX-XXXXX-XX)';
+    }
+    
+    const capacityErrors = vesselValidations.validateCapacities(formData);
+    if (capacityErrors.length > 0) {
+      capacityErrors.forEach((error, index) => {
+        newErrors[`capacity_${index}`] = error;
+      });
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    
+    if (!validateForm()) return;
+
+    console.log('Submitting vessel data:', formData);
+    
+    // Validar que company_id esté presente
+    if (!formData.company_id) {
+      console.error('company_id is missing!');
+      setErrors({ ...errors, company_id: 'ID de compañía es requerido' });
+      return;
+    }
+
+    try {
+      if (vessel) {
+        await updateVessel.mutateAsync({ id: vessel.id, data: formData });
+      } else {
+        await createVessel.mutateAsync(formData);
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error saving vessel:', error);
+      // Los errores ya se manejan en los hooks
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={vessel ? 'Editar Embarcación' : 'Nueva Embarcación'} maxWidth="lg">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={vessel ? 'Editar Embarcación' : 'Nueva Embarcación'} 
+      maxWidth="lg"
+    >
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="Número de Matrícula"
             value={formData.registration_number}
             onChange={(e) => setFormData({ ...formData, registration_number: e.target.value })}
+            error={errors.registration_number}
+            placeholder="IQ-12345-AB"
             required
           />
           <Input
             label="Nombre de la Embarcación"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            error={errors.name}
             required
           />
         </div>
@@ -167,6 +158,8 @@ const VesselFormModal: React.FC<{
             type="number"
             value={formData.capacity_weight_kg}
             onChange={(e) => setFormData({ ...formData, capacity_weight_kg: parseFloat(e.target.value) || 0 })}
+            error={errors.capacity_0}
+            min="0"
             required
           />
           <Input
@@ -174,6 +167,8 @@ const VesselFormModal: React.FC<{
             type="number"
             value={formData.capacity_packages}
             onChange={(e) => setFormData({ ...formData, capacity_packages: parseInt(e.target.value) || 0 })}
+            error={errors.capacity_1}
+            min="0"
             required
           />
           <Input
@@ -181,15 +176,32 @@ const VesselFormModal: React.FC<{
             type="number"
             value={formData.capacity_passengers}
             onChange={(e) => setFormData({ ...formData, capacity_passengers: parseInt(e.target.value) || 0 })}
+            error={errors.capacity_2}
+            min="0"
             required
           />
+        </div>
+
+        <div className="flex items-center gap-3">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.is_active}
+              onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+              className="mr-2"
+            />
+            Embarcación activa
+          </label>
         </div>
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit">
+          <Button 
+            type="submit" 
+            isLoading={createVessel.isPending || updateVessel.isPending}
+          >
             {vessel ? 'Actualizar' : 'Crear'} Embarcación
           </Button>
         </div>
@@ -198,20 +210,39 @@ const VesselFormModal: React.FC<{
   );
 };
 
-const SeatConfigModal: React.FC<{
+// ========================================
+// FORMULARIO PARA CONFIGURACIÓN DE ASIENTOS
+// ========================================
+interface SeatConfigModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: SeatConfigFormData[]) => void;
-  vessel?: Vessel & { seat_configurations?: VesselSeatConfiguration[] };
-}> = ({ isOpen, onClose, onSubmit, vessel }) => {
-  const [configs, setConfigs] = useState<SeatConfigFormData[]>(
-    vessel?.seat_configurations?.map(config => ({
-      seat_type_id: config.seat_type_id,
-      total_seats: config.total_seats,
-      deck_level: config.deck_level || 1,
-      notes: config.notes || ''
-    })) || [{ seat_type_id: 1, total_seats: 0, deck_level: 1, notes: '' }]
-  );
+  vessel?: VesselWithConfigurations;
+}
+
+const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClose, vessel }) => {
+  const addSeatConfiguration = useAddSeatConfiguration();
+  const { data: seatTypes = [] } = useSeatTypes();
+
+  const [configs, setConfigs] = useState<SeatConfigurationCreateData[]>([
+    { seat_type_id: 1, total_seats: 0, deck_level: 1, notes: '' }
+  ]);
+  const [errors, setErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (vessel?.seat_configurations && vessel.seat_configurations.length > 0) {
+      setConfigs(
+        vessel.seat_configurations.map(config => ({
+          seat_type_id: config.seat_type_id,
+          total_seats: config.total_seats,
+          deck_level: config.deck_level || 1,
+          notes: config.notes || ''
+        }))
+      );
+    } else {
+      setConfigs([{ seat_type_id: 1, total_seats: 0, deck_level: 1, notes: '' }]);
+    }
+    setErrors([]);
+  }, [vessel, isOpen]);
 
   const addConfig = () => {
     setConfigs([...configs, { seat_type_id: 1, total_seats: 0, deck_level: 1, notes: '' }]);
@@ -221,23 +252,59 @@ const SeatConfigModal: React.FC<{
     setConfigs(configs.filter((_, i) => i !== index));
   };
 
-  const updateConfig = (index: number, field: keyof SeatConfigFormData, value: any) => {
+  const updateConfig = (index: number, field: keyof SeatConfigurationCreateData, value: any) => {
     const newConfigs = [...configs];
     newConfigs[index] = { ...newConfigs[index], [field]: value };
     setConfigs(newConfigs);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(configs);
-    onClose();
+    
+    if (!vessel) return;
+    
+    const validationErrors = vesselValidations.validateSeatConfiguration(
+      configs,
+      vessel.capacity_passengers
+    );
+    
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      await addSeatConfiguration.mutateAsync({ 
+        vesselId: vessel.id, 
+        configs 
+      });
+      onClose();
+    } catch (error) {
+      // Los errores ya se manejan en el hook
+    }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !vessel) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Configuración de Asientos - ${vessel?.name}`} maxWidth="2xl">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={`Configuración de Asientos - ${vessel.name}`} 
+      maxWidth="2xl"
+    >
       <form onSubmit={handleSubmit} className="p-6">
+        {errors.length > 0 && (
+          <div className="mb-4 p-4 bg-red-50 rounded-lg">
+            <h4 className="font-medium text-red-900 mb-2">Errores de validación:</h4>
+            <ul className="list-disc list-inside text-sm text-red-700">
+              {errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {configs.map((config, index) => (
             <div key={index} className="grid grid-cols-5 gap-4 items-end p-4 border border-gray-200 rounded-lg">
@@ -249,7 +316,7 @@ const SeatConfigModal: React.FC<{
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
                 >
-                  {SEAT_TYPES.map((seatType) => (
+                  {seatTypes.map((seatType) => (
                     <option key={seatType.id} value={seatType.id}>
                       {seatType.name}
                     </option>
@@ -306,6 +373,13 @@ const SeatConfigModal: React.FC<{
           ))}
         </div>
 
+        <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+          <p className="text-sm text-blue-700">
+            Capacidad máxima: {vessel.capacity_passengers} pasajeros | 
+            Total configurado: {configs.reduce((sum, c) => sum + c.total_seats, 0)} asientos
+          </p>
+        </div>
+
         <div className="flex justify-between items-center mt-4">
           <Button type="button" variant="outline" onClick={addConfig}>
             <PlusIcon className="h-4 w-4 mr-2" />
@@ -316,7 +390,10 @@ const SeatConfigModal: React.FC<{
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit"
+              isLoading={addSeatConfiguration.isPending}
+            >
               Guardar Configuración
             </Button>
           </div>
@@ -326,15 +403,29 @@ const SeatConfigModal: React.FC<{
   );
 };
 
+// ========================================
+// COMPONENTE PRINCIPAL
+// ========================================
 export const VesselsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [vessels, setVessels] = useState<(Vessel & { seat_configurations?: VesselSeatConfiguration[] })[]>(VESSELS_DATA);
+  const [showOnlyActive, setShowOnlyActive] = useState(true);
   
   // Estados para modales
   const [showVesselModal, setShowVesselModal] = useState(false);
   const [showSeatConfigModal, setShowSeatConfigModal] = useState(false);
   const [editingVessel, setEditingVessel] = useState<Vessel | undefined>();
-  const [configuringVessel, setConfiguringVessel] = useState<(Vessel & { seat_configurations?: VesselSeatConfiguration[] }) | undefined>();
+  const [configuringVesselId, setConfiguringVesselId] = useState<number | null>(null);
+
+  // Queries y mutations
+  const { data: vessels = [], isLoading: vesselsLoading, error: vesselsError } = useVessels(showOnlyActive);
+  const { data: configuringVessel } = useVessel(configuringVesselId);
+  const deleteVessel = useDeleteVessel();
+
+  // Confirmación de eliminación
+  const handleDeleteVessel = useConfirmDelete(
+    (vessel: Vessel) => deleteVessel.mutate(vessel.id),
+    (vessel: Vessel) => `¿Está seguro de desactivar la embarcación ${vessel.name}? Esta acción puede afectar viajes programados.`
+  );
 
   // Filtrar embarcaciones según búsqueda
   const filteredVessels = vessels.filter(vessel =>
@@ -342,68 +433,26 @@ export const VesselsPage: React.FC = () => {
     vessel.registration_number.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getTotalSeats = (vessel: Vessel & { seat_configurations?: VesselSeatConfiguration[] }) => {
-    return vessel.seat_configurations?.reduce((total, config) => total + config.total_seats, 0) || 0;
+  // Obtener total de asientos para una embarcación
+  const getTotalSeats = (vessel: any) => {
+    return vesselHelpers.getTotalConfiguredSeats(vessel);
   };
 
-  const handleCreateVessel = (data: VesselFormData) => {
-    const newVessel = {
-      id: Math.max(...vessels.map(v => v.id)) + 1,
-      ...data,
-      company_id: 1,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      seat_configurations: []
-    };
-    setVessels([...vessels, newVessel]);
-    console.log('Embarcación creada:', newVessel);
-  };
-
-  const handleUpdateVessel = (data: VesselFormData) => {
-    if (!editingVessel) return;
-    
-    const updatedVessels = vessels.map(vessel =>
-      vessel.id === editingVessel.id
-        ? { ...vessel, ...data, updated_at: new Date().toISOString() }
-        : vessel
+  if (vesselsLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner size="lg" />
+      </div>
     );
-    setVessels(updatedVessels);
-    setEditingVessel(undefined);
-    console.log('Embarcación actualizada:', data);
-  };
+  }
 
-  const handleUpdateSeatConfig = (configs: SeatConfigFormData[]) => {
-    if (!configuringVessel) return;
-    
-    const newConfigurations: VesselSeatConfiguration[] = configs.map((config, index) => ({
-      id: Date.now() + index, // Simulado
-      vessel_id: configuringVessel.id,
-      seat_type_id: config.seat_type_id,
-      seat_type: SEAT_TYPES.find(st => st.id === config.seat_type_id),
-      total_seats: config.total_seats,
-      deck_level: config.deck_level,
-      notes: config.notes,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }));
-
-    const updatedVessels = vessels.map(vessel =>
-      vessel.id === configuringVessel.id
-        ? { ...vessel, seat_configurations: newConfigurations, updated_at: new Date().toISOString() }
-        : vessel
+  if (vesselsError) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-600">Error al cargar las embarcaciones</p>
+      </div>
     );
-    setVessels(updatedVessels);
-    setConfiguringVessel(undefined);
-    console.log('Configuración de asientos actualizada:', configs);
-  };
-
-  const handleDeleteVessel = (vesselId: number) => {
-    if (confirm('¿Está seguro de eliminar esta embarcación?')) {
-      setVessels(vessels.filter(vessel => vessel.id !== vesselId));
-      console.log('Embarcación eliminada:', vesselId);
-    }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -416,17 +465,29 @@ export const VesselsPage: React.FC = () => {
 
       {/* Filtros y acciones */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        <div className="relative flex-grow max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+        <div className="flex gap-4 items-center flex-grow">
+          <div className="relative flex-grow max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+              placeholder="Buscar embarcaciones..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-            placeholder="Buscar embarcaciones..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          
+          <label className="flex items-center whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={showOnlyActive}
+              onChange={(e) => setShowOnlyActive(e.target.checked)}
+              className="mr-2"
+            />
+            Solo activas
+          </label>
         </div>
         
         <Button
@@ -477,18 +538,18 @@ export const VesselsPage: React.FC = () => {
                   </div>
                   <div>
                     <span className="text-gray-500">Configuraciones:</span>
-                    <div className="font-medium">{vessel.seat_configurations?.length || 0}</div>
+                    <div className="font-medium">{Array.isArray(vessel.seat_configurations) ? vessel.seat_configurations.length : 0}</div>
                   </div>
                 </div>
 
-                {vessel.seat_configurations && vessel.seat_configurations.length > 0 && (
+                {Array.isArray(vessel.seat_configurations) && vessel.seat_configurations.length > 0 && (
                   <div className="border-t pt-3">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Configuración de Asientos:</h4>
                     <div className="space-y-1">
-                      {vessel.seat_configurations.map((config) => (
-                        <div key={config.id} className="flex justify-between text-xs">
-                          <span>{config.seat_type?.name} (Cubierta {config.deck_level})</span>
-                          <span className="font-medium">{config.total_seats} asientos</span>
+                      {vesselHelpers.getSeatConfigurationSummary({ ...vessel, seat_configurations: vessel.seat_configurations }).map((summary, index) => (
+                        <div key={index} className="flex justify-between text-xs">
+                          <span>{summary.seatType} (Cubiertas: {summary.decks.join(', ')})</span>
+                          <span className="font-medium">{summary.totalSeats} asientos</span>
                         </div>
                       ))}
                     </div>
@@ -500,6 +561,7 @@ export const VesselsPage: React.FC = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
+                      console.log('Edit clicked, vessel:', vessel);
                       setEditingVessel(vessel);
                       setShowVesselModal(true);
                     }}
@@ -510,7 +572,8 @@ export const VesselsPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => {
-                      setConfiguringVessel(vessel);
+                      console.log('Config clicked, vessel:', vessel);
+                      setConfiguringVesselId(vessel.id);
                       setShowSeatConfigModal(true);
                     }}
                     className="text-green-600 hover:text-green-900"
@@ -519,9 +582,12 @@ export const VesselsPage: React.FC = () => {
                     <CogIcon className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteVessel(vessel.id)}
+                    onClick={() => {
+                      console.log('Delete clicked, vessel:', vessel);
+                      handleDeleteVessel(vessel);
+                    }}
                     className="text-red-600 hover:text-red-900"
-                    title="Eliminar embarcación"
+                    title="Desactivar embarcación"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </button>
@@ -545,16 +611,20 @@ export const VesselsPage: React.FC = () => {
       {/* Modales */}
       <VesselFormModal
         isOpen={showVesselModal}
-        onClose={() => setShowVesselModal(false)}
-        onSubmit={editingVessel ? handleUpdateVessel : handleCreateVessel}
+        onClose={() => {
+          setShowVesselModal(false);
+          setEditingVessel(undefined);
+        }}
         vessel={editingVessel}
       />
 
       <SeatConfigModal
-        isOpen={showSeatConfigModal}
-        onClose={() => setShowSeatConfigModal(false)}
-        onSubmit={handleUpdateSeatConfig}
-        vessel={configuringVessel}
+        isOpen={showSeatConfigModal && !!configuringVessel}
+        onClose={() => {
+          setShowSeatConfigModal(false);
+          setConfiguringVesselId(null);
+        }}
+        vessel={configuringVessel ?? undefined}
       />
     </div>
   );

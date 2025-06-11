@@ -14,9 +14,18 @@ interface RoleSelectorProps {
 
 // Roles por defecto que se usarán en caso de error
 const DEFAULT_ROLES: Role[] = [
-  { id: 1, name: 'admin', description: 'Administrador del Sistema' },
-  { id: 2, name: 'sales', description: 'Personal de Ventas' },
-  { id: 3, name: 'warehouse', description: 'Personal de Almacén' }
+  {
+    id: 1, name: 'admin', description: 'Administrador del Sistema',
+    is_active: false
+  },
+  {
+    id: 2, name: 'sales', description: 'Personal de Ventas',
+    is_active: false
+  },
+  {
+    id: 3, name: 'warehouse', description: 'Personal de Almacén',
+    is_active: false
+  }
 ];
 
 export const RoleSelector: React.FC<RoleSelectorProps> = ({ 

@@ -58,17 +58,17 @@ export const CompanySettingsPage: React.FC = () => {
       ...company
     },
     values: company ? {
-      ruc: company.ruc,
-      business_name: company.business_name,
+      ruc: company.ruc || '',
+      business_name: company.business_name || '',
       trade_name: company.trade_name || '',
-      address: company.address,
-      ubigeo: company.ubigeo,
+      address: company.address || '',
+      ubigeo: company.ubigeo || '',
       phone: company.phone || '',
       email: company.email || '',
-      sunat_username: company.sunat_username,
+      sunat_username: company.sunat_username || '',
       detraccion_account: company.detraccion_account || '',
-      beta_mode: company.beta_mode,
-      is_active: company.is_active,
+      beta_mode: company.beta_mode ?? true,
+      is_active: company.is_active ?? true,
       sunat_password_sol: ''
     } : undefined
   });

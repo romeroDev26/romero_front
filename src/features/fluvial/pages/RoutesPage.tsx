@@ -1,145 +1,171 @@
 // src/features/fluvial/pages/RoutesPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, MapIcon, ClockIcon, PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
+import { DataTable, Column, useConfirmDelete } from '../../../components/common/DataTable';
 import { Route, RouteStop, Port, City } from '../../../types';
+import { usePorts } from '../../../hooks/useCitiesPortsData';
+import {
+  useRoutes,
+  useRoute,
+  useCreateRoute,
+  useUpdateRoute,
+  useDeleteRoute,
+  useUpdateRouteStops
+} from '../hooks/useVesselsRoutesData';
+import {
+  RouteCreateData,
+  RouteUpdateData,
+  RouteStopCreateData,
+  RouteWithStops,
+  routeHelpers,
+  routeValidations
+} from '../../../services/routes.service';
 
-// Datos estáticos simulados
-const CITIES_DATA: City[] = [
-  { id: 1, name: 'Iquitos', code: 'IQT', ubigeo: '160101', department: 'Loreto', province: 'Maynas', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 2, name: 'Nauta', code: 'NAU', ubigeo: '160201', department: 'Loreto', province: 'Loreto', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 3, name: 'Yurimaguas', code: 'YUR', ubigeo: '160301', department: 'Loreto', province: 'Alto Amazonas', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 4, name: 'Contamana', code: 'CON', ubigeo: '250101', department: 'Ucayali', province: 'Padre Abad', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 5, name: 'Pucallpa', code: 'PUC', ubigeo: '250101', department: 'Ucayali', province: 'Coronel Portillo', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-];
-
-const PORTS_DATA: (Port & { city?: City })[] = [
-  { id: 1, name: 'Puerto Principal de Iquitos', ubigeo: '160101', address: 'Av. Ramón Castilla s/n, Belén', city_id: 1, city: CITIES_DATA[0], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 2, name: 'Embarcadero de Nauta', ubigeo: '160201', address: 'Puerto Fluvial de Nauta', city_id: 2, city: CITIES_DATA[1], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 3, name: 'Puerto Fluvial Yurimaguas', ubigeo: '160301', address: 'Malecón Tahuishco s/n', city_id: 3, city: CITIES_DATA[2], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 4, name: 'Embarcadero Contamana', ubigeo: '250101', address: 'Puerto de Contamana', city_id: 4, city: CITIES_DATA[3], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 5, name: 'Puerto Callao de Pucallpa', ubigeo: '250101', address: 'Jr. Raimondi s/n, Callería', city_id: 5, city: CITIES_DATA[4], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 6, name: 'Embarcadero La Hoyada', ubigeo: '250101', address: 'Puerto La Hoyada, Pucallpa', city_id: 5, city: CITIES_DATA[4], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-];
-
-const ROUTES_DATA: (Route & { origin_port?: Port; destination_port?: Port; route_stops?: RouteStop[] })[] = [
-  {
-    id: 1,
-    name: 'Ruta Iquitos - Yurimaguas Express',
-    origin_port_id: 1,
-    destination_port_id: 3,
-    origin_port: PORTS_DATA[0],
-    destination_port: PORTS_DATA[2],
-    estimated_duration_hours: 10,
-    company_id: 1,
-    is_active: true,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    route_stops: [
-      { id: 1, route_id: 1, port_id: 1, port: PORTS_DATA[0], stop_order: 1, estimated_duration_from_origin: '00:00:00', is_boarding_allowed: true, is_disembarking_allowed: false, notes: 'Puerto de origen', created_at: '2025-01-01T00:00:00Z' },
-      { id: 2, route_id: 1, port_id: 2, port: PORTS_DATA[1], stop_order: 2, estimated_duration_from_origin: '04:00:00', is_boarding_allowed: true, is_disembarking_allowed: true, notes: 'Parada intermedia', created_at: '2025-01-01T00:00:00Z' },
-      { id: 3, route_id: 1, port_id: 3, port: PORTS_DATA[2], stop_order: 3, estimated_duration_from_origin: '10:00:00', is_boarding_allowed: false, is_disembarking_allowed: true, notes: 'Puerto de destino', created_at: '2025-01-01T00:00:00Z' }
-    ]
-  },
-  {
-    id: 2,
-    name: 'Ruta Yurimaguas - Pucallpa',
-    origin_port_id: 3,
-    destination_port_id: 5,
-    origin_port: PORTS_DATA[2],
-    destination_port: PORTS_DATA[4],
-    estimated_duration_hours: 12,
-    company_id: 1,
-    is_active: true,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    route_stops: [
-      { id: 4, route_id: 2, port_id: 3, port: PORTS_DATA[2], stop_order: 1, estimated_duration_from_origin: '00:00:00', is_boarding_allowed: true, is_disembarking_allowed: false, notes: 'Puerto de origen', created_at: '2025-01-01T00:00:00Z' },
-      { id: 5, route_id: 2, port_id: 4, port: PORTS_DATA[3], stop_order: 2, estimated_duration_from_origin: '06:00:00', is_boarding_allowed: true, is_disembarking_allowed: true, notes: 'Parada intermedia', created_at: '2025-01-01T00:00:00Z' },
-      { id: 6, route_id: 2, port_id: 5, port: PORTS_DATA[4], stop_order: 3, estimated_duration_from_origin: '12:00:00', is_boarding_allowed: false, is_disembarking_allowed: true, notes: 'Puerto de destino', created_at: '2025-01-01T00:00:00Z' }
-    ]
-  },
-  {
-    id: 3,
-    name: 'Ruta Circular Amazonas',
-    origin_port_id: 1,
-    destination_port_id: 1,
-    origin_port: PORTS_DATA[0],
-    destination_port: PORTS_DATA[0],
-    estimated_duration_hours: 24,
-    company_id: 1,
-    is_active: true,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z',
-    route_stops: [
-      { id: 7, route_id: 3, port_id: 1, port: PORTS_DATA[0], stop_order: 1, estimated_duration_from_origin: '00:00:00', is_boarding_allowed: true, is_disembarking_allowed: false, notes: 'Puerto de origen', created_at: '2025-01-01T00:00:00Z' },
-      { id: 8, route_id: 3, port_id: 2, port: PORTS_DATA[1], stop_order: 2, estimated_duration_from_origin: '06:00:00', is_boarding_allowed: true, is_disembarking_allowed: true, notes: 'Primera parada', created_at: '2025-01-01T00:00:00Z' },
-      { id: 9, route_id: 3, port_id: 3, port: PORTS_DATA[2], stop_order: 3, estimated_duration_from_origin: '12:00:00', is_boarding_allowed: true, is_disembarking_allowed: true, notes: 'Segunda parada', created_at: '2025-01-01T00:00:00Z' },
-      { id: 10, route_id: 3, port_id: 4, port: PORTS_DATA[3], stop_order: 4, estimated_duration_from_origin: '18:00:00', is_boarding_allowed: true, is_disembarking_allowed: true, notes: 'Tercera parada', created_at: '2025-01-01T00:00:00Z' },
-      { id: 11, route_id: 3, port_id: 1, port: PORTS_DATA[0], stop_order: 5, estimated_duration_from_origin: '24:00:00', is_boarding_allowed: false, is_disembarking_allowed: true, notes: 'Regreso al origen', created_at: '2025-01-01T00:00:00Z' }
-    ]
-  }
-];
-
-// Formularios
-interface RouteFormData {
-  name: string;
-  origin_port_id: number;
-  destination_port_id: number;
-  estimated_duration_hours: number;
-}
-
-interface RouteStopFormData {
-  port_id: number;
-  stop_order: number;
-  estimated_duration_hours: number;
-  estimated_duration_minutes: number;
-  is_boarding_allowed: boolean;
-  is_disembarking_allowed: boolean;
-  notes: string;
-}
-
-const RouteFormModal: React.FC<{
+// ========================================
+// FORMULARIO PARA RUTAS
+// ========================================
+interface RouteFormProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: RouteFormData) => void;
   route?: Route;
-  ports: Port[];
-}> = ({ isOpen, onClose, onSubmit, route, ports }) => {
-  const [formData, setFormData] = useState<RouteFormData>({
-    name: route?.name || '',
-    origin_port_id: route?.origin_port_id || 0,
-    destination_port_id: route?.destination_port_id || 0,
-    estimated_duration_hours: route?.estimated_duration_hours || 0
+}
+
+const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route }) => {
+  const createRoute = useCreateRoute();
+  const updateRoute = useUpdateRoute();
+  const { data: ports = [] } = usePorts();
+  
+  const [formData, setFormData] = useState<RouteUpdateData>({
+    name: '',
+    origin_port_id: 0,
+    destination_port_id: 0,
+    estimated_duration_hours: 0,
+    is_active: true
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (route) {
+      setFormData({
+        name: route.name,
+        origin_port_id: route.origin_port_id,
+        destination_port_id: route.destination_port_id,
+        estimated_duration_hours: route.estimated_duration_hours || 0,
+        is_active: route.is_active
+      });
+    } else {
+      setFormData({
+        name: '',
+        origin_port_id: 0,
+        destination_port_id: 0,
+        estimated_duration_hours: 0,
+        is_active: true
+      });
+    }
+    setErrors({});
+  }, [route, isOpen]);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name?.trim()) {
+      newErrors.name = 'El nombre de la ruta es requerido';
+    }
+    
+    if (!formData.origin_port_id) {
+      newErrors.origin_port_id = 'Debe seleccionar un puerto de origen';
+    }
+    
+    if (!formData.destination_port_id) {
+      newErrors.destination_port_id = 'Debe seleccionar un puerto de destino';
+    }
+    
+    const portError = routeValidations.validatePorts(
+      formData.origin_port_id || 0,
+      formData.destination_port_id || 0
+    );
+    if (portError) {
+      newErrors.ports = portError;
+    }
+    
+    if ((formData.estimated_duration_hours || 0) <= 0) {
+      newErrors.duration = 'La duración debe ser mayor a 0';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    
+    if (!validateForm()) return;
+
+    try {
+      if (route) {
+        await updateRoute.mutateAsync({ id: route.id, data: formData });
+      } else {
+        // Para nueva ruta, crear con paradas básicas
+        const createData: RouteCreateData = {
+          ...formData as Required<RouteUpdateData>,
+          stops: routeHelpers.generateBasicStops(
+            formData.origin_port_id!,
+            formData.destination_port_id!
+          ),
+          company_id: 0
+        };
+        // Actualizar duración de la última parada
+        if (createData.stops && createData.stops.length > 0) {
+          createData.stops[createData.stops.length - 1].estimated_duration_from_origin = 
+            routeHelpers.hoursToTimeString(formData.estimated_duration_hours || 0);
+        }
+          
+        await createRoute.mutateAsync(createData);
+      }
+      onClose();
+    } catch (error) {
+      // Los errores ya se manejan en los hooks
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={route ? 'Editar Ruta' : 'Nueva Ruta'} maxWidth="lg">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={route ? 'Editar Ruta' : 'Nueva Ruta'} 
+      maxWidth="lg"
+    >
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         <Input
           label="Nombre de la Ruta"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          error={errors.name}
+          placeholder="Ej: Ruta Iquitos - Yurimaguas Express"
           required
         />
         
+        {errors.ports && (
+          <div className="text-sm text-red-600">{errors.ports}</div>
+        )}
+        
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Puerto de Origen</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Puerto de Origen *
+            </label>
             <select
               value={formData.origin_port_id}
               onChange={(e) => setFormData({ ...formData, origin_port_id: parseInt(e.target.value) })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className={`w-full p-2 border rounded-md ${
+                errors.origin_port_id ? 'border-red-500' : 'border-gray-300'
+              }`}
               required
             >
               <option value="">Seleccione puerto de origen</option>
@@ -149,13 +175,21 @@ const RouteFormModal: React.FC<{
                 </option>
               ))}
             </select>
+            {errors.origin_port_id && (
+              <p className="mt-1 text-sm text-red-600">{errors.origin_port_id}</p>
+            )}
           </div>
+          
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Puerto de Destino</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Puerto de Destino *
+            </label>
             <select
               value={formData.destination_port_id}
               onChange={(e) => setFormData({ ...formData, destination_port_id: parseInt(e.target.value) })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className={`w-full p-2 border rounded-md ${
+                errors.destination_port_id ? 'border-red-500' : 'border-gray-300'
+              }`}
               required
             >
               <option value="">Seleccione puerto de destino</option>
@@ -165,6 +199,9 @@ const RouteFormModal: React.FC<{
                 </option>
               ))}
             </select>
+            {errors.destination_port_id && (
+              <p className="mt-1 text-sm text-red-600">{errors.destination_port_id}</p>
+            )}
           </div>
         </div>
 
@@ -174,14 +211,31 @@ const RouteFormModal: React.FC<{
           step="0.5"
           value={formData.estimated_duration_hours}
           onChange={(e) => setFormData({ ...formData, estimated_duration_hours: parseFloat(e.target.value) || 0 })}
+          error={errors.duration}
+          min="0.5"
           required
         />
+
+        <div className="flex items-center gap-3">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.is_active}
+              onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+              className="mr-2"
+            />
+            Ruta activa
+          </label>
+        </div>
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit">
+          <Button 
+            type="submit"
+            isLoading={createRoute.isPending || updateRoute.isPending}
+          >
             {route ? 'Actualizar' : 'Crear'} Ruta
           </Button>
         </div>
@@ -190,36 +244,50 @@ const RouteFormModal: React.FC<{
   );
 };
 
-const RouteStopsModal: React.FC<{
+// ========================================
+// FORMULARIO PARA PARADAS
+// ========================================
+interface RouteStopsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (stops: RouteStopFormData[]) => void;
-  route?: Route & { route_stops?: RouteStop[] };
-  ports: Port[];
-}> = ({ isOpen, onClose, onSubmit, route, ports }) => {
-  const [stops, setStops] = useState<RouteStopFormData[]>(
-    route?.route_stops?.map(stop => {
-      const duration = stop.estimated_duration_from_origin || '00:00:00';
-      const [hours, minutes] = duration.split(':').map(Number);
-      return {
-        port_id: stop.port_id,
-        stop_order: stop.stop_order,
-        estimated_duration_hours: hours || 0,
-        estimated_duration_minutes: minutes || 0,
-        is_boarding_allowed: stop.is_boarding_allowed,
-        is_disembarking_allowed: stop.is_disembarking_allowed,
-        notes: stop.notes || ''
-      };
-    }) || [{ port_id: 0, stop_order: 1, estimated_duration_hours: 0, estimated_duration_minutes: 0, is_boarding_allowed: true, is_disembarking_allowed: false, notes: '' }]
-  );
+  route?: RouteWithStops;
+}
+
+const RouteStopsModal: React.FC<RouteStopsModalProps> = ({ isOpen, onClose, route }) => {
+  const updateRouteStops = useUpdateRouteStops();
+  const { data: ports = [] } = usePorts();
+  
+  const [stops, setStops] = useState<RouteStopCreateData[]>([]);
+  const [errors, setErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (route?.route_stops && route.route_stops.length > 0) {
+      setStops(
+        route.route_stops.map(stop => ({
+          port_id: stop.port_id,
+          stop_order: stop.stop_order,
+          estimated_duration_from_origin: stop.estimated_duration_from_origin || '00:00:00',
+          is_boarding_allowed: stop.is_boarding_allowed,
+          is_disembarking_allowed: stop.is_disembarking_allowed,
+          notes: stop.notes || ''
+        }))
+      );
+    } else if (route) {
+      // Generar paradas básicas si no hay paradas
+      setStops(routeHelpers.generateBasicStops(
+        route.origin_port_id,
+        route.destination_port_id
+      ));
+    }
+    setErrors([]);
+  }, [route, isOpen]);
 
   const addStop = () => {
     const nextOrder = Math.max(...stops.map(s => s.stop_order)) + 1;
     setStops([...stops, { 
       port_id: 0, 
       stop_order: nextOrder, 
-      estimated_duration_hours: 0, 
-      estimated_duration_minutes: 0,
+      estimated_duration_from_origin: '00:00:00',
       is_boarding_allowed: true, 
       is_disembarking_allowed: true, 
       notes: '' 
@@ -227,113 +295,186 @@ const RouteStopsModal: React.FC<{
   };
 
   const removeStop = (index: number) => {
-    setStops(stops.filter((_, i) => i !== index));
-  };
-
-  const updateStop = (index: number, field: keyof RouteStopFormData, value: any) => {
-    const newStops = [...stops];
-    newStops[index] = { ...newStops[index], [field]: value };
+    const newStops = stops.filter((_, i) => i !== index);
+    // Reordenar stops
+    newStops.forEach((stop, i) => {
+      stop.stop_order = i + 1;
+    });
     setStops(newStops);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(stops);
-    onClose();
+  const updateStop = (index: number, field: keyof RouteStopCreateData, value: any) => {
+    const newStops = [...stops];
+    
+    if (field === 'estimated_duration_from_origin' && typeof value === 'object') {
+      // Convertir horas y minutos a formato HH:MM:SS
+      const hours = value.hours || 0;
+      const minutes = value.minutes || 0;
+      newStops[index] = {
+        ...newStops[index],
+        estimated_duration_from_origin: routeHelpers.hoursToTimeString(hours + minutes / 60)
+      };
+    } else {
+      newStops[index] = { ...newStops[index], [field]: value };
+    }
+    
+    setStops(newStops);
   };
 
-  if (!isOpen) return null;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!route) return;
+    
+    const validationErrors = routeValidations.validateStops(
+      stops,
+      route.origin_port_id,
+      route.destination_port_id
+    );
+    
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      await updateRouteStops.mutateAsync({ 
+        routeId: route.id, 
+        stops 
+      });
+      onClose();
+    } catch (error) {
+      // Los errores ya se manejan en el hook
+    }
+  };
+
+  if (!isOpen || !route) return null;
+
+  // Parsear duración para mostrar en campos separados
+  const parseDuration = (duration: string) => {
+    const hours = routeHelpers.timeStringToHours(duration);
+    return {
+      hours: Math.floor(hours),
+      minutes: Math.round((hours % 1) * 60)
+    };
+  };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Paradas de Ruta - ${route?.name}`} maxWidth="2xl">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={`Paradas de Ruta - ${route.name}`} 
+      maxWidth="2xl"
+    >
       <form onSubmit={handleSubmit} className="p-6">
+        {errors.length > 0 && (
+          <div className="mb-4 p-4 bg-red-50 rounded-lg">
+            <h4 className="font-medium text-red-900 mb-2">Errores de validación:</h4>
+            <ul className="list-disc list-inside text-sm text-red-700">
+              {errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className="space-y-4 max-h-96 overflow-y-auto">
-          {stops.map((stop, index) => (
-            <div key={index} className="grid grid-cols-7 gap-4 items-end p-4 border border-gray-200 rounded-lg">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Puerto</label>
-                <select
-                  value={stop.port_id}
-                  onChange={(e) => updateStop(index, 'port_id', parseInt(e.target.value))}
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  required
-                >
-                  <option value="">Seleccione</option>
-                  {ports.map((port) => (
-                    <option key={port.id} value={port.id}>
-                      {port.name}
-                    </option>
-                  ))}
-                </select>
+          {stops.map((stop, index) => {
+            const duration = parseDuration(stop.estimated_duration_from_origin || '00:00:00');
+            return (
+              <div key={index} className="grid grid-cols-7 gap-4 items-end p-4 border border-gray-200 rounded-lg">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Puerto</label>
+                  <select
+                    value={stop.port_id}
+                    onChange={(e) => updateStop(index, 'port_id', parseInt(e.target.value))}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    required
+                  >
+                    <option value="">Seleccione</option>
+                    {ports.map((port) => (
+                      <option key={port.id} value={port.id}>
+                        {port.name} ({port.city?.name})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
+                  <input
+                    type="number"
+                    value={stop.stop_order}
+                    readOnly
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm bg-gray-50"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Horas</label>
+                  <input
+                    type="number"
+                    value={duration.hours}
+                    onChange={(e) => updateStop(index, 'estimated_duration_from_origin', {
+                      hours: parseInt(e.target.value) || 0,
+                      minutes: duration.minutes
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    min="0"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Minutos</label>
+                  <input
+                    type="number"
+                    value={duration.minutes}
+                    onChange={(e) => updateStop(index, 'estimated_duration_from_origin', {
+                      hours: duration.hours,
+                      minutes: parseInt(e.target.value) || 0
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    min="0"
+                    max="59"
+                  />
+                </div>
+                
+                <div>
+                  <label className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={stop.is_boarding_allowed}
+                      onChange={(e) => updateStop(index, 'is_boarding_allowed', e.target.checked)}
+                      className="mr-1"
+                    />
+                    Embarque
+                  </label>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center text-sm">
+                    <input
+                      type="checkbox"
+                      checked={stop.is_disembarking_allowed}
+                      onChange={(e) => updateStop(index, 'is_disembarking_allowed', e.target.checked)}
+                      className="mr-1"
+                    />
+                    Desemb.
+                  </label>
+                  
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={() => removeStop(index)}
+                    disabled={stops.length <= 2}
+                    className="ml-auto"
+                  >
+                    <MinusCircleIcon className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Orden</label>
-                <input
-                  type="number"
-                  value={stop.stop_order}
-                  onChange={(e) => updateStop(index, 'stop_order', parseInt(e.target.value) || 1)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  min="1"
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Horas</label>
-                <input
-                  type="number"
-                  value={stop.estimated_duration_hours}
-                  onChange={(e) => updateStop(index, 'estimated_duration_hours', parseInt(e.target.value) || 0)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  min="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Minutos</label>
-                <input
-                  type="number"
-                  value={stop.estimated_duration_minutes}
-                  onChange={(e) => updateStop(index, 'estimated_duration_minutes', parseInt(e.target.value) || 0)}
-                  className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                  min="0"
-                  max="59"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Embarque</label>
-                <input
-                  type="checkbox"
-                  checked={stop.is_boarding_allowed}
-                  onChange={(e) => updateStop(index, 'is_boarding_allowed', e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Desembarque</label>
-                <input
-                  type="checkbox"
-                  checked={stop.is_disembarking_allowed}
-                  onChange={(e) => updateStop(index, 'is_disembarking_allowed', e.target.checked)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 rounded"
-                />
-              </div>
-              
-              <div>
-                <Button
-                  type="button"
-                  variant="danger"
-                  onClick={() => removeStop(index)}
-                  disabled={stops.length === 1}
-                >
-                  <MinusCircleIcon className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex justify-between items-center mt-4">
@@ -346,7 +487,10 @@ const RouteStopsModal: React.FC<{
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button 
+              type="submit"
+              isLoading={updateRouteStops.isPending}
+            >
               Guardar Paradas
             </Button>
           </div>
@@ -356,101 +500,95 @@ const RouteStopsModal: React.FC<{
   );
 };
 
+// ========================================
+// COMPONENTE PRINCIPAL
+// ========================================
 export const RoutesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [routes, setRoutes] = useState<(Route & { origin_port?: Port; destination_port?: Port; route_stops?: RouteStop[] })[]>(ROUTES_DATA);
+  const [showOnlyActive, setShowOnlyActive] = useState(true);
   
   // Estados para modales
   const [showRouteModal, setShowRouteModal] = useState(false);
   const [showStopsModal, setShowStopsModal] = useState(false);
   const [editingRoute, setEditingRoute] = useState<Route | undefined>();
-  const [configuringRoute, setConfiguringRoute] = useState<(Route & { route_stops?: RouteStop[] }) | undefined>();
+  const [configuringRouteId, setConfiguringRouteId] = useState<number | null>(null);
+
+  // Queries y mutations
+  const { data: routes = [], isLoading: routesLoading, error: routesError } = useRoutes(showOnlyActive);
+  const { data: configuringRoute } = useRoute(configuringRouteId);
+  const deleteRoute = useDeleteRoute();
+
+  // Confirmación de eliminación
+  const handleDeleteRoute = useConfirmDelete(
+    (route: Route) => deleteRoute.mutate(route.id),
+    (route: Route) => `¿Está seguro de desactivar la ruta ${route.name}? Esta acción puede afectar viajes programados.`
+  );
 
   // Filtrar rutas según búsqueda
   const filteredRoutes = routes.filter(route =>
     route.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    route.origin_port?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    route.destination_port?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    route.origin_port?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    route.destination_port?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateRoute = (data: RouteFormData) => {
-    const originPort = PORTS_DATA.find(p => p.id === data.origin_port_id);
-    const destinationPort = PORTS_DATA.find(p => p.id === data.destination_port_id);
-    
-    const newRoute = {
-      id: Math.max(...routes.map(r => r.id)) + 1,
-      ...data,
-      company_id: 1,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      origin_port: originPort,
-      destination_port: destinationPort,
-      route_stops: []
-    };
-    setRoutes([...routes, newRoute]);
-    console.log('Ruta creada:', newRoute);
-  };
-
-  const handleUpdateRoute = (data: RouteFormData) => {
-    if (!editingRoute) return;
-    
-    const originPort = PORTS_DATA.find(p => p.id === data.origin_port_id);
-    const destinationPort = PORTS_DATA.find(p => p.id === data.destination_port_id);
-    
-    const updatedRoutes = routes.map(route =>
-      route.id === editingRoute.id
-        ? { 
-            ...route, 
-            ...data, 
-            origin_port: originPort,
-            destination_port: destinationPort,
-            updated_at: new Date().toISOString() 
-          }
-        : route
-    );
-    setRoutes(updatedRoutes);
-    setEditingRoute(undefined);
-    console.log('Ruta actualizada:', data);
-  };
-
-  const handleUpdateStops = (stopsData: RouteStopFormData[]) => {
-    if (!configuringRoute) return;
-    
-    const newStops: RouteStop[] = stopsData.map((stopData, index) => {
-      const port = PORTS_DATA.find(p => p.id === stopData.port_id);
-      const durationString = `${stopData.estimated_duration_hours.toString().padStart(2, '0')}:${stopData.estimated_duration_minutes.toString().padStart(2, '0')}:00`;
-      
-      return {
-        id: Date.now() + index,
-        route_id: configuringRoute.id,
-        port_id: stopData.port_id,
-        port: port,
-        stop_order: stopData.stop_order,
-        estimated_duration_from_origin: durationString,
-        is_boarding_allowed: stopData.is_boarding_allowed,
-        is_disembarking_allowed: stopData.is_disembarking_allowed,
-        notes: stopData.notes,
-        created_at: new Date().toISOString()
-      };
-    });
-
-    const updatedRoutes = routes.map(route =>
-      route.id === configuringRoute.id
-        ? { ...route, route_stops: newStops, updated_at: new Date().toISOString() }
-        : route
-    );
-    setRoutes(updatedRoutes);
-    setConfiguringRoute(undefined);
-    console.log('Paradas actualizadas:', stopsData);
-  };
-
-  const handleDeleteRoute = (routeId: number) => {
-    if (confirm('¿Está seguro de eliminar esta ruta?')) {
-      setRoutes(routes.filter(route => route.id !== routeId));
-      console.log('Ruta eliminada:', routeId);
-    }
-  };
+  // Columnas para la tabla
+  const routeColumns: Column<Route>[] = [
+    {
+      key: 'name',
+      header: 'Ruta',
+      accessor: (route) => (
+        <div className="flex items-center">
+          <MapIcon className="h-5 w-5 text-blue-500 mr-3" />
+          <div className="font-medium text-gray-900">{route.name}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'route',
+      header: 'Origen → Destino',
+      accessor: (route) => (
+        <div>
+          <div className="flex items-center text-sm">
+            <span className="font-medium">{route.origin_port?.city?.name}</span>
+            <span className="mx-2">→</span>
+            <span className="font-medium">{route.destination_port?.city?.name}</span>
+          </div>
+          <div className="text-xs text-gray-400">
+            {route.origin_port?.name} → {route.destination_port?.name}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'duration',
+      header: 'Duración',
+      accessor: (route) => (
+        <div className="flex items-center text-sm text-gray-500">
+          <ClockIcon className="h-4 w-4 mr-1" />
+          {route.estimated_duration_hours || 0}h
+        </div>
+      ),
+    },
+    {
+      key: 'stops',
+      header: 'Paradas',
+      accessor: (route) => {
+        const stopCount = (route as RouteWithStops).route_stops?.length || 0;
+        return <span className="text-sm text-gray-500">{stopCount} paradas</span>;
+      },
+    },
+    {
+      key: 'status',
+      header: 'Estado',
+      accessor: (route) => (
+        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+          route.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {route.is_active ? 'Activo' : 'Inactivo'}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -463,17 +601,29 @@ export const RoutesPage: React.FC = () => {
 
       {/* Filtros y acciones */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        <div className="relative flex-grow max-w-md">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+        <div className="flex gap-4 items-center flex-grow">
+          <div className="relative flex-grow max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+              placeholder="Buscar rutas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-            placeholder="Buscar rutas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          
+          <label className="flex items-center whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={showOnlyActive}
+              onChange={(e) => setShowOnlyActive(e.target.checked)}
+              className="mr-2"
+            />
+            Solo activas
+          </label>
         </div>
         
         <Button
@@ -488,128 +638,59 @@ export const RoutesPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Lista de rutas */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ruta
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Origen → Destino
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Duración
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Paradas
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredRoutes.map((route) => (
-              <tr key={route.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <MapIcon className="h-5 w-5 text-blue-500 mr-3" />
-                    <div className="font-medium text-gray-900">{route.name}</div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <div className="flex items-center">
-                    <span className="font-medium">{route.origin_port?.city?.name}</span>
-                    <span className="mx-2">→</span>
-                    <span className="font-medium">{route.destination_port?.city?.name}</span>
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {route.origin_port?.name} → {route.destination_port?.name}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <ClockIcon className="h-4 w-4 mr-1" />
-                    {route.estimated_duration_hours}h
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <span className="font-medium">{route.route_stops?.length || 0}</span> paradas
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    route.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {route.is_active ? 'Activo' : 'Inactivo'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => {
-                        setEditingRoute(route);
-                        setShowRouteModal(true);
-                      }}
-                      className="text-blue-600 hover:text-blue-900"
-                      title="Editar ruta"
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setConfiguringRoute(route);
-                        setShowStopsModal(true);
-                      }}
-                      className="text-green-600 hover:text-green-900"
-                      title="Configurar paradas"
-                    >
-                      <MapIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteRoute(route.id)}
-                      className="text-red-600 hover:text-red-900"
-                      title="Eliminar ruta"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Tabla de rutas con botón de configurar paradas */}
+      <DataTable
+        data={filteredRoutes}
+        columns={routeColumns}
+        isLoading={routesLoading}
+        error={routesError}
+        onEdit={(route) => {
+          setEditingRoute(route);
+          setShowRouteModal(true);
+        }}
+        onDelete={handleDeleteRoute}
+        keyExtractor={(route) => route.id}
+        emptyMessage="No se encontraron rutas"
+        showActions={true}
+        customActions={(route) => (
+          <Button
+            variant="outline"
+            onClick={() => {
+              setConfiguringRouteId(route.id);
+              setShowStopsModal(true);
+            }}
+            className="p-1"
+            title="Configurar paradas"
+          >
+            <MapIcon className="h-4 w-4" />
+          </Button>
+        )}
+      />
 
-      {filteredRoutes.length === 0 && (
-        <div className="text-center py-12">
-          <MapIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No hay rutas</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {searchTerm ? 'No se encontraron rutas que coincidan con la búsqueda' : 'Comience agregando una nueva ruta'}
-          </p>
+      {/* Tip informativo */}
+      {filteredRoutes.length > 0 && (
+        <div className="text-sm text-gray-500 mt-2">
+          <p>💡 Tip: Usa el botón <MapIcon className="h-4 w-4 inline" /> para configurar las paradas de cada ruta.</p>
         </div>
       )}
 
       {/* Modales */}
       <RouteFormModal
         isOpen={showRouteModal}
-        onClose={() => setShowRouteModal(false)}
-        onSubmit={editingRoute ? handleUpdateRoute : handleCreateRoute}
+        onClose={() => {
+          setShowRouteModal(false);
+          setEditingRoute(undefined);
+        }}
         route={editingRoute}
-        ports={PORTS_DATA}
       />
 
       <RouteStopsModal
-        isOpen={showStopsModal}
-        onClose={() => setShowStopsModal(false)}
-        onSubmit={handleUpdateStops}
-        route={configuringRoute}
-        ports={PORTS_DATA}
+        isOpen={showStopsModal && !!configuringRoute}
+        onClose={() => {
+          setShowStopsModal(false);
+          setConfiguringRouteId(null);
+        }}
+        route={configuringRoute ?? undefined}
       />
     </div>
   );

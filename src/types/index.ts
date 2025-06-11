@@ -1,6 +1,29 @@
 // src/types/index.ts
 
 // ========================================
+// TIPOS PARA COMPONENTES
+// ========================================
+
+export interface DataTableProps<T> {
+  data: T[];
+  columns: Column<T>[];
+  isLoading: boolean;
+  error: Error | null;
+  onEdit?: (item: T) => void;
+  onDelete?: (item: T) => void;
+  keyExtractor: (item: T) => number | string;
+  emptyMessage?: string;
+  showActions?: boolean;
+  customActions?: (item: T) => React.ReactNode;
+}
+
+export interface Column<T> {
+  key: string;
+  header: string;
+  accessor: (item: T) => React.ReactNode;
+}
+
+// ========================================
 // ENUMS Y TIPOS BASE
 // ========================================
 
@@ -194,11 +217,11 @@ export interface Vessel {
   capacity_weight_kg?: number;
   capacity_packages?: number;
   capacity_passengers?: number;
-  company_id: number;
-  company?: Company;
+  company_id: number; 
   is_active: boolean;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  seat_configurations?: VesselSeatConfiguration[];
 }
 
 export interface SeatType {

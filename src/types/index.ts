@@ -255,13 +255,14 @@ export interface Route {
   origin_port?: Port;
   destination_port_id: number;
   destination_port?: Port;
-  estimated_duration?: string; // Interval como string
+  estimated_duration?: string; // Formato ISO 8601 Duration (e.g., "P3D")
   estimated_duration_hours?: number;
-  company_id?: number;
+  company_id: number;
   company?: Company;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  stops: RouteStop[]; // La API devuelve las paradas aquí
 }
 
 export interface RouteStop {
@@ -271,11 +272,11 @@ export interface RouteStop {
   port_id: number;
   port?: Port;
   stop_order: number;
-  estimated_duration_from_origin?: string; // Interval como string
+  estimated_duration_from_origin?: string; // Formato ISO 8601 Duration (e.g., "PT12H")
   is_boarding_allowed: boolean;
   is_disembarking_allowed: boolean;
   notes?: string;
-  created_at: string;
+  created_at: string; // El backend no siempre lo devuelve, pero lo dejamos por si acaso
 }
 
 export interface Fare {

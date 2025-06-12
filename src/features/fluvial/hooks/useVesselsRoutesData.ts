@@ -1,7 +1,7 @@
 // src/features/fluvial/hooks/useVesselsRoutesData.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { 
+import {
   vesselsService,
   VesselCreateData,
   VesselUpdateData,
@@ -13,7 +13,8 @@ import {
   RouteCreateData,
   RouteUpdateData,
   RouteStopCreateData,
-  RouteWithStops
+  RouteWithStops,
+  routeHelpers
 } from '../../../services/routes.service';
 import {
   seatTypesService,
@@ -29,7 +30,10 @@ import { Vessel, Route, VesselSeatConfiguration, RouteStop, SeatType } from '../
 export const useVessels = (isActive = true) => {
   return useQuery({
     queryKey: ['vessels', { isActive }],
-    queryFn: () => vesselsService.getAll({ is_active: isActive }),
+    queryFn: () => vesselsService.getAll({
+      is_active: isActive,
+      company_id: 0
+    }),
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
 };
@@ -48,12 +52,11 @@ export const useCreateVessel = () => {
   return useMutation({
     mutationFn: (data: VesselCreateData) => vesselsService.create(data),
     onSuccess: (newVessel) => {
-      // Actualizar la cache con la nueva embarcación
       queryClient.setQueryData<Vessel[]>(['vessels', { isActive: true }], (old) => {
         if (!old) return [newVessel];
         return [...old, newVessel];
       });
-      
+
       toast.success(`Embarcación ${newVessel.name} creada exitosamente`);
     },
     onError: (error: any) => {
@@ -67,18 +70,16 @@ export const useUpdateVessel = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: VesselUpdateData }) => 
+    mutationFn: ({ id, data }: { id: number; data: VesselUpdateData }) =>
       vesselsService.update(id, data),
     onSuccess: (updatedVessel) => {
-      // Actualizar la cache
       queryClient.setQueryData<Vessel[]>(['vessels', { isActive: true }], (old) => {
         if (!old) return [];
         return old.map(vessel => vessel.id === updatedVessel.id ? updatedVessel : vessel);
       });
-      
-      // Invalidar query específica
+
       queryClient.invalidateQueries({ queryKey: ['vessel', updatedVessel.id] });
-      
+
       toast.success(`Embarcación ${updatedVessel.name} actualizada exitosamente`);
     },
     onError: (error: any) => {
@@ -94,12 +95,11 @@ export const useDeleteVessel = () => {
   return useMutation({
     mutationFn: (id: number) => vesselsService.delete(id),
     onSuccess: (deletedVessel) => {
-      // Actualizar la cache removiendo la embarcación
       queryClient.setQueryData<Vessel[]>(['vessels', { isActive: true }], (old) => {
         if (!old) return [];
         return old.filter(vessel => vessel.id !== deletedVessel.id);
       });
-      
+
       toast.success(`Embarcación ${deletedVessel.name} desactivada exitosamente`);
     },
     onError: (error: any) => {
@@ -117,9 +117,8 @@ export const useAddSeatConfiguration = () => {
     mutationFn: ({ vesselId, configs }: { vesselId: number; configs: SeatConfigurationCreateData[] }) =>
       vesselsService.addMultipleSeatConfigurations(vesselId, configs),
     onSuccess: (_, variables) => {
-      // Invalidar la query de la embarcación específica para recargar con las nuevas configuraciones
       queryClient.invalidateQueries({ queryKey: ['vessel', variables.vesselId] });
-      
+
       toast.success('Configuración de asientos actualizada exitosamente');
     },
     onError: (error: any) => {
@@ -135,10 +134,9 @@ export const useDeleteSeatConfiguration = () => {
   return useMutation({
     mutationFn: (configId: number) => vesselsService.deleteSeatConfiguration(configId),
     onSuccess: () => {
-      // Invalidar todas las queries de embarcaciones para refrescar
       queryClient.invalidateQueries({ queryKey: ['vessels'] });
       queryClient.invalidateQueries({ queryKey: ['vessel'] });
-      
+
       toast.success('Configuración de asientos eliminada exitosamente');
     },
     onError: (error: any) => {
@@ -149,18 +147,20 @@ export const useDeleteSeatConfiguration = () => {
 };
 
 // ========================================
-// HOOKS PARA RUTAS
+// HOOKS PARA RUTAS (REVISED)
 // ========================================
 
-export const useRoutes = (isActive = true, filters?: { originPortId?: number; destinationPortId?: number }) => {
+export const useRoutes = (isActive = true) => {
+  const companyId = routeHelpers.getCurrentCompanyId();
+
   return useQuery({
-    queryKey: ['routes', { isActive, ...filters }],
-    queryFn: () => routesService.getAll({ 
-      is_active: isActive,
-      originPortId: filters?.originPortId,
-      destinationPortId: filters?.destinationPortId
+    queryKey: ['routes', { companyId, isActive }],
+    queryFn: () => routesService.getAll({
+      company_id: companyId,
+      is_active: isActive
     }),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
+    enabled: !!companyId,
   });
 };
 
@@ -178,12 +178,8 @@ export const useCreateRoute = () => {
   return useMutation({
     mutationFn: (data: RouteCreateData) => routesService.create(data),
     onSuccess: (newRoute) => {
-      // Invalidar las queries de rutas para forzar refetch
       queryClient.invalidateQueries({ queryKey: ['routes'] });
-      
-      // Establecer la nueva ruta en el cache
       queryClient.setQueryData(['route', newRoute.id], newRoute);
-      
       toast.success(`Ruta ${newRoute.name} creada exitosamente`);
     },
     onError: (error: any) => {
@@ -197,15 +193,10 @@ export const useUpdateRoute = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: RouteUpdateData }) => 
-      routesService.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: RouteUpdateData }) => routesService.update(id, data),
     onSuccess: (updatedRoute) => {
-      // Invalidar las queries de rutas
       queryClient.invalidateQueries({ queryKey: ['routes'] });
-      
-      // Actualizar la ruta específica en el cache
       queryClient.setQueryData(['route', updatedRoute.id], updatedRoute);
-      
       toast.success(`Ruta ${updatedRoute.name} actualizada exitosamente`);
     },
     onError: (error: any) => {
@@ -220,17 +211,10 @@ export const useDeleteRoute = () => {
 
   return useMutation({
     mutationFn: (id: number) => routesService.delete(id),
-    onSuccess: (deletedRoute) => {
-      // Invalidar las queries de rutas
+    onSuccess: (_, deletedId) => {
       queryClient.invalidateQueries({ queryKey: ['routes'] });
-      
-      // Marcar la ruta como inactiva en el cache
-      queryClient.setQueryData(['route', deletedRoute.id], {
-        ...deletedRoute,
-        is_active: false
-      });
-      
-      toast.success(`Ruta ${deletedRoute.name} desactivada exitosamente`);
+      queryClient.invalidateQueries({ queryKey: ['route', deletedId] });
+      toast.success(`Ruta desactivada exitosamente`);
     },
     onError: (error: any) => {
       const message = error.response?.data?.detail || 'Error al desactivar la ruta';
@@ -239,20 +223,15 @@ export const useDeleteRoute = () => {
   });
 };
 
-// Hook para actualizar paradas de ruta
 export const useUpdateRouteStops = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ routeId, stops }: { routeId: number; stops: RouteStopCreateData[] }) =>
       routesService.updateStops(routeId, stops),
-    onSuccess: (updatedStops, variables) => {
-      // Invalidar la query de la ruta específica para recargar con las nuevas paradas
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['route', variables.routeId] });
-      
-      // También invalidar las queries de rutas por si muestran conteo de paradas
       queryClient.invalidateQueries({ queryKey: ['routes'] });
-      
       toast.success('Paradas de la ruta actualizadas exitosamente');
     },
     onError: (error: any) => {
@@ -270,7 +249,7 @@ export const useSeatTypes = (isActive = true) => {
   return useQuery({
     queryKey: ['seatTypes', { isActive }],
     queryFn: () => seatTypesService.getAll({ is_active: isActive }),
-    staleTime: 1000 * 60 * 10, // 10 minutos (cambian menos frecuentemente)
+    staleTime: 1000 * 60 * 10,
   });
 };
 
@@ -292,7 +271,7 @@ export const useCreateSeatType = () => {
         if (!old) return [newSeatType];
         return [...old, newSeatType];
       });
-      
+
       toast.success(`Tipo de asiento ${newSeatType.name} creado exitosamente`);
     },
     onError: (error: any) => {
@@ -306,16 +285,16 @@ export const useUpdateSeatType = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: SeatTypeUpdateData }) => 
+    mutationFn: ({ id, data }: { id: number; data: SeatTypeUpdateData }) =>
       seatTypesService.update(id, data),
     onSuccess: (updatedSeatType) => {
       queryClient.setQueryData<SeatType[]>(['seatTypes', { isActive: true }], (old) => {
         if (!old) return [];
         return old.map(type => type.id === updatedSeatType.id ? updatedSeatType : type);
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ['seatType', updatedSeatType.id] });
-      
+
       toast.success(`Tipo de asiento ${updatedSeatType.name} actualizado exitosamente`);
     },
     onError: (error: any) => {
@@ -335,7 +314,7 @@ export const useDeleteSeatType = () => {
         if (!old) return [];
         return old.filter(type => type.id !== deletedSeatType.id);
       });
-      
+
       toast.success(`Tipo de asiento ${deletedSeatType.name} desactivado exitosamente`);
     },
     onError: (error: any) => {
@@ -349,10 +328,9 @@ export const useDeleteSeatType = () => {
 // HOOKS UTILITARIOS
 // ========================================
 
-// Hook para obtener resumen de flota
 export const useFleetSummary = () => {
   const { data: vessels = [], isLoading } = useVessels();
-  
+
   const summary = {
     totalVessels: vessels.length,
     totalCapacityPassengers: vessels.reduce((sum, v) => sum + (v.capacity_passengers || 0), 0),
@@ -360,33 +338,27 @@ export const useFleetSummary = () => {
     totalCapacityPackages: vessels.reduce((sum, v) => sum + (v.capacity_packages || 0), 0),
     activeVessels: vessels.filter(v => v.is_active).length,
   };
-  
+
   return { summary, isLoading };
 };
 
-// Hook para obtener rutas por puerto
 export const useRoutesByPort = (portId: number | null) => {
   const { data: allRoutes = [], isLoading } = useRoutes();
-  
-  const routes = portId 
-    ? allRoutes.filter(route => 
-        route.origin_port_id === portId || 
+
+  const routes = portId
+    ? allRoutes.filter(route =>
+        route.origin_port_id === portId ||
         route.destination_port_id === portId
       )
     : [];
-  
+
   return { routes, isLoading };
 };
 
-// Hook para validación de disponibilidad de embarcación
 export const useVesselAvailability = (vesselId: number, date: Date) => {
-  // Este hook sería más complejo en producción, consultando los viajes programados
-  // Por ahora retorna un placeholder
   return useQuery({
     queryKey: ['vessel-availability', vesselId, date.toISOString()],
     queryFn: async () => {
-      // Aquí iría la lógica real de verificación de disponibilidad
-      // consultando los viajes programados para esa fecha
       return { isAvailable: true, scheduledTrips: [] };
     },
     enabled: !!vesselId,

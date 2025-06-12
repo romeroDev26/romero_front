@@ -404,10 +404,6 @@ export const Dashboard: React.FC = () => {
                     <span className="text-sm text-gray-600">
                       Usuario: <strong>{currentUser.full_name}</strong>
                     </span>
-                    <span className="mx-2 text-gray-400">|</span>
-                    <span className="text-sm text-gray-600">
-                      Rol: <strong>{getRoleDisplay(currentUser)}</strong>
-                    </span>
                   </div>
                 </div>
               ) : (

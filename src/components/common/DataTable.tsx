@@ -81,7 +81,7 @@ export function DataTable<T>({
                 >
                   {column.header}
                 </th>
-              ))}              {showActions && (onEdit || onDelete || customActions) && (
+              ))}{showActions && (onEdit || onDelete || customActions) && (
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Acciones
                 </th>
@@ -98,8 +98,7 @@ export function DataTable<T>({
                   >
                     {column.accessor(item)}
                   </td>
-                ))}
-                {showActions && (onEdit || onDelete || customActions) && (
+                ))}{showActions && (onEdit || onDelete || customActions) && (
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
                       {onEdit && (
@@ -147,4 +146,3 @@ export const useConfirmDelete = (
 
   return handleDelete;
 };
-

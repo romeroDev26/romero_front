@@ -1,188 +1,13 @@
 // src/features/fluvial/pages/FaresPage.tsx
-import React, { useState } from 'react';
-import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, CurrencyDollarIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import React, { useState, useMemo } from 'react';
+import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, CurrencyDollarIcon, ArrowRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
-import { Fare, Port, City, ServiceCategory, FareType } from '../../../types';
-
-// Datos estáticos simulados (consistentes con otros componentes)
-const CITIES_DATA: City[] = [
-  { id: 1, name: 'Iquitos', code: 'IQT', ubigeo: '160101', department: 'Loreto', province: 'Maynas', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 2, name: 'Nauta', code: 'NAU', ubigeo: '160201', department: 'Loreto', province: 'Loreto', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 3, name: 'Yurimaguas', code: 'YUR', ubigeo: '160301', department: 'Loreto', province: 'Alto Amazonas', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 4, name: 'Contamana', code: 'CON', ubigeo: '250101', department: 'Ucayali', province: 'Padre Abad', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 5, name: 'Pucallpa', code: 'PUC', ubigeo: '250101', department: 'Ucayali', province: 'Coronel Portillo', country_code: 'PE', is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-];
-
-const PORTS_DATA: (Port & { city?: City })[] = [
-  { id: 1, name: 'Puerto Principal de Iquitos', ubigeo: '160101', address: 'Av. Ramón Castilla s/n, Belén', city_id: 1, city: CITIES_DATA[0], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 2, name: 'Embarcadero de Nauta', ubigeo: '160201', address: 'Puerto Fluvial de Nauta', city_id: 2, city: CITIES_DATA[1], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 3, name: 'Puerto Fluvial Yurimaguas', ubigeo: '160301', address: 'Malecón Tahuishco s/n', city_id: 3, city: CITIES_DATA[2], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 4, name: 'Embarcadero Contamana', ubigeo: '250101', address: 'Puerto de Contamana', city_id: 4, city: CITIES_DATA[3], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 5, name: 'Puerto Callao de Pucallpa', ubigeo: '250101', address: 'Jr. Raimondi s/n, Callería', city_id: 5, city: CITIES_DATA[4], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' },
-  { id: 6, name: 'Embarcadero La Hoyada', ubigeo: '250101', address: 'Puerto La Hoyada, Pucallpa', city_id: 5, city: CITIES_DATA[4], is_active: true, created_at: '2025-01-01T00:00:00Z', updated_at: '2025-01-01T00:00:00Z' }
-];
-
-const FARES_DATA: (Fare & { origin_port?: Port; destination_port?: Port })[] = [
-  {
-    id: 1,
-    company_id: 1,
-    origin_port_id: 1,
-    destination_port_id: 2,
-    origin_port: PORTS_DATA[0],
-    destination_port: PORTS_DATA[1],
-    service_category: 'PASAJES',
-    price: 85.00,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Tarifa estándar Iquitos-Nauta',
-    fare_type: 'PARTIAL_SEGMENT',
-    route_id: 1,
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-12-31',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  },
-  {
-    id: 2,
-    company_id: 1,
-    origin_port_id: 2,
-    destination_port_id: 3,
-    origin_port: PORTS_DATA[1],
-    destination_port: PORTS_DATA[2],
-    service_category: 'PASAJES',
-    price: 95.00,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Tarifa estándar Nauta-Yurimaguas',
-    fare_type: 'PARTIAL_SEGMENT',
-    route_id: 1,
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-12-31',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  },
-  {
-    id: 3,
-    company_id: 1,
-    origin_port_id: 1,
-    destination_port_id: 3,
-    origin_port: PORTS_DATA[0],
-    destination_port: PORTS_DATA[2],
-    service_category: 'PASAJES',
-    price: 160.00,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Tarifa completa Iquitos-Yurimaguas',
-    fare_type: 'FULL_ROUTE',
-    route_id: 1,
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-12-31',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  },
-  {
-    id: 4,
-    company_id: 1,
-    origin_port_id: 3,
-    destination_port_id: 4,
-    origin_port: PORTS_DATA[2],
-    destination_port: PORTS_DATA[3],
-    service_category: 'PASAJES',
-    price: 110.00,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Tarifa Yurimaguas-Contamana',
-    fare_type: 'PARTIAL_SEGMENT',
-    route_id: 2,
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-12-31',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  },
-  {
-    id: 5,
-    company_id: 1,
-    origin_port_id: 4,
-    destination_port_id: 5,
-    origin_port: PORTS_DATA[3],
-    destination_port: PORTS_DATA[4],
-    service_category: 'PASAJES',
-    price: 120.00,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Tarifa Contamana-Pucallpa',
-    fare_type: 'PARTIAL_SEGMENT',
-    route_id: 2,
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-12-31',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  },
-  {
-    id: 6,
-    company_id: 1,
-    origin_port_id: 1,
-    destination_port_id: 2,
-    origin_port: PORTS_DATA[0],
-    destination_port: PORTS_DATA[1],
-    service_category: 'ENCOMIENDA_PEQUENA',
-    price: 15.00,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Encomienda pequeña Iquitos-Nauta',
-    fare_type: 'PARTIAL_SEGMENT',
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-12-31',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  },
-  {
-    id: 7,
-    company_id: 1,
-    origin_port_id: 2,
-    destination_port_id: 3,
-    origin_port: PORTS_DATA[1],
-    destination_port: PORTS_DATA[2],
-    service_category: 'ENCOMIENDA_MEDIANA',
-    price: 25.00,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Encomienda mediana Nauta-Yurimaguas',
-    fare_type: 'PARTIAL_SEGMENT',
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-07-15',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  },
-  {
-    id: 8,
-    company_id: 1,
-    origin_port_id: 3,
-    destination_port_id: 5,
-    origin_port: PORTS_DATA[2],
-    destination_port: PORTS_DATA[4],
-    service_category: 'CARGA_GENERAL_KGM',
-    price: 2.50,
-    currency_code: 'PEN',
-    tax_category_code: '10',
-    description: 'Carga general por kilogramo Yurimaguas-Pucallpa',
-    fare_type: 'PARTIAL_SEGMENT',
-    is_active: true,
-    effective_date: '2025-01-01',
-    expiration_date: '2025-06-30',
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-01-01T00:00:00Z'
-  }
-];
+import { Fare, Port, ServiceCategory, FareType } from '../../../types';
+import { useFares } from '../../../hooks/useFares';
+import { usePorts } from '../../../hooks/usePorts';
+import { CreateFareData, UpdateFareData } from '../../../services/fareService';
 
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
   { value: 'PASAJES', label: 'Pasajes' },
@@ -200,7 +25,6 @@ const FARE_TYPES: { value: FareType; label: string }[] = [
   { value: 'SPECIAL', label: 'Especial' }
 ];
 
-// Formulario de tarifas
 interface FareFormData {
   origin_port_id: number;
   destination_port_id: number;
@@ -210,17 +34,19 @@ interface FareFormData {
   tax_category_code: string;
   description: string;
   fare_type: FareType;
+  route_id?: number;
   effective_date: string;
-  expiration_date: string;
+  expiration_date?: string;
 }
 
 const FareFormModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: FareFormData) => void;
+  onSubmit: (data: FareFormData) => Promise<void>;
   fare?: Fare;
   ports: Port[];
-}> = ({ isOpen, onClose, onSubmit, fare, ports }) => {
+  loading?: boolean;
+}> = ({ isOpen, onClose, onSubmit, fare, ports, loading }) => {
   const [formData, setFormData] = useState<FareFormData>({
     origin_port_id: fare?.origin_port_id || 0,
     destination_port_id: fare?.destination_port_id || 0,
@@ -230,14 +56,26 @@ const FareFormModal: React.FC<{
     tax_category_code: fare?.tax_category_code || '10',
     description: fare?.description || '',
     fare_type: fare?.fare_type || 'PARTIAL_SEGMENT',
+    route_id: fare?.route_id,
     effective_date: fare?.effective_date || new Date().toISOString().split('T')[0],
     expiration_date: fare?.expiration_date || ''
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    onClose();
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await onSubmit(formData);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Error al guardar la tarifa');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -245,6 +83,13 @@ const FareFormModal: React.FC<{
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={fare ? 'Editar Tarifa' : 'Nueva Tarifa'} maxWidth="lg">
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Puerto de Origen</label>
@@ -253,11 +98,12 @@ const FareFormModal: React.FC<{
               onChange={(e) => setFormData({ ...formData, origin_port_id: parseInt(e.target.value) })}
               className="w-full p-2 border border-gray-300 rounded-md"
               required
+              disabled={loading || submitting}
             >
               <option value="">Seleccione puerto de origen</option>
               {ports.map((port) => (
                 <option key={port.id} value={port.id}>
-                  {port.name} ({port.city?.name})
+                  {port.name}
                 </option>
               ))}
             </select>
@@ -269,11 +115,12 @@ const FareFormModal: React.FC<{
               onChange={(e) => setFormData({ ...formData, destination_port_id: parseInt(e.target.value) })}
               className="w-full p-2 border border-gray-300 rounded-md"
               required
+              disabled={loading || submitting}
             >
               <option value="">Seleccione puerto de destino</option>
               {ports.map((port) => (
                 <option key={port.id} value={port.id}>
-                  {port.name} ({port.city?.name})
+                  {port.name}
                 </option>
               ))}
             </select>
@@ -288,6 +135,7 @@ const FareFormModal: React.FC<{
               onChange={(e) => setFormData({ ...formData, service_category: e.target.value as ServiceCategory })}
               className="w-full p-2 border border-gray-300 rounded-md"
               required
+              disabled={submitting}
             >
               {SERVICE_CATEGORIES.map((category) => (
                 <option key={category.value} value={category.value}>
@@ -303,6 +151,7 @@ const FareFormModal: React.FC<{
               onChange={(e) => setFormData({ ...formData, fare_type: e.target.value as FareType })}
               className="w-full p-2 border border-gray-300 rounded-md"
               required
+              disabled={submitting}
             >
               {FARE_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
@@ -315,12 +164,13 @@ const FareFormModal: React.FC<{
 
         <div className="grid grid-cols-3 gap-4">
           <Input
-            label="Precio Base (S/)"
+            label="Precio Base"
             type="number"
             step="0.01"
             value={formData.price}
             onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
             required
+            disabled={submitting}
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
@@ -328,6 +178,7 @@ const FareFormModal: React.FC<{
               value={formData.currency_code}
               onChange={(e) => setFormData({ ...formData, currency_code: e.target.value })}
               className="w-full p-2 border border-gray-300 rounded-md"
+              disabled={submitting}
             >
               <option value="PEN">PEN - Soles</option>
               <option value="USD">USD - Dólares</option>
@@ -339,6 +190,7 @@ const FareFormModal: React.FC<{
               value={formData.tax_category_code}
               onChange={(e) => setFormData({ ...formData, tax_category_code: e.target.value })}
               className="w-full p-2 border border-gray-300 rounded-md"
+              disabled={submitting}
             >
               <option value="10">10 - Gravado</option>
               <option value="20">20 - Exonerado</option>
@@ -352,6 +204,7 @@ const FareFormModal: React.FC<{
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           required
+          disabled={submitting}
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -361,21 +214,23 @@ const FareFormModal: React.FC<{
             value={formData.effective_date}
             onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
             required
+            disabled={submitting}
           />
           <Input
             label="Fecha de Vencimiento"
             type="date"
-            value={formData.expiration_date}
+            value={formData.expiration_date || ''}
             onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
+            disabled={submitting}
           />
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
             Cancelar
           </Button>
-          <Button type="submit">
-            {fare ? 'Actualizar' : 'Crear'} Tarifa
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Guardando...' : (fare ? 'Actualizar' : 'Crear')} Tarifa
           </Button>
         </div>
       </form>
@@ -386,25 +241,40 @@ const FareFormModal: React.FC<{
 export const FaresPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [fares, setFares] = useState<(Fare & { origin_port?: Port; destination_port?: Port })[]>(FARES_DATA);
-  
-  // Estados para modales
+
+  const companyId = parseInt(localStorage.getItem('companyId') || '1');
+
+  const initialFilters = useMemo(() => ({
+    limit: 200,
+    is_active: true
+  }), []);
+
+  const { fares, loading: loadingFares, error: errorFares, createFare, updateFare, deactivateFare } = useFares(companyId, initialFilters);
+  const { ports, loading: loadingPorts } = usePorts(companyId);
+
   const [showFareModal, setShowFareModal] = useState(false);
   const [editingFare, setEditingFare] = useState<Fare | undefined>();
 
-  // Filtrar tarifas según búsqueda y categoría
-  const filteredFares = fares.filter(fare => {
-    const matchesSearch = 
-      fare.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fare.origin_port?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fare.destination_port?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fare.origin_port?.city?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      fare.destination_port?.city?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = selectedCategory === '' || fare.service_category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
+  const enrichedFares = useMemo(() => {
+    return fares.map(fare => ({
+      ...fare,
+      origin_port: ports.find(p => p.id === fare.origin_port_id),
+      destination_port: ports.find(p => p.id === fare.destination_port_id)
+    }));
+  }, [fares, ports]);
+
+  const filteredFares = useMemo(() => {
+    return enrichedFares.filter(fare => {
+      const matchesSearch =
+        fare.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fare.origin_port?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fare.destination_port?.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesCategory = selectedCategory === '' || fare.service_category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [enrichedFares, searchTerm, selectedCategory]);
 
   const getServiceCategoryLabel = (category: ServiceCategory) => {
     return SERVICE_CATEGORIES.find(c => c.value === category)?.label || category;
@@ -414,50 +284,39 @@ export const FaresPage: React.FC = () => {
     return FARE_TYPES.find(t => t.value === type)?.label || type;
   };
 
-  const handleCreateFare = (data: FareFormData) => {
-    const originPort = PORTS_DATA.find(p => p.id === data.origin_port_id);
-    const destinationPort = PORTS_DATA.find(p => p.id === data.destination_port_id);
-    
-    const newFare = {
-      id: Math.max(...fares.map(f => f.id)) + 1,
+  const handleCreateFare = async (data: FareFormData) => {
+    const createData: CreateFareData = {
       ...data,
-      company_id: 1,
-      origin_port: originPort,
-      destination_port: destinationPort,
+      company_id: companyId,
       is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      expiration_date: data.expiration_date || undefined
     };
-    setFares([...fares, newFare]);
-    console.log('Tarifa creada:', newFare);
+    await createFare(createData);
   };
 
-  const handleUpdateFare = (data: FareFormData) => {
+  const handleUpdateFare = async (data: FareFormData) => {
     if (!editingFare) return;
-    
-    const originPort = PORTS_DATA.find(p => p.id === data.origin_port_id);
-    const destinationPort = PORTS_DATA.find(p => p.id === data.destination_port_id);
-    
-    const updatedFares = fares.map(fare =>
-      fare.id === editingFare.id
-        ? { 
-            ...fare, 
-            ...data, 
-            origin_port: originPort,
-            destination_port: destinationPort,
-            updated_at: new Date().toISOString() 
-          }
-        : fare
-    );
-    setFares(updatedFares);
+
+    const updateData: UpdateFareData = {
+      price: data.price,
+      currency_code: data.currency_code,
+      tax_category_code: data.tax_category_code,
+      description: data.description,
+      expiration_date: data.expiration_date || null,
+    };
+
+    await updateFare(editingFare.id, updateData);
     setEditingFare(undefined);
-    console.log('Tarifa actualizada:', data);
   };
 
-  const handleDeleteFare = (fareId: number) => {
-    if (confirm('¿Está seguro de eliminar esta tarifa?')) {
-      setFares(fares.filter(fare => fare.id !== fareId));
-      console.log('Tarifa eliminada:', fareId);
+  const handleDeactivateFare = async (fareId: number) => {
+    if (confirm('¿Está seguro de desactivar esta tarifa? La tarifa dejará de estar disponible para nuevas ventas, pero se conservará en el historial.')) {
+      try {
+        await deactivateFare(fareId);
+      } catch (error) {
+        console.error('Error al desactivar la tarifa:', error);
+        alert('No se pudo desactivar la tarifa. Intente de nuevo.');
+      }
     }
   };
 
@@ -476,14 +335,35 @@ export const FaresPage: React.FC = () => {
     return expDate < today;
   };
 
-  // Calcular estadísticas
-  const stats = {
+  const stats = useMemo(() => ({
     total: fares.length,
     pasajes: fares.filter(f => f.service_category === 'PASAJES').length,
     encomiendas: fares.filter(f => f.service_category.includes('ENCOMIENDA')).length,
     porVencer: fares.filter(f => isExpiringSoon(f.expiration_date)).length,
     vencidas: fares.filter(f => isExpired(f.expiration_date)).length
-  };
+  }), [fares]);
+
+  if (loadingFares || loadingPorts) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando tarifas...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorFares) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+        <div className="flex items-center">
+          <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+          Error al cargar las tarifas: {errorFares}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -494,7 +374,6 @@ export const FaresPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtros y acciones */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="flex gap-4 flex-grow">
           <div className="relative flex-grow max-w-md">
@@ -509,7 +388,7 @@ export const FaresPage: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
+
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -523,7 +402,7 @@ export const FaresPage: React.FC = () => {
             ))}
           </select>
         </div>
-        
+
         <Button
           onClick={() => {
             setEditingFare(undefined);
@@ -536,7 +415,6 @@ export const FaresPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Resumen de estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
@@ -585,7 +463,6 @@ export const FaresPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Lista de tarifas */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -615,17 +492,14 @@ export const FaresPage: React.FC = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredFares.map((fare) => (
-              <tr key={fare.id} className="hover:bg-gray-50">
+              <tr key={fare.id} className={`hover:bg-gray-50 ${!fare.is_active ? 'bg-gray-100 opacity-60' : ''}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="text-sm">
                       <div className="font-medium text-gray-900 flex items-center">
-                        <span>{fare.origin_port?.city?.name}</span>
+                        <span>{fare.origin_port?.name || `Puerto ${fare.origin_port_id}`}</span>
                         <ArrowRightIcon className="h-4 w-4 mx-2 text-gray-400" />
-                        <span>{fare.destination_port?.city?.name}</span>
-                      </div>
-                      <div className="text-gray-500 text-xs">
-                        {fare.origin_port?.name} → {fare.destination_port?.name}
+                        <span>{fare.destination_port?.name || `Puerto ${fare.destination_port_id}`}</span>
                       </div>
                     </div>
                   </div>
@@ -659,28 +533,29 @@ export const FaresPage: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    isExpired(fare.expiration_date) 
+                    !fare.is_active
+                      ? 'bg-gray-200 text-gray-800'
+                      : isExpired(fare.expiration_date)
                       ? 'bg-red-100 text-red-800'
                       : isExpiringSoon(fare.expiration_date)
                       ? 'bg-yellow-100 text-yellow-800'
-                      : fare.is_active 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
+                      : 'bg-green-100 text-green-800'
                   }`}>
-                    {isExpired(fare.expiration_date) 
+                    {!fare.is_active
+                      ? 'Inactivo'
+                      : isExpired(fare.expiration_date)
                       ? 'Vencido'
                       : isExpiringSoon(fare.expiration_date)
                       ? 'Por Vencer'
-                      : fare.is_active 
-                      ? 'Activo' 
-                      : 'Inactivo'}
+                      : 'Activo'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => {
-                        setEditingFare(fare);
+                        const fareToEdit = { ...fare, expiration_date: fare.expiration_date || '' };
+                        setEditingFare(fareToEdit);
                         setShowFareModal(true);
                       }}
                       className="text-blue-600 hover:text-blue-900"
@@ -688,13 +563,15 @@ export const FaresPage: React.FC = () => {
                     >
                       <PencilIcon className="h-4 w-4" />
                     </button>
-                    <button
-                      onClick={() => handleDeleteFare(fare.id)}
-                      className="text-red-600 hover:text-red-900"
-                      title="Eliminar tarifa"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
+                    {fare.is_active && (
+                      <button
+                        onClick={() => handleDeactivateFare(fare.id)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Desactivar tarifa"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -708,20 +585,20 @@ export const FaresPage: React.FC = () => {
           <CurrencyDollarIcon className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">No hay tarifas</h3>
           <p className="mt-1 text-sm text-gray-500">
-            {searchTerm || selectedCategory 
-              ? 'No se encontraron tarifas que coincidan con los filtros' 
+            {searchTerm || selectedCategory
+              ? 'No se encontraron tarifas que coincidan con los filtros'
               : 'Comience agregando una nueva tarifa'}
           </p>
         </div>
       )}
 
-      {/* Modal */}
       <FareFormModal
         isOpen={showFareModal}
         onClose={() => setShowFareModal(false)}
         onSubmit={editingFare ? handleUpdateFare : handleCreateFare}
         fare={editingFare}
-        ports={PORTS_DATA}
+        ports={ports}
+        loading={loadingPorts}
       />
     </div>
   );

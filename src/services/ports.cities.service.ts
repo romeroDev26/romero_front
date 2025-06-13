@@ -49,6 +49,7 @@ export interface PortUpdateData {
 }
 
 export interface PortListParams {
+  company_id: number;
   is_active?: boolean;
   skip?: number;
   limit?: number;
@@ -94,18 +95,21 @@ export const citiesConfigService = {
 // ========================================
 
 export const portsConfigService = {
-  getAll: async (params: PortListParams = {}): Promise<Port[]> => {
-    const { is_active = true, skip = 0, limit = 100, city_id } = params;
-    const queryParams: any = { is_active, skip, limit };
-    
-    // Agregar city_id solo si está definido
-    if (city_id !== undefined) {
-      queryParams.city_id = city_id;
+  getAll: async (params: PortListParams): Promise<Port[]> => {
+    if (!params.company_id) {
+      throw new Error("El 'company_id' es requerido para listar puertos.");
     }
-    
-    const response = await api.get<Port[]>('/config/ports/', {
-      params: queryParams
+
+    const queryParams = new URLSearchParams({
+      company_id: params.company_id.toString(),
     });
+
+    if (params.is_active !== undefined) queryParams.append('is_active', String(params.is_active));
+    if (params.skip !== undefined) queryParams.append('skip', String(params.skip));
+    if (params.limit !== undefined) queryParams.append('limit', String(params.limit));
+    if (params.city_id !== undefined) queryParams.append('city_id', String(params.city_id));
+
+    const response = await api.get<Port[]>(`/config/ports/?${queryParams.toString()}`);
     return response.data;
   },
 

@@ -27,7 +27,8 @@ import {
   ClipboardDocumentListIcon,
   CurrencyDollarIcon,
   AdjustmentsHorizontalIcon,
-  ChartPieIcon
+  ChartPieIcon,
+  CubeIcon  // Nuevo icono para Productos y Servicios
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
@@ -131,7 +132,8 @@ export const Dashboard: React.FC = () => {
             { name: 'Embarcaciones', path: '/fluvial/config/vessels', icon: BuildingOffice2Icon },
             { name: 'Rutas', path: '/fluvial/config/routes', icon: TruckIcon },
             { name: 'Tarifas', path: '/fluvial/config/fares', icon: CurrencyDollarIcon },
-            { name: 'Tipos de Asiento', path: '/fluvial/config/seat-types', icon: AdjustmentsHorizontalIcon }
+            { name: 'Tipos de Asiento', path: '/fluvial/config/seat-types', icon: AdjustmentsHorizontalIcon },
+            { name: 'Productos y Servicios', path: '/fluvial/config/products-services', icon: CubeIcon }
           ]
         },
         { 
@@ -278,7 +280,7 @@ export const Dashboard: React.FC = () => {
         
         <div className="fixed inset-y-0 left-0 flex flex-col w-64 max-w-xs bg-primary text-white shadow-xl">
           <div className="flex items-center justify-between h-16 px-4 border-b border-primary-dark">
-            <h1 className="text-xl font-bold">Transportes Fluviales</h1>
+            <h1 className="text-xl font-bold">Transportes Romero</h1>
             <button onClick={() => setSidebarOpen(false)}>
               <XMarkIcon className="w-6 h-6" />
             </button>
@@ -327,7 +329,7 @@ export const Dashboard: React.FC = () => {
       <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}`}>
         <div className="flex flex-col w-full bg-primary text-white">
           <div className="flex items-center h-14 px-3 border-b border-primary/30 justify-between">
-            {!isCollapsed && <h1 className="text-lg font-semibold">Transportes Fluviales</h1>}
+            {!isCollapsed && <h1 className="text-lg font-semibold">Transportes Romero</h1>}
             <button 
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="p-1 rounded-full hover:bg-primary/80"

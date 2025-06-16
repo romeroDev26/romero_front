@@ -35,6 +35,7 @@ import { VesselsPage } from './features/fluvial/pages/VesselsPage';
 import { FaresPage } from './features/fluvial/pages/FaresPage';
 import { RoutesPage } from './features/fluvial/pages/RoutesPage';
 import { SeatTypesPage } from './features/fluvial/pages/SeatTypesPage';
+import { ProductsServicesPage } from './features/fluvial/pages/ProductsServicesPage.tsx';
 
 // Operaciones Fluviales (pendientes de implementar)
 const ScheduleTripsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Programar Viajes</h1><p>Programación de viajes y itinerarios</p></div>;
@@ -90,6 +91,7 @@ function App() {
                 <Route path="routes" element={<RoutesPage />} />
                 <Route path="fares" element={<FaresPage />} />
                 <Route path="seat-types" element={<SeatTypesPage />} />
+                <Route path="products-services" element={<ProductsServicesPage />} />
               </Route>
               
               {/* Operaciones Fluviales */}

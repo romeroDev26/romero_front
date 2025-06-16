@@ -1,4 +1,5 @@
 // src/types/index.ts
+import { Column } from '../components/common/DataTable';
 
 // ========================================
 // TIPOS PARA COMPONENTES
@@ -17,11 +18,6 @@ export interface DataTableProps<T> {
   customActions?: (item: T) => React.ReactNode;
 }
 
-export interface Column<T> {
-  key: string;
-  header: string;
-  accessor: (item: T) => React.ReactNode;
-}
 
 // ========================================
 // ENUMS Y TIPOS BASE

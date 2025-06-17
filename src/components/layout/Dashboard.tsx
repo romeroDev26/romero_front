@@ -306,28 +306,34 @@ export const Dashboard: React.FC = () => {
   ];
   
   // Función para renderizar un item del menú
-  const renderMenuItem = (item: any, isSubitem = false) => {
+  const renderMenuItem = (item: any, isSubitem = false, level = 0) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
-    const itemClasses = `flex items-center px-${isSubitem ? '6' : '3'} py-2 text-[14px] rounded ${!item.isSubmenu ? 'hover:bg-primary/80' : ''} transition-colors`;
+    
+    // Calcular padding basado en el nivel de anidamiento
+    const paddingLeft = level === 0 ? 'pl-3' : level === 1 ? 'pl-8' : 'pl-12';
+    
+    const baseClasses = `flex items-center ${paddingLeft} pr-3 py-2.5 text-[14px] rounded-lg transition-all duration-200`;
     
     if (item.isSubmenu) {
       return (
-        <div key={item.name}>
+        <div key={item.name} className="mb-1">
           <button
             onClick={() => toggleSubmenu(item.expandKey)}
-            className={`${itemClasses} w-full text-left text-white`}
+            className={`${baseClasses} w-full text-left text-white group ${
+              isExpanded 
+                ? 'bg-primary-dark/70 shadow-sm' 
+                : 'hover:bg-primary-dark/50'
+            }`}
           >
-            <item.icon className="w-6 h-6 mr-3" />
-            <span className="flex-1">{item.name}</span>
-            {isExpanded ? (
+            <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+            <span className="flex-1 font-medium">{item.name}</span>
+            <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
               <ChevronDownIcon className="w-4 h-4" />
-            ) : (
-              <ChevronRightIcon className="w-4 h-4" />
-            )}
+            </div>
           </button>
           {isExpanded && item.subitems && (
-            <div className="ml-6 mt-1 space-y-1">
-              {item.subitems.map((subitem: any) => renderMenuItem(subitem, true))}
+            <div className="mt-1 space-y-1 bg-primary-dark/30 rounded-lg py-2 mx-2">
+              {item.subitems.map((subitem: any) => renderMenuItem(subitem, true, level + 1))}
             </div>
           )}
         </div>
@@ -339,11 +345,15 @@ export const Dashboard: React.FC = () => {
         key={item.path}
         to={item.path}
         className={({ isActive }) =>
-          `${itemClasses} ${isActive ? 'bg-secondary text-white' : 'text-white'}`
+          `${baseClasses} mb-1 group ${
+            isActive 
+              ? 'bg-secondary text-white shadow-md font-medium' 
+              : 'text-white/90 bg-primary-dark/40 hover:bg-primary-dark/70 hover:text-white hover:shadow-sm'
+          }`
         }
       >
-        <item.icon className="w-6 h-6 mr-3" />
-        <span>{item.name}</span>
+        <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+        <span className="font-medium">{item.name}</span>
       </NavLink>
     );
   };
@@ -353,24 +363,26 @@ export const Dashboard: React.FC = () => {
     const isExpanded = expandedMenus[group.expandKey];
     
     return (
-      <div key={group.title} className="mb-4">
+      <div key={group.title} className="mb-6">
         <button
           onClick={() => toggleSubmenu(group.expandKey)}
-          className="flex items-center justify-between w-full px-3 text-[13px] font-medium text-white/60 uppercase tracking-wider mb-2 hover:text-white/80 transition-colors"
+          className={`flex items-center justify-between w-full px-3 py-2 text-[13px] font-semibold text-white/80 uppercase tracking-wider mb-3 rounded-lg transition-all duration-200 ${
+            isExpanded 
+              ? 'bg-primary-dark/40 text-white' 
+              : 'hover:bg-primary-dark/30 hover:text-white'
+          }`}
         >
           <div className="flex items-center">
             <group.icon className="w-4 h-4 mr-2" />
             <span>{group.title}</span>
           </div>
-          {isExpanded ? (
+          <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
             <ChevronDownIcon className="w-4 h-4" />
-          ) : (
-            <ChevronRightIcon className="w-4 h-4" />
-          )}
+          </div>
         </button>
         
         {isExpanded && (
-          <div className="space-y-1">
+          <div className="space-y-1 pl-2">
             {group.items.map((item: any) => renderMenuItem(item))}
           </div>
         )}
@@ -389,11 +401,11 @@ export const Dashboard: React.FC = () => {
       </div>
       
       <div className="flex-1 overflow-y-auto">
-        <nav className="px-2 py-4">
+        <nav className="px-3 py-4">
           {navGroups.map((group, idx) => (
             group.expandable ? renderExpandableGroup(group) : (
-              <div key={idx} className="mb-4">
-                <h2 className="px-4 text-xs font-semibold text-white/70 uppercase tracking-wider mb-2">
+              <div key={idx} className="mb-6">
+                <h2 className="px-3 py-2 text-xs font-semibold text-white/70 uppercase tracking-wider mb-3 bg-primary-dark/20 rounded-lg">
                   {group.title}
                 </h2>
                 <div className="space-y-1">
@@ -407,7 +419,7 @@ export const Dashboard: React.FC = () => {
       
       {/* Información del usuario */}
       {currentUser && (
-        <div className="p-4 border-t border-primary/30">
+        <div className="p-4 border-t border-primary/30 bg-primary-dark/20">
           <div className="text-sm text-white/80 mb-2">
             <div className="font-medium">{currentUser.full_name}</div>
             <div className="text-xs text-white/60">{getRoleDisplay(currentUser)}</div>
@@ -415,13 +427,13 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
       
-      <div className="p-2 border-t border-primary/30">
+      <div className="p-3 border-t border-primary/30">
         <button
-          className="flex items-center w-full px-3 py-1.5 text-[13px] text-white hover:bg-primary/80 rounded"
+          className="flex items-center w-full px-3 py-2.5 text-[14px] text-white hover:bg-red-600/80 hover:shadow-sm rounded-lg transition-all duration-200 group"
           onClick={handleLogout}
         >
           <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
-          Cerrar Sesión
+          <span className="font-medium">Cerrar Sesión</span>
         </button>
       </div>
     </>

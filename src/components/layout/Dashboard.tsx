@@ -1,5 +1,5 @@
 // src/components/layout/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
@@ -32,15 +32,96 @@ import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import { User } from '../../types';
 
+// Declarar el tipo para el timeout del scroll
+declare global {
+  interface Window {
+    scrollSaveTimeout: NodeJS.Timeout;
+  }
+}
+
 // Keys para localStorage
 const STORAGE_KEYS = {
   EXPANDED_MENUS: 'dashboard_expanded_menus',
-  SIDEBAR_HIDDEN: 'dashboard_sidebar_hidden'
+  SIDEBAR_HIDDEN: 'dashboard_sidebar_hidden',
+  SIDEBAR_SCROLL: 'dashboard_sidebar_scroll'
 };
 
 export const Dashboard: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Referencia para el contenedor de scroll del sidebar
+  const sidebarScrollRef = useRef<HTMLDivElement>(null);
+  
+  // Agregar estilos CSS personalizados para animaciones (solo cuando se necesiten)
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes expandHeight {
+        from {
+          max-height: 0;
+          opacity: 0;
+          transform: translateY(-8px);
+        }
+        to {
+          max-height: 500px;
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Solo aplicar animaciones cuando se requiera específicamente */
+      .animate-controlled {
+        animation: slideInUp 0.3s ease-out forwards;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
+  
+  // Restaurar posición del scroll al montar el componente
+  useEffect(() => {
+    const savedScrollPosition = localStorage.getItem(STORAGE_KEYS.SIDEBAR_SCROLL);
+    if (savedScrollPosition && sidebarScrollRef.current) {
+      sidebarScrollRef.current.scrollTop = parseInt(savedScrollPosition, 10);
+    }
+    
+    // Cleanup del timeout al desmontar
+    return () => {
+      if (window.scrollSaveTimeout) {
+        clearTimeout(window.scrollSaveTimeout);
+      }
+    };
+  }, []);
+  
+  // Guardar posición del scroll cuando cambie (con debounce para optimizar)
+  const handleSidebarScroll = useCallback(() => {
+    if (sidebarScrollRef.current) {
+      // Usar un pequeño delay para evitar demasiadas escrituras a localStorage
+      clearTimeout(window.scrollSaveTimeout);
+      window.scrollSaveTimeout = setTimeout(() => {
+        if (sidebarScrollRef.current) {
+          localStorage.setItem(STORAGE_KEYS.SIDEBAR_SCROLL, sidebarScrollRef.current.scrollTop.toString());
+        }
+      }, 100);
+    }
+  }, []);
   
   // Estados del sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false); // Para móvil
@@ -63,6 +144,9 @@ export const Dashboard: React.FC = () => {
       administration: false,
     };
   });
+
+  // Estado para controlar si las animaciones deben ejecutarse
+  const [shouldAnimate, setShouldAnimate] = useState<{ [key: string]: boolean }>({});
   
   // Efecto para expandir menús basado en la ruta actual
   useEffect(() => {
@@ -168,11 +252,18 @@ export const Dashboard: React.FC = () => {
     // Limpiar localStorage al cerrar sesión
     localStorage.removeItem(STORAGE_KEYS.EXPANDED_MENUS);
     localStorage.removeItem(STORAGE_KEYS.SIDEBAR_HIDDEN);
+    localStorage.removeItem(STORAGE_KEYS.SIDEBAR_SCROLL);
     authService.logout();
     navigate('/login');
   };
   
   const toggleSubmenu = (menuKey: string) => {
+    // Guardar la posición actual del scroll antes de hacer cambios
+    const currentScrollPosition = sidebarScrollRef.current?.scrollTop || 0;
+    
+    // Marcar que este menú debe animarse
+    setShouldAnimate(prev => ({ ...prev, [menuKey]: true }));
+    
     setExpandedMenus(prev => {
       const newState = {
         ...prev,
@@ -182,6 +273,18 @@ export const Dashboard: React.FC = () => {
       localStorage.setItem(STORAGE_KEYS.EXPANDED_MENUS, JSON.stringify(newState));
       return newState;
     });
+
+    // Restaurar la posición del scroll después de un pequeño delay
+    setTimeout(() => {
+      if (sidebarScrollRef.current) {
+        sidebarScrollRef.current.scrollTop = currentScrollPosition;
+      }
+    }, 10);
+
+    // Limpiar el flag de animación después de que termine
+    setTimeout(() => {
+      setShouldAnimate(prev => ({ ...prev, [menuKey]: false }));
+    }, 400);
   };
   
   const toggleSidebar = () => {
@@ -306,34 +409,59 @@ export const Dashboard: React.FC = () => {
   ];
   
   // Función para renderizar un item del menú
-  const renderMenuItem = (item: any, isSubitem = false, level = 0) => {
+  const renderMenuItem = (item: any, isSubitem = false, level = 0, inExpandedGroup = false) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
     
     // Calcular padding basado en el nivel de anidamiento
-    const paddingLeft = level === 0 ? 'pl-3' : level === 1 ? 'pl-8' : 'pl-12';
+    const paddingLeft = level === 0 ? 'pl-2' : level === 1 ? 'pl-6' : 'pl-10';
     
-    const baseClasses = `flex items-center ${paddingLeft} pr-3 py-2.5 text-[14px] rounded-lg transition-all duration-200`;
+    const baseClasses = `flex items-center ${paddingLeft} pr-3 py-2.5 text-[14px] rounded-lg transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-lg transform-gpu`;
     
     if (item.isSubmenu) {
       return (
         <div key={item.name} className="mb-1">
           <button
             onClick={() => toggleSubmenu(item.expandKey)}
-            className={`${baseClasses} w-full text-left text-white group ${
+            className={`${baseClasses} w-full text-left text-white group border-l-4 ${
               isExpanded 
-                ? 'bg-primary-dark/70 shadow-sm' 
-                : 'hover:bg-primary-dark/50'
+                ? 'border-white/80 shadow-sm transform scale-[1.01]' 
+                : 'border-transparent hover:border-white/50'
             }`}
           >
-            <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+            <item.icon className="w-5 h-5 mr-3 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" />
             <span className="flex-1 font-medium">{item.name}</span>
-            <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
+            <div className={`transition-all duration-300 ease-out ${isExpanded ? 'rotate-180 scale-110' : 'group-hover:scale-110'}`}>
               <ChevronDownIcon className="w-4 h-4" />
             </div>
           </button>
           {isExpanded && item.subitems && (
-            <div className="mt-1 space-y-1 bg-primary-dark/30 rounded-lg py-2 mx-2">
-              {item.subitems.map((subitem: any) => renderMenuItem(subitem, true, level + 1))}
+            <div 
+              className={`mt-1 rounded-lg mx-2 overflow-hidden transition-all duration-300 ease-out ${
+                shouldAnimate[item.expandKey] ? 'animate-in slide-in-from-top-1 fade-in' : ''
+              }`}
+              style={shouldAnimate[item.expandKey] ? {
+                animation: 'expandHeight 0.25s ease-out forwards'
+              } : {}}
+            >
+              {/* Barra lateral indicadora para submenús más gruesa */}
+              <div className="relative">
+                <div className="absolute left-1 top-0 bottom-0 w-1 bg-white/40 rounded-full"></div>
+                <div className="py-2 space-y-1 pl-4">
+                  {item.subitems.map((subitem: any, subIndex: number) => (
+                    <div
+                      key={subitem.name || subitem.path}
+                      className={shouldAnimate[item.expandKey] ? "animate-in slide-in-from-left-2 fade-in" : ""}
+                      style={shouldAnimate[item.expandKey] ? {
+                        animationDelay: `${subIndex * 30}ms`,
+                        animationDuration: '0.3s',
+                        animationFillMode: 'both'
+                      } : {}}
+                    >
+                      {renderMenuItem(subitem, true, level + 1, inExpandedGroup)}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -347,12 +475,12 @@ export const Dashboard: React.FC = () => {
         className={({ isActive }) =>
           `${baseClasses} mb-1 group ${
             isActive 
-              ? 'bg-secondary text-white shadow-md font-medium' 
-              : 'text-white/90 bg-primary-dark/40 hover:bg-primary-dark/70 hover:text-white hover:shadow-sm'
+              ? 'bg-secondary text-white shadow-lg font-medium border-l-4 border-white transform scale-[1.02]' 
+              : 'text-white/90 hover:text-white hover:shadow-lg border-l-4 border-transparent hover:border-white/50'
           }`
         }
       >
-        <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+        <item.icon className="w-5 h-5 mr-3 flex-shrink-0 transition-transform duration-300 group-hover:scale-110" />
         <span className="font-medium">{item.name}</span>
       </NavLink>
     );
@@ -366,24 +494,49 @@ export const Dashboard: React.FC = () => {
       <div key={group.title} className="mb-6">
         <button
           onClick={() => toggleSubmenu(group.expandKey)}
-          className={`flex items-center justify-between w-full px-3 py-2 text-[13px] font-semibold text-white/80 uppercase tracking-wider mb-3 rounded-lg transition-all duration-200 ${
+          className={`flex items-center justify-between w-full px-3 py-3 text-[14px] font-bold uppercase tracking-wide mb-3 rounded-lg transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-lg border-l-4 bg-white/5 ${
             isExpanded 
-              ? 'bg-primary-dark/40 text-white' 
-              : 'hover:bg-primary-dark/30 hover:text-white'
+              ? 'text-white transform scale-[1.01] border-white/80 shadow-md' 
+              : 'text-white/95 hover:text-white border-transparent hover:border-white/50 hover:bg-white/10'
           }`}
         >
           <div className="flex items-center">
-            <group.icon className="w-4 h-4 mr-2" />
-            <span>{group.title}</span>
+            <group.icon className="w-5 h-5 mr-3" />
+            <span className="text-[13px]">{group.title}</span>
           </div>
-          <div className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}>
-            <ChevronDownIcon className="w-4 h-4" />
+          <div className={`transition-all duration-300 ease-out ${isExpanded ? 'rotate-180 scale-110' : 'hover:scale-110'}`}>
+            <ChevronDownIcon className="w-5 h-5" />
           </div>
         </button>
         
         {isExpanded && (
-          <div className="space-y-1 pl-2">
-            {group.items.map((item: any) => renderMenuItem(item))}
+          <div 
+            className={`rounded-lg mx-1 overflow-hidden transition-all duration-300 ease-out ${
+              shouldAnimate[group.expandKey] ? 'animate-in slide-in-from-top-2 fade-in' : ''
+            }`}
+            style={shouldAnimate[group.expandKey] ? {
+              animation: 'expandHeight 0.3s ease-out forwards'
+            } : {}}
+          >
+            {/* Barra lateral indicadora más gruesa */}
+            <div className="relative">
+              <div className="absolute left-1 top-0 bottom-0 w-1 bg-white/50 rounded-full"></div>
+              <div className="p-2 space-y-1 pl-4">
+                {group.items.map((item: any, index: number) => (
+                  <div 
+                    key={item.name || item.path}
+                    className={shouldAnimate[group.expandKey] ? "animate-in slide-in-from-left-3 fade-in" : ""}
+                    style={shouldAnimate[group.expandKey] ? {
+                      animationDelay: `${index * 50}ms`,
+                      animationDuration: '0.4s',
+                      animationFillMode: 'both'
+                    } : {}}
+                  >
+                    {renderMenuItem(item, false, 0, true)}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -393,23 +546,33 @@ export const Dashboard: React.FC = () => {
   // Componente del Sidebar
   const SidebarContent = () => (
     <>
-      <div className="flex items-center justify-between h-16 px-4 border-b border-primary-dark">
+      <div className="flex items-center justify-between h-16 px-4 border-b border-white/20">
         <h1 className="text-xl font-bold">Transportes Romero</h1>
         <button onClick={() => setSidebarOpen(false)} className="lg:hidden">
           <XMarkIcon className="w-6 h-6" />
         </button>
       </div>
       
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        ref={sidebarScrollRef}
+        className="flex-1 overflow-y-auto"
+        onScroll={handleSidebarScroll}
+      >
         <nav className="px-3 py-4">
           {navGroups.map((group, idx) => (
             group.expandable ? renderExpandableGroup(group) : (
               <div key={idx} className="mb-6">
-                <h2 className="px-3 py-2 text-xs font-semibold text-white/70 uppercase tracking-wider mb-3 bg-primary-dark/20 rounded-lg">
-                  {group.title}
-                </h2>
-                <div className="space-y-1">
-                  {group.items.map((item) => renderMenuItem(item))}
+                <div className="px-3 py-3 text-[14px] font-bold text-white uppercase tracking-wide mb-3 bg-white/5 rounded-lg border-l-4 border-white/50">
+                  <div className="flex items-center">
+                    <span className="w-5 h-5 mr-3 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white/70 rounded-full"></div>
+                    </span>
+                    <span className="text-[13px]">{group.title}</span>
+                  </div>
+                </div>
+                {/* Contenedor sin barra lateral para grupos no expandibles */}
+                <div className="space-y-1 pl-4">
+                  {group.items.map((item) => renderMenuItem(item, false, 0, false))}
                 </div>
               </div>
             )
@@ -419,7 +582,7 @@ export const Dashboard: React.FC = () => {
       
       {/* Información del usuario */}
       {currentUser && (
-        <div className="p-4 border-t border-primary/30 bg-primary-dark/20">
+        <div className="p-4 border-t border-white/20">
           <div className="text-sm text-white/80 mb-2">
             <div className="font-medium">{currentUser.full_name}</div>
             <div className="text-xs text-white/60">{getRoleDisplay(currentUser)}</div>
@@ -427,12 +590,12 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
       
-      <div className="p-3 border-t border-primary/30">
+      <div className="p-3 border-t border-white/20">
         <button
-          className="flex items-center w-full px-3 py-2.5 text-[14px] text-white hover:bg-red-600/80 hover:shadow-sm rounded-lg transition-all duration-200 group"
+          className="flex items-center w-full px-3 py-2.5 text-[14px] text-white hover:bg-red-600/80 hover:shadow-lg rounded-lg transition-all duration-300 ease-out group border-l-4 border-transparent hover:border-red-300 hover:scale-[1.02] transform-gpu"
           onClick={handleLogout}
         >
-          <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
+          <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3 transition-transform duration-300 group-hover:scale-110" />
           <span className="font-medium">Cerrar Sesión</span>
         </button>
       </div>

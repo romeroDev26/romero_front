@@ -392,7 +392,7 @@ export const FaresPage: React.FC = () => {
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="rounded-md border-gray-300 shadow-sm p-2 border"
+            className="rounded-md border-gray-300 shadow-sm p-2 pr-8 border"
           >
             <option value="">Todas las categorías</option>
             {SERVICE_CATEGORIES.map((category) => (

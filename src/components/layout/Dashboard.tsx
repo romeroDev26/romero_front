@@ -15,7 +15,6 @@ import {
   Bars3Icon,
   ArrowRightOnRectangleIcon,
   ChevronDownIcon,
-  ChevronRightIcon,
   UsersIcon,
   KeyIcon,
   MapIcon,
@@ -116,7 +115,7 @@ export const Dashboard: React.FC = () => {
   });
 
   // Estado para controlar si las animaciones deben ejecutarse
-  const [shouldAnimate, setShouldAnimate] = useState<{ [key: string]: boolean }>({});
+  const [shouldAnimate] = useState<{ [key: string]: boolean }>({});
   
   // Efecto para expandir menús basado en la ruta actual
   useEffect(() => {

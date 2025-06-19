@@ -52,73 +52,43 @@ export const Dashboard: React.FC = () => {
   
   // Referencia para el contenedor de scroll del sidebar
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
-  
-  // Agregar estilos CSS personalizados para animaciones (solo cuando se necesiten)
-  React.useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes expandHeight {
-        from {
-          max-height: 0;
-          opacity: 0;
-          transform: translateY(-8px);
+  // Referencia para mantener la última posición del scroll
+  const lastScrollPositionRef = useRef<number>(0);
+
+  // Función para preservar la posición del scroll
+  const preserveScrollPosition = useCallback(() => {
+    if (sidebarScrollRef.current) {
+      const currentScroll = sidebarScrollRef.current.scrollTop;
+      lastScrollPositionRef.current = currentScroll;
+      setTimeout(() => {
+        if (sidebarScrollRef.current) {
+          sidebarScrollRef.current.scrollTop = lastScrollPositionRef.current;
         }
-        to {
-          max-height: 500px;
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      @keyframes slideInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      
-      /* Solo aplicar animaciones cuando se requiera específicamente */
-      .animate-controlled {
-        animation: slideInUp 0.3s ease-out forwards;
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      if (document.head.contains(style)) {
-        document.head.removeChild(style);
-      }
-    };
-  }, []);
-  
-  // Restaurar posición del scroll al montar el componente
-  useEffect(() => {
-    const savedScrollPosition = localStorage.getItem(STORAGE_KEYS.SIDEBAR_SCROLL);
-    if (savedScrollPosition && sidebarScrollRef.current) {
-      sidebarScrollRef.current.scrollTop = parseInt(savedScrollPosition, 10);
+      }, 100);
     }
-    
-    // Cleanup del timeout al desmontar
-    return () => {
-      if (window.scrollSaveTimeout) {
-        clearTimeout(window.scrollSaveTimeout);
-      }
-    };
   }, []);
-  
-  // Guardar posición del scroll cuando cambie (con debounce para optimizar)
+
+  // Restaurar posición del scroll al montar el componente y cuando cambia la ruta
+  useEffect(() => {
+    if (lastScrollPositionRef.current && sidebarScrollRef.current) {
+      sidebarScrollRef.current.scrollTop = lastScrollPositionRef.current;
+    } else {
+      const savedScrollPosition = localStorage.getItem(STORAGE_KEYS.SIDEBAR_SCROLL);
+      if (savedScrollPosition && sidebarScrollRef.current) {
+        sidebarScrollRef.current.scrollTop = parseInt(savedScrollPosition, 10);
+        lastScrollPositionRef.current = parseInt(savedScrollPosition, 10);
+      }
+    }
+  }, [location.pathname]);
+
+  // Guardar posición del scroll cuando cambie
   const handleSidebarScroll = useCallback(() => {
     if (sidebarScrollRef.current) {
-      // Usar un pequeño delay para evitar demasiadas escrituras a localStorage
+      const currentScroll = sidebarScrollRef.current.scrollTop;
+      lastScrollPositionRef.current = currentScroll;
       clearTimeout(window.scrollSaveTimeout);
       window.scrollSaveTimeout = setTimeout(() => {
-        if (sidebarScrollRef.current) {
-          localStorage.setItem(STORAGE_KEYS.SIDEBAR_SCROLL, sidebarScrollRef.current.scrollTop.toString());
-        }
+        localStorage.setItem(STORAGE_KEYS.SIDEBAR_SCROLL, currentScroll.toString());
       }, 100);
     }
   }, []);
@@ -258,33 +228,36 @@ export const Dashboard: React.FC = () => {
   };
   
   const toggleSubmenu = (menuKey: string) => {
-    // Guardar la posición actual del scroll antes de hacer cambios
+    // Guardar la posición actual del scroll antes de cualquier cambio
     const currentScrollPosition = sidebarScrollRef.current?.scrollTop || 0;
-    
-    // Marcar que este menú debe animarse
-    setShouldAnimate(prev => ({ ...prev, [menuKey]: true }));
+    lastScrollPositionRef.current = currentScrollPosition;
     
     setExpandedMenus(prev => {
-      const newState = {
-        ...prev,
-        [menuKey]: !prev[menuKey]
-      };
-      // Guardar inmediatamente en localStorage
+      const willExpand = !prev[menuKey];
+      const newState = { ...prev, [menuKey]: willExpand };
+      
+      // Guardar en localStorage
       localStorage.setItem(STORAGE_KEYS.EXPANDED_MENUS, JSON.stringify(newState));
+      
+      // Programar la restauración del scroll
+      if (sidebarScrollRef.current) {
+        // Restauración inmediata
+        requestAnimationFrame(() => {
+          if (sidebarScrollRef.current) {
+            sidebarScrollRef.current.scrollTop = currentScrollPosition;
+          }
+        });
+        
+        // Restauración después de un breve delay para asegurar que funcione
+        setTimeout(() => {
+          if (sidebarScrollRef.current) {
+            sidebarScrollRef.current.scrollTop = currentScrollPosition;
+          }
+        }, 50);
+      }
+      
       return newState;
     });
-
-    // Restaurar la posición del scroll después de un pequeño delay
-    setTimeout(() => {
-      if (sidebarScrollRef.current) {
-        sidebarScrollRef.current.scrollTop = currentScrollPosition;
-      }
-    }, 10);
-
-    // Limpiar el flag de animación después de que termine
-    setTimeout(() => {
-      setShouldAnimate(prev => ({ ...prev, [menuKey]: false }));
-    }, 400);
   };
   
   const toggleSidebar = () => {
@@ -409,7 +382,7 @@ export const Dashboard: React.FC = () => {
   ];
   
   // Función para renderizar un item del menú
-  const renderMenuItem = (item: any, isSubitem = false, level = 0, inExpandedGroup = false) => {
+  const renderMenuItem = (item: any, _isSubitem = false, level = 0, inExpandedGroup = false) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
     
     // Calcular padding basado en el nivel de anidamiento
@@ -435,13 +408,9 @@ export const Dashboard: React.FC = () => {
             </div>
           </button>
           {isExpanded && item.subitems && (
-            <div 
-              className={`mt-1 rounded-lg mx-2 overflow-hidden transition-all duration-300 ease-out ${
-                shouldAnimate[item.expandKey] ? 'animate-in slide-in-from-top-1 fade-in' : ''
-              }`}
-              style={shouldAnimate[item.expandKey] ? {
-                animation: 'expandHeight 0.25s ease-out forwards'
-              } : {}}
+            <div            className={`mt-1 rounded-lg mx-2 submenu-content ${
+              expandedMenus[item.expandKey] ? 'expanding' : 'collapsing'
+            }`}
             >
               {/* Barra lateral indicadora para submenús más gruesa */}
               <div className="relative">
@@ -472,6 +441,7 @@ export const Dashboard: React.FC = () => {
       <NavLink
         key={item.path}
         to={item.path}
+        onClick={preserveScrollPosition}
         className={({ isActive }) =>
           `${baseClasses} mb-1 group ${
             isActive 
@@ -509,14 +479,10 @@ export const Dashboard: React.FC = () => {
           </div>
         </button>
         
-        {isExpanded && (
-          <div 
-            className={`rounded-lg mx-1 overflow-hidden transition-all duration-300 ease-out ${
-              shouldAnimate[group.expandKey] ? 'animate-in slide-in-from-top-2 fade-in' : ''
+        {isExpanded && (          <div 
+            className={`rounded-lg mx-1 overflow-hidden ${
+              shouldAnimate[group.expandKey] ? 'submenu-expand' : ''
             }`}
-            style={shouldAnimate[group.expandKey] ? {
-              animation: 'expandHeight 0.3s ease-out forwards'
-            } : {}}
           >
             {/* Barra lateral indicadora más gruesa */}
             <div className="relative">
@@ -601,6 +567,44 @@ export const Dashboard: React.FC = () => {
       </div>
     </>
   );
+  
+  // Estilo para las animaciones de los menús
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .submenu-content {
+        position: relative;
+        transition: max-height 0.2s ease-out;
+        overflow: hidden;
+      }
+      
+      .submenu-content.expanding {
+        max-height: 1000px;
+      }
+      
+      .submenu-content.collapsing {
+        max-height: 0;
+      }
+      
+      .submenu-items {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+      }
+      
+      .submenu-items.fade-enter {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
   
   return (
     <div className="flex h-screen bg-gray-100">

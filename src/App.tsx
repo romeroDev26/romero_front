@@ -36,9 +36,9 @@ import { FaresPage } from './features/fluvial/pages/FaresPage';
 import { RoutesPage } from './features/fluvial/pages/RoutesPage';
 import { SeatTypesPage } from './features/fluvial/pages/SeatTypesPage';
 import { ProductsServicesPage } from './features/fluvial/pages/ProductsServicesPage.tsx';
+import { ScheduleTripsPage } from './features/fluvial/pages/ScheduleTripsPage';
 
 // Operaciones Fluviales (pendientes de implementar)
-const ScheduleTripsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Programar Viajes</h1><p>Programación de viajes y itinerarios</p></div>;
 const ReservationsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Gestionar Reservas</h1><p>Gestión de reservas y separaciones</p></div>;
 const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
 

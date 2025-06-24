@@ -94,7 +94,8 @@ const AVAILABLE_TRIPS: AvailableTrip[] = [
     total_reserved_seats: 4,
     total_confirmed_seats: 2,
     total_capacity: 30,
-    sales_status: 'DISPONIBLE'
+    sales_status: 'DISPONIBLE',
+    id: 0
   },
   {
     trip_id: 2,
@@ -112,7 +113,8 @@ const AVAILABLE_TRIPS: AvailableTrip[] = [
     total_reserved_seats: 5,
     total_confirmed_seats: 2,
     total_capacity: 25,
-    sales_status: 'DISPONIBLE'
+    sales_status: 'DISPONIBLE',
+    id: 0
   }
 ];
 

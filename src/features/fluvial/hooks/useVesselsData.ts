@@ -9,24 +9,28 @@ import {
   VesselWithConfigurations,
   vesselHelpers
 } from '../../../services/vessels.service';
-import { Vessel, VesselSeatConfiguration } from '../../../types';
+import { Vessel } from '../../../types';
 
 // ========================================
 // HOOKS PARA EMBARCACIONES
 // ========================================
-
 export const useVessels = (isActive = true) => {
-  return useQuery({
-    queryKey: ['vessels', { isActive }],    
+  return useQuery<Vessel[]>({
+    // La queryKey es crucial para el caching. Incluye el filtro 'isActive'.
+    queryKey: ['vessels', { isActive }],
     queryFn: async () => {
-      const companyId = vesselHelpers.getCurrentCompanyId();
+      // Como acordamos, usamos ID 1 por ahora para asegurar que funcione.
+      const companyId = 1; 
+      
       const vessels = await vesselsService.getAll({ 
         company_id: companyId,
         is_active: isActive 
       });
       return vessels;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    // Habilitamos la query solo si el companyId es válido (para el futuro)
+    enabled: true, // Lo dejamos en true por ahora ya que companyId es fijo.
+    staleTime: 1000 * 60 * 5, // 5 minutos de cache
   });
 };
 

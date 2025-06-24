@@ -1,5 +1,5 @@
 import api from '../config/api';
-import { City, Port } from '../types';
+import { City, Port, PortType } from '../types';
 
 // ========================================
 // INTERFACES
@@ -34,6 +34,7 @@ export interface PortCreateData {
   ubigeo: string;
   address: string;
   city_id: number;
+  port_type: PortType; 
   is_active?: boolean;
 }
 
@@ -42,6 +43,7 @@ export interface PortUpdateData {
   ubigeo?: string;
   address?: string;
   city_id?: number;
+  port_type?: PortType; 
   is_active?: boolean;
 }
 

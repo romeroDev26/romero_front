@@ -3,21 +3,25 @@ import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, MapPinIcon } from
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
-import { Spinner } from '../../../components/common/Spinner'; // Asumo que tienes este componente
-import { City, Port } from '../../../types';
+import { Spinner } from '../../../components/common/Spinner';
+import { City, Port, PortType } from '../../../types';
 import { useCities, useCreateCity, useUpdateCity, useDeactivateCity, usePorts, useCreatePort, useUpdatePort, useDeactivatePort } from '../../../hooks/useCitiesPortsData';
 import { CityCreateData, CityUpdateData, PortCreateData, PortUpdateData } from '../../../services/ports.cities.service';
+import { toast } from 'react-toastify';
 
+// Objeto para mapear los tipos de puerto a etiquetas legibles
+const PORT_TYPE_LABELS: Record<PortType, string> = {
+  'PRIMARY_HUB': 'Puerto Principal',
+  'SECONDARY_STOP': 'Parada Secundaria',
+};
 
-// Los componentes de formulario (CityFormModal, PortFormModal) que creaste están perfectos.
-// Solo necesitamos ajustar los tipos de las props `onSubmit` para que coincidan con los datos de creación/actualización.
+// Componente para el modal de Ciudad
 const CityFormModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CityCreateData | CityUpdateData) => void;
   city?: City;
 }> = ({ isOpen, onClose, onSubmit, city }) => {
-  // El estado inicial del formulario
   const [formData, setFormData] = useState({
     name: city?.name || '',
     code: city?.code || '',
@@ -27,23 +31,26 @@ const CityFormModal: React.FC<{
     country_code: city?.country_code || 'PE'
   });
 
-  // Resetea el form cuando cambia la prop `city` o se abre el modal
   React.useEffect(() => {
     if (isOpen) {
-        setFormData({
-            name: city?.name || '',
-            code: city?.code || '',
-            ubigeo: city?.ubigeo || '',
-            department: city?.department || '',
-            province: city?.province || '',
-            country_code: city?.country_code || 'PE'
-        });
+      setFormData({
+        name: city?.name || '',
+        code: city?.code || '',
+        ubigeo: city?.ubigeo || '',
+        department: city?.department || '',
+        province: city?.province || '',
+        country_code: city?.country_code || 'PE'
+      });
     }
   }, [isOpen, city]);
 
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Validar que el Ubigeo tenga exactamente 6 dígitos
+    if (!/^\d{6}$/.test(formData.ubigeo)) {
+      toast.error('El Ubigeo debe contener exactamente 6 dígitos.');
+      return;
+    }
     onSubmit(formData);
   };
 
@@ -57,7 +64,11 @@ const CityFormModal: React.FC<{
           <Input label="Código" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} required />
         </div>
         <div className="grid grid-cols-3 gap-4">
-          <Input label="Ubigeo" value={formData.ubigeo} onChange={(e) => setFormData({ ...formData, ubigeo: e.target.value })} required />
+          <Input label="Ubigeo" value={formData.ubigeo} onChange={(e) => {
+            // Limitar a máximo 6 caracteres numéricos
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            setFormData({ ...formData, ubigeo: value });
+          }} required maxLength={6} />
           <Input label="Departamento" value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} required />
           <Input label="Provincia" value={formData.province} onChange={(e) => setFormData({ ...formData, province: e.target.value })} required />
         </div>
@@ -70,6 +81,7 @@ const CityFormModal: React.FC<{
   );
 };
 
+// Componente para el modal de Puerto
 const PortFormModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
@@ -81,25 +93,31 @@ const PortFormModal: React.FC<{
     name: port?.name || '',
     ubigeo: port?.ubigeo || '',
     address: port?.address || '',
-    city_id: port?.city_id || 0
+    city_id: port?.city_id || 0,
+    port_type: port?.port_type || 'SECONDARY_STOP' as PortType
   });
 
-   React.useEffect(() => {
+  React.useEffect(() => {
     if (isOpen) {
-        setFormData({
-            name: port?.name || '',
-            ubigeo: port?.ubigeo || '',
-            address: port?.address || '',
-            city_id: port?.city_id || 0,
-        });
+      setFormData({
+        name: port?.name || '',
+        ubigeo: port?.ubigeo || '',
+        address: port?.address || '',
+        city_id: port?.city_id || 0,
+        port_type: port?.port_type || 'SECONDARY_STOP' as PortType
+      });
     }
   }, [isOpen, port]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!/^\d{6}$/.test(formData.ubigeo)) {
+      toast.error('El Ubigeo debe contener exactamente 6 dígitos.');
+      return;
+    }
     if (formData.city_id === 0) {
-        alert("Por favor, seleccione una ciudad.");
-        return;
+      toast.error("Por favor, seleccione una ciudad.");
+      return;
     }
     onSubmit(formData);
   };
@@ -111,16 +129,31 @@ const PortFormModal: React.FC<{
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         <Input label="Nombre del Puerto" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
         <div className="grid grid-cols-2 gap-4">
+          <Input label="Ubigeo (6 dígitos)" value={formData.ubigeo} onChange={(e) => {
+            // Limitar a máximo 6 caracteres numéricos
+            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+            setFormData({ ...formData, ubigeo: value });
+          }} required maxLength={6} />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-            <select value={formData.city_id} onChange={(e) => setFormData({ ...formData, city_id: parseInt(e.target.value) })} className="w-full p-2 border border-gray-300 rounded-md" required>
-              <option value={0}>Seleccione una ciudad</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>{city.name} ({city.department})</option>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Puerto</label>
+            <select
+              value={formData.port_type}
+              onChange={(e) => setFormData({ ...formData, port_type: e.target.value as PortType })}
+              className="w-full p-2 border border-gray-300 rounded-md"
+              required
+            >
+              {Object.entries(PORT_TYPE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
               ))}
             </select>
           </div>
-          <Input label="Ubigeo" value={formData.ubigeo} onChange={(e) => setFormData({ ...formData, ubigeo: e.target.value })} required/>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+          <select value={formData.city_id} onChange={(e) => setFormData({ ...formData, city_id: parseInt(e.target.value) })} className="w-full p-2 border border-gray-300 rounded-md" required>
+            <option value={0}>Seleccione una ciudad</option>
+            {cities.map((city) => (<option key={city.id} value={city.id}>{city.name} ({city.department})</option>))}
+          </select>
         </div>
         <Input label="Dirección" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
         <div className="flex justify-end gap-3">
@@ -132,8 +165,8 @@ const PortFormModal: React.FC<{
   );
 };
 
+// Componente principal de la página
 export const CitiesPortsPage: React.FC = () => {
-  // ESTADO LOCAL
   const [activeTab, setActiveTab] = useState<'cities' | 'ports'>('cities');
   const [searchTerm, setSearchTerm] = useState('');
   const [showCityModal, setShowCityModal] = useState(false);
@@ -141,11 +174,9 @@ export const CitiesPortsPage: React.FC = () => {
   const [editingCity, setEditingCity] = useState<City | undefined>();
   const [editingPort, setEditingPort] = useState<Port | undefined>();
 
-  // OBTENCIÓN DE DATOS CON REACT QUERY
   const { data: cities = [], isLoading: isLoadingCities } = useCities();
   const { data: ports = [], isLoading: isLoadingPorts } = usePorts(true);
 
-  // MUTACIONES
   const createCityMutation = useCreateCity();
   const updateCityMutation = useUpdateCity();
   const deactivateCityMutation = useDeactivateCity();
@@ -153,7 +184,6 @@ export const CitiesPortsPage: React.FC = () => {
   const updatePortMutation = useUpdatePort();
   const deactivatePortMutation = useDeactivatePort();
 
-  // MANEJADORES DE EVENTOS
   const handleFormSubmit = (data: CityCreateData | CityUpdateData | PortCreateData | PortUpdateData) => {
     if (editingCity) {
       updateCityMutation.mutate({ id: editingCity.id, data: data as CityUpdateData }, { onSuccess: () => setShowCityModal(false) });
@@ -176,8 +206,7 @@ export const CitiesPortsPage: React.FC = () => {
       }
     }
   };
-  
-  // LÓGICA DE FILTRADO
+
   const filteredCities = useMemo(() =>
     cities.filter(city =>
       city.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -222,7 +251,7 @@ export const CitiesPortsPage: React.FC = () => {
           <input type="text" className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border" placeholder={`Buscar ${activeTab === 'cities' ? 'ciudades' : 'puertos'}...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
         <Button onClick={() => {
-          if (activeTab === 'cities') { setEditingCity(undefined); setShowCityModal(true); } 
+          if (activeTab === 'cities') { setEditingCity(undefined); setShowCityModal(true); }
           else { setEditingPort(undefined); setShowPortModal(true); }
         }} className="flex items-center">
           <PlusIcon className="h-5 w-5 mr-2" />
@@ -233,7 +262,6 @@ export const CitiesPortsPage: React.FC = () => {
       {activeTab === 'cities' ? (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
-            {/* ... Tu JSX de la tabla de ciudades está perfecto ... */}
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudad</th>
@@ -264,10 +292,10 @@ export const CitiesPortsPage: React.FC = () => {
       ) : (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
-            {/* ... Tu JSX de la tabla de puertos está perfecto ... */}
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puerto</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudad</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubigeo</th>
@@ -279,6 +307,7 @@ export const CitiesPortsPage: React.FC = () => {
               {filteredPorts.map((port) => (
                 <tr key={port.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap"><div className="flex items-center"><MapPinIcon className="h-5 w-5 text-blue-400 mr-3" /><div className="font-medium text-gray-900">{port.name}</div></div></td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{PORT_TYPE_LABELS[port.port_type] || port.port_type}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{port.city?.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{port.address}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{port.ubigeo}</td>

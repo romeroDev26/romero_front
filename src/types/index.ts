@@ -202,10 +202,13 @@ export interface Port {
   address?: string;
   city_id?: number;
   city?: City;
+  port_type: PortType;
   is_active: boolean;
   created_at: string;
   updated_at: string;
 }
+
+export type PortType = 'PRIMARY_HUB' | 'SECONDARY_STOP';
 
 export interface Vessel {
   id: number;

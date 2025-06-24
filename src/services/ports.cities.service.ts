@@ -1,11 +1,9 @@
-// src/services/ports.cities.service.ts
 import api from '../config/api';
 import { City, Port } from '../types';
 
 // ========================================
 // INTERFACES
 // ========================================
-
 export interface CityCreateData {
   name: string;
   code: string;
@@ -27,7 +25,6 @@ export interface CityUpdateData {
 }
 
 export interface CityListParams {
-  is_active?: boolean;
   skip?: number;
   limit?: number;
 }
@@ -49,7 +46,6 @@ export interface PortUpdateData {
 }
 
 export interface PortListParams {
-  company_id: number;
   is_active?: boolean;
   skip?: number;
   limit?: number;
@@ -59,12 +55,11 @@ export interface PortListParams {
 // ========================================
 // SERVICIO DE CIUDADES
 // ========================================
-
 export const citiesConfigService = {
   getAll: async (params: CityListParams = {}): Promise<City[]> => {
-    const { is_active = true, skip = 0, limit = 100 } = params;
+    const { skip = 0, limit = 100 } = params;
     const response = await api.get<City[]>('/config/cities/', {
-      params: { is_active, skip, limit }
+      params: { skip, limit }
     });
     return response.data;
   },
@@ -84,7 +79,7 @@ export const citiesConfigService = {
     return response.data;
   },
 
-  delete: async (cityId: number): Promise<City> => {
+  deactivate: async (cityId: number): Promise<City> => {
     const response = await api.delete<City>(`/config/cities/${cityId}`);
     return response.data;
   }
@@ -93,23 +88,12 @@ export const citiesConfigService = {
 // ========================================
 // SERVICIO DE PUERTOS
 // ========================================
-
 export const portsConfigService = {
-  getAll: async (params: PortListParams): Promise<Port[]> => {
-    if (!params.company_id) {
-      throw new Error("El 'company_id' es requerido para listar puertos.");
-    }
-
-    const queryParams = new URLSearchParams({
-      company_id: params.company_id.toString(),
+  getAll: async (params: PortListParams = {}): Promise<Port[]> => {
+    const { is_active = true, skip = 0, limit = 100, city_id } = params;
+    const response = await api.get<Port[]>('/config/ports/', {
+      params: { is_active, skip, limit, city_id }
     });
-
-    if (params.is_active !== undefined) queryParams.append('is_active', String(params.is_active));
-    if (params.skip !== undefined) queryParams.append('skip', String(params.skip));
-    if (params.limit !== undefined) queryParams.append('limit', String(params.limit));
-    if (params.city_id !== undefined) queryParams.append('city_id', String(params.city_id));
-
-    const response = await api.get<Port[]>(`/config/ports/?${queryParams.toString()}`);
     return response.data;
   },
 
@@ -128,7 +112,7 @@ export const portsConfigService = {
     return response.data;
   },
 
-  delete: async (portId: number): Promise<Port> => {
+  deactivate: async (portId: number): Promise<Port> => {
     const response = await api.delete<Port>(`/config/ports/${portId}`);
     return response.data;
   }

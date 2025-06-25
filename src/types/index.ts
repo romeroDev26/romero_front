@@ -1031,3 +1031,35 @@ export interface ReservationFormData extends SalesPointFormData {
 
 // Tipo para documento de identidad
 export type DocType = '1' | '4' | '6' | '7' | '0';
+
+
+export interface DocumentSeries {
+  id: number;
+  company_id: number;
+  branch_office_id: number;
+  document_type_code: string; // e.g., "01", "03"
+  series_code: string; // e.g., "F001", "B001"
+  current_number: number;
+  is_electronic: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  // Opcionales para mostrar info enriquecida en la UI
+  branch_office?: { id: number, name: string }; // Asumiendo una estructura para sucursal
+}
+
+export interface BranchOffice {
+  id: number;
+  company_id: number;
+  name: string;
+  code?: string;
+  port_id: number;
+  address_line?: string;
+  phone?: string;
+  email?: string;
+  is_main_office: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  port?: Port;
+}

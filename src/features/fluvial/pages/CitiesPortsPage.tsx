@@ -175,7 +175,7 @@ export const CitiesPortsPage: React.FC = () => {
   const [editingPort, setEditingPort] = useState<Port | undefined>();
 
   const { data: cities = [], isLoading: isLoadingCities } = useCities();
-  const { data: ports = [], isLoading: isLoadingPorts } = usePorts(true);
+  const { data: ports = [], isLoading: isLoadingPorts } = usePorts({ isActive: true });
 
   const createCityMutation = useCreateCity();
   const updateCityMutation = useUpdateCity();

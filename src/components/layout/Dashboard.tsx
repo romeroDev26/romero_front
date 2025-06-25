@@ -3,8 +3,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
-import { 
-  HomeIcon, 
+import {
+  HomeIcon,
   UserGroupIcon,
   DocumentTextIcon,
   CreditCardIcon,
@@ -48,7 +48,7 @@ const STORAGE_KEYS = {
 export const Dashboard: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Referencia para el contenedor de scroll del sidebar
   const sidebarScrollRef = useRef<HTMLDivElement>(null);
   // Referencia para mantener la última posición del scroll
@@ -91,7 +91,7 @@ export const Dashboard: React.FC = () => {
       }, 100);
     }
   }, []);
-  
+
   // Estados del sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false); // Para móvil
   const [sidebarHidden, setSidebarHidden] = useState(() => {
@@ -101,7 +101,7 @@ export const Dashboard: React.FC = () => {
     const saved = localStorage.getItem(STORAGE_KEYS.SIDEBAR_HIDDEN);
     return saved ? JSON.parse(saved) : false;
   });
-  
+
   // Estados para controlar submenús expandibles
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.EXPANDED_MENUS);
@@ -116,20 +116,20 @@ export const Dashboard: React.FC = () => {
 
   // Estado para controlar si las animaciones deben ejecutarse
   const [shouldAnimate] = useState<{ [key: string]: boolean }>({});
-  
+
   // Efecto para expandir menús basado en la ruta actual
   useEffect(() => {
     const currentPath = location.pathname;
     const newExpandedMenus = { ...expandedMenus };
     let shouldUpdate = false;
-    
+
     // Sistema Fluvial
     if (currentPath.startsWith('/fluvial')) {
       if (!newExpandedMenus.fluvial) {
         newExpandedMenus.fluvial = true;
         shouldUpdate = true;
       }
-      
+
       // Configuración
       if (currentPath.startsWith('/fluvial/config')) {
         if (!newExpandedMenus.fluvialConfig) {
@@ -137,7 +137,7 @@ export const Dashboard: React.FC = () => {
           shouldUpdate = true;
         }
       }
-      
+
       // Operaciones
       if (currentPath.startsWith('/fluvial/operations')) {
         if (!newExpandedMenus.fluvialOps) {
@@ -146,19 +146,19 @@ export const Dashboard: React.FC = () => {
         }
       }
     }
-    
+
     // Operaciones Comerciales
-    if (currentPath.startsWith('/sales') || 
-        currentPath.startsWith('/invoices') || 
-        currentPath.startsWith('/credit-notes') || 
-        currentPath.startsWith('/debit-notes') || 
+    if (currentPath.startsWith('/sales') ||
+        currentPath.startsWith('/invoices') ||
+        currentPath.startsWith('/credit-notes') ||
+        currentPath.startsWith('/debit-notes') ||
         currentPath.startsWith('/remission-guides')) {
       if (!newExpandedMenus.commerce) {
         newExpandedMenus.commerce = true;
         shouldUpdate = true;
       }
     }
-    
+
     // Administración del Sistema
     if (currentPath.startsWith('/settings')) {
       if (!newExpandedMenus.administration) {
@@ -166,25 +166,25 @@ export const Dashboard: React.FC = () => {
         shouldUpdate = true;
       }
     }
-    
+
     if (shouldUpdate) {
       setExpandedMenus(newExpandedMenus);
       localStorage.setItem(STORAGE_KEYS.EXPANDED_MENUS, JSON.stringify(newExpandedMenus));
     }
   }, [location.pathname]);
-  
+
   // Guardar estado del sidebar hidden (solo en desktop)
   useEffect(() => {
     if (window.innerWidth >= 1024) {
       localStorage.setItem(STORAGE_KEYS.SIDEBAR_HIDDEN, JSON.stringify(sidebarHidden));
     }
   }, [sidebarHidden]);
-  
+
   // Guardar estado de menús expandidos
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.EXPANDED_MENUS, JSON.stringify(expandedMenus));
   }, [expandedMenus]);
-  
+
   // Manejar cambios de tamaño de ventana
   useEffect(() => {
     const handleResize = () => {
@@ -192,11 +192,11 @@ export const Dashboard: React.FC = () => {
         setSidebarHidden(true);
       }
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   const { data: currentUser, isLoading, error } = useQuery<User>({
     queryKey: ['currentUser'],
     queryFn: async (): Promise<User> => {
@@ -216,7 +216,7 @@ export const Dashboard: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 minutos
     retry: 1
   });
-  
+
   const handleLogout = () => {
     // Limpiar localStorage al cerrar sesión
     localStorage.removeItem(STORAGE_KEYS.EXPANDED_MENUS);
@@ -225,19 +225,19 @@ export const Dashboard: React.FC = () => {
     authService.logout();
     navigate('/login');
   };
-  
+
   const toggleSubmenu = (menuKey: string) => {
     // Guardar la posición actual del scroll antes de cualquier cambio
     const currentScrollPosition = sidebarScrollRef.current?.scrollTop || 0;
     lastScrollPositionRef.current = currentScrollPosition;
-    
+
     setExpandedMenus(prev => {
       const willExpand = !prev[menuKey];
       const newState = { ...prev, [menuKey]: willExpand };
-      
+
       // Guardar en localStorage
       localStorage.setItem(STORAGE_KEYS.EXPANDED_MENUS, JSON.stringify(newState));
-      
+
       // Programar la restauración del scroll
       if (sidebarScrollRef.current) {
         // Restauración inmediata
@@ -246,7 +246,7 @@ export const Dashboard: React.FC = () => {
             sidebarScrollRef.current.scrollTop = currentScrollPosition;
           }
         });
-        
+
         // Restauración después de un breve delay para asegurar que funcione
         setTimeout(() => {
           if (sidebarScrollRef.current) {
@@ -254,11 +254,11 @@ export const Dashboard: React.FC = () => {
           }
         }, 50);
       }
-      
+
       return newState;
     });
   };
-  
+
   const toggleSidebar = () => {
     // En móvil usa el estado temporal
     if (window.innerWidth < 1024) {
@@ -268,28 +268,28 @@ export const Dashboard: React.FC = () => {
       setSidebarHidden(!sidebarHidden);
     }
   };
-  
+
   // Función para obtener el nombre del rol formateado
   const getRoleDisplay = (user: User | undefined) => {
     if (!user) return '';
-    
+
     if (user.role_name) {
       if (typeof user.role_name === 'string') {
         return user.role_name;
       }
     }
-    
+
     if (user.role?.description) {
       return user.role.description;
     }
-    
+
     if (user.role?.name) {
       return user.role.name;
     }
-    
+
     return 'Sin rol';
   };
-  
+
   const navGroups = [
     {
       title: 'Dashboard',
@@ -310,10 +310,10 @@ export const Dashboard: React.FC = () => {
       icon: ChartPieIcon,
       items: [
         { name: 'Dashboard Fluvial', path: '/fluvial/dashboard', icon: ChartBarIcon },
-        { 
-          name: 'Configuración', 
-          path: '#', 
-          icon: AdjustmentsHorizontalIcon, 
+        {
+          name: 'Configuración',
+          path: '#',
+          icon: AdjustmentsHorizontalIcon,
           isSubmenu: true,
           expandKey: 'fluvialConfig',
           subitems: [
@@ -322,13 +322,14 @@ export const Dashboard: React.FC = () => {
             { name: 'Rutas', path: '/fluvial/config/routes', icon: TruckIcon },
             { name: 'Tarifas', path: '/fluvial/config/fares', icon: CurrencyDollarIcon },
             { name: 'Tipos de Asiento', path: '/fluvial/config/seat-types', icon: AdjustmentsHorizontalIcon },
-            { name: 'Productos y Servicios', path: '/fluvial/config/products-services', icon: CubeIcon }
+            { name: 'Productos y Servicios', path: '/fluvial/config/products-services', icon: CubeIcon },
+            { name: 'Configuración de Series', path: '/fluvial/config/document-series', icon: ClipboardDocumentListIcon },
           ]
         },
-        { 
-          name: 'Operaciones', 
-          path: '#', 
-          icon: CalendarDaysIcon, 
+        {
+          name: 'Operaciones',
+          path: '#',
+          icon: CalendarDaysIcon,
           isSubmenu: true,
           expandKey: 'fluvialOps',
           subitems: [
@@ -379,24 +380,24 @@ export const Dashboard: React.FC = () => {
       ]
     }
   ];
-  
+
   // Función para renderizar un item del menú
   const renderMenuItem = (item: any, _isSubitem = false, level = 0, inExpandedGroup = false) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
-    
+
     // Calcular padding basado en el nivel de anidamiento
     const paddingLeft = level === 0 ? 'pl-2' : level === 1 ? 'pl-6' : 'pl-10';
-    
+
     const baseClasses = `flex items-center ${paddingLeft} pr-3 py-2.5 text-[14px] rounded-lg transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-lg transform-gpu`;
-    
+
     if (item.isSubmenu) {
       return (
         <div key={item.name} className="mb-1">
           <button
             onClick={() => toggleSubmenu(item.expandKey)}
             className={`${baseClasses} w-full text-left text-white group border-l-4 ${
-              isExpanded 
-                ? 'border-white/80 shadow-sm transform scale-[1.01]' 
+              isExpanded
+                ? 'border-white/80 shadow-sm transform scale-[1.01]'
                 : 'border-transparent hover:border-white/50'
             }`}
           >
@@ -407,9 +408,10 @@ export const Dashboard: React.FC = () => {
             </div>
           </button>
           {isExpanded && item.subitems && (
-            <div            className={`mt-1 rounded-lg mx-2 submenu-content ${
-              expandedMenus[item.expandKey] ? 'expanding' : 'collapsing'
-            }`}
+            <div
+              className={`mt-1 rounded-lg mx-2 submenu-content ${
+                expandedMenus[item.expandKey] ? 'expanding' : 'collapsing'
+              }`}
             >
               {/* Barra lateral indicadora para submenús más gruesa */}
               <div className="relative">
@@ -435,7 +437,7 @@ export const Dashboard: React.FC = () => {
         </div>
       );
     }
-    
+
     return (
       <NavLink
         key={item.path}
@@ -443,8 +445,8 @@ export const Dashboard: React.FC = () => {
         onClick={preserveScrollPosition}
         className={({ isActive }) =>
           `${baseClasses} mb-1 group ${
-            isActive 
-              ? 'bg-secondary text-white shadow-lg font-medium border-l-4 border-white transform scale-[1.02]' 
+            isActive
+              ? 'bg-secondary text-white shadow-lg font-medium border-l-4 border-white transform scale-[1.02]'
               : 'text-white/90 hover:text-white hover:shadow-lg border-l-4 border-transparent hover:border-white/50'
           }`
         }
@@ -454,18 +456,18 @@ export const Dashboard: React.FC = () => {
       </NavLink>
     );
   };
-  
+
   // Función para renderizar un grupo expandible
   const renderExpandableGroup = (group: any) => {
     const isExpanded = expandedMenus[group.expandKey];
-    
+
     return (
       <div key={group.title} className="mb-6">
         <button
           onClick={() => toggleSubmenu(group.expandKey)}
           className={`flex items-center justify-between w-full px-3 py-3 text-[14px] font-bold uppercase tracking-wide mb-3 rounded-lg transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-lg border-l-4 bg-white/5 ${
-            isExpanded 
-              ? 'text-white transform scale-[1.01] border-white/80 shadow-md' 
+            isExpanded
+              ? 'text-white transform scale-[1.01] border-white/80 shadow-md'
               : 'text-white/95 hover:text-white border-transparent hover:border-white/50 hover:bg-white/10'
           }`}
         >
@@ -477,8 +479,9 @@ export const Dashboard: React.FC = () => {
             <ChevronDownIcon className="w-5 h-5" />
           </div>
         </button>
-        
-        {isExpanded && (          <div 
+
+        {isExpanded && (
+          <div
             className={`rounded-lg mx-1 overflow-hidden ${
               shouldAnimate[group.expandKey] ? 'submenu-expand' : ''
             }`}
@@ -488,7 +491,7 @@ export const Dashboard: React.FC = () => {
               <div className="absolute left-1 top-0 bottom-0 w-1 bg-white/50 rounded-full"></div>
               <div className="p-2 space-y-1 pl-4">
                 {group.items.map((item: any, index: number) => (
-                  <div 
+                  <div
                     key={item.name || item.path}
                     className={shouldAnimate[group.expandKey] ? "animate-in slide-in-from-left-3 fade-in" : ""}
                     style={shouldAnimate[group.expandKey] ? {
@@ -507,7 +510,7 @@ export const Dashboard: React.FC = () => {
       </div>
     );
   };
-  
+
   // Componente del Sidebar
   const SidebarContent = () => (
     <>
@@ -517,14 +520,14 @@ export const Dashboard: React.FC = () => {
           <XMarkIcon className="w-6 h-6" />
         </button>
       </div>
-      
-      <div 
+
+      <div
         ref={sidebarScrollRef}
         className="flex-1 overflow-y-auto"
         onScroll={handleSidebarScroll}
       >
         <nav className="px-3 py-4">
-          {navGroups.map((group, idx) => (
+          {navGroups.map((group, idx) =>
             group.expandable ? renderExpandableGroup(group) : (
               <div key={idx} className="mb-6">
                 <div className="px-3 py-3 text-[14px] font-bold text-white uppercase tracking-wide mb-3 bg-white/5 rounded-lg border-l-4 border-white/50">
@@ -541,10 +544,10 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
             )
-          ))}
+          )}
         </nav>
       </div>
-      
+
       {/* Información del usuario */}
       {currentUser && (
         <div className="p-4 border-t border-white/20">
@@ -554,7 +557,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <div className="p-3 border-t border-white/20">
         <button
           className="flex items-center w-full px-3 py-2.5 text-[14px] text-white hover:bg-red-600/80 hover:shadow-lg rounded-lg transition-all duration-300 ease-out group border-l-4 border-transparent hover:border-red-300 hover:scale-[1.02] transform-gpu"
@@ -566,7 +569,7 @@ export const Dashboard: React.FC = () => {
       </div>
     </>
   );
-  
+
   // Estilo para las animaciones de los menús
   React.useEffect(() => {
     const style = document.createElement('style');
@@ -576,53 +579,53 @@ export const Dashboard: React.FC = () => {
         transition: max-height 0.2s ease-out;
         overflow: hidden;
       }
-      
+
       .submenu-content.expanding {
         max-height: 1000px;
       }
-      
+
       .submenu-content.collapsing {
         max-height: 0;
       }
-      
+
       .submenu-items {
         opacity: 1;
         transform: translateY(0);
         transition: opacity 0.2s ease-out, transform 0.2s ease-out;
       }
-      
+
       .submenu-items.fade-enter {
         opacity: 0;
         transform: translateY(-10px);
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       if (document.head.contains(style)) {
         document.head.removeChild(style);
       }
     };
   }, []);
-  
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar para móvil (overlay) */}
       <div className={`fixed inset-0 z-40 lg:hidden ${sidebarOpen ? 'block' : 'hidden'}`}>
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)}></div>
-        
+
         <div className="fixed inset-y-0 left-0 flex flex-col w-64 max-w-xs bg-primary text-white shadow-xl">
           <SidebarContent />
         </div>
       </div>
-      
+
       {/* Sidebar para escritorio */}
       <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${sidebarHidden ? 'lg:w-0' : 'lg:w-64'}`}>
         <div className={`flex flex-col w-64 bg-primary text-white transition-opacity duration-300 ${sidebarHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <SidebarContent />
         </div>
       </div>
-      
+
       {/* Contenido principal */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Barra superior */}
@@ -637,7 +640,7 @@ export const Dashboard: React.FC = () => {
               >
                 <Bars3Icon className="w-6 h-6" />
               </button>
-              
+
               {/* Información del usuario */}
               <div>
                 {isLoading ? (
@@ -656,14 +659,14 @@ export const Dashboard: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             {/* Puedes agregar más elementos al navbar aquí */}
             <div className="flex items-center space-x-4">
               {/* Por ejemplo: notificaciones, perfil, etc. */}
             </div>
           </div>
         </header>
-        
+
         {/* Área de contenido */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-100">
           <div className="px-6">

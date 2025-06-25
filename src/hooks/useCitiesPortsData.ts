@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { citiesConfigService, portsConfigService } from '../services/ports.cities.service';
 import { City, Port } from '../types';
 import { CityCreateData, CityUpdateData, PortCreateData, PortUpdateData } from '../services/ports.cities.service';
+import { PortType } from '../types';
 
 // ========================================
 // HOOKS PARA CIUDADES
@@ -11,8 +12,8 @@ import { CityCreateData, CityUpdateData, PortCreateData, PortUpdateData } from '
 export const useCities = () => {
   return useQuery({
     queryKey: ['cities'],
-    queryFn: () => citiesConfigService.getAll({ limit: 200 }), // Traemos hasta 200, ajusta si es necesario
-    staleTime: 1000 * 60 * 5, // 5 minutos de caché
+    queryFn: () => citiesConfigService.getAll({ limit: 200 }),
+    staleTime: 1000 * 60 * 5,
   });
 };
 
@@ -34,7 +35,7 @@ export const useCreateCity = () => {
 export const useUpdateCity = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: CityUpdateData }) => 
+    mutationFn: ({ id, data }: { id: number; data: CityUpdateData }) =>
       citiesConfigService.update(id, data),
     onSuccess: (updatedCity) => {
       queryClient.invalidateQueries({ queryKey: ['cities'] });
@@ -63,16 +64,23 @@ export const useDeactivateCity = () => {
   });
 };
 
-
 // ========================================
 // HOOKS PARA PUERTOS
 // ========================================
 
-export const usePorts = (isActive: boolean | undefined = true) => {
+export const usePorts = (params?: { isActive?: boolean; portType?: PortType }) => {
+  const { isActive = true, portType } = params || {};
+
   return useQuery({
     queryKey: ['ports', { isActive }],
     queryFn: () => portsConfigService.getAll({ is_active: isActive, limit: 200 }),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 5,
+    select: (allPorts) => {
+      if (!portType) {
+        return allPorts;
+      }
+      return allPorts.filter(port => port.port_type === portType);
+    },
   });
 };
 
@@ -94,7 +102,7 @@ export const useCreatePort = () => {
 export const useUpdatePort = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: PortUpdateData }) => 
+    mutationFn: ({ id, data }: { id: number; data: PortUpdateData }) =>
       portsConfigService.update(id, data),
     onSuccess: (updatedPort) => {
       queryClient.invalidateQueries({ queryKey: ['ports'] });

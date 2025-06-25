@@ -49,6 +49,7 @@ export interface PortUpdateData {
 
 export interface PortListParams {
   is_active?: boolean;
+  company_id?: number;
   skip?: number;
   limit?: number;
   city_id?: number;

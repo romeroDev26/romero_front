@@ -23,13 +23,13 @@ const navGroups = [
   {
     title: 'Dashboard',
     items: [
-      { name: 'Dashboard General', path: '/', icon: HomeIcon }
+      { name: 'Dashboard General', path: '/', icon: HomeIcon, iconColor: 'text-purple-500' }
     ]
   },
   {
     title: 'Gestión de Clientes',
     items: [
-      { name: 'Clientes', path: '/clients', icon: UserGroupIcon }
+      { name: 'Clientes', path: '/clients', icon: UserGroupIcon, iconColor: 'text-orange-500' }
     ]
   },
   {
@@ -37,38 +37,41 @@ const navGroups = [
     expandable: true,
     expandKey: 'fluvial',
     icon: ChartPieIcon,
+    iconColor: 'text-blue-500',
     items: [
-      { name: 'Dashboard Fluvial', path: '/fluvial/dashboard', icon: ChartBarIcon },
+      { name: 'Dashboard Fluvial', path: '/fluvial/dashboard', icon: ChartBarIcon, iconColor: 'text-blue-500' },
       {
         name: 'Configuración',
         path: '#',
         icon: AdjustmentsHorizontalIcon,
+        iconColor: 'text-blue-500',
         isSubmenu: true,
         expandKey: 'fluvialConfig',
         subitems: [
-          { name: 'Ciudades y Puertos', path: '/fluvial/config/cities-ports', icon: MapIcon },
-          { name: 'Embarcaciones', path: '/fluvial/config/vessels', icon: BuildingOffice2Icon },
-          { name: 'Rutas', path: '/fluvial/config/routes', icon: TruckIcon },
-          { name: 'Tarifas', path: '/fluvial/config/fares', icon: CurrencyDollarIcon },
-          { name: 'Tipos de Asiento', path: '/fluvial/config/seat-types', icon: AdjustmentsHorizontalIcon },
-          { name: 'Productos y Servicios', path: '/fluvial/config/products-services', icon: CubeIcon },
-          { name: 'Configuración de Series', path: '/fluvial/config/document-series', icon: ClipboardDocumentListIcon },
+          { name: 'Ciudades y Puertos', path: '/fluvial/config/cities-ports', icon: MapIcon, iconColor: 'text-blue-500' },
+          { name: 'Embarcaciones', path: '/fluvial/config/vessels', icon: BuildingOffice2Icon, iconColor: 'text-blue-500' },
+          { name: 'Rutas', path: '/fluvial/config/routes', icon: TruckIcon, iconColor: 'text-blue-500' },
+          { name: 'Tarifas', path: '/fluvial/config/fares', icon: CurrencyDollarIcon, iconColor: 'text-blue-500' },
+          { name: 'Tipos de Asiento', path: '/fluvial/config/seat-types', icon: AdjustmentsHorizontalIcon, iconColor: 'text-blue-500' },
+          { name: 'Productos y Servicios', path: '/fluvial/config/products-services', icon: CubeIcon, iconColor: 'text-blue-500' },
+          { name: 'Configuración de Series', path: '/fluvial/config/document-series', icon: ClipboardDocumentListIcon, iconColor: 'text-blue-500' },
         ]
       },
       {
         name: 'Operaciones',
         path: '#',
         icon: CalendarDaysIcon,
+        iconColor: 'text-blue-500',
         isSubmenu: true,
         expandKey: 'fluvialOps',
         subitems: [
-          { name: 'Programar Viajes', path: '/fluvial/operations/schedule-trips', icon: CalendarDaysIcon },
-          { name: 'Punto de Ventas', path: '/fluvial/operations/sales-point', icon: TicketIcon },
-          { name: 'Gestionar Reservas', path: '/fluvial/operations/reservations', icon: ClipboardDocumentListIcon },
-          { name: 'Manifiestos', path: '/fluvial/operations/manifests', icon: DocumentTextIcon }
+          { name: 'Programar Viajes', path: '/fluvial/operations/schedule-trips', icon: CalendarDaysIcon, iconColor: 'text-blue-500' },
+          { name: 'Punto de Ventas', path: '/fluvial/operations/sales-point', icon: TicketIcon, iconColor: 'text-blue-500' },
+          { name: 'Gestionar Reservas', path: '/fluvial/operations/reservations', icon: ClipboardDocumentListIcon, iconColor: 'text-blue-500' },
+          { name: 'Manifiestos', path: '/fluvial/operations/manifests', icon: DocumentTextIcon, iconColor: 'text-blue-500' }
         ]
       },
-      { name: 'Reportes Fluviales', path: '/fluvial/reports', icon: ChartBarIcon }
+      { name: 'Reportes Fluviales', path: '/fluvial/reports', icon: ChartBarIcon, iconColor: 'text-blue-500' }
     ]
   },
   {
@@ -76,25 +79,26 @@ const navGroups = [
     expandable: true,
     expandKey: 'commerce',
     icon: DocumentTextIcon,
+    iconColor: 'text-green-500',
     items: [
-      { name: 'Cotizaciones', path: '/sales/quotations', icon: DocumentTextIcon },
-      { name: 'Facturas', path: '/invoices', icon: DocumentTextIcon },
-      { name: 'Notas de Crédito', path: '/credit-notes', icon: DocumentTextIcon },
-      { name: 'Notas de Débito', path: '/debit-notes', icon: DocumentTextIcon },
-      { name: 'Guías de Remisión', path: '/remission-guides', icon: TruckIcon }
+      { name: 'Cotizaciones', path: '/sales/quotations', icon: DocumentTextIcon, iconColor: 'text-green-500' },
+      { name: 'Facturas', path: '/invoices', icon: DocumentTextIcon, iconColor: 'text-green-500' },
+      { name: 'Notas de Crédito', path: '/credit-notes', icon: DocumentTextIcon, iconColor: 'text-green-500' },
+      { name: 'Notas de Débito', path: '/debit-notes', icon: DocumentTextIcon, iconColor: 'text-green-500' },
+      { name: 'Guías de Remisión', path: '/remission-guides', icon: TruckIcon, iconColor: 'text-green-500' }
     ]
   },
   {
     title: 'Informes y Reportes',
     items: [
-      { name: 'Reportes SUNAT', path: '/sunat-reports', icon: DocumentTextIcon }
+      { name: 'Reportes SUNAT', path: '/sunat-reports', icon: DocumentTextIcon, iconColor: 'text-cyan-500' }
     ]
   },
   {
     title: 'Finanzas',
     items: [
-      { name: 'Cuentas por Cobrar', path: '/finance/receivables', icon: CreditCardIcon },
-      { name: 'Gastos', path: '/finance/expenses', icon: CreditCardIcon }
+      { name: 'Cuentas por Cobrar', path: '/finance/receivables', icon: CreditCardIcon, iconColor: 'text-pink-500' },
+      { name: 'Gastos', path: '/finance/expenses', icon: CreditCardIcon, iconColor: 'text-pink-500' }
     ]
   },
   {
@@ -102,10 +106,11 @@ const navGroups = [
     expandable: true,
     expandKey: 'administration',
     icon: CogIcon,
+    iconColor: 'text-gray-500',
     items: [
-      { name: 'Usuarios', path: '/settings/users', icon: UsersIcon },
-      { name: 'Roles', path: '/settings/roles', icon: KeyIcon },
-      { name: 'Configuración Empresa', path: '/settings/company', icon: CogIcon }
+      { name: 'Usuarios', path: '/settings/users', icon: UsersIcon, iconColor: 'text-gray-500' },
+      { name: 'Roles', path: '/settings/roles', icon: KeyIcon, iconColor: 'text-gray-500' },
+      { name: 'Configuración Empresa', path: '/settings/company', icon: CogIcon, iconColor: 'text-gray-500' }
     ]
   }
 ];
@@ -166,9 +171,14 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
 
     const baseClasses = `flex items-center w-full text-left text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-lg`;
 
-    let paddingClasses = isSubitem ? 'pl-10 pr-4 py-2.5' : 'px-4 py-3';
-    if (level > 0) {
-      paddingClasses = `pl-${10 + level * 4} pr-4 py-2.5`;
+    // Mejorar la alineación del padding basado en el nivel
+    let paddingClasses = 'px-4 py-3';
+    if (level === 1) {
+      paddingClasses = 'pl-8 pr-4 py-2.5'; // Segundo nivel
+    } else if (level === 2) {
+      paddingClasses = 'pl-12 pr-4 py-2.5'; // Tercer nivel - mejor alineación
+    } else if (isSubitem) {
+      paddingClasses = 'pl-10 pr-4 py-2.5';
     }
 
     if (item.isSubmenu) {
@@ -182,7 +192,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
             }`}
           >
-            <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+            <item.icon className={`w-5 h-5 mr-3 flex-shrink-0 ${item.iconColor || 'text-gray-500'}`} />
             <span className="flex-1">{item.name}</span>
             <ChevronDownIcon
               className={`w-4 h-4 transition-transform duration-200 ${
@@ -215,7 +225,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           }`
         }
       >
-        <item.icon className="w-5 h-5 mr-3 flex-shrink-0" />
+        <item.icon className={`w-5 h-5 mr-3 flex-shrink-0 ${
+          item.iconColor || 'text-gray-500'
+        }`} />
         <span>{item.name}</span>
       </NavLink>
     );
@@ -234,7 +246,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
               : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
           }`}
         >
-          <group.icon className="w-5 h-5 mr-3" />
+          <group.icon className={`w-5 h-5 mr-3 ${group.iconColor || 'text-gray-500'}`} />
           <span className="flex-1">{group.title}</span>
           <ChevronDownIcon
             className={`w-4 h-4 transition-transform duration-200 ${

@@ -217,12 +217,28 @@ export interface Vessel {
   name: string;
   capacity_weight_kg?: number;
   capacity_packages?: number;
-  capacity_passengers?: number;
+  capacity_passengers?: number; 
   company_id: number; 
   is_active: boolean;
   created_at: string;
   updated_at?: string;
   seat_configurations?: VesselSeatConfiguration[];
+}
+
+export interface UnifiedTripViewItem {
+  trip_id: number;
+  trip_name?: string | null;
+  route_name?: string | null;
+  origin_city?: string | null;
+  destination_city?: string | null;
+  vessel_name?: string | null;
+  departure_datetime: string;
+  estimated_arrival_datetime?: string | null;
+  status?: string | null;
+  sales_status?: string | null;
+  total_available_seats?: number | null;
+  total_capacity?: number | null; 
+  original_data: any;
 }
 
 export interface SeatType {

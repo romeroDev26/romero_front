@@ -6,9 +6,14 @@ import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
 import { Fare, Port, ServiceCategory, FareType } from '../../../types';
 import { useFares } from '../../../hooks/useFares';
-import { usePorts } from '../../../hooks/usePorts';
+// ===================================================================
+// CAMBIO 1: Importar el hook correcto
+// ===================================================================
+import { usePortsData } from '../../../hooks/usePorts'; 
 import { CreateFareData, UpdateFareData } from '../../../services/fareService';
+import { routeHelpers } from '../../../services/routes.service'; // Importar para obtener companyId
 
+// ... (constantes SERVICE_CATEGORIES y FARE_TYPES se mantienen igual) ...
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
   { value: 'PASAJES', label: 'Pasajes' },
   { value: 'ENCOMIENDA_PEQUENA', label: 'Encomienda Pequeña' },
@@ -25,6 +30,7 @@ const FARE_TYPES: { value: FareType; label: string }[] = [
   { value: 'SPECIAL', label: 'Especial' }
 ];
 
+
 interface FareFormData {
   origin_port_id: number;
   destination_port_id: number;
@@ -39,14 +45,18 @@ interface FareFormData {
   expiration_date?: string;
 }
 
+// El componente FareFormModal se mantiene igual, pero le pasaremos
+// `isLoading` en lugar de `loading`.
 const FareFormModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: FareFormData) => Promise<void>;
   fare?: Fare;
   ports: Port[];
-  loading?: boolean;
-}> = ({ isOpen, onClose, onSubmit, fare, ports, loading }) => {
+  isLoading?: boolean; // Cambiado de `loading` a `isLoading` por consistencia
+}> = ({ isOpen, onClose, onSubmit, fare, ports, isLoading }) => {
+  // ... (El contenido de FareFormModal no necesita cambios, solo el nombre de la prop) ...
+  // Solo asegúrate de que donde usabas `loading` ahora uses `isLoading`
   const [formData, setFormData] = useState<FareFormData>({
     origin_port_id: fare?.origin_port_id || 0,
     destination_port_id: fare?.destination_port_id || 0,
@@ -98,7 +108,7 @@ const FareFormModal: React.FC<{
               onChange={(e) => setFormData({ ...formData, origin_port_id: parseInt(e.target.value) })}
               className="w-full p-2 border border-gray-300 rounded-md"
               required
-              disabled={loading || submitting}
+              disabled={isLoading || submitting}
             >
               <option value="">Seleccione puerto de origen</option>
               {ports.map((port) => (
@@ -115,7 +125,7 @@ const FareFormModal: React.FC<{
               onChange={(e) => setFormData({ ...formData, destination_port_id: parseInt(e.target.value) })}
               className="w-full p-2 border border-gray-300 rounded-md"
               required
-              disabled={loading || submitting}
+              disabled={isLoading || submitting}
             >
               <option value="">Seleccione puerto de destino</option>
               {ports.map((port) => (
@@ -229,8 +239,8 @@ const FareFormModal: React.FC<{
           <Button type="button" variant="outline" onClick={onClose} disabled={submitting}>
             Cancelar
           </Button>
-          <Button type="submit" disabled={submitting}>
-            {submitting ? 'Guardando...' : (fare ? 'Actualizar' : 'Crear')} Tarifa
+          <Button type="submit" disabled={submitting} isLoading={submitting}>
+            {fare ? 'Actualizar' : 'Crear'} Tarifa
           </Button>
         </div>
       </form>
@@ -238,24 +248,37 @@ const FareFormModal: React.FC<{
   );
 };
 
+
 export const FaresPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-
-  const companyId = parseInt(localStorage.getItem('companyId') || '1');
+  
+  // ===================================================================
+  // CAMBIO 2: Usar el helper para obtener companyId de forma segura
+  // ===================================================================
+  const companyId = routeHelpers.getCurrentCompanyId();
 
   const initialFilters = useMemo(() => ({
     limit: 200,
     is_active: true
   }), []);
 
-  const { fares, loading: loadingFares, error: errorFares, createFare, updateFare, deactivateFare } = useFares(companyId, initialFilters);
-  const { ports, loading: loadingPorts } = usePorts(companyId);
+  const { fares, loading: isLoadingFares, error: errorFares, createFare, updateFare, deactivateFare } = useFares(companyId, initialFilters);
+
+  // ===================================================================
+  // CAMBIO 3: Actualizar la llamada al hook de puertos
+  // ===================================================================
+  const { data: ports = [], isLoading: isLoadingPorts } = usePortsData();
 
   const [showFareModal, setShowFareModal] = useState(false);
   const [editingFare, setEditingFare] = useState<Fare | undefined>();
+  
+  // El resto de la lógica (enrichedFares, filteredFares, handlers, stats) funciona sin cambios.
+  // Solo la forma en que se obtienen los datos iniciales ha sido actualizada.
 
+  // ... (toda tu lógica de `enrichedFares`, `filteredFares`, `getServiceCategoryLabel`, etc., se mantiene igual) ...
   const enrichedFares = useMemo(() => {
+    if (ports.length === 0) return fares; // Devolver tarifas sin enriquecer si los puertos aún no cargan
     return fares.map(fare => ({
       ...fare,
       origin_port: ports.find(p => p.id === fare.origin_port_id),
@@ -342,18 +365,22 @@ export const FaresPage: React.FC = () => {
     porVencer: fares.filter(f => isExpiringSoon(f.expiration_date)).length,
     vencidas: fares.filter(f => isExpired(f.expiration_date)).length
   }), [fares]);
-
-  if (loadingFares || loadingPorts) {
+  
+  // ===================================================================
+  // CAMBIO 4: Actualizar la condición de carga
+  // ===================================================================
+  if (isLoadingFares || isLoadingPorts) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando tarifas...</p>
+          <p className="mt-4 text-gray-600">Cargando datos...</p>
         </div>
       </div>
     );
   }
 
+  // El manejo de errores ya es compatible con useQuery
   if (errorFares) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
@@ -367,6 +394,7 @@ export const FaresPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* ... El resto de tu JSX se mantiene exactamente igual ... */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Tarifas</h1>
@@ -592,13 +620,16 @@ export const FaresPage: React.FC = () => {
         </div>
       )}
 
+      {/* =================================================================== */}
+      {/* CAMBIO 5: Pasar `isLoadingPorts` al modal */}
+      {/* =================================================================== */}
       <FareFormModal
         isOpen={showFareModal}
         onClose={() => setShowFareModal(false)}
         onSubmit={editingFare ? handleUpdateFare : handleCreateFare}
         fare={editingFare}
         ports={ports}
-        loading={loadingPorts}
+        isLoading={isLoadingPorts}
       />
     </div>
   );

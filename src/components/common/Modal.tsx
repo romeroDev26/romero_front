@@ -1,13 +1,23 @@
-import React, { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import React, { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
+  maxWidth?:
+    | "sm"
+    | "md"
+    | "lg"
+    | "xl"
+    | "2xl"
+    | "3xl"
+    | "4xl"
+    | "5xl"
+    | "6xl"
+    | "full";
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -15,15 +25,20 @@ export const Modal: React.FC<ModalProps> = ({
   onClose,
   title,
   children,
-  maxWidth = 'md',
+  maxWidth = "md",
 }) => {
+  // Se agregaron los tamaños faltantes de la interfaz al objeto de clases
   const maxWidthClasses = {
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    'full': 'max-w-full',
+    sm: "max-w-sm",
+    md: "max-w-md",
+    lg: "max-w-lg",
+    xl: "max-w-xl",
+    "2xl": "max-w-2xl",
+    "3xl": "max-w-3xl",
+    "4xl": "max-w-4xl",
+    "5xl": "max-w-5xl",
+    "6xl": "max-w-6xl",
+    full: "max-w-full",
   };
 
   return (
@@ -52,7 +67,9 @@ export const Modal: React.FC<ModalProps> = ({
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className={`w-full ${maxWidthClasses[maxWidth]} transform overflow-hidden rounded-lg bg-white text-left align-middle shadow-xl transition-all`}>
+              <Dialog.Panel
+                className={`w-full ${maxWidthClasses[maxWidth]} transform overflow-hidden rounded-lg bg-white text-left align-middle shadow-xl transition-all`}
+              >
                 {title && (
                   <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">
                     <Dialog.Title
@@ -66,11 +83,13 @@ export const Modal: React.FC<ModalProps> = ({
                       className="text-gray-400 hover:text-gray-500"
                       onClick={onClose}
                     >
+                      <span className="sr-only">Cerrar modal</span>
                       <XMarkIcon className="h-6 w-6" />
                     </button>
                   </div>
                 )}
-                <div className={!title ? 'pt-5' : ''}>{children}</div>
+                {/* Ajuste para que el padding superior solo se aplique si no hay título */}
+                <div className="p-6">{children}</div>
               </Dialog.Panel>
             </Transition.Child>
           </div>

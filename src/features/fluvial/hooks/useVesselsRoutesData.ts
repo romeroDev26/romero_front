@@ -364,3 +364,5 @@ export const useVesselAvailability = (vesselId: number, date: Date) => {
     enabled: !!vesselId,
   });
 };
+export { routeHelpers };
+

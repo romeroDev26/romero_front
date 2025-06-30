@@ -1,6 +1,6 @@
 // src/services/trips.service.ts
 import api from '../config/api';
-import { Trip, AvailableTrip } from '../types';
+import { Trip, AvailableTrip, TripStop, Vessel, TripSeatAvailability } from '../types';
 import { AxiosRequestConfig } from 'axios';
 import { stringify } from 'qs';
 
@@ -41,6 +41,24 @@ export interface SearchTripsParams {
   limit?: number;
 }
 
+// Tipado para la respuesta del endpoint /by-boarding-port
+export interface AvailableTripByPort {
+  id: number;
+  trip_name: string;
+  status: string;
+  vessel_name: string;
+  estimated_arrival_time: string;
+  estimated_departure_time: string;
+}
+
+// NUEVO: Interfaz para la respuesta detallada del viaje
+export interface TripDetailsResponse extends Trip {
+  vessel: Vessel;
+  route: Trip['route']; // Asumimos que el tipo Route ya está definido en Trip
+  stops: TripStop[];
+  availability: TripSeatAvailability[]; // El backend lo llama 'availability'
+}
+
 class TripsService {
   private basePath = '/operations/trips/';
 
@@ -49,8 +67,8 @@ class TripsService {
     return response.data;
   }
 
-  async getById(tripId: number): Promise<Trip> {
-    const response = await api.get(`${this.basePath}${tripId}`);
+  async getById(tripId: number): Promise<TripDetailsResponse> {
+    const response = await api.get<TripDetailsResponse>(`${this.basePath}${tripId}`);
     return response.data;
   }
 
@@ -64,25 +82,21 @@ class TripsService {
     return response.data;
   }
 
-  // NUEVO MÉTODO para el historial base
   async getAllForCompany(params: { company_id: number; skip?: number; limit?: number }): Promise<Trip[]> {
     const response = await api.get(this.basePath, { params });
     return response.data;
   }
 
-  // Para la vista "Próximos Viajes"
   async getUpcoming(params: { company_id: number; limit?: number }): Promise<AvailableTrip[]> {
     const response = await api.get(`${this.basePath}upcoming`, { params });
     return response.data;
   }
 
-  // Para la vista "Semanal"
   async getForWeek(params: { company_id: number; start_date: string }): Promise<Trip[]> {
     const response = await api.get(`${this.basePath}week-view`, { params });
     return response.data;
   }
 
-  // Para la vista "Historial" y filtros avanzados
   async search(params: SearchTripsParams): Promise<Trip[]> {
     const config: AxiosRequestConfig = {
       params,
@@ -92,8 +106,6 @@ class TripsService {
     return response.data;
   }
 
-  // Este método ya no es necesario para la página de Schedule, pero lo mantenemos
-  // por si es usado en otro lado (ej: punto de venta).
   async searchAvailable(params: {
     start_date: string;
     company_id: number;
@@ -101,6 +113,17 @@ class TripsService {
     destination_city_id?: number;
   }): Promise<AvailableTrip[]> {
     const response = await api.get(`${this.basePath}available`, { params });
+    return response.data;
+  }
+
+  async getTripsByBoardingPort(companyId: number, portId: number, onDate: string): Promise<AvailableTripByPort[]> {
+    const response = await api.get<AvailableTripByPort[]>('/operations/trips/by-boarding-port', {
+      params: {
+        company_id: companyId,
+        port_id: portId,
+        on_date: onDate,
+      },
+    });
     return response.data;
   }
 }

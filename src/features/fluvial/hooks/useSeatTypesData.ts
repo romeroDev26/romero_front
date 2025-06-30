@@ -1,7 +1,7 @@
 // src/features/fluvial/hooks/useSeatTypesData.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { 
+import {
   seatTypesService,
   SeatTypeCreateData,
   SeatTypeUpdateData
@@ -19,6 +19,10 @@ export const useSeatTypes = (isActive = true) => {
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
 };
+
+// **AÑADIR ESTA LÍNEA** para que coincida con el código que ya escribimos.
+// Simplemente estamos creando un alias para mantener la consistencia.
+export const useSeatTypesData = useSeatTypes;
 
 export const useSeatType = (seatTypeId: number | null) => {
   return useQuery({
@@ -39,7 +43,7 @@ export const useCreateSeatType = () => {
         if (!old) return [newSeatType];
         return [...old, newSeatType].sort((a, b) => a.display_order - b.display_order);
       });
-      
+
       toast.success(`Tipo de asiento ${newSeatType.name} creado exitosamente`);
     },
     onError: (error: any) => {
@@ -53,7 +57,7 @@ export const useUpdateSeatType = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: SeatTypeUpdateData }) => 
+    mutationFn: ({ id, data }: { id: number; data: SeatTypeUpdateData }) =>
       seatTypesService.update(id, data),
     onSuccess: (updatedSeatType) => {
       // Actualizar la cache
@@ -63,10 +67,10 @@ export const useUpdateSeatType = () => {
           .map(seatType => seatType.id === updatedSeatType.id ? updatedSeatType : seatType)
           .sort((a, b) => a.display_order - b.display_order);
       });
-      
+
       // Invalidar query específica
       queryClient.invalidateQueries({ queryKey: ['seatType', updatedSeatType.id] });
-      
+
       toast.success(`Tipo de asiento ${updatedSeatType.name} actualizado exitosamente`);
     },
     onError: (error: any) => {
@@ -87,7 +91,7 @@ export const useDeleteSeatType = () => {
         if (!old) return [];
         return old.filter(seatType => seatType.id !== deletedSeatType.id);
       });
-      
+
       toast.success(`Tipo de asiento ${deletedSeatType.name} desactivado exitosamente`);
     },
     onError: (error: any) => {
@@ -104,7 +108,7 @@ export const useUpdateSeatTypeOrder = () => {
   return useMutation({
     mutationFn: async ({ seatTypes }: { seatTypes: { id: number; display_order: number }[] }) => {
       // Actualizar el orden de cada tipo de asiento
-      const promises = seatTypes.map(({ id, display_order }) => 
+      const promises = seatTypes.map(({ id, display_order }) =>
         seatTypesService.update(id, { display_order })
       );
       return Promise.all(promises);

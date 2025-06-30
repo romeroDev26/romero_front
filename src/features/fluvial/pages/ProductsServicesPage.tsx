@@ -18,7 +18,8 @@ import {
   ProductServiceFilters,
   ITEM_TYPE_OPTIONS,
   SERVICE_CATEGORY_OPTIONS,
-  ProductServiceFormData
+  ProductServiceFormData,
+  getTaxCategoryLabel
 } from '../types/products-services-ui.types';
 import { ProductService } from '../../../types';
 import { Button } from '../../../components/common/Button';
@@ -133,16 +134,16 @@ export const ProductsServicesPage: React.FC = () => {
       className: 'text-left'
     },
     {
-      key: 'service_category',
-      header: 'Categoría',
-      accessor: (item) => item.service_category || '-',
-      className: 'text-left'
-    },
-    {
       key: 'sale_price',
       header: 'Precio Venta',
-      accessor: (item) => 
+      accessor: (item) =>
         `${item.currency_code} ${Number(item.sale_price).toFixed(2)}`,
+      className: 'text-right'
+    },
+    {
+      key: 'tax_category_code',
+      header: 'Afectación IGV',
+      accessor: (item) => getTaxCategoryLabel(item.tax_category_code),
       className: 'text-left'
     },
     {
@@ -230,7 +231,8 @@ export const ProductsServicesPage: React.FC = () => {
 
       <div className="bg-white p-4 rounded-lg shadow space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex-1 max-w-md">            <div className="relative">
+          <div className="flex-1 max-w-md">
+            <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <MagnifyingGlassIcon className="h-4 w-4 text-gray-500" />
               </div>
@@ -345,9 +347,9 @@ export const ProductsServicesPage: React.FC = () => {
             <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
               Cancelar
             </Button>
-            <Button 
-              variant="danger" 
-              onClick={handleDelete} 
+            <Button
+              variant="danger"
+              onClick={handleDelete}
               isLoading={deleteMutation.isPending}
             >
               Eliminar
@@ -393,6 +395,12 @@ export const ProductsServicesPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700">Precio de Venta</label>
                 <p className="text-sm text-gray-900">
                   {selectedItem.currency_code} {Number(selectedItem.sale_price).toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Afectación IGV</label>
+                <p className="text-sm text-gray-900">
+                  {getTaxCategoryLabel(selectedItem.tax_category_code)}
                 </p>
               </div>
             </div>

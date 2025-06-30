@@ -3,85 +3,106 @@
 
 export type CurrencyCode = 'PEN' | 'USD' | 'EUR';
 
-export type UnitCode = 
-  | 'NIU'  // Unidad (número de elementos)
-  | 'KGM'  // Kilogramo
-  | 'MTR'  // Metro
-  | 'LTR'  // Litro
-  | 'M2'   // Metro cuadrado
-  | 'M3'   // Metro cúbico
-  | 'HUR'  // Hora
-  | 'ZZ';  // Unidad no definida
+export type UnitCode =
+ | 'NIU' // Unidad (número de elementos)
+ | 'KGM' // Kilogramo
+ | 'MTR' // Metro
+ | 'LTR' // Litro
+ | 'M2'  // Metro cuadrado
+ | 'M3'  // Metro cúbico
+ | 'HUR' // Hora
+ | 'ZZ'; // Unidad no definida
 
 export interface ProductServiceFormData {
-  internal_code: string;
-  name: string;
-  description?: string;
-  item_type: 'PRODUCT' | 'SERVICE';
-  service_category: string;
-  unit_code: UnitCode;
-  purchase_price: number;
-  sale_price: number;
-  currency_code: CurrencyCode;
-  tax_category_code: string;
-  unspcs_code: string;
-  is_active: boolean;
-  specific_route_id?: number;
+ internal_code: string;
+ name: string;
+ description?: string;
+ item_type: 'PRODUCT' | 'SERVICE';
+ service_category: string;
+ unit_code: UnitCode;
+ purchase_price: number;
+ sale_price: number;
+ currency_code: CurrencyCode;
+ tax_category_code: string;
+ unspcs_code: string;
+ is_active: boolean;
+ specific_route_id?: number;
 }
 
 export interface ProductServiceFilters {
-  search?: string;
-  item_type?: 'PRODUCT' | 'SERVICE' | '';
-  is_active?: boolean;
-  service_category?: string;
+ search?: string;
+ item_type?: 'PRODUCT' | 'SERVICE' | '';
+ is_active?: boolean;
+ service_category?: string;
 }
 
 // Opciones predefinidas para formularios
 export const ITEM_TYPE_OPTIONS = [
-  { value: 'SERVICE', label: 'Servicio' },
-  { value: 'PRODUCT', label: 'Producto' }
+ { value: 'SERVICE', label: 'Servicio' },
+ { value: 'PRODUCT', label: 'Producto' }
 ] as const;
 
 export const SERVICE_CATEGORY_OPTIONS = [
-  { value: 'PASAJES', label: 'Pasajes' },
-  { value: 'ENCOMIENDA_PEQUENA', label: 'Encomienda Pequeña' },
-  { value: 'ENCOMIENDA_MEDIANA', label: 'Encomienda Mediana' },
-  { value: 'ENCOMIENDA_GRANDE', label: 'Encomienda Grande' },
-  { value: 'CARGA_GENERAL_KGM', label: 'Carga General (KG)' },
-  { value: 'CARGA_GENERAL_VOL', label: 'Carga General (VOL)' },
-  { value: 'OTROS', label: 'Otros' }
+ { value: 'PASAJES', label: 'Pasajes' },
+ { value: 'ENCOMIENDA_PEQUENA', label: 'Encomienda Pequeña' },
+ { value: 'ENCOMIENDA_MEDIANA', label: 'Encomienda Mediana' },
+ { value: 'ENCOMIENDA_GRANDE', label: 'Encomienda Grande' },
+ { value: 'CARGA_GENERAL_KGM', label: 'Carga General (KG)' },
+ { value: 'CARGA_GENERAL_VOL', label: 'Carga General (VOL)' },
+ { value: 'OTROS', label: 'Otros' }
 ] as const;
 
 export const CURRENCY_OPTIONS = [
-  { value: 'PEN', label: 'Soles (PEN)' },
-  { value: 'USD', label: 'Dólares (USD)' },
-  { value: 'EUR', label: 'Euros (EUR)' }
+ { value: 'PEN', label: 'Soles (PEN)' },
+ { value: 'USD', label: 'Dólares (USD)' },
+ { value: 'EUR', label: 'Euros (EUR)' }
 ] as const;
 
 export const UNIT_CODE_OPTIONS = [
-  { value: 'NIU', label: 'Unidad' },
-  { value: 'KGM', label: 'Kilogramo' },
-  { value: 'MTR', label: 'Metro' },
-  { value: 'LTR', label: 'Litro' },
-  { value: 'M2', label: 'Metro cuadrado' },
-  { value: 'M3', label: 'Metro cúbico' },
-  { value: 'HUR', label: 'Hora' },
-  { value: 'ZZ', label: 'No definida' }
+ { value: 'NIU', label: 'Unidad' },
+ { value: 'KGM', label: 'Kilogramo' },
+ { value: 'MTR', label: 'Metro' },
+ { value: 'LTR', label: 'Litro' },
+ { value: 'M2', label: 'Metro cuadrado' },
+ { value: 'M3', label: 'Metro cúbico' },
+ { value: 'HUR', label: 'Hora' },
+ { value: 'ZZ', label: 'No definida' }
 ] as const;
 
 // Códigos de categoría tributaria comunes
 export const TAX_CATEGORY_OPTIONS = [
-  { value: 'stri', label: 'Servicio de transporte regular de pasajeros (STRI)' },
-  { value: 'grav', label: 'Gravado - Operación Onerosa' },
-  { value: 'exon', label: 'Exonerado - Operación Onerosa' },
-  { value: 'inaf', label: 'Inafecto - Operación Onerosa' },
-  { value: 'gratuito', label: 'Gratuito' }
+ { value: 'stri', label: 'Servicio de transporte regular de pasajeros (STRI)' },
+ { value: 'grav', label: 'Gravado - Operación Onerosa' },
+ { value: 'exon', label: 'Exonerado - Operación Onerosa' },
+ { value: 'inaf', label: 'Inafecto - Operación Onerosa' },
+ { value: 'gratuito', label: 'Gratuito' }
 ] as const;
 
 // Códigos UNSPSC comunes para transporte fluvial
 export const UNSPCS_CODE_OPTIONS = [
-  { value: '78111804', label: 'Servicios de transporte de pasajeros por agua' },
-  { value: '78111805', label: 'Servicios de transporte de carga por agua' },
-  { value: '78111801', label: 'Servicios de transporte fluvial' },
-  { value: '34061773', label: 'Productos y servicios diversos' }
+ { value: '78111804', label: 'Servicios de transporte de pasajeros por agua' },
+ { value: '78111805', label: 'Servicios de transporte de carga por agua' },
+ { value: '78111801', label: 'Servicios de transporte fluvial' },
+ { value: '34061773', label: 'Productos y servicios diversos' }
 ] as const;
+
+// Códigos de afectación de IGV (Catálogo 07 SUNAT)
+export const TAX_CATEGORY_CODE_SUNAT_OPTIONS = [
+ { value: '10', label: 'Gravado - Operación Onerosa' },
+ { value: '20', label: 'Exonerado - Operación Onerosa' },
+ { value: '30', label: 'Inafecto - Operación Onerosa' },
+ { value: '40', label: 'Exportación' },
+] as const;
+
+// Objeto de mapeo para una búsqueda rápida del label.
+export const TAX_CATEGORY_CODE_MAP: { [key: string]: string } = {
+ '10': 'Gravado - Ope. Onerosa',
+ '20': 'Exonerado - Ope. Onerosa',
+ '30': 'Inafecto - Ope. Onerosa',
+ '40': 'Exportación',
+};
+
+// Función de utilidad para obtener la etiqueta de forma segura.
+export const getTaxCategoryLabel = (code: string): string => {
+ return TAX_CATEGORY_CODE_MAP[code] || code; // Si no lo encuentra, devuelve el código.
+};

@@ -1,7 +1,7 @@
 // src/features/fluvial/components/ProductServiceFormModal.tsx
 import React, { useEffect, useState } from 'react';
 import { ProductService } from '../../../types';
-import { 
+import {
   ProductServiceFormData,
   ITEM_TYPE_OPTIONS,
   SERVICE_CATEGORY_OPTIONS,
@@ -9,6 +9,7 @@ import {
   UNIT_CODE_OPTIONS,
   TAX_CATEGORY_OPTIONS,
   UNSPCS_CODE_OPTIONS,
+  TAX_CATEGORY_CODE_SUNAT_OPTIONS,
   UnitCode,
   CurrencyCode
 } from '../types/products-services-ui.types';
@@ -34,7 +35,7 @@ const INITIAL_FORM_DATA: ProductServiceFormData = {
   purchase_price: 0,
   sale_price: 0,
   currency_code: 'PEN',
-  tax_category_code: 'stri',
+  tax_category_code: '10', // Cambiado a un valor predeterminado válido para SUNAT
   unspcs_code: '',
   is_active: true,
   specific_route_id: undefined,
@@ -53,7 +54,6 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
   useEffect(() => {
     if (isOpen) {
       if (isEditMode && item) {
-        // Validar que el unit_code y currency_code sean valores permitidos
         const validUnitCode = (code: string): UnitCode => {
           const validCodes: UnitCode[] = ['NIU', 'KGM', 'MTR', 'LTR', 'M2', 'M3', 'HUR', 'ZZ'];
           return validCodes.includes(code as UnitCode) ? (code as UnitCode) : 'NIU';
@@ -94,7 +94,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
     } else if (type === 'number') {
       finalValue = value === '' ? '' : parseFloat(value);
     }
-    
+
     setFormData(prev => ({ ...prev, [name]: finalValue }));
   };
 
@@ -104,7 +104,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
       setFormData(prev => ({ ...prev, [name]: 0 }));
     }
   };
-  
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
@@ -119,39 +119,39 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input 
-            label="Código Interno" 
-            name="internal_code" 
-            value={formData.internal_code} 
-            onChange={handleChange} 
+          <Input
+            label="Código Interno"
+            name="internal_code"
+            value={formData.internal_code}
+            onChange={handleChange}
           />
-          <Input 
-            label="Nombre" 
-            name="name" 
-            value={formData.name} 
-            onChange={handleChange} 
-            required 
+          <Input
+            label="Nombre"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Descripción</label>
-          <textarea 
-            name="description" 
-            value={formData.description} 
-            onChange={handleChange} 
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500" 
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             rows={2}
           />
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Tipo</label>
-            <select 
-              name="item_type" 
-              value={formData.item_type} 
-              onChange={handleChange} 
+            <select
+              name="item_type"
+              value={formData.item_type}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
               {ITEM_TYPE_OPTIONS.map(opt => (
@@ -159,14 +159,14 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
               ))}
             </select>
           </div>
-          
+
           {formData.item_type === 'SERVICE' && (
             <div>
               <label className="block text-sm font-medium text-gray-700">Categoría de Servicio</label>
-              <select 
-                name="service_category" 
-                value={formData.service_category} 
-                onChange={handleChange} 
+              <select
+                name="service_category"
+                value={formData.service_category}
+                onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 {SERVICE_CATEGORY_OPTIONS.map(opt => (
@@ -176,33 +176,33 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             </div>
           )}
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input 
-            label="Precio Venta" 
-            name="sale_price" 
-            type="number" 
-            step="0.01" 
-            value={formData.sale_price} 
-            onChange={handleChange} 
-            onBlur={handlePriceBlur} 
-            required 
+          <Input
+            label="Precio Venta"
+            name="sale_price"
+            type="number"
+            step="0.01"
+            value={formData.sale_price}
+            onChange={handleChange}
+            onBlur={handlePriceBlur}
+            required
           />
-          <Input 
-            label="Precio Compra" 
-            name="purchase_price" 
-            type="number" 
-            step="0.01" 
-            value={formData.purchase_price} 
-            onChange={handleChange} 
-            onBlur={handlePriceBlur} 
+          <Input
+            label="Precio Compra"
+            name="purchase_price"
+            type="number"
+            step="0.01"
+            value={formData.purchase_price}
+            onChange={handleChange}
+            onBlur={handlePriceBlur}
           />
           <div>
             <label className="block text-sm font-medium text-gray-700">Moneda</label>
-            <select 
-              name="currency_code" 
-              value={formData.currency_code} 
-              onChange={handleChange} 
+            <select
+              name="currency_code"
+              value={formData.currency_code}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
               {CURRENCY_OPTIONS.map(opt => (
@@ -211,14 +211,14 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             </select>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Unidad de Medida</label>
-            <select 
-              name="unit_code" 
-              value={formData.unit_code} 
-              onChange={handleChange} 
+            <select
+              name="unit_code"
+              value={formData.unit_code}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
               {UNIT_CODE_OPTIONS.map(opt => (
@@ -226,28 +226,33 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
               ))}
             </select>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700">Cód. Afectación IGV</label>
-            <select 
-              name="tax_category_code" 
-              value={formData.tax_category_code} 
-              onChange={handleChange} 
+            <label htmlFor="tax_category_code" className="block text-sm font-medium text-gray-700">
+              Afectación IGV (SUNAT)
+            </label>
+            <select
+              id="tax_category_code"
+              name="tax_category_code"
+              value={formData.tax_category_code}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
-              {TAX_CATEGORY_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              {TAX_CATEGORY_CODE_SUNAT_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
               ))}
             </select>
           </div>
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700">Cód. UNSPSC (Opcional)</label>
-          <select 
-            name="unspcs_code" 
-            value={formData.unspcs_code} 
-            onChange={handleChange} 
+          <select
+            name="unspcs_code"
+            value={formData.unspcs_code}
+            onChange={handleChange}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Ninguno</option>
@@ -256,15 +261,15 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             ))}
           </select>
         </div>
-        
+
         <div className="flex items-center">
-          <input 
-            type="checkbox" 
-            id="is_active" 
-            name="is_active" 
-            checked={formData.is_active} 
-            onChange={handleChange} 
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" 
+          <input
+            type="checkbox"
+            id="is_active"
+            name="is_active"
+            checked={formData.is_active}
+            onChange={handleChange}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
             Activo

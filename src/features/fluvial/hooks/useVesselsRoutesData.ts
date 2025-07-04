@@ -2,13 +2,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import {
-  vesselsService,
-  VesselCreateData,
-  VesselUpdateData,
-  SeatConfigurationCreateData,
-  VesselWithConfigurations
-} from '../../../services/vessels.service';
-import {
   routesService,
   RouteCreateData,
   RouteUpdateData,
@@ -21,138 +14,14 @@ import {
   SeatTypeCreateData,
   SeatTypeUpdateData
 } from '../../../services/seat-types.service';
-import { Vessel, Route, VesselSeatConfiguration, RouteStop, SeatType } from '../../../types';
+import { Route, RouteStop, SeatType } from '../../../types';
 
 // ========================================
-// HOOKS PARA EMBARCACIONES
-// ========================================
-
-export const useVessels = (isActive = true) => {
-  return useQuery({
-    queryKey: ['vessels', { isActive }],
-    queryFn: () => vesselsService.getAll({
-      is_active: isActive,
-      company_id: 0
-    }),
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  });
-};
-
-export const useVessel = (vesselId: number | null) => {
-  return useQuery({
-    queryKey: ['vessel', vesselId],
-    queryFn: () => vesselId ? vesselsService.getById(vesselId) : null,
-    enabled: !!vesselId,
-  });
-};
-
-export const useCreateVessel = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: VesselCreateData) => vesselsService.create(data),
-    onSuccess: (newVessel) => {
-      queryClient.setQueryData<Vessel[]>(['vessels', { isActive: true }], (old) => {
-        if (!old) return [newVessel];
-        return [...old, newVessel];
-      });
-
-      toast.success(`Embarcación ${newVessel.name} creada exitosamente`);
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al crear la embarcación';
-      toast.error(message);
-    },
-  });
-};
-
-export const useUpdateVessel = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: VesselUpdateData }) =>
-      vesselsService.update(id, data),
-    onSuccess: (updatedVessel) => {
-      queryClient.setQueryData<Vessel[]>(['vessels', { isActive: true }], (old) => {
-        if (!old) return [];
-        return old.map(vessel => vessel.id === updatedVessel.id ? updatedVessel : vessel);
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['vessel', updatedVessel.id] });
-
-      toast.success(`Embarcación ${updatedVessel.name} actualizada exitosamente`);
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar la embarcación';
-      toast.error(message);
-    },
-  });
-};
-
-export const useDeleteVessel = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: number) => vesselsService.delete(id),
-    onSuccess: (deletedVessel) => {
-      queryClient.setQueryData<Vessel[]>(['vessels', { isActive: true }], (old) => {
-        if (!old) return [];
-        return old.filter(vessel => vessel.id !== deletedVessel.id);
-      });
-
-      toast.success(`Embarcación ${deletedVessel.name} desactivada exitosamente`);
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al desactivar la embarcación';
-      toast.error(message);
-    },
-  });
-};
-
-// Hooks para configuración de asientos
-export const useAddSeatConfiguration = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ vesselId, configs }: { vesselId: number; configs: SeatConfigurationCreateData[] }) =>
-      vesselsService.addMultipleSeatConfigurations(vesselId, configs),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['vessel', variables.vesselId] });
-
-      toast.success('Configuración de asientos actualizada exitosamente');
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar la configuración de asientos';
-      toast.error(message);
-    },
-  });
-};
-
-export const useDeleteSeatConfiguration = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (configId: number) => vesselsService.deleteSeatConfiguration(configId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vessels'] });
-      queryClient.invalidateQueries({ queryKey: ['vessel'] });
-
-      toast.success('Configuración de asientos eliminada exitosamente');
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al eliminar la configuración';
-      toast.error(message);
-    },
-  });
-};
-
-// ========================================
-// HOOKS PARA RUTAS (REVISED)
+// HOOKS PARA RUTAS
 // ========================================
 
 export const useRoutes = (isActive = true) => {
   const companyId = routeHelpers.getCurrentCompanyId();
-
   return useQuery({
     queryKey: ['routes', { companyId, isActive }],
     queryFn: () => routesService.getAll({
@@ -174,7 +43,6 @@ export const useRoute = (routeId: number | null) => {
 
 export const useCreateRoute = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (data: RouteCreateData) => routesService.create(data),
     onSuccess: (newRoute) => {
@@ -191,7 +59,6 @@ export const useCreateRoute = () => {
 
 export const useUpdateRoute = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: RouteUpdateData }) => routesService.update(id, data),
     onSuccess: (updatedRoute) => {
@@ -208,7 +75,6 @@ export const useUpdateRoute = () => {
 
 export const useDeleteRoute = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: number) => routesService.delete(id),
     onSuccess: (_, deletedId) => {
@@ -225,7 +91,6 @@ export const useDeleteRoute = () => {
 
 export const useUpdateRouteStops = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ routeId, stops }: { routeId: number; stops: RouteStopCreateData[] }) =>
       routesService.updateStops(routeId, stops),
@@ -263,7 +128,6 @@ export const useSeatType = (seatTypeId: number | null) => {
 
 export const useCreateSeatType = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (data: SeatTypeCreateData) => seatTypesService.create(data),
     onSuccess: (newSeatType) => {
@@ -271,7 +135,6 @@ export const useCreateSeatType = () => {
         if (!old) return [newSeatType];
         return [...old, newSeatType];
       });
-
       toast.success(`Tipo de asiento ${newSeatType.name} creado exitosamente`);
     },
     onError: (error: any) => {
@@ -283,7 +146,6 @@ export const useCreateSeatType = () => {
 
 export const useUpdateSeatType = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: SeatTypeUpdateData }) =>
       seatTypesService.update(id, data),
@@ -292,9 +154,7 @@ export const useUpdateSeatType = () => {
         if (!old) return [];
         return old.map(type => type.id === updatedSeatType.id ? updatedSeatType : type);
       });
-
       queryClient.invalidateQueries({ queryKey: ['seatType', updatedSeatType.id] });
-
       toast.success(`Tipo de asiento ${updatedSeatType.name} actualizado exitosamente`);
     },
     onError: (error: any) => {
@@ -306,7 +166,6 @@ export const useUpdateSeatType = () => {
 
 export const useDeleteSeatType = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (id: number) => seatTypesService.delete(id),
     onSuccess: (deletedSeatType) => {
@@ -314,7 +173,6 @@ export const useDeleteSeatType = () => {
         if (!old) return [];
         return old.filter(type => type.id !== deletedSeatType.id);
       });
-
       toast.success(`Tipo de asiento ${deletedSeatType.name} desactivado exitosamente`);
     },
     onError: (error: any) => {
@@ -328,41 +186,15 @@ export const useDeleteSeatType = () => {
 // HOOKS UTILITARIOS
 // ========================================
 
-export const useFleetSummary = () => {
-  const { data: vessels = [], isLoading } = useVessels();
-
-  const summary = {
-    totalVessels: vessels.length,
-    totalCapacityPassengers: vessels.reduce((sum, v) => sum + (v.capacity_passengers || 0), 0),
-    totalCapacityWeight: vessels.reduce((sum, v) => sum + (v.capacity_weight_kg || 0), 0),
-    totalCapacityPackages: vessels.reduce((sum, v) => sum + (v.capacity_packages || 0), 0),
-    activeVessels: vessels.filter(v => v.is_active).length,
-  };
-
-  return { summary, isLoading };
-};
-
 export const useRoutesByPort = (portId: number | null) => {
   const { data: allRoutes = [], isLoading } = useRoutes();
-
   const routes = portId
     ? allRoutes.filter(route =>
         route.origin_port_id === portId ||
         route.destination_port_id === portId
       )
     : [];
-
   return { routes, isLoading };
 };
 
-export const useVesselAvailability = (vesselId: number, date: Date) => {
-  return useQuery({
-    queryKey: ['vessel-availability', vesselId, date.toISOString()],
-    queryFn: async () => {
-      return { isAvailable: true, scheduledTrips: [] };
-    },
-    enabled: !!vesselId,
-  });
-};
 export { routeHelpers };
-

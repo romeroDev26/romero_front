@@ -5,7 +5,6 @@ import { Vessel, VesselSeatConfiguration } from '../types';
 // ========================================
 // INTERFACES
 // ========================================
-
 export interface VesselCreateData {
   registration_number: string;
   name: string;
@@ -23,6 +22,7 @@ export interface VesselUpdateData {
   capacity_packages?: number;
   capacity_passengers?: number;
   is_active?: boolean;
+  total_columns?: number;
 }
 
 export interface VesselListParams {
@@ -35,6 +35,10 @@ export interface VesselListParams {
 export interface SeatConfigurationCreateData {
   seat_type_id: number;
   total_seats: number;
+  // --- NUEVOS CAMPOS AÑADIDOS ---
+  total_rows: number;
+  total_columns?: number;
+  // --- FIN DE NUEVOS CAMPOS ---
   deck_level?: number;
   notes?: string;
 }
@@ -42,12 +46,12 @@ export interface SeatConfigurationCreateData {
 // Respuesta con configuraciones incluidas
 export type VesselWithConfigurations = Omit<Vessel, 'seat_configurations'> & {
   seat_configurations?: VesselSeatConfiguration[];
+  total_columns?: number;
 };
 
 // ========================================
 // CLASE DE SERVICIO DE EMBARCACIONES
 // ========================================
-
 class VesselsService {
   private basePath = '/config/vessels/';
 
@@ -153,7 +157,6 @@ class VesselsService {
 // ========================================
 // OPERACIONES DE VALIDACIÓN Y UTILIDADES
 // ========================================
-
 export const vesselValidations = {
   // Validar número de matrícula
   validateRegistrationNumber: (registrationNumber: string): boolean => {
@@ -161,45 +164,34 @@ export const vesselValidations = {
     const pattern = /^[A-Z]{2}-[A-Z0-9]{5}-[A-Z0-9]{2}$/;
     return pattern.test(registrationNumber);
   },
-
   // Validar capacidades
   validateCapacities: (vessel: VesselCreateData | VesselUpdateData): string[] => {
     const errors: string[] = [];
-
     if (vessel.capacity_weight_kg !== undefined && vessel.capacity_weight_kg < 0) {
       errors.push('La capacidad de peso no puede ser negativa');
     }
-
     if (vessel.capacity_packages !== undefined && vessel.capacity_packages < 0) {
       errors.push('La capacidad de bultos no puede ser negativa');
     }
-
     if (vessel.capacity_passengers !== undefined && vessel.capacity_passengers < 0) {
       errors.push('La capacidad de pasajeros no puede ser negativa');
     }
-
     return errors;
   },
-
   // Validar configuración de asientos
   validateSeatConfiguration: (
     configs: SeatConfigurationCreateData[],
     maxPassengers?: number
   ): string[] => {
     const errors: string[] = [];
-
     // Verificar que no haya tipos de asiento duplicados por cubierta
     const seatTypesByDeck = new Map<string, Set<number>>();
-
     configs.forEach((config, index) => {
       const deckKey = `deck-${config.deck_level || 1}`;
-
       if (!seatTypesByDeck.has(deckKey)) {
         seatTypesByDeck.set(deckKey, new Set());
       }
-
       const deckSeatTypes = seatTypesByDeck.get(deckKey)!;
-
       if (deckSeatTypes.has(config.seat_type_id)) {
         errors.push(
           `Configuración ${index + 1}: El tipo de asiento ya está configurado para la cubierta ${config.deck_level || 1}`
@@ -207,12 +199,10 @@ export const vesselValidations = {
       } else {
         deckSeatTypes.add(config.seat_type_id);
       }
-
       if (config.total_seats < 0) {
         errors.push(`Configuración ${index + 1}: El número de asientos no puede ser negativo`);
       }
     });
-
     // Verificar que el total de asientos no exceda la capacidad máxima
     if (maxPassengers) {
       const totalSeats = configs.reduce((sum, config) => sum + config.total_seats, 0);
@@ -222,7 +212,6 @@ export const vesselValidations = {
         );
       }
     }
-
     return errors;
   }
 };
@@ -230,18 +219,15 @@ export const vesselValidations = {
 // ========================================
 // HELPERS PARA MANEJO DE DATOS
 // ========================================
-
 export const vesselHelpers = {
   // Calcular el total de asientos configurados
   getTotalConfiguredSeats: (vessel: VesselWithConfigurations): number => {
     if (!vessel.seat_configurations) return 0;
     return vessel.seat_configurations.reduce((total, config) => total + config.total_seats, 0);
   },
-
   // Obtener resumen de configuración por tipo de asiento
   getSeatConfigurationSummary: (vessel: VesselWithConfigurations) => {
     if (!vessel.seat_configurations) return [];
-
     const summary = vessel.seat_configurations.reduce((acc, config) => {
       const seatType = config.seat_type?.name || 'Sin tipo';
       if (!acc[seatType]) {
@@ -255,17 +241,14 @@ export const vesselHelpers = {
       acc[seatType].decks.push(config.deck_level);
       return acc;
     }, {} as Record<string, { seatType: string; totalSeats: number; decks: number[] }>);
-
     return Object.values(summary);
   },
-
   // Generar número de matrícula automático
   generateRegistrationNumber: (): string => {
     const currentYear = new Date().getFullYear().toString().slice(-2);
     const randomNumber = Math.floor(Math.random() * 90000) + 10000;
     return `IQ-${randomNumber}-${currentYear}`;
   },
-
   // Helper para obtener el company_id del usuario actual
   getCurrentCompanyId: (): number => {
     const userInfo = localStorage.getItem('userInfo');

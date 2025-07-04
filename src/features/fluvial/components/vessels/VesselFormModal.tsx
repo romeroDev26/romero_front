@@ -11,6 +11,13 @@ import {
   vesselValidations 
 } from '../../../../services/vessels.service';
 
+// Tipo para el formulario con capacidades como string
+type VesselFormData = Omit<VesselCreateData, 'capacity_weight_kg' | 'capacity_packages' | 'capacity_passengers'> & {
+  capacity_weight_kg: string;
+  capacity_packages: string;
+  capacity_passengers: string;
+};
+
 interface VesselFormProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,29 +28,29 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
   const createVesselMutation = useCreateVessel();
   const updateVesselMutation = useUpdateVessel();
 
-  const getInitialFormData = (): VesselCreateData => ({
+  const getInitialFormData = (): VesselFormData => ({
     registration_number: '',
     name: '',
-    capacity_weight_kg: 0,
-    capacity_packages: 0,
-    capacity_passengers: 0,
+    capacity_weight_kg: '0',
+    capacity_packages: '0',
+    capacity_passengers: '0',
     company_id: vesselHelpers.getCurrentCompanyId(),
     is_active: true
   });
 
-  const [formData, setFormData] = useState<VesselCreateData>(getInitialFormData());
+  const [formData, setFormData] = useState<VesselFormData>(getInitialFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (isOpen) {
       if (vessel) {
-        // Editando una embarcación existente
+        // Editando una embarcación existente - convertir números a strings
         setFormData({
           registration_number: vessel.registration_number,
           name: vessel.name,
-          capacity_weight_kg: vessel.capacity_weight_kg || 0,
-          capacity_packages: vessel.capacity_packages || 0,
-          capacity_passengers: vessel.capacity_passengers || 0,
+          capacity_weight_kg: String(vessel.capacity_weight_kg || 0),
+          capacity_packages: String(vessel.capacity_packages || 0),
+          capacity_passengers: String(vessel.capacity_passengers || 0),
           company_id: vessel.company_id || vesselHelpers.getCurrentCompanyId(),
           is_active: vessel.is_active
         });
@@ -60,10 +67,30 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
+    
+    // Para campos de capacidad, solo permitir números
+    if (type === 'text' && name.startsWith('capacity_') && !/^\d*$/.test(value)) {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) || 0 : value
+      [name]: type === 'checkbox' ? checked : value
     }));
+  };
+
+  // Función para limpiar el campo cuando tiene focus y vale 0
+  const handleNumberFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === '0') {
+      setFormData(prev => ({ ...prev, [e.target.name]: '' }));
+    }
+  };
+  
+  // Función para restaurar 0 si el campo está vacío al perder focus
+  const handleNumberBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value === '') {
+      setFormData(prev => ({ ...prev, [e.target.name]: '0' }));
+    }
   };
 
   const validateForm = (): boolean => {
@@ -74,7 +101,15 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
       newErrors.registration_number = 'Formato inválido (ej: IQ-12345-AB)';
     }
     
-    const capacityErrors = vesselValidations.validateCapacities(formData);
+    // Convertir strings a números para validación
+    const dataToValidate = {
+      ...formData,
+      capacity_passengers: parseInt(formData.capacity_passengers, 10) || 0,
+      capacity_weight_kg: parseInt(formData.capacity_weight_kg, 10) || 0,
+      capacity_packages: parseInt(formData.capacity_packages, 10) || 0,
+    };
+    
+    const capacityErrors = vesselValidations.validateCapacities(dataToValidate);
     if (capacityErrors.length > 0) newErrors.capacity = capacityErrors.join(', ');
 
     setErrors(newErrors);
@@ -85,13 +120,21 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Convertir strings a números para envío
+    const dataToSubmit: VesselCreateData = {
+      ...formData,
+      capacity_passengers: parseInt(formData.capacity_passengers, 10) || 0,
+      capacity_weight_kg: parseInt(formData.capacity_weight_kg, 10) || 0,
+      capacity_packages: parseInt(formData.capacity_packages, 10) || 0,
+    };
+
     try {
       if (vessel) {
         // Lógica de actualización
-        await updateVesselMutation.mutateAsync({ id: vessel.id, data: formData });
+        await updateVesselMutation.mutateAsync({ id: vessel.id, data: dataToSubmit });
       } else {
         // Lógica de creación
-        await createVesselMutation.mutateAsync(formData);
+        await createVesselMutation.mutateAsync(dataToSubmit);
       }
       onClose(); // Cerrar el modal solo si la mutación tiene éxito
     } catch (error) {
@@ -101,9 +144,18 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={vessel ? `Editar: ${vessel.name}` : 'Nueva Embarcación'}>
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={vessel ? `Editar: ${vessel.name}` : 'Nueva Embarcación'}
+      maxWidth="4xl"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <p className="text-sm text-gray-600 mb-4">
+          Complete los detalles de la embarcación. La matrícula se genera automáticamente.
+        </p>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Input
             label="Número de Matrícula"
             name="registration_number"
@@ -123,35 +175,41 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
           />
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Input
             label="Capacidad Pasajeros"
             name="capacity_passengers"
-            type="number"
+            type="text"
             value={formData.capacity_passengers}
             onChange={handleChange}
-            min="0"
+            onFocus={handleNumberFocus}
+            onBlur={handleNumberBlur}
+            placeholder="0"
           />
           <Input
             label="Capacidad Peso (kg)"
             name="capacity_weight_kg"
-            type="number"
+            type="text"
             value={formData.capacity_weight_kg}
             onChange={handleChange}
-            min="0"
+            onFocus={handleNumberFocus}
+            onBlur={handleNumberBlur}
+            placeholder="0"
           />
           <Input
             label="Capacidad Bultos"
             name="capacity_packages"
-            type="number"
+            type="text"
             value={formData.capacity_packages}
             onChange={handleChange}
-            min="0"
+            onFocus={handleNumberFocus}
+            onBlur={handleNumberBlur}
+            placeholder="0"
           />
         </div>
         {errors.capacity && <p className="text-sm text-red-600 mt-1">{errors.capacity}</p>}
 
-        <div className="flex items-center">
+        <div className="flex items-center pt-2">
           <input
             id="is_active"
             name="is_active"
@@ -160,7 +218,7 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
             onChange={handleChange}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+          <label htmlFor="is_active" className="ml-3 block text-sm font-medium text-gray-900">
             Embarcación activa
           </label>
         </div>

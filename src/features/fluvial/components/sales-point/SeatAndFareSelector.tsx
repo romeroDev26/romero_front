@@ -1,12 +1,13 @@
-// src/features/fluvial/components/sales-point/SeatAndFareSelector.tsx
 import React, { useMemo } from 'react';
 import { Spinner } from '../../../../components/common/Spinner';
 import { useTripDetails } from '../../hooks/useTripDetails';
-import { useSeatTypesData } from '../../hooks/useSeatTypesData'; // ¡Ahora esta importación funcionará!
+import { useSeatTypesData } from '../../hooks/useSeatTypesData';
+import { TripStop } from '../../../../types';
 
 interface SeatAndFareSelectorProps {
   tripId: number;
-  originPortId: number;
+  selectedOriginId: number | null;
+  onOriginChange: (portId: number) => void;
   selectedDestinationId: number | null;
   onDestinationChange: (portId: number) => void;
   selectedSeatTypeId: number | null;
@@ -15,43 +16,40 @@ interface SeatAndFareSelectorProps {
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   tripId,
-  originPortId,
+  selectedOriginId,
+  onOriginChange,
   selectedDestinationId,
   onDestinationChange,
   selectedSeatTypeId,
   onSeatTypeChange
 }) => {
-  // Hook 1: Obtiene detalles del viaje (paradas, disponibilidad por ID)
   const { data: tripDetails, isLoading: isLoadingTrip, error: tripError } = useTripDetails(tripId);
-  // Hook 2: Obtiene TODOS los tipos de asiento (ID, nombre, multiplicador)
   const { data: allSeatTypes = [], isLoading: isLoadingSeatTypes, error: seatTypesError } = useSeatTypesData();
 
-  const { availableStops, seatTypesWithAvailability } = useMemo(() => {
-    // Esperamos a que ambos hooks tengan datos
+  const {
+    originStops,
+    destinationStops,
+    seatTypesWithAvailability
+  } = useMemo(() => {
     if (!tripDetails || allSeatTypes.length === 0) {
-      return { availableStops: [], seatTypesWithAvailability: [] };
+      return { originStops: [], destinationStops: [], seatTypesWithAvailability: [] };
     }
 
-    // Lógica de paradas (ya es correcta)
-    const originStop = tripDetails.stops.find(s => s.port_id === originPortId);
-    const stops = originStop
-      ? tripDetails.stops.filter(s => s.stop_order > originStop.stop_order)
-      : [];
-      
-    // Lógica corregida para asientos:
-    // 1. Creamos un mapa de los detalles de los tipos de asiento para una búsqueda rápida.
-    const seatTypeDetailsMap = new Map(allSeatTypes.map(st => [st.id, st]));
-    
-    // 2. Mapeamos la lista de 'availability' del viaje.
+    const validOriginStops = tripDetails.stops.slice(0, -1);
+
+    let validDestinationStops: TripStop[] = [];
+    if (selectedOriginId) {
+      const originStop = tripDetails.stops.find(s => s.port_id === selectedOriginId);
+      if (originStop) {
+        validDestinationStops = tripDetails.stops.filter(s => s.stop_order > originStop.stop_order);
+      }
+    }
+
+    const availabilityMap = new Map(tripDetails.availability.map(sa => [sa.seat_type_id, sa.available_seats]));
     const seats = tripDetails.availability
       .map(avail => {
-        // 3. Por cada asiento disponible en el viaje, buscamos sus detalles en el mapa.
-        const details = seatTypeDetailsMap.get(avail.seat_type_id);
-        
-        // Si no encontramos detalles (raro, pero posible), lo ignoramos.
+        const details = new Map(allSeatTypes.map(st => [st.id, st])).get(avail.seat_type_id);
         if (!details) return null;
-
-        // 4. Combinamos la información en un nuevo objeto.
         return {
           id: details.id,
           name: details.name,
@@ -59,20 +57,29 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           available_seats: avail.available_seats,
         };
       })
-      .filter(Boolean); // 5. Eliminamos cualquier resultado nulo.
+      .filter(Boolean);
 
-    return { availableStops: stops, seatTypesWithAvailability: seats as any[] };
+    return {
+      originStops: validOriginStops,
+      destinationStops: validDestinationStops,
+      seatTypesWithAvailability: seats as any[]
+    };
+  }, [tripDetails, allSeatTypes, selectedOriginId]);
 
-  }, [tripDetails, allSeatTypes, originPortId]);
+  const handleOriginChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newOriginId = Number(e.target.value);
+    onOriginChange(newOriginId);
+    onDestinationChange(0);
+  };
 
   const isLoading = isLoadingTrip || isLoadingSeatTypes;
   const error = tripError || seatTypesError;
 
   if (isLoading) {
     return (
-        <div className="flex justify-center items-center h-40">
-            <Spinner /><span className="ml-2 text-gray-600">Cargando...</span>
-        </div>
+      <div className="flex justify-center items-center h-40">
+        <Spinner /><span className="ml-2 text-gray-600">Cargando...</span>
+      </div>
     );
   }
 
@@ -82,20 +89,36 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     <div className="space-y-6">
       <div>
         <h3 className="font-semibold text-lg text-gray-800 mb-2">Tramo y Asiento</h3>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Destino</label>
-        <select
-          value={selectedDestinationId || ''}
-          onChange={(e) => onDestinationChange(Number(e.target.value))}
-          className="w-full p-2 border border-gray-300 rounded-md bg-white"
-          disabled={availableStops.length === 0}
-        >
-          <option value="" disabled>Seleccione un destino</option>
-          {availableStops.map(stop => (
-            <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
-          ))}
-        </select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Origen</label>
+            <select
+              value={selectedOriginId || ''}
+              onChange={handleOriginChange}
+              className="w-full p-2 border border-gray-300 rounded-md bg-white"
+            >
+              <option value="" disabled>Seleccione un origen</option>
+              {originStops.map(stop => (
+                <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Destino</label>
+            <select
+              value={selectedDestinationId || ''}
+              onChange={(e) => onDestinationChange(Number(e.target.value))}
+              className="w-full p-2 border border-gray-300 rounded-md bg-white"
+              disabled={!selectedOriginId || destinationStops.length === 0}
+            >
+              <option value="" disabled>Seleccione un destino</option>
+              {destinationStops.map(stop => (
+                <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
-
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Asiento</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -115,7 +138,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           ))}
         </div>
         {seatTypesWithAvailability.length === 0 && (
-            <p className="text-sm text-gray-500 mt-2">No hay configuración de asientos para esta embarcación.</p>
+          <p className="text-sm text-gray-500 mt-2">No hay configuración de asientos para esta embarcación.</p>
         )}
       </div>
     </div>

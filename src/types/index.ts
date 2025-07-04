@@ -99,44 +99,52 @@ export interface City {
   updated_at: string;
 }
 
+// src/types/index.ts -> Reemplaza la sección de Company con esto
+
 export interface Company {
   id: number;
   ruc: string;
   business_name: string;
-  trade_name?: string;
-  address?: string;
-  ubigeo?: string;
-  phone?: string;
-  email?: string;
-  logo_url?: string;
-  sunat_username?: string;
-  sunat_password_hash?: string;
-  certificate_path?: string;
-  certificate_password_hash?: string;
+  trade_name: string; // La API de GET lo devuelve como string, no opcional
+  address: string;
+  ubigeo: string;
+  phone: string;
+  email: string;
+  logo_url: string;
+  sunat_username: string;
+  certificate_path: string;
   beta_mode: boolean;
-  detraccion_account?: string;
+  detraccion_account: string;
   is_active: boolean;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
+  updated_at: string;
+  // OJO: Los campos hash no vienen en la respuesta de la API según la doc, 
+  // así que es mejor no incluirlos para mantener el tipo alineado con lo que se recibe.
 }
 
-export interface CompanyUpdate {
-  ruc?: string;
-  business_name?: string;
+// NUEVO: Tipo para CREAR una compañía (POST)
+// Basado en el "Request Body" de tu API.
+export interface CompanyCreate {
+  ruc: string;
+  business_name: string;
   trade_name?: string;
-  address?: string;
-  ubigeo?: string;
+  address: string;
+  ubigeo: string;
   phone?: string;
   email?: string;
   logo_url?: string;
-  sunat_username?: string;
+  sunat_username: string;
   certificate_path?: string;
-  beta_mode?: boolean;
+  beta_mode: boolean;
   detraccion_account?: string;
   is_active?: boolean;
-  sunat_password_sol?: string;
+  sunat_password_sol: string; // Es obligatoria al crear
   certificate_password?: string;
 }
+
+// TIPO AJUSTADO: Para ACTUALIZAR una compañía (PATCH)
+// Partial<CompanyCreate> es perfecto para esto.
+export type CompanyUpdate = Partial<CompanyCreate>;
 
 export interface BranchOffice {
   id: number;
@@ -222,7 +230,7 @@ export interface Vessel {
   is_active: boolean;
   created_at: string;
   updated_at?: string;
-  seat_configurations?: VesselSeatConfiguration[];
+  seat_configurations_count?: number;
 }
 
 export interface UnifiedTripViewItem {
@@ -261,6 +269,11 @@ export interface VesselSeatConfiguration {
   total_seats: number;
   deck_level: number;
   notes?: string;
+  // --- NUEVOS CAMPOS AÑADIDOS ---
+   
+  total_rows?: number;
+  total_columns?: number;
+  // --- FIN DE NUEVOS CAMPOS ---
   created_at: string;
   updated_at: string;
 }

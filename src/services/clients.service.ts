@@ -1,36 +1,6 @@
 // src/services/clients.service.ts
 import api from '../config/api';
-import { Client } from '../types';
-
-export interface CreateClientData {
-  doc_type: string;
-  doc_number: string;
-  name: string;
-  address_line?: string; 
-  department?: string;   
-  province?: string;    
-  district?: string;    
-  country_code?: string;  
-  ubigeo?: string;
-  email?: string;
-  phone?: string;
-  is_active?: boolean;
-}
-
-export interface UpdateClientData {
-  doc_type?: string;
-  doc_number?: string;
-  name?: string;
-  address_line?: string;  
-  department?: string;    
-  province?: string;      
-  district?: string;      
-  country_code?: string;  
-  ubigeo?: string;
-  email?: string;
-  phone?: string;
-  is_active?: boolean;
-}
+import { Client, CreateClientData, UpdateClientData } from '../types';
 
 export const clientsService = {
   // Obtener todos los clientes
@@ -43,7 +13,7 @@ export const clientsService = {
       throw error;
     }
   },
-  
+
   // Obtener cliente por ID
   getById: async (id: number): Promise<Client> => {
     try {
@@ -54,7 +24,28 @@ export const clientsService = {
       throw error;
     }
   },
-  
+
+  /**
+   * Busca un cliente por su número de documento.
+   * La API devuelve 404 si no lo encuentra.
+   * Endpoint actualizado para usar un path parameter.
+   */
+  findByDocument: async (docNumber: string): Promise<Client | null> => {
+    if (!docNumber) return null;
+
+    try {
+      // La URL ahora incluye el número de documento directamente en la ruta
+      const response = await api.get<Client>(`/clients/by-document/${docNumber}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null; // Cliente no encontrado, es un caso de uso válido
+      }
+      console.error(`Error buscando cliente por documento ${docNumber}:`, error);
+      throw error;
+    }
+  },
+
   // Crear nuevo cliente
   create: async (clientData: CreateClientData): Promise<Client> => {
     try {
@@ -65,7 +56,7 @@ export const clientsService = {
       throw error;
     }
   },
-  
+
   // Actualizar cliente existente
   update: async (id: number, clientData: UpdateClientData): Promise<Client> => {
     try {
@@ -76,7 +67,7 @@ export const clientsService = {
       throw error;
     }
   },
-  
+
   // Eliminar (desactivar) cliente
   delete: async (id: number): Promise<Client> => {
     try {

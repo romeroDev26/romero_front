@@ -1,7 +1,6 @@
-// src/features/settings/pages/CompanySettingsPage.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'react-toastify';
@@ -10,8 +9,9 @@ import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { companiesService } from '../../../services/companies.service';
 import { CompanyUpdate } from '../../../types';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
-// Asumimos que la empresa tiene ID 1 (ajusta según tu caso)
+// Asumimos que la empresa activa para la configuración tiene un ID conocido (ej. 1)
 const COMPANY_ID = 1;
 
 const companySchema = z.object({
@@ -25,8 +25,8 @@ const companySchema = z.object({
   sunat_username: z.string().min(3, "Usuario SOL es requerido"),
   detraccion_account: z.string().optional(),
   beta_mode: z.boolean(),
-  is_active: z.boolean(),
   sunat_password_sol: z.string().optional(),
+  certificate_password: z.string().optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -35,351 +35,231 @@ export const CompanySettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const certificateInputRef = useRef<HTMLInputElement>(null);
-  const [certificatePassword, setCertificatePassword] = useState('');
-  const [showPasswordFields, setShowPasswordFields] = useState(false);
-  
-  // Query para obtener empresa
+
+  const [showSunatPassword, setShowSunatPassword] = useState(false);
+  const [showCertPassword, setShowCertPassword] = useState(false);
+
   const { data: company, isLoading, error } = useQuery({
     queryKey: ['company', COMPANY_ID],
     queryFn: () => companiesService.getById(COMPANY_ID),
-    retry: 1
+    enabled: !!COMPANY_ID,
   });
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    watch,
-  } = useForm<CompanyFormData>({
+
+  const { register, handleSubmit, formState: { errors }, reset, control, watch } = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
-      beta_mode: company?.beta_mode ?? true,
-      is_active: company?.is_active ?? true,
-      ...company
-    },
-    values: company ? {
-      ruc: company.ruc || '',
-      business_name: company.business_name || '',
-      trade_name: company.trade_name || '',
-      address: company.address || '',
-      ubigeo: company.ubigeo || '',
-      phone: company.phone || '',
-      email: company.email || '',
-      sunat_username: company.sunat_username || '',
-      detraccion_account: company.detraccion_account || '',
-      beta_mode: company.beta_mode ?? true,
-      is_active: company.is_active ?? true,
-      sunat_password_sol: ''
-    } : undefined
+      ruc: '',
+      business_name: '',
+      trade_name: '',
+      address: '',
+      ubigeo: '',
+      phone: '',
+      email: '',
+      sunat_username: '',
+      detraccion_account: '',
+      beta_mode: true,
+      sunat_password_sol: '',
+      certificate_password: '',
+    }
   });
-  
-  // Mutación para actualizar empresa
-  const mutation = useMutation({
+
+  const certificatePasswordForUpload = watch('certificate_password');
+
+  useEffect(() => {
+    if (company) {
+      reset({
+        ruc: company.ruc || '',
+        business_name: company.business_name || '',
+        trade_name: company.trade_name || '',
+        address: company.address || '',
+        ubigeo: company.ubigeo || '',
+        phone: company.phone || '',
+        email: company.email || '',
+        sunat_username: company.sunat_username || '',
+        detraccion_account: company.detraccion_account || '',
+        beta_mode: company.beta_mode ?? true,
+        sunat_password_sol: '',
+        certificate_password: '',
+      });
+    }
+  }, [company, reset]);
+
+  const updateMutation = useMutation({
     mutationFn: (data: CompanyUpdate) => companiesService.update(COMPANY_ID, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
-      toast.success('Información de empresa actualizada');
-      setShowPasswordFields(false);
+      toast.success('Información de la empresa actualizada exitosamente.');
     },
-    onError: (error: any) => {
-      if (error.response?.status === 409) {
-        toast.error('El RUC ya está en uso');
-      } else {
-        toast.error(error.response?.data?.detail || 'Error al actualizar información de empresa');
-      }
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || 'Error al actualizar la empresa.');
     }
   });
 
-  // Subir logo
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB
-        toast.error('El archivo es demasiado grande. Máximo 2MB');
-        return;
-      }
-      
-      try {
-        const result = await companiesService.uploadLogo(COMPANY_ID, file);
-        // Actualizar la URL del logo en el estado local
-        queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
-        toast.success('Logo actualizado correctamente');
-      } catch (error) {
-        toast.error('Error al subir el logo');
-      }
-    }
-  };
-
-  // Subir certificado
-  const handleCertificateUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && certificatePassword) {
-      try {
-        await companiesService.uploadCertificate(COMPANY_ID, file, certificatePassword);
-        toast.success('Certificado digital actualizado correctamente');
-        setCertificatePassword('');
-      } catch (error) {
-        toast.error('Error al subir el certificado');
-      }
-    } else if (!certificatePassword) {
-      toast.error('Debe ingresar la contraseña del certificado');
-    }
-  };
-  
   const onSubmit = (data: CompanyFormData) => {
-    const updateData: CompanyUpdate = {
-      ...data,
-      email: data.email || undefined,
-      phone: data.phone || undefined,
-      trade_name: data.trade_name || undefined,
-      detraccion_account: data.detraccion_account || undefined,
-      sunat_password_sol: data.sunat_password_sol || undefined,
-    };
-    
-    // Si no se ingresó contraseña de SUNAT, no la enviamos
+    const updateData: CompanyUpdate = { ...data };
+
     if (!updateData.sunat_password_sol) {
       delete updateData.sunat_password_sol;
     }
-    
-    mutation.mutate(updateData);
+
+    if (!updateData.certificate_password) {
+      delete updateData.certificate_password;
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      updateMutation.mutate(updateData);
+    } else {
+      toast.info("No hay cambios que guardar.");
+    }
   };
-  
-  if (isLoading) return <Spinner />;
-  
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Error al cargar información de la empresa</p>
-      </div>
-    );
-  }
-  
+
+  const handleFileUpload = async (
+    file: File | undefined,
+    uploadService: (id: number, file: File, password?: string) => Promise<any>,
+    options: { password?: string, maxSizeMB?: number, successMsg: string, errorMsg: string }
+  ) => {
+    if (!file) return;
+
+    if (options.maxSizeMB && file.size > options.maxSizeMB * 1024 * 1024) {
+      toast.error(`El archivo es demasiado grande. Máximo ${options.maxSizeMB}MB.`);
+      return;
+    }
+
+    try {
+      if (uploadService === companiesService.uploadCertificate && !options.password) {
+        toast.error('Se requiere la contraseña para subir el certificado.');
+        return;
+      }
+
+      await uploadService(COMPANY_ID, file, options.password);
+      toast.success(options.successMsg);
+      queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
+
+    } catch (err) {
+      toast.error(options.errorMsg);
+    }
+  };
+
+  if (isLoading) return <div className="flex justify-center items-center h-screen"><Spinner size="lg" /></div>;
+  if (error) return <div className="p-4 text-center text-red-600 bg-red-100 rounded-md">Error al cargar la información de la empresa. Por favor, intente de nuevo.</div>;
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Configuración de Empresa</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Configuración de Empresa</h1>
+        <p className="mt-1 text-sm text-gray-600">Administra los datos fiscales y credenciales de tu compañía.</p>
       </div>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Información básica */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input
-              label="RUC *"
-              type="text"
-              error={errors.ruc?.message}
-              {...register('ruc')}
-            />
-            
-            <Input
-              label="Razón Social *"
-              type="text"
-              error={errors.business_name?.message}
-              {...register('business_name')}
-            />
-            
-            <Input
-              label="Nombre Comercial"
-              type="text"
-              error={errors.trade_name?.message}
-              {...register('trade_name')}
-            />
-            
-            <Input
-              label="Dirección *"
-              type="text"
-              error={errors.address?.message}
-              {...register('address')}
-            />
-            
-            <Input
-              label="Ubigeo *"
-              type="text"
-              error={errors.ubigeo?.message}
-              {...register('ubigeo')}
-            />
-            
-            <Input
-              label="Teléfono"
-              type="text"
-              error={errors.phone?.message}
-              {...register('phone')}
-            />
-            
-            <Input
-              label="Email"
-              type="email"
-              error={errors.email?.message}
-              {...register('email')}
-            />
-            
-            <Input
-              label="Cuenta de Detracción"
-              type="text"
-              error={errors.detraccion_account?.message}
-              {...register('detraccion_account')}
-            />
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Datos Generales</h2></div>
+          <div className="border-t border-gray-200 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input label="RUC *" {...register('ruc')} error={errors.ruc?.message} />
+            <Input label="Razón Social *" {...register('business_name')} error={errors.business_name?.message} />
+            <Input label="Nombre Comercial" {...register('trade_name')} error={errors.trade_name?.message} />
+            <Input label="Dirección Fiscal *" {...register('address')} error={errors.address?.message} />
+            <Input label="Ubigeo *" {...register('ubigeo')} error={errors.ubigeo?.message} />
+            <Input label="Teléfono" {...register('phone')} error={errors.phone?.message} />
+            <Input label="Email" type="email" {...register('email')} error={errors.email?.message} />
+            <Input label="Cuenta de Detracción" {...register('detraccion_account')} error={errors.detraccion_account?.message} />
           </div>
-          
-          {/* Configuración SUNAT */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Configuración SUNAT</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Usuario SOL *"
-                type="text"
-                error={errors.sunat_username?.message}
-                {...register('sunat_username')}
+        </div>
+
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Configuración SUNAT</h2></div>
+          <div className="border-t border-gray-200 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Input label="Usuario SOL *" {...register('sunat_username')} error={errors.sunat_username?.message} />
+            <div className="relative">
+              <Input label="Contraseña SOL (si desea cambiar)" type={showSunatPassword ? 'text' : 'password'} {...register('sunat_password_sol')} error={errors.sunat_password_sol?.message} />
+              <button
+                type="button"
+                onClick={() => setShowSunatPassword(!showSunatPassword)}
+                className="absolute right-3 top-8 text-gray-500"
+                tabIndex={-1}
+              >
+                {showSunatPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+              </button>
+            </div>
+            <div className="md:col-span-2 flex items-start space-x-3 pt-2">
+              <Controller
+                name="beta_mode"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="checkbox"
+                    id="beta_mode"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
+                  />
+                )}
               />
-              
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="beta_mode"
-                  className="rounded border-gray-300 text-primary focus:ring-primary"
-                  {...register('beta_mode')}
-                />
-                <label htmlFor="beta_mode" className="text-sm text-gray-700">
-                  Modo Beta (Usar ambiente de pruebas de SUNAT)
-                </label>
-              </div>
-              
+              <div><label htmlFor="beta_mode" className="font-medium text-gray-900">Modo Beta</label><p className="text-sm text-gray-500">Enviar comprobantes al ambiente de pruebas de SUNAT.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+          <div className="px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Archivos Digitales</h2></div>
+          <div className="border-t border-gray-200 p-6 space-y-6">
+            <div className="flex items-center gap-4">
+              <img src={company?.logo_url || 'https://via.placeholder.com/80'} alt="Logo" className="h-20 w-20 rounded-md object-cover bg-gray-200" />
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Contraseña SOL
-                  </label>
+                <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()}>Cambiar Logo</Button>
+                <p className="mt-1 text-sm text-gray-500">PNG, JPG, máx 2MB.</p>
+                <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e.target.files?.[0], companiesService.uploadLogo, { successMsg: 'Logo actualizado', errorMsg: 'Error al subir logo', maxSizeMB: 2 })} />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Certificado Digital (.pfx)</label>
+                <Button type="button" variant="outline" className="mt-1" onClick={() => certificateInputRef.current?.click()}>{company?.certificate_path ? 'Reemplazar' : 'Seleccionar'}</Button>
+                <p className="mt-1 text-sm text-gray-500">{company?.certificate_path ? `Certificado cargado.` : 'No se ha cargado un certificado.'}</p>
+                <input
+                  type="file"
+                  ref={certificateInputRef}
+                  className="hidden"
+                  accept=".pfx,.p12"
+                  onChange={(e) => handleFileUpload(
+                    e.target.files?.[0],
+                    companiesService.uploadCertificate,
+                    {
+                      password: certificatePasswordForUpload,
+                      successMsg: 'Certificado actualizado',
+                      errorMsg: 'Error al subir certificado'
+                    }
+                  )}
+                />
+              </div>
+              <div>
+                <div className="relative">
+                  <Input
+                    label="Contraseña del Certificado"
+                    type={showCertPassword ? 'text' : 'password'}
+                    {...register('certificate_password')}
+                    error={errors.certificate_password?.message}
+                    placeholder="Ingrese para cambiar o para subir nuevo"
+                  />
                   <button
                     type="button"
-                    onClick={() => setShowPasswordFields(!showPasswordFields)}
-                    className="text-sm text-primary hover:text-primary/80"
+                    onClick={() => setShowCertPassword(!showCertPassword)}
+                    className="absolute right-3 top-8 text-gray-500"
+                    tabIndex={-1}
                   >
-                    {showPasswordFields ? 'Cancelar cambio' : 'Cambiar contraseña'}
+                    {showCertPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                   </button>
                 </div>
-                {showPasswordFields && (
-                  <Input
-                    type="password"
-                    placeholder="Nueva contraseña SOL"
-                    error={errors.sunat_password_sol?.message}
-                    {...register('sunat_password_sol')}
-                  />
-                )}
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="is_active"
-                  className="rounded border-gray-300 text-primary focus:ring-primary"
-                  {...register('is_active')}
-                />
-                <label htmlFor="is_active" className="text-sm text-gray-700">
-                  Empresa Activa
-                </label>
               </div>
             </div>
           </div>
-          
-          {/* Certificado Digital */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Certificado Digital</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Certificado Digital
-                </label>
-                <div className="mt-1 flex items-center">
-                  <input
-                    type="file"
-                    ref={certificateInputRef}
-                    onChange={handleCertificateUpload}
-                    accept=".pfx,.p12"
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => certificateInputRef.current?.click()}
-                  >
-                    Seleccionar Certificado
-                  </Button>
-                  {company?.certificate_path && (
-                    <span className="ml-3 text-sm text-gray-500">
-                      Certificado cargado
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-sm text-gray-500">
-                  Formato .pfx o .p12
-                </p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contraseña del Certificado
-                </label>
-                <input
-                  type="password"
-                  value={certificatePassword}
-                  onChange={(e) => setCertificatePassword(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-          </div>
-          
-          {/* Logo de la empresa */}
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Logo de la Empresa</h3>
-            
-            <div className="flex items-center">
-              <span className="inline-block h-20 w-20 rounded-md overflow-hidden bg-gray-100 mr-4">
-                {company?.logo_url ? (
-                  <img 
-                    src={company.logo_url} 
-                    alt="Logo" 
-                    className="h-full w-full object-cover" 
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-gray-300 text-gray-500">
-                    Logo
-                  </div>
-                )}
-              </span>
-              <input
-                type="file"
-                ref={logoInputRef}
-                onChange={handleLogoUpload}
-                className="hidden"
-                accept="image/*"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => logoInputRef.current?.click()}
-              >
-                Cambiar Logo
-              </Button>
-            </div>
-            <p className="mt-2 text-sm text-gray-500">
-              PNG o JPG, máximo 2MB. Recomendado: 500x500px
-            </p>
-          </div>
-          
-          <div className="flex justify-end pt-4">
-            <Button
-              type="submit"
-              isLoading={isSubmitting || mutation.isPending}
-            >
-              Guardar Cambios
-            </Button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        <div className="flex justify-end pt-4">
+          <Button type="submit" isLoading={updateMutation.isPending}>Guardar Cambios</Button>
+        </div>
+      </form>
     </div>
   );
 };

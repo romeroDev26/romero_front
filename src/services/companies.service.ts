@@ -1,66 +1,75 @@
 // src/services/companies.service.ts
 import api from '../config/api';
-import { Company, CompanyUpdate } from '../types';
+import { Company, CompanyCreate, CompanyUpdate } from '../types';
 
-export const companiesService = {
-  // Obtener empresa por ID
-  getById: async (id: number): Promise<Company> => {
-    try {
-      const response = await api.get(`/companies/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error obteniendo empresa con ID ${id}:`, error);
-      throw error;
-    }
-  },
+// Definimos la interfaz para los filtros del listado
+export interface CompanyListFilters {
+  skip?: number;
+  limit?: number;
+  is_active?: boolean;
+}
 
-  // Actualizar empresa
-  update: async (id: number, data: CompanyUpdate): Promise<Company> => {
-    try {
-      const response = await api.patch(`/companies/${id}`, data);
-      return response.data;
-    } catch (error) {
-      console.error(`Error actualizando empresa con ID ${id}:`, error);
-      throw error;
-    }
-  },
+class CompaniesService {
+  private readonly basePath = '/companies';
 
-  // Subir logo de empresa
-  uploadLogo: async (id: number, file: File): Promise<{ logo_url: string }> => {
-    try {
-      const formData = new FormData();
-      formData.append('logo', file);
-      
-      const response = await api.post(`/companies/${id}/logo`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      return response.data;
-    } catch (error) {
-      console.error('Error subiendo logo:', error);
-      throw error;
-    }
-  },
-
-  // Subir certificado digital
-  uploadCertificate: async (id: number, file: File, password: string): Promise<{ certificate_path: string }> => {
-    try {
-      const formData = new FormData();
-      formData.append('certificate', file);
-      formData.append('password', password);
-      
-      const response = await api.post(`/companies/${id}/certificate`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      return response.data;
-    } catch (error) {
-      console.error('Error subiendo certificado:', error);
-      throw error;
-    }
+  // GET /companies/ (Listar)
+  async getList(filters: CompanyListFilters = {}): Promise<Company[]> {
+    const params = new URLSearchParams();
+    if (filters.skip !== undefined) params.append('skip', String(filters.skip));
+    if (filters.limit !== undefined) params.append('limit', String(filters.limit));
+    if (filters.is_active !== undefined) params.append('is_active', String(filters.is_active));
+    
+    const response = await api.get<Company[]>(`${this.basePath}/`, { params });
+    return response.data;
   }
-};
+
+  // GET /companies/{id} (Obtener uno)
+  async getById(id: number): Promise<Company> {
+    const response = await api.get<Company>(`${this.basePath}/${id}`);
+    return response.data;
+  }
+
+  // POST /companies/ (Crear)
+  async create(data: CompanyCreate): Promise<Company> {
+    const response = await api.post<Company>(`${this.basePath}/`, data);
+    return response.data;
+  }
+
+  // PATCH /companies/{id} (Actualizar)
+  async update(id: number, data: CompanyUpdate): Promise<Company> {
+    const response = await api.patch<Company>(`${this.basePath}/${id}`, data);
+    return response.data;
+  }
+
+  // DELETE /companies/{id} (Desactivar - Borrado Lógico)
+  async delete(id: number): Promise<Company> {
+    const response = await api.delete<Company>(`${this.basePath}/${id}`);
+    return response.data;
+  }
+
+  // --- MÉTODOS DE SUBIDA DE ARCHIVOS ---
+  async uploadLogo(id: number, file: File): Promise<{ logo_url: string }> {
+    const formData = new FormData();
+    formData.append('logo', file);
+    
+    const response = await api.post<{ logo_url: string }>(`${this.basePath}/${id}/logo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  }
+
+  async uploadCertificate(id: number, file: File, password?: string): Promise<{ certificate_path: string }> {
+    const formData = new FormData();
+    formData.append('certificate', file);
+    if (password) {
+      formData.append('password', password);
+    }
+    
+    const response = await api.post<{ certificate_path: string }>(`${this.basePath}/${id}/certificate`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  }
+}
+
+export const companiesService = new CompaniesService();

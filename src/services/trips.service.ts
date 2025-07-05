@@ -59,6 +59,25 @@ export interface TripDetailsResponse extends Trip {
   availability: TripSeatAvailability[]; // El backend lo llama 'availability'
 }
 
+// Definimos los posibles estados como un tipo para mayor seguridad
+export type SeatStatus = "AVAILABLE" | "RESERVED" | "CONFIRMED" | "CANCELLED" | "EXPIRED" | "BLOCKED";
+
+// Actualizamos la interfaz SeatMapItem
+export interface SeatMapItem {
+  id: number;
+  trip_id: number;
+  vessel_seat_config_id: number;
+  seat_number: string;
+  status: SeatStatus; // Usamos el nuevo tipo
+  notes: string;
+  seat_type: {
+    id: number;
+    name: string;
+    code: string;
+    price_multiplier: number;
+  };
+}
+
 class TripsService {
   private basePath = '/operations/trips/';
 
@@ -124,6 +143,11 @@ class TripsService {
         on_date: onDate,
       },
     });
+    return response.data;
+  }
+
+  async getSeatMap(tripId: number): Promise<SeatMapItem[]> {
+    const response = await api.get<SeatMapItem[]>(`${this.basePath}${tripId}/seat-map`);
     return response.data;
   }
 }

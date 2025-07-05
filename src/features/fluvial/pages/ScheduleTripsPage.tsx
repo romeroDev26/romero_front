@@ -258,7 +258,13 @@ export const ScheduleTripsPage: React.FC = () => {
                 // Adapt AvailableTrip to UnifiedTripViewItem
                 const unifiedTrip: UnifiedTripViewItem = {
                   ...trip,
-                  original_data: trip, // or provide a more accurate mapping if needed
+                  trip_name: trip.trip_name ?? null,
+                  original_data: trip,
+                  origin_port_name: null,
+                  destination_port_name: null,
+                  total_seats: null,
+                  available_seats: null,
+                  manifest_generated: false
                 };
                 handleEditTrip(unifiedTrip);
               }}

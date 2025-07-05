@@ -1,4 +1,3 @@
-// src/features/fluvial/components/schedule/TripFormModal.tsx
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Input } from '../../../../components/common/Input';
@@ -56,40 +55,52 @@ export const TripFormModal: React.FC<Props> = ({
   });
 
   const [errors, setErrors] = useState<any>({});
+  const [datePart, setDatePart] = useState('');
+  const [timePart, setTimePart] = useState('08:00');
 
   useEffect(() => {
-    if (trip && tripDetails) {
-      setFormData({
-        route_id: tripDetails.route_id,
-        vessel_id: tripDetails.vessel_id || 0,
-        trip_name: tripDetails.trip_name || '',
-        departure_datetime: format(new Date(tripDetails.departure_datetime), "yyyy-MM-dd'T'HH:mm"),
-        can_sell_tickets: tripDetails.can_sell_tickets,
-        status: tripDetails.status,
-        actual_departure_datetime: tripDetails.actual_departure_datetime
-          ? format(new Date(tripDetails.actual_departure_datetime), "yyyy-MM-dd'T'HH:mm")
-          : '',
-        actual_arrival_datetime: tripDetails.actual_arrival_datetime
-          ? format(new Date(tripDetails.actual_arrival_datetime), "yyyy-MM-dd'T'HH:mm")
-          : '',
-        captain_user_id: tripDetails.captain_user_id || '',
-      });
-    } else if (!trip) {
-      const defaultDate = initialDate ? set(initialDate, { hours: 8, minutes: 0 }) : new Date();
-      setFormData({
-        route_id: 0,
-        vessel_id: 0,
-        trip_name: '',
-        departure_datetime: format(defaultDate, "yyyy-MM-dd'T'HH:mm"),
-        can_sell_tickets: true,
-        status: 'SCHEDULED',
-        actual_departure_datetime: '',
-        actual_arrival_datetime: '',
-        captain_user_id: '',
-      });
+    if (isOpen) {
+      if (trip && tripDetails) {
+        const departure = new Date(tripDetails.departure_datetime);
+        setDatePart(format(departure, 'yyyy-MM-dd'));
+        setTimePart(format(departure, 'HH:mm'));
+
+        setFormData({
+          route_id: tripDetails.route_id,
+          vessel_id: tripDetails.vessel_id || 0,
+          trip_name: tripDetails.trip_name || '',
+          departure_datetime: format(new Date(tripDetails.departure_datetime), "yyyy-MM-dd'T'HH:mm"),
+          can_sell_tickets: tripDetails.can_sell_tickets,
+          status: tripDetails.status,
+          actual_departure_datetime: tripDetails.actual_departure_datetime
+            ? format(new Date(tripDetails.actual_departure_datetime), "yyyy-MM-dd'T'HH:mm")
+            : '',
+          actual_arrival_datetime: tripDetails.actual_arrival_datetime
+            ? format(new Date(tripDetails.actual_arrival_datetime), "yyyy-MM-dd'T'HH:mm")
+            : '',
+          captain_user_id: tripDetails.captain_user_id || '',
+        });
+      } else if (!trip) {
+        const defaultDate = initialDate ? format(initialDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
+        setDatePart(defaultDate);
+        setTimePart('08:00');
+
+        const defaultDateTime = initialDate ? set(initialDate, { hours: 8, minutes: 0 }) : new Date();
+        setFormData({
+          route_id: 0,
+          vessel_id: 0,
+          trip_name: '',
+          departure_datetime: format(defaultDateTime, "yyyy-MM-dd'T'HH:mm"),
+          can_sell_tickets: true,
+          status: 'SCHEDULED',
+          actual_departure_datetime: '',
+          actual_arrival_datetime: '',
+          captain_user_id: '',
+        });
+      }
+      setErrors({});
     }
-    setErrors({});
-  }, [trip, tripDetails, initialDate, isOpen]);
+  }, [isOpen, trip, tripDetails, initialDate]);
 
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -106,7 +117,7 @@ export const TripFormModal: React.FC<Props> = ({
     if (!formData.vessel_id || formData.vessel_id === 0) {
       newErrors.vessel_id = 'Debe seleccionar una embarcación.';
     }
-    if (!formData.departure_datetime) {
+    if (!datePart || !timePart) {
       newErrors.departure_datetime = 'La fecha y hora de salida es requerida.';
     }
     setErrors(newErrors);
@@ -117,9 +128,11 @@ export const TripFormModal: React.FC<Props> = ({
     e.preventDefault();
     if (!validate()) return;
 
+    const combinedDateTime = `${datePart}T${timePart}:00`;
+
     const dataToSave: any = {
       vessel_id: formData.vessel_id,
-      departure_datetime: new Date(formData.departure_datetime).toISOString(),
+      departure_datetime: combinedDateTime,
       can_sell_tickets: formData.can_sell_tickets,
       trip_name: formData.trip_name.trim() ? formData.trip_name.trim() : undefined,
       captain_user_id: formData.captain_user_id || undefined,
@@ -132,6 +145,7 @@ export const TripFormModal: React.FC<Props> = ({
     } else {
       dataToSave.route_id = formData.route_id;
     }
+
     onSave(dataToSave);
   };
 
@@ -175,7 +189,6 @@ export const TripFormModal: React.FC<Props> = ({
               )}
             </div>
           )}
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Embarcación <span className="text-red-500">*</span>
@@ -199,43 +212,56 @@ export const TripFormModal: React.FC<Props> = ({
               <p className="mt-1 text-sm text-red-600">{errors.vessel_id}</p>
             )}
           </div>
-
           <Input
             label="Nombre del Viaje (Opcional)"
             value={formData.trip_name}
             onChange={(e) => handleChange('trip_name', e.target.value)}
             placeholder="Ej: Viaje Especial Navidad"
           />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              type="datetime-local"
-              label="Fecha y Hora de Salida"
-              value={formData.departure_datetime}
-              onChange={(e) => handleChange('departure_datetime', e.target.value)}
-              error={errors.departure_datetime}
-              required
-            />
-            {trip && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Estado
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => handleChange('status', e.target.value)}
-                  className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
-                >
-                  {TRIP_STATUS_OPTIONS.map((status) => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Fecha de Salida
+              </label>
+              <input
+                type="date"
+                value={datePart}
+                onChange={(e) => setDatePart(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Hora de Salida
+              </label>
+              <input
+                type="time"
+                value={timePart}
+                onChange={(e) => setTimePart(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+            </div>
           </div>
-
+          {trip && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Estado
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) => handleChange('status', e.target.value)}
+                className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
+              >
+                {TRIP_STATUS_OPTIONS.map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Capitán (Opcional)
@@ -255,7 +281,6 @@ export const TripFormModal: React.FC<Props> = ({
             </select>
             {isLoadingCaptains && <p className="text-xs text-gray-500 mt-1">Cargando capitanes...</p>}
           </div>
-
           {trip && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
@@ -272,7 +297,6 @@ export const TripFormModal: React.FC<Props> = ({
               />
             </div>
           )}
-
           <label className="flex items-center">
             <input
               type="checkbox"
@@ -284,7 +308,6 @@ export const TripFormModal: React.FC<Props> = ({
               Permitir venta de tickets
             </span>
           </label>
-
           {!trip && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
               <p className="text-sm text-yellow-800">
@@ -293,7 +316,6 @@ export const TripFormModal: React.FC<Props> = ({
               </p>
             </div>
           )}
-
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button
               type="button"

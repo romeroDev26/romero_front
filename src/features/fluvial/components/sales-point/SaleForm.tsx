@@ -4,19 +4,16 @@ import { ArrowLeft, Ship, Clock, AlertTriangle, CreditCard } from 'lucide-react'
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-
 // Components & Utils
 import { Button } from '../../../../components/common/Button';
 import { PassengerDataForm } from './PassengerDataForm';
 import { SeatAndFareSelector } from './SeatAndFareSelector';
 import { PriceSummary } from './PriceSummary';
-
 // Types & Enums
 import { BranchOffice, ServiceCategory } from '../../../../types';
 import { AvailableTripByPort } from '../../../../services/trips.service';
 import { SunatDocType, SunatInvoiceType, SunatTaxCategory } from '../../types/sunat.types';
 import { InvoiceCreateData } from '../../../../services/invoices.service';
-
 // Hooks
 import { useFindFare } from '../../hooks/useFindFare';
 import { useTripDetails } from '../../hooks/useTripDetails';
@@ -42,10 +39,10 @@ interface SaleFormProps {
 }
 
 export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSaleSuccess }) => {
-  // --- ESTADOS ---
   const [selectedOriginId, setSelectedOriginId] = useState<number | null>(null);
   const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
   const [selectedSeatTypeId, setSelectedSeatTypeId] = useState<number | null>(null);
+  const [selectedSeatNumber, setSelectedSeatNumber] = useState<string>('');
   const [passengerData, setPassengerData] = useState<PassengerData>({
     docType: SunatDocType.DNI,
     docNumber: '',
@@ -54,12 +51,15 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   });
   const [extraCost, setExtraCost] = useState(0);
   const [isIgvGravado, setIsIgvGravado] = useState(false);
-
-  // --- NUEVOS ESTADOS PARA SERIES ---
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>('');
   const [selectedFacturaSeries, setSelectedFacturaSeries] = useState<string>('');
 
-  // --- HOOKS DE DATOS ---
+  useEffect(() => {
+    if (branch.port_id) {
+      setSelectedOriginId(branch.port_id);
+    }
+  }, [branch.port_id]);
+
   const { data: passengerService } = usePassengerService();
   const { data: tripDetails } = useTripDetails(trip.id);
   const { data: allSeatTypes = [] } = useSeatTypesData();
@@ -68,23 +68,19 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
     destinationPortId: selectedDestinationId,
     serviceCategory: 'PASAJES' as any
   });
-
   const { availableBoletaSeries, availableFacturaSeries, isLoading: isLoadingSeries } = useDocumentSeriesForBranch(branch.id);
   const { findOrCreateClient, isProcessingClient } = useClientManager();
   const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateInvoice();
 
   useEffect(() => {
-    if (branch.port_id) setSelectedOriginId(branch.port_id);
     if (passengerService) {
       setIsIgvGravado(passengerService.tax_category_code === SunatTaxCategory.GRAVADO);
     }
-  }, [branch, passengerService]);
+  }, [passengerService]);
 
-  // --- LÓGICA DE CACHÉ Y SELECCIÓN POR DEFECTO PARA SERIES ---
   useEffect(() => {
     const cachedBoleta = localStorage.getItem('lastUsedBoletaSeries');
     const cachedFactura = localStorage.getItem('lastUsedFacturaSeries');
-
     if (availableBoletaSeries.length > 0) {
       if (cachedBoleta && availableBoletaSeries.some(s => s.series_code === cachedBoleta)) {
         setSelectedBoletaSeries(cachedBoleta);
@@ -92,7 +88,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
         setSelectedBoletaSeries(availableBoletaSeries[0].series_code);
       }
     }
-
     if (availableFacturaSeries.length > 0) {
       if (cachedFactura && availableFacturaSeries.some(s => s.series_code === cachedFactura)) {
         setSelectedFacturaSeries(cachedFactura);
@@ -102,7 +97,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
     }
   }, [availableBoletaSeries, availableFacturaSeries]);
 
-  // --- HANDLERS PARA CAMBIO DE SERIE ---
   const handleBoletaSeriesChange = (seriesCode: string) => {
     setSelectedBoletaSeries(seriesCode);
     localStorage.setItem('lastUsedBoletaSeries', seriesCode);
@@ -111,6 +105,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   const handleFacturaSeriesChange = (seriesCode: string) => {
     setSelectedFacturaSeries(seriesCode);
     localStorage.setItem('lastUsedFacturaSeries', seriesCode);
+  };
+
+  const handleSeatTypeChange = (seatTypeId: number) => {
+    setSelectedSeatTypeId(seatTypeId);
+    setSelectedSeatNumber('');
   };
 
   const { basePrice, seatMultiplier } = useMemo(() => {
@@ -125,14 +124,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   }, [basePrice, seatMultiplier, extraCost]);
 
   const handleConfirmSale = async () => {
-    if (!selectedOriginId || !selectedDestinationId || !selectedSeatTypeId || !passengerData.docNumber.trim() || !passengerData.name.trim() || !passengerService) {
+    if (!selectedOriginId || !selectedDestinationId || !selectedSeatTypeId || !passengerData.docNumber.trim() || !passengerData.name.trim() || !passengerService || !selectedSeatNumber) {
       toast.error("Complete todos los campos: Origen, Destino, Asiento y Datos del Cliente.");
       return;
     }
 
     const isRuc = passengerData.docType === SunatDocType.RUC;
     const series = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
-
     if (!series) {
       toast.error(`Por favor, seleccione una serie de ${isRuc ? 'Factura' : 'Boleta'}.`);
       return;
@@ -168,7 +166,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
           unit_code: 'NIU',
           unit_price: finalTicketPrice,
           tax_category_code: taxCategoryCode,
-          price_type_code: "01"
+          price_type_code: "01",
+          trip_id: trip.id,
+          seat_type_id: selectedSeatTypeId!,
+          boarding_stop_id: tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.id,
+          disembarking_stop_id: tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.id,
+          seat_number: selectedSeatNumber,
         }],
       };
 
@@ -192,14 +195,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
           <ArrowLeft className="h-4 w-4 mr-2" />Volver
         </Button>
       </div>
-
       <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-6 flex items-center gap-4 text-sm">
         <Ship className="h-5 w-5 text-blue-700" />
         <span className="font-semibold">{trip.trip_name} ({trip.vessel_name})</span>
         <Clock className="h-5 w-5 text-blue-700 ml-auto" />
         <span>{format(new Date(trip.estimated_departure_time), 'dd/MM/yyyy hh:mm a')}</span>
       </div>
-
       <div className="grid lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 space-y-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -210,14 +211,15 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
               selectedDestinationId={selectedDestinationId}
               onDestinationChange={setSelectedDestinationId}
               selectedSeatTypeId={selectedSeatTypeId}
-              onSeatTypeChange={setSelectedSeatTypeId}
+              onSeatTypeChange={handleSeatTypeChange}
+              selectedSeatNumber={selectedSeatNumber}
+              onSeatNumberChange={setSelectedSeatNumber}
             />
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <PassengerDataForm passengerData={passengerData} setPassengerData={setPassengerData} />
           </div>
         </div>
-
         <div className="lg:col-span-2">
           <div className="sticky top-24 space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-sm border">

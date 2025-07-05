@@ -1,4 +1,3 @@
-// src/components/layout/Sidebar.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { User } from '../../types';
@@ -125,7 +124,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const newExpanded: { [key: string]: boolean } = {};
+    const newExpanded: { [key: string]: boolean } = { ...expandedMenus };
 
     navGroups.forEach(group => {
       if (group.expandable) {
@@ -133,9 +132,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           currentPath.startsWith(item.path !== '#' ? item.path : '---') ||
           (item.subitems && item.subitems.some(sub => currentPath.startsWith(sub.path)))
         );
+
         if (isGroupActive) {
           newExpanded[group.expandKey] = true;
-
           group.items.forEach(subGroup => {
             if (subGroup.isSubmenu) {
               const isSubGroupActive = subGroup.subitems.some(sub => currentPath.startsWith(sub.path));
@@ -168,15 +167,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
 
   const renderMenuItem = useCallback((item: any, isSubitem = false, level = 0) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
-
     const baseClasses = `flex items-center w-full text-left text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-lg`;
-
-    // Mejorar la alineación del padding basado en el nivel
     let paddingClasses = 'px-4 py-3';
     if (level === 1) {
-      paddingClasses = 'pl-8 pr-4 py-2.5'; // Segundo nivel
+      paddingClasses = 'pl-8 pr-4 py-2.5';
     } else if (level === 2) {
-      paddingClasses = 'pl-12 pr-4 py-2.5'; // Tercer nivel - mejor alineación
+      paddingClasses = 'pl-12 pr-4 py-2.5';
     } else if (isSubitem) {
       paddingClasses = 'pl-10 pr-4 py-2.5';
     }
@@ -200,7 +196,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
               }`}
             />
           </button>
-
           {isExpanded && item.subitems && (
             <div className="mt-1 bg-gray-50/50 rounded-lg mx-2">
               <div className="py-2 space-y-1">
@@ -235,7 +230,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
 
   const renderExpandableGroup = useCallback((group: any) => {
     const isExpanded = expandedMenus[group.expandKey];
-
     return (
       <div key={group.title} className="mb-6">
         <button
@@ -254,7 +248,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
             }`}
           />
         </button>
-
         {isExpanded && (
           <div className="mt-1 bg-gray-50 rounded-lg mx-2 overflow-hidden">
             <div className="py-2 space-y-1">

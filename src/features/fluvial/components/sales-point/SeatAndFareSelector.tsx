@@ -1,4 +1,3 @@
-// src/features/fluvial/components/sales-point/SeatAndFareSelector.tsx
 import React, { useMemo } from 'react';
 import { Spinner } from '../../../../components/common/Spinner';
 import { useTripDetails } from '../../hooks/useTripDetails';
@@ -14,8 +13,8 @@ interface SeatAndFareSelectorProps {
   onDestinationChange: (portId: number | null) => void;
   selectedSeatTypeId: number | null;
   onSeatTypeChange: (seatTypeId: number) => void;
-  selectedSeatNumber: string;
-  onSeatNumberChange: (seatNumber: string) => void;
+  selectedSeatId: number | null;
+  onSeatSelect: (seatId: number | null, seatNumber: string) => void;
 }
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
@@ -26,77 +25,77 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   onDestinationChange,
   selectedSeatTypeId,
   onSeatTypeChange,
-  selectedSeatNumber,
-  onSeatNumberChange
+  selectedSeatId,
+  onSeatSelect
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip, error: tripError } = useTripDetails(tripId);
   const { data: allSeatTypes = [], isLoading: isLoadingSeatTypes, error: seatTypesError } = useSeatTypesData();
-  const { data: seatMap = [], isLoading: isLoadingSeatMap, error: seatMapError } = useSeatMap(tripId);
+  const { data: seatMap, isLoading: isLoadingSeatMap, error: seatMapError } = useSeatMap(tripId);
 
   const {
-    originStops,
-    destinationStops,
+    availableStops,
     seatTypesWithAvailability,
     availableSeatsForSelectedType
   } = useMemo(() => {
-    if (!tripDetails || !allSeatTypes.length) {
-      return { originStops: [], destinationStops: [], seatTypesWithAvailability: [], availableSeatsForSelectedType: [] };
+    if (!tripDetails || !allSeatTypes.length || !seatMap || !seatMap.length) {
+      return { availableStops: [], seatTypesWithAvailability: [], availableSeatsForSelectedType: [] };
     }
 
-    // Logic for origin stops
-    const validOriginStops = tripDetails.stops.slice(0, -1);
+    const originStop = tripDetails.stops.find(s => s.port_id === selectedOriginId);
+    const stops = originStop ? tripDetails.stops.filter(s => s.stop_order > originStop.stop_order) : [];
 
-    // Logic for destination stops (depends on origin)
-    let validDestinationStops: TripStop[] = [];
-    if (selectedOriginId) {
-      const originStop = tripDetails.stops.find(s => s.port_id === selectedOriginId);
-      if (originStop) {
-        validDestinationStops = tripDetails.stops.filter(s => s.stop_order > originStop.stop_order);
+    const seatsGroupedByType = seatMap.reduce((acc, seat) => {
+      const typeId = seat.seat_type.id;
+      if (!acc[typeId]) {
+        acc[typeId] = [];
       }
-    }
+      acc[typeId].push(seat);
+      return acc;
+    }, {} as Record<number, typeof seatMap>);
 
-    const seatTypeDetailsMap = new Map(allSeatTypes.map(st => [st.id, st]));
-    const seatsWithAvailability = tripDetails.availability
-      .map(avail => {
-        const details = seatTypeDetailsMap.get(avail.seat_type_id);
-        if (!details) return null;
+    const seatsForButtons = allSeatTypes
+      .map(seatType => {
+        const seatsInGroup = seatsGroupedByType[seatType.id] || [];
+        const availableCount = seatsInGroup.filter(s => s.status === 'AVAILABLE').length;
+
+        if (seatsInGroup.length === 0) {
+          return null;
+        }
+
         return {
-          id: details.id,
-          name: details.name,
-          available_seats: avail.available_seats,
+          id: seatType.id,
+          name: seatType.name,
+          available_seats: availableCount,
         };
       })
       .filter(Boolean);
 
-    let seatsForDropdown: string[] = [];
-    if (selectedSeatTypeId && (seatMap?.length ?? 0) > 0) {
-      seatsForDropdown = (seatMap ?? [])
-        .filter(seat =>
-          seat.seat_type.id === selectedSeatTypeId && seat.status === 'AVAILABLE'
-        )
-        .map(seat => seat.seat_number)
-        .sort((a, b) => {
-          const numA = parseInt(a.match(/\d+/)![0]);
-          const numB = parseInt(b.match(/\d+/)![0]);
-          if (numA !== numB) return numA - numB;
-          const strA = a.match(/[a-zA-Z]+/)![0];
-          const strB = b.match(/[a-zA-Z]+/)![0];
-          return strA.localeCompare(strB);
-        });
+    let seatsForDropdown: { id: number; seat_number: string }[] = [];
+    if (selectedSeatTypeId) {
+      const seatsInGroup = seatsGroupedByType[selectedSeatTypeId] || [];
+      seatsForDropdown = seatsInGroup
+        .filter(seat => seat.status === 'AVAILABLE')
+        .map(seat => ({ id: seat.id, seat_number: seat.seat_number }))
+        .sort((a, b) => parseInt(a.seat_number) - parseInt(b.seat_number));
     }
 
     return {
-      originStops: validOriginStops,
-      destinationStops: validDestinationStops,
-      seatTypesWithAvailability: seatsWithAvailability as any[],
+      availableStops: stops,
+      seatTypesWithAvailability: seatsForButtons as any[],
       availableSeatsForSelectedType: seatsForDropdown
     };
-  }, [tripDetails, allSeatTypes, selectedOriginId, selectedSeatTypeId, seatMap]);
+  }, [tripDetails, allSeatTypes, seatMap, selectedOriginId, selectedSeatTypeId]);
 
   const handleOriginChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newOriginId = Number(e.target.value);
     onOriginChange(newOriginId);
-    onDestinationChange(null); // Reset destination to force a new selection
+    onDestinationChange(null);
+  };
+
+  const handleSeatSelectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = Number(e.target.value);
+    const selectedSeat = availableSeatsForSelectedType.find(s => s.id === selectedId);
+    onSeatSelect(selectedId, selectedSeat?.seat_number || '');
   };
 
   const isLoading = isLoadingTrip || isLoadingSeatTypes || isLoadingSeatMap;
@@ -126,7 +125,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
             className="w-full p-2 border border-gray-300 rounded-md bg-white"
           >
             <option value="" disabled>Seleccione...</option>
-            {originStops.map(stop => (
+            {tripDetails?.stops?.slice(0, -1).map(stop => (
               <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
             ))}
           </select>
@@ -137,10 +136,10 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
             value={selectedDestinationId || ''}
             onChange={(e) => onDestinationChange(Number(e.target.value))}
             className="w-full p-2 border border-gray-300 rounded-md bg-white"
-            disabled={!selectedOriginId || destinationStops.length === 0}
+            disabled={!selectedOriginId || availableStops.length === 0}
           >
             <option value="" disabled>Seleccione...</option>
-            {destinationStops.map(stop => (
+            {availableStops.map(stop => (
               <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
             ))}
           </select>
@@ -166,20 +165,16 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Número de Asiento</label>
         <select
-          value={selectedSeatNumber}
-          onChange={(e) => onSeatNumberChange(e.target.value)}
+          value={selectedSeatId || ''}
+          onChange={handleSeatSelectionChange}
           className="w-full p-2 border border-gray-300 rounded-md bg-white"
           disabled={!selectedSeatTypeId || availableSeatsForSelectedType.length === 0}
         >
           <option value="">
-            {
-              !selectedSeatTypeId
-                ? "Seleccione un tipo de asiento"
-                : (isLoadingSeatMap ? "Cargando asientos..." : "Seleccione un asiento")
-            }
+            {!selectedSeatTypeId ? "Seleccione un tipo de asiento" : (isLoadingSeatMap ? "Cargando asientos..." : "Seleccione un asiento")}
           </option>
-          {availableSeatsForSelectedType.map(seatNum => (
-            <option key={seatNum} value={seatNum}>{seatNum}</option>
+          {availableSeatsForSelectedType.map(seat => (
+            <option key={seat.id} value={seat.id}>{seat.seat_number}</option>
           ))}
         </select>
         {selectedSeatTypeId && !isLoadingSeatMap && availableSeatsForSelectedType.length === 0 && (

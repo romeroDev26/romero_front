@@ -1,4 +1,3 @@
-// src/features/fluvial/components/sales-point/SaleForm.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Ship, Clock, AlertTriangle, CreditCard } from 'lucide-react';
 import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
@@ -42,6 +41,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   const [selectedOriginId, setSelectedOriginId] = useState<number | null>(null);
   const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
   const [selectedSeatTypeId, setSelectedSeatTypeId] = useState<number | null>(null);
+  const [selectedSeatId, setSelectedSeatId] = useState<number | null>(null);
   const [selectedSeatNumber, setSelectedSeatNumber] = useState<string>('');
   const [passengerData, setPassengerData] = useState<PassengerData>({
     docType: SunatDocType.DNI,
@@ -107,9 +107,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
     localStorage.setItem('lastUsedFacturaSeries', seriesCode);
   };
 
-  const handleSeatTypeChange = (seatTypeId: number) => {
-    setSelectedSeatTypeId(seatTypeId);
-    setSelectedSeatNumber('');
+  const handleSeatSelect = (seatId: number | null, seatNumber: string) => {
+    setSelectedSeatId(seatId);
+    setSelectedSeatNumber(seatNumber);
   };
 
   const { basePrice, seatMultiplier } = useMemo(() => {
@@ -124,18 +124,20 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   }, [basePrice, seatMultiplier, extraCost]);
 
   const handleConfirmSale = async () => {
-    if (!selectedOriginId || !selectedDestinationId || !selectedSeatTypeId || !passengerData.docNumber.trim() || !passengerData.name.trim() || !passengerService || !selectedSeatNumber) {
+    if (!selectedSeatId) {
+      toast.error("Por favor, seleccione un número de asiento.");
+      return;
+    }
+    if (!selectedOriginId || !selectedDestinationId || !selectedSeatTypeId || !passengerData.docNumber.trim() || !passengerData.name.trim() || !passengerService) {
       toast.error("Complete todos los campos: Origen, Destino, Asiento y Datos del Cliente.");
       return;
     }
-
     const isRuc = passengerData.docType === SunatDocType.RUC;
     const series = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
     if (!series) {
       toast.error(`Por favor, seleccione una serie de ${isRuc ? 'Factura' : 'Boleta'}.`);
       return;
     }
-
     try {
       const client = await findOrCreateClient({
         doc_type: passengerData.docType,
@@ -143,12 +145,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
         name: passengerData.name,
         address_line: passengerData.address,
       });
-
       const documentTypeCode = isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA;
       const taxCategoryCode = isIgvGravado ? SunatTaxCategory.GRAVADO : SunatTaxCategory.EXONERADO;
       const originPortName = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.port?.name || '';
       const destinationPortName = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.port?.name || '';
-
       const payload: InvoiceCreateData = {
         client_id: client.id,
         document_type_code: documentTypeCode,
@@ -162,20 +162,20 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
         items: [{
           product_id: passengerService.id,
           quantity: 1,
-          item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}.`,
-          unit_code: 'NIU',
           unit_price: finalTicketPrice,
           tax_category_code: taxCategoryCode,
+          item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeatNumber}`,
+          unit_code: 'NIU',
           price_type_code: "01",
-          trip_id: trip.id,
-          seat_type_id: selectedSeatTypeId!,
-          boarding_stop_id: tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.id,
-          disembarking_stop_id: tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.id,
-          seat_number: selectedSeatNumber,
+          trip_seat_id: selectedSeatId,
         }],
       };
 
-      await createInvoice(payload);
+      await createInvoice({
+        invoiceData: payload,
+        tripId: trip.id,
+      });
+
       onSaleSuccess();
     } catch (error: any) {
       console.error("Fallo en el proceso de venta:", error);
@@ -211,9 +211,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
               selectedDestinationId={selectedDestinationId}
               onDestinationChange={setSelectedDestinationId}
               selectedSeatTypeId={selectedSeatTypeId}
-              onSeatTypeChange={handleSeatTypeChange}
-              selectedSeatNumber={selectedSeatNumber}
-              onSeatNumberChange={setSelectedSeatNumber}
+              onSeatTypeChange={(id) => {
+                setSelectedSeatTypeId(id);
+                handleSeatSelect(null, '');
+              }}
+              selectedSeatId={selectedSeatId}
+              onSeatSelect={handleSeatSelect}
             />
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border">

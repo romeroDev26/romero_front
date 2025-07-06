@@ -6,19 +6,13 @@ import { Invoice } from '../types'; // Asumiendo que tienes un tipo Invoice
 export interface InvoiceItemCreateData {
   product_id: number;
   quantity: number;
+  unit_price: string | number;
+  tax_category_code: string;
+  trip_seat_id?: number; 
   item_description?: string;
   unit_code?: string;
-  unit_price: string | number;
   price_type_code?: string;
   discount?: number;
-  tax_category_code: string;
-
-  // --- NUEVOS CAMPOS PARA PASAJES ---
-  trip_id?: number;
-  seat_type_id?: number;
-  boarding_stop_id?: number;
-  disembarking_stop_id?: number;
-  seat_number?: string; // El número de asiento que el cliente eligió
 }
 
 export interface LegendCreateData {

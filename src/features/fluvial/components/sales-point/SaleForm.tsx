@@ -1,18 +1,23 @@
+// src/features/fluvial/components/sales-point/SaleForm.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Ship, Clock, AlertTriangle, CreditCard } from 'lucide-react';
 import { ClipboardDocumentListIcon, HashtagIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
+
 // Components & Utils
 import { Button } from '../../../../components/common/Button';
 import { PassengerDataForm } from './PassengerDataForm';
 import { SeatAndFareSelector } from './SeatAndFareSelector';
 import { PriceSummary } from './PriceSummary';
+import { Spinner } from '../../../../components/common/Spinner';
+
 // Types & Enums
-import { BranchOffice, ServiceCategory } from '../../../../types';
+import { BranchOffice, ServiceCategory, SeatMapItem } from '../../../../types';
 import { AvailableTripByPort } from '../../../../services/trips.service';
 import { SunatDocType, SunatInvoiceType, SunatTaxCategory } from '../../types/sunat.types';
 import { InvoiceCreateData } from '../../../../services/invoices.service';
+
 // Hooks
 import { useFindFare } from '../../hooks/useFindFare';
 import { useTripDetails } from '../../hooks/useTripDetails';
@@ -21,7 +26,6 @@ import { usePassengerService } from '../../hooks/usePassengerService';
 import { useDocumentSeriesForBranch } from '../../hooks/useDocumentSeriesForBranch';
 import { useCreateInvoice } from '../../hooks/useInvoices';
 import { useClientManager } from '../../hooks/useClientManager';
-import { Spinner } from '../../../../components/common/Spinner';
 
 interface PassengerData {
   docType: string;
@@ -41,8 +45,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   const [selectedOriginId, setSelectedOriginId] = useState<number | null>(null);
   const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
   const [selectedSeatTypeId, setSelectedSeatTypeId] = useState<number | null>(null);
-  const [selectedSeatId, setSelectedSeatId] = useState<number | null>(null);
-  const [selectedSeatNumber, setSelectedSeatNumber] = useState<string>('');
+  const [selectedSeat, setSelectedSeat] = useState<SeatMapItem | null>(null);
   const [passengerData, setPassengerData] = useState<PassengerData>({
     docType: SunatDocType.DNI,
     docNumber: '',
@@ -66,7 +69,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   const { data: foundFare } = useFindFare({
     originPortId: selectedOriginId,
     destinationPortId: selectedDestinationId,
-    serviceCategory: 'PASAJES' as any
+    serviceCategory: 'PASAJES' as ServiceCategory,
   });
   const { availableBoletaSeries, availableFacturaSeries, isLoading: isLoadingSeries } = useDocumentSeriesForBranch(branch.id);
   const { findOrCreateClient, isProcessingClient } = useClientManager();
@@ -77,6 +80,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
       setIsIgvGravado(passengerService.tax_category_code === SunatTaxCategory.GRAVADO);
     }
   }, [passengerService]);
+  
+  // Sincronizar el tipo de asiento con el asiento seleccionado
+  useEffect(() => {
+    if (selectedSeat) {
+      setSelectedSeatTypeId(selectedSeat.seat_type.id);
+    }
+  }, [selectedSeat]);
 
   useEffect(() => {
     const cachedBoleta = localStorage.getItem('lastUsedBoletaSeries');
@@ -106,17 +116,21 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
     setSelectedFacturaSeries(seriesCode);
     localStorage.setItem('lastUsedFacturaSeries', seriesCode);
   };
-
-  const handleSeatSelect = (seatId: number | null, seatNumber: string) => {
-    setSelectedSeatId(seatId);
-    setSelectedSeatNumber(seatNumber);
+  
+  const handleSeatTypeChange = (seatTypeId: number | null) => {
+    setSelectedSeatTypeId(seatTypeId);
+    if (selectedSeat?.seat_type.id !== seatTypeId) {
+        setSelectedSeat(null);
+    }
   };
 
   const { basePrice, seatMultiplier } = useMemo(() => {
     const price = foundFare?.price ?? null;
-    const multiplier = allSeatTypes.find(st => st.id === selectedSeatTypeId)?.price_multiplier ?? 1.0;
+    const multiplier =
+      selectedSeat?.seat_type.price_multiplier ||
+      allSeatTypes.find((st) => st.id === selectedSeatTypeId)?.price_multiplier || 1.0;
     return { basePrice: price, seatMultiplier: multiplier };
-  }, [foundFare, selectedSeatTypeId, allSeatTypes]);
+  }, [foundFare, selectedSeatTypeId, selectedSeat, allSeatTypes]);
 
   const finalTicketPrice = useMemo(() => {
     if (!basePrice) return 0;
@@ -124,7 +138,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   }, [basePrice, seatMultiplier, extraCost]);
 
   const handleConfirmSale = async () => {
-    if (!selectedSeatId) {
+    if (!selectedSeat) {
       toast.error("Por favor, seleccione un número de asiento.");
       return;
     }
@@ -164,10 +178,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
           quantity: 1,
           unit_price: finalTicketPrice,
           tax_category_code: taxCategoryCode,
-          item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeatNumber}`,
+          item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeat.seat_number}`,
           unit_code: 'NIU',
           price_type_code: "01",
-          trip_seat_id: selectedSeatId,
+          trip_seat_id: selectedSeat.id,
         }],
       };
       await createInvoice({
@@ -181,13 +195,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
   };
 
   const isRuc = passengerData.docType === SunatDocType.RUC;
-
   const currentSeriesNumber = useMemo(() => {
     const seriesList = isRuc ? availableFacturaSeries : availableBoletaSeries;
     const selectedSeriesCode = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
-
     const seriesData = seriesList.find(s => s.series_code === selectedSeriesCode);
-
     return seriesData ? seriesData.current_number + 1 : null;
   }, [isRuc, availableFacturaSeries, availableBoletaSeries, selectedFacturaSeries, selectedBoletaSeries]);
 
@@ -218,12 +229,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
               selectedDestinationId={selectedDestinationId}
               onDestinationChange={setSelectedDestinationId}
               selectedSeatTypeId={selectedSeatTypeId}
-              onSeatTypeChange={(id) => {
-                setSelectedSeatTypeId(id);
-                handleSeatSelect(null, '');
-              }}
-              selectedSeatId={selectedSeatId}
-              onSeatSelect={handleSeatSelect}
+              onSeatTypeChange={handleSeatTypeChange}
+              selectedSeat={selectedSeat}
+              onSeatSelect={setSelectedSeat}
             />
           </div>
           <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -249,18 +257,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
                       className="w-full p-2 border border-gray-300 rounded-md bg-white"
                       disabled={(isRuc ? availableFacturaSeries.length : availableBoletaSeries.length) <= 1}
                     >
-                      {(isRuc ? availableFacturaSeries : availableBoletaSeries).length === 0
-                        ? <option>No hay series</option>
-                        : (isRuc ? availableFacturaSeries : availableBoletaSeries).map(s =>
-                            <option key={s.id} value={s.series_code}>{s.series_code}</option>
-                          )
-                      }
+                      {(isRuc ? availableFacturaSeries : availableBoletaSeries).map(s =>
+                        <option key={s.id} value={s.series_code}>{s.series_code}</option>
+                      )}
                     </select>
                   </div>
                   <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Siguiente N°
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Siguiente N°</label>
                     <div className="relative">
                       <HashtagIcon className="h-4 w-4 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2"/>
                       <input
@@ -268,7 +271,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
                         value={currentSeriesNumber ? String(currentSeriesNumber).padStart(8, '0') : '...'}
                         disabled
                         className="w-full p-2 pl-7 border-gray-200 bg-gray-100 rounded-md text-sm text-center"
-                        title="Siguiente número de comprobante a generar"
                       />
                     </div>
                   </div>

@@ -164,7 +164,10 @@ export interface BranchOffice {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  port_id: number;
+  port?: Port;
 }
+
 
 export interface Client {
   id: number;
@@ -231,6 +234,10 @@ export interface Vessel {
   created_at: string;
   updated_at?: string;
   seat_configurations_count?: number;
+    // --- CAMPOS AÑADIDOS PARA EL MAPA DE ASIENTOS ---
+  seat_configurations?: VesselSeatConfiguration[];
+  total_columns?: number;
+  total_rows?: number;
 }
 
 export interface UnifiedTripViewItem {
@@ -1092,4 +1099,24 @@ export interface BranchOffice {
   created_at: string;
   updated_at: string;
   port?: Port;
+}
+
+// ========================================
+// TIPOS PARA MAPA DE ASIENTOS 
+// ========================================
+export type SeatStatus = "AVAILABLE" | "RESERVED" | "CONFIRMED" | "CANCELLED" | "EXPIRED" | "BLOCKED";
+
+export interface SeatMapItem {
+    id: number;
+    trip_id: number;
+    vessel_seat_config_id: number;
+    seat_number: string;
+    status: SeatStatus;
+    notes: string;
+    seat_type: {
+        id: number;
+        name: string;
+        code: string;
+        price_multiplier: number;
+    };
 }

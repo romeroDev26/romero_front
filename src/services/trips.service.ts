@@ -1,6 +1,6 @@
 // src/services/trips.service.ts
 import api from '../config/api';
-import { Trip, AvailableTrip, TripStop, Vessel, TripSeatAvailability } from '../types';
+import { Trip, AvailableTrip, TripStop, Vessel, TripSeatAvailability, SeatMapItem } from '../types';
 import { AxiosRequestConfig } from 'axios';
 import { stringify } from 'qs';
 
@@ -41,7 +41,6 @@ export interface SearchTripsParams {
   limit?: number;
 }
 
-// Tipado para la respuesta del endpoint /by-boarding-port
 export interface AvailableTripByPort {
   id: number;
   trip_name: string;
@@ -51,31 +50,11 @@ export interface AvailableTripByPort {
   estimated_departure_time: string;
 }
 
-// NUEVO: Interfaz para la respuesta detallada del viaje
 export interface TripDetailsResponse extends Trip {
   vessel: Vessel;
   route: Trip['route']; // Asumimos que el tipo Route ya está definido en Trip
   stops: TripStop[];
   availability: TripSeatAvailability[]; // El backend lo llama 'availability'
-}
-
-// Definimos los posibles estados como un tipo para mayor seguridad
-export type SeatStatus = "AVAILABLE" | "RESERVED" | "CONFIRMED" | "CANCELLED" | "EXPIRED" | "BLOCKED";
-
-// Actualizamos la interfaz SeatMapItem
-export interface SeatMapItem {
-  id: number;
-  trip_id: number;
-  vessel_seat_config_id: number;
-  seat_number: string;
-  status: SeatStatus; // Usamos el nuevo tipo
-  notes: string;
-  seat_type: {
-    id: number;
-    name: string;
-    code: string;
-    price_multiplier: number;
-  };
 }
 
 class TripsService {

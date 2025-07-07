@@ -9,6 +9,7 @@ import { useVessel } from '../../hooks/useVesselsData';
 
 interface SeatMapProps {
   tripId: number;
+  vesselName: string; // Nueva propiedad
   selectedSeats: Set<number>;
   onSeatToggle: (seat: SeatMapItem) => void;
 }
@@ -30,7 +31,7 @@ const getZoneTitle = (seatTypeName: string): string => {
   return 'ZONA DE ASIENTOS';
 };
 
-export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatToggle }) => {
+export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSeats, onSeatToggle }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails, isLoading: isLoadingVessel } = useVessel(vesselId || null);
@@ -40,7 +41,6 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
     if (!vesselDetails?.seat_configurations || !(seatMap ?? []).length) {
       return [];
     }
-
     const seatsByConfigId = (seatMap ?? []).reduce((acc, seat) => {
       const configId = seat.vessel_seat_config_id;
       if (!acc[configId]) acc[configId] = [];
@@ -52,16 +52,14 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
       .map(config => {
         const configSeats = seatsByConfigId[config.id] || [];
         const totalColumns = vesselDetails.total_columns || 4;
-        
+
         // Agrupar por filas
         const rows: SeatRow[] = [];
         configSeats.forEach(seat => {
-          // Ordenamos los asientos de la sección por número
-          const sortedSectionSeats = [...configSeats].sort((a,b) => parseInt(a.seat_number) - parseInt(b.seat_number));
+          const sortedSectionSeats = [...configSeats].sort((a, b) => parseInt(a.seat_number) - parseInt(b.seat_number));
           const seatIndexInSection = sortedSectionSeats.findIndex(s => s.id === seat.id);
-
           const rowIndex = Math.floor(seatIndexInSection / totalColumns);
-          
+
           if (!rows[rowIndex]) {
             rows[rowIndex] = [];
           }
@@ -90,7 +88,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
   if (isLoading) {
     return <div className="flex justify-center items-center h-64"><Spinner /></div>;
   }
-  
+
   if (!seatLayout.length) {
     return <div className="text-center text-gray-500 p-8">No se pudo cargar la configuración de asientos.</div>;
   }
@@ -103,20 +101,18 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Selección de Asientos</h1>
           <p className="text-gray-600 text-sm">Sistema de reserva empresarial</p>
         </div>
-
         {/* Bus Layout Container */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4">
           <div className="relative">
             {/* Bus outline with dashed border */}
             <div className="border border-dashed border-gray-400 rounded-2xl px-2 py-4 relative">
-              
               {/* Front Section */}
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="w-32 h-8 border border-dashed border-gray-400 rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
-                  <span className="text-xs font-bold text-gray-700">ROMERO XXI</span>
+                <div className="w-auto px-4 h-8 border border-dashed border-gray-400 rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
+                  <span className="text-xs font-bold text-gray-700 uppercase">{vesselName}</span>
                 </div>
               </div>
-              
+
               {/* Main Seating Area */}
               <div className="mt-2">
                 <div className="space-y-2">
@@ -131,8 +127,6 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
                         {section.rows.map((row, rowIndex) => (
                           <div key={`${section.id}-row-${rowIndex}`} className="bg-white/40 rounded-lg p-3">
                             <div className="flex justify-center gap-6">
-                              
-                              {/* Lado izquierdo: Segunda mitad de la fila (C, D) ordenados 4,3 */}
                               <div className="flex gap-3">
                                 {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => (
                                   <Seat
@@ -143,15 +137,14 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
                                   />
                                 ))}
                               </div>
-                              
+
                               {/* Pasillo más ancho */}
                               {section.totalColumns > 2 && (
                                 <div className="w-16 flex items-center justify-center">
                                   <div className="w-0.5 h-8 bg-gray-300 rounded-full"></div>
                                 </div>
                               )}
-                              
-                              {/* Lado derecho: Primera mitad de la fila (B, A) ordenados 2,1 */}
+
                               <div className="flex gap-3">
                                 {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => (
                                   <Seat
@@ -162,7 +155,6 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
                                   />
                                 ))}
                               </div>
-
                             </div>
                           </div>
                         ))}
@@ -171,7 +163,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, selectedSeats, onSeatT
                   ))}
                 </div>
               </div>
-              
+
               {/* Back of the bus */}
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-white border border-dashed border-gray-400 rounded-b-xl flex items-center justify-center">
                 <span className="text-xs font-bold text-gray-600">TRASERA</span>

@@ -29,6 +29,7 @@ export const SeatSelectionVisualizer: React.FC<SeatSelectionVisualizerProps> = (
             <div className="mt-4 bg-gray-50 p-4 rounded-lg overflow-x-auto">
               <SeatMap 
                 tripId={tripId}
+                vesselName="Embarcación"
                 selectedSeats={selectedSeats}
                 onSeatToggle={onSeatToggle}
               />

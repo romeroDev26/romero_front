@@ -1,13 +1,11 @@
 // src/features/fluvial/components/sales-point/SeatAndFareSelector.tsx
-import React, { useMemo, useState } from 'react';
-import { Map as MapIcon } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { Spinner } from '../../../../components/common/Spinner';
-import { Button } from '../../../../components/common/Button';
 import { useTripDetails } from '../../hooks/useTripDetails';
 import { useSeatTypesData } from '../../hooks/useSeatTypesData';
 import { useSeatMap } from '../../hooks/useSeatMap';
 import { SeatMapItem, TripStop } from '../../../../types';
-import { SeatSelectionVisualizer } from '../seat-map/SeatSelectionVisualizer';
+import { SeatMap } from '../seat-map/SeatMap';
 
 interface SeatAndFareSelectorProps {
   tripId: number;
@@ -32,20 +30,17 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   selectedSeat,
   onSeatSelect,
 }) => {
-  const [showSeatMap, setShowSeatMap] = useState(false);
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { data: allSeatTypes = [], isLoading: isLoadingSeatTypes } = useSeatTypesData();
   const { data: seatMap = [], isLoading: isLoadingSeatMap } = useSeatMap(tripId);
 
   const { availableStops, seatTypesWithAvailability, availableSeatsForSelectedType } = useMemo(() => {
-    if (!tripDetails || !allSeatTypes.length || !seatMap?.length) {
+    if (!tripDetails || !allSeatTypes.length || !(seatMap ?? []).length) {
       return { availableStops: [], seatTypesWithAvailability: [], availableSeatsForSelectedType: [] };
     }
-
     const originStopOrder = tripDetails.stops.find(s => s.port_id === selectedOriginId)?.stop_order ?? -1;
     const stops = tripDetails.stops.filter(s => s.stop_order > originStopOrder);
-
-    const seatsGroupedByType = seatMap.reduce((acc, seat) => {
+    const seatsGroupedByType = (seatMap ?? []).reduce((acc, seat) => {
       const typeId = seat.seat_type.id;
       if (!acc[typeId]) acc[typeId] = [];
       acc[typeId].push(seat);
@@ -67,13 +62,12 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       seatsForDropdown = (seatsGroupedByType[selectedSeatTypeId] || [])
         .filter(seat => seat.status === 'AVAILABLE')
         .sort((a, b) => {
-          const numA = parseInt(a.seat_number.substring(1), 10);
-          const numB = parseInt(b.seat_number.substring(1), 10);
+          const numA = parseInt(a.seat_number, 10);
+          const numB = parseInt(b.seat_number, 10);
           if (numA !== numB) return numA - numB;
           return a.seat_number.localeCompare(b.seat_number);
         });
     }
-
     return {
       availableStops: stops as TripStop[],
       seatTypesWithAvailability: seatsForButtons as any[],
@@ -81,31 +75,12 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     };
   }, [tripDetails, allSeatTypes, seatMap, selectedOriginId, selectedSeatTypeId]);
 
-  const handleOriginChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onOriginChange(Number(e.target.value));
-    onDestinationChange(null);
-    onSeatTypeChange(null);
-  };
-
-  const handleSeatTypeButtonClick = (typeId: number) => {
-    onSeatTypeChange(typeId);
-    if (selectedSeat && selectedSeat.seat_type.id !== typeId) {
-      onSeatSelect(null);
-    }
-  };
-  
-  const handleSeatDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const seatId = Number(e.target.value);
-      const seatObject = availableSeatsForSelectedType.find(s => s.id === seatId) || null;
-      onSeatSelect(seatObject);
-  }
-
   const handleSeatToggleFromMap = (toggledSeat: SeatMapItem) => {
-      if (selectedSeat && selectedSeat.id === toggledSeat.id) {
-          onSeatSelect(null); // Deseleccionar si se hace clic en el mismo asiento
-      } else {
-          onSeatSelect(toggledSeat);
-      }
+    if (selectedSeat && selectedSeat.id === toggledSeat.id) {
+      onSeatSelect(null);
+    } else {
+      onSeatSelect(toggledSeat);
+    }
   };
 
   const isLoading = isLoadingTrip || isLoadingSeatTypes || isLoadingSeatMap;
@@ -117,16 +92,18 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-gray-800">Tramo y Asiento</h2>
+
+      {/* Selector de tramo */}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Origen</label>
           <select
             value={selectedOriginId || ''}
-            onChange={handleOriginChange}
+            onChange={(e) => onOriginChange(Number(e.target.value))}
             className="w-full p-2 border border-gray-300 rounded-md bg-white"
           >
             {tripDetails?.stops?.slice(0, -1).map(stop => (
@@ -150,57 +127,23 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Asiento</label>
-        <div className="grid grid-cols-2 gap-3">
-          {seatTypesWithAvailability.map(seatType => (
-            <button
-              key={seatType.id}
-              onClick={() => handleSeatTypeButtonClick(seatType.id)}
-              className={`p-3 rounded-lg border-2 text-left transition-all ${
-                selectedSeatTypeId === seatType.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-400'
-              }`}
-            >
-              <div className="font-semibold">{seatType.name}</div>
-              <div className="text-sm text-gray-600">Disponibles: {seatType.available_seats}</div>
-            </button>
-          ))}
+      {/* Asiento seleccionado */}
+      {selectedSeat && (
+        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-center">
+          <p className="text-sm text-gray-600">Asiento Seleccionado:</p>
+          <p className="font-bold text-lg text-blue-700">N° {selectedSeat.seat_number} <span className="font-normal text-base">({selectedSeat.seat_type.name})</span></p>
         </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Número de Asiento</label>
-        <div className="flex items-center gap-2">
-            <select
-              value={selectedSeat?.id || ''}
-              onChange={handleSeatDropdownChange}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white"
-              disabled={!selectedSeatTypeId || availableSeatsForSelectedType.length === 0}
-            >
-              <option value="">
-                {!selectedSeatTypeId ? "Seleccione tipo" : "Seleccione asiento"}
-              </option>
-              {availableSeatsForSelectedType.map(seat => (
-                <option key={seat.id} value={seat.id}>{seat.seat_number}</option>
-              ))}
-            </select>
-            <Button
-                variant="outline"
-                onClick={() => setShowSeatMap(!showSeatMap)}
-                className="flex-shrink-0"
-              >
-                <MapIcon className="h-5 w-5" />
-            </Button>
-        </div>
-      </div>
-      
-      {showSeatMap && (
-          <SeatSelectionVisualizer
-            tripId={tripId}
-            selectedSeats={selectedSeat ? new Set([selectedSeat.id]) : new Set()}
-            onSeatToggle={handleSeatToggleFromMap}
-          />
       )}
+
+      {/* Mapa de asientos visible por defecto */}
+      <div className="mt-4 border-t pt-4">
+        <SeatMap
+          tripId={tripId}
+          vesselName={tripDetails?.vessel?.name || 'Embarcación'}
+          selectedSeats={selectedSeat ? new Set([selectedSeat.id]) : new Set()}
+          onSeatToggle={handleSeatToggleFromMap}
+        />
+      </div>
     </div>
   );
 };

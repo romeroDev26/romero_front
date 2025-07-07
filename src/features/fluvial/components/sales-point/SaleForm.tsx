@@ -4,20 +4,17 @@ import { ArrowLeft, Ship, Clock, AlertTriangle, CreditCard } from 'lucide-react'
 import { ClipboardDocumentListIcon, HashtagIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-
 // Components & Utils
 import { Button } from '../../../../components/common/Button';
 import { PassengerDataForm } from './PassengerDataForm';
 import { SeatAndFareSelector } from './SeatAndFareSelector';
 import { PriceSummary } from './PriceSummary';
 import { Spinner } from '../../../../components/common/Spinner';
-
 // Types & Enums
 import { BranchOffice, ServiceCategory, SeatMapItem } from '../../../../types';
 import { AvailableTripByPort } from '../../../../services/trips.service';
 import { SunatDocType, SunatInvoiceType, SunatTaxCategory } from '../../types/sunat.types';
 import { InvoiceCreateData } from '../../../../services/invoices.service';
-
 // Hooks
 import { useFindFare } from '../../hooks/useFindFare';
 import { useTripDetails } from '../../hooks/useTripDetails';
@@ -41,7 +38,12 @@ interface SaleFormProps {
   onSaleSuccess: () => void;
 }
 
-export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSaleSuccess }) => {
+export const SaleForm: React.FC<SaleFormProps> = ({
+  trip,
+  branch,
+  onBack,
+  onSaleSuccess
+}) => {
   const [selectedOriginId, setSelectedOriginId] = useState<number | null>(null);
   const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
   const [selectedSeatTypeId, setSelectedSeatTypeId] = useState<number | null>(null);
@@ -80,8 +82,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
       setIsIgvGravado(passengerService.tax_category_code === SunatTaxCategory.GRAVADO);
     }
   }, [passengerService]);
-  
-  // Sincronizar el tipo de asiento con el asiento seleccionado
+
   useEffect(() => {
     if (selectedSeat) {
       setSelectedSeatTypeId(selectedSeat.seat_type.id);
@@ -116,11 +117,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
     setSelectedFacturaSeries(seriesCode);
     localStorage.setItem('lastUsedFacturaSeries', seriesCode);
   };
-  
+
   const handleSeatTypeChange = (seatTypeId: number | null) => {
     setSelectedSeatTypeId(seatTypeId);
     if (selectedSeat?.seat_type.id !== seatTypeId) {
-        setSelectedSeat(null);
+      setSelectedSeat(null);
     }
   };
 
@@ -221,6 +222,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
       </div>
       <div className="grid lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 space-y-6">
+          {/* Datos del Pasajero (AHORA PRIMERO) */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <PassengerDataForm passengerData={passengerData} setPassengerData={setPassengerData} />
+          </div>
+          {/* Selección de Asiento y Tramo (AHORA SEGUNDO) */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <SeatAndFareSelector
               tripId={trip.id}
@@ -233,9 +239,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({ trip, branch, onBack, onSale
               selectedSeat={selectedSeat}
               onSeatSelect={setSelectedSeat}
             />
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <PassengerDataForm passengerData={passengerData} setPassengerData={setPassengerData} />
           </div>
         </div>
         <div className="lg:col-span-2">

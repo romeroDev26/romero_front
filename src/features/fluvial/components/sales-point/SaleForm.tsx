@@ -23,6 +23,7 @@ import { usePassengerService } from '../../hooks/usePassengerService';
 import { useDocumentSeriesForBranch } from '../../hooks/useDocumentSeriesForBranch';
 import { useCreateInvoice } from '../../hooks/useInvoices';
 import { useClientManager } from '../../hooks/useClientManager';
+import { useCreateSeatAssignment } from '../../hooks/useSeatAssignments';
 
 interface PassengerData {
   docType: string;
@@ -76,6 +77,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const { availableBoletaSeries, availableFacturaSeries, isLoading: isLoadingSeries } = useDocumentSeriesForBranch(branch.id);
   const { findOrCreateClient, isProcessingClient } = useClientManager();
   const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateInvoice();
+  const { mutateAsync: createSeatAssignment, isPending: isAssigningSeat } = useCreateSeatAssignment();
 
   useEffect(() => {
     if (passengerService) {
@@ -143,16 +145,18 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       toast.error("Por favor, seleccione un número de asiento.");
       return;
     }
-    if (!selectedOriginId || !selectedDestinationId || !selectedSeatTypeId || !passengerData.docNumber.trim() || !passengerData.name.trim() || !passengerService) {
-      toast.error("Complete todos los campos: Origen, Destino, Asiento y Datos del Cliente.");
+    if (!selectedOriginId || !selectedDestinationId || !passengerData.docNumber.trim() || !passengerData.name.trim() || !passengerService) {
+      toast.error("Complete todos los campos: Cliente, Origen, Destino y Asiento.");
       return;
     }
+
     const isRuc = passengerData.docType === SunatDocType.RUC;
     const series = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
     if (!series) {
       toast.error(`Por favor, seleccione una serie de ${isRuc ? 'Factura' : 'Boleta'}.`);
       return;
     }
+
     try {
       const client = await findOrCreateClient({
         doc_type: passengerData.docType,
@@ -160,38 +164,70 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         name: passengerData.name,
         address_line: passengerData.address,
       });
-      const documentTypeCode = isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA;
-      const taxCategoryCode = isIgvGravado ? SunatTaxCategory.GRAVADO : SunatTaxCategory.EXONERADO;
+
       const originPortName = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.port?.name || '';
       const destinationPortName = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.port?.name || '';
-      const payload: InvoiceCreateData = {
+
+      const invoicePayload = {
         client_id: client.id,
-        document_type_code: documentTypeCode,
+        document_type_code: isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA,
         series: series,
         issue_date: format(new Date(), 'yyyy-MM-dd'),
         issue_time: format(new Date(), 'HH:mm:ss'),
-        operation_type_code: "0101",
+        operation_type_code: '0101',
         currency_code: 'PEN',
-        payment_terms_description: "Contado",
         notes: `Punto de Venta: ${branch.name}`,
         items: [{
           product_id: passengerService.id,
           quantity: 1,
           unit_price: finalTicketPrice,
-          tax_category_code: taxCategoryCode,
+          tax_category_code: isIgvGravado ? SunatTaxCategory.GRAVADO : SunatTaxCategory.EXONERADO,
           item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeat.seat_number}`,
           unit_code: 'NIU',
-          price_type_code: "01",
-          trip_seat_id: selectedSeat.id,
         }],
       };
-      await createInvoice({
-        invoiceData: payload,
+
+      const createdInvoice = await createInvoice({
+        invoiceData: invoicePayload,
         tripId: trip.id,
       });
+
+      if (!createdInvoice || !createdInvoice.items || createdInvoice.items.length === 0) {
+        throw new Error("La respuesta de la creación de la factura no incluyó los items necesarios.");
+      }
+
+      const invoiceItemId = createdInvoice.items[0].id;
+
+      const boardingStopId = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.id;
+      const disembarkingStopId = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.id;
+
+      if (!boardingStopId || !disembarkingStopId) {
+        throw new Error("No se pudieron encontrar los IDs de las paradas de embarque/desembarque.");
+      }
+
+      const assignmentPayload = {
+        trip_id: trip.id,
+        client_id: client.id,
+        seat_type_id: selectedSeat.seat_type.id,
+        trip_seat_id: selectedSeat.id,
+        boarding_stop_id: boardingStopId,
+        disembarking_stop_id: disembarkingStopId,
+        passenger_name: passengerData.name,
+        passenger_doc_type: passengerData.docType,
+        passenger_doc_number: passengerData.docNumber,
+        seat_number: selectedSeat.seat_number,
+        invoice_item_id: invoiceItemId,
+      };
+
+      await createSeatAssignment(assignmentPayload);
+
+      toast.success("¡Venta completada con éxito!");
       onSaleSuccess();
     } catch (error: any) {
       console.error("Fallo en el proceso de venta:", error);
+      if (!error.message.includes('asignar el asiento')) {
+        toast.error(error.response?.data?.detail || "Ocurrió un error inesperado durante la venta.");
+      }
     }
   };
 
@@ -222,11 +258,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       </div>
       <div className="grid lg:grid-cols-5 gap-8">
         <div className="lg:col-span-3 space-y-6">
-          {/* Datos del Pasajero (AHORA PRIMERO) */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <PassengerDataForm passengerData={passengerData} setPassengerData={setPassengerData} />
           </div>
-          {/* Selección de Asiento y Tramo (AHORA SEGUNDO) */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <SeatAndFareSelector
               tripId={trip.id}
@@ -293,7 +327,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
               <Button
                 onClick={handleConfirmSale}
                 className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-                isLoading={isProcessingClient || isCreatingInvoice}
+                isLoading={isProcessingClient || isCreatingInvoice || isAssigningSeat}
               >
                 <CreditCard className="h-5 w-5 mr-2"/>
                 Generar y Cobrar

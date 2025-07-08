@@ -1,7 +1,7 @@
 // src/features/fluvial/components/sales-point/SaleForm.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Ship, Clock, AlertTriangle, CreditCard } from 'lucide-react';
-import { ClipboardDocumentListIcon, HashtagIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentListIcon, HashtagIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 // Components & Utils
@@ -10,6 +10,7 @@ import { PassengerDataForm } from './PassengerDataForm';
 import { SeatAndFareSelector } from './SeatAndFareSelector';
 import { PriceSummary } from './PriceSummary';
 import { Spinner } from '../../../../components/common/Spinner';
+import { ReservationModal } from './ReservationModal';
 // Types & Enums
 import { BranchOffice, ServiceCategory, SeatMapItem } from '../../../../types';
 import { AvailableTripByPort } from '../../../../services/trips.service';
@@ -30,6 +31,8 @@ interface PassengerData {
   docNumber: string;
   name: string;
   address: string;
+  phone: string; // Nuevo campo
+  email: string; // Nuevo campo
 }
 
 interface SaleFormProps {
@@ -53,12 +56,15 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     docType: SunatDocType.DNI,
     docNumber: '',
     name: '',
-    address: ''
+    address: '',
+    phone: '', // Nuevo campo
+    email: '', // Nuevo campo
   });
   const [extraCost, setExtraCost] = useState(0);
   const [isIgvGravado, setIsIgvGravado] = useState(false);
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>('');
   const [selectedFacturaSeries, setSelectedFacturaSeries] = useState<string>('');
+  const [isReservationModalOpen, setReservationModalOpen] = useState(false);
 
   useEffect(() => {
     if (branch.port_id) {
@@ -149,25 +155,23 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       toast.error("Complete todos los campos: Cliente, Origen, Destino y Asiento.");
       return;
     }
-
     const isRuc = passengerData.docType === SunatDocType.RUC;
     const series = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
     if (!series) {
       toast.error(`Por favor, seleccione una serie de ${isRuc ? 'Factura' : 'Boleta'}.`);
       return;
     }
-
     try {
       const client = await findOrCreateClient({
         doc_type: passengerData.docType,
         doc_number: passengerData.docNumber,
         name: passengerData.name,
         address_line: passengerData.address,
+        phone: passengerData.phone, // Nuevo campo
+        email: passengerData.email, // Nuevo campo
       });
-
       const originPortName = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.port?.name || '';
       const destinationPortName = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.port?.name || '';
-
       const invoicePayload = {
         client_id: client.id,
         document_type_code: isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA,
@@ -186,25 +190,19 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           unit_code: 'NIU',
         }],
       };
-
       const createdInvoice = await createInvoice({
         invoiceData: invoicePayload,
         tripId: trip.id,
       });
-
       if (!createdInvoice || !createdInvoice.items || createdInvoice.items.length === 0) {
         throw new Error("La respuesta de la creación de la factura no incluyó los items necesarios.");
       }
-
       const invoiceItemId = createdInvoice.items[0].id;
-
       const boardingStopId = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.id;
       const disembarkingStopId = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.id;
-
       if (!boardingStopId || !disembarkingStopId) {
         throw new Error("No se pudieron encontrar los IDs de las paradas de embarque/desembarque.");
       }
-
       const assignmentPayload = {
         trip_id: trip.id,
         client_id: client.id,
@@ -218,9 +216,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         seat_number: selectedSeat.seat_number,
         invoice_item_id: invoiceItemId,
       };
-
       await createSeatAssignment(assignmentPayload);
-
       toast.success("¡Venta completada con éxito!");
       onSaleSuccess();
     } catch (error: any) {
@@ -239,109 +235,140 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     return seriesData ? seriesData.current_number + 1 : null;
   }, [isRuc, availableFacturaSeries, availableBoletaSeries, selectedFacturaSeries, selectedBoletaSeries]);
 
+  const areActionsEnabled = !!selectedSeat && !!selectedOriginId && !!selectedDestinationId && !!passengerData.docNumber.trim() && !!passengerData.name.trim();
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between mb-6 pb-4 border-b">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Registrar Venta de Pasaje</h1>
-          <p className="text-gray-600">Desde: <span className="font-semibold">{branch.name}</span></p>
-        </div>
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-2" />Volver
-        </Button>
-      </div>
-      <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-6 flex items-center gap-4 text-sm">
-        <Ship className="h-5 w-5 text-blue-700" />
-        <span className="font-semibold">{trip.trip_name} ({trip.vessel_name})</span>
-        <Clock className="h-5 w-5 text-blue-700 ml-auto" />
-        <span>{format(new Date(trip.estimated_departure_time), 'dd/MM/yyyy hh:mm a')}</span>
-      </div>
-      <div className="grid lg:grid-cols-5 gap-8">
-        <div className="lg:col-span-3 space-y-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <PassengerDataForm passengerData={passengerData} setPassengerData={setPassengerData} />
+    <>
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex items-start justify-between mb-6 pb-4 border-b">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Registrar Venta de Pasaje</h1>
+            <p className="text-gray-600">Desde: <span className="font-semibold">{branch.name}</span></p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <SeatAndFareSelector
-              tripId={trip.id}
-              selectedOriginId={selectedOriginId}
-              onOriginChange={setSelectedOriginId}
-              selectedDestinationId={selectedDestinationId}
-              onDestinationChange={setSelectedDestinationId}
-              selectedSeatTypeId={selectedSeatTypeId}
-              onSeatTypeChange={handleSeatTypeChange}
-              selectedSeat={selectedSeat}
-              onSeatSelect={setSelectedSeat}
-            />
-          </div>
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />Volver
+          </Button>
         </div>
-        <div className="lg:col-span-2">
-          <div className="sticky top-24 space-y-6">
+        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-6 flex items-center gap-4 text-sm">
+          <Ship className="h-5 w-5 text-blue-700" />
+          <span className="font-semibold">{trip.trip_name} ({trip.vessel_name})</span>
+          <Clock className="h-5 w-5 text-blue-700 ml-auto" />
+          <span>{format(new Date(trip.estimated_departure_time), 'dd/MM/yyyy hh:mm a')}</span>
+        </div>
+        <div className="grid lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-3 space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center">
-                <ClipboardDocumentListIcon className="h-6 w-6 mr-2 text-gray-500"/>
-                Comprobante
-              </h3>
-              {isLoadingSeries ? <Spinner /> : (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {isRuc ? 'Serie de Factura' : 'Serie de Boleta'}
-                    </label>
-                    <select
-                      value={isRuc ? selectedFacturaSeries : selectedBoletaSeries}
-                      onChange={(e) => isRuc ? handleFacturaSeriesChange(e.target.value) : handleBoletaSeriesChange(e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                      disabled={(isRuc ? availableFacturaSeries.length : availableBoletaSeries.length) <= 1}
-                    >
-                      {(isRuc ? availableFacturaSeries : availableBoletaSeries).map(s =>
-                        <option key={s.id} value={s.series_code}>{s.series_code}</option>
-                      )}
-                    </select>
-                  </div>
-                  <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Siguiente N°</label>
-                    <div className="relative">
-                      <HashtagIcon className="h-4 w-4 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2"/>
-                      <input
-                        type="text"
-                        value={currentSeriesNumber ? String(currentSeriesNumber).padStart(8, '0') : '...'}
-                        disabled
-                        className="w-full p-2 pl-7 border-gray-200 bg-gray-100 rounded-md text-sm text-center"
-                      />
+              <PassengerDataForm passengerData={passengerData} setPassengerData={setPassengerData} />
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <SeatAndFareSelector
+                tripId={trip.id}
+                selectedOriginId={selectedOriginId}
+                onOriginChange={setSelectedOriginId}
+                selectedDestinationId={selectedDestinationId}
+                onDestinationChange={setSelectedDestinationId}
+                selectedSeatTypeId={selectedSeatTypeId}
+                onSeatTypeChange={handleSeatTypeChange}
+                selectedSeat={selectedSeat}
+                onSeatSelect={setSelectedSeat}
+              />
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <div className="sticky top-24 space-y-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm border">
+                <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center">
+                  <ClipboardDocumentListIcon className="h-6 w-6 mr-2 text-gray-500"/>
+                  Comprobante
+                </h3>
+                {isLoadingSeries ? <Spinner /> : (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {isRuc ? 'Serie de Factura' : 'Serie de Boleta'}
+                      </label>
+                      <select
+                        value={isRuc ? selectedFacturaSeries : selectedBoletaSeries}
+                        onChange={(e) => isRuc ? handleFacturaSeriesChange(e.target.value) : handleBoletaSeriesChange(e.target.value)}
+                        className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                        disabled={(isRuc ? availableFacturaSeries.length : availableBoletaSeries.length) <= 1}
+                      >
+                        {(isRuc ? availableFacturaSeries : availableBoletaSeries).map(s =>
+                          <option key={s.id} value={s.series_code}>{s.series_code}</option>
+                        )}
+                      </select>
+                    </div>
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Siguiente N°</label>
+                      <div className="relative">
+                        <HashtagIcon className="h-4 w-4 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2"/>
+                        <input
+                          type="text"
+                          value={currentSeriesNumber ? String(currentSeriesNumber).padStart(8, '0') : '...'}
+                          disabled
+                          className="w-full p-2 pl-7 border-gray-200 bg-gray-100 rounded-md text-sm text-center"
+                        />
+                      </div>
                     </div>
                   </div>
+                )}
+              </div>
+              <PriceSummary
+                basePrice={basePrice}
+                seatMultiplier={seatMultiplier}
+                extraCost={extraCost}
+                onExtraCostChange={setExtraCost}
+                isIgvGravado={isIgvGravado}
+                onIgvGravadoChange={setIsIgvGravado}
+                taxCategoryCodeDefault={passengerService?.tax_category_code ?? null}
+              />
+              <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
+                <h3 className="font-semibold text-center text-gray-700">Acciones</h3>
+                <Button
+                  onClick={handleConfirmSale}
+                  className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
+                  isLoading={isProcessingClient || isCreatingInvoice || isAssigningSeat}
+                  disabled={!areActionsEnabled}
+                >
+                  <CreditCard className="h-5 w-5 mr-2"/>
+                  Generar y Cobrar
+                </Button>
+                <Button
+                  onClick={() => setReservationModalOpen(true)}
+                  variant="outline"
+                  className="w-full text-lg py-3"
+                  disabled={!areActionsEnabled}
+                >
+                  <ClipboardDocumentListIcon className="h-5 w-5 mr-2"/>
+                  Reservar Asiento
+                </Button>
+              </div>
+              {!basePrice && (
+                <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-3 rounded-md">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span>Seleccione un destino para ver el precio.</span>
                 </div>
               )}
             </div>
-            <PriceSummary
-              basePrice={basePrice}
-              seatMultiplier={seatMultiplier}
-              extraCost={extraCost}
-              onExtraCostChange={setExtraCost}
-              isIgvGravado={isIgvGravado}
-              onIgvGravadoChange={setIsIgvGravado}
-              taxCategoryCodeDefault={passengerService?.tax_category_code ?? null}
-            />
-            <div className="space-y-3">
-              <Button
-                onClick={handleConfirmSale}
-                className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-                isLoading={isProcessingClient || isCreatingInvoice || isAssigningSeat}
-              >
-                <CreditCard className="h-5 w-5 mr-2"/>
-                Generar y Cobrar
-              </Button>
-            </div>
-            {!basePrice && (
-              <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-3 rounded-md">
-                <AlertTriangle className="h-4 w-4" />
-                <span>Seleccione un destino para ver el precio.</span>
-              </div>
-            )}
           </div>
         </div>
       </div>
-    </div>
+      {selectedSeat && tripDetails && areActionsEnabled && (
+        <ReservationModal
+          isOpen={isReservationModalOpen}
+          onClose={() => setReservationModalOpen(false)}
+          reservationData={{
+            trip: tripDetails,
+            tripStops: tripDetails.stops,
+            selectedSeat,
+            passengerData,
+            originId: selectedOriginId!,
+            destinationId: selectedDestinationId!,
+            totalPrice: finalTicketPrice,
+          }}
+          onSuccess={onSaleSuccess}
+        />
+      )}
+    </>
   );
 };

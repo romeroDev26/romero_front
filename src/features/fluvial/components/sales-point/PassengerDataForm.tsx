@@ -12,6 +12,8 @@ interface PassengerData {
   docNumber: string;
   name: string;
   address: string; // Añadimos dirección para RUC
+  phone: string;
+  email: string;
 }
 
 interface PassengerDataFormProps {
@@ -117,6 +119,30 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           />
         </div>
       )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input
+            type="tel"
+            name="phone"
+            value={passengerData.phone}
+            onChange={handleInputChange}
+            className="w-full p-2 border border-gray-300 rounded-md"
+            placeholder="Número de teléfono"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={passengerData.email}
+            onChange={handleInputChange}
+            className="w-full p-2 border border-gray-300 rounded-md"
+            placeholder="Correo electrónico"
+          />
+        </div>
+      </div>
     </div>
   );
 };

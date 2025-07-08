@@ -37,6 +37,7 @@ export interface SearchTripsParams {
   status?: string[]; // Siempre como array
   origin_city_id?: number;
   destination_city_id?: number;
+  trip_name_like?: string; // Para buscar por nombre
   skip?: number;
   limit?: number;
 }

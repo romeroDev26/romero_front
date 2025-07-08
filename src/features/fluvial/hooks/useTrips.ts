@@ -1,22 +1,41 @@
+// src/features/fluvial/hooks/useTrips.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import {
   tripsService,
   CreateTripData,
   UpdateTripData,
-  CancelTripData
+  CancelTripData,
+  SearchTripsParams
 } from '../../../services/trips.service';
 import { Trip } from '../../../types';
+import { useDebounce } from '../../../hooks/useDebounce';
 
-// Este hook ahora se enfoca solo en las mutaciones (acciones de escritura)
-// y en obtener detalles de un solo viaje.
+export const useTrips = (filters: { tripName?: string, status?: string[] }) => {
+  const debouncedFilters = useDebounce(filters, 500);
+
+  return useQuery<Trip[], Error>({
+    queryKey: ['trips', debouncedFilters],
+    queryFn: () => {
+      const companyId = 1; // OBTENER DE FORMA DINÁMICA (ej. auth context)
+
+      const searchParams: SearchTripsParams = {
+        company_id: companyId,
+        status: debouncedFilters.status,
+        ...(debouncedFilters.tripName && { trip_name_like: debouncedFilters.tripName })
+      };
+
+      return tripsService.search(searchParams);
+    },
+    placeholderData: (previousData) => previousData,
+  });
+};
+
 export const useTripMutations = () => {
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
     mutationFn: (data: CreateTripData) => tripsService.create(data),
-    // Al tener éxito, invalidamos la caché general de 'tripsView'
-    // para que cualquier vista activa se refresque.
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tripsView'] });
       toast.success('Viaje creado exitosamente');
@@ -32,7 +51,6 @@ export const useTripMutations = () => {
       tripsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tripsView'] });
-      // También invalidamos el detalle específico si se está viendo
       queryClient.invalidateQueries({ queryKey: ['trip'] });
       toast.success('Viaje actualizado exitosamente');
     },
@@ -56,7 +74,7 @@ export const useTripMutations = () => {
   });
 
   return {
-    createTrip: createMutation.mutateAsync, // Usamos mutateAsync para poder usar onSuccess en el componente
+    createTrip: createMutation.mutateAsync,
     updateTrip: updateMutation.mutateAsync,
     cancelTrip: cancelMutation.mutateAsync,
     isCreating: createMutation.isPending,
@@ -65,7 +83,6 @@ export const useTripMutations = () => {
   };
 };
 
-// El hook de detalles se mantiene igual, es muy útil.
 export const useTripDetails = (tripId: number | null) => {
   return useQuery<Trip>({
     queryKey: ['trip', tripId],

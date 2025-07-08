@@ -39,10 +39,10 @@ import { ProductsServicesPage } from './features/fluvial/pages/ProductsServicesP
 import { ScheduleTripsPage } from './features/fluvial/pages/ScheduleTripsPage';
 import { DocumentSeriesPage } from './features/fluvial/pages/DocumentSeriesPage';
 import { DocumentSeriesPage as SeriesAndOfficesPage } from './features/fluvial/pages/SeriesAndOfficesPage';
+import { ReservationsPage } from './features/fluvial/pages/ReservationsPage';
 
 
 // Operaciones Fluviales (pendientes de implementar)
-const ReservationsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Gestionar Reservas</h1><p>Gestión de reservas y separaciones</p></div>;
 const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
 
 // Reportes Fluviales (pendientes de implementar)

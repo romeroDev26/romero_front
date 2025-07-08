@@ -1,4 +1,4 @@
-// src/features/fluvial/components/sales-point/SaleForm.tsx
+//src/features/fluvial/components/sales-point/SaleForm.tsx
 import React, { useState, useMemo, useEffect } from 'react';
 import { ArrowLeft, Ship, Clock, AlertTriangle, CreditCard } from 'lucide-react';
 import { ClipboardDocumentListIcon, HashtagIcon, CalendarIcon } from '@heroicons/react/24/outline';
@@ -12,7 +12,7 @@ import { PriceSummary } from './PriceSummary';
 import { Spinner } from '../../../../components/common/Spinner';
 import { ReservationModal } from './ReservationModal';
 // Types & Enums
-import { BranchOffice, ServiceCategory, SeatMapItem } from '../../../../types';
+import { BranchOffice, ServiceCategory, SeatMapItem, SeatReservation, TripStop } from '../../../../types';
 import { AvailableTripByPort } from '../../../../services/trips.service';
 import { SunatDocType, SunatInvoiceType, SunatTaxCategory } from '../../types/sunat.types';
 import { InvoiceCreateData } from '../../../../services/invoices.service';
@@ -25,14 +25,15 @@ import { useDocumentSeriesForBranch } from '../../hooks/useDocumentSeriesForBran
 import { useCreateInvoice } from '../../hooks/useInvoices';
 import { useClientManager } from '../../hooks/useClientManager';
 import { useCreateSeatAssignment } from '../../hooks/useSeatAssignments';
+import { useUpdateReservation } from '../../hooks/useReservations';
 
 interface PassengerData {
   docType: string;
   docNumber: string;
   name: string;
   address: string;
-  phone: string; // Nuevo campo
-  email: string; // Nuevo campo
+  phone: string;
+  email: string;
 }
 
 interface SaleFormProps {
@@ -40,31 +41,33 @@ interface SaleFormProps {
   branch: BranchOffice;
   onBack: () => void;
   onSaleSuccess: () => void;
+  reservationToConfirm?: SeatReservation;
 }
 
 export const SaleForm: React.FC<SaleFormProps> = ({
   trip,
   branch,
   onBack,
-  onSaleSuccess
+  onSaleSuccess,
+  reservationToConfirm,
 }) => {
   const [selectedOriginId, setSelectedOriginId] = useState<number | null>(null);
   const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
-  const [selectedSeatTypeId, setSelectedSeatTypeId] = useState<number | null>(null);
   const [selectedSeat, setSelectedSeat] = useState<SeatMapItem | null>(null);
   const [passengerData, setPassengerData] = useState<PassengerData>({
     docType: SunatDocType.DNI,
     docNumber: '',
     name: '',
     address: '',
-    phone: '', // Nuevo campo
-    email: '', // Nuevo campo
+    phone: '',
+    email: '',
   });
   const [extraCost, setExtraCost] = useState(0);
   const [isIgvGravado, setIsIgvGravado] = useState(false);
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>('');
   const [selectedFacturaSeries, setSelectedFacturaSeries] = useState<string>('');
   const [isReservationModalOpen, setReservationModalOpen] = useState(false);
+  const [isConfirmingMode, setIsConfirmingMode] = useState(!!reservationToConfirm);
 
   useEffect(() => {
     if (branch.port_id) {
@@ -72,8 +75,30 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     }
   }, [branch.port_id]);
 
-  const { data: passengerService } = usePassengerService();
   const { data: tripDetails } = useTripDetails(trip.id);
+
+  useEffect(() => {
+    if (reservationToConfirm && tripDetails) {
+      setIsConfirmingMode(true);
+      setPassengerData({
+        docType: reservationToConfirm.customer_doc_type,
+        docNumber: reservationToConfirm.customer_doc_number,
+        name: reservationToConfirm.customer_name,
+        phone: reservationToConfirm.customer_phone || '',
+        email: reservationToConfirm.customer_email || '',
+        address: '',
+      });
+
+      // Aseguramos que el origen y destino se establezcan correctamente
+      // Buscamos el port_id a partir del stop_id de la reserva
+      const boardingPortId = tripDetails.stops.find(s => s.id === reservationToConfirm.boarding_stop_id)?.port_id;
+      const disembarkingPortId = tripDetails.stops.find(s => s.id === reservationToConfirm.disembarking_stop_id)?.port_id;
+      if (boardingPortId) setSelectedOriginId(boardingPortId);
+      if (disembarkingPortId) setSelectedDestinationId(disembarkingPortId);
+    }
+  }, [reservationToConfirm, tripDetails]);
+
+  const { data: passengerService } = usePassengerService();
   const { data: allSeatTypes = [] } = useSeatTypesData();
   const { data: foundFare } = useFindFare({
     originPortId: selectedOriginId,
@@ -84,18 +109,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const { findOrCreateClient, isProcessingClient } = useClientManager();
   const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateInvoice();
   const { mutateAsync: createSeatAssignment, isPending: isAssigningSeat } = useCreateSeatAssignment();
+  const { mutateAsync: updateReservation, isPending: isUpdatingReservation } = useUpdateReservation();
 
   useEffect(() => {
     if (passengerService) {
       setIsIgvGravado(passengerService.tax_category_code === SunatTaxCategory.GRAVADO);
     }
   }, [passengerService]);
-
-  useEffect(() => {
-    if (selectedSeat) {
-      setSelectedSeatTypeId(selectedSeat.seat_type.id);
-    }
-  }, [selectedSeat]);
 
   useEffect(() => {
     const cachedBoleta = localStorage.getItem('lastUsedBoletaSeries');
@@ -126,20 +146,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     localStorage.setItem('lastUsedFacturaSeries', seriesCode);
   };
 
-  const handleSeatTypeChange = (seatTypeId: number | null) => {
-    setSelectedSeatTypeId(seatTypeId);
-    if (selectedSeat?.seat_type.id !== seatTypeId) {
-      setSelectedSeat(null);
-    }
-  };
-
   const { basePrice, seatMultiplier } = useMemo(() => {
     const price = foundFare?.price ?? null;
-    const multiplier =
-      selectedSeat?.seat_type.price_multiplier ||
-      allSeatTypes.find((st) => st.id === selectedSeatTypeId)?.price_multiplier || 1.0;
+    const multiplier = selectedSeat?.seat_type.price_multiplier || 1.0;
     return { basePrice: price, seatMultiplier: multiplier };
-  }, [foundFare, selectedSeatTypeId, selectedSeat, allSeatTypes]);
+  }, [foundFare, selectedSeat, allSeatTypes]);
 
   const finalTicketPrice = useMemo(() => {
     if (!basePrice) return 0;
@@ -161,15 +172,19 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       toast.error(`Por favor, seleccione una serie de ${isRuc ? 'Factura' : 'Boleta'}.`);
       return;
     }
+
     try {
+      // 1. Crear/encontrar el cliente (esto es común para ambos flujos)
       const client = await findOrCreateClient({
         doc_type: passengerData.docType,
         doc_number: passengerData.docNumber,
         name: passengerData.name,
         address_line: passengerData.address,
-        phone: passengerData.phone, // Nuevo campo
-        email: passengerData.email, // Nuevo campo
+        phone: passengerData.phone,
+        email: passengerData.email,
       });
+
+      // 2. Crear la factura (también es común)
       const originPortName = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.port?.name || '';
       const destinationPortName = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.port?.name || '';
       const invoicePayload = {
@@ -194,33 +209,61 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         invoiceData: invoicePayload,
         tripId: trip.id,
       });
-      if (!createdInvoice || !createdInvoice.items || createdInvoice.items.length === 0) {
-        throw new Error("La respuesta de la creación de la factura no incluyó los items necesarios.");
+
+      // ================== BIFURCACIÓN LÓGICA ==================
+      if (isConfirmingMode && reservationToConfirm) {
+        // --- ESTAMOS CONFIRMANDO UNA RESERVA EXISTENTE ---
+        
+        await updateReservation({
+          reservationId: reservationToConfirm.id,
+          tripId: reservationToConfirm.trip_id,
+          data: {
+            status: 'CONFIRMED',
+            // Usamos el número de factura como referencia de pago
+            payment_reference: `${createdInvoice.series}-${createdInvoice.number}`,
+          },
+        });
+
+        // La API debería manejar la creación de la asignación internamente
+        // o la vinculación de la factura a la reserva.
+        toast.success("¡Reserva confirmada y venta completada con éxito!");
+
+      } else {
+        // --- ESTAMOS HACIENDO UNA VENTA DIRECTA NUEVA ---
+        
+        if (!createdInvoice || !createdInvoice.items || createdInvoice.items.length === 0) {
+          throw new Error("La respuesta de la creación de la factura no incluyó los items necesarios.");
+        }
+        const invoiceItemId = createdInvoice.items[0].id;
+        const boardingStopId = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.id;
+        const disembarkingStopId = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.id;
+
+        if (!boardingStopId || !disembarkingStopId) {
+          throw new Error("No se pudieron encontrar los IDs de las paradas de embarque/desembarque.");
+        }
+
+        const assignmentPayload = {
+          trip_id: trip.id,
+          client_id: client.id,
+          seat_type_id: selectedSeat.seat_type.id,
+          trip_seat_id: selectedSeat.id,
+          boarding_stop_id: boardingStopId,
+          disembarking_stop_id: disembarkingStopId,
+          passenger_name: passengerData.name,
+          passenger_doc_type: passengerData.docType,
+          passenger_doc_number: passengerData.docNumber,
+          seat_number: selectedSeat.seat_number,
+          invoice_item_id: invoiceItemId,
+        };
+        await createSeatAssignment(assignmentPayload);
+        toast.success("¡Venta completada con éxito!");
       }
-      const invoiceItemId = createdInvoice.items[0].id;
-      const boardingStopId = tripDetails?.stops.find(s => s.port_id === selectedOriginId)?.id;
-      const disembarkingStopId = tripDetails?.stops.find(s => s.port_id === selectedDestinationId)?.id;
-      if (!boardingStopId || !disembarkingStopId) {
-        throw new Error("No se pudieron encontrar los IDs de las paradas de embarque/desembarque.");
-      }
-      const assignmentPayload = {
-        trip_id: trip.id,
-        client_id: client.id,
-        seat_type_id: selectedSeat.seat_type.id,
-        trip_seat_id: selectedSeat.id,
-        boarding_stop_id: boardingStopId,
-        disembarking_stop_id: disembarkingStopId,
-        passenger_name: passengerData.name,
-        passenger_doc_type: passengerData.docType,
-        passenger_doc_number: passengerData.docNumber,
-        seat_number: selectedSeat.seat_number,
-        invoice_item_id: invoiceItemId,
-      };
-      await createSeatAssignment(assignmentPayload);
-      toast.success("¡Venta completada con éxito!");
+
       onSaleSuccess();
+
     } catch (error: any) {
       console.error("Fallo en el proceso de venta:", error);
+      // Aquí podrías añadir una lógica para anular la factura si la segunda parte falla.
       if (!error.message.includes('asignar el asiento')) {
         toast.error(error.response?.data?.detail || "Ocurrió un error inesperado durante la venta.");
       }
@@ -258,7 +301,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         <div className="grid lg:grid-cols-5 gap-8">
           <div className="lg:col-span-3 space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <PassengerDataForm passengerData={passengerData} setPassengerData={setPassengerData} />
+              <PassengerDataForm
+                passengerData={passengerData}
+                setPassengerData={setPassengerData}
+                disabled={isConfirmingMode}
+              />
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <SeatAndFareSelector
@@ -267,10 +314,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 onOriginChange={setSelectedOriginId}
                 selectedDestinationId={selectedDestinationId}
                 onDestinationChange={setSelectedDestinationId}
-                selectedSeatTypeId={selectedSeatTypeId}
-                onSeatTypeChange={handleSeatTypeChange}
                 selectedSeat={selectedSeat}
                 onSeatSelect={setSelectedSeat}
+                isConfirmingMode={isConfirmingMode}
+                reservationToConfirm={reservationToConfirm}
               />
             </div>
           </div>
@@ -327,21 +374,23 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 <Button
                   onClick={handleConfirmSale}
                   className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-                  isLoading={isProcessingClient || isCreatingInvoice || isAssigningSeat}
+                  isLoading={isProcessingClient || isCreatingInvoice || isAssigningSeat || isUpdatingReservation}
                   disabled={!areActionsEnabled}
                 >
                   <CreditCard className="h-5 w-5 mr-2"/>
-                  Generar y Cobrar
+                  {isConfirmingMode ? 'Confirmar y Cobrar' : 'Generar y Cobrar'}
                 </Button>
-                <Button
-                  onClick={() => setReservationModalOpen(true)}
-                  variant="outline"
-                  className="w-full text-lg py-3"
-                  disabled={!areActionsEnabled}
-                >
-                  <ClipboardDocumentListIcon className="h-5 w-5 mr-2"/>
-                  Reservar Asiento
-                </Button>
+                {!isConfirmingMode && (
+                  <Button
+                    onClick={() => setReservationModalOpen(true)}
+                    variant="outline"
+                    className="w-full text-lg py-3"
+                    disabled={!areActionsEnabled}
+                  >
+                    <ClipboardDocumentListIcon className="h-5 w-5 mr-2"/>
+                    Reservar Asiento
+                  </Button>
+                )}
               </div>
               {!basePrice && (
                 <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-3 rounded-md">

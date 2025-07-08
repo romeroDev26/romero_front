@@ -19,9 +19,10 @@ interface PassengerData {
 interface PassengerDataFormProps {
   passengerData: PassengerData;
   setPassengerData: React.Dispatch<React.SetStateAction<PassengerData>>;
+  disabled?: boolean;
 }
 
-export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerData, setPassengerData }) => {
+export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerData, setPassengerData, disabled = false }) => {
   const { queryDni, isQueryingDni, queryRuc, isQueryingRuc } = useSunatData();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -66,7 +67,8 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             name="docType"
             value={passengerData.docType}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded-md bg-white"
+            className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+            disabled={disabled}
           >
             {DOCUMENT_TYPES.map(doc => (
               <option key={doc.code} value={doc.code}>{doc.name}</option>
@@ -81,12 +83,13 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
               name="docNumber"
               value={passengerData.docNumber}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-l-md"
+              className="w-full p-2 border border-gray-300 rounded-l-md disabled:bg-gray-100"
               placeholder="Ingrese el número"
+              disabled={disabled}
             />
             <Button
               onClick={handleSearch}
-              disabled={!isSearchable || isQueryingDni || isQueryingRuc}
+              disabled={!isSearchable || isQueryingDni || isQueryingRuc || disabled}
               className="rounded-l-none"
             >
               {isQueryingDni || isQueryingRuc ? <Spinner size="sm"/> : <Search className="h-4 w-4" />}
@@ -103,8 +106,9 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           name="name"
           value={passengerData.name}
           onChange={handleInputChange}
-          className="w-full p-2 border border-gray-300 rounded-md"
+          className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
           placeholder="Nombres y apellidos o Razón Social"
+          disabled={disabled}
         />
       </div>
       {passengerData.docType === SunatDocType.RUC && (
@@ -115,7 +119,8 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             name="address"
             value={passengerData.address}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
+            disabled={disabled}
           />
         </div>
       )}
@@ -127,8 +132,9 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             name="phone"
             value={passengerData.phone}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
             placeholder="Número de teléfono"
+            disabled={disabled}
           />
         </div>
         <div>
@@ -138,8 +144,9 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             name="email"
             value={passengerData.email}
             onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
             placeholder="Correo electrónico"
+            disabled={disabled}
           />
         </div>
       </div>

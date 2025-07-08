@@ -424,6 +424,7 @@ export interface SeatReservation {
   id: number;
   trip_id: number;
   trip?: Trip;
+  trip_seat_id: number;
   seat_type_id: number;
   seat_type?: SeatType;
   boarding_stop_id: number;

@@ -9,12 +9,12 @@ import { useVessel } from '../../hooks/useVesselsData';
 
 interface SeatMapProps {
   tripId: number;
-  vesselName: string; // Nueva propiedad
+  vesselName: string;
   selectedSeats: Set<number>;
   onSeatToggle: (seat: SeatMapItem) => void;
+  isLocked?: boolean; // Nueva propiedad
 }
 
-// Definimos un tipo para la estructura de una fila
 type SeatRow = SeatMapItem[];
 
 const getZoneColor = (seatTypeName: string): string => {
@@ -31,7 +31,7 @@ const getZoneTitle = (seatTypeName: string): string => {
   return 'ZONA DE ASIENTOS';
 };
 
-export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSeats, onSeatToggle }) => {
+export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSeats, onSeatToggle, isLocked = false }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails, isLoading: isLoadingVessel } = useVessel(vesselId || null);
@@ -52,21 +52,17 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
       .map(config => {
         const configSeats = seatsByConfigId[config.id] || [];
         const totalColumns = vesselDetails.total_columns || 4;
-
-        // Agrupar por filas
         const rows: SeatRow[] = [];
         configSeats.forEach(seat => {
           const sortedSectionSeats = [...configSeats].sort((a, b) => parseInt(a.seat_number) - parseInt(b.seat_number));
           const seatIndexInSection = sortedSectionSeats.findIndex(s => s.id === seat.id);
           const rowIndex = Math.floor(seatIndexInSection / totalColumns);
-
           if (!rows[rowIndex]) {
             rows[rowIndex] = [];
           }
           rows[rowIndex].push(seat);
         });
 
-        // Ordenar los asientos dentro de cada fila por su número
         rows.forEach(row => {
           row.sort((a, b) => parseInt(a.seat_number) - parseInt(b.seat_number));
         });
@@ -96,24 +92,18 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
       <div className="max-w-lg mx-auto">
-        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Selección de Asientos</h1>
           <p className="text-gray-600 text-sm">Sistema de reserva empresarial</p>
         </div>
-        {/* Bus Layout Container */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4">
           <div className="relative">
-            {/* Bus outline with dashed border */}
             <div className="border border-dashed border-gray-400 rounded-2xl px-2 py-4 relative">
-              {/* Front Section */}
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <div className="w-auto px-4 h-8 border border-dashed border-gray-400 rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
                   <span className="text-xs font-bold text-gray-700 uppercase">{vesselName}</span>
                 </div>
               </div>
-
-              {/* Main Seating Area */}
               <div className="mt-2">
                 <div className="space-y-2">
                   {seatLayout.map(section => (
@@ -134,17 +124,15 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                                     seat={seat}
                                     isSelected={selectedSeats.has(seat.id)}
                                     onClick={onSeatToggle}
+                                    isLocked={isLocked}
                                   />
                                 ))}
                               </div>
-
-                              {/* Pasillo más ancho */}
                               {section.totalColumns > 2 && (
                                 <div className="w-16 flex items-center justify-center">
                                   <div className="w-0.5 h-8 bg-gray-300 rounded-full"></div>
                                 </div>
                               )}
-
                               <div className="flex gap-3">
                                 {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => (
                                   <Seat
@@ -152,6 +140,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                                     seat={seat}
                                     isSelected={selectedSeats.has(seat.id)}
                                     onClick={onSeatToggle}
+                                    isLocked={isLocked}
                                   />
                                 ))}
                               </div>
@@ -163,8 +152,6 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                   ))}
                 </div>
               </div>
-
-              {/* Back of the bus */}
               <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-white border border-dashed border-gray-400 rounded-b-xl flex items-center justify-center">
                 <span className="text-xs font-bold text-gray-600">TRASERA</span>
               </div>

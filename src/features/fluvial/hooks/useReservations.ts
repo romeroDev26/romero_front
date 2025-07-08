@@ -53,13 +53,15 @@ export const useCreateReservation = () => {
 // Hook para actualizar una reserva (confirmar, cancelar)
 export const useUpdateReservation = () => {
   const queryClient = useQueryClient();
+  // La mutación ahora acepta un `tripId` para la invalidación de queries
   return useMutation<SeatReservation, Error, { reservationId: number; data: Partial<ReservationUpdateData>; tripId: number }>({
     mutationFn: ({ reservationId, data }) => reservationsService.update(reservationId, data),
     onSuccess: (updatedReservation, variables) => {
       toast.success(`Reserva actualizada a ${updatedReservation.status}.`);
       // Invalidar para actualizar la lista de reservas y el mapa de asientos
-      queryClient.invalidateQueries({ queryKey: ['reservations', variables.tripId] });
+      queryClient.invalidateQueries({ queryKey: ['reservations', { tripId: variables.tripId }] }); // Mejor ser específico
       queryClient.invalidateQueries({ queryKey: ['seatMap', variables.tripId] });
+      queryClient.invalidateQueries({ queryKey: ['reservations'] }); // Invalidar la lista general también
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || "Error al actualizar la reserva.");

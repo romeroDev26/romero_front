@@ -65,8 +65,9 @@ const navGroups = [
         expandKey: 'fluvialOps',
         subitems: [
           { name: 'Programar Viajes', path: '/fluvial/operations/schedule-trips', icon: CalendarDaysIcon, iconColor: 'text-blue-500' },
-          { name: 'Punto de Ventas', path: '/fluvial/operations/sales-point', icon: TicketIcon, iconColor: 'text-blue-500' },
+          { name: 'Punto de Venta (Pasajes)', path: '/fluvial/operations/sales-point', icon: TicketIcon, iconColor: 'text-blue-500' },
           { name: 'Gestionar Reservas', path: '/fluvial/operations/reservations', icon: ClipboardDocumentListIcon, iconColor: 'text-blue-500' },
+          { name: 'Encomiendas y Carga', path: '/fluvial/operations/cargo-sale', icon: CubeIcon, iconColor: 'text-blue-500' },
           { name: 'Manifiestos', path: '/fluvial/operations/manifests', icon: DocumentTextIcon, iconColor: 'text-blue-500' }
         ]
       },
@@ -117,6 +118,7 @@ const navGroups = [
 const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile }) => {
   const location = useLocation();
   const { scrollRef, handleScroll } = useSidebarScroll();
+  
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_EXPANDED_MENUS);
     return saved ? JSON.parse(saved) : {};
@@ -135,6 +137,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
 
         if (isGroupActive) {
           newExpanded[group.expandKey] = true;
+
           group.items.forEach(subGroup => {
             if (subGroup.isSubmenu) {
               const isSubGroupActive = subGroup.subitems.some(sub => currentPath.startsWith(sub.path));
@@ -168,6 +171,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
   const renderMenuItem = useCallback((item: any, isSubitem = false, level = 0) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
     const baseClasses = `flex items-center w-full text-left text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-lg`;
+    
     let paddingClasses = 'px-4 py-3';
     if (level === 1) {
       paddingClasses = 'pl-8 pr-4 py-2.5';
@@ -230,6 +234,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
 
   const renderExpandableGroup = useCallback((group: any) => {
     const isExpanded = expandedMenus[group.expandKey];
+
     return (
       <div key={group.title} className="mb-6">
         <button
@@ -287,6 +292,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           <XMarkIcon className="w-5 h-5 text-gray-500" />
         </button>
       </div>
+
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -304,6 +310,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           )}
         </nav>
       </div>
+
       {currentUser && (
         <div className="p-4 border-t border-gray-100">
           <div className="text-sm text-gray-600 mb-2">
@@ -312,6 +319,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           </div>
         </div>
       )}
+
       <div className="p-3 border-t border-gray-100">
         <button
           className="flex items-center w-full px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"

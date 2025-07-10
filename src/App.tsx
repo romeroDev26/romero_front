@@ -40,10 +40,12 @@ import { ScheduleTripsPage } from './features/fluvial/pages/ScheduleTripsPage';
 import { DocumentSeriesPage } from './features/fluvial/pages/DocumentSeriesPage';
 import { DocumentSeriesPage as SeriesAndOfficesPage } from './features/fluvial/pages/SeriesAndOfficesPage';
 import { ReservationsPage } from './features/fluvial/pages/ReservationsPage';
+import { CargoSalePage } from './features/cargo/pages/CargoSalePage';
 
 
 // Operaciones Fluviales (pendientes de implementar)
 const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
+
 
 // Reportes Fluviales (pendientes de implementar)
 const FluvialReportsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Reportes Fluviales</h1><p>Reportes específicos del transporte fluvial</p></div>;
@@ -104,6 +106,7 @@ function App() {
                 <Route path="schedule-trips" element={<ScheduleTripsPage />} />
                 <Route path="sales-point" element={<SalesPointPage />} />
                 <Route path="reservations" element={<ReservationsPage />} />
+                <Route path="cargo-sale" element={<CargoSalePage />} />
                 <Route path="manifests" element={<ManifestsPage />} />
               </Route>
               

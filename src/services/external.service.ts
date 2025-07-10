@@ -1,7 +1,6 @@
 // src/services/external.service.ts
 import api from '../config/api';
 
-// Interfaces para tipar las respuestas de la API
 export interface DniResponse {
   nombres: string;
   apellidoPaterno: string;
@@ -19,7 +18,6 @@ export interface RucResponse {
   direccion: string;
   estado: string;
   condicion: string;
-  // Añadir más campos si la API los devuelve
 }
 
 class ExternalQueryService {

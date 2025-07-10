@@ -10,8 +10,8 @@ import { toast } from 'react-toastify';
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
-import { LocationSelector } from '../../../components/common/LocationSelector';
-import { clientsService, CreateClientData, UpdateClientData } from '../../../services/clients.service';
+import { LocationSelector } from '../../../components/common/LocationSelector'; // Assuming this is correct
+import { clientsService, CreateClientData } from '../../../services/clients.service';
 import { DocType } from '../../../types';
 import { useLocation } from '../../../hooks/useLocation';
 
@@ -42,6 +42,7 @@ const clientSchema = z.object({
   phone: z.string().max(50, 'Teléfono muy largo').optional(),
   is_active: z.boolean(),
 });
+type UpdateClientData = CreateClientData; // Assuming UpdateClientData is the same as CreateClientData for now
 
 type ClientFormData = z.infer<typeof clientSchema>;
 

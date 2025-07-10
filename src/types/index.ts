@@ -613,6 +613,7 @@ export interface InvoiceItem {
   quantity: number;
   unit_code: string;
   unit_price: number;
+  item_description?: string;
   price_with_tax?: number;
   price_type_code?: string;
   discount: number;
@@ -637,6 +638,10 @@ export interface InvoiceItem {
   boarding_trip_stop?: TripStop;
   disembarking_trip_stop_id?: number;
   disembarking_trip_stop?: TripStop;
+  recipient_name?: string;
+  recipient_doc_type?: string;
+  recipient_doc_number?: string;
+  recipient_phone?: string;
 }
 
 // ========================================

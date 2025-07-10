@@ -79,3 +79,5 @@ export const clientsService = {
     }
   }
 };
+
+export type { CreateClientData };

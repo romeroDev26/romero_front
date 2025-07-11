@@ -37,7 +37,13 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
       if (passengerData.docType === SunatDocType.DNI) {
         const data = await queryDni(passengerData.docNumber);
         if (data) {
-          setPassengerData(prev => ({ ...prev, name: data.nombreCompleto }));
+          setPassengerData(prev => ({ 
+            ...prev, 
+            name: data.nombreCompleto,
+            // Solo actualizar email y phone si están disponibles en la respuesta
+            ...(data.email && { email: data.email }),
+            ...(data.phone && { phone: data.phone }),
+          }));
         }
       } else if (passengerData.docType === SunatDocType.RUC) {
         const data = await queryRuc(passengerData.docNumber);
@@ -46,6 +52,9 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             ...prev,
             name: data.razonSocial,
             address: data.direccion,
+            // Solo actualizar email y phone si están disponibles en la respuesta
+            ...(data.email && { email: data.email }),
+            ...(data.phone && { phone: data.phone }),
           }));
         }
       }

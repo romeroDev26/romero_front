@@ -9,6 +9,8 @@ export interface DniResponse {
   tipoDocumento: string;
   numeroDocumento: string;
   digitoVerificador: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface RucResponse {
@@ -18,6 +20,8 @@ export interface RucResponse {
   direccion: string;
   estado: string;
   condicion: string;
+  email?: string;
+  phone?: string;
 }
 
 class ExternalQueryService {

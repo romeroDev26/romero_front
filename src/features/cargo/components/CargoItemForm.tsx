@@ -111,12 +111,20 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
         const data = await queryDni(docNumber);
         if (data) {
           setValue('recipient.name', data.nombreCompleto, { shouldValidate: true });
+          // Solo actualizar phone si está disponible en la respuesta
+          if (data.phone) {
+            setValue('recipient.phone', data.phone, { shouldValidate: true });
+          }
           toast.success('Datos encontrados correctamente.');
         }
       } else if (docType === SunatDocType.RUC) {
         const data = await queryRuc(docNumber);
         if (data) {
           setValue('recipient.name', data.razonSocial, { shouldValidate: true });
+          // Solo actualizar phone si está disponible en la respuesta
+          if (data.phone) {
+            setValue('recipient.phone', data.phone, { shouldValidate: true });
+          }
           toast.success('Datos encontrados correctamente.');
         }
       } else {

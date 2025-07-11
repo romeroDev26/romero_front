@@ -16,18 +16,17 @@ export interface InvoiceItemCreateData {
   // Campo para pasajes (asiento)
   trip_seat_id?: number;
 
-  // Campos para encomiendas
+  // Campo para vincular con el viaje (nuevo campo del backend)
   trip_id?: number;
+
+  // Campos para encomiendas
   recipient_name?: string;
   recipient_doc_type?: string;
   recipient_doc_number?: string;
   recipient_phone?: string;
 }
 
-export interface LegendCreateData {
-  code: string;
-  value: string;
-}
+
 
 // Esta interfaz define los datos para CREAR una factura completa.
 export interface InvoiceCreateData {
@@ -40,7 +39,6 @@ export interface InvoiceCreateData {
   currency_code: string;
   notes?: string;
   items: InvoiceItemCreateData[];
-  legends?: LegendCreateData[];
 }
 
 // Esta interfaz define la forma de un ítem de factura que viene del backend

@@ -133,6 +133,8 @@ export const CargoSalePage: React.FC = () => {
         return;
       }
 
+
+
       const invoicePayload = {
         client_id: client.id,
         document_type_code: isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA,
@@ -159,7 +161,7 @@ export const CargoSalePage: React.FC = () => {
 
       await createInvoice({
         invoiceData: invoicePayload,
-        tripId: 0
+        tripId: selectedTrip.id
       });
       toast.success('¡Venta de encomienda completada!');
       // Resetear para una nueva venta

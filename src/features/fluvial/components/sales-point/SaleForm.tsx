@@ -245,6 +245,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       const destinationPortName =
         tripDetails?.stops.find((s) => s.port_id === selectedDestinationId)
           ?.port?.name || "";
+
+
       const invoicePayload = {
         client_id: client.id,
         document_type_code: isRuc
@@ -266,6 +268,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
               : SunatTaxCategory.EXONERADO,
             item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeat.seat_number}`,
             unit_code: "NIU",
+            trip_id: trip.id, // Agregamos el trip_id para vincular con el viaje
           },
         ],
       };

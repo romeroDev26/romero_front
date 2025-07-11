@@ -23,6 +23,16 @@ interface CargoItemFormProps {
 
 type FormValues = Omit<CargoItemData, 'id'>;
 
+const UNIT_OF_MEASURE_OPTIONS = [
+  { code: 'KGM', name: 'Kilogramos' },
+  { code: 'TNE', name: 'Toneladas' },
+  { code: 'NIU', name: 'Unidades' },
+  { code: 'PAC', name: 'Paquete' },
+  { code: 'MTR', name: 'Metros' },
+  { code: 'LTR', name: 'Litros' },
+  { code: 'MTQ', name: 'Metros Cúbicos' },
+];
+
 export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose, existingItem }) => {
   const { data: allServices = [], isLoading: isLoadingServices } = useProductsServicesData({ is_active: true });
   const { queryDni, isQueryingDni, queryRuc, isQueryingRuc } = useSunatData();
@@ -39,7 +49,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
         docType: SunatDocType.DNI,
         docNumber: '',
         phone: '',
-      }
+      },
+      unitOfMeasure: existingItem?.unitOfMeasure || 'NIU',
     }
   });
 
@@ -212,6 +223,26 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
               error={errors.price?.message}
             />
           </div>
+        </div>
+
+        {/* Unidad de Medida */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Unidad de Medida *
+          </label>
+          <select
+            {...register('unitOfMeasure', { required: 'La unidad de medida es obligatoria' })}
+            className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {UNIT_OF_MEASURE_OPTIONS.map(opt => (
+              <option key={opt.code} value={opt.code}>
+                {opt.name}
+              </option>
+            ))}
+          </select>
+          {errors.unitOfMeasure && (
+            <p className="text-sm text-red-500 mt-1">{errors.unitOfMeasure.message}</p>
+          )}
         </div>
 
         {/* Descripción */}

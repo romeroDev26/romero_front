@@ -20,4 +20,7 @@ export interface CargoItemData {
   description: string; // Descripción específica del paquete (ej. "Caja con repuestos")
   price: number; // Precio unitario del servicio
   recipient: RecipientData;
+  unitOfMeasure: string; // Código de la unidad de medida (ej: "NIU", "KGM", etc.)
+  boarding_trip_stop_id?: number; // ID de la parada de embarque (se asigna automáticamente)
+  disembarking_trip_stop_id?: number; // ID de la parada de desembarque (se asigna automáticamente)
 }

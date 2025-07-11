@@ -202,7 +202,7 @@ export const CargoSalePage: React.FC = () => {
           unit_price: item.price,
           tax_category_code: item.product.tax_category_code,
           item_description: item.description,
-          unit_code: item.product.unit_code,
+          unit_code: item.unitOfMeasure,
           trip_id: selectedTrip.id,
           recipient_name: item.recipient.isSameAsSender ? remitter.name : item.recipient.name,
           recipient_doc_type: item.recipient.isSameAsSender ? remitter.docType : item.recipient.docType,

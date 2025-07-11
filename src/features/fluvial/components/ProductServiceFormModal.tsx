@@ -124,6 +124,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             name="internal_code"
             value={formData.internal_code}
             onChange={handleChange}
+            disabled={isEditMode}
           />
           <Input
             label="Nombre"
@@ -153,6 +154,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
               value={formData.item_type}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isEditMode}
             >
               {ITEM_TYPE_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -168,6 +170,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
                 value={formData.service_category}
                 onChange={handleChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+                disabled={isEditMode}
               >
                 {SERVICE_CATEGORY_OPTIONS.map(opt => (
                   <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -176,6 +179,12 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             </div>
           )}
         </div>
+
+        {isEditMode && (
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-yellow-800 text-sm rounded mb-2">
+            Solo puedes modificar el <b>Nombre</b>, <b>Descripción</b> y <b>Afectación IGV (SUNAT)</b>. Para cambiar el Código Interno, Tipo o Categoría de Servicio, comunícate con el equipo de soporte.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Input

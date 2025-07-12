@@ -26,8 +26,6 @@ export interface InvoiceItemCreateData {
   recipient_phone?: string;
 }
 
-
-
 // Esta interfaz define los datos para CREAR una factura completa.
 export interface InvoiceCreateData {
   client_id: number;
@@ -50,8 +48,8 @@ export interface ItemForGuide extends InvoiceItem {
   invoice_number: number;
 }
 
-
 class InvoicesService {
+  // El path base para facturas es diferente al de notas de crédito y guías
   private readonly basePath = '/sunat/invoices/';
 
   // Crea una nueva factura.
@@ -64,6 +62,23 @@ class InvoicesService {
   async getItemsForGuide(tripId: number): Promise<ItemForGuide[]> {
     const response = await api.get<ItemForGuide[]>(`${this.basePath}items-for-guide`, {
       params: { trip_id: tripId }
+    });
+    return response.data;
+  }
+
+  // ========= INICIO DE LA MODIFICACIÓN =========
+  
+  // NUEVO MÉTODO: Para obtener una factura por su ID
+  async getById(invoiceId: number): Promise<Invoice> {
+    const response = await api.get<Invoice>(`${this.basePath}${invoiceId}`);
+    return response.data;
+  }
+
+  // NUEVO MÉTODO: Para obtener la lista de facturas anulables
+  // Lo movemos aquí para mantener todo lo de 'invoices' en un solo lugar.
+  async getVoidableInvoices(companyId: number): Promise<any[]> { // Usamos 'any' por ahora, lo tiparemos mejor
+    const response = await api.get<any[]>(`${this.basePath}voidable`, {
+      params: { company_id: companyId }
     });
     return response.data;
   }

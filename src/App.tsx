@@ -42,6 +42,13 @@ import { DocumentSeriesPage as SeriesAndOfficesPage } from './features/fluvial/p
 import { ReservationsPage } from './features/fluvial/pages/ReservationsPage';
 import { CargoSalePage } from './features/cargo/pages/CargoSalePage';
 
+//páginas de contabilidad
+import { InvoiceDetailPage } from './features/accounting/pages/InvoiceDetailPage';
+import { CreditNoteFormPage } from './features/accounting/pages/CreditNoteFormPage';
+import { AccountingDashboardPage } from './features/accounting/pages/AccountingDashboardPage';
+import { SummariesPage } from './features/accounting/pages/SummariesPage';
+import { VoidsPage } from './features/accounting/pages/VoidsPage';
+
 
 // Operaciones Fluviales (pendientes de implementar)
 const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
@@ -121,17 +128,17 @@ function App() {
               <Route path="quotations/:id" element={<QuotationFormPage />} />
             </Route>
             
-            {/* Facturas */}
-            <Route path="invoices" element={<div className="p-6"><h1 className="text-2xl font-bold">Lista de Facturas</h1></div>} />
-            <Route path="invoices/:id" element={<div className="p-6"><h1 className="text-2xl font-bold">Detalle/Edición de Factura</h1></div>} />
-            
-            {/* Notas de Crédito */}
-            <Route path="credit-notes" element={<div className="p-6"><h1 className="text-2xl font-bold">Notas de Crédito</h1></div>} />
-            <Route path="credit-notes/:id" element={<div className="p-6"><h1 className="text-2xl font-bold">Detalle/Edición de Nota de Crédito</h1></div>} />
-            
-            {/* Notas de Débito */}
-            <Route path="debit-notes" element={<div className="p-6"><h1 className="text-2xl font-bold">Notas de Débito</h1></div>} />
-            <Route path="debit-notes/:id" element={<div className="p-6"><h1 className="text-2xl font-bold">Detalle/Edición de Nota de Débito</h1></div>} />
+            {/* Contabilidad */}
+            <Route path="accounting">
+              <Route path="dashboard" element={<AccountingDashboardPage />} />
+              <Route path="invoices" element={<div className="p-6"><h1 className="text-2xl font-bold">Facturas</h1><p>Gestión de facturas</p></div>} />
+              <Route path="invoices/:id" element={<InvoiceDetailPage />} />
+              <Route path="credit-notes" element={<div className="p-6"><h1 className="text-2xl font-bold">Notas de Crédito</h1><p>Gestión de notas de crédito</p></div>} />
+              <Route path="credit-notes/new" element={<CreditNoteFormPage />} />
+              <Route path="debit-notes" element={<div className="p-6"><h1 className="text-2xl font-bold">Notas de Débito</h1><p>Gestión de notas de débito</p></div>} />
+              <Route path="summaries" element={<SummariesPage />} />
+              <Route path="voids" element={<VoidsPage />} />
+            </Route>
             
             {/* Guías de Remisión (importante para carga) */}
             <Route path="remission-guides" element={<RemissionGuidesListPage />} />

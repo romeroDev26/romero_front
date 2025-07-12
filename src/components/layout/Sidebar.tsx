@@ -82,10 +82,22 @@ const navGroups = [
     iconColor: 'text-green-500',
     items: [
       { name: 'Cotizaciones', path: '/sales/quotations', icon: DocumentTextIcon, iconColor: 'text-green-500' },
-      { name: 'Facturas', path: '/invoices', icon: DocumentTextIcon, iconColor: 'text-green-500' },
-      { name: 'Notas de Crédito', path: '/credit-notes', icon: DocumentTextIcon, iconColor: 'text-green-500' },
-      { name: 'Notas de Débito', path: '/debit-notes', icon: DocumentTextIcon, iconColor: 'text-green-500' },
       { name: 'Guías de Remisión', path: '/remission-guides', icon: TruckIcon, iconColor: 'text-green-500' }
+    ]
+  },
+  {
+    title: 'Contabilidad',
+    expandable: true,
+    expandKey: 'accounting',
+    icon: DocumentTextIcon,
+    iconColor: 'text-indigo-500',
+    items: [
+      { name: 'Dashboard Contable', path: '/accounting/dashboard', icon: ChartBarIcon, iconColor: 'text-indigo-500' },
+      { name: 'Facturas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
+      { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
+      { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
+      { name: 'Resúmenes', path: '/accounting/summaries', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
+      { name: 'Anulaciones', path: '/accounting/voids', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
     ]
   },
   {

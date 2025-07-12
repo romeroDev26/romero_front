@@ -10,6 +10,9 @@ interface PriceSummaryProps {
   isIgvGravado: boolean;
   onIgvGravadoChange: (isGravado: boolean) => void;
   taxCategoryCodeDefault: string | null; // '10' o '20'
+  subtotal: number;
+  igvAmount: number;
+  finalTotal: number;
 }
 
 export const PriceSummary: React.FC<PriceSummaryProps> = ({
@@ -19,14 +22,12 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   onExtraCostChange,
   isIgvGravado,
   onIgvGravadoChange,
-  taxCategoryCodeDefault
+  taxCategoryCodeDefault,
+  subtotal,
+  igvAmount,
+  finalTotal
 }) => {
   const ticketPrice = basePrice ? basePrice * seatMultiplier : 0;
-  const totalPrice = ticketPrice + extraCost;
-
-  const subtotal = isIgvGravado ? totalPrice / 1.18 : totalPrice;
-  const igvAmount = isIgvGravado ? totalPrice - subtotal : 0;
-  
   const isIgvDisabled = taxCategoryCodeDefault === null; // Deshabilitar si no se pudo cargar el servicio
 
   return (
@@ -38,7 +39,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         <span className="font-medium">{ticketPrice > 0 ? `S/ ${ticketPrice.toFixed(2)}` : 'N/A'}</span>
       </div>
 
-      {/* --- NUEVO CAMPO PARA COSTO ADICIONAL --- */}
+      {/* --- CAMPO PARA COSTO ADICIONAL --- */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Costo Adicional (Bultos)</label>
         <Input
@@ -52,17 +53,38 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
       </div>
       
       <div className="border-t pt-3 mt-3">
-        {/* --- CHECKBOX DE IGV AUTOMÁTICO --- */}
-        <label className="flex items-center justify-between cursor-pointer" title={isIgvDisabled ? 'No se pudo cargar la configuración del servicio de pasajes' : ''}>
-          <span className={`font-medium ${isIgvDisabled ? 'text-gray-400' : 'text-gray-700'}`}>Gravar con IGV (18%)</span>
-          <input
-            type="checkbox"
-            checked={isIgvGravado}
-            onChange={(e) => onIgvGravadoChange(e.target.checked)}
-            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            disabled={isIgvDisabled}
-          />
-        </label>
+        {/* --- SWITCH DE IGV --- */}
+        <div className="flex items-center justify-between">
+          <span className={`font-medium ${isIgvDisabled ? 'text-gray-400' : 'text-gray-700'}`}>
+            Gravar con IGV (18%)
+          </span>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => !isIgvDisabled && onIgvGravadoChange(!isIgvGravado)}
+              disabled={isIgvDisabled}
+              className={`
+                relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                ${isIgvGravado 
+                  ? 'bg-blue-600' 
+                  : 'bg-gray-200'
+                }
+                ${isIgvDisabled 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'cursor-pointer'
+                }
+              `}
+              title={isIgvDisabled ? 'No se pudo cargar la configuración del servicio de pasajes' : ''}
+            >
+              <span
+                className={`
+                  inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ease-in-out
+                  ${isIgvGravado ? 'translate-x-6' : 'translate-x-1'}
+                `}
+              />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="border-t pt-3 mt-3 space-y-2">
@@ -76,7 +98,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         </div>
         <div className="flex justify-between text-xl font-bold text-gray-900">
           <span>TOTAL:</span>
-          <span>S/ {totalPrice.toFixed(2)}</span>
+          <span>S/ {finalTotal.toFixed(2)}</span>
         </div>
       </div>
     </div>

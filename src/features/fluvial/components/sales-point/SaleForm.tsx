@@ -93,9 +93,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const [isConfirmingMode, setIsConfirmingMode] = useState(
     !!reservationToConfirm
   );
-  // IGV opcional: el usuario puede activarlo/desactivarlo con un switch
-  // Por defecto desactivado. En el futuro, esto será automático desde la configuración de la empresa (ver configuración global).
-  const [isIgvActive, setIsIgvActive] = useState(false);
 
   useEffect(() => {
     if (branch.port_id) {
@@ -193,26 +190,25 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     localStorage.setItem("lastUsedFacturaSeries", seriesCode);
   };
 
-  // Cálculo de precios para mostrar IGV adicional
   const { basePrice, seatMultiplier } = useMemo(() => {
     const price = foundFare?.price ?? null;
     const multiplier = selectedSeat?.seat_type.price_multiplier || 1.0;
     return { basePrice: price, seatMultiplier: multiplier };
   }, [foundFare, selectedSeat, allSeatTypes]);
 
-  // Subtotal sin IGV
+  // Calculamos el subtotal (precio base sin IGV)
   const subtotal = useMemo(() => {
     if (!basePrice) return 0;
     return basePrice * seatMultiplier + extraCost;
   }, [basePrice, seatMultiplier, extraCost]);
 
-  // IGV adicional (18%) solo si está activo
+  // Calculamos el IGV (18% del subtotal solo si está gravado)
   const igvAmount = useMemo(() => {
-    return isIgvActive ? subtotal * 0.18 : 0;
-  }, [subtotal, isIgvActive]);
+    return isIgvGravado ? subtotal * 0.18 : 0;
+  }, [subtotal, isIgvGravado]);
 
-  // Total a pagar (subtotal + IGV si está activo)
-  const totalWithIgv = useMemo(() => {
+  // El precio final incluye el IGV adicional
+  const finalTicketPrice = useMemo(() => {
     return subtotal + igvAmount;
   }, [subtotal, igvAmount]);
 
@@ -277,7 +273,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           {
             product_id: passengerService.id,
             quantity: 1,
-            unit_price: subtotal, // El precio sin IGV
+            unit_price: finalTicketPrice,
             tax_category_code: isIgvGravado
               ? SunatTaxCategory.GRAVADO
               : SunatTaxCategory.EXONERADO,
@@ -501,37 +497,18 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   </div>
                 )}
               </div>
-              {/* Resumen de precios con switch para IGV */}
-              <div className="bg-gray-50 p-4 rounded-lg border space-y-2">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-base">Subtotal</span>
-                  <span className="text-base">S/ {subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-base flex items-center gap-2">
-                    IGV (18%)
-                    {/* Switch para activar/desactivar IGV */}
-                    <label className="inline-flex relative items-center cursor-pointer ml-2">
-                      <input
-                        type="checkbox"
-                        className="sr-only peer"
-                        checked={isIgvActive}
-                        onChange={() => setIsIgvActive(v => !v)}
-                      />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500 rounded-full peer peer-checked:bg-blue-600 transition-all"></div>
-                      <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transition-all peer-checked:translate-x-5"></div>
-                    </label>
-                  </span>
-                  <span className="text-base">S/ {igvAmount.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-lg font-bold border-t pt-2">
-                  <span>Total</span>
-                  <span>S/ {totalWithIgv.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-xs text-gray-500 pt-1">
-                  <span>Nota: El IGV se suma adicional al subtotal solo si está activado. {/* En el futuro, esto será automático desde la configuración de la empresa */}</span>
-                </div>
-              </div>
+              <PriceSummary
+                basePrice={basePrice}
+                seatMultiplier={seatMultiplier}
+                extraCost={extraCost}
+                onExtraCostChange={setExtraCost}
+                isIgvGravado={isIgvGravado}
+                onIgvGravadoChange={setIsIgvGravado}
+                taxCategoryCodeDefault={passengerService?.tax_category_code ?? null}
+                subtotal={subtotal}
+                igvAmount={igvAmount}
+                finalTotal={finalTicketPrice}
+              />
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
                 <h3 className="font-semibold text-center text-gray-700">
                   Acciones
@@ -583,7 +560,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
             passengerData,
             originId: selectedOriginId!,
             destinationId: selectedDestinationId!,
-            totalPrice: totalWithIgv,
+            totalPrice: finalTicketPrice,
           }}
           onSuccess={onSaleSuccess}
         />

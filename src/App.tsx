@@ -44,7 +44,9 @@ import { CargoSalePage } from './features/cargo/pages/CargoSalePage';
 
 //páginas de contabilidad
 import { InvoiceDetailPage } from './features/accounting/pages/InvoiceDetailPage';
+import { InvoicesListPage } from './features/accounting/pages/InvoicesListPage';
 import { CreditNoteFormPage } from './features/accounting/pages/CreditNoteFormPage';
+import { DebitNotesListPage } from './features/accounting/pages/DebitNotesListPage';
 import { AccountingDashboardPage } from './features/accounting/pages/AccountingDashboardPage';
 import { SummariesPage } from './features/accounting/pages/SummariesPage';
 import { VoidsPage } from './features/accounting/pages/VoidsPage';
@@ -131,11 +133,11 @@ function App() {
             {/* Contabilidad */}
             <Route path="accounting">
               <Route path="dashboard" element={<AccountingDashboardPage />} />
-              <Route path="invoices" element={<div className="p-6"><h1 className="text-2xl font-bold">Facturas</h1><p>Gestión de facturas</p></div>} />
+              <Route path="invoices" element={<InvoicesListPage />} />
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
-              <Route path="credit-notes" element={<div className="p-6"><h1 className="text-2xl font-bold">Notas de Crédito</h1><p>Gestión de notas de crédito</p></div>} />
+              <Route path="credit-notes" element={<CreditNoteFormPage />} />
               <Route path="credit-notes/new" element={<CreditNoteFormPage />} />
-              <Route path="debit-notes" element={<div className="p-6"><h1 className="text-2xl font-bold">Notas de Débito</h1><p>Gestión de notas de débito</p></div>} />
+              <Route path="debit-notes" element={<DebitNotesListPage />} />
               <Route path="summaries" element={<SummariesPage />} />
               <Route path="voids" element={<VoidsPage />} />
             </Route>

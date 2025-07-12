@@ -17,13 +17,14 @@ import { useDocumentSeriesForBranch } from '../../fluvial/hooks/useDocumentSerie
 import { Stepper } from '../../../components/common/Stepper.tsx';
 
 import { CargoItemForm } from '../components/CargoItemForm';
+import { CargoTripSelector } from '../components/CargoTripSelector';
 import { CargoItemData } from '../types/cargo-ui.types';
 import { BranchOffice } from '../../../types';
 import { SunatDocType, SunatInvoiceType } from '../../fluvial/types/sunat.types';
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { useTripDetails } from '../../fluvial/hooks/useTripDetails';
 
-type CargoSaleView = 'clientSelection' | 'tripSelection' | 'itemsDefinition';
+type CargoSaleView = 'clientSelection' | 'tripSelection' | 'tripSegmentSelection' | 'itemsDefinition';
 
 interface ClientData {
   docType: string; docNumber: string; name: string;
@@ -37,10 +38,19 @@ export const CargoSalePage: React.FC = () => {
   
   const [remitter, setRemitter] = useState<ClientData>({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
   const [selectedTrip, setSelectedTrip] = useState<AvailableTripByPort | null>(null);
+  const [selectedOriginId, setSelectedOriginId] = useState<number | null>(null);
+  const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
   const [cargoItems, setCargoItems] = useState<CargoItemData[]>([]);
 
   // Hook para obtener los detalles del viaje seleccionado (incluye stops)
   const { data: tripDetails } = useTripDetails(selectedTrip ? selectedTrip.id : null);
+
+  // Establecer el origen por defecto cuando se selecciona un viaje
+  useEffect(() => {
+    if (selectedTrip && selectedBranch) {
+      setSelectedOriginId(selectedBranch.port_id);
+    }
+  }, [selectedTrip, selectedBranch]);
 
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CargoItemData | null>(null);
@@ -99,6 +109,14 @@ export const CargoSalePage: React.FC = () => {
       toast.error('Por favor, complete y busque los datos del remitente.');
       return;
     }
+    if (currentView === 'tripSelection' && !selectedTrip) {
+      toast.error('Por favor, seleccione un viaje.');
+      return;
+    }
+    if (currentView === 'tripSegmentSelection' && (!selectedOriginId || !selectedDestinationId)) {
+      toast.error('Por favor, seleccione el origen y destino del tramo.');
+      return;
+    }
     setCurrentView(nextView);
   };
   
@@ -123,53 +141,17 @@ export const CargoSalePage: React.FC = () => {
   const handleFinalizeSale = async () => {
     if (cargoItems.length === 0 || !selectedTrip || !selectedBranch) return;
 
-    // Obtener los trip stops del viaje seleccionado
-    // Usamos el hook useTripDetails para obtener los stops
-    // Pero aquí, para asegurar que siempre tenemos los datos, podemos obtenerlos directamente antes de enviar
-    // Si ya tienes los stops en el estado, usa eso; si no, deberías obtenerlos aquí
-    // Suponiendo que tienes un hook useTripDetails
-    // Si no, puedes agregarlo arriba:
-    // const { data: tripDetails } = useTripDetails(selectedTrip?.id);
-    // Y usar tripDetails?.stops
-    // Aquí asumo que tienes tripDetails en el scope
-    // Si no, deberás agregar el hook y pasarlo como prop o contexto
-    // ---
-    // Para este edit, asumo que tienes tripDetails
-    // Si no, dime y lo ajusto
-    // ---
-    // Si tripDetails no está disponible, no se puede continuar
-    // Si está, obtenemos los stops
-    // ---
-    // Si no tienes tripDetails, agrega:
-    // const { data: tripDetails } = useTripDetails(selectedTrip?.id);
-    // Y usa tripDetails?.stops
-    // ---
-    // Aquí agrego la lógica suponiendo que tienes tripDetails
-    // ---
-    // Si no, dime y lo ajusto
-    // ---
-    // Obtener los stops del viaje seleccionado
-    // Si no hay stops, no se puede continuar
-    // ---
-    // Aquí va la lógica:
-    // const boardingStopId = tripDetails?.stops?.[0]?.id;
-    // const disembarkingStopId = tripDetails?.stops?.[tripDetails.stops.length - 1]?.id;
-    // ---
-    // Si no hay stops, mostrar error
-    // ---
-    // Si todo bien, agregar estos IDs a cada item antes de enviarlos
-    // ---
-    // Si tienes dudas, dime y lo ajusto
-    // ---
-    // Aquí va el código real:
-    // ---
-    // Obtener detalles del viaje
     if (!tripDetails || !tripDetails.stops || tripDetails.stops.length < 2) {
       toast.error('No se pudieron obtener las paradas del viaje.');
       return;
     }
-    const boardingStopId = tripDetails.stops[0].id;
-    const disembarkingStopId = tripDetails.stops[tripDetails.stops.length - 1].id;
+          const boardingStopId = tripDetails.stops.find(s => s.port_id === selectedOriginId)?.id;
+      const disembarkingStopId = tripDetails.stops.find(s => s.port_id === selectedDestinationId)?.id;
+      
+      if (!boardingStopId || !disembarkingStopId) {
+        toast.error('No se pudieron encontrar las paradas del tramo seleccionado.');
+        return;
+      }
 
     try {
       const client = await findOrCreateClient({
@@ -221,6 +203,8 @@ export const CargoSalePage: React.FC = () => {
       // Resetear para una nueva venta
       setRemitter({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
       setSelectedTrip(null);
+      setSelectedOriginId(null);
+      setSelectedDestinationId(null);
       setCargoItems([]);
       setCurrentView('clientSelection');
 
@@ -243,12 +227,13 @@ export const CargoSalePage: React.FC = () => {
     selectedBoletaSeries,
   ]);
 
-  const steps = ['Datos del Remitente', 'Seleccionar Viaje', 'Definir Encomiendas'];
+  const steps = ['Datos del Remitente', 'Seleccionar Viaje', 'Seleccionar Tramo', 'Definir Encomiendas'];
   const currentStepIndex = useMemo(() => {
     switch (currentView) {
       case 'clientSelection': return 0;
       case 'tripSelection': return 1;
-      case 'itemsDefinition': return 2;
+      case 'tripSegmentSelection': return 2;
+      case 'itemsDefinition': return 3;
       default: return 0;
     }
   }, [currentView]);
@@ -274,10 +259,42 @@ export const CargoSalePage: React.FC = () => {
             <p className="text-gray-500 mb-6 text-center">Seleccione el viaje en el que se transportará la encomienda.</p>
             <TripSelection 
               branch={selectedBranch}
-              onTripSelect={(trip) => { setSelectedTrip(trip); handleNextStep('itemsDefinition'); }}
+              onTripSelect={(trip) => { 
+                setSelectedTrip(trip); 
+                // ===================================================================
+                // CAMBIO: Mover la navegación al siguiente paso después de que el estado se actualice
+                // ===================================================================
+                setTimeout(() => {
+                  setCurrentView('tripSegmentSelection');
+                }, 0);
+              }}
               onChangeBranch={() => navigate('/fluvial/operations/sales-point')}
             />
              <div className="mt-6"><Button variant="outline" onClick={() => setCurrentView('clientSelection')}>Volver a Datos del Remitente</Button></div>
+          </div>
+        );
+
+      case 'tripSegmentSelection':
+        return (
+          <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-sm border">
+            <p className="text-gray-500 mb-6 text-center">Seleccione el tramo específico para la encomienda.</p>
+            {selectedTrip && (
+              <CargoTripSelector
+                tripId={selectedTrip.id}
+                selectedOriginId={selectedOriginId}
+                onOriginChange={setSelectedOriginId}
+                selectedDestinationId={selectedDestinationId}
+                onDestinationChange={setSelectedDestinationId}
+              />
+            )}
+            <div className="mt-6 flex justify-between">
+              <Button variant="outline" onClick={() => { setSelectedTrip(null); setCurrentView('tripSelection'); }}>
+                Volver a Seleccionar Viaje
+              </Button>
+              <Button onClick={() => handleNextStep('itemsDefinition')}>
+                Siguiente: Definir Encomiendas
+              </Button>
+            </div>
           </div>
         );
 
@@ -291,9 +308,9 @@ export const CargoSalePage: React.FC = () => {
                 {/* Botón volver - lado izquierdo */}
                 <Button 
                   variant="outline" 
-                  onClick={() => { setSelectedTrip(null); setCurrentView('tripSelection'); }}
+                  onClick={() => { setSelectedDestinationId(null); setCurrentView('tripSegmentSelection'); }}
                 >
-                  Volver a Seleccionar Viaje
+                  Volver a Seleccionar Tramo
                 </Button>
 
                 {/* Selector de comprobante - lado derecho */}
@@ -347,7 +364,10 @@ export const CargoSalePage: React.FC = () => {
                 <div>
                   <p className="text-sm text-gray-500">
                     Remitente: <span className="font-semibold">{remitter.name}</span> | 
-                    Viaje: <span className="font-semibold">{selectedTrip?.trip_name}</span>
+                    Viaje: <span className="font-semibold">{selectedTrip?.trip_name}</span> | 
+                    Tramo: <span className="font-semibold">
+                      {tripDetails?.stops?.find(s => s.port_id === selectedOriginId)?.port?.name} → {tripDetails?.stops?.find(s => s.port_id === selectedDestinationId)?.port?.name}
+                    </span>
                   </p>
                 </div>
                 <Button 

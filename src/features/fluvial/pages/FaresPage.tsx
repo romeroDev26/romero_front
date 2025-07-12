@@ -1,5 +1,5 @@
 // src/features/fluvial/pages/FaresPage.tsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, CurrencyDollarIcon, ArrowRightIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
@@ -12,6 +12,10 @@ import { useFares } from '../../../hooks/useFares';
 import { usePortsData } from '../../../hooks/usePorts'; 
 import { CreateFareData, UpdateFareData } from '../../../services/fareService';
 import { routeHelpers } from '../../../services/routes.service'; // Importar para obtener companyId
+// ===================================================================
+// CAMBIO 2: Importar toast para notificaciones
+// ===================================================================
+import { toast } from 'react-toastify';
 
 // ... (constantes SERVICE_CATEGORIES y FARE_TYPES se mantienen igual) ...
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
@@ -73,6 +77,42 @@ const FareFormModal: React.FC<{
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ===================================================================
+  // CAMBIO: Agregar useEffect para actualizar formData cuando cambie la tarifa
+  // ===================================================================
+  useEffect(() => {
+    if (fare) {
+      setFormData({
+        origin_port_id: fare.origin_port_id,
+        destination_port_id: fare.destination_port_id,
+        service_category: fare.service_category,
+        price: fare.price,
+        currency_code: fare.currency_code,
+        tax_category_code: fare.tax_category_code,
+        description: fare.description || '',
+        fare_type: fare.fare_type,
+        route_id: fare.route_id,
+        effective_date: fare.effective_date,
+        expiration_date: fare.expiration_date || ''
+      });
+    } else {
+      // Reset form when creating new fare
+      setFormData({
+        origin_port_id: 0,
+        destination_port_id: 0,
+        service_category: 'PASAJES',
+        price: 0,
+        currency_code: 'PEN',
+        tax_category_code: '10',
+        description: '',
+        fare_type: 'PARTIAL_SEGMENT',
+        route_id: undefined,
+        effective_date: new Date().toISOString().split('T')[0],
+        expiration_date: ''
+      });
+    }
+  }, [fare]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -85,6 +125,24 @@ const FareFormModal: React.FC<{
       setError(err.message || 'Error al guardar la tarifa');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // ===================================================================
+  // CAMBIO: Arreglar el problema del precio base
+  // ===================================================================
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Si el valor está vacío o es solo un punto, permitir
+    if (value === '' || value === '.') {
+      setFormData({ ...formData, price: 0 });
+      return;
+    }
+    
+    // Convertir a número y validar
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      setFormData({ ...formData, price: numValue });
     }
   };
 
@@ -173,15 +231,19 @@ const FareFormModal: React.FC<{
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Input
-            label="Precio Base"
-            type="number"
-            step="0.01"
-            value={formData.price}
-            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-            required
-            disabled={submitting}
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Precio Base</label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.price === 0 ? '' : formData.price}
+              onChange={handlePriceChange}
+              className="w-full p-2 border border-gray-300 rounded-md"
+              required
+              disabled={submitting}
+              placeholder="0.00"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Moneda</label>
             <select
@@ -308,37 +370,54 @@ export const FaresPage: React.FC = () => {
   };
 
   const handleCreateFare = async (data: FareFormData) => {
-    const createData: CreateFareData = {
-      ...data,
-      company_id: companyId,
-      is_active: true,
-      expiration_date: data.expiration_date || undefined
-    };
-    await createFare(createData);
+    try {
+      const createData: CreateFareData = {
+        ...data,
+        company_id: companyId,
+        is_active: true,
+        expiration_date: data.expiration_date || undefined
+      };
+      await createFare(createData);
+      toast.success('Tarifa creada exitosamente');
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Error al crear la tarifa';
+      toast.error(message);
+      throw error; // Re-lanzar para que el modal maneje el error
+    }
   };
 
   const handleUpdateFare = async (data: FareFormData) => {
     if (!editingFare) return;
 
-    const updateData: UpdateFareData = {
-      price: data.price,
-      currency_code: data.currency_code,
-      tax_category_code: data.tax_category_code,
-      description: data.description,
-      expiration_date: data.expiration_date || null,
-    };
+    try {
+      const updateData: UpdateFareData = {
+        price: data.price,
+        currency_code: data.currency_code,
+        tax_category_code: data.tax_category_code,
+        description: data.description,
+        is_active: true, // =================================================================== CAMBIO: Agregar is_active: true
+        expiration_date: data.expiration_date || null,
+      };
 
-    await updateFare(editingFare.id, updateData);
-    setEditingFare(undefined);
+      await updateFare(editingFare.id, updateData);
+      toast.success('Tarifa actualizada exitosamente');
+      setEditingFare(undefined);
+    } catch (error: any) {
+      const message = error.response?.data?.detail || 'Error al actualizar la tarifa';
+      toast.error(message);
+      throw error; // Re-lanzar para que el modal maneje el error
+    }
   };
 
   const handleDeactivateFare = async (fareId: number) => {
     if (confirm('¿Está seguro de desactivar esta tarifa? La tarifa dejará de estar disponible para nuevas ventas, pero se conservará en el historial.')) {
       try {
         await deactivateFare(fareId);
-      } catch (error) {
+        toast.success('Tarifa desactivada exitosamente');
+      } catch (error: any) {
         console.error('Error al desactivar la tarifa:', error);
-        alert('No se pudo desactivar la tarifa. Intente de nuevo.');
+        const message = error.response?.data?.detail || 'No se pudo desactivar la tarifa. Intente de nuevo.';
+        toast.error(message);
       }
     }
   };

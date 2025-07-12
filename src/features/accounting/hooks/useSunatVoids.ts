@@ -1,9 +1,24 @@
 // src/features/accounting/hooks/useSunatVoids.ts
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { sunatBatchesService } from '../services/sunatBatches.service';
-import { VoidCreateData } from '../types';
 import { toast } from 'react-toastify';
+import { sunatBatchesService } from '../services/sunatBatches.service';
+import { invoicesService } from '../../../services/invoices.service';
+import { VoidCreateData, VoidableInvoice } from '../types';
+
+// NUEVO HOOK: Para obtener las facturas que se pueden dar de baja
+export const useVoidableInvoices = (companyId: number | null) => {
+  return useQuery<VoidableInvoice[], Error>({
+    queryKey: ['voidableInvoices', companyId],
+    queryFn: () => {
+      if (!companyId) return Promise.resolve([]);
+      // Llamamos al método que está en el servicio de facturas
+      return invoicesService.getVoidableInvoices(companyId); 
+    },
+    enabled: !!companyId,
+    staleTime: 1000 * 60 * 2, // 2 minutos
+  });
+};
 
 // Hook para listar comunicaciones de baja
 export const useSunatVoids = (companyId: number) => {
@@ -34,6 +49,8 @@ export const useCreateSunatVoid = () => {
     onSuccess: (data) => {
       toast.success(`Lote de Baja ${data.batch_number} creado y enviado a SUNAT. Consulte el estado en unos minutos.`);
       queryClient.invalidateQueries({ queryKey: ['sunatVoids'] });
+      // Invalidar también las facturas anulables para actualizar la lista
+      queryClient.invalidateQueries({ queryKey: ['voidableInvoices'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Error al crear la comunicación de baja');

@@ -199,13 +199,6 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-white text-xl font-bold">Transportes Romero</h1>
         </div>
       </div>
-
-      {/* Footer */}
-      <div className="absolute bottom-0 right-0 lg:w-2/5 w-full p-4 bg-transparent">
-        <p className="text-center text-sm text-gray-600">
-          ©{new Date().getFullYear()} Transportes Romero. Todos los derechos reservados.
-        </p>
-      </div>
     </div>
   );
 };

@@ -76,7 +76,7 @@ class InvoicesService {
 
   // NUEVO MÉTODO: Para obtener la lista de facturas anulables
   // Lo movemos aquí para mantener todo lo de 'invoices' en un solo lugar.
-  async getVoidableInvoices(companyId: number): Promise<any[]> { // Usamos 'any' por ahora, lo tiparemos mejor
+  async getVoidableInvoices(companyId: number): Promise<any[]> {
     const response = await api.get<any[]>(`${this.basePath}voidable`, {
       params: { company_id: companyId }
     });

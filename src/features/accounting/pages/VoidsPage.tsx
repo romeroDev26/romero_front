@@ -1,327 +1,200 @@
-// src/features/accounting/pages/VoidsPage.tsx
-
 import React, { useState } from 'react';
-import { 
-  ExclamationTriangleIcon, 
-  CheckCircleIcon, 
-  XCircleIcon, 
-  ClockIcon,
-  ArrowPathIcon,
-  PlusIcon,
-  TrashIcon
-} from '@heroicons/react/24/outline';
-import { useSunatVoids, useCreateSunatVoid, useCheckVoidStatus } from '../hooks/useSunatVoids';
-import { useVoidableInvoices } from '../hooks/useCreditNotes';
+import { format } from 'date-fns';
+import { toast } from 'react-toastify';
+import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
-import { Modal } from '../../../components/common/Modal';
+import { DataTable, Column } from '../../../components/common/DataTable';
+import { Input } from '../../../components/common/Input';
+import { useSunatVoids, useCreateSunatVoid, useCheckVoidStatus, useVoidableInvoices } from '../hooks/useSunatVoids';
+import { InvoiceSelectorModal } from '../components/InvoiceSelectorModal';
 import { SunatStatusBadge } from '../components/SunatStatusBadge';
-import { VoidableInvoice } from '../types';
+import { Void, VoidItem, VoidableInvoice } from '../types';
 
 export const VoidsPage: React.FC = () => {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedInvoices, setSelectedInvoices] = useState<number[]>([]);
-  const [generalReason, setGeneralReason] = useState('');
-  
-  // TODO: Obtener company_id del contexto de autenticación
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemsToVoid, setItemsToVoid] = useState<Omit<VoidItem, 'reason'>[]>([]);
+  const [reason, setReason] = useState('');
   const companyId = 1;
-  
-  const { data: voids = [], isLoading, refetch } = useSunatVoids(companyId);
-  const { data: voidableInvoices = [], isLoading: loadingInvoices } = useVoidableInvoices(companyId);
-  const createVoid = useCreateSunatVoid();
-  const checkStatus = useCheckVoidStatus();
+
+  const { data: voids = [], isLoading: isLoadingVoids, refetch } = useSunatVoids(companyId);
+  const { data: voidableInvoices = [], isLoading: isLoadingVoidableInvoices } = useVoidableInvoices(companyId);
+  const { mutate: createVoid, isPending: isCreatingVoid } = useCreateSunatVoid();
+  const { mutate: checkStatus, isPending: isCheckingStatus } = useCheckVoidStatus();
+
+  const handleSelectInvoices = (selectedItems: Omit<VoidItem, 'reason'>[]) => {
+    setItemsToVoid(selectedItems);
+    setIsModalOpen(false);
+  };
+
+  // Función para obtener el nombre del tipo de documento
+  const getDocumentTypeName = (documentTypeCode: string) => {
+    const documentTypes: Record<string, string> = {
+      '01': 'Factura',
+      '03': 'Boleta',
+      '07': 'Nota de Crédito',
+      '08': 'Nota de Débito'
+    };
+    return documentTypes[documentTypeCode] || documentTypeCode;
+  };
 
   const handleCreateVoid = () => {
-    if (selectedInvoices.length === 0) {
-      alert('Por favor seleccione al menos una factura');
+    if (itemsToVoid.length === 0) {
+      toast.warn("Primero debe cargar las facturas a anular usando el botón 'Seleccionar Facturas'.");
       return;
     }
-
-    if (!generalReason.trim()) {
-      alert('Por favor ingrese un motivo general');
+    if (!reason.trim()) {
+      toast.warn("Debe ingresar un motivo para la baja.");
       return;
     }
-
-    const selectedInvoiceData = voidableInvoices.filter(invoice => 
-      selectedInvoices.includes(invoice.id)
-    );
-
-    const voidItems = selectedInvoiceData.map(invoice => ({
-      document_type_code: invoice.document_type_code,
-      series: invoice.series,
-      number: invoice.number,
-      reason: generalReason
-    }));
-
-    createVoid.mutate({
+    createVoid({
       company_id: companyId,
-      items: voidItems
+      generation_date: format(new Date(), 'yyyy-MM-dd'),
+      items: itemsToVoid.map(item => ({ ...item, reason })),
     }, {
       onSuccess: () => {
-        setIsCreateModalOpen(false);
-        setSelectedInvoices([]);
-        setGeneralReason('');
+        setItemsToVoid([]);
+        setReason('');
+        refetch();
       }
     });
   };
 
-  const handleCheckStatus = (id: number) => {
-    checkStatus.mutate(id);
-  };
+  const columns: Column<Void>[] = [
+    {
+      key: 'batch_number',
+      header: 'Lote',
+      accessor: (item) => item.batch_number,
+    },
+    {
+      key: 'generation_date',
+      header: 'Fecha',
+      accessor: (item) => format(new Date(item.generation_date), 'dd/MM/yyyy')
+    },
+    {
+      key: 'documents',
+      header: 'Documentos',
+      accessor: (item) => `${item.items.length} documento(s)`
+    },
+    {
+      key: 'sunat_status',
+      header: 'Estado',
+      accessor: (item) => <SunatStatusBadge status={item.sunat_status} />
+    },
+    {
+      key: 'sunat_ticket',
+      header: 'Ticket',
+      accessor: (item) => item.sunat_ticket || '-'
+    },
+  ];
 
-  const handleInvoiceSelection = (invoiceId: number) => {
-    setSelectedInvoices(prev => 
-      prev.includes(invoiceId) 
-        ? prev.filter(id => id !== invoiceId)
-        : [...prev, invoiceId]
-    );
-  };
-
-
-
-  const getDocumentTypeText = (code: string) => {
-    switch (code) {
-      case '01':
-        return 'Factura';
-      case '03':
-        return 'Boleta';
-      default:
-        return code;
-    }
-  };
+  // Columnas para la tabla de documentos anulables
+  const voidableInvoicesColumns: Column<VoidableInvoice>[] = [
+    {
+      key: 'document_type',
+      header: 'Tipo de Comprobante',
+      accessor: (item) => getDocumentTypeName(item.document_type_code)
+    },
+    {
+      key: 'series_number',
+      header: 'Serie y Número',
+      accessor: (item) => `${item.series}-${item.number}`
+    },
+    {
+      key: 'client_name',
+      header: 'Cliente',
+      accessor: (item) => item.client_name
+    },
+    {
+      key: 'issue_date',
+      header: 'Fecha de Emisión',
+      accessor: (item) => format(new Date(item.issue_date), 'dd/MM/yyyy')
+    },
+    {
+      key: 'total_payable',
+      header: 'Total',
+      accessor: (item) => `S/ ${item.total_payable}`
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Comunicaciones de Baja</h1>
-          <p className="text-gray-600">Gestionar anulaciones de documentos enviados a SUNAT</p>
-        </div>
-        <Button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="bg-red-600 hover:bg-red-700 text-white"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Nueva Comunicación
-        </Button>
+        <h1 className="text-2xl font-bold text-gray-900">Comunicaciones de Baja</h1>
+        <p className="text-gray-500">Anulación de facturas informadas a SUNAT.</p>
       </div>
-
-      {/* Tabla de Comunicaciones de Baja */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">Comunicaciones Generadas</h2>
-            <button
-              onClick={() => refetch()}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <ArrowPathIcon className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-        
-        {isLoading ? (
-          <div className="p-6 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Cargando comunicaciones...</p>
-          </div>
-        ) : voids.length === 0 ? (
-          <div className="p-6 text-center">
-            <ExclamationTriangleIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No hay comunicaciones de baja generadas</p>
-            <p className="text-sm text-gray-400 mt-1">Cree una nueva comunicación para comenzar</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Lote
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Documentos
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ticket
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {voids.map((voidItem) => (
-                  <tr key={voidItem.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {voidItem.batch_number}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {new Date(voidItem.generation_date).toLocaleDateString('es-ES')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {voidItem.items.length} documento(s)
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <SunatStatusBadge status={voidItem.sunat_status} />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {voidItem.sunat_ticket || '-'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {(voidItem.sunat_status === 'PENDING' || voidItem.sunat_status === 'SENT') && (
-                        <Button
-                          onClick={() => handleCheckStatus(voidItem.id)}
-                          disabled={checkStatus.isPending}
-                          className="text-sm bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          {checkStatus.isPending ? 'Consultando...' : 'Consultar Estado'}
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Modal para Crear Comunicación de Baja */}
-      <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Nueva Comunicación de Baja"
-        maxWidth="lg"
-      >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Motivo General
-            </label>
-            <textarea
-              value={generalReason}
-              onChange={(e) => setGeneralReason(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-              rows={3}
-              placeholder="Ej: Error en la emisión, operación no concretada..."
+      {/* SECCIÓN PARA CREAR NUEVA COMUNICACIÓN */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border space-y-4">
+        <h2 className="text-lg font-semibold">Nueva Comunicación de Baja</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <Input
+              label="Motivo General de la Baja*"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Ej: Error en los datos del cliente"
             />
           </div>
+          <div className="self-end">
+            <Button variant="outline" onClick={() => setIsModalOpen(true)}>
+              Seleccionar Facturas ({itemsToVoid.length})
+            </Button>
+          </div>
+        </div>
+        {itemsToVoid.length > 0 && (
+          <div className="border-t pt-4">
+            <h3 className="text-sm font-medium mb-2">Facturas a anular:</h3>
+            <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+              {itemsToVoid.map(item => (
+                <li key={`${item.series}-${item.number}`}>{item.series}-{item.number}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <div className="flex justify-end">
+          <Button variant="danger" onClick={handleCreateVoid} isLoading={isCreatingVoid} disabled={itemsToVoid.length === 0 || !reason.trim()}>
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Crear y Enviar Comunicación
+          </Button>
+        </div>
+      </div>
+      {/* SECCIÓN PARA LISTAR DOCUMENTOS ANULABLES */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold mb-4">Documentos Disponibles para Anulación</h2>
+        <p className="text-gray-600 mb-4">Lista de documentos aceptados por SUNAT que pueden ser dados de baja.</p>
+        <DataTable
+          columns={voidableInvoicesColumns}
+          data={voidableInvoices}
+          isLoading={isLoadingVoidableInvoices}
+          keyExtractor={(item) => item.id}
+          emptyMessage="No hay documentos disponibles para anulación"
+        />
+      </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Seleccionar Documentos a Anular
-            </label>
-            {loadingInvoices ? (
-              <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-600 mx-auto"></div>
-                <p className="mt-2 text-sm text-gray-600">Cargando documentos...</p>
-              </div>
-            ) : voidableInvoices.length === 0 ? (
-              <div className="text-center py-4">
-                <ExclamationTriangleIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500">No hay documentos disponibles para anular</p>
-              </div>
-            ) : (
-              <div className="max-h-64 overflow-y-auto border border-gray-300 rounded-md">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50 sticky top-0">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">
-                        <input
-                          type="checkbox"
-                          checked={selectedInvoices.length === voidableInvoices.length}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedInvoices(voidableInvoices.map(inv => inv.id));
-                            } else {
-                              setSelectedInvoices([]);
-                            }
-                          }}
-                          className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                        />
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Documento</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cliente</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Monto</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Fecha</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {voidableInvoices.map((invoice) => (
-                      <tr key={invoice.id} className="hover:bg-gray-50">
-                        <td className="px-3 py-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedInvoices.includes(invoice.id)}
-                            onChange={() => handleInvoiceSelection(invoice.id)}
-                            className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                          />
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
-                          {getDocumentTypeText(invoice.document_type_code)} {invoice.series}-{invoice.number}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
-                          {invoice.client_name}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
-                          S/ {invoice.total_amount.toFixed(2)}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-gray-900">
-                          {new Date(invoice.issue_date).toLocaleDateString('es-ES')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-          
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="flex">
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400 mt-0.5 mr-3" />
-              <div>
-                <h4 className="text-sm font-medium text-red-800">Advertencia</h4>
-                <p className="text-sm text-red-700 mt-1">
-                  Esta acción anulará permanentemente los documentos seleccionados. 
-                  Asegúrese de que los documentos no hayan sido entregados al cliente.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-6 flex justify-end space-x-3">
-          <Button
-            onClick={() => setIsCreateModalOpen(false)}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-700"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleCreateVoid}
-            disabled={selectedInvoices.length === 0 || !generalReason.trim() || createVoid.isPending}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            {createVoid.isPending ? 'Creando...' : 'Crear Comunicación'}
-          </Button>
-        </div>
-      </Modal>
+      {/* SECCIÓN PARA LISTAR COMUNICACIONES EXISTENTES */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold mb-4">Comunicaciones Generadas</h2>
+        <DataTable
+          columns={columns}
+          data={voids}
+          isLoading={isLoadingVoids}
+          keyExtractor={(item) => item.id}
+          customActions={(item) => (
+            (item.sunat_status === 'PENDING' || item.sunat_status === 'SENT') && (
+              <Button size="sm" variant="outline" onClick={() => checkStatus(item.id)} isLoading={isCheckingStatus}>
+                <ArrowPathIcon className="h-4 w-4 mr-1" />
+                Consultar
+              </Button>
+            )
+          )}
+        />
+      </div>
+      <InvoiceSelectorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        companyId={companyId}
+        onSubmit={handleSelectInvoices}
+        isSubmitting={false}
+      />
     </div>
   );
 };

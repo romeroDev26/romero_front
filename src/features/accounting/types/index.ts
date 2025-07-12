@@ -85,7 +85,7 @@ export interface VoidableInvoice {
   series: string;
   number: number;
   client_name: string;
-  total_amount: number;
+  total_payable: string;
   issue_date: string;
 }
 

@@ -183,8 +183,8 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
         <div className="flex-1 space-y-4 overflow-y-auto pr-2">
           {configs.map((config, index) => (
             <div key={config.id || index} className="p-4 border border-gray-200 rounded-lg">
-              <div className="grid grid-cols-12 gap-x-4 gap-y-2 items-end">
-                <div className="col-span-12 sm:col-span-5">
+              <div className="grid grid-cols-12 gap-x-4 gap-y-3 items-end">
+                <div className="col-span-12 md:col-span-4">
                   <label className="block text-sm font-medium">Tipo de Asiento</label>
                   <select
                     value={config.seat_type_id || ''}
@@ -196,7 +196,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
                     {seatTypes.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
                   </select>
                 </div>
-                <div className="col-span-6 sm:col-span-3">
+                <div className="col-span-4 md:col-span-2">
                   <label className="block text-sm font-medium">Cantidad</label>
                   <input
                     type="number"
@@ -207,7 +207,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
                     disabled={!!config.id}
                   />
                 </div>
-                <div className="col-span-6 sm:col-span-2">
+                <div className="col-span-4 md:col-span-2">
                   <label className="block text-sm font-medium">Filas (auto)</label>
                   <input
                     type="text"
@@ -216,7 +216,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
                     className="w-full mt-1 p-2 border-gray-200 bg-gray-100 rounded-md text-sm text-center"
                   />
                 </div>
-                <div className="col-span-6 sm:col-span-2">
+                <div className="col-span-3 md:col-span-2">
                   <label className="block text-sm font-medium">Nivel</label>
                   <input
                     type="number"
@@ -227,7 +227,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
                     disabled={!!config.id}
                   />
                 </div>
-                <div className="col-span-12 sm:col-span-2 flex justify-end">
+                <div className="col-span-1 md:col-span-2 flex justify-center md:justify-end">
                   <Button
                     type="button"
                     variant="outline"

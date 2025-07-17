@@ -1,12 +1,13 @@
 // src/features/fluvial/components/sales-point/TripSelection.tsx
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, Ship } from 'lucide-react';
-import { format } from 'date-fns';
+import { Ship } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { BranchOffice } from '../../../../types';
 import { AvailableTripByPort } from '../../../../services/trips.service';
 import { useAvailableTrips } from '../../hooks/useAvailableTrips';
+import { TripCalendar } from './TripCalendar';
 
 interface TripSelectionProps {
   branch: BranchOffice;
@@ -38,17 +39,17 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   
   // Usamos el hook que creamos para obtener los viajes
-  const { data: trips = [], isLoading, error, refetch } = useAvailableTrips({
+  const { data: trips = [], isLoading, error } = useAvailableTrips({
     portId: branch.port_id,
     onDate: selectedDate,
   });
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(e.target.value);
+  const handleDateSelect = (date: string) => {
+    setSelectedDate(date);
   };
   
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto">
       {/* Header de la sección */}
       <div className="flex justify-between items-center mb-6 pb-4 border-b">
         <div>
@@ -60,47 +61,57 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
         </Button>
       </div>
 
-      {/* Controles y filtros */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border mb-6 flex items-center gap-4">
-        <label htmlFor="trip-date" className="font-medium text-gray-700 flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-gray-500" />
-          Fecha de Viaje:
-        </label>
-        <input
-          id="trip-date"
-          type="date"
-          value={selectedDate}
-          onChange={handleDateChange}
-          className="p-2 border border-gray-300 rounded-md"
-        />
-        {/* Aquí se podrían añadir más filtros en el futuro (ej. vista de calendario) */}
-      </div>
+      {/* Layout principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Calendario */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Seleccionar Fecha</h2>
+          <TripCalendar
+            portId={branch.port_id}
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+          />
+        </div>
 
-      {/* Lista de Viajes */}
-      <div className="space-y-4">
-        {isLoading && (
-          <div className="flex justify-center items-center py-16">
-            <Spinner />
-            <p className="ml-4 text-gray-600">Buscando viajes...</p>
+        {/* Lista de Viajes */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Viajes para {format(parseISO(selectedDate), 'dd/MM/yyyy')}
+            </h2>
+            {trips.length > 0 && (
+              <span className="text-sm text-gray-600 bg-blue-100 px-2 py-1 rounded-full">
+                {trips.length} viaje{trips.length !== 1 ? 's' : ''} disponible{trips.length !== 1 ? 's' : ''}
+              </span>
+            )}
           </div>
-        )}
 
-        {!isLoading && error && (
-          <div className="text-center text-red-500 bg-red-50 p-4 rounded-lg">
-            Error al cargar los viajes: {error.message}
+          <div className="space-y-4 max-h-96 overflow-y-auto">
+            {isLoading && (
+              <div className="flex justify-center items-center py-16">
+                <Spinner />
+                <p className="ml-4 text-gray-600">Buscando viajes...</p>
+              </div>
+            )}
+
+            {!isLoading && error && (
+              <div className="text-center text-red-500 bg-red-50 p-4 rounded-lg">
+                Error al cargar los viajes: {error.message}
+              </div>
+            )}
+
+            {!isLoading && !error && trips.length === 0 && (
+              <div className="text-center text-gray-500 bg-gray-50 p-8 rounded-lg">
+                <h3 className="font-semibold text-lg">No hay viajes disponibles</h3>
+                <p>No se encontraron viajes programados desde "{branch.port?.name}" para la fecha seleccionada.</p>
+              </div>
+            )}
+
+            {!isLoading && !error && trips.map((trip) => (
+              <TripCard key={trip.id} trip={trip} onSelect={() => onTripSelect(trip)} />
+            ))}
           </div>
-        )}
-
-        {!isLoading && !error && trips.length === 0 && (
-          <div className="text-center text-gray-500 bg-gray-50 p-8 rounded-lg">
-            <h3 className="font-semibold text-lg">No hay viajes disponibles</h3>
-            <p>No se encontraron viajes programados desde "{branch.port?.name}" para la fecha seleccionada.</p>
-          </div>
-        )}
-
-        {!isLoading && !error && trips.map((trip) => (
-          <TripCard key={trip.id} trip={trip} onSelect={() => onTripSelect(trip)} />
-        ))}
+        </div>
       </div>
     </div>
   );

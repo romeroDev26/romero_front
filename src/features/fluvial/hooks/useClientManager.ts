@@ -31,13 +31,12 @@ export const useClientManager = () => {
         throw new Error("El nombre es requerido para crear un nuevo cliente.");
       }
       
-      toast.info(`Registrando nuevo cliente: ${clientDataToProcess.name}`);
       const createdClient = await clientsService.create(clientDataToProcess);
       return createdClient;
     },
-    onSuccess: (client) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast.success(`Cliente ${client.name} procesado correctamente.`);
+      // Toast eliminado para evitar múltiples mensajes de éxito
     },
     onError: (error) => {
       toast.error(`Error al procesar el cliente: ${error.message}`);

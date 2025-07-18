@@ -18,12 +18,11 @@ export const useCreateInvoice = () => {
         mutationFn: ({ invoiceData }) => invoicesService.create(invoiceData),
 
         // El callback onSuccess recibe la respuesta de la API y las variables que se pasaron a la mutación
-        onSuccess: (newInvoice, variables) => {
-            toast.success(`Comprobante ${newInvoice.series}-${String(newInvoice.number).padStart(8, '0')} creado.`);
+        onSuccess: (_, variables) => {
+            // Toast eliminado para evitar múltiples mensajes de éxito
 
             // Invalidamos la query del seat-map para el viaje que acabamos de afectar.
             // React Query automáticamente volverá a solicitar los datos para esa query.
-            console.log(`Invalidando query del seat-map para el tripId: ${variables.tripId}`);
             queryClient.invalidateQueries({ queryKey: ['seatMap', variables.tripId] });
 
             // También es buena idea invalidar los resúmenes de viajes si muestran disponibilidad

@@ -241,14 +241,16 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
     try {
       // 1. Crear/encontrar el cliente (esto es común para ambos flujos)
-      const client = await findOrCreateClient({
+      const clientData = {
         doc_type: passengerData.docType,
         doc_number: passengerData.docNumber,
         name: passengerData.name,
         address_line: passengerData.address,
         phone: passengerData.phone,
         email: passengerData.email,
-      });
+      };
+      
+      const client = await findOrCreateClient(clientData);
 
       // 2. Crear la factura (también es común)
       const originPortName =
@@ -334,7 +336,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
         // La API debería manejar la creación de la asignación internamente
         // o la vinculación de la factura a la reserva.
-        toast.success("¡Reserva confirmada y venta completada con éxito!");
       } else {
         // --- ESTAMOS HACIENDO UNA VENTA DIRECTA NUEVA ---
 
@@ -375,8 +376,16 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           invoice_item_id: invoiceItemId,
         };
         await createSeatAssignment(assignmentPayload);
-        toast.success("¡Venta completada con éxito!");
       }
+
+      // Toast único y consolidado al final del proceso exitoso
+      const documentType = isRuc ? "Factura" : "Boleta";
+      const documentNumber = `${createdInvoice.series}-${String(createdInvoice.number).padStart(8, '0')}`;
+      const operationType = isConfirmingMode ? "Reserva confirmada" : "Venta registrada";
+      
+      toast.success(
+        `${operationType} exitosamente. ${documentType}: ${documentNumber} | Asiento: ${selectedSeat.seat_number}`
+      );
 
       onSaleSuccess();
     } catch (error: any) {

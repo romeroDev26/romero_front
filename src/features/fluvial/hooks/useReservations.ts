@@ -38,7 +38,7 @@ export const useCreateReservation = () => {
   return useMutation<SeatReservation, Error, ReservationCreateData>({
     mutationFn: (data) => reservationsService.create(data),
     onSuccess: (newReservation) => {
-      toast.success(`Asiento ${newReservation.seat_number} reservado.`);
+      // Toast eliminado para evitar múltiples mensajes durante el flujo de venta
       // Invalidamos el mapa de asientos para que se actualice el estado a 'RESERVED'
       queryClient.invalidateQueries({ queryKey: ['seatMap', newReservation.trip_id] });
       // Invalidamos la lista de reservas del viaje
@@ -56,8 +56,8 @@ export const useUpdateReservation = () => {
   // La mutación ahora acepta un `tripId` para la invalidación de queries
   return useMutation<SeatReservation, Error, { reservationId: number; data: Partial<ReservationUpdateData>; tripId: number }>({
     mutationFn: ({ reservationId, data }) => reservationsService.update(reservationId, data),
-    onSuccess: (updatedReservation, variables) => {
-      toast.success(`Reserva actualizada a ${updatedReservation.status}.`);
+    onSuccess: (_, variables) => {
+      // Toast eliminado para evitar múltiples mensajes durante el flujo de venta
       // Invalidar para actualizar la lista de reservas y el mapa de asientos
       queryClient.invalidateQueries({ queryKey: ['reservations', { tripId: variables.tripId }] }); // Mejor ser específico
       queryClient.invalidateQueries({ queryKey: ['seatMap', variables.tripId] });

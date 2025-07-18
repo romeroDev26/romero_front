@@ -7,7 +7,7 @@ export const useSunatData = () => {
   const queryDniMutation = useMutation<DniResponse, Error, string>({
     mutationFn: (dni: string) => externalQueryService.queryDni(dni),
     onSuccess: () => {
-      toast.success('DNI encontrado exitosamente.');
+      // Toast eliminado para evitar múltiples mensajes durante el flujo de venta
     },
     onError: (error) => {
       toast.error(`Error al consultar DNI: ${error.message}`);
@@ -17,7 +17,7 @@ export const useSunatData = () => {
   const queryRucMutation = useMutation<RucResponse, Error, string>({
     mutationFn: (ruc: string) => externalQueryService.queryRuc(ruc),
      onSuccess: () => {
-      toast.success('RUC encontrado exitosamente.');
+      // Toast eliminado para evitar múltiples mensajes durante el flujo de venta
     },
     onError: (error) => {
       toast.error(`Error al consultar RUC: ${error.message}`);

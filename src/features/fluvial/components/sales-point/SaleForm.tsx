@@ -85,6 +85,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     email: "",
   });
   const [extraCost, setExtraCost] = useState(0);
+  const [extraCostDescription, setExtraCostDescription] = useState("");
   const [isIgvGravado, setIsIgvGravado] = useState(false);
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>("");
   const [selectedFacturaSeries, setSelectedFacturaSeries] =
@@ -258,6 +259,47 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           ?.port?.name || "";
 
 
+      // Preparar los items de la factura
+      const invoiceItems = [];
+      
+      // Precio del servicio base sin costo adicional
+      const baseServicePrice = (basePrice || 0) * seatMultiplier;
+      const baseServiceWithIgv = isIgvGravado 
+        ? baseServicePrice * 1.18 
+        : baseServicePrice;
+
+      // Item principal: Servicio de transporte
+      invoiceItems.push({
+        product_id: passengerService.id,
+        quantity: 1,
+        unit_price: baseServiceWithIgv,
+        tax_category_code: isIgvGravado
+          ? SunatTaxCategory.GRAVADO
+          : SunatTaxCategory.EXONERADO,
+        item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeat.seat_number}`,
+        unit_code: "NIU",
+        trip_id: trip.id,
+      });
+
+      // Item adicional: Costo adicional (si existe y tiene descripción)
+      if (extraCost > 0 && extraCostDescription.trim()) {
+        const extraCostWithIgv = isIgvGravado 
+          ? extraCost * 1.18 
+          : extraCost;
+          
+        invoiceItems.push({
+          product_id: 7, // ID específico para exceso de equipaje/costos adicionales
+          quantity: 1,
+          unit_price: extraCostWithIgv,
+          tax_category_code: isIgvGravado
+            ? SunatTaxCategory.GRAVADO
+            : SunatTaxCategory.EXONERADO,
+          item_description: extraCostDescription.trim(),
+          unit_code: "NIU",
+          trip_id: trip.id,
+        });
+      }
+
       const invoicePayload = {
         client_id: client.id,
         document_type_code: isRuc
@@ -269,19 +311,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         operation_type_code: "0101",
         currency_code: "PEN",
         notes: `Punto de Venta: ${branch.name}`,
-        items: [
-          {
-            product_id: passengerService.id,
-            quantity: 1,
-            unit_price: finalTicketPrice,
-            tax_category_code: isIgvGravado
-              ? SunatTaxCategory.GRAVADO
-              : SunatTaxCategory.EXONERADO,
-            item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeat.seat_number}`,
-            unit_code: "NIU",
-            trip_id: trip.id, // Agregamos el trip_id para vincular con el viaje
-          },
-        ],
+        items: invoiceItems,
       };
       const createdInvoice = await createInvoice({
         invoiceData: invoicePayload,
@@ -502,6 +532,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 seatMultiplier={seatMultiplier}
                 extraCost={extraCost}
                 onExtraCostChange={setExtraCost}
+                extraCostDescription={extraCostDescription}
+                onExtraCostDescriptionChange={setExtraCostDescription}
                 isIgvGravado={isIgvGravado}
                 onIgvGravadoChange={setIsIgvGravado}
                 taxCategoryCodeDefault={passengerService?.tax_category_code ?? null}

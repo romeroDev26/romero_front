@@ -26,7 +26,7 @@ const TripCard: React.FC<{ trip: AvailableTripByPort, onSelect: () => void }> = 
         <h3 className="font-semibold text-gray-900">{trip.trip_name}</h3>
         <p className="text-sm text-gray-600">{trip.vessel_name}</p>
         <p className="text-sm text-gray-500">
-          Salida estimada: {format(new Date(trip.estimated_departure_time), 'hh:mm a')}
+          Salida estimada: {format(parseISO(trip.estimated_departure_time), 'hh:mm a')}
         </p>
       </div>
     </div>

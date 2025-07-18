@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { 
   MagnifyingGlassIcon, 
   EyeIcon,
@@ -201,7 +201,7 @@ export const InvoicesListPage: React.FC = () => {
       header: 'Fecha',
       accessor: (invoice: Invoice) => (
         <div className="text-sm text-gray-900">
-          {format(new Date(invoice.issue_date), 'dd/MM/yyyy')}
+          {format(parseISO(invoice.issue_date), 'dd/MM/yyyy')}
         </div>
       ),
     },

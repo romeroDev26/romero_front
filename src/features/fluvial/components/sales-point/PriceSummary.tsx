@@ -7,6 +7,8 @@ interface PriceSummaryProps {
   seatMultiplier: number;
   extraCost: number;
   onExtraCostChange: (cost: number) => void;
+  extraCostDescription: string;
+  onExtraCostDescriptionChange: (description: string) => void;
   isIgvGravado: boolean;
   onIgvGravadoChange: (isGravado: boolean) => void;
   taxCategoryCodeDefault: string | null; // '10' o '20'
@@ -20,6 +22,8 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   seatMultiplier,
   extraCost,
   onExtraCostChange,
+  extraCostDescription,
+  onExtraCostDescriptionChange,
   isIgvGravado,
   onIgvGravadoChange,
   taxCategoryCodeDefault,
@@ -51,6 +55,19 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           min="0"
         />
       </div>
+
+      {/* --- CAMPO PARA DESCRIPCIÓN DEL COSTO ADICIONAL --- */}
+      {extraCost > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción del Costo Adicional</label>
+          <Input
+            type="text"
+            value={extraCostDescription || ''}
+            onChange={(e) => onExtraCostDescriptionChange(e.target.value)}
+            placeholder="Ej: Exceso de equipaje, Bultos adicionales"
+          />
+        </div>
+      )}
       
       <div className="border-t pt-3 mt-3">
         {/* --- SWITCH DE IGV --- */}

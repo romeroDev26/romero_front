@@ -12,7 +12,7 @@ import {
   EyeIcon,
   PencilIcon
 } from '@heroicons/react/24/outline';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { Input } from '../../../components/common/Input';
@@ -137,7 +137,7 @@ export const RemissionGuidesListPage: React.FC = () => {
         <div className="flex items-center space-x-2">
           <CalendarIcon className="h-4 w-4 text-gray-400" />
           <span className="text-sm text-gray-900">
-            {format(new Date(item.issue_date), 'dd/MM/yyyy')}
+            {format(parseISO(item.issue_date), 'dd/MM/yyyy')}
           </span>
         </div>
       ),

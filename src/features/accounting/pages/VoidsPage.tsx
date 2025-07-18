@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { toast } from 'react-toastify';
 import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
@@ -68,7 +68,7 @@ export const VoidsPage: React.FC = () => {
     {
       key: 'generation_date',
       header: 'Fecha',
-      accessor: (item) => format(new Date(item.generation_date), 'dd/MM/yyyy')
+      accessor: (item) => format(parseISO(item.generation_date), 'dd/MM/yyyy')
     },
     {
       key: 'documents',
@@ -107,7 +107,7 @@ export const VoidsPage: React.FC = () => {
     {
       key: 'issue_date',
       header: 'Fecha de Emisión',
-      accessor: (item) => format(new Date(item.issue_date), 'dd/MM/yyyy')
+      accessor: (item) => format(parseISO(item.issue_date), 'dd/MM/yyyy')
     },
     {
       key: 'total_payable',

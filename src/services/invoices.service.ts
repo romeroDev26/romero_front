@@ -48,6 +48,20 @@ export interface ItemForGuide extends InvoiceItem {
   invoice_number: number;
 }
 
+// Interfaz para los parámetros de filtrado del nuevo endpoint
+export interface InvoiceFilters {
+  skip?: number;
+  limit?: number;
+  company_id?: number;
+  series?: string;
+  number?: number;
+  start_date?: string; // YYYY-MM-DD
+  end_date?: string; // YYYY-MM-DD
+  client_search?: string;
+  sunat_status?: 'PENDING' | 'GENERATED' | 'SIGNED' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'OBSERVED' | 'VOIDED' | 'ERROR';
+  period?: 'LAST_WEEK' | 'LAST_MONTH' | 'LAST_3_MONTHS' | 'LAST_YEAR';
+}
+
 class InvoicesService {
   // El path base para facturas es diferente al de notas de crédito y guías
   private readonly basePath = '/sunat/invoices/';
@@ -68,6 +82,19 @@ class InvoicesService {
 
   // ========= INICIO DE LA MODIFICACIÓN =========
   
+  // NUEVO MÉTODO: Para obtener una lista filtrable y paginada de facturas
+  async getInvoices(filters: InvoiceFilters = {}): Promise<Invoice[]> {
+    // Limpiamos los parámetros undefined para no enviarlos
+    const cleanParams = Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
+    );
+    
+    const response = await api.get<Invoice[]>(this.basePath, {
+      params: cleanParams
+    });
+    return response.data;
+  }
+
   // NUEVO MÉTODO: Para obtener una factura por su ID
   async getById(invoiceId: number): Promise<Invoice> {
     const response = await api.get<Invoice>(`${this.basePath}${invoiceId}`);

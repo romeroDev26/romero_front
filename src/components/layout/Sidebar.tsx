@@ -93,7 +93,7 @@ const navGroups = [
     iconColor: 'text-indigo-500',
     items: [
       { name: 'Dashboard Contable', path: '/accounting/dashboard', icon: ChartBarIcon, iconColor: 'text-indigo-500' },
-      { name: 'Facturas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
+      { name: 'Facturas/Boletas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Resúmenes', path: '/accounting/summaries', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },

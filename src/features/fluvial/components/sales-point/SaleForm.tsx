@@ -209,7 +209,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   const { basePrice, seatMultiplier } = useMemo(() => {
     const price = foundFare?.price ?? null;
-    const multiplier = selectedSeat?.seat_type.price_multiplier || 1.0;
+    const multiplier = selectedSeat?.seat_type?.price_multiplier || 1.0;
     return { basePrice: price, seatMultiplier: multiplier };
   }, [foundFare, selectedSeat, allSeatTypes]);
 
@@ -417,7 +417,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         const assignmentPayload = {
           trip_id: trip.id,
           client_id: client.id,
-          seat_type_id: selectedSeat.seat_type.id,
+          seat_type_id: selectedSeat.seat_type?.id || 1, // Default seat type ID si es null
           trip_seat_id: selectedSeat.id,
           boarding_stop_id: boardingStopId,
           disembarking_stop_id: disembarkingStopId,

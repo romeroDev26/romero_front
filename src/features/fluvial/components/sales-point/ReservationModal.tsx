@@ -73,7 +73,7 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
     try {
       const reservationPayload: ReservationCreateData = {
         trip_id: trip.id,
-        seat_type_id: selectedSeat.seat_type.id,
+        seat_type_id: selectedSeat.seat_type?.id || 1, // Default seat type ID si es null
         trip_seat_id: selectedSeat.id,
         boarding_stop_id: boardingStopId,
         disembarking_stop_id: disembarkingStopId,

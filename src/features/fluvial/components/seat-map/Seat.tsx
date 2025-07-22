@@ -52,7 +52,7 @@ export const Seat: React.FC<SeatProps> = ({ seat, isSelected, onClick, isLocked 
         flex items-center justify-center text-sm font-bold
         ${getSeatStyles(seat.status, isSelected, isLocked)}
       `}
-      title={`Asiento: ${seat.seat_number} - Tipo: ${seat.seat_type.name} - Estado: ${seat.status}`}
+      title={`Asiento: ${seat.seat_number} - Tipo: ${seat.seat_type?.name || 'Tipo no definido'} - Estado: ${seat.status}`}
     >
       {seat.seat_number}
     </button>

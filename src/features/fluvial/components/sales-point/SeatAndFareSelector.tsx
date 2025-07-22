@@ -125,7 +125,12 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       {selectedSeat && (
         <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-center">
           <p className="text-sm text-gray-600">Asiento Seleccionado:</p>
-          <p className="font-bold text-lg text-blue-700">N° {selectedSeat.seat_number} <span className="font-normal text-base">({selectedSeat.seat_type.name})</span></p>
+          <p className="font-bold text-lg text-blue-700">
+            N° {selectedSeat.seat_number} 
+            <span className="font-normal text-base">
+              ({selectedSeat.seat_type?.name || 'Tipo no definido'})
+            </span>
+          </p>
         </div>
       )}
 

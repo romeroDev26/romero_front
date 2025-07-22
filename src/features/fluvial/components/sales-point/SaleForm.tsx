@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
 // Components & Utils
 import { Button } from "../../../../components/common/Button";
 import { PassengerDataForm } from "./PassengerDataForm";
@@ -28,6 +29,7 @@ import {
   SeatMapItem,
   SeatReservation,
   TripStop,
+  User,
 } from "../../../../types";
 import { AvailableTripByPort } from "../../../../services/trips.service";
 import {
@@ -46,6 +48,9 @@ import { useCreateInvoice } from "../../hooks/useInvoices";
 import { useClientManager } from "../../hooks/useClientManager";
 import { useCreateSeatAssignment } from "../../hooks/useSeatAssignments";
 import { useUpdateReservation } from "../../hooks/useReservations";
+import { seatValidationService } from "../../../../services/seatValidation.service";
+// Services
+import { authService } from "../../../../services/auth.service";
 
 interface PassengerData {
   docType: string;
@@ -94,6 +99,17 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const [isConfirmingMode, setIsConfirmingMode] = useState(
     !!reservationToConfirm
   );
+
+  // Hook para obtener información del usuario actual
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ['currentUser'],
+    queryFn: async (): Promise<User> => {
+      const data = await authService.getProfile();
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+    retry: 1
+  });
 
   useEffect(() => {
     if (branch.port_id) {
@@ -240,6 +256,42 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     }
 
     try {
+      // ===== NUEVA VALIDACIÓN DE ASIENTO =====
+      // Validar disponibilidad del asiento antes de proceder
+      const seatValidation = await seatValidationService.validateSeatAvailability({
+        tripId: trip.id,
+        seatId: selectedSeat.id,
+        userId: currentUser?.id || 'unknown'
+      });
+
+      if (!seatValidation.isAvailable) {
+        // El asiento ya no está disponible
+        const errorMessage = seatValidation.reason || 'El asiento seleccionado ya no está disponible';
+        
+        if (seatValidation.conflictDetails) {
+          toast.error(
+            `${errorMessage}. Ocupado por: ${seatValidation.conflictDetails.occupiedBy} 
+            ${seatValidation.conflictDetails.invoiceNumber ? 
+              `(Factura: ${seatValidation.conflictDetails.invoiceNumber})` : ''
+            }`
+          );
+        } else {
+          toast.error(errorMessage);
+        }
+        
+        // Refrescar el mapa de asientos para mostrar el estado actualizado
+        // (Si el hook de realtime está disponible)
+        return;
+      }
+
+      // Reservar el asiento temporalmente durante el proceso de venta
+      await seatValidationService.reserveSeatTemporarily({
+        tripId: trip.id,
+        seatId: selectedSeat.id,
+        userId: currentUser?.id || 'unknown'
+      });
+
+      // ===== RESTO DEL PROCESO DE VENTA =====
       // 1. Crear/encontrar el cliente (esto es común para ambos flujos)
       const clientData = {
         doc_type: passengerData.docType,
@@ -387,9 +439,34 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         `${operationType} exitosamente. ${documentType}: ${documentNumber} | Asiento: ${selectedSeat.seat_number}`
       );
 
+      // Liberar la reserva temporal al completar exitosamente
+      await seatValidationService.releaseSeatReservation({
+        tripId: trip.id,
+        seatId: selectedSeat.id,
+        userId: currentUser?.id || 'unknown'
+      });
+
       onSaleSuccess();
     } catch (error: any) {
       console.error("Fallo en el proceso de venta:", error);
+      
+      // Liberar la reserva temporal en caso de error
+      if (selectedSeat) {
+        await seatValidationService.releaseSeatReservation({
+          tripId: trip.id,
+          seatId: selectedSeat.id,
+          userId: currentUser?.id || 'unknown'
+        });
+      }
+      
+      // Manejar errores específicos de asiento ocupado
+      if (error.response?.status === 409) {
+        toast.error(
+          "El asiento seleccionado acaba de ser vendido por otro vendedor. Por favor, seleccione otro asiento."
+        );
+        return;
+      }
+      
       // Aquí podrías añadir una lógica para anular la factura si la segunda parte falla.
       if (!error.message.includes("asignar el asiento")) {
         toast.error(
@@ -475,6 +552,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 onSeatSelect={setSelectedSeat}
                 isConfirmingMode={isConfirmingMode}
                 reservationToConfirm={reservationToConfirm}
+                userId={currentUser?.id || 'unknown'}
+                userName={currentUser?.full_name || currentUser?.first_name || 'Usuario'}
               />
             </div>
           </div>

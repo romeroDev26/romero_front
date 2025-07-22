@@ -1,54 +1,81 @@
-# React + TypeScript + Vite
+# Transportes Romero Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es una aplicación web desarrollada con **React**, **TypeScript** y **Vite**. Está orientada a la gestión de operaciones para la empresa Transportes Romero, incluyendo módulos de contabilidad, clientes, ventas, inventario, reportes SUNAT, entre otros.
 
-Currently, two official plugins are available:
+## Estructura de Proyecto (Árbol)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+transportes-romero-frontend/
+├── public/
+├── scripts/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   ├── auth/         # Componentes de autenticación y rutas privadas
+│   │   ├── common/       # Botones, tablas, inputs, modales, spinner, breadcrumbs, etc.
+│   │   ├── layout/       # Sidebar, dashboard y estructura general
+│   │   ├── tables/       # Componentes para visualización de datos en tablas
+│   │   └── ...           # Otros componentes reutilizables
+│   ├── config/           # Configuración de APIs y endpoints
+│   ├── features/
+│   │   ├── accounting/   # Módulo de contabilidad (componentes, hooks, páginas, servicios, tipos)
+│   │   ├── auth/         # Módulo de autenticación (componentes, hooks, páginas)
+│   │   ├── cargo/        # Módulo de carga
+│   │   ├── clients/      # Gestión de clientes
+│   │   ├── creditNotes/  # Notas de crédito
+│   │   ├── dashboard/    # Páginas de dashboard
+│   │   ├── debitNotes/   # Notas de débito
+│   │   ├── expenses/     # Gastos
+│   │   ├── finance/      # Finanzas
+│   │   ├── fluvial/      # Fluvial
+│   │   ├── inventory/    # Inventario
+│   │   ├── invoices/     # Facturación
+│   │   ├── remissionGuides/ # Guías de remisión
+│   │   ├── sales/        # Ventas
+│   │   ├── settings/     # Configuración
+│   │   ├── sunatReports/ # Reportes SUNAT
+│   │   ├── suppliers/    # Proveedores
+│   │   └── ...           # Otros módulos funcionales
+│   ├── hooks/            # Hooks globales reutilizables
+│   ├── lib/              # Librerías y utilidades compartidas
+│   ├── services/         # Servicios para APIs y lógica de negocio
+│   ├── store/            # Estado global
+│   ├── types/
+│   │   ├── index.ts      # Tipos globales
+│   │   ├── params.ts     # Tipos para parámetros y queries
+│   │   └── ...           # Otros tipos específicos
+│   ├── utils/            # Funciones utilitarias generales
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── package.json
+├── tsconfig.json
+├── tailwind.config.js
+├── vite.config.ts
+└── README.md
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Principales Dependencias
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **React**: v18+ (moderno, con hooks y componentes funcionales).
+- **TypeScript**: Tipado estático para mayor robustez.
+- **Vite**: Bundler rápido para desarrollo y producción.
+- **TailwindCSS**: Utilidades para estilos rápidos y responsivos.
+- **ESLint**: Linter para mantener calidad de código.
+- **PostCSS**: Procesador de CSS.
+- **React Router**: Navegación entre páginas.
+- **Axios**: Cliente HTTP para llamadas a APIs.
+- **Otras**: Dependencias específicas para cada módulo (por ejemplo, librerías de tablas, modales, etc.).
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Organización Recomendada
+
+- Mantener cada módulo funcional en `src/features` con sus propios componentes, hooks, servicios y tipos.
+- Centralizar servicios en `src/services` para facilitar el mantenimiento y reutilización.
+- Usar `src/components/common` para componentes reutilizables en toda la app.
+- Definir tipos globales en `src/types` y estados en `src/store`.
+
+## Notas
+
+- El proyecto está pensado para escalar y agregar nuevos módulos fácilmente.
+- Se recomienda seguir la misma estructura para futuros proyectos empresariales con React + Vite.
+- Las configuraciones de ESLint y Tailwind pueden adaptarse según necesidades específicas.

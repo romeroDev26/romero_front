@@ -4,9 +4,8 @@ import React, { useMemo, useEffect } from 'react';
 import { Spinner } from '../../../../components/common/Spinner';
 import { useTripDetails } from '../../hooks/useTripDetails';
 import { useSeatTypesData } from '../../hooks/useSeatTypesData';
-import { useSeatMap } from '../../hooks/useSeatMap';
 import { SeatMapItem, TripStop, SeatReservation } from '../../../../types';
-import { SeatMap } from '../seat-map/SeatMap';
+import { SeatMapRealtime } from '../seat-map/SeatMapRealtime';
 
 interface SeatAndFareSelectorProps {
   tripId: number;
@@ -18,6 +17,9 @@ interface SeatAndFareSelectorProps {
   onSeatSelect: (seat: SeatMapItem | null) => void;
   isConfirmingMode?: boolean;
   reservationToConfirm?: SeatReservation;
+  // Nuevas props para WebSocket
+  userId?: string;
+  userName?: string;
 }
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
@@ -30,35 +32,29 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   onSeatSelect,
   isConfirmingMode = false,
   reservationToConfirm,
+  userId = 'default-user',
+  userName = 'Usuario',
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
-  const { data: allSeatTypes = [], isLoading: isLoadingSeatTypes } = useSeatTypesData();
-  const { data: seatMap = [], isLoading: isLoadingSeatMap } = useSeatMap(tripId);
+  const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
 
   // Este efecto se encarga de pre-seleccionar el asiento
   // cuando el formulario está en modo de confirmación de reserva.
   useEffect(() => {
-    // 1. Salir temprano si no estamos en modo de confirmación o si los datos necesarios no están listos.
-    if (!isConfirmingMode || !reservationToConfirm || !seatMap || seatMap.length === 0) {
+    // 1. Salir temprano si no estamos en modo de confirmación
+    if (!isConfirmingMode || !reservationToConfirm) {
       return;
     }
 
     // 2. Si ya hay un asiento seleccionado con el ID correcto, no es necesario volver a buscarlo.
-    //    Esto evita ejecuciones innecesarias si el componente se vuelve a renderizar por otra razón.
     if (selectedSeat && selectedSeat.id === reservationToConfirm.trip_seat_id) {
       return;
     }
 
-    // 3. Buscar el asiento correspondiente a la reserva en el mapa de asientos cargado.
-    const seatToSelect = seatMap.find(
-      (seat) => seat.id === reservationToConfirm.trip_seat_id
-    );
-
-    // 4. Si se encuentra el asiento, se lo pasamos al componente padre para que lo seleccione.
-    if (seatToSelect) {
-      onSeatSelect(seatToSelect);
-    }
-  }, [isConfirmingMode, reservationToConfirm, seatMap, onSeatSelect, selectedSeat]);
+    // 3. Para el modo de confirmación, necesitaremos buscar el asiento desde el backend
+    // ya que el mapa de asientos ahora se maneja en el componente SeatMapRealtime
+    // Por ahora, el efecto queda documentado pero la lógica se maneja en el componente hijo
+  }, [isConfirmingMode, reservationToConfirm, selectedSeat]);
 
 
   const { availableStops } = useMemo(() => {
@@ -83,7 +79,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     }
   };
 
-  const isLoading = isLoadingTrip || isLoadingSeatTypes || isLoadingSeatMap;
+  const isLoading = isLoadingTrip || isLoadingSeatTypes;
 
   if (isLoading) {
     return (
@@ -134,12 +130,14 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       )}
 
       <div className="mt-4 border-t pt-4">
-        <SeatMap
+        <SeatMapRealtime
           tripId={tripId}
           vesselName={tripDetails?.vessel?.name || 'Embarcación'}
           selectedSeats={selectedSeat ? new Set([selectedSeat.id]) : new Set()}
           onSeatToggle={handleSeatToggleFromMap}
           isLocked={isConfirmingMode}
+          userId={userId}
+          userName={userName}
         />
       </div>
     </div>

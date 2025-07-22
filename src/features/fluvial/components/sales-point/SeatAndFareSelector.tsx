@@ -110,6 +110,37 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     }
   };
 
+  // Función para obtener información de zona del asiento seleccionado
+  const getSeatZoneInfo = (seat: SeatMapItem) => {
+    const enrichedSeat = enrichSeatWithType(seat);
+    const seatConfig = vesselDetails?.seat_configurations?.find(
+      config => config.id === seat.vessel_seat_config_id
+    );
+    const seatTypeName = seatConfig?.seat_type?.name || enrichedSeat.seat_type?.name;
+    
+    // Obtener colores de fondo y texto que contrasten
+    const getZoneColorWithText = (typeName?: string | null): { bgColor: string; textColor: string } => {
+      if (!typeName) return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+      
+      const name = typeName.toLowerCase();
+      if (name.includes('reclinable')) return { bgColor: 'bg-green-100/80 border border-green-200', textColor: 'text-green-800' };
+      if (name.includes('estático')) return { bgColor: 'bg-yellow-100/80 border border-yellow-200', textColor: 'text-yellow-800' };
+      if (name.includes('premium')) return { bgColor: 'bg-purple-100/80 border border-purple-200', textColor: 'text-purple-800' };
+      if (name.includes('vip')) return { bgColor: 'bg-indigo-100/80 border border-indigo-200', textColor: 'text-indigo-800' };
+      if (name.includes('económico') || name.includes('economico')) return { bgColor: 'bg-blue-100/80 border border-blue-200', textColor: 'text-blue-800' };
+      
+      return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+    };
+    
+    const { bgColor, textColor } = getZoneColorWithText(seatTypeName);
+    
+    return {
+      zoneName: getSeatZoneName(enrichedSeat, vesselDetails?.seat_configurations),
+      zoneColor: `${bgColor} ${textColor}`,
+      seatTypeName
+    };
+  };
+
   const isLoading = isLoadingTrip || isLoadingSeatTypes;
 
   if (isLoading) {
@@ -154,14 +185,22 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       </div>
 
       {selectedSeat && (
-        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-center">
-          <p className="text-sm text-gray-600">Asiento Seleccionado:</p>
-          <p className="font-bold text-lg text-blue-700">
-            N° {selectedSeat.seat_number} 
-            <span className="font-normal text-base">
-              ({getSeatZoneName(enrichSeatWithType(selectedSeat), vesselDetails?.seat_configurations)})
-            </span>
-          </p>
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <p className="text-sm text-gray-600 text-center mb-3">Asiento Seleccionado</p>
+          <div className="flex items-center justify-center gap-6">
+            <div className="text-center">
+              <p className="font-bold text-2xl text-blue-700">
+                N° {selectedSeat.seat_number}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Número</p>
+            </div>
+            <div className="text-center">
+              <div className={`px-4 py-2 rounded-lg text-sm font-semibold shadow-sm ${getSeatZoneInfo(selectedSeat).zoneColor}`}>
+                {getSeatZoneInfo(selectedSeat).zoneName}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Zona</p>
+            </div>
+          </div>
         </div>
       )}
 

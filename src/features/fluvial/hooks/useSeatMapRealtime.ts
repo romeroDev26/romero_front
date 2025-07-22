@@ -19,6 +19,7 @@ interface SeatSelection {
   userId: string;
   userName: string;
   timestamp: string;
+  type?: 'temporary' | 'reserved' | 'purchasing'; // Tipo de selección
 }
 
 interface UseSeatMapRealtimeOptions {
@@ -49,6 +50,7 @@ export const useSeatMapRealtime = ({
   const { data: initialSeatMap = [], isLoading, refetch, error } = useSeatMap(tripId);
   const [seatMap, setSeatMap] = useState<SeatMapItem[]>([]);
   const [activeSeatSelections, setActiveSeatSelections] = useState<Map<number, SeatSelection>>(new Map());
+  const [myReservedSeats, setMyReservedSeats] = useState<Set<number>>(new Set()); // Asientos reservados por mí
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'failed'>('disconnected');
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [isWebSocketAvailable, setIsWebSocketAvailable] = useState(true); // Nueva bandera
@@ -64,6 +66,7 @@ export const useSeatMapRealtime = ({
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const purchaseTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const myReservedSeatsRef = useRef<Set<number>>(new Set()); // Referencia estable
 
   // Actualizar el estado local cuando llegan los datos iniciales
   useEffect(() => {
@@ -82,7 +85,7 @@ export const useSeatMapRealtime = ({
         setSeatMap(initialSeatMap);
       }
     }
-  }, [initialSeatMap, pendingWebSocketData, error, isLoading, enableDebugLogs]);
+  }, [initialSeatMap, pendingWebSocketData]); // Removido error, isLoading, enableDebugLogs
 
   const connectWebSocket = useCallback(() => {
     if (!enabled || !tripId || !isWebSocketAvailable) return;
@@ -241,22 +244,87 @@ export const useSeatMapRealtime = ({
         setIsWebSocketAvailable(false);
       }
     }
-  }, [tripId, userId, userName, enabled]); // Dependencias mínimas para evitar loops
+  }, [tripId, userId, userName, enabled, maxReconnectAttempts, isWebSocketAvailable, reconnectAttempts, seatMap.length]); // Dependencias completas para estabilidad
+
+  // Función para detener temporizador de compra
+  const stopPurchaseTimer = useCallback(() => {
+    if (purchaseTimerRef.current) {
+      clearInterval(purchaseTimerRef.current);
+      purchaseTimerRef.current = null;
+    }
+    setIsPurchaseTimerActive(false);
+    setPurchaseStartTime(null);
+    setPurchaseTimeRemaining(purchaseTimeout);
+  }, [purchaseTimeout]);
+
+  // Función para iniciar temporizador de compra
+  const startPurchaseTimer = useCallback(() => {
+    const startTime = Date.now();
+    setPurchaseStartTime(startTime);
+    setIsPurchaseTimerActive(true);
+    setPurchaseTimeRemaining(purchaseTimeout);
+
+    // Limpiar temporizador existente si existe
+    if (purchaseTimerRef.current) {
+      clearInterval(purchaseTimerRef.current);
+    }
+
+    // Actualizar cada segundo
+    purchaseTimerRef.current = setInterval(() => {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      const remaining = Math.max(0, purchaseTimeout - elapsed);
+      
+      setPurchaseTimeRemaining(remaining);
+
+      if (remaining <= 0) {
+        // Tiempo agotado
+        clearInterval(purchaseTimerRef.current!);
+        purchaseTimerRef.current = null;
+        setIsPurchaseTimerActive(false);
+        setPurchaseStartTime(null);
+        
+        // Ejecutar callback si existe
+        if (onPurchaseTimeoutExpired) {
+          onPurchaseTimeoutExpired();
+        }
+      }
+    }, 1000);
+  }, [purchaseTimeout, onPurchaseTimeoutExpired]);
 
   // Función para notificar selección de asiento
-  const selectSeat = useCallback((seatId: number) => {
+  const selectSeat = useCallback((seatId: number, selectionType: 'temporary' | 'reserved' = 'temporary') => {
     if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
       const message = {
         type: 'SEAT_SELECTION',
-        seatId
+        seatId,
+        selectionType
       };
       
       wsRef.current.send(JSON.stringify(message));
+      
+      // Si es una reserva, agregar a mis asientos reservados
+      if (selectionType === 'reserved') {
+        setMyReservedSeats(prev => {
+          const newSet = new Set([...prev, seatId]);
+          myReservedSeatsRef.current = newSet;
+          return newSet;
+        });
+      }
     }
-  }, [isWebSocketAvailable, enableDebugLogs]);
+  }, [isWebSocketAvailable]);
 
   // Función para notificar liberación de asiento
-  const releaseSeat = useCallback((seatId: number) => {
+  const releaseSeat = useCallback((seatId: number, force: boolean = false) => {
+    // Si el asiento está reservado por mí y no es forzado, no liberarlo
+    // Usar la referencia para evitar dependencias problemáticas
+    if (myReservedSeatsRef.current.has(seatId) && !force) {
+      if (enableDebugLogs) {
+        console.log(`🔒 Asiento ${seatId} está reservado para compra, no se libera automáticamente`);
+      }
+      return;
+    }
+
     if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
       const message = {
         type: 'SEAT_RELEASED',
@@ -264,8 +332,90 @@ export const useSeatMapRealtime = ({
       };
       
       wsRef.current.send(JSON.stringify(message));
+      
+      // Remover de mis reservas si era mío
+      setMyReservedSeats(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(seatId);
+        myReservedSeatsRef.current = newSet;
+        return newSet;
+      });
     }
-  }, [isWebSocketAvailable, enableDebugLogs]);
+  }, [isWebSocketAvailable, enableDebugLogs]); // Removido myReservedSeats
+
+  // Función para reservar asiento para compra
+  const reserveSeatForPurchase = useCallback((seatId: number) => {
+    selectSeat(seatId, 'reserved');
+    setMyReservedSeats(prev => {
+      const newSet = new Set([...prev, seatId]);
+      myReservedSeatsRef.current = newSet;
+      return newSet;
+    });
+    
+    if (enableDebugLogs) {
+      console.log(`🛒 Asiento ${seatId} reservado para compra`);
+    }
+  }, [selectSeat, enableDebugLogs]);
+
+  // Función para liberar asiento reservado (forzado)
+  const releaseReservedSeat = useCallback((seatId: number) => {
+    releaseSeat(seatId, true);
+    
+    if (enableDebugLogs) {
+      console.log(`❌ Asiento ${seatId} liberado forzosamente`);
+    }
+  }, [releaseSeat, enableDebugLogs]);
+
+  // Función para confirmar compra (libera todas las reservas como compradas)
+  const confirmPurchase = useCallback((seatIds?: number[]) => {
+    // Usar la referencia para obtener los asientos actuales
+    const seatsToConfirm = seatIds || Array.from(myReservedSeatsRef.current);
+    
+    seatsToConfirm.forEach(seatId => {
+      if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
+        const message = {
+          type: 'SEAT_UPDATE',
+          seatId,
+          status: 'SOLD' // o el estado que uses para asientos vendidos
+        };
+        
+        wsRef.current.send(JSON.stringify(message));
+      }
+    });
+    
+    // Limpiar mis reservas
+    setMyReservedSeats(() => {
+      const newSet = new Set<number>();
+      myReservedSeatsRef.current = newSet;
+      return newSet;
+    });
+    
+    // Detener temporizador de compra
+    stopPurchaseTimer();
+    
+    if (enableDebugLogs) {
+      console.log(`✅ Compra confirmada para asientos: ${seatsToConfirm.join(', ')}`);
+    }
+  }, [isWebSocketAvailable, stopPurchaseTimer, enableDebugLogs]); // Removido myReservedSeats
+
+  // Función para cancelar todas las reservas
+  const cancelAllReservations = useCallback(() => {
+    // Usar la referencia para obtener los asientos actuales
+    Array.from(myReservedSeatsRef.current).forEach(seatId => {
+      releaseReservedSeat(seatId);
+    });
+    
+    setMyReservedSeats(() => {
+      const newSet = new Set<number>();
+      myReservedSeatsRef.current = newSet;
+      return newSet;
+    });
+    stopPurchaseTimer();
+    
+    if (enableDebugLogs) {
+      console.log(`🚫 Todas las reservas canceladas`);
+    }
+  }, [releaseReservedSeat, stopPurchaseTimer, enableDebugLogs]); // Removido myReservedSeats
 
   // Función para verificar conexión (opcional - solo para debugging)
   const pingConnection = useCallback(() => {
@@ -311,7 +461,7 @@ export const useSeatMapRealtime = ({
   const setSeatTimeout = useCallback((_timeoutMs: number) => {
     // Esta función puede ser usada para cambiar el timeout dinámicamente
     // Por ejemplo, en modo "urgente" podría ser más corto
-  }, [enableDebugLogs]);
+  }, []); // Sin dependencias innecesarias
 
   // Función para debug de selecciones activas
   const debugActiveSelections = useCallback(() => {
@@ -327,52 +477,6 @@ export const useSeatMapRealtime = ({
       });
     }
   }, [activeSeatSelections, enableDebugLogs]);
-
-  // Función para iniciar temporizador de compra
-  const startPurchaseTimer = useCallback(() => {
-    const startTime = Date.now();
-    setPurchaseStartTime(startTime);
-    setIsPurchaseTimerActive(true);
-    setPurchaseTimeRemaining(purchaseTimeout);
-
-    // Limpiar temporizador existente si existe
-    if (purchaseTimerRef.current) {
-      clearInterval(purchaseTimerRef.current);
-    }
-
-    // Actualizar cada segundo
-    purchaseTimerRef.current = setInterval(() => {
-      const now = Date.now();
-      const elapsed = now - startTime;
-      const remaining = Math.max(0, purchaseTimeout - elapsed);
-      
-      setPurchaseTimeRemaining(remaining);
-
-      if (remaining <= 0) {
-        // Tiempo agotado
-        clearInterval(purchaseTimerRef.current!);
-        purchaseTimerRef.current = null;
-        setIsPurchaseTimerActive(false);
-        setPurchaseStartTime(null);
-        
-        // Ejecutar callback si existe
-        if (onPurchaseTimeoutExpired) {
-          onPurchaseTimeoutExpired();
-        }
-      }
-    }, 1000);
-  }, [purchaseTimeout, onPurchaseTimeoutExpired]);
-
-  // Función para detener temporizador de compra
-  const stopPurchaseTimer = useCallback(() => {
-    if (purchaseTimerRef.current) {
-      clearInterval(purchaseTimerRef.current);
-      purchaseTimerRef.current = null;
-    }
-    setIsPurchaseTimerActive(false);
-    setPurchaseStartTime(null);
-    setPurchaseTimeRemaining(purchaseTimeout);
-  }, [purchaseTimeout]);
 
   // Función para extender tiempo de compra
   const extendPurchaseTime = useCallback((additionalMs: number) => {
@@ -432,9 +536,10 @@ export const useSeatMapRealtime = ({
         purchaseTimerRef.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, tripId, userId, userName]); // Solo estas dependencias básicas
 
-  // Limpiar selecciones antiguas según configuración
+  // Limpiar selecciones antiguas según configuración (mejorado para no tocar reservas)
   useEffect(() => {
     const cleanup = setInterval(() => {
       const now = new Date().getTime();
@@ -443,6 +548,16 @@ export const useSeatMapRealtime = ({
         let hasChanges = false;
         
         for (const [seatId, selection] of newMap.entries()) {
+          // No limpiar selecciones propias si están reservadas para compra
+          if (selection.userId === userId && myReservedSeatsRef.current.has(seatId)) {
+            continue;
+          }
+          
+          // No limpiar selecciones de tipo 'reserved' o 'purchasing'
+          if (selection.type === 'reserved' || selection.type === 'purchasing') {
+            continue;
+          }
+          
           const selectionTime = new Date(selection.timestamp).getTime();
           if (now - selectionTime > seatSelectionTimeout) {
             newMap.delete(seatId);
@@ -455,28 +570,37 @@ export const useSeatMapRealtime = ({
     }, cleanupInterval);
 
     return () => clearInterval(cleanup);
-  }, [seatSelectionTimeout, cleanupInterval, enableDebugLogs]);
+  }, [seatSelectionTimeout, cleanupInterval, userId]); // Solo dependencias estables
 
   return {
     seatMap,
     activeSeatSelections,
+    myReservedSeats, // Nuevo: asientos que tengo reservados
     connectionStatus,
     isLoading,
+    // Funciones básicas
     selectSeat,
     releaseSeat,
     refreshSeatMap,
-    pingConnection, // Para debugging opcional
-    testConnection, // Para probar diferentes URLs
-    forceReconnect, // Para debugging - reconexión manual
-    debugActiveSelections, // Para debug de selecciones
-    setSeatTimeout, // Para cambiar timeout dinámicamente
+    // Funciones de reserva para compra
+    reserveSeatForPurchase,
+    releaseReservedSeat,
+    confirmPurchase,
+    cancelAllReservations,
     // Funciones del temporizador de compra
     startPurchaseTimer,
     stopPurchaseTimer,
     extendPurchaseTime,
+    // Funciones de debugging
+    pingConnection,
+    testConnection,
+    forceReconnect,
+    debugActiveSelections,
+    setSeatTimeout,
     // Estados del temporizador
     purchaseTimeRemaining,
     isPurchaseTimerActive,
+    // Estados de conexión
     isConnected: connectionStatus === 'connected',
     isWebSocketAvailable,
     canUseRealtime: connectionStatus === 'connected' && isWebSocketAvailable,
@@ -490,6 +614,7 @@ export const useSeatMapRealtime = ({
       hasPendingWsData: !!pendingWebSocketData,
       pendingWsDataLength: pendingWebSocketData?.length || 0,
       activeSelectionsCount: activeSeatSelections.size,
+      myReservedSeatsCount: myReservedSeats.size,
       currentTimeout: seatSelectionTimeout,
       cleanupInterval: cleanupInterval,
       purchaseTimeRemaining,

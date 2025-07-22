@@ -4,8 +4,10 @@ import React, { useMemo, useEffect } from 'react';
 import { Spinner } from '../../../../components/common/Spinner';
 import { useTripDetails } from '../../hooks/useTripDetails';
 import { useSeatTypesData } from '../../hooks/useSeatTypesData';
+import { useVessel } from '../../hooks/useVesselsData';
 import { SeatMapItem, TripStop, SeatReservation } from '../../../../types';
 import { SeatMapRealtime } from '../seat-map/SeatMapRealtime';
+import { getSeatZoneName } from '../../utils/seatUtils';
 
 interface SeatAndFareSelectorProps {
   tripId: number;
@@ -37,6 +39,10 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
+  
+  // Obtener información de la embarcación para las configuraciones de asientos
+  const vesselId = tripDetails?.vessel?.id;
+  const { data: vesselDetails } = useVessel(vesselId || null);
 
   // Este efecto se encarga de pre-seleccionar el asiento
   // cuando el formulario está en modo de confirmación de reserva.
@@ -128,7 +134,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           <p className="font-bold text-lg text-blue-700">
             N° {selectedSeat.seat_number} 
             <span className="font-normal text-base">
-              ({selectedSeat.seat_type?.name || 'Tipo no definido'})
+              ({getSeatZoneName(selectedSeat, vesselDetails?.seat_configurations)})
             </span>
           </p>
         </div>

@@ -7,6 +7,7 @@ import { SeatRealtime } from './SeatRealtime';
 import { SeatMapItem } from '../../../../types';
 import { useVessel } from '../../hooks/useVesselsData';
 import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
+import { getZoneColor, getZoneTitle } from '../../utils/seatUtils';
 
 interface SeatMapRealtimeProps {
   tripId: number;
@@ -19,20 +20,6 @@ interface SeatMapRealtimeProps {
 }
 
 type SeatRow = SeatMapItem[];
-
-const getZoneColor = (seatTypeName: string): string => {
-  const name = (seatTypeName || '').toLowerCase();
-  if (name.includes('reclinable')) return 'bg-green-100/80 border border-green-200';
-  if (name.includes('estático')) return 'bg-yellow-100/80 border border-yellow-200';
-  return 'bg-gray-100/80 border border-gray-200';
-};
-
-const getZoneTitle = (seatTypeName: string): string => {
-  const name = (seatTypeName || '').toLowerCase();
-  if (name.includes('reclinable')) return 'ZONA RECLINABLE';
-  if (name.includes('estático')) return 'ZONA ESTÁTICA';
-  return 'ZONA DE ASIENTOS';
-};
 
 const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' | 'disconnected' | 'failed' }> = ({ status }) => {
   const getStatusConfig = () => {

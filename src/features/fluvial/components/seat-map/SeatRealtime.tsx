@@ -1,6 +1,7 @@
 // src/features/fluvial/components/seat-map/SeatRealtime.tsx
 import React from 'react';
 import { SeatMapItem, SeatStatus } from '../../../../types';
+import { getSeatTypeName } from '../../utils/seatUtils';
 
 interface SeatSelection {
   seatId: number;
@@ -63,7 +64,7 @@ const getSeatStyles = (
 };
 
 const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection): string => {
-  const seatTypeName = seat.seat_type?.name || 'Tipo no definido';
+  const seatTypeName = getSeatTypeName(seat.seat_type?.name);
   const baseInfo = `Asiento: ${seat.seat_number} - Tipo: ${seatTypeName} - Estado: ${seat.status}`;
   
   if (activeSelection) {

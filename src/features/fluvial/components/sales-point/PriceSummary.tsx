@@ -31,8 +31,9 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   igvAmount,
   finalTotal
 }) => {
-  const ticketPrice = basePrice ? basePrice * seatMultiplier : 0;
-  const isIgvDisabled = taxCategoryCodeDefault === null; // Deshabilitar si no se pudo cargar el servicio
+  // Calcular el precio del ticket basado en el subtotal (más preciso)
+  const ticketPrice = subtotal - extraCost;
+  const isIgvDisabled = taxCategoryCodeDefault === null;
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg border space-y-3">

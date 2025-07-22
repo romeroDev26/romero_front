@@ -41,7 +41,7 @@ import { InvoiceCreateData } from "../../../../services/invoices.service";
 // Hooks
 import { useFindFare } from "../../hooks/useFindFare";
 import { useTripDetails } from "../../hooks/useTripDetails";
-import { useSeatTypesData } from "../../hooks/useSeatTypesData";
+import { useVessel } from "../../hooks/useVesselsData";
 import { usePassengerService } from "../../hooks/usePassengerService";
 import { useDocumentSeriesForBranch } from "../../hooks/useDocumentSeriesForBranch";
 import { useCreateInvoice } from "../../hooks/useInvoices";
@@ -118,6 +118,30 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   }, [branch.port_id]);
 
   const { data: tripDetails } = useTripDetails(trip.id);
+  
+  // Obtener información de la embarcación para enriquecer los asientos con seat_type
+  const vesselId = tripDetails?.vessel?.id;
+  const { data: vesselDetails } = useVessel(vesselId || null);
+
+  // 🔧 Función para enriquecer asientos con información de seat_type
+  const enrichSeatWithType = (seat: SeatMapItem): SeatMapItem => {
+    if (!vesselDetails?.seat_configurations || !seat.vessel_seat_config_id) {
+      return seat;
+    }
+
+    const seatConfig = vesselDetails.seat_configurations.find(
+      config => config.id === seat.vessel_seat_config_id
+    );
+
+    if (seatConfig && seatConfig.seat_type) {
+      return {
+        ...seat,
+        seat_type: seatConfig.seat_type
+      };
+    }
+
+    return seat;
+  };
 
   useEffect(() => {
     if (reservationToConfirm && tripDetails) {
@@ -145,7 +169,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   }, [reservationToConfirm, tripDetails]);
 
   const { data: passengerService } = usePassengerService();
-  const { data: allSeatTypes = [] } = useSeatTypesData();
   const { data: foundFare } = useFindFare({
     originPortId: selectedOriginId,
     destinationPortId: selectedDestinationId,
@@ -209,9 +232,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   const { basePrice, seatMultiplier } = useMemo(() => {
     const price = foundFare?.price ?? null;
-    const multiplier = selectedSeat?.seat_type?.price_multiplier || 1.0;
+    
+    // Enriquecer el asiento antes de obtener el multiplicador
+    const enrichedSeat = selectedSeat ? enrichSeatWithType(selectedSeat) : null;
+    const multiplier = enrichedSeat?.seat_type?.price_multiplier || 1.0;
+    
     return { basePrice: price, seatMultiplier: multiplier };
-  }, [foundFare, selectedSeat, allSeatTypes]);
+  }, [foundFare, selectedSeat, vesselDetails]);
 
   // Calculamos el subtotal (precio base sin IGV)
   const subtotal = useMemo(() => {

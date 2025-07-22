@@ -44,6 +44,28 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails } = useVessel(vesselId || null);
 
+  // 🔧 Función utilitaria para enriquecer asientos con información de seat_type
+  // NOTA: Esta función compensa la falta de seat_type en la respuesta del backend /seat-map
+  // utilizando las configuraciones de embarcación que ya están disponibles
+  const enrichSeatWithType = (seat: SeatMapItem): SeatMapItem => {
+    if (!vesselDetails?.seat_configurations || !seat.vessel_seat_config_id) {
+      return seat;
+    }
+
+    const seatConfig = vesselDetails.seat_configurations.find(
+      config => config.id === seat.vessel_seat_config_id
+    );
+
+    if (seatConfig && seatConfig.seat_type) {
+      return {
+        ...seat,
+        seat_type: seatConfig.seat_type
+      };
+    }
+
+    return seat;
+  };
+
   // Este efecto se encarga de pre-seleccionar el asiento
   // cuando el formulario está en modo de confirmación de reserva.
   useEffect(() => {
@@ -78,10 +100,13 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     // Si estamos en modo de confirmación, no se permite ninguna interacción con el mapa.
     if (isConfirmingMode) return;
 
-    if (selectedSeat && selectedSeat.id === toggledSeat.id) {
+    // Enriquecer el asiento con información de seat_type
+    const enrichedSeat = enrichSeatWithType(toggledSeat);
+
+    if (selectedSeat && selectedSeat.id === enrichedSeat.id) {
       onSeatSelect(null);
     } else {
-      onSeatSelect(toggledSeat);
+      onSeatSelect(enrichedSeat);
     }
   };
 
@@ -134,7 +159,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           <p className="font-bold text-lg text-blue-700">
             N° {selectedSeat.seat_number} 
             <span className="font-normal text-base">
-              ({getSeatZoneName(selectedSeat, vesselDetails?.seat_configurations)})
+              ({getSeatZoneName(enrichSeatWithType(selectedSeat), vesselDetails?.seat_configurations)})
             </span>
           </p>
         </div>

@@ -63,7 +63,8 @@ const getSeatStyles = (
 };
 
 const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection): string => {
-  const baseInfo = `Asiento: ${seat.seat_number} - Tipo: ${seat.seat_type.name} - Estado: ${seat.status}`;
+  const seatTypeName = seat.seat_type?.name || 'Tipo no definido';
+  const baseInfo = `Asiento: ${seat.seat_number} - Tipo: ${seatTypeName} - Estado: ${seat.status}`;
   
   if (activeSelection) {
     return `${baseInfo} - Siendo seleccionado por: ${activeSelection.userName}`;

@@ -30,6 +30,8 @@ interface UseSeatMapRealtimeOptions {
   seatSelectionTimeout?: number; // Tiempo en ms para limpiar selecciones (default: 30s)
   cleanupInterval?: number; // Intervalo de limpieza en ms (default: 5s)
   enableDebugLogs?: boolean; // Para habilitar/deshabilitar logs detallados
+  purchaseTimeout?: number; // Tiempo en ms para completar compra (default: 5 min)
+  onPurchaseTimeoutExpired?: () => void; // Callback cuando expira el tiempo de compra
 }
 
 export const useSeatMapRealtime = ({ 
@@ -40,7 +42,9 @@ export const useSeatMapRealtime = ({
   maxReconnectAttempts = 3,
   seatSelectionTimeout = 30000, // 30 segundos por defecto
   cleanupInterval = 5000, // 5 segundos por defecto
-  enableDebugLogs = false // Deshabilitado por defecto
+  enableDebugLogs = false, // Deshabilitado por defecto
+  purchaseTimeout = 300000, // 5 minutos por defecto
+  onPurchaseTimeoutExpired
 }: UseSeatMapRealtimeOptions) => {
   const { data: initialSeatMap = [], isLoading, refetch, error } = useSeatMap(tripId);
   const [seatMap, setSeatMap] = useState<SeatMapItem[]>([]);
@@ -49,11 +53,17 @@ export const useSeatMapRealtime = ({
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [isWebSocketAvailable, setIsWebSocketAvailable] = useState(true); // Nueva bandera
   
+  // Estados para temporizador de compra
+  const [purchaseStartTime, setPurchaseStartTime] = useState<number | null>(null);
+  const [purchaseTimeRemaining, setPurchaseTimeRemaining] = useState<number>(purchaseTimeout);
+  const [isPurchaseTimerActive, setIsPurchaseTimerActive] = useState(false);
+  
   // Almacenar datos del WebSocket temporalmente hasta que lleguen los datos de la API
   const [pendingWebSocketData, setPendingWebSocketData] = useState<Array<{ seatId: number; status: string }> | null>(null);
   
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const purchaseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Actualizar el estado local cuando llegan los datos iniciales
   useEffect(() => {
@@ -318,6 +328,85 @@ export const useSeatMapRealtime = ({
     }
   }, [activeSeatSelections, enableDebugLogs]);
 
+  // Función para iniciar temporizador de compra
+  const startPurchaseTimer = useCallback(() => {
+    const startTime = Date.now();
+    setPurchaseStartTime(startTime);
+    setIsPurchaseTimerActive(true);
+    setPurchaseTimeRemaining(purchaseTimeout);
+
+    // Limpiar temporizador existente si existe
+    if (purchaseTimerRef.current) {
+      clearInterval(purchaseTimerRef.current);
+    }
+
+    // Actualizar cada segundo
+    purchaseTimerRef.current = setInterval(() => {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      const remaining = Math.max(0, purchaseTimeout - elapsed);
+      
+      setPurchaseTimeRemaining(remaining);
+
+      if (remaining <= 0) {
+        // Tiempo agotado
+        clearInterval(purchaseTimerRef.current!);
+        purchaseTimerRef.current = null;
+        setIsPurchaseTimerActive(false);
+        setPurchaseStartTime(null);
+        
+        // Ejecutar callback si existe
+        if (onPurchaseTimeoutExpired) {
+          onPurchaseTimeoutExpired();
+        }
+      }
+    }, 1000);
+  }, [purchaseTimeout, onPurchaseTimeoutExpired]);
+
+  // Función para detener temporizador de compra
+  const stopPurchaseTimer = useCallback(() => {
+    if (purchaseTimerRef.current) {
+      clearInterval(purchaseTimerRef.current);
+      purchaseTimerRef.current = null;
+    }
+    setIsPurchaseTimerActive(false);
+    setPurchaseStartTime(null);
+    setPurchaseTimeRemaining(purchaseTimeout);
+  }, [purchaseTimeout]);
+
+  // Función para extender tiempo de compra
+  const extendPurchaseTime = useCallback((additionalMs: number) => {
+    if (isPurchaseTimerActive && purchaseStartTime) {
+      const newTimeout = purchaseTimeout + additionalMs;
+      const startTime = purchaseStartTime;
+      
+      // Limpiar temporizador actual
+      if (purchaseTimerRef.current) {
+        clearInterval(purchaseTimerRef.current);
+      }
+
+      // Reiniciar con nuevo timeout
+      purchaseTimerRef.current = setInterval(() => {
+        const now = Date.now();
+        const elapsed = now - startTime;
+        const remaining = Math.max(0, newTimeout - elapsed);
+        
+        setPurchaseTimeRemaining(remaining);
+
+        if (remaining <= 0) {
+          clearInterval(purchaseTimerRef.current!);
+          purchaseTimerRef.current = null;
+          setIsPurchaseTimerActive(false);
+          setPurchaseStartTime(null);
+          
+          if (onPurchaseTimeoutExpired) {
+            onPurchaseTimeoutExpired();
+          }
+        }
+      }, 1000);
+    }
+  }, [isPurchaseTimerActive, purchaseStartTime, purchaseTimeout, onPurchaseTimeoutExpired]);
+
   // Función para refrescar datos desde la API
   const refreshSeatMap = useCallback(() => {
     refetch();
@@ -337,6 +426,10 @@ export const useSeatMapRealtime = ({
       if (wsRef.current) {
         wsRef.current.close(1000, 'Component unmounting');
         wsRef.current = null;
+      }
+      if (purchaseTimerRef.current) {
+        clearInterval(purchaseTimerRef.current);
+        purchaseTimerRef.current = null;
       }
     };
   }, [enabled, tripId, userId, userName]); // Solo estas dependencias básicas
@@ -377,6 +470,13 @@ export const useSeatMapRealtime = ({
     forceReconnect, // Para debugging - reconexión manual
     debugActiveSelections, // Para debug de selecciones
     setSeatTimeout, // Para cambiar timeout dinámicamente
+    // Funciones del temporizador de compra
+    startPurchaseTimer,
+    stopPurchaseTimer,
+    extendPurchaseTime,
+    // Estados del temporizador
+    purchaseTimeRemaining,
+    isPurchaseTimerActive,
     isConnected: connectionStatus === 'connected',
     isWebSocketAvailable,
     canUseRealtime: connectionStatus === 'connected' && isWebSocketAvailable,
@@ -391,7 +491,9 @@ export const useSeatMapRealtime = ({
       pendingWsDataLength: pendingWebSocketData?.length || 0,
       activeSelectionsCount: activeSeatSelections.size,
       currentTimeout: seatSelectionTimeout,
-      cleanupInterval: cleanupInterval
+      cleanupInterval: cleanupInterval,
+      purchaseTimeRemaining,
+      isPurchaseTimerActive
     }
   };
 };

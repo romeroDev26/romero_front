@@ -7,7 +7,7 @@ interface SeatUpdateMessage {
   type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG';
   tripId: number;
   seatId?: number;
-  seats?: Array<{ seatId: number; status: string }>; // Para INITIAL_STATE
+  seats?: Array<{ seatId: number; userId: string; userName: string }>; // Para INITIAL_STATE - selecciones activas
   status?: string;
   userId?: string;
   userName?: string;
@@ -47,7 +47,7 @@ export const useSeatMapRealtime = ({
   purchaseTimeout = 300000, // 5 minutos por defecto
   onPurchaseTimeoutExpired
 }: UseSeatMapRealtimeOptions) => {
-  const { data: initialSeatMap = [], isLoading, refetch, error } = useSeatMap(tripId);
+  const { data: initialSeatMap = [], isLoading, refetch } = useSeatMap(tripId);
   const [seatMap, setSeatMap] = useState<SeatMapItem[]>([]);
   const [activeSeatSelections, setActiveSeatSelections] = useState<Map<number, SeatSelection>>(new Map());
   const [myReservedSeats, setMyReservedSeats] = useState<Set<number>>(new Set()); // Asientos reservados por mí
@@ -60,8 +60,8 @@ export const useSeatMapRealtime = ({
   const [purchaseTimeRemaining, setPurchaseTimeRemaining] = useState<number>(purchaseTimeout);
   const [isPurchaseTimerActive, setIsPurchaseTimerActive] = useState(false);
   
-  // Almacenar datos del WebSocket temporalmente hasta que lleguen los datos de la API
-  const [pendingWebSocketData, setPendingWebSocketData] = useState<Array<{ seatId: number; status: string }> | null>(null);
+  // Almacenar selecciones del WebSocket temporalmente hasta que lleguen los datos de la API
+  const [pendingWebSocketSelections, setPendingWebSocketSelections] = useState<Array<{ seatId: number; userId: string; userName: string }> | null>(null);
   
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -71,21 +71,30 @@ export const useSeatMapRealtime = ({
   // Actualizar el estado local cuando llegan los datos iniciales
   useEffect(() => {
     if (initialSeatMap && initialSeatMap.length > 0) {
-      // Si tenemos datos pendientes del WebSocket, aplicarlos
-      if (pendingWebSocketData) {
-        const updatedSeatMap = initialSeatMap.map(seat => {
-          const wsUpdate = pendingWebSocketData.find(ws => ws.seatId === seat.id);
-          return wsUpdate 
-            ? { ...seat, status: wsUpdate.status as any }
-            : seat;
+      // Si tenemos selecciones pendientes del WebSocket, aplicarlas
+      if (pendingWebSocketSelections) {
+        const initialSelections = new Map<number, SeatSelection>();
+        
+        pendingWebSocketSelections.forEach(selection => {
+          // Solo agregar selecciones de otros usuarios
+          if (selection.userId !== userId) {
+            initialSelections.set(selection.seatId, {
+              seatId: selection.seatId,
+              userId: selection.userId,
+              userName: selection.userName,
+              timestamp: new Date().toISOString(),
+              type: 'temporary'
+            });
+          }
         });
-        setSeatMap(updatedSeatMap);
-        setPendingWebSocketData(null); // Limpiar datos pendientes
-      } else {
-        setSeatMap(initialSeatMap);
+        
+        setActiveSeatSelections(initialSelections);
+        setPendingWebSocketSelections(null); // Limpiar selecciones pendientes
       }
+      
+      setSeatMap(initialSeatMap);
     }
-  }, [initialSeatMap, pendingWebSocketData]); // Removido error, isLoading, enableDebugLogs
+  }, [initialSeatMap, pendingWebSocketSelections, userId]); // Dependencias actualizadas
 
   const connectWebSocket = useCallback(() => {
     if (!enabled || !tripId || !isWebSocketAvailable) return;
@@ -133,19 +142,28 @@ export const useSeatMapRealtime = ({
           switch (message.type) {
             case 'INITIAL_STATE':
               if (message.seats) {
-                // Si ya tenemos datos de la API, aplicar inmediatamente
+                // Este mensaje contiene las selecciones activas de otros usuarios
+                const initialSelections = new Map<number, SeatSelection>();
+                
+                message.seats.forEach(selection => {
+                  // Solo agregar selecciones de otros usuarios
+                  if (selection.userId !== userId) {
+                    initialSelections.set(selection.seatId, {
+                      seatId: selection.seatId,
+                      userId: selection.userId,
+                      userName: selection.userName,
+                      timestamp: message.timestamp,
+                      type: 'temporary'
+                    });
+                  }
+                });
+                
+                // Si ya tenemos el mapa de asientos, aplicar inmediatamente
                 if (seatMap.length > 0) {
-                  setSeatMap(prevMap => 
-                    prevMap.map(seat => {
-                      const wsUpdate = message.seats!.find(ws => ws.seatId === seat.id);
-                      return wsUpdate 
-                        ? { ...seat, status: wsUpdate.status as any }
-                        : seat;
-                    })
-                  );
+                  setActiveSeatSelections(initialSelections);
                 } else {
                   // Si no tenemos datos de la API todavía, guardar para aplicar después
-                  setPendingWebSocketData(message.seats);
+                  setPendingWebSocketSelections(message.seats);
                 }
               }
               break;
@@ -319,9 +337,6 @@ export const useSeatMapRealtime = ({
     // Si el asiento está reservado por mí y no es forzado, no liberarlo
     // Usar la referencia para evitar dependencias problemáticas
     if (myReservedSeatsRef.current.has(seatId) && !force) {
-      if (enableDebugLogs) {
-        console.log(`🔒 Asiento ${seatId} está reservado para compra, no se libera automáticamente`);
-      }
       return;
     }
 
@@ -341,7 +356,7 @@ export const useSeatMapRealtime = ({
         return newSet;
       });
     }
-  }, [isWebSocketAvailable, enableDebugLogs]); // Removido myReservedSeats
+  }, [isWebSocketAvailable]); // Removido enableDebugLogs
 
   // Función para reservar asiento para compra
   const reserveSeatForPurchase = useCallback((seatId: number) => {
@@ -351,20 +366,12 @@ export const useSeatMapRealtime = ({
       myReservedSeatsRef.current = newSet;
       return newSet;
     });
-    
-    if (enableDebugLogs) {
-      console.log(`🛒 Asiento ${seatId} reservado para compra`);
-    }
-  }, [selectSeat, enableDebugLogs]);
+  }, [selectSeat]);
 
   // Función para liberar asiento reservado (forzado)
   const releaseReservedSeat = useCallback((seatId: number) => {
     releaseSeat(seatId, true);
-    
-    if (enableDebugLogs) {
-      console.log(`❌ Asiento ${seatId} liberado forzosamente`);
-    }
-  }, [releaseSeat, enableDebugLogs]);
+  }, [releaseSeat]);
 
   // Función para confirmar compra (libera todas las reservas como compradas)
   const confirmPurchase = useCallback((seatIds?: number[]) => {
@@ -392,11 +399,7 @@ export const useSeatMapRealtime = ({
     
     // Detener temporizador de compra
     stopPurchaseTimer();
-    
-    if (enableDebugLogs) {
-      console.log(`✅ Compra confirmada para asientos: ${seatsToConfirm.join(', ')}`);
-    }
-  }, [isWebSocketAvailable, stopPurchaseTimer, enableDebugLogs]); // Removido myReservedSeats
+  }, [isWebSocketAvailable, stopPurchaseTimer]); // Removido enableDebugLogs
 
   // Función para cancelar todas las reservas
   const cancelAllReservations = useCallback(() => {
@@ -411,11 +414,7 @@ export const useSeatMapRealtime = ({
       return newSet;
     });
     stopPurchaseTimer();
-    
-    if (enableDebugLogs) {
-      console.log(`🚫 Todas las reservas canceladas`);
-    }
-  }, [releaseReservedSeat, stopPurchaseTimer, enableDebugLogs]); // Removido myReservedSeats
+  }, [releaseReservedSeat, stopPurchaseTimer]); // Removido enableDebugLogs
 
   // Función para verificar conexión (opcional - solo para debugging)
   const pingConnection = useCallback(() => {
@@ -611,8 +610,8 @@ export const useSeatMapRealtime = ({
       connectionStatus,
       reconnectAttempts,
       isWebSocketAvailable,
-      hasPendingWsData: !!pendingWebSocketData,
-      pendingWsDataLength: pendingWebSocketData?.length || 0,
+      hasPendingWsSelections: !!pendingWebSocketSelections,
+      pendingWsSelectionsLength: pendingWebSocketSelections?.length || 0,
       activeSelectionsCount: activeSeatSelections.size,
       myReservedSeatsCount: myReservedSeats.size,
       currentTimeout: seatSelectionTimeout,

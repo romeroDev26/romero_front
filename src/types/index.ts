@@ -180,6 +180,7 @@ export interface Client {
   province?: string;
   district?: string;
   country_code?: string;
+  country_name?: string; // Nombre del país para mostrar
   email?: string;
   phone?: string;
   is_active: boolean;
@@ -1045,6 +1046,7 @@ export interface CreateClientData {
   province?: string;
   district?: string;
   country_code?: string;
+  country_name?: string; // Nombre del país para mostrar
   ubigeo?: string;
   email?: string;
   phone?: string;

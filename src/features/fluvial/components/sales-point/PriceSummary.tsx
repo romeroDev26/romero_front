@@ -14,6 +14,8 @@ interface PriceSummaryProps {
   taxCategoryCodeDefault: string | null; // '10' o '20'
   subtotal: number;
   igvAmount: number;
+  discount: number;
+  onDiscountChange: (discount: number) => void;
   finalTotal: number;
 }
 
@@ -29,6 +31,8 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   taxCategoryCodeDefault,
   subtotal,
   igvAmount,
+  discount,
+  onDiscountChange,
   finalTotal
 }) => {
   // Calcular el precio del ticket basado en el subtotal (más preciso)
@@ -114,6 +118,29 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           <span className="text-gray-600">IGV (18%):</span>
           <span>S/ {igvAmount.toFixed(2)}</span>
         </div>
+        
+        {/* --- CAMPO PARA DESCUENTO MANUAL --- */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Manual</label>
+          <Input
+            type="number"
+            value={discount === 0 ? '' : discount.toString()}
+            onChange={(e) => onDiscountChange(parseFloat(e.target.value) || 0)}
+            placeholder="S/ 0.00"
+            step="0.10"
+            min="0"
+            max={subtotal + igvAmount}
+          />
+        </div>
+        
+        {/* Mostrar descuento aplicado si es mayor a 0 */}
+        {discount > 0 && (
+          <div className="flex justify-between text-sm text-red-600">
+            <span>Descuento:</span>
+            <span>- S/ {discount.toFixed(2)}</span>
+          </div>
+        )}
+        
         <div className="flex justify-between text-xl font-bold text-gray-900">
           <span>TOTAL:</span>
           <span>S/ {finalTotal.toFixed(2)}</span>

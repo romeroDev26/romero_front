@@ -5,6 +5,7 @@ import { useSunatData } from '../../hooks/useSunatData';
 import { DOCUMENT_TYPES, SunatDocType } from '../../types/sunat.types';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
+import CountrySelector from './CountrySelector';
 
 // Tipamos las props que recibirá este componente
 interface PassengerData {
@@ -14,6 +15,8 @@ interface PassengerData {
   address: string; // Añadimos dirección para RUC
   phone: string;
   email: string;
+  countryCode?: string; // Código del país (PE, US, etc.)
+  countryName?: string; // Nombre del país para mostrar
 }
 
 interface PassengerDataFormProps {
@@ -27,7 +30,27 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setPassengerData(prev => ({ ...prev, [name]: value }));
+    
+    // Si cambia el tipo de documento, establecer el país por defecto
+    if (name === 'docType') {
+      const isPeruvianDoc = value === SunatDocType.DNI || value === SunatDocType.RUC;
+      setPassengerData(prev => ({ 
+        ...prev, 
+        [name]: value,
+        countryCode: isPeruvianDoc ? "PE" : "",
+        countryName: isPeruvianDoc ? "Peru" : "",
+      }));
+    } else {
+      setPassengerData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleCountryChange = (countryCode: string, countryName: string) => {
+    setPassengerData(prev => ({
+      ...prev,
+      countryCode,
+      countryName
+    }));
   };
 
   const handleSearch = async () => {
@@ -65,6 +88,9 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
   };
 
   const isSearchable = passengerData.docType === SunatDocType.DNI || passengerData.docType === SunatDocType.RUC;
+  
+  // Determinar si se debe mostrar el selector de países (para documentos no peruanos)
+  const showCountrySelector = passengerData.docType !== SunatDocType.DNI && passengerData.docType !== SunatDocType.RUC;
 
   return (
     <div className="space-y-4">
@@ -131,6 +157,45 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
             disabled={disabled}
           />
+        </div>
+      )}
+      
+      {/* Selector de países para documentos extranjeros */}
+      {showCountrySelector && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            País de Procedencia
+          </label>
+          <CountrySelector
+            value={passengerData.countryCode || ""}
+            onChange={handleCountryChange}
+            disabled={disabled}
+            placeholder="Seleccionar país de procedencia..."
+            className="w-full"
+          />
+          {passengerData.countryCode && passengerData.countryName && (
+            <div className="mt-1 text-xs text-gray-500">
+              Código de país: <span className="font-mono font-semibold">{passengerData.countryCode}</span>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Mostrar país fijo para documentos peruanos */}
+      {!showCountrySelector && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            País
+          </label>
+          <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-300 rounded-md">
+            <img 
+              src="https://flagcdn.com/pe.svg" 
+              alt="Bandera de Perú"
+              className="w-5 h-3 object-cover rounded"
+            />
+            <span className="text-gray-900">Peru</span>
+            <span className="text-gray-500 text-sm">(PE)</span>
+          </div>
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

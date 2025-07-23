@@ -49,16 +49,20 @@ class SeatValidationService {
 
   /**
    * Reserva temporalmente un asiento por unos minutos durante el proceso de venta
+   * NOTA: El backend no tiene endpoint separado para reserva temporal,
+   * la validación maneja esto internamente
    */
   async reserveSeatTemporarily(request: ValidateSeatRequest): Promise<{ success: boolean; expiresAt?: string }> {
     try {
-      const response = await api.post<{ success: boolean; expiresAt: string }>(
-        `${this.basePath}/reserve-temporarily`,
-        { ...request, durationMinutes: 5 } // Reserva por 5 minutos
-      );
-      return response.data;
+      // El backend maneja la reserva temporal durante la validación
+      // Por ahora, simplemente validamos nuevamente
+      const validation = await this.validateSeatAvailability(request);
+      return { 
+        success: validation.isAvailable,
+        expiresAt: validation.isAvailable ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : undefined
+      };
     } catch (error: any) {
-      console.error('Error reservando asiento temporalmente:', error);
+      console.error('Error en reserva temporal (usando validación):', error);
       return { success: false };
     }
   }
@@ -70,7 +74,11 @@ class SeatValidationService {
     try {
       const response = await api.post<{ success: boolean }>(
         `${this.basePath}/release-reservation`,
-        request
+        {
+          tripId: request.tripId,
+          seatId: request.seatId
+          // Nota: userId no es requerido por el backend según las instrucciones
+        }
       );
       return response.data;
     } catch (error: any) {

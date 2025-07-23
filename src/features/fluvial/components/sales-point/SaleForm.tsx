@@ -59,6 +59,8 @@ interface PassengerData {
   address: string;
   phone: string;
   email: string;
+  countryCode?: string; // Código del país (PE, US, etc.)
+  countryName?: string; // Nombre del país para mostrar
 }
 
 interface SaleFormProps {
@@ -88,9 +90,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     address: "",
     phone: "",
     email: "",
+    countryCode: "PE", // Por defecto Perú para DNI/RUC
+    countryName: "Peru",
   });
   const [extraCost, setExtraCost] = useState(0);
   const [extraCostDescription, setExtraCostDescription] = useState("");
+  const [discount, setDiscount] = useState(0);
   const [isIgvGravado, setIsIgvGravado] = useState(false);
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>("");
   const [selectedFacturaSeries, setSelectedFacturaSeries] =
@@ -153,6 +158,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         phone: reservationToConfirm.customer_phone || "",
         email: reservationToConfirm.customer_email || "",
         address: "",
+        countryCode: "PE", // Valor por defecto, se puede mejorar si tienes este dato en la reserva
+        countryName: "Peru",
       });
 
       // Aseguramos que el origen y destino se establezcan correctamente
@@ -251,10 +258,21 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     return isIgvGravado ? subtotal * 0.18 : 0;
   }, [subtotal, isIgvGravado]);
 
-  // El precio final incluye el IGV adicional
+  // Función para manejar el cambio de descuento con validación
+  const handleDiscountChange = (newDiscount: number) => {
+    const maxDiscount = subtotal + igvAmount;
+    if (newDiscount > maxDiscount) {
+      toast.error(`El descuento no puede ser mayor a S/ ${maxDiscount.toFixed(2)} (monto total sin descuento)`);
+      return;
+    }
+    setDiscount(newDiscount);
+  };
+
+  // El precio final incluye el IGV adicional y descuenta el descuento manual
   const finalTicketPrice = useMemo(() => {
-    return subtotal + igvAmount;
-  }, [subtotal, igvAmount]);
+    const baseTotal = subtotal + igvAmount;
+    return Math.max(0, baseTotal - discount); // No permitir totales negativos
+  }, [subtotal, igvAmount, discount]);
 
   const handleConfirmSale = async () => {
     if (!selectedSeat) {
@@ -273,6 +291,14 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       );
       return;
     }
+    
+    // Validación del descuento
+    const maxDiscount = subtotal + igvAmount;
+    if (discount > maxDiscount) {
+      toast.error(`El descuento no puede ser mayor a S/ ${maxDiscount.toFixed(2)}`);
+      return;
+    }
+    
     const isRuc = passengerData.docType === SunatDocType.RUC;
     const series = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
     if (!series) {
@@ -283,7 +309,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     }
 
     try {
-      // ===== NUEVA VALIDACIÓN DE ASIENTO =====
+      // ===== VALIDACIÓN DE ASIENTO =====
       // Validar disponibilidad del asiento antes de proceder
       const seatValidation = await seatValidationService.validateSeatAvailability({
         tripId: trip.id,
@@ -307,18 +333,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         }
         
         // Refrescar el mapa de asientos para mostrar el estado actualizado
-        // (Si el hook de realtime está disponible)
         return;
       }
 
-      // Reservar el asiento temporalmente durante el proceso de venta
-      await seatValidationService.reserveSeatTemporarily({
-        tripId: trip.id,
-        seatId: selectedSeat.id,
-        userId: currentUser?.id || 'unknown'
-      });
-
-      // ===== RESTO DEL PROCESO DE VENTA =====
+      // ===== PROCESO DE VENTA =====
       // 1. Crear/encontrar el cliente (esto es común para ambos flujos)
       const clientData = {
         doc_type: passengerData.docType,
@@ -327,6 +345,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         address_line: passengerData.address,
         phone: passengerData.phone,
         email: passengerData.email,
+        country_code: passengerData.countryCode || "PE", // Incluir código de país
+        country_name: passengerData.countryName || "Peru", // Incluir nombre de país
       };
       
       const client = await findOrCreateClient(clientData);
@@ -354,6 +374,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         product_id: passengerService.id,
         quantity: 1,
         unit_price: baseServiceWithIgv,
+        discount: discount, // Incluir el descuento en el item principal
         tax_category_code: isIgvGravado
           ? SunatTaxCategory.GRAVADO
           : SunatTaxCategory.EXONERADO,
@@ -372,6 +393,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           product_id: 7, // ID específico para exceso de equipaje/costos adicionales
           quantity: 1,
           unit_price: extraCostWithIgv,
+          discount: 0, // Los costos adicionales no tienen descuento
           tax_category_code: isIgvGravado
             ? SunatTaxCategory.GRAVADO
             : SunatTaxCategory.EXONERADO,
@@ -467,6 +489,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       );
 
       // Liberar la reserva temporal al completar exitosamente
+      // Nota: El backend maneja esto internamente, pero mantenemos por compatibilidad
       await seatValidationService.releaseSeatReservation({
         tripId: trip.id,
         seatId: selectedSeat.id,
@@ -478,6 +501,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       console.error("Fallo en el proceso de venta:", error);
       
       // Liberar la reserva temporal en caso de error
+      // Nota: El backend maneja esto internamente, pero mantenemos por compatibilidad
       if (selectedSeat) {
         await seatValidationService.releaseSeatReservation({
           tripId: trip.id,
@@ -654,6 +678,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 taxCategoryCodeDefault={passengerService?.tax_category_code ?? null}
                 subtotal={subtotal}
                 igvAmount={igvAmount}
+                discount={discount}
+                onDiscountChange={handleDiscountChange}
                 finalTotal={finalTicketPrice}
               />
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">

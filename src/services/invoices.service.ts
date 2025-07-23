@@ -9,6 +9,7 @@ export interface InvoiceItemCreateData {
   product_id: number;
   quantity: number;
   unit_price: string | number;
+  discount?: number; // Campo para descuentos manuales
   tax_category_code: string;
   item_description?: string;
   unit_code?: string;

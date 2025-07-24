@@ -634,7 +634,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
             </div>
           </div>
           <div className="lg:col-span-2">
-            <div className="sticky top-24 space-y-6">
+            <div className="sticky top-24 max-h-[calc(100vh-1rem)] overflow-y-auto pr-2 space-y-6 pb-56 scroll-pb-64">
               <div className="bg-white p-6 rounded-lg shadow-sm border">
                 <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center">
                   <ClipboardDocumentListIcon className="h-6 w-6 mr-2 text-gray-500" />
@@ -691,6 +691,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   </div>
                 )}
               </div>
+              
               <PriceSummary
                 basePrice={basePrice}
                 seatMultiplier={seatMultiplier}
@@ -707,6 +708,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 onDiscountChange={handleDiscountChange}
                 finalTotal={finalTicketPrice}
               />
+              
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
                 <h3 className="font-semibold text-center text-gray-700">
                   Acciones
@@ -737,6 +739,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   </Button>
                 )}
               </div>
+              
               {!basePrice && (
                 <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-3 rounded-md">
                   <AlertTriangle className="h-4 w-4" />

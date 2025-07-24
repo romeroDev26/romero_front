@@ -1,7 +1,7 @@
 // src/hooks/useLocation.ts
 import { useState, useEffect } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
-import { toast } from 'react-toastify';
+// ...
 import { geonamesService } from '../services/geonames.service';
 
 interface LocationData {
@@ -39,7 +39,7 @@ export const useLocation = ({ setValue, initialData }: UseLocationProps) => {
   }, [initialData, setValue, isInitialized]);
   
   const handleLocationChange = {
-    onCountryChange: (countryCode: string, countryName: string) => {
+    onCountryChange: (countryCode: string) => {
       setValue('country_code', countryCode, { shouldValidate: true });
       // Limpiar campos dependientes
       setValue('department', '', { shouldValidate: true });

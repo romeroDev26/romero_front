@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-
 import { Modal } from '../../../components/common/Modal';
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';

@@ -1,37 +1,40 @@
-PATCH /clients/{client_id}
-Actualizar un cliente
+GET
+/operations/trips/{trip_id}/seat-map
+Obtener el mapa de asientos para un viaje
 
 
-Actualiza los datos de un cliente existente.
+Devuelve una lista completa de todos los asientos individuales para un viaje específico, cada uno con su estado (Disponible, Reservado, Ocupado, etc.) y los detalles de su tipo de asiento.
 
-Se requiere rol sales o admin.
+Esta es la fuente de datos para dibujar el mapa visual de asientos en el frontend.
 
 Parameters
-Try it out
+Cancel
 Name	Description
-client_id *
+trip_id *
 integer
 (path)
-client_id
-Request body
+205
+Execute
+Clear
+Responses
+Curl
 
-application/json
-Example Value
-Schema
-{
-  "doc_type": "0",
-  "doc_number": "string",
-  "name": "string",
-  "address": "string",
-  "ubigeo": "716760",
-  "email": "user@example.com",
-  "phone": "string",
-  "is_active": true,
-  "sunat_trade_name": "string",
-  "sunat_state": "string",
-  "sunat_condition": "string",
-  "last_api_query": "2025-07-24T04:04:44.963Z"
-}
+curl -X 'GET' \
+  'https://romeroapi-production.up.railway.app/api/v1/operations/trips/205/seat-map' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTM5NDAyNjEsInN1YiI6IjY3NzBmMTNiLWQzYTUtNDQwNC1hMDUxLTI3NmJlNGNjMmVlYiIsInJvbGUiOiJhZG1pbiJ9.iQvEmhQ7XXqhjnioVZhFTmrHG_zcCo4CDltn1f_k8UQ'
+Request URL
+https://romeroapi-production.up.railway.app/api/v1/operations/trips/205/seat-map
+Server response
+Code	Details
+204
+Undocumented
+Response headers
+ date: Thu,24 Jul 2025 05:38:25 GMT 
+ server: railway-edge 
+ x-process-time: 0.20555639266967773 
+ x-railway-edge: railway/us-east4-eqdc4a 
+ x-railway-request-id: Rtkjaaj2TeGHUbW4Cx5-qw 
 Responses
 Code	Description	Links
 200	
@@ -43,23 +46,26 @@ application/json
 Controls Accept header.
 Example Value
 Schema
-{
-  "doc_type": "6",
-  "doc_number": "20123456789",
-  "name": "EMPRESA XYZ S.A.C.",
-  "address_line": "string",
-  "ubigeo": "string",
-  "department": "LIMA",
-  "province": "LIMA",
-  "district": "LIMA",
-  "country_code": "PE",
-  "email": "contacto@empresa.xyz",
-  "phone": "+5112345678",
-  "is_active": true,
-  "id": 0,
-  "created_at": "2025-07-24T04:04:45.048Z",
-  "updated_at": "2025-07-24T04:04:45.048Z"
-}
+[
+  {
+    "trip_id": 0,
+    "vessel_seat_config_id": 0,
+    "seat_number": "string",
+    "status": "AVAILABLE",
+    "notes": "string",
+    "id": 0,
+    "seat_type": {
+      "name": "VIP Panorámico",
+      "code": "VIP",
+      "description": "string",
+      "price_multiplier": 1,
+      "is_active": true,
+      "display_order": 0,
+      "id": 0,
+      "created_at": "2025-07-24T05:45:24.176Z"
+    }
+  }
+]
 No links
 422	
 Validation Error

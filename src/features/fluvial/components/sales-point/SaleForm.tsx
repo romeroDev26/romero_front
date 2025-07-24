@@ -10,7 +10,6 @@ import {
 import {
   ClipboardDocumentListIcon,
   HashtagIcon,
-  CalendarIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
@@ -28,7 +27,6 @@ import {
   ServiceCategory,
   SeatMapItem,
   SeatReservation,
-  TripStop,
   User,
 } from "../../../../types";
 import { AvailableTripByPort } from "../../../../services/trips.service";
@@ -37,7 +35,6 @@ import {
   SunatInvoiceType,
   SunatTaxCategory,
 } from "../../types/sunat.types";
-import { InvoiceCreateData } from "../../../../services/invoices.service";
 // Hooks
 import { useFindFare } from "../../hooks/useFindFare";
 import { useTripDetails } from "../../hooks/useTripDetails";
@@ -51,6 +48,7 @@ import { useUpdateReservation } from "../../hooks/useReservations";
 import { seatValidationService } from "../../../../services/seatValidation.service";
 // Services
 import { authService } from "../../../../services/auth.service";
+import api from "../../../../config/api";
 
 interface PassengerData {
   docType: string;
@@ -104,6 +102,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const [isConfirmingMode, setIsConfirmingMode] = useState(
     !!reservationToConfirm
   );
+  const [canSellWithoutSeats, setCanSellWithoutSeats] = useState(false);
+  const [showSeatMap, setShowSeatMap] = useState(true);
 
   // Hook para obtener información del usuario actual
   const { data: currentUser } = useQuery<User>({
@@ -124,11 +124,42 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   const { data: tripDetails } = useTripDetails(trip.id);
   
+  // Detectar tipo de embarcación (con/sin asientos configurados)
+  useQuery({
+    queryKey: ['seatMap', trip.id],
+    queryFn: async () => {
+      try {
+        const response = await api.get(`/operations/trips/${trip.id}/seat-map`);
+        
+        if (response.status === 204) {
+          // Embarcación sin asientos configurados
+          setCanSellWithoutSeats(true);
+          setShowSeatMap(false);
+          return null;
+        } else if (response.status === 200) {
+          // Embarcación con asientos configurados
+          const data = response.data;
+          setCanSellWithoutSeats(false);
+          setShowSeatMap(true);
+          return data;
+        } else {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+      } catch (error) {
+        setCanSellWithoutSeats(false);
+        setShowSeatMap(true);
+        throw error;
+      }
+    },
+    staleTime: 1000 * 60 * 5, // Cache por 5 minutos
+    retry: 1
+  });
+  
   // Obtener información de la embarcación para enriquecer los asientos con seat_type
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails } = useVessel(vesselId || null);
 
-  // 🔧 Función para enriquecer asientos con información de seat_type
+  // Función para enriquecer asientos con información de seat_type
   const enrichSeatWithType = (seat: SeatMapItem): SeatMapItem => {
     if (!vesselDetails?.seat_configurations || !seat.vessel_seat_config_id) {
       return seat;
@@ -176,10 +207,16 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   }, [reservationToConfirm, tripDetails]);
 
   const { data: passengerService } = usePassengerService();
+  
+  // Determinar categoría de servicio basada en el tipo de embarcación
+  const serviceCategory = useMemo(() => {
+    return canSellWithoutSeats ? "OTROS" as ServiceCategory : "PASAJES" as ServiceCategory;
+  }, [canSellWithoutSeats]);
+  
   const { data: foundFare } = useFindFare({
     originPortId: selectedOriginId,
     destinationPortId: selectedDestinationId,
-    serviceCategory: "PASAJES" as ServiceCategory,
+    serviceCategory: serviceCategory,
   });
   const {
     availableBoletaSeries,
@@ -275,10 +312,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   }, [subtotal, igvAmount, discount]);
 
   const handleConfirmSale = async () => {
-    if (!selectedSeat) {
+    // Para embarcaciones sin asientos, no validar selección de asiento
+    if (showSeatMap && !selectedSeat) {
       toast.error("Por favor, seleccione un número de asiento.");
       return;
     }
+    
     if (
       !selectedOriginId ||
       !selectedDestinationId ||
@@ -287,7 +326,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       !passengerService
     ) {
       toast.error(
-        "Complete todos los campos: Cliente, Origen, Destino y Asiento."
+        "Complete todos los campos: Cliente, Origen y Destino."
       );
       return;
     }
@@ -309,31 +348,29 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     }
 
     try {
-      // ===== VALIDACIÓN DE ASIENTO =====
-      // Validar disponibilidad del asiento antes de proceder
-      const seatValidation = await seatValidationService.validateSeatAvailability({
-        tripId: trip.id,
-        seatId: selectedSeat.id,
-        userId: currentUser?.id || 'unknown'
-      });
+      // ===== VALIDACIÓN DE ASIENTO (solo para embarcaciones con asientos) =====
+      if (showSeatMap && selectedSeat) {
+        const seatValidation = await seatValidationService.validateSeatAvailability({
+          tripId: trip.id,
+          seatId: selectedSeat.id,
+          userId: currentUser?.id || 'unknown'
+        });
 
-      if (!seatValidation.isAvailable) {
-        // El asiento ya no está disponible
-        const errorMessage = seatValidation.reason || 'El asiento seleccionado ya no está disponible';
-        
-        if (seatValidation.conflictDetails) {
-          toast.error(
-            `${errorMessage}. Ocupado por: ${seatValidation.conflictDetails.occupiedBy} 
-            ${seatValidation.conflictDetails.invoiceNumber ? 
-              `(Factura: ${seatValidation.conflictDetails.invoiceNumber})` : ''
-            }`
-          );
-        } else {
-          toast.error(errorMessage);
+        if (!seatValidation.isAvailable) {
+          const errorMessage = seatValidation.reason || 'El asiento seleccionado ya no está disponible';
+          
+          if (seatValidation.conflictDetails) {
+            toast.error(
+              `${errorMessage}. Ocupado por: ${seatValidation.conflictDetails.occupiedBy} 
+              ${seatValidation.conflictDetails.invoiceNumber ? 
+                `(Factura: ${seatValidation.conflictDetails.invoiceNumber})` : ''
+              }`
+            );
+          } else {
+            toast.error(errorMessage);
+          }
+          return;
         }
-        
-        // Refrescar el mapa de asientos para mostrar el estado actualizado
-        return;
       }
 
       // ===== PROCESO DE VENTA =====
@@ -370,6 +407,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         : baseServicePrice;
 
       // Item principal: Servicio de transporte
+      const seatDescription = selectedSeat ? `Asiento: ${selectedSeat.seat_number}` : "Elección libre de ubicación";
+      
       invoiceItems.push({
         product_id: passengerService.id,
         quantity: 1,
@@ -378,7 +417,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         tax_category_code: isIgvGravado
           ? SunatTaxCategory.GRAVADO
           : SunatTaxCategory.EXONERADO,
-        item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. Asiento: ${selectedSeat.seat_number}`,
+        item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. ${seatDescription}`,
         unit_code: "NIU",
         trip_id: trip.id,
       });
@@ -466,14 +505,14 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         const assignmentPayload = {
           trip_id: trip.id,
           client_id: client.id,
-          seat_type_id: selectedSeat.seat_type?.id || 1, // Default seat type ID si es null
-          trip_seat_id: selectedSeat.id,
+          seat_type_id: selectedSeat?.seat_type?.id || 1, // Default seat type ID
+          trip_seat_id: selectedSeat?.id || -1, // -1 para embarcaciones sin asientos (indicador especial)
           boarding_stop_id: boardingStopId,
           disembarking_stop_id: disembarkingStopId,
           passenger_name: passengerData.name,
           passenger_doc_type: passengerData.docType,
           passenger_doc_number: passengerData.docNumber,
-          seat_number: selectedSeat.seat_number,
+          seat_number: selectedSeat?.seat_number || "Elección libre", // Para embarcaciones sin asientos
           invoice_item_id: invoiceItemId,
         };
         await createSeatAssignment(assignmentPayload);
@@ -483,18 +522,20 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       const documentType = isRuc ? "Factura" : "Boleta";
       const documentNumber = `${createdInvoice.series}-${String(createdInvoice.number).padStart(8, '0')}`;
       const operationType = isConfirmingMode ? "Reserva confirmada" : "Venta registrada";
+      const seatInfo = selectedSeat ? `Asiento: ${selectedSeat.seat_number}` : "Elección libre";
       
       toast.success(
-        `${operationType} exitosamente. ${documentType}: ${documentNumber} | Asiento: ${selectedSeat.seat_number}`
+        `${operationType} exitosamente. ${documentType}: ${documentNumber} | ${seatInfo}`
       );
 
-      // Liberar la reserva temporal al completar exitosamente
-      // Nota: El backend maneja esto internamente, pero mantenemos por compatibilidad
-      await seatValidationService.releaseSeatReservation({
-        tripId: trip.id,
-        seatId: selectedSeat.id,
-        userId: currentUser?.id || 'unknown'
-      });
+      // Liberar la reserva temporal al completar exitosamente (solo si hay asiento seleccionado)
+      if (selectedSeat) {
+        await seatValidationService.releaseSeatReservation({
+          tripId: trip.id,
+          seatId: selectedSeat.id,
+          userId: currentUser?.id || 'unknown'
+        });
+      }
 
       onSaleSuccess();
     } catch (error: any) {
@@ -529,25 +570,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   };
 
   const isRuc = passengerData.docType === SunatDocType.RUC;
-  const currentSeriesNumber = useMemo(() => {
-    const seriesList = isRuc ? availableFacturaSeries : availableBoletaSeries;
-    const selectedSeriesCode = isRuc
-      ? selectedFacturaSeries
-      : selectedBoletaSeries;
-    const seriesData = seriesList.find(
-      (s) => s.series_code === selectedSeriesCode
-    );
-    return seriesData ? seriesData.current_number + 1 : null;
-  }, [
-    isRuc,
-    availableFacturaSeries,
-    availableBoletaSeries,
-    selectedFacturaSeries,
-    selectedBoletaSeries,
-  ]);
 
   const areActionsEnabled =
-    !!selectedSeat &&
+    (showSeatMap ? !!selectedSeat : true) &&
     !!selectedOriginId &&
     !!selectedDestinationId &&
     !!passengerData.docNumber.trim() &&

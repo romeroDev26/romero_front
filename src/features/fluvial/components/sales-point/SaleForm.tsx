@@ -725,7 +725,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   <CreditCard className="h-5 w-5 mr-2" />
                   {isConfirmingMode ? "Confirmar y Cobrar" : "Generar y Cobrar"}
                 </Button>
-                {!isConfirmingMode && (
+                {!isConfirmingMode && showSeatMap && (
                   <Button
                     onClick={() => setReservationModalOpen(true)}
                     variant="outline"
@@ -747,7 +747,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           </div>
         </div>
       </div>
-      {selectedSeat && tripDetails && areActionsEnabled && (
+      {selectedSeat && tripDetails && areActionsEnabled && showSeatMap && (
         <ReservationModal
           isOpen={isReservationModalOpen}
           onClose={() => setReservationModalOpen(false)}

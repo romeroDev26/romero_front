@@ -1053,7 +1053,10 @@ export interface CreateClientData {
   is_active?: boolean;
 }
 
-export interface UpdateClientData extends Partial<CreateClientData> {}
+export interface UpdateClientData extends Partial<CreateClientData> {
+  // El backend espera "address" para actualizaciones, no "address_line"
+  address?: string;
+}
 
 export interface SalesPointFormData {
   trip_id: number;

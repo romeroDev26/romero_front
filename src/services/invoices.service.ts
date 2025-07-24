@@ -20,11 +20,13 @@ export interface InvoiceItemCreateData {
   // Campo para vincular con el viaje (nuevo campo del backend)
   trip_id?: number;
 
-  // Campos para encomiendas
+  // Campos para encomiendas y carga
   recipient_name?: string;
   recipient_doc_type?: string;
   recipient_doc_number?: string;
   recipient_phone?: string;
+  boarding_trip_stop_id?: number;
+  disembarking_trip_stop_id?: number;
 }
 
 // Esta interfaz define los datos para CREAR una factura completa.

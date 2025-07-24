@@ -1,91 +1,282 @@
-GET
-/operations/trips/{trip_id}/seat-map
-Obtener el mapa de asientos para un viaje
-
-
-Devuelve una lista completa de todos los asientos individuales para un viaje específico, cada uno con su estado (Disponible, Reservado, Ocupado, etc.) y los detalles de su tipo de asiento.
-
-Esta es la fuente de datos para dibujar el mapa visual de asientos en el frontend.
-
-Parameters
-Cancel
-Name	Description
-trip_id *
-integer
-(path)
-205
-Execute
-Clear
-Responses
-Curl
-
-curl -X 'GET' \
-  'https://romeroapi-production.up.railway.app/api/v1/operations/trips/205/seat-map' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTM5NDAyNjEsInN1YiI6IjY3NzBmMTNiLWQzYTUtNDQwNC1hMDUxLTI3NmJlNGNjMmVlYiIsInJvbGUiOiJhZG1pbiJ9.iQvEmhQ7XXqhjnioVZhFTmrHG_zcCo4CDltn1f_k8UQ'
-Request URL
-https://romeroapi-production.up.railway.app/api/v1/operations/trips/205/seat-map
-Server response
-Code	Details
-204
-Undocumented
-Response headers
- date: Thu,24 Jul 2025 05:38:25 GMT 
- server: railway-edge 
- x-process-time: 0.20555639266967773 
- x-railway-edge: railway/us-east4-eqdc4a 
- x-railway-request-id: Rtkjaaj2TeGHUbW4Cx5-qw 
-Responses
-Code	Description	Links
-200	
-Successful Response
-
-Media type
-
-application/json
-Controls Accept header.
-Example Value
-Schema
-[
-  {
-    "trip_id": 0,
-    "vessel_seat_config_id": 0,
-    "seat_number": "string",
-    "status": "AVAILABLE",
-    "notes": "string",
-    "id": 0,
-    "seat_type": {
-      "name": "VIP Panorámico",
-      "code": "VIP",
-      "description": "string",
-      "price_multiplier": 1,
-      "is_active": true,
-      "display_order": 0,
-      "id": 0,
-      "created_at": "2025-07-24T05:45:24.176Z"
-    }
-  }
-]
-No links
-422	
-Validation Error
-
-Media type
-
-application/json
-Example Value
-Schema
+esto es lo que envío:
 {
-  "detail": [
+  "client_id": 5,
+  "document_type_code": "01",
+  "series": "F002",
+  "issue_date": "2025-07-24",
+  "issue_time": "13:06:53",
+  "operation_type_code": "0101",
+  "currency_code": "PEN",
+  "exchange_rate": null,
+  "payment_terms_description": null,
+  "due_date": null,
+  "payment_installments": null,
+  "detraccion_code": null,
+  "detraccion_percentage": null,
+  "related_documents": null,
+  "notes": null,
+  "id": 289,
+  "company_id": 1,
+  "number": 4,
+  "ubl_version": "2.1",
+  "created_by": "fb408cb6-9b5e-443e-840c-072a9f825a0f",
+  "total_taxable": "0.00",
+  "total_exonerated": "50.00",
+  "total_unaffected": "0.00",
+  "total_free": "0.00",
+  "total_global_discount": "0.00",
+  "total_igv": "0.00",
+  "total_isc": "0.00",
+  "total_other_taxes": "0.00",
+  "total_payable": "50.00",
+  "total_in_words": "CINCUENTA CON 00/100 SOLES",
+  "detraccion_amount": null,
+  "sunat_status": "PENDING",
+  "sunat_ticket": null,
+  "items": [
     {
-      "loc": [
-        "string",
-        0
-      ],
-      "msg": "string",
-      "type": "string"
+      "product_id": 3,
+      "quantity": "1.0000",
+      "trip_id": 193,
+      "trip_seat_id": 10354,
+      "boarding_trip_stop_id": 1301,
+      "disembarking_trip_stop_id": 1304,
+      "item_description": "Servicio de Transporte de Carga General un televisor 55\". Asiento: 2.",
+      "unit_code": "NIU",
+      "unit_price": "50.0000000000",
+      "price_type_code": "01",
+      "discount": "0.00",
+      "tax_category_code": "20",
+      "recipient_name": "WILMER ALEXANDER EDQUÉN BARBOZA",
+      "recipient_doc_type": "1",
+      "recipient_doc_number": "76307497",
+      "recipient_phone": "987654321",
+      "id": 293,
+      "invoice_id": 289,
+      "item_order": 1,
+      "product_internal_code": "SRV-CAR-001",
+      "product_name": "Servicio de Transporte de Carga General",
+      "price_with_tax": "50.00",
+      "subtotal": "50.00",
+      "igv_percentage": "0.00",
+      "igv_amount": "0.00",
+      "isc_amount": null,
+      "other_tax_amount": null,
+      "total_line": "50.00"
     }
-  ]
+  ],
+  "client": {
+    "doc_type": "6",
+    "doc_number": "10744984799",
+    "name": "LUNA VILLANUEVA JHON MARCOS",
+    "address_line": "-",
+    "ubigeo": null,
+    "department": null,
+    "province": null,
+    "district": null,
+    "country_code": "PE",
+    "email": "test@gmail.com",
+    "phone": "968574321",
+    "is_active": true,
+    "id": 5,
+    "created_at": "2025-07-02T11:34:33.974222Z",
+    "updated_at": "2025-07-24T18:06:58.881918Z"
+  },
+  "company": {
+    "ruc": "20167700277",
+    "business_name": "EMPRESA DE TRANSPORTES ROMERO S.R.L.",
+    "trade_name": "EMPRESA DE TRANSPORTES ROMERO S.R.L.",
+    "address": "MZA. B LOTE. 19 Z.I. ZONA INDUSTRIAL (TALARA ALTA) PIURA - TALARA - PARIÑAS",
+    "ubigeo": "168626",
+    "phone": "968574321",
+    "email": "romero@example.com.pe",
+    "logo_url": "https://example.com/",
+    "sunat_username": "20167700277MODDATOS",
+    "certificate_path": "LLAMA-PE-CERTIFICADO-DEMO-20167700277.pfx",
+    "beta_mode": true,
+    "detraccion_account": "string",
+    "is_active": true,
+    "id": 1,
+    "created_at": "2025-06-09T18:56:14.940728Z",
+    "updated_at": "2025-07-17T00:22:46.428452Z"
+  },
+  "seller": null,
+  "boarding_time": null,
+  "qr_code_data": null
 }
-No links
 
+esto es lo que recivo de response al consultar la factura del documento que acabamos de crear
+
+{
+    "company_id": 1,
+    "route_id": 10,
+    "vessel_id": 13,
+    "departure_datetime": "2025-07-27T00:00:00Z",
+    "can_sell_tickets": true,
+    "notes": null,
+    "id": 193,
+    "status": "SCHEDULED",
+    "trip_name": "Iquitos - Nauta - 2025-07-26 19:00",
+    "estimated_arrival_datetime": "2025-07-27T05:00:00Z",
+    "created_at": "2025-07-07T23:39:09.855510Z",
+    "updated_at": "2025-07-07T23:39:09.855510Z",
+    "vessel": {
+        "registration_number": "IQ-65771-25",
+        "name": "Romero XXI",
+        "capacity_weight_kg": 500.0,
+        "capacity_packages": 100,
+        "capacity_passengers": 96,
+        "company_id": 1,
+        "is_active": true,
+        "total_columns": 4,
+        "id": 13,
+        "created_at": "2025-07-04T23:09:59.184382-05:00",
+        "updated_at": "2025-07-04T23:10:31.231528-05:00",
+        "seat_configurations": []
+    },
+    "route": {
+        "name": "Iquitos - Nauta",
+        "origin_port_id": 26,
+        "destination_port_id": 14,
+        "estimated_duration": "PT5H",
+        "estimated_duration_hours": null,
+        "company_id": 1,
+        "is_active": true,
+        "id": 10,
+        "created_at": "2025-07-04T08:26:18.858060-05:00",
+        "updated_at": "2025-07-04T08:26:18.858060-05:00",
+        "stops": []
+    },
+    "stops": [
+        {
+            "id": 1301,
+            "trip_id": 193,
+            "port_id": 26,
+            "stop_order": 1,
+            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
+            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
+            "actual_arrival_time": null,
+            "actual_departure_time": null,
+            "port": {
+                "name": "Iquitos",
+                "ubigeo": "123456",
+                "address": "123 123",
+                "city_id": 21,
+                "port_type": "PRIMARY_HUB",
+                "is_active": true,
+                "id": 26,
+                "created_at": "2025-07-04T08:22:26.348233-05:00",
+                "updated_at": "2025-07-04T08:22:26.348233-05:00",
+                "city": null
+            }
+        },
+        {
+            "id": 1302,
+            "trip_id": 193,
+            "port_id": 27,
+            "stop_order": 2,
+            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
+            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
+            "actual_arrival_time": null,
+            "actual_departure_time": null,
+            "port": {
+                "name": "Puritania",
+                "ubigeo": "123456",
+                "address": "123 siempre viva ",
+                "city_id": 22,
+                "port_type": "SECONDARY_STOP",
+                "is_active": true,
+                "id": 27,
+                "created_at": "2025-07-04T08:23:52.184445-05:00",
+                "updated_at": "2025-07-04T08:23:52.184445-05:00",
+                "city": null
+            }
+        },
+        {
+            "id": 1303,
+            "trip_id": 193,
+            "port_id": 28,
+            "stop_order": 3,
+            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
+            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
+            "actual_arrival_time": null,
+            "actual_departure_time": null,
+            "port": {
+                "name": "Omaguas",
+                "ubigeo": "123456",
+                "address": "123 1233",
+                "city_id": 23,
+                "port_type": "SECONDARY_STOP",
+                "is_active": true,
+                "id": 28,
+                "created_at": "2025-07-04T08:24:57.097211-05:00",
+                "updated_at": "2025-07-04T08:24:57.097211-05:00",
+                "city": null
+            }
+        },
+        {
+            "id": 1304,
+            "trip_id": 193,
+            "port_id": 29,
+            "stop_order": 4,
+            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
+            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
+            "actual_arrival_time": null,
+            "actual_departure_time": null,
+            "port": {
+                "name": "Tamshiyacu",
+                "ubigeo": "123456",
+                "address": "123123123",
+                "city_id": 24,
+                "port_type": "SECONDARY_STOP",
+                "is_active": true,
+                "id": 29,
+                "created_at": "2025-07-04T08:25:52.936110-05:00",
+                "updated_at": "2025-07-04T08:25:52.936110-05:00",
+                "city": null
+            }
+        },
+        {
+            "id": 1305,
+            "trip_id": 193,
+            "port_id": 14,
+            "stop_order": 5,
+            "estimated_arrival_time": "2025-07-27T00:00:00-05:00",
+            "estimated_departure_time": "2025-07-27T00:15:00-05:00",
+            "actual_arrival_time": null,
+            "actual_departure_time": null,
+            "port": {
+                "name": "Nauta",
+                "ubigeo": "000000",
+                "address": "Av. Siempre viva 856",
+                "city_id": 10,
+                "port_type": "PRIMARY_HUB",
+                "is_active": true,
+                "id": 14,
+                "created_at": "2025-06-24T07:16:42.874319-05:00",
+                "updated_at": "2025-06-24T07:16:42.874319-05:00",
+                "city": null
+            }
+        }
+    ],
+    "availability": [
+        {
+            "seat_type_id": 1,
+            "total_seats": 48,
+            "reserved_seats": 0,
+            "confirmed_seats": 2,
+            "blocked_seats": 0,
+            "available_seats": 46
+        },
+        {
+            "seat_type_id": 2,
+            "total_seats": 48,
+            "reserved_seats": 0,
+            "confirmed_seats": 0,
+            "blocked_seats": 0,
+            "available_seats": 48
+        }
+    ]
+}
+
+lo que se me hace extraño es que me devuelva esto:  Asiento: 2. lo cual no debe de pasar, recuerda que es un servicio de transporte de carga, no de pasajeros. El asiento es un concepto que no debería aparecer en este contexto. mi pregunta esto nosotros lo envíamos en invoices? o es algo que se genera automáticamente en el backend? y no sería relevante para el servicio de carga.

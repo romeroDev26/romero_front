@@ -11,7 +11,6 @@ import { Input } from '../../../components/common/Input';
 import { Spinner } from '../../../components/common/Spinner';
 import { useProductsServicesData } from '../../fluvial/hooks/useProductsServicesData';
 import { useSunatData } from '../../fluvial/hooks/useSunatData';
-import { ProductService } from '../../../types';
 import { CargoItemData } from '../types/cargo-ui.types';
 import { DOCUMENT_TYPES, SunatDocType } from '../../fluvial/types/sunat.types';
 
@@ -19,6 +18,7 @@ interface CargoItemFormProps {
   onSubmit: (item: CargoItemData) => void;
   onClose: () => void;
   existingItem?: CargoItemData | null;
+  defaultRecipient?: import('../types/cargo-ui.types').RecipientData;
 }
 
 type FormValues = Omit<CargoItemData, 'id'>;
@@ -33,7 +33,7 @@ const UNIT_OF_MEASURE_OPTIONS = [
   { code: 'MTQ', name: 'Metros Cúbicos' },
 ];
 
-export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose, existingItem }) => {
+export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose, existingItem, defaultRecipient }) => {
   const { data: allServices = [], isLoading: isLoadingServices } = useProductsServicesData({ is_active: true });
   const { queryDni, isQueryingDni, queryRuc, isQueryingRuc } = useSunatData();
 
@@ -43,7 +43,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
       quantity: existingItem?.quantity || 1,
       description: existingItem?.description || '',
       price: existingItem?.price || 0,
-      recipient: existingItem?.recipient || {
+      recipient: existingItem?.recipient || defaultRecipient || {
         isSameAsSender: true,
         name: '',
         docType: SunatDocType.DNI,
@@ -247,100 +247,106 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
 
         {/* Descripción */}
         <div>
-          <Input
-            label="Descripción del Contenido *"
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Descripción del Contenido *
+          </label>
+          <textarea
             {...register('description', { required: 'La descripción es obligatoria' })}
-            error={errors.description?.message}
+            rows={4}
+            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
             placeholder="Ej: Repuestos de motor, ropa, electrodomésticos, etc."
           />
+          {errors.description && (
+            <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
+          )}
         </div>
         
-        {/* Separador para sección de destinatario */}
-        <div className="pt-4 border-t border-gray-200">
-          <h4 className="font-semibold text-md text-gray-800 mb-3">Datos del Destinatario</h4>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isSameAsSender"
-              {...register('recipient.isSameAsSender')}
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="isSameAsSender" className="ml-2 block text-sm text-gray-900">
-              El destinatario es el mismo que el remitente
-            </label>
-          </div>
-        </div>
-        
-        {/* Formulario de destinatario */}
-        {!isSameAsSender && (
-          <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo Doc. *
+        {/* Si no se pasa defaultRecipient, mostrar sección de destinatario */}
+        {!defaultRecipient && (
+          <>
+            <div className="pt-4 border-t border-gray-200">
+              <h4 className="font-semibold text-md text-gray-800 mb-3">Datos del Destinatario</h4>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isSameAsSender"
+                  {...register('recipient.isSameAsSender')}
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor="isSameAsSender" className="ml-2 block text-sm text-gray-900">
+                  El destinatario es el mismo que el remitente
                 </label>
-                <select 
-                  {...register('recipient.docType')} 
-                  className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {DOCUMENT_TYPES.map(doc => (
-                    <option key={doc.code} value={doc.code}>
-                      {doc.name}
-                    </option>
-                  ))}
-                </select>
               </div>
-              
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  N° Documento *
-                </label>
-                <div className="flex">
-                  <Input
-                    {...register('recipient.docNumber', {
-                      required: !isSameAsSender ? 'El número de documento es obligatorio' : false
+            </div>
+            {/* Formulario de destinatario */}
+            {!isSameAsSender && (
+              <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Tipo Doc. *
+                    </label>
+                    <select 
+                      {...register('recipient.docType')} 
+                      className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      {DOCUMENT_TYPES.map(doc => (
+                        <option key={doc.code} value={doc.code}>
+                          {doc.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      N° Documento *
+                    </label>
+                    <div className="flex">
+                      <Input
+                        {...register('recipient.docNumber', {
+                          required: !isSameAsSender ? 'El número de documento es obligatorio' : false
+                        })}
+                        error={errors.recipient?.docNumber?.message}
+                        className="rounded-r-none"
+                        placeholder={recipientDocType === SunatDocType.DNI ? '12345678' : '20123456789'}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleRecipientSearch}
+                        disabled={!isRecipientSearchable || isQueryingRecipient}
+                        className="rounded-l-none px-3 h-10 flex items-center justify-center"
+                        title={isRecipientSearchable ? 'Buscar datos en SUNAT' : 'Búsqueda disponible solo para DNI y RUC'}
+                      >
+                        {isQueryingRecipient ? (
+                          <Spinner size="sm" />
+                        ) : (
+                          <Search className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <Input 
+                    label="Nombre Completo del Destinatario *" 
+                    {...register('recipient.name', {
+                      required: !isSameAsSender ? 'El nombre del destinatario es obligatorio' : false
                     })}
-                    error={errors.recipient?.docNumber?.message}
-                    className="rounded-r-none"
-                    placeholder={recipientDocType === SunatDocType.DNI ? '12345678' : '20123456789'}
+                    error={errors.recipient?.name?.message}
+                    placeholder="Nombre completo o razón social"
                   />
-                  <Button
-                    type="button"
-                    onClick={handleRecipientSearch}
-                    disabled={!isRecipientSearchable || isQueryingRecipient}
-                    className="rounded-l-none px-3 h-10 flex items-center justify-center"
-                    title={isRecipientSearchable ? 'Buscar datos en SUNAT' : 'Búsqueda disponible solo para DNI y RUC'}
-                  >
-                    {isQueryingRecipient ? (
-                      <Spinner size="sm" />
-                    ) : (
-                      <Search className="h-4 w-4" />
-                    )}
-                  </Button>
+                </div>
+                <div>
+                  <Input 
+                    label="Teléfono de Contacto" 
+                    {...register('recipient.phone')}
+                    placeholder="Número de teléfono (opcional)"
+                    type="tel"
+                  />
                 </div>
               </div>
-            </div>
-            
-            <div>
-              <Input 
-                label="Nombre Completo del Destinatario *" 
-                {...register('recipient.name', {
-                  required: !isSameAsSender ? 'El nombre del destinatario es obligatorio' : false
-                })}
-                error={errors.recipient?.name?.message}
-                placeholder="Nombre completo o razón social"
-              />
-            </div>
-            
-            <div>
-              <Input 
-                label="Teléfono de Contacto" 
-                {...register('recipient.phone')}
-                placeholder="Número de teléfono (opcional)"
-                type="tel"
-              />
-            </div>
-          </div>
+            )}
+          </>
         )}
 
         {/* Botones de acción */}

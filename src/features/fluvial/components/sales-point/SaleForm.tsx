@@ -21,6 +21,11 @@ import { SeatAndFareSelector } from "./SeatAndFareSelector";
 import { PriceSummary } from "./PriceSummary";
 import { Spinner } from "../../../../components/common/Spinner";
 import { ReservationModal } from "./ReservationModal";
+import { 
+  PassengerQuantitySelector,
+  RepresentativesInstructions,
+  AddRepresentativeForm 
+} from "./representatives";
 // Types & Enums
 import {
   BranchOffice,
@@ -43,8 +48,10 @@ import { usePassengerService } from "../../hooks/usePassengerService";
 import { useDocumentSeriesForBranch } from "../../hooks/useDocumentSeriesForBranch";
 import { useCreateInvoice } from "../../hooks/useInvoices";
 import { useClientManager } from "../../hooks/useClientManager";
+import { useSeatReservations } from "../../hooks/useSeatReservations";
 import { useCreateSeatAssignment } from "../../hooks/useSeatAssignments";
 import { useUpdateReservation } from "../../hooks/useReservations";
+import { useRepresentantes } from "../../hooks/useRepresentantes";
 import { seatValidationService } from "../../../../services/seatValidation.service";
 // Services
 import { authService } from "../../../../services/auth.service";
@@ -76,8 +83,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   onSaleSuccess,
   reservationToConfirm,
 }) => {
-  const [selectedOriginId, setSelectedOriginId] = useState<number | null>(null);
-  const [selectedDestinationId, setSelectedDestinationId] = useState<
+  // NUEVO: Usar stop IDs en lugar de port IDs
+  const [selectedBoardingStopId, setSelectedBoardingStopId] = useState<number | null>(null);
+  const [selectedDisembarkingStopId, setSelectedDisembarkingStopId] = useState<
     number | null
   >(null);
   const [selectedSeat, setSelectedSeat] = useState<SeatMapItem | null>(null);
@@ -104,6 +112,58 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   );
   const [canSellWithoutSeats, setCanSellWithoutSeats] = useState(false);
   const [showSeatMap, setShowSeatMap] = useState(true);
+  
+  // Estados para el sistema de representantes - NUEVO ENFOQUE BACKEND
+  const [representatives, setRepresentatives] = useState<Array<{
+    document_type: string;
+    document_number: string;
+    name: string;
+    phone: string;
+    seat_number?: string;
+  }>>([]);
+  const [showRepresentatives, setShowRepresentatives] = useState(false);
+  const [maxPassengers, setMaxPassengers] = useState(1);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedSeatForRepresentative, setSelectedSeatForRepresentative] = useState<any>(null);
+  
+  // Hook para crear factura empresarial con representantes
+  const { createCompanyInvoiceWithRepresentatives, isCreating } = useRepresentantes();
+
+  // NUEVO: Hook para manejar reservas temporales de asientos
+  const {
+    reserveSeat,
+    releaseSeat,
+    confirmAllReservations,
+    releaseAllReservations,
+    getReservedSeatNumbers,
+    isReserving
+  } = useSeatReservations(trip.id);
+
+  // Funciones para gestionar representantes
+  const handleAddRepresentative = (representative: {
+    document_type: string;
+    document_number: string;
+    name: string;
+    phone: string;
+    seat_number?: string;
+  }) => {
+    setRepresentatives(prev => [...prev, representative]);
+    setShowAddForm(false);
+    toast.success('Representante agregado exitosamente');
+  };
+
+  const handleRemoveRepresentative = (index: number) => {
+    // Liberar asiento reservado antes de eliminar representante
+    releaseSeat(index);
+    
+    setRepresentatives(prev => prev.filter((_, i) => i !== index));
+    toast.success('Representante eliminado');
+  };
+
+  const existingDocuments = representatives.map(rep => rep.document_number);
+  const usedSeatNumbers = representatives
+    .map(rep => rep.seat_number)
+    .filter((seat): seat is string => seat != null && seat !== "Elección libre");
 
   // Hook para obtener información del usuario actual
   const { data: currentUser } = useQuery<User>({
@@ -116,13 +176,19 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     retry: 1
   });
 
-  useEffect(() => {
-    if (branch.port_id) {
-      setSelectedOriginId(branch.port_id);
-    }
-  }, [branch.port_id]);
-
   const { data: tripDetails } = useTripDetails(trip.id);
+  
+  // Establecer el stop de embarque inicial basado en el puerto de la sucursal
+  useEffect(() => {
+    if (branch.port_id && tripDetails?.stops) {
+      const initialBoardingStop = tripDetails.stops.find(
+        stop => stop.port_id === branch.port_id
+      );
+      if (initialBoardingStop) {
+        setSelectedBoardingStopId(initialBoardingStop.id);
+      }
+    }
+  }, [branch.port_id, tripDetails?.stops]);
   
   // Detectar tipo de embarcación (con/sin asientos configurados)
   useQuery({
@@ -193,18 +259,21 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         countryName: "Peru",
       });
 
-      // Aseguramos que el origen y destino se establezcan correctamente
-      // Buscamos el port_id a partir del stop_id de la reserva
-      const boardingPortId = tripDetails.stops.find(
-        (s) => s.id === reservationToConfirm.boarding_stop_id
-      )?.port_id;
-      const disembarkingPortId = tripDetails.stops.find(
-        (s) => s.id === reservationToConfirm.disembarking_stop_id
-      )?.port_id;
-      if (boardingPortId) setSelectedOriginId(boardingPortId);
-      if (disembarkingPortId) setSelectedDestinationId(disembarkingPortId);
+      // NUEVO: Usar directamente los stop IDs de la reserva
+      setSelectedBoardingStopId(reservationToConfirm.boarding_stop_id);
+      setSelectedDisembarkingStopId(reservationToConfirm.disembarking_stop_id);
     }
   }, [reservationToConfirm, tripDetails]);
+
+  // NUEVO: Funciones helper para obtener port IDs desde stop IDs
+  const getPortIdFromStopId = (stopId: number | null): number | null => {
+    if (!stopId || !tripDetails?.stops) return null;
+    const stop = tripDetails.stops.find(s => s.id === stopId);
+    return stop?.port_id || null;
+  };
+
+  const getBoardingPortId = () => getPortIdFromStopId(selectedBoardingStopId);
+  const getDisembarkingPortId = () => getPortIdFromStopId(selectedDisembarkingStopId);
 
   const { data: passengerService } = usePassengerService();
   
@@ -214,8 +283,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   }, [canSellWithoutSeats]);
   
   const { data: foundFare } = useFindFare({
-    originPortId: selectedOriginId,
-    destinationPortId: selectedDestinationId,
+    originPortId: getBoardingPortId(),
+    destinationPortId: getDisembarkingPortId(),
     serviceCategory: serviceCategory,
   });
   const {
@@ -238,6 +307,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       );
     }
   }, [passengerService]);
+  
+  // Mostrar sección de representantes cuando sea RUC y se haya completado la información básica
+  useEffect(() => {
+    const isRuc = passengerData.docType === SunatDocType.RUC;
+    const hasBasicInfo = Boolean(passengerData.docNumber.trim() && passengerData.name.trim());
+    setShowRepresentatives(isRuc && hasBasicInfo);
+  }, [passengerData.docType, passengerData.docNumber, passengerData.name]);
 
   useEffect(() => {
     const cachedBoleta = localStorage.getItem("lastUsedBoletaSeries");
@@ -287,8 +363,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   // Calculamos el subtotal (precio base sin IGV)
   const subtotal = useMemo(() => {
     if (!basePrice) return 0;
-    return basePrice * seatMultiplier + extraCost;
-  }, [basePrice, seatMultiplier, extraCost]);
+    const isRuc = passengerData.docType === SunatDocType.RUC;
+    const quantity = isRuc ? Math.max(1, representatives.length) : 1;
+    return (basePrice * seatMultiplier + extraCost) * quantity;
+  }, [basePrice, seatMultiplier, extraCost, passengerData.docType, representatives.length]);
 
   // Calculamos el IGV (18% del subtotal solo si está gravado)
   const igvAmount = useMemo(() => {
@@ -299,7 +377,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const handleDiscountChange = (newDiscount: number) => {
     const maxDiscount = subtotal + igvAmount;
     if (newDiscount > maxDiscount) {
-      toast.error(`El descuento no puede ser mayor a S/ ${maxDiscount.toFixed(2)} (monto total sin descuento)`);
+      const isRuc = passengerData.docType === SunatDocType.RUC;
+      const quantityText = isRuc ? ` para ${representatives.length} representante${representatives.length !== 1 ? 's' : ''}` : '';
+      toast.error(`El descuento no puede ser mayor a S/ ${maxDiscount.toFixed(2)} (monto total sin descuento${quantityText})`);
       return;
     }
     setDiscount(newDiscount);
@@ -312,6 +392,101 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   }, [subtotal, igvAmount, discount]);
 
   const handleConfirmSale = async () => {
+    const isRuc = passengerData.docType === SunatDocType.RUC;
+    
+    // Para RUC, manejar factura empresarial con representantes
+    if (isRuc) {
+      await handleCompanyInvoiceWithRepresentatives();
+      return;
+    }
+    
+    // Para no-RUC, proceder con venta normal
+    await handleRegularSale();
+  };
+
+  const handleCompanyInvoiceWithRepresentatives = async () => {
+    if (
+      !selectedBoardingStopId ||
+      !selectedDisembarkingStopId ||
+      !passengerData.docNumber.trim() ||
+      !passengerData.name.trim() ||
+      !passengerService ||
+      representatives.length === 0
+    ) {
+      toast.error(
+        "Complete todos los campos: Cliente, Origen, Destino y al menos un representante."
+      );
+      return;
+    }
+    
+    const series = selectedFacturaSeries;
+    if (!series) {
+      toast.error("Por favor, seleccione una serie de Factura.");
+      return;
+    }
+
+    try {
+      // Preparar datos para la factura empresarial con representantes
+      const companyInvoiceData = {
+        // Datos de la empresa
+        company_data: {
+          client_doc_type: passengerData.docType, // Siempre "6" para RUC
+          client_doc_number: passengerData.docNumber,
+          client_name: passengerData.name,
+          client_address: passengerData.address,
+          client_phone: passengerData.phone,
+          client_email: passengerData.email,
+        },
+        
+        // Datos del viaje - NUEVO: Usar stop IDs directamente
+        trip_id: trip.id,
+        boarding_stop_id: selectedBoardingStopId,
+        disembarking_stop_id: selectedDisembarkingStopId,
+        
+        // Lista de representantes
+        representatives: representatives.map(rep => ({
+          passenger_name: rep.name,
+          passenger_doc_type: rep.document_type,
+          passenger_doc_number: rep.document_number,
+          passenger_phone: rep.phone,
+          seat_number: rep.seat_number || "Elección libre",
+        })),
+        
+        // Notas especiales
+        special_notes: `Punto de Venta: ${branch.name} - Factura Empresarial`
+      };
+
+      // Llamar al nuevo endpoint transaccional
+      const result = await createCompanyInvoiceWithRepresentatives(companyInvoiceData);
+      
+      // NUEVO: Confirmar reservas de asientos tras venta exitosa
+      const reservationsConfirmed = await confirmAllReservations();
+      if (!reservationsConfirmed) {
+        console.warn('No se pudieron confirmar algunas reservas de asientos');
+      }
+      
+      // Mostrar éxito y navegar
+      toast.success(
+        `Factura empresarial creada con ${(result as any).representatives.length} representantes`,
+        { autoClose: 5000 }
+      );
+      
+      onSaleSuccess();
+
+    } catch (error: any) {
+      console.error("Error creando factura empresarial:", error);
+      
+      // NUEVO: Liberar reservas en caso de error
+      await releaseAllReservations();
+      
+      toast.error(
+        error.response?.data?.detail ||
+          "Ocurrió un error al crear la factura empresarial."
+      );
+    }
+  };
+
+  const handleRegularSale = async () => {
     // Para embarcaciones sin asientos, no validar selección de asiento
     if (showSeatMap && !selectedSeat) {
       toast.error("Por favor, seleccione un número de asiento.");
@@ -319,8 +494,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     }
     
     if (
-      !selectedOriginId ||
-      !selectedDestinationId ||
+      !selectedBoardingStopId ||
+      !selectedDisembarkingStopId ||
       !passengerData.docNumber.trim() ||
       !passengerData.name.trim() ||
       !passengerService
@@ -389,18 +564,21 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       const client = await findOrCreateClient(clientData);
 
       // 2. Crear la factura (también es común)
-      const originPortName =
-        tripDetails?.stops.find((s) => s.port_id === selectedOriginId)?.port
-          ?.name || "";
-      const destinationPortName =
-        tripDetails?.stops.find((s) => s.port_id === selectedDestinationId)
-          ?.port?.name || "";
+      // NUEVO: Obtener nombres de puertos desde stop IDs
+      const boardingStop = tripDetails?.stops.find(s => s.id === selectedBoardingStopId);
+      const disembarkingStop = tripDetails?.stops.find(s => s.id === selectedDisembarkingStopId);
+      const originPortName = boardingStop?.port?.name || "";
+      const destinationPortName = disembarkingStop?.port?.name || "";
 
 
       // Preparar los items de la factura
       const invoiceItems = [];
       
-      // Precio del servicio base sin costo adicional
+      // Calcular cantidad según tipo de documento
+      const isRucSale = passengerData.docType === SunatDocType.RUC;
+      const quantity = isRucSale ? Math.max(1, representatives.length) : 1;
+      
+      // Precio del servicio base sin costo adicional (por unidad)
       const baseServicePrice = (basePrice || 0) * seatMultiplier;
       const baseServiceWithIgv = isIgvGravado 
         ? baseServicePrice * 1.18 
@@ -408,18 +586,22 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
       // Item principal: Servicio de transporte
       const seatDescription = selectedSeat ? `Asiento: ${selectedSeat.seat_number}` : "Elección libre de ubicación";
+      const quantityDescription = quantity > 1 ? ` (${quantity} pasajeros)` : "";
       
       invoiceItems.push({
         product_id: passengerService.id,
-        quantity: 1,
+        quantity: quantity,
         unit_price: baseServiceWithIgv,
         discount: discount, // Incluir el descuento en el item principal
         tax_category_code: isIgvGravado
           ? SunatTaxCategory.GRAVADO
           : SunatTaxCategory.EXONERADO,
-        item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. ${seatDescription}`,
+        item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. ${seatDescription}${quantityDescription}`,
         unit_code: "NIU",
         trip_id: trip.id,
+        // NUEVO: Agregar stop IDs para facturas normales según documentación
+        boarding_trip_stop_id: selectedBoardingStopId,
+        disembarking_trip_stop_id: selectedDisembarkingStopId,
       });
 
       // Item adicional: Costo adicional (si existe y tiene descripción)
@@ -439,6 +621,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           item_description: extraCostDescription.trim(),
           unit_code: "NIU",
           trip_id: trip.id,
+          // NUEVO: Agregar stop IDs también para costos adicionales
+          boarding_trip_stop_id: selectedBoardingStopId,
+          disembarking_trip_stop_id: selectedDisembarkingStopId,
         });
       }
 
@@ -489,12 +674,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           );
         }
         const invoiceItemId = createdInvoice.items[0].id;
-        const boardingStopId = tripDetails?.stops.find(
-          (s) => s.port_id === selectedOriginId
-        )?.id;
-        const disembarkingStopId = tripDetails?.stops.find(
-          (s) => s.port_id === selectedDestinationId
-        )?.id;
+        // NUEVO: Usar directamente los stop IDs seleccionados
+        const boardingStopId = selectedBoardingStopId;
+        const disembarkingStopId = selectedDisembarkingStopId;
 
         if (!boardingStopId || !disembarkingStopId) {
           throw new Error(
@@ -572,11 +754,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
   const areActionsEnabled =
-    (showSeatMap ? !!selectedSeat : true) &&
-    !!selectedOriginId &&
-    !!selectedDestinationId &&
+    !!selectedBoardingStopId &&
+    !!selectedDisembarkingStopId &&
     !!passengerData.docNumber.trim() &&
-    !!passengerData.name.trim();
+    !!passengerData.name.trim() &&
+    // Para RUC, requiere al menos un representante
+    // Para no-RUC, requiere asiento seleccionado (si aplica)
+    (isRuc ? representatives.length > 0 : (!showSeatMap || !!selectedSeat));
 
   return (
     <>
@@ -617,19 +801,133 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 disabled={isConfirmingMode}
               />
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            
+            {/* Sección de Representantes para RUC */}
+            {showRepresentatives && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-lg text-blue-800">
+                    Gestión de Representantes
+                  </h3>
+                  <span className="text-sm text-blue-600">
+                    {representatives.length} / {maxPassengers} agregados
+                  </span>
+                </div>
+                
+                <RepresentativesInstructions />
+                
+                {representatives.length < maxPassengers && (
+                  <PassengerQuantitySelector
+                    quantity={maxPassengers}
+                    onQuantityChange={setMaxPassengers}
+                    disabled={false}
+                  />
+                )}
+                
+                {/* Lista de representantes agregados */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-gray-700">
+                      Representantes ({representatives.length})
+                    </div>
+                    {representatives.length < maxPassengers && !showAddForm && (
+                      <Button
+                        onClick={() => setShowAddForm(true)}
+                        className="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700"
+                        disabled={isReserving}
+                      >
+                        {isReserving ? 'Reservando...' : '+ Agregar'}
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {representatives.map((rep, index) => (
+                    <div key={index} className="bg-white border rounded p-3 text-sm flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium">{rep.name}</div>
+                        <div className="text-gray-600 text-xs">
+                          {rep.document_type}: {rep.document_number}
+                        </div>
+                        <div className="text-gray-600 text-xs">
+                          Teléfono: {rep.phone}
+                        </div>
+                        <div className="text-blue-600 text-xs font-medium mt-1">
+                          {rep.seat_number === "Elección libre" ? (
+                            <span className="bg-blue-100 px-2 py-1 rounded">
+                              Elección libre
+                            </span>
+                          ) : (
+                            <span className="bg-green-100 px-2 py-1 rounded">
+                              Asiento {rep.seat_number}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => handleRemoveRepresentative(index)}
+                        variant="outline"
+                        className="text-xs px-2 py-1 text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        Eliminar
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  {representatives.length === 0 && !showAddForm && (
+                    <div className="text-center text-gray-500 py-4 border-2 border-dashed border-gray-300 rounded">
+                      No hay representantes agregados
+                      <br />
+                      <Button
+                        onClick={() => setShowAddForm(true)}
+                        variant="outline"
+                        className="mt-2 text-sm px-4 py-2"
+                      >
+                        Agregar Primer Representante
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Formulario para agregar representante */}
+                {showAddForm && (
+                  <AddRepresentativeForm
+                    onAdd={handleAddRepresentative}
+                    onCancel={() => setShowAddForm(false)}
+                    existingDocuments={existingDocuments}
+                    tripId={trip.id}
+                    usedSeatNumbers={[...usedSeatNumbers, ...getReservedSeatNumbers()]}
+                    selectedSeat={selectedSeatForRepresentative}
+                    onSeatSelect={setSelectedSeatForRepresentative}
+                    representativeIndex={representatives.length}
+                    onSeatReserve={reserveSeat}
+                    onSeatRelease={releaseSeat}
+                  />
+                )}
+              </div>
+            )}            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              {showAddForm && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="text-sm font-medium text-blue-800">
+                    Modo: Selección de asiento para representante
+                  </div>
+                  <div className="text-xs text-blue-600">
+                    Haga clic en un asiento del mapa para asignarlo al representante
+                  </div>
+                </div>
+              )}
               <SeatAndFareSelector
                 tripId={trip.id}
-                selectedOriginId={selectedOriginId}
-                onOriginChange={setSelectedOriginId}
-                selectedDestinationId={selectedDestinationId}
-                onDestinationChange={setSelectedDestinationId}
-                selectedSeat={selectedSeat}
-                onSeatSelect={setSelectedSeat}
+                selectedBoardingStopId={selectedBoardingStopId}
+                onBoardingStopChange={setSelectedBoardingStopId}
+                selectedDisembarkingStopId={selectedDisembarkingStopId}
+                onDisembarkingStopChange={setSelectedDisembarkingStopId}
+                selectedSeat={showAddForm ? selectedSeatForRepresentative : selectedSeat}
+                onSeatSelect={showAddForm ? setSelectedSeatForRepresentative : setSelectedSeat}
                 isConfirmingMode={isConfirmingMode}
                 reservationToConfirm={reservationToConfirm}
                 userId={currentUser?.id || 'unknown'}
                 userName={currentUser?.full_name || currentUser?.first_name || 'Usuario'}
+                occupiedSeatNumbers={[...usedSeatNumbers, ...getReservedSeatNumbers()]}
               />
             </div>
           </div>
@@ -707,6 +1005,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 discount={discount}
                 onDiscountChange={handleDiscountChange}
                 finalTotal={finalTicketPrice}
+                isRuc={isRuc}
+                representativesCount={representatives.length}
               />
               
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
@@ -720,14 +1020,20 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                     isProcessingClient ||
                     isCreatingInvoice ||
                     isAssigningSeat ||
-                    isUpdatingReservation
+                    isUpdatingReservation ||
+                    isCreating
                   }
                   disabled={!areActionsEnabled}
                 >
                   <CreditCard className="h-5 w-5 mr-2" />
-                  {isConfirmingMode ? "Confirmar y Cobrar" : "Generar y Cobrar"}
+                  {isConfirmingMode 
+                    ? "Confirmar y Cobrar" 
+                    : isRuc 
+                      ? "Crear Factura Empresarial con Representantes"
+                      : "Generar y Cobrar"
+                  }
                 </Button>
-                {!isConfirmingMode && showSeatMap && (
+                {!isConfirmingMode && showSeatMap && !isRuc && (
                   <Button
                     onClick={() => setReservationModalOpen(true)}
                     variant="outline"
@@ -736,6 +1042,18 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   >
                     <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
                     Reservar Asiento
+                  </Button>
+                )}
+                
+                {/* Botón adicional para mostrar/ocultar gestión de representantes en RUC */}
+                {isRuc && (
+                  <Button
+                    onClick={() => setShowRepresentatives(!showRepresentatives)}
+                    variant="outline"
+                    className="w-full text-lg py-3 border-blue-600 text-blue-600 hover:bg-blue-50"
+                  >
+                    <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
+                    {showRepresentatives ? "Ocultar" : "Gestionar"} Representantes
                   </Button>
                 )}
               </div>
@@ -759,8 +1077,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
             tripStops: tripDetails.stops,
             selectedSeat,
             passengerData,
-            originId: selectedOriginId!,
-            destinationId: selectedDestinationId!,
+            boardingStopId: selectedBoardingStopId!,
+            disembarkingStopId: selectedDisembarkingStopId!,
             totalPrice: finalTicketPrice,
           }}
           onSuccess={onSaleSuccess}

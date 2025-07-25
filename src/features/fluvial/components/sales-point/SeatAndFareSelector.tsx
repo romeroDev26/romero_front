@@ -11,10 +11,11 @@ import { getSeatZoneName } from '../../utils/seatUtils';
 
 interface SeatAndFareSelectorProps {
   tripId: number;
-  selectedOriginId: number | null;
-  onOriginChange: (portId: number | null) => void;
-  selectedDestinationId: number | null;
-  onDestinationChange: (portId: number | null) => void;
+  // NUEVO: Usar stop IDs en lugar de port IDs
+  selectedBoardingStopId: number | null;
+  onBoardingStopChange: (stopId: number | null) => void;
+  selectedDisembarkingStopId: number | null;
+  onDisembarkingStopChange: (stopId: number | null) => void;
   selectedSeat: SeatMapItem | null;
   onSeatSelect: (seat: SeatMapItem | null) => void;
   isConfirmingMode?: boolean;
@@ -22,20 +23,23 @@ interface SeatAndFareSelectorProps {
   // Nuevas props para WebSocket
   userId?: string;
   userName?: string;
+  // Nueva prop para asientos ocupados por representantes
+  occupiedSeatNumbers?: string[];
 }
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   tripId,
-  selectedOriginId,
-  onOriginChange,
-  selectedDestinationId,
-  onDestinationChange,
+  selectedBoardingStopId,
+  onBoardingStopChange,
+  selectedDisembarkingStopId,
+  onDisembarkingStopChange,
   selectedSeat,
   onSeatSelect,
   isConfirmingMode = false,
   reservationToConfirm,
   userId = 'default-user',
   userName = 'Usuario',
+  occupiedSeatNumbers = [],
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
@@ -85,16 +89,18 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   }, [isConfirmingMode, reservationToConfirm, selectedSeat]);
 
 
+  // NUEVO: Calcular stops disponibles para destino basado en el stop de embarque seleccionado
   const { availableStops } = useMemo(() => {
-    if (!tripDetails) {
+    if (!tripDetails || !selectedBoardingStopId) {
       return { availableStops: [] };
     }
-    const originStopOrder = tripDetails.stops.find(s => s.port_id === selectedOriginId)?.stop_order ?? -1;
-    const stops = tripDetails.stops.filter(s => s.stop_order > originStopOrder);
+    const boardingStop = tripDetails.stops.find(s => s.id === selectedBoardingStopId);
+    const boardingStopOrder = boardingStop?.stop_order ?? -1;
+    const stops = tripDetails.stops.filter(s => s.stop_order > boardingStopOrder);
     return {
       availableStops: stops as TripStop[],
     };
-  }, [tripDetails, selectedOriginId]);
+  }, [tripDetails, selectedBoardingStopId]);
 
   const handleSeatToggleFromMap = (toggledSeat: SeatMapItem) => {
     // Si estamos en modo de confirmación, no se permite ninguna interacción con el mapa.
@@ -156,29 +162,34 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       <h2 className="text-lg font-semibold text-gray-800">Tramo y Asiento</h2>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Origen</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Origen (Embarque)</label>
           <select
-            value={selectedOriginId || ''}
-            onChange={(e) => onOriginChange(Number(e.target.value))}
+            value={selectedBoardingStopId || ''}
+            onChange={(e) => onBoardingStopChange(Number(e.target.value))}
             className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
             disabled={isConfirmingMode}
           >
+            <option value="" disabled>Seleccione embarque...</option>
             {tripDetails?.stops?.slice(0, -1).map(stop => (
-              <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
+              <option key={stop.id} value={stop.id}>
+                {stop.port?.name}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Destino</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Destino (Desembarque)</label>
           <select
-            value={selectedDestinationId || ''}
-            onChange={(e) => onDestinationChange(Number(e.target.value))}
+            value={selectedDisembarkingStopId || ''}
+            onChange={(e) => onDisembarkingStopChange(Number(e.target.value))}
             className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-            disabled={!selectedOriginId || availableStops.length === 0 || isConfirmingMode}
+            disabled={!selectedBoardingStopId || availableStops.length === 0 || isConfirmingMode}
           >
-            <option value="" disabled>Seleccione...</option>
+            <option value="" disabled>Seleccione desembarque...</option>
             {availableStops.map(stop => (
-              <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
+              <option key={stop.id} value={stop.id}>
+                {stop.port?.name}
+              </option>
             ))}
           </select>
         </div>
@@ -213,6 +224,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           isLocked={isConfirmingMode}
           userId={userId}
           userName={userName}
+          occupiedSeatNumbers={occupiedSeatNumbers}
         />
       </div>
     </div>

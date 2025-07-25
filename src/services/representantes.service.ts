@@ -1,0 +1,145 @@
+// src/services/representantes.service.ts
+import api from '../config/api';
+
+// NUEVOS TIPOS SEGÚN ESPECIFICACIÓN BACKEND
+export interface CompanyInvoiceWithRepresentatives {
+  // Datos de la empresa
+  company_data: {
+    client_doc_type: string; // Siempre "6" para RUC
+    client_doc_number: string; // RUC de 11 dígitos
+    client_name: string; // Razón social
+    client_address?: string;
+    client_email?: string;
+    client_phone?: string;
+  };
+  
+  // Datos del viaje
+  trip_id: number;
+  boarding_stop_id: number;
+  disembarking_stop_id: number;
+  
+  // Lista de representantes
+  representatives: Array<{
+    passenger_name: string;
+    passenger_doc_type: string; // "1"=DNI, "4"=CE, "6"=RUC, "7"=Pasaporte
+    passenger_doc_number: string;
+    passenger_phone?: string;
+    passenger_email?: string;
+    seat_number?: string; // "Elección libre" o número específico
+    special_notes?: string;
+  }>;
+  
+  // Configuración adicional
+  special_notes?: string;
+}
+
+export interface CompanyInvoiceResponse {
+  invoice: {
+    id: number;
+    series: string;
+    number: string;
+    document_type_code: string;
+    client_name: string;
+    total_amount: number;
+    created_at: string;
+    items?: Array<{
+      id: number;
+      product_id: number;
+      quantity: number;
+      unit_price: number;
+      // ... otros campos
+    }>;
+  };
+  representatives: Array<{
+    id: number;
+    passenger_name: string;
+    passenger_doc_type: string;
+    passenger_doc_number: string;
+    seat_number?: string;
+    boarding_stop_id?: number;
+    disembarking_stop_id?: number;
+    special_notes?: string;
+    // ... otros campos de representante
+  }>;
+  summary: {
+    total_capacity: number;
+    used_capacity: number;
+    remaining_capacity: number;
+    is_complete: boolean;
+  };
+}
+
+//  TIPO PARA REPRESENTANTE INDIVIDUAL (para UI)
+export interface Representative {
+  passenger_name: string;
+  passenger_doc_type: string;
+  passenger_doc_number: string;
+  passenger_phone?: string;
+  passenger_email?: string;
+  seat_number?: string;
+  special_notes?: string;
+}
+
+class RepresentantesService {
+  //  NUEVO: Endpoint único según especificación backend
+  async createCompanyInvoiceWithRepresentatives(
+    data: CompanyInvoiceWithRepresentatives
+  ): Promise<CompanyInvoiceResponse> {
+    try {
+      const response = await api.post('/sunat/invoices/company-with-representatives', data);
+      return response.data;
+    } catch (error: any) {
+      // Manejar errores específicos según la especificación
+      if (error.response?.status === 400) {
+        throw new Error(error.response.data.detail || 'Error de validación');
+      } else if (error.response?.status === 404) {
+        throw new Error('Viaje o paradas no encontradas');
+      } else if (error.response?.status === 422) {
+        throw new Error('Error de datos: ' + error.response.data.detail);
+      } else if (error.response?.status === 500) {
+        throw new Error('Error interno del servidor');
+      }
+      throw error;
+    }
+  }
+}
+
+export const representantesService = new RepresentantesService();
+
+// UTILIDAD: Manejo de errores según especificación
+export const handleApiError = (error: any) => {
+  const status = error.response?.status;
+  const detail = error.response?.data?.detail;
+  
+  switch (status) {
+    case 400:
+      // Errores de validación
+      if (detail?.includes('RUC inválido')) {
+        return 'El RUC ingresado no es válido. Verifique el número.';
+      } else if (detail?.includes('Documento inválido')) {
+        return 'Uno o más documentos de representantes son inválidos.';
+      } else if (detail?.includes('duplicado')) {
+        return 'No se permiten documentos duplicados en la misma factura.';
+      } else if (detail?.includes('Capacidad insuficiente')) {
+        return detail; // Mostrar mensaje específico de capacidad
+      }
+      return `Error de validación: ${detail}`;
+      
+    case 404:
+      if (detail?.includes('Viaje no encontrado')) {
+        return 'El viaje seleccionado no existe o está inactivo.';
+      } else if (detail?.includes('Parada')) {
+        return 'Una o más paradas seleccionadas no son válidas.';
+      }
+      return 'Recurso no encontrado.';
+      
+    case 422:
+      return `Error de datos: ${detail}`;
+      
+    case 500:
+      return 'Error interno del servidor. Intente nuevamente en unos momentos.';
+      
+    default:
+      return 'Error inesperado. Contacte al soporte técnico.';
+  }
+};

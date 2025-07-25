@@ -18,6 +18,7 @@ interface SeatRealtimeProps {
   activeSelection?: SeatSelection; // Nueva prop para selección en tiempo real
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'failed';
   isWebSocketAvailable?: boolean; // Nueva prop
+  isOccupiedByRepresentative?: boolean; // Nueva prop para asientos ocupados por representantes
 }
 
 const getSeatStyles = (
@@ -26,8 +27,14 @@ const getSeatStyles = (
   isLocked: boolean, 
   activeSelection?: SeatSelection,
   connectionStatus?: string,
-  isWebSocketAvailable?: boolean
+  isWebSocketAvailable?: boolean,
+  isOccupiedByRepresentative?: boolean
 ): string => {
+  // Si está ocupado por un representante, mostrar como ocupado
+  if (isOccupiedByRepresentative) {
+    return 'bg-purple-500 border-purple-600 text-white cursor-not-allowed';
+  }
+  
   // Si hay una selección activa de otro usuario (solo si WebSocket está disponible)
   if (activeSelection && !isSelected && isWebSocketAvailable) {
     return 'bg-orange-400 border-orange-500 text-white cursor-not-allowed animate-pulse';
@@ -63,9 +70,13 @@ const getSeatStyles = (
   }
 };
 
-const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection): string => {
+const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection, isOccupiedByRepresentative?: boolean): string => {
   const seatTypeName = getSeatTypeName(seat.seat_type?.name);
   const baseInfo = `Asiento: ${seat.seat_number} - Tipo: ${seatTypeName} - Estado: ${seat.status}`;
+  
+  if (isOccupiedByRepresentative) {
+    return `${baseInfo} - Ocupado por representante de la empresa`;
+  }
   
   if (activeSelection) {
     return `${baseInfo} - Siendo seleccionado por: ${activeSelection.userName}`;
@@ -81,11 +92,13 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
   isLocked = false,
   activeSelection,
   connectionStatus,
-  isWebSocketAvailable = true
+  isWebSocketAvailable = true,
+  isOccupiedByRepresentative = false
 }) => {
   // Un asiento no es clickeable si está bloqueado, su estado no es 'AVAILABLE', 
-  // o está siendo seleccionado por otro usuario (solo si WebSocket está disponible)
+  // está ocupado por un representante, o está siendo seleccionado por otro usuario (solo si WebSocket está disponible)
   const isClickable = !isLocked && seat.status === 'AVAILABLE' && 
+    !isOccupiedByRepresentative &&
     !(activeSelection && isWebSocketAvailable);
 
   return (
@@ -96,9 +109,9 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
         className={`
           w-14 h-14 rounded-lg border-2 transition-all duration-200
           flex items-center justify-center text-sm font-bold relative
-          ${getSeatStyles(seat.status, isSelected, isLocked, activeSelection, connectionStatus, isWebSocketAvailable)}
+          ${getSeatStyles(seat.status, isSelected, isLocked, activeSelection, connectionStatus, isWebSocketAvailable, isOccupiedByRepresentative)}
         `}
-        title={getTooltipText(seat, activeSelection)}
+        title={getTooltipText(seat, activeSelection, isOccupiedByRepresentative)}
       >
         {seat.seat_number}
         

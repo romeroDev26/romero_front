@@ -13,8 +13,9 @@ interface PassengerAndSeatData {
     tripStops: TripStop[];
     selectedSeat: SeatMapItem;
     passengerData: { name: string; docType: string; docNumber: string; phone?: string; email?: string; };
-    originId: number;
-    destinationId: number;
+    // NUEVO: Usar stop IDs en lugar de port IDs
+    boardingStopId: number;
+    disembarkingStopId: number;
     totalPrice: number;
 }
 
@@ -61,10 +62,9 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
       return;
     }
 
-    const { trip, tripStops, selectedSeat, passengerData, originId, destinationId, totalPrice } = reservationData;
-    const boardingStopId = tripStops.find(s => s.port_id === originId)?.id;
-    const disembarkingStopId = tripStops.find(s => s.port_id === destinationId)?.id;
-
+    const { trip, selectedSeat, passengerData, boardingStopId, disembarkingStopId, totalPrice } = reservationData;
+    
+    // NUEVO: Ya tenemos los stop IDs directamente, no necesitamos buscarlos
     if (!boardingStopId || !disembarkingStopId) {
       toast.error("Error interno: No se encontraron las paradas.");
       return;

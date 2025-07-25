@@ -17,6 +17,9 @@ interface PriceSummaryProps {
   discount: number;
   onDiscountChange: (discount: number) => void;
   finalTotal: number;
+  // Nuevas props para representantes
+  isRuc?: boolean;
+  representativesCount?: number;
 }
 
 export const PriceSummary: React.FC<PriceSummaryProps> = ({
@@ -33,20 +36,42 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   igvAmount,
   discount,
   onDiscountChange,
-  finalTotal
+  finalTotal,
+  isRuc = false,
+  representativesCount = 1
 }) => {
   // Calcular el precio del ticket basado en el subtotal (más preciso)
-  const ticketPrice = subtotal - extraCost;
+  const quantity = isRuc ? Math.max(1, representativesCount) : 1;
+  const ticketPricePerUnit = (basePrice || 0) * seatMultiplier;
+  const ticketPriceTotal = (subtotal - extraCost);
   const isIgvDisabled = taxCategoryCodeDefault === null;
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
       <h3 className="font-semibold text-lg text-gray-800">Resumen de Venta</h3>
       
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-600">Tarifa Pasaje:</span>
-        <span className="font-medium">{ticketPrice > 0 ? `S/ ${ticketPrice.toFixed(2)}` : 'N/A'}</span>
-      </div>
+      {/* Mostrar información según el tipo de venta */}
+      {isRuc && quantity > 1 ? (
+        <>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Tarifa por Pasajero:</span>
+            <span className="font-medium">{ticketPricePerUnit > 0 ? `S/ ${ticketPricePerUnit.toFixed(2)}` : 'N/A'}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Cantidad de Representantes:</span>
+            <span className="font-medium">{quantity}</span>
+          </div>
+          <div className="flex justify-between text-sm border-t pt-2">
+            <span className="text-gray-600 font-medium">Total Pasajes:</span>
+            <span className="font-medium">{ticketPriceTotal > 0 ? `S/ ${ticketPriceTotal.toFixed(2)}` : 'N/A'}</span>
+          </div>
+        </>
+      ) : (
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Tarifa Pasaje:</span>
+          <span className="font-medium">{ticketPriceTotal > 0 ? `S/ ${ticketPriceTotal.toFixed(2)}` : 'N/A'}</span>
+        </div>
+      )}
 
       {/* --- CAMPO PARA COSTO ADICIONAL --- */}
       <div>

@@ -1,282 +1,352 @@
-esto es lo que envío:
+# Guía Frontend: Uso de Trip Stops para Facturas
+
+Mira mi backend como tal me da esta estructura de datos para los viajes, y necesito que el frontend use correctamente los boarding_stop_id y disembarking_stop_id para crear facturas normales y de empresa.
+## Resumen
+
+Esta guía explica cómo el frontend debe obtener y usar correctamente los boarding_stop_id y disembarking_stop_id para crear *facturas normales* y *facturas de empresa* usando el endpoint existente.
+
+*Aplica para:*
+- ✅ Facturas normales: POST /api/v1/invoices/
+- ✅ Facturas de empresa: POST /api/v1/invoices/company-with-representatives
+
+## Endpoint a Utilizar
+
+*No necesitas un nuevo endpoint.* Usa el endpoint existente:
+
+
+GET /api/v1/operations/trips/{trip_id}
+
+
+*Ejemplo:*
+
+GET https://romeroapi-production.up.railway.app/api/v1/operations/trips/189
+
+
+## Estructura de la Respuesta
+
+El endpoint devuelve un objeto con la siguiente estructura relevante:
+
+json
 {
-  "client_id": 5,
+  "id": 189,
+  "trip_name": "Nauta - Yurimaguas - 2025-07-26 18:00",
+  "route": {
+    "name": "Nauta - Yurimaguas",
+    "origin_port_id": 14,
+    "destination_port_id": 15
+  },
+  "stops": [
+    {
+      "id": 1269,
+      "trip_id": 189,
+      "port_id": 14,
+      "stop_order": 1,
+      "estimated_arrival_time": "2025-07-26T18:00:00-05:00",
+      "estimated_departure_time": "2025-07-26T18:15:00-05:00",
+      "port": {
+        "name": "Nauta",
+        "id": 14,
+        "port_type": "PRIMARY_HUB"
+      }
+    },
+    {
+      "id": 1270,
+      "trip_id": 189,
+      "port_id": 17,
+      "stop_order": 2,
+      "port": {
+        "name": "Arauante",
+        "id": 17,
+        "port_type": "SECONDARY_STOP"
+      }
+    }
+    // ... más stops
+  ]
+}
+
+
+## Información Clave del Array stops
+
+Cada elemento en el array stops contiene:
+
+- **id**: ✅ **Este es el trip_stop_id que necesitas** para boarding_stop_id y disembarking_stop_id
+- **port.name**: Nombre del puerto para mostrar al usuario
+- **stop_order**: Orden del stop en la ruta (1, 2, 3, etc.)
+- **port_id*: ❌ **NO uses este* para la factura de empresa
+
+## Ejemplo de Stops Disponibles (Trip 189)
+
+| Stop Order | Stop ID | Puerto | Uso |
+|------------|---------|--------|-----------|
+| 1 | *1269* | Nauta | boarding_stop_id |
+| 2 | *1270* | Arauante | boarding_stop_id o disembarking_stop_id |
+| 3 | *1271* | Lagunas | boarding_stop_id o disembarking_stop_id |
+| 4 | *1272* | Maypuco | boarding_stop_id o disembarking_stop_id |
+| 5 | *1273* | Porgreso | boarding_stop_id o disembarking_stop_id |
+| 6 | *1274* | Providencia | boarding_stop_id o disembarking_stop_id |
+| 7 | *1275* | San Luis | boarding_stop_id o disembarking_stop_id |
+| 8 | *1276* | Santa Cruz | boarding_stop_id o disembarking_stop_id |
+| 9 | *1277* | Tamarate | boarding_stop_id o disembarking_stop_id |
+| 10 | *1278* | Tipishca | boarding_stop_id o disembarking_stop_id |
+| 11 | *1279* | Yurimaguas | disembarking_stop_id |
+
+## Implementación en JavaScript/React
+
+### 1. Obtener los Stops del Viaje
+
+javascript
+const fetchTripStops = async (tripId) => {
+  try {
+    const response = await fetch(`/api/v1/operations/trips/${tripId}`);
+    const tripData = await response.json();
+    
+    // Extraer y ordenar los stops
+    const stops = tripData.stops.sort((a, b) => a.stop_order - b.stop_order);
+    
+    return stops;
+  } catch (error) {
+    console.error('Error fetching trip stops:', error);
+    throw error;
+  }
+};
+
+
+### 2. Crear Opciones para Selectores
+
+javascript
+const createStopOptions = (stops) => {
+  return stops.map(stop => ({
+    value: stop.id, // ¡IMPORTANTE: usar stop.id, NO port_id!
+    label: `${stop.port.name} (Parada ${stop.stop_order})`,
+    stopOrder: stop.stop_order,
+    portName: stop.port.name
+  }));
+};
+
+
+### 3. Validación de Stops
+
+javascript
+const validateStops = (stops, boardingStopId, disembarkingStopId) => {
+  const boardingStop = stops.find(s => s.id === boardingStopId);
+  const disembarkingStop = stops.find(s => s.id === disembarkingStopId);
+  
+  if (!boardingStop || !disembarkingStop) {
+    throw new Error('Stops no encontrados');
+  }
+  
+  if (boardingStop.stop_order >= disembarkingStop.stop_order) {
+    throw new Error('El stop de embarque debe ser anterior al de desembarque');
+  }
+  
+  if (boardingStopId === disembarkingStopId) {
+    throw new Error('Los stops de embarque y desembarque deben ser diferentes');
+  }
+  
+  return true;
+};
+
+
+### 4. Componente React Ejemplo
+
+jsx
+import React, { useState, useEffect } from 'react';
+
+const TripStopSelector = ({ tripId, onStopsChange }) => {
+  const [stops, setStops] = useState([]);
+  const [boardingStopId, setBoardingStopId] = useState('');
+  const [disembarkingStopId, setDisembarkingStopId] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadStops = async () => {
+      try {
+        setLoading(true);
+        const tripStops = await fetchTripStops(tripId);
+        setStops(tripStops);
+      } catch (error) {
+        console.error('Error loading stops:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (tripId) {
+      loadStops();
+    }
+  }, [tripId]);
+
+  useEffect(() => {
+    if (boardingStopId && disembarkingStopId) {
+      try {
+        validateStops(stops, parseInt(boardingStopId), parseInt(disembarkingStopId));
+        onStopsChange({
+          boardingStopId: parseInt(boardingStopId),
+          disembarkingStopId: parseInt(disembarkingStopId)
+        });
+      } catch (error) {
+        console.error('Validation error:', error.message);
+        onStopsChange(null);
+      }
+    }
+  }, [boardingStopId, disembarkingStopId, stops]);
+
+  if (loading) return <div>Cargando stops...</div>;
+
+  const stopOptions = createStopOptions(stops);
+
+  return (
+    <div>
+      <div>
+        <label>Stop de Embarque:</label>
+        <select 
+          value={boardingStopId} 
+          onChange={(e) => setBoardingStopId(e.target.value)}
+        >
+          <option value="">Seleccionar...</option>
+          {stopOptions.map(option => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      
+      <div>
+        <label>Stop de Desembarque:</label>
+        <select 
+          value={disembarkingStopId} 
+          onChange={(e) => setDisembarkingStopId(e.target.value)}
+        >
+          <option value="">Seleccionar...</option>
+          {stopOptions
+            .filter(option => !boardingStopId || option.stopOrder > stops.find(s => s.id === parseInt(boardingStopId))?.stop_order)
+            .map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))
+          }
+        </select>
+      </div>
+    </div>
+  );
+};
+
+
+## JSON Final para Facturas
+
+### Factura Normal
+
+Para facturas normales, incluye los boarding_stop_id y disembarking_stop_id en cada item:
+
+json
+{
+  "client_id": 123,
   "document_type_code": "01",
-  "series": "F002",
-  "issue_date": "2025-07-24",
-  "issue_time": "13:06:53",
-  "operation_type_code": "0101",
+  "series": "F001",
+  "issue_date": "2025-01-15",
   "currency_code": "PEN",
-  "exchange_rate": null,
-  "payment_terms_description": null,
-  "due_date": null,
-  "payment_installments": null,
-  "detraccion_code": null,
-  "detraccion_percentage": null,
-  "related_documents": null,
-  "notes": null,
-  "id": 289,
-  "company_id": 1,
-  "number": 4,
-  "ubl_version": "2.1",
-  "created_by": "fb408cb6-9b5e-443e-840c-072a9f825a0f",
-  "total_taxable": "0.00",
-  "total_exonerated": "50.00",
-  "total_unaffected": "0.00",
-  "total_free": "0.00",
-  "total_global_discount": "0.00",
-  "total_igv": "0.00",
-  "total_isc": "0.00",
-  "total_other_taxes": "0.00",
-  "total_payable": "50.00",
-  "total_in_words": "CINCUENTA CON 00/100 SOLES",
-  "detraccion_amount": null,
-  "sunat_status": "PENDING",
-  "sunat_ticket": null,
   "items": [
     {
-      "product_id": 3,
-      "quantity": "1.0000",
-      "trip_id": 193,
-      "trip_seat_id": 10354,
-      "boarding_trip_stop_id": 1301,
-      "disembarking_trip_stop_id": 1304,
-      "item_description": "Servicio de Transporte de Carga General un televisor 55\". Asiento: 2.",
-      "unit_code": "NIU",
-      "unit_price": "50.0000000000",
-      "price_type_code": "01",
-      "discount": "0.00",
-      "tax_category_code": "20",
-      "recipient_name": "WILMER ALEXANDER EDQUÉN BARBOZA",
-      "recipient_doc_type": "1",
-      "recipient_doc_number": "76307497",
-      "recipient_phone": "987654321",
-      "id": 293,
-      "invoice_id": 289,
-      "item_order": 1,
-      "product_internal_code": "SRV-CAR-001",
-      "product_name": "Servicio de Transporte de Carga General",
-      "price_with_tax": "50.00",
-      "subtotal": "50.00",
-      "igv_percentage": "0.00",
-      "igv_amount": "0.00",
-      "isc_amount": null,
-      "other_tax_amount": null,
-      "total_line": "50.00"
+      "trip_id": 189,
+      "boarding_trip_stop_id": 1269,
+      "disembarking_trip_stop_id": 1279,
+      "seat_number": "A1",
+      "seat_type_id": 1,
+      "passenger_document_type": "DNI",
+      "passenger_document_number": "12345678",
+      "passenger_full_name": "Juan Pérez",
+      "unit_price": 50.00,
+      "quantity": 1
     }
-  ],
-  "client": {
-    "doc_type": "6",
-    "doc_number": "10744984799",
-    "name": "LUNA VILLANUEVA JHON MARCOS",
-    "address_line": "-",
-    "ubigeo": null,
-    "department": null,
-    "province": null,
-    "district": null,
-    "country_code": "PE",
-    "email": "test@gmail.com",
-    "phone": "968574321",
-    "is_active": true,
-    "id": 5,
-    "created_at": "2025-07-02T11:34:33.974222Z",
-    "updated_at": "2025-07-24T18:06:58.881918Z"
-  },
-  "company": {
-    "ruc": "20167700277",
-    "business_name": "EMPRESA DE TRANSPORTES ROMERO S.R.L.",
-    "trade_name": "EMPRESA DE TRANSPORTES ROMERO S.R.L.",
-    "address": "MZA. B LOTE. 19 Z.I. ZONA INDUSTRIAL (TALARA ALTA) PIURA - TALARA - PARIÑAS",
-    "ubigeo": "168626",
-    "phone": "968574321",
-    "email": "romero@example.com.pe",
-    "logo_url": "https://example.com/",
-    "sunat_username": "20167700277MODDATOS",
-    "certificate_path": "LLAMA-PE-CERTIFICADO-DEMO-20167700277.pfx",
-    "beta_mode": true,
-    "detraccion_account": "string",
-    "is_active": true,
-    "id": 1,
-    "created_at": "2025-06-09T18:56:14.940728Z",
-    "updated_at": "2025-07-17T00:22:46.428452Z"
-  },
-  "seller": null,
-  "boarding_time": null,
-  "qr_code_data": null
+  ]
 }
 
-esto es lo que recivo de response al consultar la factura del documento que acabamos de crear
 
+### Factura de Empresa
+
+Para facturas de empresa, los boarding_stop_id y disembarking_stop_id van a nivel raíz:
+
+json
 {
-    "company_id": 1,
-    "route_id": 10,
-    "vessel_id": 13,
-    "departure_datetime": "2025-07-27T00:00:00Z",
-    "can_sell_tickets": true,
-    "notes": null,
-    "id": 193,
-    "status": "SCHEDULED",
-    "trip_name": "Iquitos - Nauta - 2025-07-26 19:00",
-    "estimated_arrival_datetime": "2025-07-27T05:00:00Z",
-    "created_at": "2025-07-07T23:39:09.855510Z",
-    "updated_at": "2025-07-07T23:39:09.855510Z",
-    "vessel": {
-        "registration_number": "IQ-65771-25",
-        "name": "Romero XXI",
-        "capacity_weight_kg": 500.0,
-        "capacity_packages": 100,
-        "capacity_passengers": 96,
-        "company_id": 1,
-        "is_active": true,
-        "total_columns": 4,
-        "id": 13,
-        "created_at": "2025-07-04T23:09:59.184382-05:00",
-        "updated_at": "2025-07-04T23:10:31.231528-05:00",
-        "seat_configurations": []
-    },
-    "route": {
-        "name": "Iquitos - Nauta",
-        "origin_port_id": 26,
-        "destination_port_id": 14,
-        "estimated_duration": "PT5H",
-        "estimated_duration_hours": null,
-        "company_id": 1,
-        "is_active": true,
-        "id": 10,
-        "created_at": "2025-07-04T08:26:18.858060-05:00",
-        "updated_at": "2025-07-04T08:26:18.858060-05:00",
-        "stops": []
-    },
-    "stops": [
-        {
-            "id": 1301,
-            "trip_id": 193,
-            "port_id": 26,
-            "stop_order": 1,
-            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
-            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
-            "actual_arrival_time": null,
-            "actual_departure_time": null,
-            "port": {
-                "name": "Iquitos",
-                "ubigeo": "123456",
-                "address": "123 123",
-                "city_id": 21,
-                "port_type": "PRIMARY_HUB",
-                "is_active": true,
-                "id": 26,
-                "created_at": "2025-07-04T08:22:26.348233-05:00",
-                "updated_at": "2025-07-04T08:22:26.348233-05:00",
-                "city": null
-            }
-        },
-        {
-            "id": 1302,
-            "trip_id": 193,
-            "port_id": 27,
-            "stop_order": 2,
-            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
-            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
-            "actual_arrival_time": null,
-            "actual_departure_time": null,
-            "port": {
-                "name": "Puritania",
-                "ubigeo": "123456",
-                "address": "123 siempre viva ",
-                "city_id": 22,
-                "port_type": "SECONDARY_STOP",
-                "is_active": true,
-                "id": 27,
-                "created_at": "2025-07-04T08:23:52.184445-05:00",
-                "updated_at": "2025-07-04T08:23:52.184445-05:00",
-                "city": null
-            }
-        },
-        {
-            "id": 1303,
-            "trip_id": 193,
-            "port_id": 28,
-            "stop_order": 3,
-            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
-            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
-            "actual_arrival_time": null,
-            "actual_departure_time": null,
-            "port": {
-                "name": "Omaguas",
-                "ubigeo": "123456",
-                "address": "123 1233",
-                "city_id": 23,
-                "port_type": "SECONDARY_STOP",
-                "is_active": true,
-                "id": 28,
-                "created_at": "2025-07-04T08:24:57.097211-05:00",
-                "updated_at": "2025-07-04T08:24:57.097211-05:00",
-                "city": null
-            }
-        },
-        {
-            "id": 1304,
-            "trip_id": 193,
-            "port_id": 29,
-            "stop_order": 4,
-            "estimated_arrival_time": "2025-07-26T19:00:00-05:00",
-            "estimated_departure_time": "2025-07-26T19:15:00-05:00",
-            "actual_arrival_time": null,
-            "actual_departure_time": null,
-            "port": {
-                "name": "Tamshiyacu",
-                "ubigeo": "123456",
-                "address": "123123123",
-                "city_id": 24,
-                "port_type": "SECONDARY_STOP",
-                "is_active": true,
-                "id": 29,
-                "created_at": "2025-07-04T08:25:52.936110-05:00",
-                "updated_at": "2025-07-04T08:25:52.936110-05:00",
-                "city": null
-            }
-        },
-        {
-            "id": 1305,
-            "trip_id": 193,
-            "port_id": 14,
-            "stop_order": 5,
-            "estimated_arrival_time": "2025-07-27T00:00:00-05:00",
-            "estimated_departure_time": "2025-07-27T00:15:00-05:00",
-            "actual_arrival_time": null,
-            "actual_departure_time": null,
-            "port": {
-                "name": "Nauta",
-                "ubigeo": "000000",
-                "address": "Av. Siempre viva 856",
-                "city_id": 10,
-                "port_type": "PRIMARY_HUB",
-                "is_active": true,
-                "id": 14,
-                "created_at": "2025-06-24T07:16:42.874319-05:00",
-                "updated_at": "2025-06-24T07:16:42.874319-05:00",
-                "city": null
-            }
-        }
-    ],
-    "availability": [
-        {
-            "seat_type_id": 1,
-            "total_seats": 48,
-            "reserved_seats": 0,
-            "confirmed_seats": 2,
-            "blocked_seats": 0,
-            "available_seats": 46
-        },
-        {
-            "seat_type_id": 2,
-            "total_seats": 48,
-            "reserved_seats": 0,
-            "confirmed_seats": 0,
-            "blocked_seats": 0,
-            "available_seats": 48
-        }
-    ]
+  "trip_id": 189,
+  "boarding_stop_id": 1269,
+  "disembarking_stop_id": 1279,
+  "company_data": {
+    "ruc": "20123456789",
+    "business_name": "Empresa Test",
+    "address": "Dirección Test"
+  },
+  "representatives": [
+    {
+      "document_type": "DNI",
+      "document_number": "12345678",
+      "full_name": "Juan Pérez",
+      "seat_number": "A1"
+    }
+  ]
 }
 
-lo que se me hace extraño es que me devuelva esto:  Asiento: 2. lo cual no debe de pasar, recuerda que es un servicio de transporte de carga, no de pasajeros. El asiento es un concepto que no debería aparecer en este contexto. mi pregunta esto nosotros lo envíamos en invoices? o es algo que se genera automáticamente en el backend? y no sería relevante para el servicio de carga.
+
+## Puntos Críticos a Recordar
+
+### ✅ Hacer
+
+1. **Usar stop.id** del array stops para boarding_stop_id y disembarking_stop_id
+2. *Validar el orden:* boarding_stop_order < disembarking_stop_order
+3. *Validar que sean diferentes:* boarding_stop_id ≠ disembarking_stop_id
+4. *Mostrar nombres amigables* en la UI pero enviar los IDs correctos
+5. *Manejar errores* de validación apropiadamente
+
+### ❌ No Hacer
+
+1. **NO usar port_id** para la factura de empresa
+2. *NO usar IDs hardcodeados* de desarrollo
+3. *NO permitir* que el stop de embarque sea posterior al de desembarque
+4. *NO permitir* stops iguales para embarque y desembarque
+
+## Errores Comunes y Soluciones
+
+### Error: "Boarding stop not found: 14"
+
+*Causa:* Estás enviando un port_id (14) en lugar del trip_stop_id (1269).
+
+*Solución:* Usar stop.id del array stops, no port_id.
+
+### Error: "Invalid stop order"
+
+*Causa:* El stop de embarque tiene un stop_order mayor o igual al de desembarque.
+
+*Solución:* Validar que boarding_stop_order < disembarking_stop_order.
+
+### Error: "Stops must be different"
+
+*Causa:* Estás enviando el mismo ID para embarque y desembarque.
+
+*Solución:* Validar que boarding_stop_id ≠ disembarking_stop_id.
+
+## Endpoints de Destino
+
+Una vez que tengas los datos correctos, envía el JSON a:
+
+### Para Facturas Normales:
+
+POST /api/v1/invoices/
+
+
+### Para Facturas de Empresa:
+
+POST /api/v1/invoices/company-with-representatives
+
+
+## Diferencias Clave
+
+| Aspecto | Factura Normal | Factura de Empresa |
+|---------|----------------|--------------------|
+| *Stop IDs* | En cada item como boarding_trip_stop_id y disembarking_trip_stop_id | A nivel raíz como boarding_stop_id y disembarking_stop_id |
+| *Pasajeros* | Un pasajero por item | Múltiples representantes |
+| *Estructura* | Array de items con detalles individuales | Datos de empresa + array de representantes |
+| *Validación* | Por cada item individualmente | Una vez para toda la factura |
+
+Con este enfoque, el frontend podrá manejar correctamente los trip stops para ambos tipos de facturas sin necesidad de endpoints adicionales.

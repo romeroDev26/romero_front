@@ -17,6 +17,7 @@ interface SeatMapRealtimeProps {
   isLocked?: boolean;
   userId: string;
   userName: string;
+  occupiedSeatNumbers?: string[]; // Nueva prop para asientos ocupados por representantes
 }
 
 type SeatRow = SeatMapItem[];
@@ -76,7 +77,8 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
   onSeatToggle, 
   isLocked = false,
   userId,
-  userName
+  userName,
+  occupiedSeatNumbers = []
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const vesselId = tripDetails?.vessel?.id;
@@ -237,6 +239,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                                     activeSelection={activeSeatSelections.get(seat.id)}
                                     connectionStatus={connectionStatus}
                                     isWebSocketAvailable={isWebSocketAvailable}
+                                    isOccupiedByRepresentative={occupiedSeatNumbers.includes(seat.seat_number)}
                                   />
                                 ))}
                               </div>
@@ -256,6 +259,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                                     activeSelection={activeSeatSelections.get(seat.id)}
                                     connectionStatus={connectionStatus}
                                     isWebSocketAvailable={isWebSocketAvailable}
+                                    isOccupiedByRepresentative={occupiedSeatNumbers.includes(seat.seat_number)}
                                   />
                                 ))}
                               </div>
@@ -291,6 +295,10 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                   <span>Otro vendedor</span>
                 </div>
               )}
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-purple-500 rounded"></div>
+                <span>Representante</span>
+              </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-500 rounded"></div>
                 <span>Ocupado</span>

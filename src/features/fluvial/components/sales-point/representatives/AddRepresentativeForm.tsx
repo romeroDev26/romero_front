@@ -94,11 +94,12 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     setDniError(null);
 
     try {
-      const response = await api.get(`/external/query-dni/${dni}`);
-      if (response.data && response.data.nombre) {
+      const response = await api.get(`/external/query-dni?dni=${dni}`);
+      if (response.data && response.data.nombreCompleto) {
         setFormData(prev => ({
           ...prev,
-          name: response.data.nombre
+          name: response.data.nombreCompleto,
+          phone: response.data.phone || prev.phone // Solo actualizar teléfono si viene en la respuesta
         }));
         toast.success('Datos encontrados automáticamente');
       }

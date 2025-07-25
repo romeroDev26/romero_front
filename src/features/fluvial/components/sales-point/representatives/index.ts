@@ -3,3 +3,4 @@
 export { PassengerQuantitySelector } from './PassengerQuantitySelector';
 export { RepresentativesInstructions } from './RepresentativesInstructions';
 export { AddRepresentativeForm } from './AddRepresentativeForm';
+export { RepresentativesManager } from './RepresentativesManager';

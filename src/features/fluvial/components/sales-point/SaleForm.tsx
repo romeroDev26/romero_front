@@ -22,9 +22,7 @@ import { PriceSummary } from "./PriceSummary";
 import { Spinner } from "../../../../components/common/Spinner";
 import { ReservationModal } from "./ReservationModal";
 import { 
-  PassengerQuantitySelector,
-  RepresentativesInstructions,
-  AddRepresentativeForm 
+  RepresentativesManager
 } from "./representatives";
 // Types & Enums
 import {
@@ -804,106 +802,24 @@ export const SaleForm: React.FC<SaleFormProps> = ({
             
             {/* Sección de Representantes para RUC */}
             {showRepresentatives && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-lg text-blue-800">
-                    Gestión de Representantes
-                  </h3>
-                  <span className="text-sm text-blue-600">
-                    {representatives.length} / {maxPassengers} agregados
-                  </span>
-                </div>
-                
-                <RepresentativesInstructions />
-                
-                {representatives.length < maxPassengers && (
-                  <PassengerQuantitySelector
-                    quantity={maxPassengers}
-                    onQuantityChange={setMaxPassengers}
-                    disabled={false}
-                  />
-                )}
-                
-                {/* Lista de representantes agregados */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium text-gray-700">
-                      Representantes ({representatives.length})
-                    </div>
-                    {representatives.length < maxPassengers && !showAddForm && (
-                      <Button
-                        onClick={() => setShowAddForm(true)}
-                        className="text-xs px-3 py-1 bg-blue-600 hover:bg-blue-700"
-                        disabled={isReserving}
-                      >
-                        {isReserving ? 'Reservando...' : '+ Agregar'}
-                      </Button>
-                    )}
-                  </div>
-                  
-                  {representatives.map((rep, index) => (
-                    <div key={index} className="bg-white border rounded p-3 text-sm flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium">{rep.name}</div>
-                        <div className="text-gray-600 text-xs">
-                          {rep.document_type}: {rep.document_number}
-                        </div>
-                        <div className="text-gray-600 text-xs">
-                          Teléfono: {rep.phone}
-                        </div>
-                        <div className="text-blue-600 text-xs font-medium mt-1">
-                          {rep.seat_number === "Elección libre" ? (
-                            <span className="bg-blue-100 px-2 py-1 rounded">
-                              Elección libre
-                            </span>
-                          ) : (
-                            <span className="bg-green-100 px-2 py-1 rounded">
-                              Asiento {rep.seat_number}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => handleRemoveRepresentative(index)}
-                        variant="outline"
-                        className="text-xs px-2 py-1 text-red-600 border-red-300 hover:bg-red-50"
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
-                  ))}
-                  
-                  {representatives.length === 0 && !showAddForm && (
-                    <div className="text-center text-gray-500 py-4 border-2 border-dashed border-gray-300 rounded">
-                      No hay representantes agregados
-                      <br />
-                      <Button
-                        onClick={() => setShowAddForm(true)}
-                        variant="outline"
-                        className="mt-2 text-sm px-4 py-2"
-                      >
-                        Agregar Primer Representante
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Formulario para agregar representante */}
-                {showAddForm && (
-                  <AddRepresentativeForm
-                    onAdd={handleAddRepresentative}
-                    onCancel={() => setShowAddForm(false)}
-                    existingDocuments={existingDocuments}
-                    tripId={trip.id}
-                    usedSeatNumbers={[...usedSeatNumbers, ...getReservedSeatNumbers()]}
-                    selectedSeat={selectedSeatForRepresentative}
-                    onSeatSelect={setSelectedSeatForRepresentative}
-                    representativeIndex={representatives.length}
-                    onSeatReserve={reserveSeat}
-                    onSeatRelease={releaseSeat}
-                  />
-                )}
-              </div>
+              <RepresentativesManager
+                representatives={representatives}
+                maxPassengers={maxPassengers}
+                onMaxPassengersChange={setMaxPassengers}
+                onAddRepresentative={handleAddRepresentative}
+                onRemoveRepresentative={handleRemoveRepresentative}
+                showAddForm={showAddForm}
+                onShowAddFormChange={setShowAddForm}
+                isReserving={isReserving}
+                existingDocuments={existingDocuments}
+                tripId={trip.id}
+                usedSeatNumbers={usedSeatNumbers}
+                selectedSeatForRepresentative={selectedSeatForRepresentative}
+                onSeatSelectForRepresentative={setSelectedSeatForRepresentative}
+                onSeatReserve={reserveSeat}
+                onSeatRelease={releaseSeat}
+                getReservedSeatNumbers={getReservedSeatNumbers}
+              />
             )}            <div className="bg-white p-6 rounded-lg shadow-sm border">
               {showAddForm && (
                 <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">

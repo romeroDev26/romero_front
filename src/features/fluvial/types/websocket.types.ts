@@ -1,0 +1,55 @@
+// src/features/fluvial/types/websocket.types.ts
+
+export interface SeatUpdateMessage {
+  type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG' 
+       | 'SEAT_TEMP_RESERVE' | 'SEAT_TEMP_RELEASE' | 'SEAT_TEMP_RESERVE_RESPONSE' 
+       | 'SEAT_TEMP_RESERVED' | 'SEAT_TEMP_RELEASED' | 'SEAT_TEMP_RELEASE_ALL';
+  tripId: number;
+  seatId?: number;
+  seatIds?: number[];
+  seats?: Array<{ seatId: number; userId: string; userName: string }>;
+  status?: string;
+  userId?: string;
+  userName?: string;
+  companyName?: string;
+  representativeIndex?: number;
+  representativeName?: string;
+  timestamp: string;
+  reservationType?: 'user' | 'representative';
+  ttl?: number;
+  success?: boolean;
+  error?: string;
+}
+
+export interface SeatSelection {
+  seatId: number;
+  userId: string;
+  userName: string;
+  timestamp: string;
+  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative' | 'temp_reserved';
+  companyName?: string;
+  representativeIndex?: number;
+  representativeName?: string;
+  ttl?: number;
+  expiresAt?: string;
+}
+
+export interface WebSocketConfig {
+  tripId: number;
+  userId: string;
+  userName: string;
+  enabled?: boolean;
+  maxReconnectAttempts?: number;
+  companyName?: string;
+  isCompanyMode?: boolean;
+}
+
+export interface SeatMapRealtimeOptions extends WebSocketConfig {
+  seatSelectionTimeout?: number;
+  cleanupInterval?: number;
+  enableDebugLogs?: boolean;
+  purchaseTimeout?: number;
+  onPurchaseTimeoutExpired?: () => void;
+}
+
+export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'failed';

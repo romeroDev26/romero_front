@@ -1,0 +1,112 @@
+// src/features/fluvial/hooks/useSeatSelections.ts
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { SeatSelection } from '../types/websocket.types';
+
+interface UseSeatSelectionsOptions {
+  userId: string;
+  seatSelectionTimeout?: number;
+  cleanupInterval?: number;
+}
+
+interface UseSeatSelectionsReturn {
+  activeSeatSelections: Map<number, SeatSelection>;
+  myReservedSeats: Set<number>;
+  myReservedSeatsRef: React.RefObject<Set<number>>; // Nueva referencia expuesta
+  addSelection: (selection: SeatSelection) => void;
+  removeSelection: (seatId: number) => void;
+  addReservation: (seatId: number) => void;
+  removeReservation: (seatId: number) => void;
+  clearAllReservations: () => void;
+  debugActiveSelections: () => void;
+}
+
+export const useSeatSelections = ({
+  userId,
+  seatSelectionTimeout = 30000,
+  cleanupInterval = 5000
+}: UseSeatSelectionsOptions): UseSeatSelectionsReturn => {
+  const [activeSeatSelections, setActiveSeatSelections] = useState<Map<number, SeatSelection>>(new Map());
+  const [myReservedSeats, setMyReservedSeats] = useState<Set<number>>(new Set());
+  
+  // Referencias estables - se actualizan manualmente solo cuando es necesario
+  const myReservedSeatsRef = useRef<Set<number>>(new Set());
+  const userIdRef = useRef(userId);
+  const seatSelectionTimeoutRef = useRef(seatSelectionTimeout);
+  const cleanupIntervalRef = useRef(cleanupInterval);
+  
+  // Actualizar referencias solo cuando cambien los props (no los estados)
+  useEffect(() => {
+    userIdRef.current = userId;
+    seatSelectionTimeoutRef.current = seatSelectionTimeout;
+    cleanupIntervalRef.current = cleanupInterval;
+  }, [userId, seatSelectionTimeout, cleanupInterval]);
+
+  const addSelection = useCallback((selection: SeatSelection) => {
+    setActiveSeatSelections(prev => {
+      const newMap = new Map(prev);
+      newMap.set(selection.seatId, selection);
+      return newMap;
+    });
+  }, []);
+
+  const removeSelection = useCallback((seatId: number) => {
+    setActiveSeatSelections(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(seatId);
+      return newMap;
+    });
+  }, []);
+
+  const addReservation = useCallback((seatId: number) => {
+    setMyReservedSeats(prev => {
+      const newSet = new Set([...prev, seatId]);
+      myReservedSeatsRef.current = newSet;
+      return newSet;
+    });
+  }, []);
+
+  const removeReservation = useCallback((seatId: number) => {
+    setMyReservedSeats(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(seatId);
+      myReservedSeatsRef.current = newSet;
+      return newSet;
+    });
+  }, []);
+
+  const clearAllReservations = useCallback(() => {
+    setMyReservedSeats(() => {
+      const newSet = new Set<number>();
+      myReservedSeatsRef.current = newSet;
+      return newSet;
+    });
+  }, []);
+
+  const debugActiveSelections = useCallback(() => {
+    // Obtener el valor actual sin crear dependencia
+    setActiveSeatSelections(current => {
+      console.log('Active seat selections:', {
+        totalSelections: current.size,
+        selections: Array.from(current.entries()).map(([seatId, selection]) => ({
+          seatId,
+          userName: selection.userName,
+          userId: selection.userId,
+          timestamp: selection.timestamp
+        }))
+      });
+      return current; // No modificar el estado
+    });
+  }, []); // Sin dependencias para evitar recreación
+
+  return {
+    activeSeatSelections,
+    myReservedSeats,
+    myReservedSeatsRef, // Nueva referencia expuesta
+    addSelection,
+    removeSelection,
+    addReservation,
+    removeReservation,
+    clearAllReservations,
+    debugActiveSelections
+  };
+};

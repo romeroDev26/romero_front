@@ -1,5 +1,5 @@
 // src/features/fluvial/components/seat-map/SeatMapRealtime.tsx
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { useTripDetails } from '../../hooks/useTripDetails';
 import { useSeatMapRealtime } from '../../hooks/useSeatMapRealtime';
 import { Spinner } from '../../../../components/common/Spinner';
@@ -80,6 +80,14 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
   userName,
   occupiedSeatNumbers = []
 }) => {
+  // Referencia estable para las selecciones actuales
+  const selectedSeatsRef = useRef<Set<number>>(selectedSeats);
+  
+  // Actualizar la referencia cuando cambien las selecciones
+  useEffect(() => {
+    selectedSeatsRef.current = selectedSeats;
+  }, [selectedSeats]);
+
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails, isLoading: isLoadingVessel } = useVessel(vesselId || null);
@@ -120,14 +128,23 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
     onSeatToggle(seat);
   };
 
-  // Liberar selección cuando el componente se desmonta o cambia la selección
+  // Liberar selección solo cuando el componente se desmonta
+  const releaseSeatRef = useRef(releaseSeat);
+  
+  // Actualizar la referencia sin crear dependencia
+  useEffect(() => {
+    releaseSeatRef.current = releaseSeat;
+  });
+  
   useEffect(() => {
     return () => {
-      selectedSeats.forEach(seatId => {
-        releaseSeat(seatId);
+      // Usar la referencia actual para evitar dependencias circulares
+      const currentSelectedSeats = Array.from(selectedSeatsRef.current);
+      currentSelectedSeats.forEach(seatId => {
+        releaseSeatRef.current(seatId);
       });
     };
-  }, [selectedSeats, releaseSeat]);
+  }, []); // Sin dependencias para evitar recreación infinita
 
   const seatLayout = useMemo(() => {
     if (!vesselDetails?.seat_configurations || !(seatMap ?? []).length) {

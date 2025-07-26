@@ -8,6 +8,10 @@ interface SeatSelection {
   userId: string;
   userName: string;
   timestamp: string;
+  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative'; // ← NUEVO: Agregado 'representative'
+  companyName?: string; // ← NUEVO: Para mostrar empresa
+  representativeIndex?: number; // ← NUEVO: Índice del representante
+  representativeName?: string; // ← NUEVO: Nombre del representante
 }
 
 interface SeatRealtimeProps {
@@ -37,6 +41,10 @@ const getSeatStyles = (
   
   // Si hay una selección activa de otro usuario (solo si WebSocket está disponible)
   if (activeSelection && !isSelected && isWebSocketAvailable) {
+    // ← NUEVO: Diferentes estilos según el tipo de selección
+    if (activeSelection.type === 'representative') {
+      return 'bg-purple-500 border-purple-600 text-white cursor-not-allowed animate-pulse';
+    }
     return 'bg-orange-400 border-orange-500 text-white cursor-not-allowed animate-pulse';
   }
   
@@ -79,6 +87,12 @@ const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection, isOc
   }
   
   if (activeSelection) {
+    // ← NUEVO: Diferentes mensajes según el tipo de selección
+    if (activeSelection.type === 'representative') {
+      const companyInfo = activeSelection.companyName ? ` (${activeSelection.companyName})` : '';
+      const repInfo = activeSelection.representativeName ? ` - Rep: ${activeSelection.representativeName}` : '';
+      return `${baseInfo} - Reservado para representante${companyInfo}${repInfo}`;
+    }
     return `${baseInfo} - Siendo seleccionado por: ${activeSelection.userName}`;
   }
   
@@ -128,7 +142,14 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
         {/* Indicador de selección por otro usuario (solo si WebSocket está disponible) */}
         {activeSelection && isWebSocketAvailable && (
           <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white text-xs px-1 rounded text-center whitespace-nowrap">
-            {activeSelection.userName.split(' ')[0]}
+            {/* ← NUEVO: Diferentes indicadores según el tipo */}
+            {activeSelection.type === 'representative' ? (
+              <span className="bg-purple-600 px-1 rounded">
+                {activeSelection.companyName ? activeSelection.companyName.substring(0, 8) : 'Empresa'}
+              </span>
+            ) : (
+              activeSelection.userName.split(' ')[0]
+            )}
           </div>
         )}
       </button>

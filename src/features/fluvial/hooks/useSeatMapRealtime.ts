@@ -4,13 +4,18 @@ import { SeatMapItem } from '../../../types';
 import { useSeatMap } from './useSeatMap';
 
 interface SeatUpdateMessage {
-  type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG';
+  type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG' 
+       | 'REPRESENTATIVE_SELECTION' | 'REPRESENTATIVE_RELEASED'; // ← NUEVO para representantes
   tripId: number;
   seatId?: number;
+  seatIds?: number[]; // ← NUEVO: Para operaciones con múltiples asientos
   seats?: Array<{ seatId: number; userId: string; userName: string }>; // Para INITIAL_STATE - selecciones activas
   status?: string;
   userId?: string;
   userName?: string;
+  companyName?: string; // ← NUEVO: Nombre de la empresa
+  representativeIndex?: number; // ← NUEVO: Índice del representante
+  representativeName?: string; // ← NUEVO: Nombre del representante
   timestamp: string;
 }
 
@@ -19,7 +24,10 @@ interface SeatSelection {
   userId: string;
   userName: string;
   timestamp: string;
-  type?: 'temporary' | 'reserved' | 'purchasing'; // Tipo de selección
+  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative'; // ← NUEVO: Agregado 'representative'
+  companyName?: string; // ← NUEVO: Para mostrar empresa
+  representativeIndex?: number; // ← NUEVO: Índice del representante
+  representativeName?: string; // ← NUEVO: Nombre del representante
 }
 
 interface UseSeatMapRealtimeOptions {
@@ -33,6 +41,9 @@ interface UseSeatMapRealtimeOptions {
   enableDebugLogs?: boolean; // Para habilitar/deshabilitar logs detallados
   purchaseTimeout?: number; // Tiempo en ms para completar compra (default: 5 min)
   onPurchaseTimeoutExpired?: () => void; // Callback cuando expira el tiempo de compra
+  // ← NUEVO: Configuración para modo empresarial/representantes
+  companyName?: string; // Nombre de la empresa (para RUC)
+  isCompanyMode?: boolean; // Si está en modo empresa
 }
 
 export const useSeatMapRealtime = ({ 
@@ -45,7 +56,10 @@ export const useSeatMapRealtime = ({
   cleanupInterval = 5000, // 5 segundos por defecto
   enableDebugLogs = false, // Deshabilitado por defecto
   purchaseTimeout = 300000, // 5 minutos por defecto
-  onPurchaseTimeoutExpired
+  onPurchaseTimeoutExpired,
+  // ← NUEVO: Parámetros para modo empresa
+  companyName,
+  isCompanyMode = false
 }: UseSeatMapRealtimeOptions) => {
   const { data: initialSeatMap = [], isLoading, refetch } = useSeatMap(tripId);
   const [seatMap, setSeatMap] = useState<SeatMapItem[]>([]);
@@ -211,6 +225,62 @@ export const useSeatMapRealtime = ({
               }
               break;
 
+            case 'REPRESENTATIVE_SELECTION':
+              // ← NUEVO: Manejar selección de asiento para representante
+              console.log('📥 Recibido REPRESENTATIVE_SELECTION:', message);
+              
+              if (message.userId !== userId && message.seatId !== undefined) {
+                console.log('✅ Procesando selección de representante de otro usuario:', {
+                  fromUser: message.userId,
+                  currentUser: userId,
+                  seatId: message.seatId,
+                  companyName: message.companyName,
+                  representativeName: message.representativeName
+                });
+                
+                setActiveSeatSelections(prev => {
+                  const newMap = new Map(prev);
+                  newMap.set(message.seatId!, {
+                    seatId: message.seatId!,
+                    userId: message.userId!,
+                    userName: message.userName!,
+                    timestamp: message.timestamp,
+                    type: 'representative',
+                    companyName: message.companyName,
+                    representativeIndex: message.representativeIndex,
+                    representativeName: message.representativeName
+                  });
+                  
+                  console.log('🗺️ Mapa de selecciones actualizado:', {
+                    totalSelections: newMap.size,
+                    newSelection: {
+                      seatId: message.seatId,
+                      type: 'representative',
+                      companyName: message.companyName
+                    }
+                  });
+                  
+                  return newMap;
+                });
+              } else {
+                console.log('⏭️ Ignorando selección propia o sin seatId:', {
+                  isOwnSelection: message.userId === userId,
+                  hasSeatId: !!message.seatId
+                });
+              }
+              break;
+
+            case 'REPRESENTATIVE_RELEASED':
+              // ← NUEVO: Manejar liberación de asiento de representante
+              if (message.userId !== userId && message.seatId !== undefined) {
+                setActiveSeatSelections(prev => {
+                  const newMap = new Map(prev);
+                  newMap.delete(message.seatId!);
+                  return newMap;
+                });
+              }
+              break;
+
             case 'PONG':
               // Connection alive confirmation
               break;
@@ -357,6 +427,56 @@ export const useSeatMapRealtime = ({
       });
     }
   }, [isWebSocketAvailable]); // Removido enableDebugLogs
+
+  // ← NUEVO: Función para notificar selección de asiento para representante
+  const selectSeatForRepresentative = useCallback((seatId: number, representativeIndex: number, representativeName: string) => {
+    console.log('📡 selectSeatForRepresentative llamado:', {
+      seatId,
+      representativeIndex,
+      representativeName,
+      isWebSocketAvailable,
+      wsState: wsRef.current?.readyState,
+      companyName: companyName || 'Sin nombre'
+    });
+    
+    if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
+      const message = {
+        type: 'REPRESENTATIVE_SELECTION',
+        seatId,
+        companyName: companyName || 'Empresa',
+        representativeIndex,
+        representativeName
+      };
+      
+      console.log('📤 Enviando mensaje WebSocket:', message);
+      wsRef.current.send(JSON.stringify(message));
+      
+      console.log('✅ Mensaje WebSocket enviado exitosamente');
+    } else {
+      console.log('❌ No se pudo enviar mensaje WebSocket:', {
+        wsReadyState: wsRef.current?.readyState,
+        wsStates: {
+          CONNECTING: WebSocket.CONNECTING,
+          OPEN: WebSocket.OPEN,
+          CLOSING: WebSocket.CLOSING,
+          CLOSED: WebSocket.CLOSED
+        },
+        isWebSocketAvailable
+      });
+    }
+  }, [isWebSocketAvailable, companyName]);
+
+  // ← NUEVO: Función para notificar liberación de asiento de representante
+  const releaseSeatForRepresentative = useCallback((seatId: number) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
+      const message = {
+        type: 'REPRESENTATIVE_RELEASED',
+        seatId
+      };
+      
+      wsRef.current.send(JSON.stringify(message));
+    }
+  }, [isWebSocketAvailable]);
 
   // Función para reservar asiento para compra
   const reserveSeatForPurchase = useCallback((seatId: number) => {
@@ -581,6 +701,9 @@ export const useSeatMapRealtime = ({
     selectSeat,
     releaseSeat,
     refreshSeatMap,
+    // ← NUEVO: Funciones para representantes
+    selectSeatForRepresentative,
+    releaseSeatForRepresentative,
     // Funciones de reserva para compra
     reserveSeatForPurchase,
     releaseReservedSeat,
@@ -617,7 +740,10 @@ export const useSeatMapRealtime = ({
       currentTimeout: seatSelectionTimeout,
       cleanupInterval: cleanupInterval,
       purchaseTimeRemaining,
-      isPurchaseTimerActive
+      isPurchaseTimerActive,
+      // ← NUEVO: Debug info para representantes
+      companyName: companyName || 'N/A',
+      isCompanyMode
     }
   };
 };

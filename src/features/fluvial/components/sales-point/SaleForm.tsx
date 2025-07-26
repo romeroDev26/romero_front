@@ -50,6 +50,7 @@ import { useSeatReservations } from "../../hooks/useSeatReservations";
 import { useCreateSeatAssignment } from "../../hooks/useSeatAssignments";
 import { useUpdateReservation } from "../../hooks/useReservations";
 import { useRepresentantes } from "../../hooks/useRepresentantes";
+import { useSeatMapRealtime } from "../../hooks/useSeatMapRealtime"; // ← NUEVO: Importar hook de WebSocket
 import { seatValidationService } from "../../../../services/seatValidation.service";
 // Services
 import { authService } from "../../../../services/auth.service";
@@ -138,19 +139,55 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   } = useSeatReservations(trip.id);
 
   // Funciones para gestionar representantes
-  const handleAddRepresentative = (representative: {
+  const handleAddRepresentative = async (representative: {
     document_type: string;
     document_number: string;
     name: string;
     phone: string;
     seat_number?: string;
   }) => {
+    console.log('🏢 Agregando representante:', {
+      representative,
+      selectedSeatForRepresentative,
+      isWebSocketConnected,
+      currentUser: currentUser?.id,
+      passengerData: passengerData.name
+    });
+    
+    // ← NUEVO: Notificar via WebSocket cuando se agrega un representante
+    if (selectedSeatForRepresentative && isWebSocketConnected) {
+      console.log('📡 Enviando notificación WebSocket para representante:', {
+        seatId: selectedSeatForRepresentative.id,
+        seatNumber: selectedSeatForRepresentative.seat_number,
+        representativeIndex: representatives.length,
+        representativeName: representative.name,
+        companyName: passengerData.name
+      });
+      
+      selectSeatForRepresentative(
+        selectedSeatForRepresentative.id,
+        representatives.length,
+        representative.name
+      );
+    } else {
+      console.log('⚠️ No se envió notificación WebSocket:', {
+        hasSelectedSeat: !!selectedSeatForRepresentative,
+        isConnected: isWebSocketConnected
+      });
+    }
+    
     setRepresentatives(prev => [...prev, representative]);
     setShowAddForm(false);
     toast.success('Representante agregado exitosamente');
   };
 
   const handleRemoveRepresentative = (index: number) => {
+    const representativeToRemove = representatives[index];
+    
+    // ← NUEVO: Por ahora simplificamos - se podría mejorar con acceso al mapa de asientos
+    // En una implementación completa, se buscaría el seatId por seat_number
+    console.log('🔄 WebSocket: Liberando asiento de representante:', representativeToRemove.seat_number);
+    
     // Liberar asiento reservado antes de eliminar representante
     releaseSeat(index);
     
@@ -750,6 +787,20 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   };
 
   const isRuc = passengerData.docType === SunatDocType.RUC;
+
+  // ← NUEVO: Hook de WebSocket para notificar selecciones de representantes
+  const {
+    selectSeatForRepresentative,
+    releaseSeatForRepresentative,
+    isConnected: isWebSocketConnected
+  } = useSeatMapRealtime({
+    tripId: trip.id,
+    userId: currentUser?.id || 'unknown',
+    userName: currentUser?.full_name || currentUser?.first_name || 'Usuario',
+    enabled: true, // Siempre habilitado para notificar
+    companyName: isRuc ? passengerData.name : undefined,
+    isCompanyMode: isRuc
+  });
 
   const areActionsEnabled =
     !!selectedBoardingStopId &&

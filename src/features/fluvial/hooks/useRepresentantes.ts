@@ -47,7 +47,7 @@ export function useRepresentantes() {
       representantesService.createCompanyInvoiceWithRepresentatives(data),
     
     onSuccess: (data: any) => {
-      const { invoice, representatives, summary } = data;
+      const { invoice, representatives } = data;
       
       toast.success(
         `Factura ${invoice.series}-${String(invoice.number).padStart(8, '0')} creada con ${representatives.length} representantes`,
@@ -61,16 +61,6 @@ export function useRepresentantes() {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['trips'] });
       queryClient.invalidateQueries({ queryKey: ['seatAssignments'] });
-      
-      // Log detallado para debugging
-      console.log('Factura empresarial creada exitosamente:', {
-        invoice_id: invoice.id,
-        invoice_number: `${invoice.series}-${invoice.number}`,
-        representatives_count: representatives.length,
-        total_amount: invoice.total_amount,
-        summary,
-        timestamp: new Date().toISOString()
-      });
     },
     
     onError: (error: any) => {

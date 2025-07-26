@@ -98,9 +98,10 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
     userId,
     userName,
     enabled: !isLocked, // Solo habilitar WebSocket si no está bloqueado
-    // ← NUEVO: Pasar configuración para empresa si aplica
-    companyName: userName.includes('Empresa') ? userName : undefined, // Simplificación temporal
-    isCompanyMode: false // Por ahora false, se podría pasar como prop si es necesario
+    enableDebugLogs: true, // ← NUEVO: Habilitar logs para debugging
+    // ← NUEVO: Configuración mejorada para empresa
+    companyName: undefined, // No es modo empresa en este componente
+    isCompanyMode: false // Modo normal, no empresarial
   });  // Manejar selección/deselección de asientos con notificación WebSocket
   const handleSeatToggle = (seat: SeatMapItem) => {
     if (isLocked) return;
@@ -298,6 +299,11 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                     <div className="w-3 h-3 bg-orange-400 rounded animate-pulse"></div>
                     <span>Otro vendedor</span>
                   </div>
+                  {/* ← NUEVO: Leyenda para reservas temporales de representantes */}
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-purple-400 rounded animate-pulse"></div>
+                    <span>Reserva temporal (30min)</span>
+                  </div>
                   {/* ← NUEVO: Leyenda para representantes de otros vendedores */}
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-purple-500 rounded animate-pulse"></div>
@@ -317,12 +323,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
             {connectionStatus === 'failed' && (
               <div className="mt-2 text-xs text-gray-600 italic">
                 💡 Modo normal: Las ventas funcionan normalmente, pero sin vista en tiempo real de otros vendedores.
-              </div>
-            )}
-            {/* ← NUEVO: Indicador de estado de representantes */}
-            {canUseRealtime && (
-              <div className="mt-2 text-xs text-blue-600 italic">
-                🏢 Sistema empresarial: Los representantes de otras empresas se muestran en tiempo real.
               </div>
             )}
           </div>

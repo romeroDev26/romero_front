@@ -5,7 +5,8 @@ import { useSeatMap } from './useSeatMap';
 
 interface SeatUpdateMessage {
   type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG' 
-       | 'REPRESENTATIVE_SELECTION' | 'REPRESENTATIVE_RELEASED'; // ← NUEVO para representantes
+       | 'SEAT_TEMP_RESERVE' | 'SEAT_TEMP_RELEASE' | 'SEAT_TEMP_RESERVE_RESPONSE' 
+       | 'SEAT_TEMP_RESERVED' | 'SEAT_TEMP_RELEASED' | 'SEAT_TEMP_RELEASE_ALL'; // ← NUEVO: Eventos correctos del backend + liberación masiva
   tripId: number;
   seatId?: number;
   seatIds?: number[]; // ← NUEVO: Para operaciones con múltiples asientos
@@ -17,6 +18,11 @@ interface SeatUpdateMessage {
   representativeIndex?: number; // ← NUEVO: Índice del representante
   representativeName?: string; // ← NUEVO: Nombre del representante
   timestamp: string;
+  // ← NUEVO: Campos específicos para eventos SEAT_TEMP_RESERVE según documentación backend
+  reservationType?: 'user' | 'representative'; // Tipo de reserva temporal
+  ttl?: number; // Tiempo de vida en segundos (30 min para representantes, 5 min para usuarios)
+  success?: boolean; // Para respuestas SEAT_TEMP_RESERVE_RESPONSE
+  error?: string; // Para errores en respuestas
 }
 
 interface SeatSelection {
@@ -24,10 +30,12 @@ interface SeatSelection {
   userId: string;
   userName: string;
   timestamp: string;
-  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative'; // ← NUEVO: Agregado 'representative'
+  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative' | 'temp_reserved'; // ← NUEVO: Agregado 'temp_reserved'
   companyName?: string; // ← NUEVO: Para mostrar empresa
   representativeIndex?: number; // ← NUEVO: Índice del representante
   representativeName?: string; // ← NUEVO: Nombre del representante
+  ttl?: number; // ← NUEVO: Tiempo de vida de la reserva temporal (en segundos)
+  expiresAt?: string; // ← NUEVO: Timestamp de cuando expira la reserva
 }
 
 interface UseSeatMapRealtimeOptions {
@@ -153,6 +161,18 @@ export const useSeatMapRealtime = ({
         try {
           const message: SeatUpdateMessage = JSON.parse(event.data);
           
+          // ← NUEVO: Log general de todos los mensajes recibidos
+          console.log('🌐 WebSocket mensaje recibido:', {
+            type: message.type,
+            from: message.userId,
+            currentUser: userId,
+            seatId: message.seatId,
+            success: message.success,
+            error: message.error,
+            ttl: message.ttl,
+            reservationType: message.reservationType
+          });
+          
           switch (message.type) {
             case 'INITIAL_STATE':
               if (message.seats) {
@@ -202,40 +222,10 @@ export const useSeatMapRealtime = ({
 
             case 'SEAT_SELECTION':
               if (message.userId !== userId && message.seatId !== undefined) {
-                setActiveSeatSelections(prev => {
-                  const newMap = new Map(prev);
-                  newMap.set(message.seatId!, {
-                    seatId: message.seatId!,
-                    userId: message.userId!,
-                    userName: message.userName!,
-                    timestamp: message.timestamp
-                  });
-                  return newMap;
-                });
-              }
-              break;
-
-            case 'SEAT_RELEASED':
-              if (message.userId !== userId && message.seatId !== undefined) {
-                setActiveSeatSelections(prev => {
-                  const newMap = new Map(prev);
-                  newMap.delete(message.seatId!);
-                  return newMap;
-                });
-              }
-              break;
-
-            case 'REPRESENTATIVE_SELECTION':
-              // ← NUEVO: Manejar selección de asiento para representante
-              console.log('📥 Recibido REPRESENTATIVE_SELECTION:', message);
-              
-              if (message.userId !== userId && message.seatId !== undefined) {
-                console.log('✅ Procesando selección de representante de otro usuario:', {
-                  fromUser: message.userId,
-                  currentUser: userId,
+                console.log('� Recibido SEAT_SELECTION (5 min):', {
                   seatId: message.seatId,
-                  companyName: message.companyName,
-                  representativeName: message.representativeName
+                  from: message.userId,
+                  userName: message.userName
                 });
                 
                 setActiveSeatSelections(prev => {
@@ -245,34 +235,127 @@ export const useSeatMapRealtime = ({
                     userId: message.userId!,
                     userName: message.userName!,
                     timestamp: message.timestamp,
-                    type: 'representative',
-                    companyName: message.companyName,
-                    representativeIndex: message.representativeIndex,
-                    representativeName: message.representativeName
+                    type: 'temporary'
                   });
-                  
-                  console.log('🗺️ Mapa de selecciones actualizado:', {
-                    totalSelections: newMap.size,
-                    newSelection: {
-                      seatId: message.seatId,
-                      type: 'representative',
-                      companyName: message.companyName
-                    }
-                  });
-                  
                   return newMap;
-                });
-              } else {
-                console.log('⏭️ Ignorando selección propia o sin seatId:', {
-                  isOwnSelection: message.userId === userId,
-                  hasSeatId: !!message.seatId
                 });
               }
               break;
 
-            case 'REPRESENTATIVE_RELEASED':
-              // ← NUEVO: Manejar liberación de asiento de representante
+            case 'SEAT_RELEASED':
               if (message.userId !== userId && message.seatId !== undefined) {
+                console.log('� Recibido SEAT_RELEASED:', {
+                  seatId: message.seatId,
+                  from: message.userId
+                });
+                
+                setActiveSeatSelections(prev => {
+                  const newMap = new Map(prev);
+                  newMap.delete(message.seatId!);
+                  return newMap;
+                });
+              }
+              break;
+
+            // ← NUEVO: Manejo de eventos SEAT_TEMP_RESERVE del backend
+            case 'SEAT_TEMP_RESERVE_RESPONSE':
+              if (message.seatId !== undefined) {
+                console.log('📬 Recibido SEAT_TEMP_RESERVE_RESPONSE:', {
+                  seatId: message.seatId,
+                  success: message.success,
+                  error: message.error,
+                  reservationType: message.reservationType
+                });
+                
+                // ← NUEVO: Logging detallado para diagnóstico
+                if (!message.success) {
+                  console.error('❌ [DEBUG] SEAT_TEMP_RESERVE RECHAZADA:', {
+                    seatId: message.seatId,
+                    errorMessage: message.error || 'Sin mensaje de error del backend',
+                    possibleReasons: [
+                      'Asiento ya ocupado por venta confirmada',
+                      'Asiento tiene reserva temporal activa de otro vendedor', 
+                      'Asiento está en proceso de venta',
+                      'Conflict de timing con otro vendedor',
+                      'Error de permisos o configuración'
+                    ],
+                    timestamp: new Date().toISOString(),
+                    backendResponse: message
+                  });
+                  
+                  // ← NUEVO: Mostrar mensaje al usuario cuando falla la reserva
+                  const seatInMap = seatMap.find((s: SeatMapItem) => s.id === message.seatId);
+                  const seatNumber = seatInMap?.seat_number || message.seatId;
+                  const errorMessage = message.error || 'Este asiento ya no está disponible';
+                  
+                  // Usar setTimeout para evitar problemas de timing con React
+                  setTimeout(() => {
+                    // Importar toast dinámicamente para evitar dependencias circulares
+                    import('react-toastify').then(({ toast }) => {
+                      toast.error(`❌ Asiento ${seatNumber}: ${errorMessage}`, {
+                        position: 'top-right',
+                        autoClose: 6000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                      });
+                    }).catch(err => {
+                      console.error('Error importando toast:', err);
+                      // Fallback: solo log en consola
+                      console.error(`❌ Asiento ${seatNumber}: ${errorMessage}`);
+                    });
+                  }, 100);
+                } else {
+                  console.log('✅ [DEBUG] SEAT_TEMP_RESERVE EXITOSA:', {
+                    seatId: message.seatId,
+                    reservationType: message.reservationType,
+                    ttl: message.ttl || '30 minutos (default para representantes)'
+                  });
+                }
+              }
+              break;
+
+            case 'SEAT_TEMP_RESERVED':
+              if (message.userId !== userId && message.seatId !== undefined) {
+                console.log('🔒 Recibido SEAT_TEMP_RESERVED (30 min para representantes):', {
+                  seatId: message.seatId,
+                  from: message.userId,
+                  userName: message.userName,
+                  reservationType: message.reservationType,
+                  ttl: message.ttl
+                });
+                
+                // Calcular tiempo de expiración
+                const expiresAt = new Date(Date.now() + (message.ttl || 1800) * 1000).toISOString();
+                
+                setActiveSeatSelections(prev => {
+                  const newMap = new Map(prev);
+                  newMap.set(message.seatId!, {
+                    seatId: message.seatId!,
+                    userId: message.userId!,
+                    userName: message.userName!,
+                    timestamp: message.timestamp,
+                    type: message.reservationType === 'representative' ? 'representative' : 'temp_reserved',
+                    ttl: message.ttl,
+                    expiresAt: expiresAt,
+                    // Información adicional para representantes
+                    companyName: message.companyName,
+                    representativeName: message.representativeName,
+                    representativeIndex: message.representativeIndex
+                  });
+                  return newMap;
+                });
+              }
+              break;
+
+            case 'SEAT_TEMP_RELEASED':
+              if (message.userId !== userId && message.seatId !== undefined) {
+                console.log('🔓 Recibido SEAT_TEMP_RELEASED:', {
+                  seatId: message.seatId,
+                  from: message.userId,
+                  reservationType: message.reservationType
+                });
+                
                 setActiveSeatSelections(prev => {
                   const newMap = new Map(prev);
                   newMap.delete(message.seatId!);
@@ -428,32 +511,56 @@ export const useSeatMapRealtime = ({
     }
   }, [isWebSocketAvailable]); // Removido enableDebugLogs
 
-  // ← NUEVO: Función para notificar selección de asiento para representante
+  // ← NUEVO: Función para notificar selección de asiento para representante usando eventos correctos del backend
   const selectSeatForRepresentative = useCallback((seatId: number, representativeIndex: number, representativeName: string) => {
-    console.log('📡 selectSeatForRepresentative llamado:', {
+    console.log('� [DEBUG] selectSeatForRepresentative iniciado:', {
       seatId,
       representativeIndex,
       representativeName,
       isWebSocketAvailable,
       wsState: wsRef.current?.readyState,
-      companyName: companyName || 'Sin nombre'
+      companyName: companyName || 'Sin nombre',
+      timestamp: new Date().toISOString()
     });
     
     if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
-      const message = {
-        type: 'REPRESENTATIVE_SELECTION',
-        seatId,
-        companyName: companyName || 'Empresa',
-        representativeIndex,
-        representativeName
+      // ← NUEVO: Primero liberar cualquier reserva temporal previa del mismo usuario para evitar conflictos
+      const releaseMessage = {
+        type: 'SEAT_TEMP_RELEASE_ALL', // Liberar todas las reservas temporales del usuario
+        userId,
+        userName,
+        timestamp: new Date().toISOString()
       };
       
-      console.log('📤 Enviando mensaje WebSocket:', message);
-      wsRef.current.send(JSON.stringify(message));
+      console.log('🔄 [DEBUG] Liberando reservas previas antes de nueva reserva:', releaseMessage);
+      wsRef.current.send(JSON.stringify(releaseMessage));
       
-      console.log('✅ Mensaje WebSocket enviado exitosamente');
+      // ← PEQUEÑO DELAY para asegurar que el backend procese la liberación
+      setTimeout(() => {
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          // ← CAMBIO IMPORTANTE: Usar SEAT_TEMP_RESERVE según documentación del backend
+          const message = {
+            type: 'SEAT_TEMP_RESERVE',
+            seatId,
+            reservationType: 'representative', // Especificar que es para representante (30 min TTL)
+            companyName: companyName || 'Empresa',
+            representativeName: representativeName,
+            representativeIndex: representativeIndex,
+            userId,
+            userName: `${companyName || 'Empresa'} - ${representativeName}`, // Formato legible
+            timestamp: new Date().toISOString()
+          };
+          
+          console.log('📤 [DEBUG] Enviando SEAT_TEMP_RESERVE para representante (después de liberación):', message);
+          wsRef.current.send(JSON.stringify(message));
+          
+          console.log('✅ [DEBUG] Mensaje SEAT_TEMP_RESERVE enviado exitosamente al WebSocket');
+        } else {
+          console.error('❌ [DEBUG] WebSocket se cerró durante el delay de liberación');
+        }
+      }, 100); // 100ms delay para asegurar procesamiento
     } else {
-      console.log('❌ No se pudo enviar mensaje WebSocket:', {
+      console.error('❌ [DEBUG] No se pudo enviar mensaje WebSocket:', {
         wsReadyState: wsRef.current?.readyState,
         wsStates: {
           CONNECTING: WebSocket.CONNECTING,
@@ -461,22 +568,43 @@ export const useSeatMapRealtime = ({
           CLOSING: WebSocket.CLOSING,
           CLOSED: WebSocket.CLOSED
         },
+        isWebSocketAvailable,
+        wsRef: !!wsRef.current,
+        companyName
+      });
+    }
+  }, [isWebSocketAvailable, companyName, userId]);
+
+  // ← NUEVO: Función para notificar liberación de asiento de representante usando eventos correctos del backend
+  const releaseSeatForRepresentative = useCallback((seatId: number) => {
+    console.log('📡 releaseSeatForRepresentative llamado con eventos correctos:', {
+      seatId,
+      isWebSocketAvailable,
+      wsState: wsRef.current?.readyState
+    });
+    
+    if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
+      // ← CAMBIO IMPORTANTE: Usar SEAT_TEMP_RELEASE según documentación del backend
+      const message = {
+        type: 'SEAT_TEMP_RELEASE',
+        seatId,
+        reservationType: 'representative', // Especificar que es liberación de representante
+        userId,
+        userName,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('📤 Enviando SEAT_TEMP_RELEASE para representante:', message);
+      wsRef.current.send(JSON.stringify(message));
+      
+      console.log('✅ Mensaje SEAT_TEMP_RELEASE enviado exitosamente');
+    } else {
+      console.log('❌ No se pudo enviar mensaje SEAT_TEMP_RELEASE:', {
+        wsReadyState: wsRef.current?.readyState,
         isWebSocketAvailable
       });
     }
-  }, [isWebSocketAvailable, companyName]);
-
-  // ← NUEVO: Función para notificar liberación de asiento de representante
-  const releaseSeatForRepresentative = useCallback((seatId: number) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
-      const message = {
-        type: 'REPRESENTATIVE_RELEASED',
-        seatId
-      };
-      
-      wsRef.current.send(JSON.stringify(message));
-    }
-  }, [isWebSocketAvailable]);
+  }, [isWebSocketAvailable, userId, userName]);
 
   // Función para reservar asiento para compra
   const reserveSeatForPurchase = useCallback((seatId: number) => {

@@ -8,10 +8,12 @@ interface SeatSelection {
   userId: string;
   userName: string;
   timestamp: string;
-  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative'; // ← NUEVO: Agregado 'representative'
+  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative' | 'temp_reserved'; // ← ACTUALIZADO: Agregado 'temp_reserved'
   companyName?: string; // ← NUEVO: Para mostrar empresa
   representativeIndex?: number; // ← NUEVO: Índice del representante
   representativeName?: string; // ← NUEVO: Nombre del representante
+  ttl?: number; // ← NUEVO: Tiempo de vida de la reserva temporal (en segundos)
+  expiresAt?: string; // ← NUEVO: Timestamp de cuando expira la reserva
 }
 
 interface SeatRealtimeProps {
@@ -44,6 +46,10 @@ const getSeatStyles = (
     // ← NUEVO: Diferentes estilos según el tipo de selección
     if (activeSelection.type === 'representative') {
       return 'bg-purple-500 border-purple-600 text-white cursor-not-allowed animate-pulse';
+    }
+    // ← NUEVO: Manejar reservas temporales (SEAT_TEMP_RESERVED del backend)
+    if (activeSelection.type === 'temp_reserved') {
+      return 'bg-purple-400 border-purple-500 text-white cursor-not-allowed animate-pulse';
     }
     return 'bg-orange-400 border-orange-500 text-white cursor-not-allowed animate-pulse';
   }
@@ -92,6 +98,12 @@ const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection, isOc
       const companyInfo = activeSelection.companyName ? ` (${activeSelection.companyName})` : '';
       const repInfo = activeSelection.representativeName ? ` - Rep: ${activeSelection.representativeName}` : '';
       return `${baseInfo} - Reservado para representante${companyInfo}${repInfo}`;
+    }
+    // ← NUEVO: Manejo de reservas temporales del backend
+    if (activeSelection.type === 'temp_reserved') {
+      const companyInfo = activeSelection.companyName ? ` (${activeSelection.companyName})` : '';
+      const ttlInfo = activeSelection.ttl ? ` - Expira en ${Math.round(activeSelection.ttl / 60)} min` : '';
+      return `${baseInfo} - Reserva temporal${companyInfo}${ttlInfo}`;
     }
     return `${baseInfo} - Siendo seleccionado por: ${activeSelection.userName}`;
   }
@@ -146,6 +158,10 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
             {activeSelection.type === 'representative' ? (
               <span className="bg-purple-600 px-1 rounded">
                 {activeSelection.companyName ? activeSelection.companyName.substring(0, 8) : 'Empresa'}
+              </span>
+            ) : activeSelection.type === 'temp_reserved' ? (
+              <span className="bg-purple-500 px-1 rounded">
+                {activeSelection.companyName ? activeSelection.companyName.substring(0, 6) : 'Temp'}
               </span>
             ) : (
               activeSelection.userName.split(' ')[0]

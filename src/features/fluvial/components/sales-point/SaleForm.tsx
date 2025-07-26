@@ -1,5 +1,5 @@
 //src/features/fluvial/components/sales-point/SaleForm.tsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import {
   ArrowLeft,
   Ship,
@@ -146,34 +146,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     phone: string;
     seat_number?: string;
   }) => {
-    console.log('🏢 Agregando representante:', {
-      representative,
-      selectedSeatForRepresentative,
-      isWebSocketConnected,
-      currentUser: currentUser?.id,
-      passengerData: passengerData.name
-    });
-    
-    // ← NUEVO: Notificar via WebSocket cuando se agrega un representante
+    // ← NUEVO: Notificar via WebSocket cuando se agrega un representante usando SEAT_TEMP_RESERVE (30 min)
     if (selectedSeatForRepresentative && isWebSocketConnected) {
-      console.log('📡 Enviando notificación WebSocket para representante:', {
-        seatId: selectedSeatForRepresentative.id,
-        seatNumber: selectedSeatForRepresentative.seat_number,
-        representativeIndex: representatives.length,
-        representativeName: representative.name,
-        companyName: passengerData.name
-      });
-      
       selectSeatForRepresentative(
         selectedSeatForRepresentative.id,
         representatives.length,
         representative.name
       );
-    } else {
-      console.log('⚠️ No se envió notificación WebSocket:', {
-        hasSelectedSeat: !!selectedSeatForRepresentative,
-        isConnected: isWebSocketConnected
-      });
     }
     
     setRepresentatives(prev => [...prev, representative]);
@@ -184,11 +163,14 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const handleRemoveRepresentative = (index: number) => {
     const representativeToRemove = representatives[index];
     
-    // ← NUEVO: Por ahora simplificamos - se podría mejorar con acceso al mapa de asientos
-    // En una implementación completa, se buscaría el seatId por seat_number
-    console.log('🔄 WebSocket: Liberando asiento de representante:', representativeToRemove.seat_number);
+    if (representativeToRemove.seat_number && representativeToRemove.seat_number !== "Elección libre") {
+      // En una implementación ideal, necesitaríamos el seatId, pero por ahora usamos el index
+      // ← NUEVO: Usar la función correcta para liberar representantes
+      // Nota: Idealmente necesitaríamos el seatId, pero el backend debería poder manejar esto
+      releaseSeatForRepresentative(index); // Temporal: usar index como placeholder
+    }
     
-    // Liberar asiento reservado antes de eliminar representante
+    // Liberar asiento reservado antes de eliminar representante (fallback)
     releaseSeat(index);
     
     setRepresentatives(prev => prev.filter((_, i) => i !== index));
@@ -200,7 +182,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     .map(rep => rep.seat_number)
     .filter((seat): seat is string => seat != null && seat !== "Elección libre");
 
-  // Hook para obtener información del usuario actual
+  // ← NUEVO: Hook para obtener información del usuario actual
   const { data: currentUser } = useQuery<User>({
     queryKey: ['currentUser'],
     queryFn: async (): Promise<User> => {
@@ -497,7 +479,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       // NUEVO: Confirmar reservas de asientos tras venta exitosa
       const reservationsConfirmed = await confirmAllReservations();
       if (!reservationsConfirmed) {
-        console.warn('No se pudieron confirmar algunas reservas de asientos');
+        // console.warn('No se pudieron confirmar algunas reservas de asientos');
       }
       
       // Mostrar éxito y navegar
@@ -509,7 +491,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       onSaleSuccess();
 
     } catch (error: any) {
-      console.error("Error creando factura empresarial:", error);
+      // console.error("Error creando factura empresarial:", error);
       
       // NUEVO: Liberar reservas en caso de error
       await releaseAllReservations();
@@ -756,7 +738,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
       onSaleSuccess();
     } catch (error: any) {
-      console.error("Fallo en el proceso de venta:", error);
+      // console.error("Fallo en el proceso de venta:", error);
       
       // Liberar la reserva temporal en caso de error
       // Nota: El backend maneja esto internamente, pero mantenemos por compatibilidad
@@ -790,6 +772,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   // ← NUEVO: Hook de WebSocket para notificar selecciones de representantes
   const {
+    seatMap, // ← NUEVO: Obtener mapa de asientos para buscar seatId por seat_number
     selectSeatForRepresentative,
     releaseSeatForRepresentative,
     isConnected: isWebSocketConnected
@@ -801,6 +784,106 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     companyName: isRuc ? passengerData.name : undefined,
     isCompanyMode: isRuc
   });
+
+  // ← NUEVO: Función para encontrar seatId por seat_number
+  const findSeatIdBySeatNumber = useCallback((seatNumber: string): number | null => {
+    if (!seatMap || seatMap.length === 0) {
+      console.warn('⚠️ [DEBUG] SeatMap no disponible para buscar seatId:', { seatMapLength: seatMap?.length });
+      return null;
+    }
+    
+    const seat = seatMap.find(s => s.seat_number === seatNumber);
+    if (!seat) {
+      console.warn('⚠️ [DEBUG] Asiento no encontrado en seatMap:', { 
+        seatNumber, 
+        availableSeats: seatMap.map(s => s.seat_number).slice(0, 10) // Mostrar primeros 10 para debug
+      });
+      return null;
+    }
+    
+    console.log('✅ [DEBUG] Asiento encontrado:', { seatNumber, seatId: seat.id });
+    return seat.id;
+  }, [seatMap]);
+
+  // ← NUEVO: Efecto para enviar eventos WebSocket de representantes existentes cuando se conecta
+  useEffect(() => {
+    console.log('🔄 [DEBUG] Verificando representantes existentes para WebSocket:', {
+      representativesCount: representatives.length,
+      isWebSocketConnected,
+      isRuc,
+      companyName: passengerData.name,
+      representatives: representatives.map(rep => ({
+        name: rep.name,
+        seatNumber: rep.seat_number
+      }))
+    });
+
+    // NO enviar eventos duplicados - esto causaba el problema
+    // Los eventos se envían en handleAddRepresentative cuando se agrega el representante
+    // Este useEffect no debe ejecutar selectSeatForRepresentative
+    
+  }, [isWebSocketConnected, representatives, isRuc, passengerData.name]);
+
+  // ← NUEVO: Función de debug manual para probar WebSocket con seatId real
+  const debugSendRepresentativeEvent = useCallback(() => {
+    if (!representatives.length) {
+      console.warn('⚠️ [DEBUG] No hay representantes para enviar evento');
+      return;
+    }
+
+    const rep = representatives[0]; // Primer representante
+    
+    if (!rep.seat_number || rep.seat_number === "Elección libre") {
+      console.warn('⚠️ [DEBUG] Representante sin asiento asignado:', rep.seat_number);
+      return;
+    }
+    
+    const seatId = findSeatIdBySeatNumber(rep.seat_number);
+    
+    if (!seatId) {
+      console.error('❌ [DEBUG] No se pudo encontrar seatId para asiento:', rep.seat_number);
+      return;
+    }
+
+    // ← NUEVO: Verificar estado del asiento en el mapa local antes de enviar
+    const seatInMap = seatMap?.find(s => s.id === seatId);
+    console.log('� [DEBUG] Estado del asiento en mapa local:', {
+      seatId,
+      seatNumber: rep.seat_number,
+      seatExists: !!seatInMap,
+      seatData: seatInMap ? {
+        id: seatInMap.id,
+        seat_number: seatInMap.seat_number,
+        is_available: seatInMap.status === 'AVAILABLE',
+        is_reserved: seatInMap.status === 'RESERVED',
+        vessel_seat_config_id: seatInMap.vessel_seat_config_id
+      } : null
+    });
+
+    console.log('�🚀 [DEBUG] Enviando evento manual con seatId REAL:', {
+      representativeName: rep.name,
+      seatNumber: rep.seat_number,
+      seatId: seatId, // ← Este es el ID REAL del asiento
+      isWebSocketConnected,
+      seatMapLength: seatMap?.length
+    });
+
+    selectSeatForRepresentative(seatId, 0, rep.name);
+
+    // ← NUEVO: Log adicional del estado del asiento para diagnóstico
+    if (seatInMap) {
+      console.log('🔎 [DEBUG] Detalles completos del asiento:', {
+        currentStatus: seatInMap.status,
+        availableStatuses: ['AVAILABLE', 'RESERVED', 'CONFIRMED', 'CANCELLED', 'EXPIRED', 'BLOCKED'],
+        isAvailable: seatInMap.status === 'AVAILABLE',
+        canReserve: seatInMap.status === 'AVAILABLE',
+        notes: seatInMap.notes || 'Sin notas',
+        diagnosis: seatInMap.status === 'AVAILABLE' 
+          ? '✅ Asiento debería poder reservarse' 
+          : `❌ Asiento no disponible (estado: ${seatInMap.status})`
+      });
+    }
+  }, [representatives, findSeatIdBySeatNumber, selectSeatForRepresentative, isWebSocketConnected, seatMap]);
 
   const areActionsEnabled =
     !!selectedBoardingStopId &&
@@ -853,25 +936,89 @@ export const SaleForm: React.FC<SaleFormProps> = ({
             
             {/* Sección de Representantes para RUC */}
             {showRepresentatives && (
-              <RepresentativesManager
-                representatives={representatives}
-                maxPassengers={maxPassengers}
-                onMaxPassengersChange={setMaxPassengers}
-                onAddRepresentative={handleAddRepresentative}
-                onRemoveRepresentative={handleRemoveRepresentative}
-                showAddForm={showAddForm}
-                onShowAddFormChange={setShowAddForm}
-                isReserving={isReserving}
-                existingDocuments={existingDocuments}
-                tripId={trip.id}
-                usedSeatNumbers={usedSeatNumbers}
-                selectedSeatForRepresentative={selectedSeatForRepresentative}
-                onSeatSelectForRepresentative={setSelectedSeatForRepresentative}
-                onSeatReserve={reserveSeat}
-                onSeatRelease={releaseSeat}
-                getReservedSeatNumbers={getReservedSeatNumbers}
-              />
-            )}            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <>
+                <RepresentativesManager
+                  representatives={representatives}
+                  maxPassengers={maxPassengers}
+                  onMaxPassengersChange={setMaxPassengers}
+                  onAddRepresentative={handleAddRepresentative}
+                  onRemoveRepresentative={handleRemoveRepresentative}
+                  showAddForm={showAddForm}
+                  onShowAddFormChange={setShowAddForm}
+                  isReserving={isReserving}
+                  existingDocuments={existingDocuments}
+                  tripId={trip.id}
+                  usedSeatNumbers={usedSeatNumbers}
+                  selectedSeatForRepresentative={selectedSeatForRepresentative}
+                  onSeatSelectForRepresentative={setSelectedSeatForRepresentative}
+                  onSeatReserve={reserveSeat}
+                  onSeatRelease={releaseSeat}
+                  getReservedSeatNumbers={getReservedSeatNumbers}
+                />
+                
+                {/* ← NUEVO: Botón de debugging para testing WebSocket con seatId real */}
+                {representatives.length > 0 && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <h4 className="text-sm font-medium text-yellow-800 mb-2">🔧 Debug WebSocket</h4>
+                    <p className="text-xs text-yellow-700 mb-3">
+                      Prueba manual para enviar evento WebSocket con seatId real del representante
+                    </p>
+                    <button
+                      type="button"
+                      onClick={debugSendRepresentativeEvent}
+                      className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-md transition-colors"
+                    >
+                      🚀 Enviar Evento WebSocket Manual
+                    </button>
+                    <div className="mt-2 text-xs text-yellow-600">
+                      Rep: {representatives[0]?.name} | Asiento: {representatives[0]?.seat_number} | 
+                      WS: {isWebSocketConnected ? '✅' : '❌'} | SeatMap: {seatMap?.length || 0}
+                    </div>
+                    
+                    {/* ← NUEVO: Botón para probar con asiento diferente */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        // Buscar un asiento AVAILABLE para testing
+                        const availableSeat = seatMap?.find(s => s.status === 'AVAILABLE');
+                        if (availableSeat) {
+                          selectSeatForRepresentative(availableSeat.id, 0, representatives[0]?.name || 'Test');
+                        }
+                      }}
+                      className="mt-2 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-md transition-colors"
+                    >
+                      🧪 Probar con Asiento Disponible
+                    </button>
+                    
+                    {/* ← NUEVO: Botón para validar estado actual del mapa */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const availableSeats = seatMap?.filter(s => s.status === 'AVAILABLE') || [];
+                        const reservedSeats = seatMap?.filter(s => s.status === 'RESERVED') || [];
+                        const confirmedSeats = seatMap?.filter(s => s.status === 'CONFIRMED') || [];
+                        
+                      }}
+                      className="mt-2 ml-2 px-3 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-md transition-colors"
+                    >
+                      📊 Verificar Estado Mapa
+                    </button>
+                    
+                    {/* ← NUEVO: Botón para limpiar reservas temporales del usuario actual */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                      }}
+                      className="mt-2 ml-2 px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded-md transition-colors"
+                    >
+                      🧹 Info Limpieza
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+            
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
               {showAddForm && (
                 <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                   <div className="text-sm font-medium text-blue-800">

@@ -345,7 +345,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   // Hook de WebSocket para notificar selecciones de representantes
   const {
-    seatMap,
     selectSeatForRepresentative,
     releaseSeatForRepresentative,
     isConnected: isWebSocketConnected
@@ -462,16 +461,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   onSeatRelease={releaseSeat}
                   getReservedSeatNumbers={getReservedSeatNumbers}
                 />
-                
-                {representatives.length > 0 && (
-                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <h4 className="text-sm font-medium text-yellow-800 mb-2">Estado WebSocket</h4>
-                    <div className="text-xs text-yellow-600">
-                      Rep: {representatives[0]?.name} | Asiento: {representatives[0]?.seat_number} | 
-                      WS: {isWebSocketConnected ? '✅' : '❌'} | SeatMap: {seatMap?.length || 0}
-                    </div>
-                  </div>
-                )}
+
               </>
             )}
             

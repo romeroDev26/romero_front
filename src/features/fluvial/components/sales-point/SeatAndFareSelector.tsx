@@ -27,6 +27,8 @@ interface SeatAndFareSelectorProps {
   occupiedSeatNumbers?: string[];
   // NUEVA prop para indicar modo empresa
   isCompanyMode?: boolean;
+  // NUEVA prop para asientos seleccionados de representantes (modo empresa)
+  representativeSelectedSeatIds?: number[];
 }
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
@@ -43,6 +45,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   userName = 'Usuario',
   occupiedSeatNumbers = [],
   isCompanyMode = false, // NUEVO: Default a false
+  representativeSelectedSeatIds = [], // NUEVO: IDs de asientos de representantes
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
@@ -91,6 +94,25 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     // Por ahora, el efecto queda documentado pero la lógica se maneja en el componente hijo
   }, [isConfirmingMode, reservationToConfirm, selectedSeat]);
 
+  // NUEVO: Calcular selectedSeats dependiendo del modo empresa
+  const selectedSeatsForMap = useMemo((): Set<number> => {
+    if (isCompanyMode) {
+      // En modo empresa, incluir todos los asientos de representantes + el actual
+      const allSelectedIds = [...representativeSelectedSeatIds];
+      if (selectedSeat) {
+        allSelectedIds.push(selectedSeat.id);
+      }
+      console.log('🔄 SeatAndFareSelector: Recalculando selectedSeats para empresa:', {
+        representativeSelectedSeatIds,
+        selectedSeatId: selectedSeat?.id,
+        allSelectedIds
+      });
+      return new Set(allSelectedIds);
+    } else {
+      // En modo individual, solo el asiento seleccionado
+      return selectedSeat ? new Set([selectedSeat.id]) : new Set();
+    }
+  }, [isCompanyMode, representativeSelectedSeatIds, selectedSeat]);
 
   // NUEVO: Calcular stops disponibles para destino basado en el stop de embarque seleccionado
   const { availableStops } = useMemo(() => {
@@ -220,9 +242,10 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
 
       <div className="mt-4 border-t pt-4">
         <SeatMapRealtime
+          key={`seat-map-${representativeSelectedSeatIds.length}-${selectedSeat?.id || 'none'}`} // NUEVO: Key que cambia cuando cambian representantes
           tripId={tripId}
           vesselName={tripDetails?.vessel?.name || 'Embarcación'}
-          selectedSeats={selectedSeat ? new Set([selectedSeat.id]) : new Set()}
+          selectedSeats={selectedSeatsForMap} // MODIFICADO: Usar useMemo que incluye representantes
           onSeatToggle={handleSeatToggleFromMap}
           isLocked={isConfirmingMode}
           userId={userId}

@@ -177,6 +177,15 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
     }
   }, [activeSeatSelections]);
 
+  // 🔍 DEBUG: Efecto para detectar cambios en selectedSeats (asientos locales)
+  useEffect(() => {
+    console.log('🔄 SeatMapRealtime: selectedSeats changed:', {
+      selectedSeatsArray: Array.from(selectedSeats),
+      selectedSeatsSize: selectedSeats.size,
+      isCompanyMode
+    });
+  }, [selectedSeats, isCompanyMode]);
+
   const seatLayout = useMemo(() => {
     if (!vesselDetails?.seat_configurations || !(seatMap ?? []).length) {
       return [];
@@ -281,19 +290,34 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                           <div key={`${section.id}-row-${rowIndex}`} className="bg-white/40 rounded-lg p-3">
                             <div className="flex justify-center gap-6">
                               <div className="flex gap-3">
-                                {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => (
-                                  <SeatRealtime
-                                    key={seat.id}
-                                    seat={seat}
-                                    isSelected={selectedSeats.has(seat.id)}
-                                    onClick={handleSeatToggle}
-                                    isLocked={isLocked}
-                                    activeSelection={activeSeatSelections.get(seat.id)}
-                                    connectionStatus={connectionStatus}
-                                    isWebSocketAvailable={isWebSocketAvailable}
-                                    isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
-                                  />
-                                ))}
+                                {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => {
+                                  const isSelected = selectedSeats.has(seat.id);
+                                  // 🔍 DEBUG: Log para verificar si isSelected se calcula correctamente
+                                  if (seat.id === 10950 || seat.seat_number === '28') { // DEBUG para asiento específico del log
+                                    console.log(`🎯 DEBUG asiento ${seat.seat_number} (ID: ${seat.id}):`, {
+                                      seatId: seat.id,
+                                      seatNumber: seat.seat_number,
+                                      selectedSeatsArray: Array.from(selectedSeats),
+                                      isSelected,
+                                      hasActiveSelection: activeSeatSelections.has(seat.id),
+                                      activeSelectionType: activeSeatSelections.get(seat.id)?.type
+                                    });
+                                  }
+                                  
+                                  return (
+                                    <SeatRealtime
+                                      key={seat.id}
+                                      seat={seat}
+                                      isSelected={isSelected}
+                                      onClick={handleSeatToggle}
+                                      isLocked={isLocked}
+                                      activeSelection={activeSeatSelections.get(seat.id)}
+                                      connectionStatus={connectionStatus}
+                                      isWebSocketAvailable={isWebSocketAvailable}
+                                      isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
+                                    />
+                                  );
+                                })}
                               </div>
                               {section.totalColumns > 2 && (
                                 <div className="w-16 flex items-center justify-center">
@@ -301,19 +325,34 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                                 </div>
                               )}
                               <div className="flex gap-3">
-                                {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => (
-                                  <SeatRealtime
-                                    key={seat.id}
-                                    seat={seat}
-                                    isSelected={selectedSeats.has(seat.id)}
-                                    onClick={handleSeatToggle}
-                                    isLocked={isLocked}
-                                    activeSelection={activeSeatSelections.get(seat.id)}
-                                    connectionStatus={connectionStatus}
-                                    isWebSocketAvailable={isWebSocketAvailable}
-                                    isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
-                                  />
-                                ))}
+                                {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => {
+                                  const isSelected = selectedSeats.has(seat.id);
+                                  // 🔍 DEBUG: Log para verificar si isSelected se calcula correctamente
+                                  if (seat.id === 10950 || seat.seat_number === '28') { // DEBUG para asiento específico del log
+                                    console.log(`🎯 DEBUG asiento ${seat.seat_number} (ID: ${seat.id}) - segunda fila:`, {
+                                      seatId: seat.id,
+                                      seatNumber: seat.seat_number,
+                                      selectedSeatsArray: Array.from(selectedSeats),
+                                      isSelected,
+                                      hasActiveSelection: activeSeatSelections.has(seat.id),
+                                      activeSelectionType: activeSeatSelections.get(seat.id)?.type
+                                    });
+                                  }
+                                  
+                                  return (
+                                    <SeatRealtime
+                                      key={seat.id}
+                                      seat={seat}
+                                      isSelected={isSelected}
+                                      onClick={handleSeatToggle}
+                                      isLocked={isLocked}
+                                      activeSelection={activeSeatSelections.get(seat.id)}
+                                      connectionStatus={connectionStatus}
+                                      isWebSocketAvailable={isWebSocketAvailable}
+                                      isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
+                                    />
+                                  );
+                                })}
                               </div>
                             </div>
                           </div>

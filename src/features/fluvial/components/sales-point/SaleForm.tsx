@@ -423,6 +423,26 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     isCompanyMode: isRuc
   });
 
+  // NUEVA función para obtener IDs de asientos seleccionados por representantes
+  const representativeSelectedSeatIds = useMemo((): number[] => {
+    const seatIds = representatives
+      .map(rep => {
+        if (!rep.seat_number) return undefined;
+        // Buscar el asiento por número en el mapa de asientos
+        const seat = seatMap.find(s => s.seat_number === rep.seat_number);
+        return seat?.id;
+      })
+      .filter((id): id is number => id !== undefined);
+    
+    console.log('🔄 SaleForm: Recalculando representative seat IDs:', {
+      representativesCount: representatives.length,
+      representatives: representatives.map(r => ({ name: r.name, seatNumber: r.seat_number })),
+      seatIds
+    });
+    
+    return seatIds;
+  }, [representatives, seatMap]);
+
   // Función para encontrar el seatId a partir del seat_number
   const findSeatIdBySeatNumber = (seatNumber: string): number | null => {
     const seat = seatMap.find(seat => seat.seat_number === seatNumber);
@@ -564,6 +584,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 userName={currentUser?.full_name || currentUser?.first_name || 'Usuario'}
                 occupiedSeatNumbers={getAllOccupiedSeatNumbers()}
                 isCompanyMode={isRuc} // NUEVA: Pasar modo empresa basado en RUC
+                representativeSelectedSeatIds={representativeSelectedSeatIds} // CORRECCIÓN: Usar useMemo
               />
             </div>
           </div>

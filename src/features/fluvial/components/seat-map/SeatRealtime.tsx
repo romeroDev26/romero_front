@@ -39,7 +39,7 @@ const getSeatStyles = (
 ): string => {
   // 🔍 DEBUG: Agregar logging para diagnosis visual
   if (activeSelection?.type === 'representative') {
-    console.log(`🎨 ESTILOS ASIENTO ${seat?.seat_number}:`, {
+    console.log(`🎨 ESTILOS ASIENTO ${seat?.seat_number} (ID: ${seat?.id}):`, {
       seatNumber: seat?.seat_number,
       seatId: seat?.id,
       activeSelection: {

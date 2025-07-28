@@ -328,10 +328,16 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     const representativeToRemove = representatives[index];
     
     if (representativeToRemove.seat_number && representativeToRemove.seat_number !== "Elección libre") {
-      releaseSeatForRepresentative(index);
+      // Encontrar el seatId correcto basado en el seat_number
+      const seatId = findSeatIdBySeatNumber(representativeToRemove.seat_number);
+      
+      if (seatId) {
+        // Usar las funciones correctas con el seatId
+        releaseSeatForRepresentative(seatId);
+        releaseSeatWebSocket(seatId);
+      }
     }
     
-    releaseSeat(index);
     setRepresentatives(prev => prev.filter((_, i) => i !== index));
     toast.success('Representante eliminado');
   };
@@ -345,8 +351,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   // Hook de WebSocket para notificar selecciones de representantes
   const {
+    seatMap,
     selectSeatForRepresentative,
     releaseSeatForRepresentative,
+    releaseSeat: releaseSeatWebSocket,
     isConnected: isWebSocketConnected
   } = useSeatMapRealtime({
     tripId: trip.id,
@@ -356,6 +364,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     companyName: isRuc ? passengerData.name : undefined,
     isCompanyMode: isRuc
   });
+
+  // Función para encontrar el seatId a partir del seat_number
+  const findSeatIdBySeatNumber = (seatNumber: string): number | null => {
+    const seat = seatMap.find(seat => seat.seat_number === seatNumber);
+    return seat ? seat.id : null;
+  };
 
   // ← NUEVO: Handler principal de venta usando el hook de lógica de negocio
   const handleConfirmSale = async () => {

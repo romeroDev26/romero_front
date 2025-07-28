@@ -51,9 +51,11 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
   const {
     activeSeatSelections,
     myReservedSeats,
+    myActiveSelections, //  NUEVO: Mis selecciones activas
     myReservedSeatsRef, // Nueva referencia para evitar recreaciones
     addSelection,
     removeSelection,
+    addMySelection, //  NUEVO: Agregar mi propia selección
     addReservation,
     removeReservation,
     clearAllReservations
@@ -139,12 +141,28 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
 
   // Operaciones básicas de asientos
   const selectSeat = useCallback((seatId: number, selectionType: 'temporary' | 'reserved' = 'temporary') => {
+    //  SOLUCIÓN: Liberar la selección actual antes de hacer una nueva (solo para modo individual)
+    if (selectionType === 'temporary' && !isCompanyMode) {
+      // Buscar y liberar cualquier selección previa del usuario usando myActiveSelections
+      myActiveSelections.forEach((selectedSeatId) => {
+        if (selectedSeatId !== seatId) {
+          seatOperations.releaseSeat(selectedSeatId);
+          removeSelection(selectedSeatId);
+        }
+      });
+    }
+    
     const success = seatOperations.selectSeat(seatId, selectionType);
-    if (success && selectionType === 'reserved') {
-      addReservation(seatId);
+    if (success) {
+      // Agregar mi propia selección al tracking
+      addMySelection(seatId);
+      
+      if (selectionType === 'reserved') {
+        addReservation(seatId);
+      }
     }
     return success;
-  }, [seatOperations, addReservation]);
+  }, [seatOperations, addReservation, addMySelection, myActiveSelections, isCompanyMode, removeSelection]);
 
   const releaseSeat = useCallback((seatId: number, force: boolean = false) => {
     // Usar referencia para evitar dependencia en myReservedSeats que cambia constantemente
@@ -154,9 +172,11 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     const success = seatOperations.releaseSeat(seatId);
     if (success) {
       removeReservation(seatId);
+      //  SOLUCIÓN: Remover de mis selecciones activas
+      removeSelection(seatId);
     }
     return success;
-  }, [seatOperations, removeReservation, myReservedSeatsRef]); // Usando referencia estable
+  }, [seatOperations, removeReservation, removeSelection, myReservedSeatsRef]); // Usando referencia estable
 
   // Operaciones para representantes (modo empresa)
   const selectSeatForRepresentative = useCallback((

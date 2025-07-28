@@ -1,334 +1,456 @@
-# 🚨 *Solución al Problema: Asientos que Desaparecen del Mapa*
+# 🎯 Guía: Selecciones vs Reservas Temporales - WebSocket y Redis
 
-## 📋 *Problema Identificado*
+## 📋 *Diferencias Fundamentales*
 
-Según los logs proporcionados, el frontend está enviando un evento WebSocket *incorrecto* que causa que los asientos desaparezcan del mapa:
+### **1. Selección Normal (SEAT_SELECTION)**
+- *Propósito:* Selección inmediata para venta individual
+- *Duración:* 5 minutos (TTL automático)
+- *Limitación:* *1 selección por usuario* ⚠
+- *Estado visual:* selected (azul)
+- *Uso:* Ventas individuales rápidas
 
-### *❌ Lo que está haciendo el frontend (INCORRECTO):*
-javascript
-// Frontend envía este evento que NO EXISTE en el backend
-{
-  type: 'REPRESENTATIVE_SELECTION',
-  seatId: 9995,
-  companyName: 'LUNA VILLANUEVA JHON MARCOS',
-  representativeIndex: 0,
-  representativeName: 'LUNA VILLANUEVA JHON MARCOS'
-}
-
-
-### *🔍 Secuencia del problema:*
-1. ✅ Usuario selecciona asiento → SEAT_SELECTION → Asiento se marca como selected
-2. ❌ Frontend envía REPRESENTATIVE_SELECTION → *Backend NO reconoce este evento*
-3. ❌ Frontend envía SEAT_RELEASED → Asiento se libera y desaparece
-4. 💥 *Resultado:* Asiento queda disponible para otros usuarios
+### **2. Reserva Temporal (SEAT_TEMP_RESERVE)**
+- *Propósito:* Reserva para representantes empresariales
+- *Duración:* 30 minutos (TTL automático)
+- *Limitación:* *Múltiples reservas por usuario* ✅
+- *Estado visual:* representative_reserved (púrpura)
+- *Uso:* Facturas empresariales con múltiples representantes
 
 ---
 
-## ✅ *Solución: Usar Eventos Correctos*
+## 🔧 *Implementación Automática vs Manual*
 
-### *Eventos WebSocket Implementados en el Backend:*
+### *✅ Automático (Recomendado - Ya Implementado)*
 
-| Evento | Propósito | Parámetros |
-|--------|-----------|------------|
-| SEAT_SELECTION | Selección normal (5 min) | seatId |
-| SEAT_RELEASED | Liberar asiento | seatId |
-| SEAT_TEMP_RESERVE | *Reserva temporal* | seatId, representativeName |
-| SEAT_TEMP_RELEASE | Liberar reserva temporal | seatId, releaseAll, reservationType |
+El backend maneja automáticamente:
 
----
-
-## 🔧 *Código Frontend Corregido*
-
-### *❌ ANTES (Incorrecto):*
 javascript
-// NO USAR - Este evento no existe
-function selectSeatForRepresentative(seatId, representativeName) {
-  const message = {
-    type: "REPRESENTATIVE_SELECTION",  // ❌ EVENTO INEXISTENTE
-    seatId: seatId,
-    representativeName: representativeName
-  };
-  ws.send(JSON.stringify(message));
-}
+// ✅ AUTO-LIBERACIÓN: El backend libera automáticamente selecciones previas
+// cuando el mismo usuario hace una nueva selección
+websocket.send(JSON.stringify({
+  type: "SEAT_SELECTION",
+  seatId: 123
+}));
+// Backend automáticamente libera selección anterior del mismo usuario
 
 
-### *✅ DESPUÉS (Correcto):*
+### *🔧 Manual (Opcional - Para Mayor Control)*
+
+El frontend puede controlar manualmente:
+
 javascript
-// USAR ESTE - Evento correcto implementado
-function selectSeatForRepresentative(seatId, representativeName) {
-  const message = {
-    type: "SEAT_TEMP_RESERVE",  // ✅ EVENTO CORRECTO
-    seatId: seatId,
-    representativeName: representativeName  // Activa TTL de 30 minutos
-  };
-  ws.send(JSON.stringify(message));
-}
+// 🔧 CONTROL MANUAL: Frontend libera explícitamente antes de nueva selección
+websocket.send(JSON.stringify({
+  type: "SEAT_TEMP_RELEASE_ALL"
+}));
+
+// Luego hacer nueva reserva
+websocket.send(JSON.stringify({
+  type: "SEAT_TEMP_RESERVE",
+  seatId: 456,
+  representativeName: "Juan Pérez"
+}));
 
 
 ---
 
-## 📡 *Manejo de Respuestas WebSocket*
+## 📡 *Eventos WebSocket Completos*
 
-### *Respuestas que debe manejar el frontend:*
+### *Eventos que Envía el Frontend:*
+
+| Evento | Propósito | Parámetros | Limitación | TTL |
+|--------|-----------|------------|------------|-----|
+| SEAT_SELECTION | Selección normal | seatId | 1 por usuario | 5 min |
+| SEAT_RELEASED | Liberar selección | seatId | - | - |
+| SEAT_TEMP_RESERVE | Reserva temporal | seatId, representativeName | Múltiples por usuario | 30 min |
+| SEAT_TEMP_RELEASE | *Liberar 1 reserva específica* | seatId | ✅ *Para eliminar solo 1 de 3* | - |
+| SEAT_TEMP_RELEASE_ALL | *Liberar TODAS las reservas* | reservationType (opcional) | ⚠ *Elimina todas del usuario* | - |
+
+### *Eventos que Recibe el Frontend:*
+
+| Evento | Cuándo se Envía | Acción Frontend |
+|--------|-----------------|------------------|
+| SEAT_SELECTED | Alguien selecciona asiento | Marcar como selected (azul) |
+| SEAT_RELEASED | Alguien libera asiento | Marcar como available (gris) |
+| SEAT_TEMP_RESERVED | Alguien reserva temporalmente | Marcar como representative_reserved (púrpura) |
+| SEAT_TEMP_RELEASED | Alguien libera reserva temporal | Marcar como available (gris) |
+| SEATS_OCCUPIED | Venta completada | Marcar como occupied (rojo) |
+
+---
+
+## 🎨 *Estados Visuales y CSS*
+
+css
+/* 1. Disponible */
+.seat.available {
+  background-color: #6c757d; /* Gris */
+  cursor: pointer;
+}
+
+/* 2. Seleccionado (1 por usuario) */
+.seat.selected {
+  background-color: #007bff; /* Azul */
+  color: white;
+}
+
+/* 3. Reserva temporal (múltiples por usuario) */
+.seat.representative_reserved {
+  background-color: #6f42c1; /* Púrpura */
+  color: white;
+}
+
+/* 4. Ocupado (vendido) */
+.seat.occupied {
+  background-color: #dc3545; /* Rojo */
+  color: white;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+
+---
+
+## 💻 *Implementación Frontend Completa*
+
+### *1. Manejo de Selecciones Normales (1 por usuario)*
 
 javascript
-function handleWebSocketMessage(data) {
-  switch (data.type) {
-    // ✅ Confirmación de reserva temporal exitosa
-    case 'SEAT_TEMP_RESERVE_RESPONSE':
-      if (data.success) {
-        console.log(`✅ Asiento ${data.seatId} reservado para representante ${data.representativeName}`);
-        // Actualizar UI: asiento → 'representative_reserved' (púrpura)
-        updateSeatUI(data.seatId, 'representative_reserved', {
-          representativeName: data.representativeName,
-          ttlSeconds: data.ttlSeconds
-        });
-      } else {
-        console.log(`❌ Error: No se pudo reservar asiento ${data.seatId}`);
-        showError(`Asiento ${data.seatId} no disponible`);
-      }
-      break;
+class SeatManager {
+  constructor() {
+    this.currentSelection = null; // Solo 1 selección permitida
+    this.tempReservations = []; // Múltiples reservas permitidas
+  }
+  
+  // Selección normal (limita a 1 por usuario)
+  selectSeat(seatId) {
+    // ✅ AUTO-LIBERACIÓN: El backend maneja esto automáticamente
+    // No necesitas liberar manualmente la selección anterior
     
-    // 🔔 Notificación: otro usuario reservó un asiento
-    case 'SEAT_TEMP_RESERVED':
-      console.log(`🔒 Asiento ${data.seatId} reservado por ${data.userName}`);
-      if (data.representativeName) {
-        // Es una reserva de representante
-        updateSeatUI(data.seatId, 'representative_reserved', data);
-      } else {
-        // Es una reserva normal
-        updateSeatUI(data.seatId, 'reserved', data);
-      }
-      break;
+    this.websocket.send(JSON.stringify({
+      type: "SEAT_SELECTION",
+      seatId: seatId
+    }));
     
-    // 🔓 Notificación: asientos liberados
-    case 'SEAT_TEMP_RELEASED':
-      console.log(`🔓 Asientos liberados: ${data.seatIds.join(', ')}`);
-      data.seatIds.forEach(seatId => {
-        updateSeatUI(seatId, 'available');
-      });
-      break;
+    // Actualizar estado local
+    this.currentSelection = seatId;
+  }
+  
+  // Liberar selección actual
+  releaseSeat() {
+    if (this.currentSelection) {
+      this.websocket.send(JSON.stringify({
+        type: "SEAT_RELEASED",
+        seatId: this.currentSelection
+      }));
+      
+      this.currentSelection = null;
+    }
   }
 }
 
 
----
-
-## 🎨 *Estados Visuales Correctos*
+### *2. Manejo de Reservas Temporales (múltiples por usuario)*
 
 javascript
-// Estados de asientos
-const SEAT_STATES = {
-  AVAILABLE: 'available',                    // Gris - Disponible
-  SELECTED: 'selected',                      // Azul - Seleccionado por mí
-  RESERVED: 'reserved',                      // Amarillo - Reservado por otro (5 min)
-  REPRESENTATIVE_RESERVED: 'representative_reserved', // Púrpura - Representante (30 min)
-  OCCUPIED: 'occupied'                       // Rojo - Vendido permanentemente
-};
+class RepresentativeManager {
+  constructor() {
+    this.tempReservations = new Map(); // Múltiples reservas
+  }
+  
+  // Reserva temporal (permite múltiples)
+  reserveSeatForRepresentative(seatId, representativeName) {
+    this.websocket.send(JSON.stringify({
+      type: "SEAT_TEMP_RESERVE",
+      seatId: seatId,
+      representativeName: representativeName
+    }));
+  }
+  
+  // Liberar reserva específica
+  releaseRepresentativeReservation(seatId) {
+    this.websocket.send(JSON.stringify({
+      type: "SEAT_TEMP_RELEASE",
+      seatId: seatId
+    }));
+    
+    this.tempReservations.delete(seatId);
+  }
+  
+  // Liberar todas las reservas del usuario
+  releaseAllReservations() {
+    this.websocket.send(JSON.stringify({
+      type: "SEAT_TEMP_RELEASE_ALL",
+      reservationType: "REPRESENTATIVE_TEMP_RESERVATION"
+    }));
+    
+    this.tempReservations.clear();
+  }
+}
 
-function updateSeatUI(seatId, state, data = null) {
+
+### *3. Manejo de Respuestas WebSocket*
+
+javascript
+function handleWebSocketMessage(event) {
+  const data = JSON.parse(event.data);
+  
+  switch (data.type) {
+    // === SELECCIONES NORMALES ===
+    case 'SEAT_SELECTED':
+      updateSeatState(data.seatId, 'selected');
+      if (data.userId === currentUserId) {
+        seatManager.currentSelection = data.seatId;
+      }
+      break;
+      
+    case 'SEAT_RELEASED':
+      updateSeatState(data.seatId, 'available');
+      if (data.userId === currentUserId) {
+        seatManager.currentSelection = null;
+      }
+      break;
+    
+    // === RESERVAS TEMPORALES ===
+    case 'SEAT_TEMP_RESERVE_RESPONSE':
+      if (data.success) {
+        console.log('✅ Reserva temporal exitosa');
+      } else {
+        console.log('❌ Error en reserva temporal:', data.message);
+        showError('No se pudo reservar el asiento');
+      }
+      break;
+      
+    case 'SEAT_TEMP_RESERVED':
+      updateSeatState(data.seatId, 'representative_reserved');
+      if (data.userId === currentUserId) {
+        representativeManager.tempReservations.set(data.seatId, {
+          representativeName: data.representativeName,
+          timestamp: data.timestamp
+        });
+      }
+      break;
+      
+    case 'SEAT_TEMP_RELEASED':
+      // Puede ser un solo asiento o múltiples
+      const seatIds = Array.isArray(data.seatIds) ? data.seatIds : [data.seatId];
+      seatIds.forEach(seatId => {
+        updateSeatState(seatId, 'available');
+        if (data.userId === currentUserId) {
+          representativeManager.tempReservations.delete(seatId);
+        }
+      });
+      break;
+      
+    case 'SEAT_TEMP_RELEASE_ALL_RESPONSE':
+      if (data.success) {
+        console.log(`✅ Liberadas ${data.releasedCount} reservas temporales`);
+        representativeManager.tempReservations.clear();
+      }
+      break;
+    
+    // === VENTAS COMPLETADAS ===
+    case 'SEATS_OCCUPIED':
+      data.seatIds.forEach(seatId => {
+        updateSeatState(seatId, 'occupied');
+      });
+      showNotification(`${data.seatIds.length} asientos vendidos en factura ${data.invoiceSeries}-${data.invoiceNumber}`);
+      break;
+      
+    default:
+      console.log('Evento WebSocket no manejado:', data.type);
+  }
+}
+
+
+### *4. Función de Actualización de Estados*
+
+javascript
+function updateSeatState(seatId, newState) {
   const seatElement = document.querySelector(`[data-seat-id="${seatId}"]`);
   if (!seatElement) return;
   
-  // Colores según estado
-  const colors = {
-    available: '#e5e7eb',
-    selected: '#3b82f6',
-    reserved: '#f59e0b',
-    representative_reserved: '#8b5cf6',  // Púrpura para representantes
-    occupied: '#ef4444'
-  };
+  // Remover todos los estados anteriores
+  seatElement.classList.remove('available', 'selected', 'representative_reserved', 'occupied');
   
-  seatElement.style.backgroundColor = colors[state];
-  seatElement.className = `seat ${state}`;
+  // Aplicar nuevo estado
+  seatElement.classList.add(newState);
+  seatElement.setAttribute('data-state', newState);
   
-  // Indicador especial para representantes
-  if (state === 'representative_reserved') {
-    seatElement.innerHTML = `${seatElement.dataset.seatNumber}<br><small>REP</small>`;
-    if (data && data.representativeName) {
-      seatElement.title = `Reservado para: ${data.representativeName}\nExpira en: ${Math.floor(data.ttlSeconds / 60)} minutos`;
-    }
-  } else {
-    seatElement.innerHTML = seatElement.dataset.seatNumber;
+  // Configurar interactividad
+  switch (newState) {
+    case 'available':
+      seatElement.style.pointerEvents = 'auto';
+      seatElement.style.cursor = 'pointer';
+      break;
+      
+    case 'occupied':
+      seatElement.style.pointerEvents = 'none';
+      seatElement.style.cursor = 'not-allowed';
+      break;
+      
+    default:
+      seatElement.style.pointerEvents = 'auto';
+      seatElement.style.cursor = 'pointer';
   }
 }
 
 
 ---
 
-## 🔄 *Flujo Correcto Completo*
+## 🔄 *Flujos de Trabajo Típicos*
 
-### *1. Seleccionar asiento para representante:*
+### *Flujo 1: Venta Individual*
+
+1. Usuario selecciona asiento → SEAT_SELECTION
+2. Backend auto-libera selección anterior (si existe)
+3. Frontend recibe SEAT_SELECTED → Asiento azul
+4. Usuario crea factura individual
+5. Frontend recibe SEATS_OCCUPIED → Asiento rojo
+
+
+### *Flujo 2: Venta Empresarial*
+
+1. Usuario reserva asiento para Rep1 → SEAT_TEMP_RESERVE
+2. Frontend recibe SEAT_TEMP_RESERVED → Asiento púrpura
+3. Usuario reserva asiento para Rep2 → SEAT_TEMP_RESERVE
+4. Frontend recibe SEAT_TEMP_RESERVED → Asiento púrpura
+5. Usuario crea factura empresarial
+6. Backend libera reservas temporales automáticamente
+7. Frontend recibe SEATS_OCCUPIED → Asientos rojos
+
+
+### *Flujo 3: Cancelación de Reservas*
+
+// Opción A: Liberar todas (recomendado)
+representativeManager.releaseAllReservations();
+
+// Opción B: Liberar una por una
+representativeManager.releaseRepresentativeReservation(seatId);
+
+
+---
+
+## ⚠ *Limitaciones y Reglas*
+
+### *Selecciones Normales:*
+- ✅ *1 selección por usuario máximo*
+- ✅ *Auto-liberación* cuando selecciona otro asiento
+- ✅ *TTL 5 minutos* (Redis automático)
+- ✅ *Para ventas individuales*
+
+### *Reservas Temporales:*
+- ✅ *Múltiples reservas por usuario*
+- ✅ *TTL 30 minutos* (Redis automático)
+- ✅ *Para ventas empresariales*
+- ✅ *Auto-liberación* al completar venta
+
+### *Estados Finales:*
+- ✅ *Ocupado (rojo):* Asiento vendido permanentemente
+- ✅ *No interactivo:* pointer-events: none
+- ✅ *Persistente:* No se libera automáticamente
+
+---
+
+## *🎯 Casos de Uso Típicos*
+
+### *Venta Individual:*
 javascript
-// Cuando usuario hace clic en un asiento para representante
-function onSeatClickForRepresentative(seatId, representativeName) {
-  // Enviar reserva temporal con TTL de 30 minutos
-  const message = {
+// 1. Usuario selecciona asiento
+webSocket.send(JSON.stringify({
+  type: "SEAT_SELECTION",
+  seatId: "12A",
+  userId: "user123"
+}));
+
+// 2. Procesar venta
+// 3. El backend libera automáticamente
+
+
+### *Venta Empresarial (Múltiples Representantes):*
+javascript
+// 1. Reservar múltiples asientos
+for (let seat of selectedSeats) {
+  webSocket.send(JSON.stringify({
     type: "SEAT_TEMP_RESERVE",
-    seatId: seatId,
-    representativeName: representativeName
-  };
-  
-  ws.send(JSON.stringify(message));
+    seatId: seat.id,
+    userId: "user123",
+    representativeName: seat.representativeName
+  }));
 }
 
+// 2. Procesar factura empresarial
+// 3. El backend libera automáticamente todas las reservas
 
-### *2. Manejar confirmación:*
+
+### *🔧 Escenario: 3 Reservas, Eliminar Solo 1*
+
+*Situación:* Tienes reservas temporales para 3 representantes pero quieres eliminar solo 1.
+
 javascript
-// En handleWebSocketMessage
-case 'SEAT_TEMP_RESERVE_RESPONSE':
-  if (data.success) {
-    // ✅ Asiento reservado exitosamente
-    updateSeatUI(data.seatId, 'representative_reserved', data);
-    
-    // Agregar a lista de representantes
-    addRepresentativeToList({
-      name: data.representativeName,
-      seatId: data.seatId,
-      seatNumber: getSeatNumber(data.seatId)
-    });
-  } else {
-    // ❌ Error en reserva
-    showError(`No se pudo reservar el asiento para ${data.representativeName}`);
-  }
-  break;
+// ✅ CORRECTO: Usar SEAT_TEMP_RELEASE para asiento específico
+webSocket.send(JSON.stringify({
+  type: "SEAT_TEMP_RELEASE",
+  seatId: "15C",  // Solo elimina este asiento
+  userId: "user123"
+}));
+
+// ❌ INCORRECTO: SEAT_TEMP_RELEASE_ALL eliminaría las 3
+webSocket.send(JSON.stringify({
+  type: "SEAT_TEMP_RELEASE_ALL",  // Elimina TODAS las reservas
+  userId: "user123"
+}));
 
 
-### *3. Crear factura final:*
-javascript
-// Al final, crear factura con asientos ya reservados
-async function createInvoiceWithRepresentatives() {
-  const representatives = getSelectedRepresentatives(); // Obtener de la UI
-  
-  const invoiceData = {
-    company: getCompanyData(),
-    trip_id: tripId,
-    representatives: representatives.map(rep => ({
-      name: rep.name,
-      seat_number: rep.seatNumber,
-      passenger_doc_type: rep.docType,
-      passenger_doc_number: rep.docNumber,
-      // ... otros campos
-    }))
-  };
-  
-  try {
-    const response = await fetch('/api/v1/sunat/invoices/company-with-representatives', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(invoiceData)
-    });
-    
-    if (response.ok) {
-      console.log('✅ Factura creada exitosamente');
-      // Las reservas temporales se convierten automáticamente en ocupadas
-    }
-  } catch (error) {
-    console.error('❌ Error creando factura:', error);
-  }
-}
-
+*Resultado:*
+- SEAT_TEMP_RELEASE: Solo libera el asiento 15C
+- Las otras 2 reservas (ej: 15A, 15B) permanecen activas
+- Puedes seguir procesando la factura con 2 representantes
 
 ---
 
-## 🚨 *Cambios Urgentes Requeridos en Frontend*
+## *❓ Preguntas Frecuentes*
 
-### *1. Reemplazar evento incorrecto:*
-diff
-- type: "REPRESENTATIVE_SELECTION"  // ❌ NO EXISTE
-+ type: "SEAT_TEMP_RESERVE"         // ✅ CORRECTO
+### *P: ¿SEAT_TEMP_RELEASE_ALL solo libera las reservas de un usuario?*
+*R:* ✅ *Sí*, solo libera las reservas temporales del userId especificado. No afecta las reservas de otros usuarios.
 
-
-### *2. Agregar manejo de respuestas:*
+### *P: ¿Si tengo 3 reservas temporales, puedo eliminar solo 1?*
+*R:* ✅ *Sí*, usa SEAT_TEMP_RELEASE con el seatId específico:
 javascript
-// Agregar estos casos en handleWebSocketMessage:
-+ case 'SEAT_TEMP_RESERVE_RESPONSE':
-+ case 'SEAT_TEMP_RESERVED':
-+ case 'SEAT_TEMP_RELEASED':
+// Elimina solo el asiento 15C, mantiene 15A y 15B
+webSocket.send(JSON.stringify({
+  type: "SEAT_TEMP_RELEASE",
+  seatId: "15C",
+  userId: "user123"
+}));
 
 
-### *3. Actualizar estados visuales:*
-javascript
-// Agregar estado púrpura para representantes
-+ representative_reserved: '#8b5cf6'
+### *P: ¿Cuándo usar SEAT_TEMP_RELEASE vs SEAT_TEMP_RELEASE_ALL?*
+*R:* 
+- **SEAT_TEMP_RELEASE*: Para eliminar **1 asiento específico*
+- **SEAT_TEMP_RELEASE_ALL*: Para **cancelar toda la operación* y empezar de nuevo
 
+### *P: ¿Las reservas tienen límite de tiempo?*
+*R:* ✅ *Sí*, 30 minutos TTL. Después se liberan automáticamente.
+
+### *P: ¿Puedo tener reservas en diferentes viajes simultáneamente?*
+*R:* ✅ *Sí*, las reservas son por tripId, puedes tener reservas en múltiples viajes.
 
 ---
 
-## ✅ *Resultado Esperado*
+## 🎯 *Recomendaciones*
 
-Después de aplicar estos cambios:
+### *Para el Frontend:*
+1. *Usar auto-liberación* del backend (ya implementada)
+2. *Manejar todos los eventos* WebSocket listados
+3. *Implementar estados visuales* claros
+4. *Validar límites* antes de enviar eventos
 
-1. ✅ *Asiento se reserva correctamente* para representante (30 min)
-2. ✅ *Asiento se muestra púrpura* con indicador "REP"
-3. ✅ *Otros usuarios NO pueden seleccionarlo*
-4. ✅ *Reserva se mantiene* hasta crear la factura
-5. ✅ *Al crear factura* → reserva temporal → asiento ocupado permanentemente
+### *Para UX:*
+1. *Mostrar contador* de reservas temporales activas
+2. *Indicar tiempo restante* de TTL
+3. *Confirmar liberación* de múltiples reservas
+4. *Notificar ventas completadas* de otros usuarios
 
 ---
 
-## 🔧 *Para Debugging*
-
-### *Verificar en consola del navegador:*
-javascript
-// Verificar que WebSocket esté conectado
-console.log('WebSocket state:', ws.readyState); // Debe ser 1 (OPEN)
-
-// Verificar eventos enviados
-ws.addEventListener('message', (event) => {
-  const data = JSON.parse(event.data);
-  console.log('📨 Recibido:', data);
-});
-
-// Verificar eventos enviados
-const originalSend = ws.send;
-ws.send = function(data) {
-  console.log('📤 Enviando:', JSON.parse(data));
-  return originalSend.call(this, data);
-};
-
-
-*🎯 Con estos cambios, el problema de asientos que desaparecen se solucionará completamente.*
-
-
-### 🎯 ESTADOS de Asientos (Frontend - Visual)
-### 📡 EVENTOS WebSocket (Comunicación)
-
-// Eventos para comunicarse con el backend
-const WEBSOCKET_EVENTS = {
-  "SEAT_SELECTION",          // 
-  Seleccionar asiento normal
-  "SEAT_RELEASED",           // Liberar 
-  asiento
-  "SEAT_TEMP_RESERVE",       // ✅ 
-  CORRECTO para representantes
-  "SEAT_TEMP_RELEASE"        // Liberar 
-  reserva temporal
-}
-
-### ❌ El Error que Tenías:
-Estabas enviando un evento inexistente :
-
-
-// ❌ INCORRECTO - Este evento NO EXISTE
-{
-  type: "REPRESENTATIVE_SELECTION",  // ← 
-  Este no es un evento válido
-  seatId: 9995,
-  representativeName: "Juan Pérez"
-}
-
-### ✅ Lo Correcto:
-1. 1.
-   Enviar evento correcto:
-
-// ✅ CORRECTO - Este evento SÍ EXISTE
-{
-  type: "SEAT_TEMP_RESERVE",  // ← Evento 
-  válido
-  seatId: 9995,
-  representativeName: "Juan Pérez"
-}
+*El sistema está diseñado para manejar automáticamente la mayoría de casos, pero proporciona control manual cuando se necesita mayor precisión.*

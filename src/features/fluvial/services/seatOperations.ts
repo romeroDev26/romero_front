@@ -37,6 +37,8 @@ export class SeatOperations {
     const message: SeatOperationMessage = {
       type: 'SEAT_SELECTION',
       seatId,
+      userId: this.userId, //  SOLUCIÓN: Asegurar que el userId se envíe
+      userName: this.userName, //  SOLUCIÓN: Asegurar que el userName se envíe
       selectionType,
       timestamp: new Date().toISOString()
     };
@@ -48,6 +50,8 @@ export class SeatOperations {
     const message: SeatOperationMessage = {
       type: 'SEAT_RELEASED',
       seatId,
+      userId: this.userId, //  SOLUCIÓN: Asegurar que el userId se envíe
+      userName: this.userName, // SOLUCIÓN: Asegurar que el userName se envíe
       timestamp: new Date().toISOString()
     };
     

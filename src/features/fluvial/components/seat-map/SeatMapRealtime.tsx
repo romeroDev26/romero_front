@@ -18,6 +18,7 @@ interface SeatMapRealtimeProps {
   userId: string;
   userName: string;
   occupiedSeatNumbers?: string[]; // Nueva prop para asientos ocupados por representantes
+  isCompanyMode?: boolean; // Nueva prop para indicar si está en modo empresa (RUC)
 }
 
 type SeatRow = SeatMapItem[];
@@ -78,7 +79,8 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
   isLocked = false,
   userId,
   userName,
-  occupiedSeatNumbers = []
+  occupiedSeatNumbers = [],
+  isCompanyMode = false // Nueva prop con valor por defecto
 }) => {
   // Referencia estable para las selecciones actuales
   const selectedSeatsRef = useRef<Set<number>>(selectedSeats);
@@ -109,22 +111,28 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
     enableDebugLogs: true, // ← NUEVO: Habilitar logs para debugging
     // ← NUEVO: Configuración mejorada para empresa
     companyName: undefined, // No es modo empresa en este componente
-    isCompanyMode: false // Modo normal, no empresarial
-  });  // Manejar selección/deselección de asientos con notificación WebSocket
+    isCompanyMode // Pasar el modo empresa al hook
+  });
+
+  // Manejar selección/deselección de asientos con notificación WebSocket
   const handleSeatToggle = (seat: SeatMapItem) => {
     if (isLocked) return;
 
-    const isCurrentlySelected = selectedSeats.has(seat.id);
-    
-    if (isCurrentlySelected) {
-      // Liberar asiento
-      releaseSeat(seat.id);
-    } else {
-      // Seleccionar asiento
-      selectSeat(seat.id);
+    // 🔧 CORRECCIÓN: En modo empresa, NO hacer selección automática vía WebSocket
+    // En modo empresa, la selección la maneja el SaleForm directamente
+    if (!isCompanyMode) {
+      const isCurrentlySelected = selectedSeats.has(seat.id);
+      
+      if (isCurrentlySelected) {
+        // Liberar asiento
+        releaseSeat(seat.id);
+      } else {
+        // Seleccionar asiento
+        selectSeat(seat.id);
+      }
     }
     
-    // Llamar al handler original
+    // Llamar al handler original (siempre necesario para actualizar UI)
     onSeatToggle(seat);
   };
 
@@ -145,6 +153,29 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
       });
     };
   }, []); // Sin dependencias para evitar recreación infinita
+
+  // 🔍 DEBUG: Función para verificar qué selecciones llegan al mapa
+  const debugActiveSeatSelections = () => {
+    console.log('🗺️ DEBUGGING SEAT MAP REALTIME:', {
+      totalActiveSelections: activeSeatSelections.size,
+      activeSelections: Array.from(activeSeatSelections.entries()).map(([seatId, selection]) => ({
+        seatId,
+        userId: selection.userId,
+        userName: selection.userName,
+        type: selection.type,
+        representativeName: selection.representativeName
+      })),
+      occupiedSeatNumbers,
+      selectedSeats: Array.from(selectedSeats)
+    });
+  };
+
+  // 🔍 DEBUG: Efecto para debug de selecciones activas
+  useEffect(() => {
+    if (activeSeatSelections.size > 0) {
+      debugActiveSeatSelections();
+    }
+  }, [activeSeatSelections]);
 
   const seatLayout = useMemo(() => {
     if (!vesselDetails?.seat_configurations || !(seatMap ?? []).length) {
@@ -260,7 +291,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                                     activeSelection={activeSeatSelections.get(seat.id)}
                                     connectionStatus={connectionStatus}
                                     isWebSocketAvailable={isWebSocketAvailable}
-                                    isOccupiedByRepresentative={occupiedSeatNumbers.includes(seat.seat_number)}
+                                    isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
                                   />
                                 ))}
                               </div>
@@ -280,7 +311,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                                     activeSelection={activeSeatSelections.get(seat.id)}
                                     connectionStatus={connectionStatus}
                                     isWebSocketAvailable={isWebSocketAvailable}
-                                    isOccupiedByRepresentative={occupiedSeatNumbers.includes(seat.seat_number)}
+                                    isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
                                   />
                                 ))}
                               </div>

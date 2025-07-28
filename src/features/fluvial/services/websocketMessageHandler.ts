@@ -121,7 +121,42 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReserved(message: SeatUpdateMessage): void {
-    if (message.userId !== this.userId && message.seatId !== undefined) {
+    console.log('🎯 PROCESANDO SEAT_TEMP_RESERVED:', {
+      seatId: message.seatId,
+      userId: message.userId,
+      myUserId: this.userId,
+      isForMe: message.userId === this.userId,
+      reservationType: message.reservationType,
+      representativeName: message.representativeName,
+      sessionId: (message as any).sessionId,
+      reservationCategory: (message as any).reservationCategory
+    });
+
+    // 🔧 SOLUCIÓN: Para reservas de representantes, siempre agregar a selecciones
+    // incluso si el userId base es el mismo, porque es para mostrar a otros vendedores
+    const isRepresentativeReservation = message.reservationType === 'REPRESENTATIVE_TEMP_RESERVATION' || 
+                                       message.reservationType === 'representative' ||
+                                       (message as any).reservationCategory === 'representative';
+    
+    // Para representantes: SIEMPRE agregar las reservas de representantes al mapa visual
+    // Ya que necesitamos ver tanto nuestros representantes como los de otros vendedores
+    const isMyOwnRepresentativeReservation = isRepresentativeReservation && 
+                                           message.userId === this.userId &&
+                                           message.representativeName;
+    
+    // CAMBIO: Para representantes, SIEMPRE mostrar en el mapa (propios y ajenos)
+    // Para otras selecciones, solo mostrar las de otros usuarios
+    const shouldAddSelection = isRepresentativeReservation || (message.userId !== this.userId);
+
+    console.log('🧠 LÓGICA DE DECISIÓN:', {
+      isRepresentativeReservation,
+      isMyOwnRepresentativeReservation,
+      shouldAddSelection,
+      messageUserId: message.userId,
+      myUserId: this.userId
+    });
+
+    if (shouldAddSelection && message.seatId !== undefined) {
       const expiresAt = new Date(Date.now() + (message.ttl || 1800) * 1000).toISOString();
 
       const selection: SeatSelection = {
@@ -129,7 +164,7 @@ export class WebSocketMessageHandler {
         userId: message.userId!,
         userName: message.userName!,
         timestamp: message.timestamp,
-        type: message.reservationType === 'representative' ? 'representative' : 'temp_reserved',
+        type: isRepresentativeReservation ? 'representative' : 'temp_reserved',
         ttl: message.ttl,
         expiresAt: expiresAt,
         companyName: message.companyName,
@@ -137,6 +172,11 @@ export class WebSocketMessageHandler {
         representativeIndex: message.representativeIndex
       };
 
+      console.log('✅ AGREGANDO SELECCIÓN:', {
+        isRepresentativeReservation,
+        shouldAddSelection,
+        selection: selection
+      });
       this.onSelectionUpdate(selection);
     }
   }

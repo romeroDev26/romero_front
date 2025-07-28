@@ -25,6 +25,8 @@ interface SeatAndFareSelectorProps {
   userName?: string;
   // Nueva prop para asientos ocupados por representantes
   occupiedSeatNumbers?: string[];
+  // NUEVA prop para indicar modo empresa
+  isCompanyMode?: boolean;
 }
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
@@ -40,6 +42,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   userId = 'default-user',
   userName = 'Usuario',
   occupiedSeatNumbers = [],
+  isCompanyMode = false, // NUEVO: Default a false
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
@@ -225,6 +228,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           userId={userId}
           userName={userName}
           occupiedSeatNumbers={occupiedSeatNumbers}
+          isCompanyMode={isCompanyMode} // NUEVA: Pasar modo empresa
         />
       </div>
     </div>

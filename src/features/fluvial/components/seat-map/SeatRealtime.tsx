@@ -8,12 +8,12 @@ interface SeatSelection {
   userId: string;
   userName: string;
   timestamp: string;
-  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative' | 'temp_reserved'; // ← ACTUALIZADO: Agregado 'temp_reserved'
-  companyName?: string; // ← NUEVO: Para mostrar empresa
-  representativeIndex?: number; // ← NUEVO: Índice del representante
-  representativeName?: string; // ← NUEVO: Nombre del representante
-  ttl?: number; // ← NUEVO: Tiempo de vida de la reserva temporal (en segundos)
-  expiresAt?: string; // ← NUEVO: Timestamp de cuando expira la reserva
+  type?: 'temporary' | 'reserved' | 'purchasing' | 'representative' | 'temp_reserved';
+  companyName?: string;
+  representativeIndex?: number;
+  representativeName?: string;
+  ttl?: number;
+  expiresAt?: string;
 }
 
 interface SeatRealtimeProps {
@@ -21,10 +21,10 @@ interface SeatRealtimeProps {
   isSelected: boolean;
   onClick: (seat: SeatMapItem) => void;
   isLocked?: boolean;
-  activeSelection?: SeatSelection; // Nueva prop para selección en tiempo real
+  activeSelection?: SeatSelection;
   connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'failed';
-  isWebSocketAvailable?: boolean; // Nueva prop
-  isOccupiedByRepresentative?: boolean; // Nueva prop para asientos ocupados por representantes
+  isWebSocketAvailable?: boolean;
+  isOccupiedByRepresentative?: boolean;
 }
 
 const getSeatStyles = (
@@ -34,20 +34,42 @@ const getSeatStyles = (
   activeSelection?: SeatSelection,
   connectionStatus?: string,
   isWebSocketAvailable?: boolean,
-  isOccupiedByRepresentative?: boolean
+  isOccupiedByRepresentative?: boolean,
+  seat?: SeatMapItem
 ): string => {
-  // Si está ocupado por un representante, mostrar como ocupado
+  // 🔍 DEBUG: Agregar logging para diagnosis visual
+  if (activeSelection?.type === 'representative') {
+    console.log(`🎨 ESTILOS ASIENTO ${seat?.seat_number}:`, {
+      seatNumber: seat?.seat_number,
+      seatId: seat?.id,
+      activeSelection: {
+        type: activeSelection.type,
+        representativeName: activeSelection.representativeName,
+        userId: activeSelection.userId
+      },
+      isSelected,
+      isWebSocketAvailable,
+      finalStyle: 'bg-purple-500 (representative)'
+    });
+  }
+
+  // Si hay una selección activa de representante de otro usuario, mostrar como ocupado
+  if (activeSelection && !isSelected && isWebSocketAvailable && activeSelection.type === 'representative') {
+    return 'bg-purple-500 border-purple-600 text-white cursor-not-allowed animate-pulse';
+  }
+
+  // Si está ocupado por un representante (para compatibilidad)
   if (isOccupiedByRepresentative) {
     return 'bg-purple-500 border-purple-600 text-white cursor-not-allowed';
   }
   
   // Si hay una selección activa de otro usuario (solo si WebSocket está disponible)
   if (activeSelection && !isSelected && isWebSocketAvailable) {
-    // ← NUEVO: Diferentes estilos según el tipo de selección
+    // Diferentes estilos según el tipo de selección
     if (activeSelection.type === 'representative') {
       return 'bg-purple-500 border-purple-600 text-white cursor-not-allowed animate-pulse';
     }
-    // ← NUEVO: Manejar reservas temporales (SEAT_TEMP_RESERVED del backend)
+    // Manejar reservas temporales (SEAT_TEMP_RESERVED del backend)
     if (activeSelection.type === 'temp_reserved') {
       return 'bg-purple-400 border-purple-500 text-white cursor-not-allowed animate-pulse';
     }
@@ -125,7 +147,7 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
   // está ocupado por un representante, o está siendo seleccionado por otro usuario (solo si WebSocket está disponible)
   const isClickable = !isLocked && seat.status === 'AVAILABLE' && 
     !isOccupiedByRepresentative &&
-    !(activeSelection && isWebSocketAvailable);
+    !(activeSelection && isWebSocketAvailable && !isSelected);
 
   return (
     <div className="relative">

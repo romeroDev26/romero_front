@@ -15,7 +15,10 @@ export interface SeatUpdateMessage {
   representativeIndex?: number;
   representativeName?: string;
   timestamp: string;
-  reservationType?: 'user' | 'representative';
+  reservationType?: 'user' | 'representative' | 'REPRESENTATIVE_TEMP_RESERVATION';
+  reservationCategory?: string; // NUEVO: Campo adicional del backend
+  expiresAt?: string; // NUEVO: Timestamp de expiración
+  sessionId?: string; // NUEVO: ID de sesión de empresa
   ttl?: number;
   success?: boolean;
   error?: string;

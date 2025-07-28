@@ -45,9 +45,28 @@ export const useSeatSelections = ({
   }, [userId, seatSelectionTimeout, cleanupInterval]);
 
   const addSelection = useCallback((selection: SeatSelection) => {
+    console.log('🗂️ AGREGANDO SELECCIÓN A MAP:', {
+      seatId: selection.seatId,
+      userId: selection.userId,
+      type: selection.type,
+      representativeName: selection.representativeName,
+      previousMapSize: activeSeatSelections.size
+    });
+    
     setActiveSeatSelections(prev => {
       const newMap = new Map(prev);
       newMap.set(selection.seatId, selection);
+      
+      console.log('🗂️ MAP DESPUÉS DE AGREGAR:', {
+        newMapSize: newMap.size,
+        allSelections: Array.from(newMap.entries()).map(([seatId, sel]) => ({
+          seatId,
+          userId: sel.userId,
+          type: sel.type,
+          representativeName: sel.representativeName
+        }))
+      });
+      
       return newMap;
     });
     
@@ -58,10 +77,30 @@ export const useSeatSelections = ({
   }, [userId]);
 
   const removeSelection = useCallback((seatId: number) => {
+    console.log('❌ REMOVIENDO SELECCIÓN DEL MAP:', {
+      seatId,
+      previousMapSize: activeSeatSelections.size
+    });
+    
     setActiveSeatSelections(prev => {
       const newMap = new Map(prev);
       const removedSelection = newMap.get(seatId);
       newMap.delete(seatId);
+      
+      console.log('❌ MAP DESPUÉS DE REMOVER:', {
+        newMapSize: newMap.size,
+        removedSelection: removedSelection ? {
+          userId: removedSelection.userId,
+          type: removedSelection.type,
+          representativeName: removedSelection.representativeName
+        } : null,
+        remainingSelections: Array.from(newMap.entries()).map(([seatId, sel]) => ({
+          seatId,
+          userId: sel.userId,
+          type: sel.type,
+          representativeName: sel.representativeName
+        }))
+      });
       
       // ✅ NUEVO: Remover de mis selecciones si era mía
       if (removedSelection?.userId === userId) {

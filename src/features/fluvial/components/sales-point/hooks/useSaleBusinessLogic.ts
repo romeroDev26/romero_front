@@ -57,7 +57,9 @@ export const useSaleBusinessLogic = ({
     passengerData: PassengerData,
     representatives: Representative[],
     branchName: string,
-    onSuccess: () => void
+    onSuccess: () => void,
+    seatMap?: any[], //  NUEVO: Para convertir seat_number a seatId
+    confirmPurchaseCallback?: (seatIds: number[]) => boolean, //  NUEVO: Para confirmar compra
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -101,6 +103,29 @@ export const useSaleBusinessLogic = ({
       };
 
       const result = await createCompanyInvoiceWithRepresentatives(companyInvoiceData);
+      
+      // 🔧 NUEVA FUNCIONALIDAD: Confirmar compra de asientos para WebSocket
+      if (confirmPurchaseCallback && seatMap && seatMap.length > 0) {
+        const seatIds: number[] = [];
+        
+        representatives.forEach(rep => {
+          if (rep.seat_number && rep.seat_number !== "Elección libre") {
+            const seat = seatMap.find(s => s.seat_number === rep.seat_number);
+            if (seat) {
+              seatIds.push(seat.id);
+            }
+          }
+        });
+        
+        if (seatIds.length > 0) {
+          const confirmed = confirmPurchaseCallback(seatIds);
+          if (confirmed) {
+            console.log(`✅ Confirmados ${seatIds.length} asientos como vendidos:`, seatIds);
+          } else {
+            console.warn('⚠️ No se pudieron confirmar algunos asientos como vendidos');
+          }
+        }
+      }
       
       toast.success(
         `Factura empresarial creada con ${(result as any).representatives.length} representantes`,

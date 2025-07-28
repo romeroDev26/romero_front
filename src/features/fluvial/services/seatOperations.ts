@@ -12,6 +12,9 @@ export interface SeatOperationMessage {
   representativeName?: string;
   representativeIndex?: number;
   timestamp: string;
+  // NUEVO: Campos adicionales para sesión de empresa
+  sessionId?: string;
+  maxGroupReservations?: number;
 }
 
 export class SeatOperations {
@@ -19,16 +22,19 @@ export class SeatOperations {
   private userId: string;
   private userName: string;
   private companyName?: string;
+  private tripId: number; // NUEVO: Agregar tripId
 
   constructor(
     sendMessage: (message: any) => boolean,
     userId: string,
     userName: string,
+    tripId: number, // NUEVO: Agregar tripId al constructor
     companyName?: string
   ) {
     this.sendMessage = sendMessage;
     this.userId = userId;
     this.userName = userName;
+    this.tripId = tripId; // NUEVO: Inicializar tripId
     this.companyName = companyName;
   }
 
@@ -75,48 +81,86 @@ export class SeatOperations {
     representativeIndex: number, 
     representativeName: string
   ): boolean {
-    // Primero liberar cualquier reserva temporal previa
-    const releaseMessage: SeatOperationMessage = {
-      type: 'SEAT_TEMP_RELEASE_ALL',
-      userId: this.userId,
-      userName: this.userName,
-      timestamp: new Date().toISOString()
+    // SOLUCIÓN: Formato exacto que requiere el backend
+    const sessionId = this.getOrCreateCompanySessionId();
+    const representativeUserId = `${this.userId}-company-${sessionId}-rep-${representativeIndex}`;
+    
+    // 🔑 MENSAJE EXACTO QUE REQUIERE EL BACKEND
+    const message = {
+      type: 'SEAT_TEMP_RESERVE',
+      seatId: seatId,
+      userId: representativeUserId,
+      userName: `${this.companyName || 'Empresa'} - ${representativeName}`,
+      representativeName: representativeName,
+      sessionId: sessionId,      // 🔑 CLAVE
+      reservationType: 'representative' // 🔑 TIPO
     };
 
-    this.sendMessage(releaseMessage);
+    console.log('🚀 Enviando mensaje al backend:', JSON.stringify(message, null, 2));
 
-    // Pequeño delay para asegurar que el backend procese la liberación
-    setTimeout(() => {
-      const message: SeatOperationMessage = {
-        type: 'SEAT_TEMP_RESERVE',
-        seatId,
-        reservationType: 'representative',
-        companyName: this.companyName || 'Empresa',
-        representativeName: representativeName,
-        representativeIndex: representativeIndex,
-        userId: this.userId,
-        userName: `${this.companyName || 'Empresa'} - ${representativeName}`,
-        timestamp: new Date().toISOString()
-      };
+    // Almacenar localmente para tracking
+    this.trackRepresentativeReservation(seatId, representativeIndex, representativeName);
 
-      this.sendMessage(message);
-    }, 100);
-
-    return true;
+    const result = this.sendMessage(message);
+    console.log('📤 Mensaje enviado:', result ? 'ÉXITO' : 'FALLÓ');
+    
+    return result;
   }
 
-  releaseSeatForRepresentative(seatId: number): boolean {
-    const message: SeatOperationMessage = {
-      type: 'SEAT_TEMP_RELEASE',
+  private getOrCreateCompanySessionId(): string {
+    const storageKey = `company-session-${this.userId}-${this.tripId}`;
+    let sessionId = sessionStorage.getItem(storageKey);
+    
+    if (!sessionId) {
+      sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      sessionStorage.setItem(storageKey, sessionId);
+    }
+    
+    return sessionId;
+  }
+
+  private trackRepresentativeReservation(seatId: number, representativeIndex: number, representativeName: string) {
+    const storageKey = `representative-seats-${this.userId}-${this.tripId}`;
+    let reservations = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+    
+    reservations[representativeIndex] = {
       seatId,
-      reservationType: 'representative',
-      userId: this.userId,
-      userName: this.userName,
+      representativeName,
       timestamp: new Date().toISOString()
     };
+    
+    sessionStorage.setItem(storageKey, JSON.stringify(reservations));
+  }
 
-    const success = this.sendMessage(message);
-    return success;
+  releaseSeatForRepresentative(seatId: number, representativeIndex?: number): boolean {
+    // Si se proporciona el índice, usar la misma lógica que para reservar
+    if (representativeIndex !== undefined) {
+      const sessionId = this.getOrCreateCompanySessionId();
+      const representativeUserId = `${this.userId}-company-${sessionId}-rep-${representativeIndex}`;
+      
+      // 🔑 MENSAJE DE LIBERACIÓN CON FORMATO CORRECTO
+      const message = {
+        type: 'SEAT_TEMP_RELEASE',
+        seatId: seatId,
+        userId: representativeUserId,
+        sessionId: sessionId,
+        reservationType: 'representative'
+      };
+
+      console.log('🔄 Liberando asiento de representante:', JSON.stringify(message, null, 2));
+      return this.sendMessage(message);
+    } else {
+      // Compatibilidad: usar formato original para liberación sin índice
+      const message = {
+        type: 'SEAT_TEMP_RELEASE',
+        seatId: seatId,
+        userId: this.userId,
+        reservationType: 'representative'
+      };
+
+      console.log('🔄 Liberando asiento (modo compatibilidad):', JSON.stringify(message, null, 2));
+      return this.sendMessage(message);
+    }
   }
 
   // Operaciones de compra

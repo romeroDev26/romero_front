@@ -120,7 +120,7 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
   });
 
   // Servicio de operaciones de asientos - Encapsula la lógica de envío de mensajes
-  const seatOperations = new SeatOperations(sendMessage, userId, userName, companyName);
+  const seatOperations = new SeatOperations(sendMessage, userId, userName, tripId, companyName);
 
   // Sincronizar datos iniciales con selecciones pendientes del WebSocket
   useEffect(() => {
@@ -141,9 +141,10 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
 
   // Operaciones básicas de asientos
   const selectSeat = useCallback((seatId: number, selectionType: 'temporary' | 'reserved' = 'temporary') => {
-    //  SOLUCIÓN: Liberar la selección actual antes de hacer una nueva (solo para modo individual)
+    // 🔧 CORRECCIÓN: NO liberar selecciones automáticamente en modo empresa
+    // En modo empresa (RUC con representantes), necesitamos mantener múltiples asientos
     if (selectionType === 'temporary' && !isCompanyMode) {
-      // Buscar y liberar cualquier selección previa del usuario usando myActiveSelections
+      // Solo en modo individual: Liberar la selección actual antes de hacer una nueva
       myActiveSelections.forEach((selectedSeatId) => {
         if (selectedSeatId !== seatId) {
           seatOperations.releaseSeat(selectedSeatId);
@@ -187,8 +188,8 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     return seatOperations.selectSeatForRepresentative(seatId, representativeIndex, representativeName);
   }, [seatOperations]);
 
-  const releaseSeatForRepresentative = useCallback((seatId: number) => {
-    return seatOperations.releaseSeatForRepresentative(seatId);
+  const releaseSeatForRepresentative = useCallback((seatId: number, representativeIndex?: number) => {
+    return seatOperations.releaseSeatForRepresentative(seatId, representativeIndex);
   }, [seatOperations]);
 
   // Operaciones de compra

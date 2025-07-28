@@ -216,20 +216,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const { mutateAsync: createSeatAssignment, isPending: isAssigningSeat } = useCreateSeatAssignment();
   const { mutateAsync: updateReservation, isPending: isUpdatingReservation } = useUpdateReservation();
 
-  // ← NUEVO: Hook de lógica de negocio
-  const { enrichSeatWithType, handleCompanyInvoiceWithRepresentatives, handleRegularSale } = useSaleBusinessLogic({
-    findOrCreateClient,
-    createInvoice,
-    createSeatAssignment,
-    updateReservation,
-    createCompanyInvoiceWithRepresentatives,
-    seatValidationService,
-    currentUser,
-    tripDetails,
-    passengerService,
-    vesselDetails,
-  });
-
   // Efectos para configurar IGV y representantes
   useEffect(() => {
     if (passengerService) {
@@ -276,6 +262,21 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     localStorage.setItem("lastUsedFacturaSeries", seriesCode);
   };
 
+  // ← NUEVO: Hook de lógica de negocio (sin confirmPurchase por ahora)
+  const { enrichSeatWithType, handleCompanyInvoiceWithRepresentatives, handleRegularSale } = useSaleBusinessLogic({
+    findOrCreateClient,
+    createInvoice,
+    createSeatAssignment,
+    updateReservation,
+    createCompanyInvoiceWithRepresentatives,
+    seatValidationService,
+    currentUser,
+    tripDetails,
+    passengerService,
+    vesselDetails,
+    // confirmPurchase se pasará después cuando esté disponible
+  });
+
   // ← NUEVO: Cálculos de precios usando el módulo
   const { basePrice, seatMultiplier } = useMemo(() => {
     const price = foundFare?.price ?? null;
@@ -311,15 +312,42 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   // Funciones para gestionar representantes
   const handleAddRepresentative = async (representative: Representative) => {
+    // Primero, reservar el asiento vía WebSocket si hay uno seleccionado
     if (selectedSeatForRepresentative && isWebSocketConnected) {
-      selectSeatForRepresentative(
+      console.log('🔵 === INICIO RESERVA REPRESENTANTE ===');
+      console.log('✅ Datos de entrada:', {
+        seatId: selectedSeatForRepresentative.id,
+        seatNumber: selectedSeatForRepresentative.seat_number,
+        representativeIndex: representatives.length,
+        representativeName: representative.name,
+        isConnected: isWebSocketConnected,
+        userId: currentUser?.id,
+        companyName: passengerData.name
+      });
+      
+      const reserveResult = selectSeatForRepresentative(
         selectedSeatForRepresentative.id,
         representatives.length,
         representative.name
       );
+      
+      console.log('📡 Resultado de reserva WebSocket:', reserveResult);
+      
+      // 🕒 Timeout para verificar si llega respuesta del backend
+      setTimeout(() => {
+        console.log('⏰ VERIFICACIÓN POST-RESERVA (después de 3 segundos):');
+        console.log('- ¿Llegó respuesta del backend? Revisar mensajes 📥 arriba');
+        console.log('- Estado actual de activeSeatSelections:', activeSeatSelections);
+        console.log('- Tamaño de activeSeatSelections:', activeSeatSelections.size);
+        console.log('- Lista de asientos activos:', Array.from(activeSeatSelections.entries()));
+      }, 3000);
+      
+      console.log('🔵 === FIN RESERVA REPRESENTANTE ===');
     }
     
+    // Luego, agregar el representante a la lista local
     setRepresentatives(prev => [...prev, representative]);
+    setSelectedSeatForRepresentative(null); // Limpiar la selección temporal
     setShowAddForm(false);
     toast.success('Representante agregado exitosamente');
   };
@@ -332,8 +360,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       const seatId = findSeatIdBySeatNumber(representativeToRemove.seat_number);
       
       if (seatId) {
-        // Usar las funciones correctas con el seatId
-        releaseSeatForRepresentative(seatId);
+        // Usar las funciones correctas con el seatId y el índice del representante
+        releaseSeatForRepresentative(seatId, index);
         releaseSeatWebSocket(seatId);
       }
     }
@@ -342,10 +370,38 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     toast.success('Representante eliminado');
   };
 
+  // Handler para manejar el cambio de estado del formulario de agregar representante
+  const handleShowAddFormChange = (show: boolean) => {
+    setShowAddForm(show);
+    if (!show) {
+      // Limpiar la selección temporal cuando se cancela la adición
+      setSelectedSeatForRepresentative(null);
+    }
+  };
+
   const existingDocuments = representatives.map(rep => rep.document_number);
   const usedSeatNumbers = representatives
     .map(rep => rep.seat_number)
     .filter((seat): seat is string => seat != null && seat !== "Elección libre");
+
+  // Crear lista completa de asientos ocupados incluyendo reservas WebSocket
+  const getAllOccupiedSeatNumbers = () => {
+    const reservedNumbers = getReservedSeatNumbers();
+    
+    // Obtener asientos reservados temporalmente por otros usuarios vía WebSocket
+    const webSocketReservedNumbers: string[] = [];
+    activeSeatSelections.forEach((selection, seatId) => {
+      // Solo incluir selecciones de otros usuarios
+      if (selection.userId !== currentUser?.id) {
+        const seat = seatMap.find(s => s.id === seatId);
+        if (seat) {
+          webSocketReservedNumbers.push(seat.seat_number);
+        }
+      }
+    });
+    
+    return [...usedSeatNumbers, ...reservedNumbers, ...webSocketReservedNumbers];
+  };
 
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
@@ -355,7 +411,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     selectSeatForRepresentative,
     releaseSeatForRepresentative,
     releaseSeat: releaseSeatWebSocket,
-    isConnected: isWebSocketConnected
+    confirmPurchase,
+    isConnected: isWebSocketConnected,
+    activeSeatSelections // Agregar para obtener selecciones activas de WebSocket
   } = useSeatMapRealtime({
     tripId: trip.id,
     userId: currentUser?.id || 'unknown',
@@ -381,7 +439,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         passengerData,
         representatives,
         branch.name,
-        onSaleSuccess
+        onSaleSuccess,
+        seatMap, //  NUEVO: Pasar seatMap
+        confirmPurchase //  NUEVO: Pasar confirmPurchase como parámetro
       );
       return;
     }
@@ -464,7 +524,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   onAddRepresentative={handleAddRepresentative}
                   onRemoveRepresentative={handleRemoveRepresentative}
                   showAddForm={showAddForm}
-                  onShowAddFormChange={setShowAddForm}
+                  onShowAddFormChange={handleShowAddFormChange}
                   isReserving={isReserving}
                   existingDocuments={existingDocuments}
                   tripId={trip.id}
@@ -502,7 +562,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 reservationToConfirm={reservationToConfirm}
                 userId={currentUser?.id || 'unknown'}
                 userName={currentUser?.full_name || currentUser?.first_name || 'Usuario'}
-                occupiedSeatNumbers={[...usedSeatNumbers, ...getReservedSeatNumbers()]}
+                occupiedSeatNumbers={getAllOccupiedSeatNumbers()}
+                isCompanyMode={isRuc} // NUEVA: Pasar modo empresa basado en RUC
               />
             </div>
           </div>

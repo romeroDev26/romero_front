@@ -3,7 +3,7 @@ import api from '../config/api';
 
 // NUEVOS TIPOS SEGÚN ESPECIFICACIÓN BACKEND
 export interface CompanyInvoiceWithRepresentatives {
-  // Datos de la empresa
+  // Datos de la empresa (OBLIGATORIO)
   company_data: {
     client_doc_type: string; // Siempre "6" para RUC
     client_doc_number: string; // RUC de 11 dígitos
@@ -13,24 +13,48 @@ export interface CompanyInvoiceWithRepresentatives {
     client_phone?: string;
   };
   
-  // Datos del viaje
+  // Datos del viaje (OBLIGATORIO)
   trip_id: number;
   boarding_stop_id: number;
   disembarking_stop_id: number;
   
-  // Lista de representantes
+  // Lista de representantes (OBLIGATORIO)
   representatives: Array<{
     passenger_name: string;
     passenger_doc_type: string; // "1"=DNI, "4"=CE, "6"=RUC, "7"=Pasaporte
     passenger_doc_number: string;
     passenger_phone?: string;
-    passenger_email?: string;
+    passenger_email?: string; // ← AGREGADO: Campo email
     seat_number?: string; // "Elección libre" o número específico
-    special_notes?: string;
+    special_notes?: string; // ← AGREGADO: Campo notas especiales
   }>;
   
-  // Configuración adicional
-  special_notes?: string;
+  // ← NUEVO: Configuración opcional de factura
+  invoice_config?: {
+    document_type_code?: string; // "01"=Factura, "03"=Boleta
+    operation_type_code?: string; // "0101"=Venta interna
+    currency_code?: string; // "PEN", "USD", "EUR"
+    exchange_rate?: string; // Solo si currency_code != PEN
+    issue_time?: string; // HH:MM:SS
+    payment_terms_description?: string; // Términos de pago
+    due_date?: string; // YYYY-MM-DD
+    detraccion_code?: string; // Código SUNAT
+    detraccion_percentage?: string; // Porcentaje 0-100
+  };
+  
+  // ← NUEVO: Configuración opcional de items
+  item_config?: {
+    unit_price?: string; // Precio unitario sin IGV
+    quantity?: number; // ← NUEVO: Cantidad de representantes/asientos
+    discount?: string; // Descuento fijo (NO usar con discount_percentage)
+    discount_percentage?: string; // Descuento en porcentaje (0-100)
+    tax_category_code?: string; // "10"=Gravado, "20"=Exonerado, "30"=Inafecto
+    item_description?: string; // Descripción del servicio
+    unit_code?: string; // "NIU"=Unidad, "ZZ"=Servicio
+  };
+  
+  // Configuración adicional (OPCIONAL)
+  special_notes?: string; // Máximo 500 caracteres
 }
 
 export interface CompanyInvoiceResponse {
@@ -86,7 +110,8 @@ class RepresentantesService {
     data: CompanyInvoiceWithRepresentatives
   ): Promise<CompanyInvoiceResponse> {
     try {
-      const response = await api.post('/sunat/invoices/company-with-representatives', data);
+      // ← CORREGIDO: Endpoint con prefijo /sunat según especificación
+      const response = await api.post('/sunat/invoices/company-with-representatives-extended', data);
       return response.data;
     } catch (error: any) {
       // Manejar errores específicos según la especificación

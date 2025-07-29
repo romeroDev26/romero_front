@@ -10,7 +10,9 @@ interface Representative {
   document_number: string;
   name: string;
   phone: string;
+  email?: string; // ← NUEVO: Campo email
   seat_number?: string;
+  special_notes?: string; // ← NUEVO: Campo notas especiales
 }
 
 interface RepresentativesManagerProps {
@@ -186,6 +188,9 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       
                       <div className="flex items-center space-x-4 text-xs text-gray-600">
                         <span>Teléfono: {rep.phone}</span>
+                        {rep.email && (
+                          <span>Email: {rep.email}</span>
+                        )}
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           {rep.seat_number === "Elección libre" ? (
                             "Elección libre"
@@ -194,6 +199,14 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                           )}
                         </span>
                       </div>
+                      
+                      {/* ← NUEVO: Mostrar notas especiales si existen */}
+                      {rep.special_notes && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                          <div className="text-xs text-gray-500 font-medium mb-1">Notas especiales:</div>
+                          <div className="text-xs text-gray-700">{rep.special_notes}</div>
+                        </div>
+                      )}
                     </div>
                     
                     <Button

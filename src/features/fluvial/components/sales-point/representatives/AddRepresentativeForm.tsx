@@ -12,7 +12,9 @@ interface Representative {
   document_number: string;
   name: string;
   phone: string;
+  email?: string; // ← NUEVO: Campo email
   seat_number?: string;
+  special_notes?: string; // ← NUEVO: Campo notas especiales
 }
 
 interface SeatMapItem {
@@ -53,7 +55,9 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     document_number: '',
     name: '',
     phone: '',
+    email: '', // ← NUEVO: Campo email
     seat_number: '',
+    special_notes: '', // ← NUEVO: Campo notas especiales
   });
   
   const [isLoadingDni, setIsLoadingDni] = useState(false);
@@ -209,7 +213,9 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       document_number: formData.document_number.trim(),
       name: formData.name.trim(),
       phone: formData.phone.trim(),
+      email: formData.email.trim(), // ← NUEVO: Campo email
       seat_number: seatNumber,
+      special_notes: formData.special_notes.trim(), // ← NUEVO: Campo notas especiales
     });
 
     // Limpiar formulario y asiento seleccionado
@@ -218,7 +224,9 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       document_number: '',
       name: '',
       phone: '',
+      email: '', // ← NUEVO: Campo email
       seat_number: '',
+      special_notes: '', // ← NUEVO: Campo notas especiales
     });
     
     // Limpiar selección de asiento
@@ -301,6 +309,38 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
             placeholder="Número de teléfono del representante"
             className="text-sm"
           />
+        </div>
+
+        {/* ← NUEVO: Campo Email */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email <span className="text-gray-400">(opcional)</span>
+          </label>
+          <Input
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            placeholder="Correo electrónico del representante"
+            className="text-sm"
+          />
+        </div>
+
+        {/* ← NUEVO: Campo Notas Especiales */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Notas Especiales <span className="text-gray-400">(opcional)</span>
+          </label>
+          <textarea
+            value={formData.special_notes}
+            onChange={(e) => setFormData(prev => ({ ...prev, special_notes: e.target.value }))}
+            placeholder="Observaciones especiales para este representante..."
+            className="w-full p-2 border border-gray-300 rounded-md text-sm resize-none"
+            rows={2}
+            maxLength={200}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            {formData.special_notes.length}/200 caracteres
+          </div>
         </div>
 
         <div>

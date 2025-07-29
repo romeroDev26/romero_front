@@ -431,7 +431,14 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         branch.name,
         onSaleSuccess,
         seatMap, //  NUEVO: Pasar seatMap
-        confirmPurchase //  NUEVO: Pasar confirmPurchase como parámetro
+        confirmPurchase, //  NUEVO: Pasar confirmPurchase como parámetro
+        // ← NUEVOS PARÁMETROS: Para construir item_config
+        basePrice || 0,
+        seatMultiplier,
+        extraCost,
+        extraCostDescription,
+        discount,
+        isIgvGravado
       );
       return;
     }

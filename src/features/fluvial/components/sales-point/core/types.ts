@@ -20,7 +20,9 @@ export interface Representative {
   document_number: string;
   name: string;
   phone: string;
+  email?: string; // ← NUEVO: Campo email para representante
   seat_number?: string;
+  special_notes?: string; // ← NUEVO: Campo notas especiales
 }
 
 export interface SaleFormProps {

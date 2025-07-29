@@ -60,6 +60,13 @@ export const useSaleBusinessLogic = ({
     onSuccess: () => void,
     seatMap?: any[], //  NUEVO: Para convertir seat_number a seatId
     confirmPurchaseCallback?: (seatIds: number[]) => boolean, //  NUEVO: Para confirmar compra
+    // ← NUEVOS PARÁMETROS: Para construir item_config
+    basePrice?: number,
+    seatMultiplier?: number,
+    extraCost?: number,
+    extraCostDescription?: string,
+    discount?: number,
+    isIgvGravado?: boolean,
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -80,14 +87,50 @@ export const useSaleBusinessLogic = ({
     }
 
     try {
+      // ← NUEVO: Construir item_config según especificación del backend
+      const itemConfig: any = {};
+      
+      // Cantidad de representantes/asientos
+      itemConfig.quantity = representatives.length;
+      
+      // Precio unitario (sin IGV por pasajero) - incluye costo adicional
+      if (basePrice !== undefined && basePrice > 0) {
+        const baseUnitPrice = basePrice * (seatMultiplier || 1.0);
+        const extraCostPerPassenger = (extraCost || 0) / representatives.length;
+        const finalUnitPrice = baseUnitPrice + extraCostPerPassenger;
+        itemConfig.unit_price = finalUnitPrice.toFixed(2);
+      }
+      
+      // Descuento fijo total (NO dividir entre representantes)
+      if (discount !== undefined && discount > 0) {
+        // El backend espera el descuento total, no por pasajero
+        itemConfig.discount = discount.toFixed(2);
+      }
+      
+      // Categoría fiscal
+      if (isIgvGravado !== undefined) {
+        itemConfig.tax_category_code = isIgvGravado ? "10" : "20"; // 10=Gravado, 20=Exonerado
+      }
+      
+      // Descripción del item (incluir costo adicional si existe)
+      let itemDescription = "Servicio de transporte fluvial empresarial";
+      if (extraCostDescription && extraCostDescription.trim()) {
+        itemDescription += ` - ${extraCostDescription.trim()}`;
+      }
+      itemConfig.item_description = itemDescription;
+      
+      // Unidad de medida
+      itemConfig.unit_code = "ZZ"; // ZZ = Servicio
+      
+      // ← CORREGIDO: JSON según especificación exacta del backend
       const companyInvoiceData = {
         company_data: {
           client_doc_type: passengerData.docType,
           client_doc_number: passengerData.docNumber,
           client_name: passengerData.name,
-          client_address: passengerData.address,
-          client_phone: passengerData.phone,
-          client_email: passengerData.email,
+          client_address: passengerData.address || "",
+          client_phone: passengerData.phone || "",
+          client_email: passengerData.email || "",
         },
         trip_id: tripId,
         boarding_stop_id: selectedBoardingStopId,
@@ -96,10 +139,14 @@ export const useSaleBusinessLogic = ({
           passenger_name: rep.name,
           passenger_doc_type: rep.document_type,
           passenger_doc_number: rep.document_number,
-          passenger_phone: rep.phone,
+          passenger_phone: rep.phone || "",
+          passenger_email: rep.email || "", // ← NUEVO: Campo email
           seat_number: rep.seat_number || "Elección libre",
+          special_notes: rep.special_notes || "", // ← NUEVO: Campo notas especiales
         })),
-        special_notes: `Punto de Venta: ${branchName} - Factura Empresarial`
+        // ← NUEVO: Incluir item_config solo si tiene configuraciones
+        ...(Object.keys(itemConfig).length > 0 && { item_config: itemConfig }),
+        special_notes: `Punto de Venta: ${branchName} - Factura Empresarial${extraCost && extraCost > 0 ? ` - Costo adicional: S/. ${extraCost.toFixed(2)}` : ''}`
       };
 
       const result = await createCompanyInvoiceWithRepresentatives(companyInvoiceData);

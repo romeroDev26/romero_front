@@ -108,7 +108,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
     userId,
     userName,
     enabled: !isLocked, // Solo habilitar WebSocket si no está bloqueado
-    enableDebugLogs: true, // ← NUEVO: Habilitar logs para debugging
     // ← NUEVO: Configuración mejorada para empresa
     companyName: undefined, // No es modo empresa en este componente
     isCompanyMode // Pasar el modo empresa al hook
@@ -153,38 +152,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
       });
     };
   }, []); // Sin dependencias para evitar recreación infinita
-
-  // 🔍 DEBUG: Función para verificar qué selecciones llegan al mapa
-  const debugActiveSeatSelections = () => {
-    console.log('🗺️ DEBUGGING SEAT MAP REALTIME:', {
-      totalActiveSelections: activeSeatSelections.size,
-      activeSelections: Array.from(activeSeatSelections.entries()).map(([seatId, selection]) => ({
-        seatId,
-        userId: selection.userId,
-        userName: selection.userName,
-        type: selection.type,
-        representativeName: selection.representativeName
-      })),
-      occupiedSeatNumbers,
-      selectedSeats: Array.from(selectedSeats)
-    });
-  };
-
-  // 🔍 DEBUG: Efecto para debug de selecciones activas
-  useEffect(() => {
-    if (activeSeatSelections.size > 0) {
-      debugActiveSeatSelections();
-    }
-  }, [activeSeatSelections]);
-
-  // 🔍 DEBUG: Efecto para detectar cambios en selectedSeats (asientos locales)
-  useEffect(() => {
-    console.log('🔄 SeatMapRealtime: selectedSeats changed:', {
-      selectedSeatsArray: Array.from(selectedSeats),
-      selectedSeatsSize: selectedSeats.size,
-      isCompanyMode
-    });
-  }, [selectedSeats, isCompanyMode]);
 
   const seatLayout = useMemo(() => {
     if (!vesselDetails?.seat_configurations || !(seatMap ?? []).length) {
@@ -292,17 +259,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                               <div className="flex gap-3">
                                 {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => {
                                   const isSelected = selectedSeats.has(seat.id);
-                                  // 🔍 DEBUG: Log para verificar si isSelected se calcula correctamente
-                                  if (seat.id === 10950 || seat.seat_number === '28') { // DEBUG para asiento específico del log
-                                    console.log(`🎯 DEBUG asiento ${seat.seat_number} (ID: ${seat.id}):`, {
-                                      seatId: seat.id,
-                                      seatNumber: seat.seat_number,
-                                      selectedSeatsArray: Array.from(selectedSeats),
-                                      isSelected,
-                                      hasActiveSelection: activeSeatSelections.has(seat.id),
-                                      activeSelectionType: activeSeatSelections.get(seat.id)?.type
-                                    });
-                                  }
                                   
                                   return (
                                     <SeatRealtime
@@ -327,17 +283,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                               <div className="flex gap-3">
                                 {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => {
                                   const isSelected = selectedSeats.has(seat.id);
-                                  // 🔍 DEBUG: Log para verificar si isSelected se calcula correctamente
-                                  if (seat.id === 10950 || seat.seat_number === '28') { // DEBUG para asiento específico del log
-                                    console.log(`🎯 DEBUG asiento ${seat.seat_number} (ID: ${seat.id}) - segunda fila:`, {
-                                      seatId: seat.id,
-                                      seatNumber: seat.seat_number,
-                                      selectedSeatsArray: Array.from(selectedSeats),
-                                      isSelected,
-                                      hasActiveSelection: activeSeatSelections.has(seat.id),
-                                      activeSelectionType: activeSeatSelections.get(seat.id)?.type
-                                    });
-                                  }
                                   
                                   return (
                                     <SeatRealtime

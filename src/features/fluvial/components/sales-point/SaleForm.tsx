@@ -314,35 +314,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const handleAddRepresentative = async (representative: Representative) => {
     // Primero, reservar el asiento vía WebSocket si hay uno seleccionado
     if (selectedSeatForRepresentative && isWebSocketConnected) {
-      console.log('🔵 === INICIO RESERVA REPRESENTANTE ===');
-      console.log('✅ Datos de entrada:', {
-        seatId: selectedSeatForRepresentative.id,
-        seatNumber: selectedSeatForRepresentative.seat_number,
-        representativeIndex: representatives.length,
-        representativeName: representative.name,
-        isConnected: isWebSocketConnected,
-        userId: currentUser?.id,
-        companyName: passengerData.name
-      });
-      
-      const reserveResult = selectSeatForRepresentative(
+      selectSeatForRepresentative(
         selectedSeatForRepresentative.id,
         representatives.length,
         representative.name
       );
-      
-      console.log('📡 Resultado de reserva WebSocket:', reserveResult);
-      
-      // 🕒 Timeout para verificar si llega respuesta del backend
-      setTimeout(() => {
-        console.log('⏰ VERIFICACIÓN POST-RESERVA (después de 3 segundos):');
-        console.log('- ¿Llegó respuesta del backend? Revisar mensajes 📥 arriba');
-        console.log('- Estado actual de activeSeatSelections:', activeSeatSelections);
-        console.log('- Tamaño de activeSeatSelections:', activeSeatSelections.size);
-        console.log('- Lista de asientos activos:', Array.from(activeSeatSelections.entries()));
-      }, 3000);
-      
-      console.log('🔵 === FIN RESERVA REPRESENTANTE ===');
     }
     
     // Luego, agregar el representante a la lista local
@@ -433,12 +409,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         return seat?.id;
       })
       .filter((id): id is number => id !== undefined);
-    
-    console.log('🔄 SaleForm: Recalculando representative seat IDs:', {
-      representativesCount: representatives.length,
-      representatives: representatives.map(r => ({ name: r.name, seatNumber: r.seat_number })),
-      seatIds
-    });
     
     return seatIds;
   }, [representatives, seatMap]);

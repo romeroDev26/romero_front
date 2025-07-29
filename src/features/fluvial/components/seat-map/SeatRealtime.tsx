@@ -34,25 +34,8 @@ const getSeatStyles = (
   activeSelection?: SeatSelection,
   connectionStatus?: string,
   isWebSocketAvailable?: boolean,
-  isOccupiedByRepresentative?: boolean,
-  seat?: SeatMapItem
+  isOccupiedByRepresentative?: boolean
 ): string => {
-  // 🔍 DEBUG: Agregar logging para diagnosis visual
-  if (activeSelection?.type === 'representative') {
-    console.log(`🎨 ESTILOS ASIENTO ${seat?.seat_number} (ID: ${seat?.id}):`, {
-      seatNumber: seat?.seat_number,
-      seatId: seat?.id,
-      activeSelection: {
-        type: activeSelection.type,
-        representativeName: activeSelection.representativeName,
-        userId: activeSelection.userId
-      },
-      isSelected,
-      isWebSocketAvailable,
-      finalStyle: 'bg-purple-500 (representative)'
-    });
-  }
-
   // Si hay una selección activa de representante de otro usuario, mostrar como ocupado
   if (activeSelection && !isSelected && isWebSocketAvailable && activeSelection.type === 'representative') {
     return 'bg-purple-500 border-purple-600 text-white cursor-not-allowed animate-pulse';
@@ -115,13 +98,13 @@ const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection, isOc
   }
   
   if (activeSelection) {
-    // ← NUEVO: Diferentes mensajes según el tipo de selección
+    // Diferentes mensajes según el tipo de selección
     if (activeSelection.type === 'representative') {
       const companyInfo = activeSelection.companyName ? ` (${activeSelection.companyName})` : '';
       const repInfo = activeSelection.representativeName ? ` - Rep: ${activeSelection.representativeName}` : '';
       return `${baseInfo} - Reservado para representante${companyInfo}${repInfo}`;
     }
-    // ← NUEVO: Manejo de reservas temporales del backend
+    // Manejo de reservas temporales del backend
     if (activeSelection.type === 'temp_reserved') {
       const companyInfo = activeSelection.companyName ? ` (${activeSelection.companyName})` : '';
       const ttlInfo = activeSelection.ttl ? ` - Expira en ${Math.round(activeSelection.ttl / 60)} min` : '';
@@ -176,7 +159,7 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
         {/* Indicador de selección por otro usuario (solo si WebSocket está disponible) */}
         {activeSelection && isWebSocketAvailable && (
           <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white text-xs px-1 rounded text-center whitespace-nowrap">
-            {/* ← NUEVO: Diferentes indicadores según el tipo */}
+            {/* Diferentes indicadores según el tipo */}
             {activeSelection.type === 'representative' ? (
               <span className="bg-purple-600 px-1 rounded">
                 {activeSelection.companyName ? activeSelection.companyName.substring(0, 8) : 'Empresa'}

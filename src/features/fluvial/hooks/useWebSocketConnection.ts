@@ -61,7 +61,6 @@ export const useWebSocketConnection = (
       ws.onmessage = (event) => {
         try {
           const message: SeatUpdateMessage = JSON.parse(event.data);
-          console.log('📥 MENSAJE DEL BACKEND:', JSON.stringify(message, null, 2));
           onMessage(message);
         } catch (error) {
           console.error('Error processing WebSocket message:', error);
@@ -107,15 +106,8 @@ export const useWebSocketConnection = (
 
   const sendMessage = useCallback((message: any) => {
     if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
-      console.log('📡 ENVIANDO AL BACKEND:', JSON.stringify(message, null, 2));
       wsRef.current.send(JSON.stringify(message));
       return true;
-    } else {
-      console.error('❌ No se puede enviar mensaje - WebSocket no disponible:', {
-        readyState: wsRef.current?.readyState,
-        isWebSocketAvailable,
-        message
-      });
     }
     return false;
   }, [isWebSocketAvailable]);

@@ -11,7 +11,7 @@ import { getSeatZoneName } from '../../utils/seatUtils';
 
 interface SeatAndFareSelectorProps {
   tripId: number;
-  // NUEVO: Usar stop IDs en lugar de port IDs
+  // Usar stop IDs en lugar de port IDs
   selectedBoardingStopId: number | null;
   onBoardingStopChange: (stopId: number | null) => void;
   selectedDisembarkingStopId: number | null;
@@ -25,9 +25,9 @@ interface SeatAndFareSelectorProps {
   userName?: string;
   // Nueva prop para asientos ocupados por representantes
   occupiedSeatNumbers?: string[];
-  // NUEVA prop para indicar modo empresa
+  // prop para indicar modo empresa
   isCompanyMode?: boolean;
-  // NUEVA prop para asientos seleccionados de representantes (modo empresa)
+  // prop para asientos seleccionados de representantes (modo empresa)
   representativeSelectedSeatIds?: number[];
 }
 
@@ -44,8 +44,8 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   userId = 'default-user',
   userName = 'Usuario',
   occupiedSeatNumbers = [],
-  isCompanyMode = false, // NUEVO: Default a false
-  representativeSelectedSeatIds = [], // NUEVO: IDs de asientos de representantes
+  isCompanyMode = false,
+  representativeSelectedSeatIds = [],
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
@@ -54,8 +54,8 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails } = useVessel(vesselId || null);
 
-  // 🔧 Función utilitaria para enriquecer asientos con información de seat_type
-  // NOTA: Esta función compensa la falta de seat_type en la respuesta del backend /seat-map
+  // Función utilitaria para enriquecer asientos con información de seat_type
+  // Esta función compensa la falta de seat_type en la respuesta del backend /seat-map
   // utilizando las configuraciones de embarcación que ya están disponibles
   const enrichSeatWithType = (seat: SeatMapItem): SeatMapItem => {
     if (!vesselDetails?.seat_configurations || !seat.vessel_seat_config_id) {
@@ -94,7 +94,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     // Por ahora, el efecto queda documentado pero la lógica se maneja en el componente hijo
   }, [isConfirmingMode, reservationToConfirm, selectedSeat]);
 
-  // NUEVO: Calcular selectedSeats dependiendo del modo empresa
+  // Calcular selectedSeats dependiendo del modo empresa
   const selectedSeatsForMap = useMemo((): Set<number> => {
     if (isCompanyMode) {
       // En modo empresa, incluir todos los asientos de representantes + el actual
@@ -102,11 +102,6 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       if (selectedSeat) {
         allSelectedIds.push(selectedSeat.id);
       }
-      console.log('🔄 SeatAndFareSelector: Recalculando selectedSeats para empresa:', {
-        representativeSelectedSeatIds,
-        selectedSeatId: selectedSeat?.id,
-        allSelectedIds
-      });
       return new Set(allSelectedIds);
     } else {
       // En modo individual, solo el asiento seleccionado
@@ -114,7 +109,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     }
   }, [isCompanyMode, representativeSelectedSeatIds, selectedSeat]);
 
-  // NUEVO: Calcular stops disponibles para destino basado en el stop de embarque seleccionado
+  // Calcular stops disponibles para destino basado en el stop de embarque seleccionado
   const { availableStops } = useMemo(() => {
     if (!tripDetails || !selectedBoardingStopId) {
       return { availableStops: [] };
@@ -242,16 +237,16 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
 
       <div className="mt-4 border-t pt-4">
         <SeatMapRealtime
-          key={`seat-map-${representativeSelectedSeatIds.length}-${selectedSeat?.id || 'none'}`} // NUEVO: Key que cambia cuando cambian representantes
+          key={`seat-map-${representativeSelectedSeatIds.length}-${selectedSeat?.id || 'none'}`}
           tripId={tripId}
           vesselName={tripDetails?.vessel?.name || 'Embarcación'}
-          selectedSeats={selectedSeatsForMap} // MODIFICADO: Usar useMemo que incluye representantes
+          selectedSeats={selectedSeatsForMap}
           onSeatToggle={handleSeatToggleFromMap}
           isLocked={isConfirmingMode}
           userId={userId}
           userName={userName}
           occupiedSeatNumbers={occupiedSeatNumbers}
-          isCompanyMode={isCompanyMode} // NUEVA: Pasar modo empresa
+          isCompanyMode={isCompanyMode}
         />
       </div>
     </div>

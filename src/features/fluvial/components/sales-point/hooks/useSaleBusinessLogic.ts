@@ -98,13 +98,12 @@ export const useSaleBusinessLogic = ({
         const baseUnitPrice = basePrice * (seatMultiplier || 1.0);
         const extraCostPerPassenger = (extraCost || 0) / representatives.length;
         const finalUnitPrice = baseUnitPrice + extraCostPerPassenger;
-        itemConfig.unit_price = finalUnitPrice.toFixed(2);
+        itemConfig.unit_price = parseFloat(finalUnitPrice.toFixed(2)); // ← CORREGIDO: Número, no string
       }
       
       // Descuento fijo total (NO dividir entre representantes)
       if (discount !== undefined && discount > 0) {
-        // El backend espera el descuento total, no por pasajero
-        itemConfig.discount = discount.toFixed(2);
+        itemConfig.discount = parseFloat(discount.toFixed(2)); // ← CORREGIDO: Número, no string
       }
       
       // Categoría fiscal
@@ -121,6 +120,27 @@ export const useSaleBusinessLogic = ({
       
       // Unidad de medida
       itemConfig.unit_code = "ZZ"; // ZZ = Servicio
+      
+      // ← NUEVO: Construir invoice_config según especificación del backend
+      const invoiceConfig: any = {};
+      
+      // Tipo de documento (01=Factura para RUC)
+      invoiceConfig.document_type_code = "01";
+      
+      // Tipo de operación
+      invoiceConfig.operation_type_code = "0101";
+      
+      // Moneda
+      invoiceConfig.currency_code = "PEN";
+      invoiceConfig.exchange_rate = null;
+      
+      // Términos de pago
+      invoiceConfig.payment_terms_description = "Contado";
+      invoiceConfig.due_date = null;
+      
+      // Detracción (opcional para transporte)
+      invoiceConfig.detraccion_code = null;
+      invoiceConfig.detraccion_percentage = null;
       
       // ← CORREGIDO: JSON según especificación exacta del backend
       const companyInvoiceData = {
@@ -146,6 +166,8 @@ export const useSaleBusinessLogic = ({
         })),
         // ← NUEVO: Incluir item_config solo si tiene configuraciones
         ...(Object.keys(itemConfig).length > 0 && { item_config: itemConfig }),
+        // ← NUEVO: Incluir invoice_config
+        invoice_config: invoiceConfig,
         special_notes: `Punto de Venta: ${branchName} - Factura Empresarial${extraCost && extraCost > 0 ? ` - Costo adicional: S/. ${extraCost.toFixed(2)}` : ''}`
       };
 

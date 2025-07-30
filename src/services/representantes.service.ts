@@ -34,20 +34,20 @@ export interface CompanyInvoiceWithRepresentatives {
     document_type_code?: string; // "01"=Factura, "03"=Boleta
     operation_type_code?: string; // "0101"=Venta interna
     currency_code?: string; // "PEN", "USD", "EUR"
-    exchange_rate?: string; // Solo si currency_code != PEN
+    exchange_rate?: number | null; // ← CORREGIDO: Número o null
     issue_time?: string; // HH:MM:SS
     payment_terms_description?: string; // Términos de pago
-    due_date?: string; // YYYY-MM-DD
-    detraccion_code?: string; // Código SUNAT
-    detraccion_percentage?: string; // Porcentaje 0-100
+    due_date?: string | null; // ← CORREGIDO: String o null
+    detraccion_code?: string | null; // ← CORREGIDO: String o null
+    detraccion_percentage?: number | null; // ← CORREGIDO: Número o null
   };
   
   // ← NUEVO: Configuración opcional de items
   item_config?: {
-    unit_price?: string; // Precio unitario sin IGV
-    quantity?: number; // ← NUEVO: Cantidad de representantes/asientos
-    discount?: string; // Descuento fijo (NO usar con discount_percentage)
-    discount_percentage?: string; // Descuento en porcentaje (0-100)
+    unit_price?: number; // ← CORREGIDO: Número, no string
+    quantity?: number; // Cantidad de representantes/asientos
+    discount?: number; // ← CORREGIDO: Número, no string
+    discount_percentage?: number; // Descuento en porcentaje (0-100)
     tax_category_code?: string; // "10"=Gravado, "20"=Exonerado, "30"=Inafecto
     item_description?: string; // Descripción del servicio
     unit_code?: string; // "NIU"=Unidad, "ZZ"=Servicio

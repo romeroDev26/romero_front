@@ -85,26 +85,18 @@ export class SeatOperations {
     const sessionId = this.getOrCreateCompanySessionId();
     const representativeUserId = `${this.userId}-company-${sessionId}-rep-${representativeIndex}`;
     
-    // 🔑 MENSAJE EXACTO QUE REQUIERE EL BACKEND
     const message = {
       type: 'SEAT_TEMP_RESERVE',
       seatId: seatId,
       userId: representativeUserId,
       userName: `${this.companyName || 'Empresa'} - ${representativeName}`,
       representativeName: representativeName,
-      sessionId: sessionId,      // 🔑 CLAVE
-      reservationType: 'representative' // 🔑 TIPO
+      sessionId: sessionId,
+      reservationType: 'representative'
     };
 
-    console.log('🚀 Enviando mensaje al backend:', JSON.stringify(message, null, 2));
-
-    // Almacenar localmente para tracking
     this.trackRepresentativeReservation(seatId, representativeIndex, representativeName);
-
-    const result = this.sendMessage(message);
-    console.log('📤 Mensaje enviado:', result ? 'ÉXITO' : 'FALLÓ');
-    
-    return result;
+    return this.sendMessage(message);
   }
 
   private getOrCreateCompanySessionId(): string {
@@ -137,8 +129,6 @@ export class SeatOperations {
     if (representativeIndex !== undefined) {
       const sessionId = this.getOrCreateCompanySessionId();
       const representativeUserId = `${this.userId}-company-${sessionId}-rep-${representativeIndex}`;
-      
-      // 🔑 MENSAJE DE LIBERACIÓN CON FORMATO CORRECTO
       const message = {
         type: 'SEAT_TEMP_RELEASE',
         seatId: seatId,
@@ -146,19 +136,14 @@ export class SeatOperations {
         sessionId: sessionId,
         reservationType: 'representative'
       };
-
-      console.log('🔄 Liberando asiento de representante:', JSON.stringify(message, null, 2));
       return this.sendMessage(message);
     } else {
-      // Compatibilidad: usar formato original para liberación sin índice
       const message = {
         type: 'SEAT_TEMP_RELEASE',
         seatId: seatId,
         userId: this.userId,
         reservationType: 'representative'
       };
-
-      console.log('🔄 Liberando asiento (modo compatibilidad):', JSON.stringify(message, null, 2));
       return this.sendMessage(message);
     }
   }

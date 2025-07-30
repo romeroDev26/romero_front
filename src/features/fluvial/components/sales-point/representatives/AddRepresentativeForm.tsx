@@ -75,7 +75,6 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
         }
         return response.data as SeatMapItem[];
       } catch (error) {
-        console.error('Error cargando mapa de asientos:', error);
         return null;
       }
     },
@@ -108,7 +107,6 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
         toast.success('Datos encontrados automáticamente');
       }
     } catch (error: any) {
-      console.error('Error consultando DNI:', error);
       setDniError('No se pudieron obtener los datos del DNI');
       toast.warning('No se encontraron datos para este DNI. Ingrese el nombre manualmente.');
     } finally {

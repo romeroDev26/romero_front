@@ -45,64 +45,21 @@ export const useSeatSelections = ({
   }, [userId, seatSelectionTimeout, cleanupInterval]);
 
   const addSelection = useCallback((selection: SeatSelection) => {
-    console.log('🗂️ AGREGANDO SELECCIÓN A MAP:', {
-      seatId: selection.seatId,
-      userId: selection.userId,
-      type: selection.type,
-      representativeName: selection.representativeName,
-      previousMapSize: activeSeatSelections.size
-    });
-    
     setActiveSeatSelections(prev => {
       const newMap = new Map(prev);
       newMap.set(selection.seatId, selection);
-      
-      console.log('🗂️ MAP DESPUÉS DE AGREGAR:', {
-        newMapSize: newMap.size,
-        allSelections: Array.from(newMap.entries()).map(([seatId, sel]) => ({
-          seatId,
-          userId: sel.userId,
-          type: sel.type,
-          representativeName: sel.representativeName
-        }))
-      });
-      
       return newMap;
     });
-    
-    // ✅ NUEVO: Seguir mis propias selecciones
     if (selection.userId === userId) {
       setMyActiveSelections(prev => new Set([...prev, selection.seatId]));
     }
   }, [userId]);
 
   const removeSelection = useCallback((seatId: number) => {
-    console.log('❌ REMOVIENDO SELECCIÓN DEL MAP:', {
-      seatId,
-      previousMapSize: activeSeatSelections.size
-    });
-    
     setActiveSeatSelections(prev => {
       const newMap = new Map(prev);
       const removedSelection = newMap.get(seatId);
       newMap.delete(seatId);
-      
-      console.log('❌ MAP DESPUÉS DE REMOVER:', {
-        newMapSize: newMap.size,
-        removedSelection: removedSelection ? {
-          userId: removedSelection.userId,
-          type: removedSelection.type,
-          representativeName: removedSelection.representativeName
-        } : null,
-        remainingSelections: Array.from(newMap.entries()).map(([seatId, sel]) => ({
-          seatId,
-          userId: sel.userId,
-          type: sel.type,
-          representativeName: sel.representativeName
-        }))
-      });
-      
-      // ✅ NUEVO: Remover de mis selecciones si era mía
       if (removedSelection?.userId === userId) {
         setMyActiveSelections(prevMine => {
           const newSet = new Set(prevMine);
@@ -110,7 +67,6 @@ export const useSeatSelections = ({
           return newSet;
         });
       }
-      
       return newMap;
     });
   }, [userId]);
@@ -146,20 +102,8 @@ export const useSeatSelections = ({
   }, []);
 
   const debugActiveSelections = useCallback(() => {
-    // Obtener el valor actual sin crear dependencia
-    setActiveSeatSelections(current => {
-      console.log('Active seat selections:', {
-        totalSelections: current.size,
-        selections: Array.from(current.entries()).map(([seatId, selection]) => ({
-          seatId,
-          userName: selection.userName,
-          userId: selection.userId,
-          timestamp: selection.timestamp
-        }))
-      });
-      return current; // No modificar el estado
-    });
-  }, []); // Sin dependencias para evitar recreación
+    // Función de debugging eliminada
+  }, []);
 
   return {
     activeSeatSelections,

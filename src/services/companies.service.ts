@@ -48,13 +48,28 @@ class CompaniesService {
   }
 
   // --- MÉTODOS DE SUBIDA DE ARCHIVOS ---
-  async uploadLogo(id: number, file: File): Promise<{ logo_url: string }> {
+  /**
+   * Sube el logo de la empresa junto con los datos actuales de la empresa.
+   * @param id ID de la empresa
+   * @param file Archivo de logo
+   * @param companyData Datos actuales de la empresa (CompanyUpdate o similar)
+   */
+  /**
+   * Sube el logo de la empresa (y opcionalmente datos) usando PATCH y FormData, siguiendo la guía del backend.
+   */
+  async uploadLogo(id: number, file: File | undefined, companyData: any): Promise<{ logo_url: string }> {
     const formData = new FormData();
-    formData.append('logo', file);
-    
-    const response = await api.post<{ logo_url: string }>(`${this.basePath}/${id}/logo`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    // Agregar cada campo individualmente (no como JSON)
+    Object.entries(companyData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        formData.append(key, String(value));
+      }
     });
+    if (file) {
+      formData.append('logo_file', file);
+    }
+    // No enviar Content-Type, dejar que el navegador lo ponga
+    const response = await api.patch<{ logo_url: string }>(`${this.basePath}/${id}`, formData);
     return response.data;
   }
 

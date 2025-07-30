@@ -7,10 +7,8 @@ const apiPrefix = '/api/v1'; // Prefijo de la API
 
 // Crear instancia de axios con configuración personalizada
 const api = axios.create({
-  baseURL: `${baseURL}${apiPrefix}`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: `${baseURL}${apiPrefix}`
+  // No headers globales aquí, para que FormData funcione correctamente
 });
 
 // Interceptor de solicitudes para agregar token de autenticación

@@ -39,13 +39,18 @@ export const CompanySettingsPage: React.FC = () => {
   const [showSunatPassword, setShowSunatPassword] = useState(false);
   const [showCertPassword, setShowCertPassword] = useState(false);
 
-  const { data: company, isLoading, error } = useQuery({
+  const [company, setCompany] = useState<any>(null);
+  const { data, isLoading, error } = useQuery({
     queryKey: ['company', COMPANY_ID],
     queryFn: () => companiesService.getById(COMPANY_ID),
     enabled: !!COMPANY_ID,
   });
 
-  const { register, handleSubmit, formState: { errors }, reset, control, watch } = useForm<CompanyFormData>({
+  useEffect(() => {
+    if (data) setCompany(data);
+  }, [data]);
+
+  const { register, handleSubmit, formState: { errors }, reset, control, watch, getValues } = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
       ruc: '',
@@ -62,6 +67,29 @@ export const CompanySettingsPage: React.FC = () => {
       certificate_password: '',
     }
   });
+  // Handler para subir certificado digital (restaurado para evitar error en input de certificado)
+  const handleFileUpload = async (
+    file: File | undefined,
+    uploadService: (id: number, file: File, password?: string) => Promise<any>,
+    options: { password?: string, maxSizeMB?: number, successMsg: string, errorMsg: string }
+  ) => {
+    if (!file) return;
+    if (options.maxSizeMB && file.size > options.maxSizeMB * 1024 * 1024) {
+      toast.error(`El archivo es demasiado grande. Máximo ${options.maxSizeMB}MB.`);
+      return;
+    }
+    try {
+      if (uploadService === companiesService.uploadCertificate && !options.password) {
+        toast.error('Se requiere la contraseña para subir el certificado.');
+        return;
+      }
+      await uploadService(COMPANY_ID, file, options.password);
+      toast.success(options.successMsg);
+      queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
+    } catch (err) {
+      toast.error(options.errorMsg);
+    }
+  };
 
   const certificatePasswordForUpload = watch('certificate_password');
 
@@ -113,30 +141,29 @@ export const CompanySettingsPage: React.FC = () => {
     }
   };
 
-  const handleFileUpload = async (
-    file: File | undefined,
-    uploadService: (id: number, file: File, password?: string) => Promise<any>,
-    options: { password?: string, maxSizeMB?: number, successMsg: string, errorMsg: string }
-  ) => {
+  // Handler especial para subir el logo con validación de tipo/tamaño y solo si es archivo válido
+  const handleLogoUpload = async (file: File | undefined) => {
     if (!file) return;
-
-    if (options.maxSizeMB && file.size > options.maxSizeMB * 1024 * 1024) {
-      toast.error(`El archivo es demasiado grande. Máximo ${options.maxSizeMB}MB.`);
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
+    const maxSize = 2 * 1024 * 1024;
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Solo se permiten archivos JPG, PNG o SVG');
       return;
     }
-
+    if (file.size > maxSize) {
+      toast.error('El archivo no puede ser mayor a 2MB');
+      return;
+    }
     try {
-      if (uploadService === companiesService.uploadCertificate && !options.password) {
-        toast.error('Se requiere la contraseña para subir el certificado.');
-        return;
-      }
-
-      await uploadService(COMPANY_ID, file, options.password);
-      toast.success(options.successMsg);
+      const formValues = getValues();
+      const result = await companiesService.uploadLogo(COMPANY_ID, file, {
+        ...formValues,
+      });
+      setCompany((prev: any) => prev ? { ...prev, logo_url: result.logo_url } : prev);
+      toast.success('Logo actualizado');
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
-
     } catch (err) {
-      toast.error(options.errorMsg);
+      toast.error('Error al subir logo');
     }
   };
 
@@ -205,11 +232,29 @@ export const CompanySettingsPage: React.FC = () => {
           <div className="px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Archivos Digitales</h2></div>
           <div className="border-t border-gray-200 p-6 space-y-6">
             <div className="flex items-center gap-4">
-              <img src={company?.logo_url || 'https://via.placeholder.com/80'} alt="Logo" className="h-20 w-20 rounded-md object-cover bg-gray-200" />
+              <div className="flex items-center min-w-[120px] max-w-[320px] h-32 bg-gray-100 rounded-md justify-center">
+                <img
+                  src={company?.logo_url || 'https://via.placeholder.com/213x128'}
+                  alt="Logo"
+                  className="h-32 w-auto max-w-full object-contain bg-gray-200 rounded-md"
+                  style={{ display: 'block' }}
+                />
+              </div>
               <div>
                 <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()}>Cambiar Logo</Button>
                 <p className="mt-1 text-sm text-gray-500">PNG, JPG, máx 2MB.</p>
-                <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e.target.files?.[0], companiesService.uploadLogo, { successMsg: 'Logo actualizado', errorMsg: 'Error al subir logo', maxSizeMB: 2 })} />
+                <input
+                  type="file"
+                  ref={logoInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files && e.target.files[0];
+                    if (file) {
+                      handleLogoUpload(file);
+                    }
+                  }}
+                />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">

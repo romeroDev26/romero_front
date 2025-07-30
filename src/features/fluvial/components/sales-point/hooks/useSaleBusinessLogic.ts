@@ -173,10 +173,8 @@ export const useSaleBusinessLogic = ({
 
       const result = await createCompanyInvoiceWithRepresentatives(companyInvoiceData);
       
-      // 🔧 NUEVA FUNCIONALIDAD: Confirmar compra de asientos para WebSocket
       if (confirmPurchaseCallback && seatMap && seatMap.length > 0) {
         const seatIds: number[] = [];
-        
         representatives.forEach(rep => {
           if (rep.seat_number && rep.seat_number !== "Elección libre") {
             const seat = seatMap.find(s => s.seat_number === rep.seat_number);
@@ -185,14 +183,8 @@ export const useSaleBusinessLogic = ({
             }
           }
         });
-        
         if (seatIds.length > 0) {
-          const confirmed = confirmPurchaseCallback(seatIds);
-          if (confirmed) {
-            console.log(`✅ Confirmados ${seatIds.length} asientos como vendidos:`, seatIds);
-          } else {
-            console.warn('⚠️ No se pudieron confirmar algunos asientos como vendidos');
-          }
+          confirmPurchaseCallback(seatIds);
         }
       }
       

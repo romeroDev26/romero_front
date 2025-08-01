@@ -76,7 +76,7 @@ export class NormalSaleTransformer {
       company_ruc: data.company.ruc,
       company_address: data.company.address,
       company_phones: formatCompanyPhones(data.company.phone),
-      emission_point: getEmissionPoint(data.branch_office_name),
+      emission_point: getEmissionPoint(data.branch_office_name, data.branch_office_name || ''),
       document_title: getDocumentTitle(data.document_type_code),
       document_id: `${data.series}-${String(data.number).padStart(5, '0')}`,
       emission_datetime: formatEmissionDateTime(data.issue_date, data.issue_time),
@@ -100,15 +100,16 @@ export class NormalSaleTransformer {
    * BLOQUE 3: Transforma detalles del viaje
    */
   private static transformTripDetails(data: BackendInvoiceData) {
+    // Agrupar en dos columnas: columna1 (EMBARCACIÓN, ORIGEN, DESTINO), columna2 (FECHA VIAJE, HORA VIAJE, EMBARQUE)
     return {
       title: 'DATOS DEL VIAJE',
       details: [
         { label: 'EMBARCACIÓN', value: extractVehicleName(data.items) },
         { label: 'ORIGEN', value: extractOriginPort(data.items) },
         { label: 'DESTINO', value: extractDestinationPort(data.items) },
-        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time) },
-        { label: 'HORA VIAJE', value: formatTripTime(data.trip_departure_time) },
-        { label: 'EMBARQUE', value: formatBoardingTime(data.boarding_time) },
+        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time), col: 2 },
+        { label: 'HORA VIAJE', value: formatTripTime(data.trip_departure_time), col: 2 },
+        { label: 'EMBARQUE', value: formatBoardingTime(data.boarding_time), col: 2 },
         { label: 'ASIENTO', value: extractMainSeatNumber(data.items) }
       ]
     };

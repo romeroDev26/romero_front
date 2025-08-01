@@ -41,66 +41,140 @@ export class NormalTicketTemplate {
     currentY = this.addTripDetails(doc, ticketData.trip_details, currentY);
     currentY += 1;
     
-    // BLOQUE 4: DESGLOSE FINANCIERO
-    currentY = this.addFinancialBreakdown(doc, ticketData.financial_breakdown, currentY);
-    currentY += 1;
+
     
-    // BLOQUE 5: INFORMACIÓN DE PAGO
-    currentY = this.addPaymentInfo(doc, ticketData.payment_info, currentY);
+
+    // BLOQUE 5: DETALLE DE LA VENTA (tabla de items y totales SUNAT)
+    currentY = this.addVentaDetailBlock(doc, ticketData, currentY);
     currentY += 1;
-    
+
     // BLOQUE 6: PIE DE PÁGINA CON QR
     currentY = await this.addFooter(doc, ticketData.footer, currentY);
-    
+
     // Ajustar la altura del documento al contenido
     const finalHeight = currentY + 10;
     doc.internal.pageSize.height = finalHeight;
-    
+
     return doc;
+  }
+
+
+  /**
+   * BLOQUE 5: DETALLE DE LA VENTA (tabla de items y totales SUNAT)
+   */
+  private static addVentaDetailBlock(doc: jsPDF, ticketData: TicketData, startY: number): number {
+    let currentY = startY;
+    // Título
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('DETALLE DE LA VENTA', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+    currentY += 5;
+    // Encabezado de tabla
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.text('CANT.', this.MARGIN, currentY);
+    doc.text('DESCRIPCIÓN', this.MARGIN + 12, currentY);
+    doc.text('P/U', this.TICKET_WIDTH - this.MARGIN - 22, currentY, { align: 'right' });
+    doc.text('TOTAL', this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+    currentY += 4;
+    doc.setFont('helvetica', 'normal');
+    // Items
+    ticketData.financial_breakdown.items.forEach(item => {
+      doc.text(String(item.quantity), this.MARGIN, currentY);
+      // Descripción multilínea
+      const descLines = this.splitText(doc, item.description, 32, 7);
+      descLines.forEach((line, idx) => {
+        doc.text(line, this.MARGIN + 12, currentY);
+        if (idx < descLines.length - 1) currentY += 3;
+      });
+      // P/U y TOTAL solo en la primera línea
+      doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.MARGIN - 22, currentY, { align: 'right' });
+      doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+      currentY += 4;
+    });
+    // Línea separadora (gris)
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    let x = 0;
+    while (x < this.TICKET_WIDTH) {
+      const xEnd = Math.min(x + 2, this.TICKET_WIDTH);
+      doc.line(x, currentY, xEnd, currentY);
+      x += 3.5;
+    }
+    currentY += 3;
+    // Totales SUNAT
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    const sunat = ticketData.sunat_totals;
+    const totales = [
+      { label: 'OP. GRAVADA', value: sunat.total_taxable },
+      { label: 'OP. EXONERADA', value: sunat.total_exonerated },
+      { label: 'OP. INAFECTA', value: sunat.total_unaffected },
+      { label: 'OP. GRATUITA', value: sunat.total_free },
+      { label: 'DESCUENTO GLOBAL', value: sunat.total_global_discount },
+      { label: 'IGV', value: sunat.total_igv },
+      { label: 'ISC', value: sunat.total_isc },
+      { label: 'OTROS TRIBUTOS', value: sunat.total_other_taxes },
+      { label: 'TOTAL A PAGAR', value: ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value || sunat.total_exonerated || sunat.total_taxable },
+    ];
+    totales.forEach(t => {
+      doc.text(t.label + ':', this.MARGIN, currentY);
+      doc.text('S/', this.TICKET_WIDTH - this.MARGIN - 18, currentY, { align: 'right' });
+      doc.text(t.value ?? '0.00', this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+      currentY += 4;
+    });
+    // Línea separadora (gris)
+    x = 0;
+    doc.setDrawColor(180, 180, 180);
+    while (x < this.TICKET_WIDTH) {
+      const xEnd = Math.min(x + 2, this.TICKET_WIDTH);
+      doc.line(x, currentY, xEnd, currentY);
+      x += 3.5;
+    }
+    currentY += 3;
+    // Monto en palabras y forma de pago
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('SON: ' + ticketData.payment_info.amount_in_words, this.MARGIN, currentY);
+    currentY += 4;
+    doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.MARGIN, currentY);
+    currentY += 4;
+    return currentY;
   }
   
   /**
    * BLOQUE 1: Añade el encabezado completo con logo y datos de empresa
    */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
+    // Colocar el logo exactamente en la parte superior (sin margen artificial)
     let currentY = startY;
-    
-    // Logo de la empresa (si existe)
     if (header.company_logo_url) {
       try {
-        // Cargar imagen real del logo
         const logoImg = new Image();
         logoImg.crossOrigin = 'anonymous';
-        
         await new Promise<void>((resolve, reject) => {
           logoImg.onload = () => resolve();
           logoImg.onerror = () => reject(new Error('Error cargando logo'));
           logoImg.src = header.company_logo_url!;
         });
-        
-        // Calcular dimensiones del logo (máximo 25mm de ancho)
-        const maxLogoWidth = 25;
+        // Calcular dimensiones del logo (máximo 30mm de ancho)
+        const maxLogoWidth = 30;
         const logoAspectRatio = logoImg.height / logoImg.width;
-        const logoWidth = Math.min(maxLogoWidth, 25);
+        const logoWidth = Math.min(maxLogoWidth, 30);
         const logoHeight = logoWidth * logoAspectRatio;
-        
         // Centrar el logo
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-        
-        // Añadir logo al PDF
+        // Dejar solo 2.5mm debajo del logo para evitar conflicto visual
         doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
-        currentY += logoHeight;
-        
+        currentY += logoHeight + 2.5;
       } catch (error) {
         console.error('Error cargando logo:', error);
-        // Fallback: mostrar texto si falla la carga
         doc.setFontSize(8);
         doc.setFont('helvetica', 'italic');
         doc.text('[LOGO NO DISPONIBLE]', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
         currentY += 4;
       }
     } else {
-      // Sin logo disponible
       doc.setFontSize(8);
       doc.setFont('helvetica', 'italic');
       doc.text('[SIN LOGO]', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
@@ -146,9 +220,11 @@ export class NormalTicketTemplate {
       currentY += 3;
     }
     
-    // Línea separadora
-    doc.text('------------------------------', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    // Línea separadora continua (gris)
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+    currentY += 3;
     
     // Tipo y número de documento
     doc.setFontSize(9);
@@ -177,10 +253,12 @@ export class NormalTicketTemplate {
   private static addPassengerInfo(doc: jsPDF, passengerInfo: TicketData['passenger_info'], startY: number): number {
     let currentY = startY;
     
-    // Línea separadora
+    // Línea separadora continua (gris)
     doc.setFontSize(7);
-    doc.text('- - - - - - - - - - - - - - - - -', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+    currentY += 3;
     
     // Documento del pasajero
     doc.setFont('helvetica', 'normal');
@@ -202,139 +280,55 @@ export class NormalTicketTemplate {
    */
   private static addTripDetails(doc: jsPDF, tripDetails: TicketData['trip_details'], startY: number): number {
     let currentY = startY;
-    
-    // Línea separadora
+    // Línea separadora continua (gris)
     doc.setFontSize(7);
-    doc.text('- - - - - - - - - - - - - - - - -', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
-    
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+    currentY += 3;
     // Título
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.text(tripDetails.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 5;
-    
-    // Detalles del viaje
+    // Detalles del viaje en dos columnas, pero ASIENTO a la izquierda y línea separadora antes de venta
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    
-    tripDetails.details.forEach(detail => {
-      // Asiento destacado más grande
-      if (detail.label === 'ASIENTO') {
+    const col1 = tripDetails.details.filter(d => !d.col || d.col === 1);
+    const col2 = tripDetails.details.filter(d => d.col === 2);
+    const maxRows = Math.max(col1.length, col2.length);
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    let asientoY = null;
+    for (let i = 0; i < maxRows; i++) {
+      const d1 = col1[i];
+      const d2 = col2[i];
+      let rowHeight = 3.5;
+      if (d1 && d1.label === 'ASIENTO') {
+        // Mostrar ASIENTO a la izquierda, más grande
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text(`${detail.label}: ${detail.value}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+        doc.text(`${d1.label}: ${d1.value}`, this.MARGIN, currentY);
         doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
-        currentY += 6;
+        asientoY = currentY + 5; // Guardar Y para la línea separadora
+        rowHeight = 6;
       } else {
-        doc.text(`${detail.label}: ${detail.value}`, this.MARGIN, currentY);
-        currentY += 3.5;
+        if (d1) doc.text(`${d1.label}: ${d1.value}`, this.MARGIN, currentY);
       }
-    });
-    
+      if (d2) doc.text(`${d2.label}: ${d2.value}`, this.MARGIN + colWidth + 2, currentY);
+      currentY += rowHeight;
+    }
+    // Línea separadora entre ASIENTO y DETALLE DE LA VENTA (gris)
+    if (asientoY !== null) {
+      doc.setLineWidth(0.2);
+      doc.setDrawColor(180, 180, 180);
+      doc.line(0, asientoY, this.TICKET_WIDTH, asientoY);
+      currentY = asientoY + 2;
+    }
     return currentY;
   }
   
-  /**
-   * BLOQUE 4: Añade el desglose financiero detallado
-   */
-  private static addFinancialBreakdown(doc: jsPDF, financialBreakdown: TicketData['financial_breakdown'], startY: number): number {
-    let currentY = startY;
-    
-    // Línea separadora
-    doc.setFontSize(7);
-    doc.text('- - - - - - - - - - - - - - - - -', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
-    
-    // Título
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text(financialBreakdown.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5;
-    
-    // Items
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    
-    financialBreakdown.items.forEach(item => {
-      // Descripción del item
-      const descLines = this.splitText(doc, item.description, this.CONTENT_WIDTH, 6);
-      descLines.forEach(line => {
-        doc.text(line, this.MARGIN, currentY);
-        currentY += 3;
-      });
-      
-      // Cantidad y precio unitario
-      const itemLine = `${item.quantity} x S/ ${item.unit_price.toFixed(2)}`;
-      doc.text(itemLine, this.MARGIN, currentY);
-      doc.text(`S/ ${item.total_line.toFixed(2)}`, this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
-      currentY += 3;
-      
-      // Descuento si existe
-      if (item.discount > 0) {
-        doc.setFont('helvetica', 'italic');
-        doc.text(`Descuento: -S/ ${item.discount.toFixed(2)}`, this.MARGIN + 2, currentY);
-        doc.setFont('helvetica', 'normal');
-        currentY += 3;
-      }
-      
-      currentY += 2; // Espacio entre items
-    });
-    
-    // Línea antes del resumen
-    currentY += 2;
-    doc.text('- - - - - - - - - - - - - - - - -', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
-    
-    // Resumen de totales
-    financialBreakdown.summary.forEach(summaryItem => {
-      if (summaryItem.is_bold) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-      } else {
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(7);
-      }
-      
-      doc.text(summaryItem.label, this.MARGIN, currentY);
-      doc.text(summaryItem.value, this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
-      currentY += 4;
-    });
-    
-    return currentY;
-  }
   
-  /**
-   * BLOQUE 5: Añade la información de pago
-   */
-  private static addPaymentInfo(doc: jsPDF, paymentInfo: TicketData['payment_info'], startY: number): number {
-    let currentY = startY;
-    
-    // Línea separadora
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text('- - - - - - - - - - - - - - - - -', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
-    
-    // Monto en palabras
-    doc.setFontSize(6);
-    const amountText = `${paymentInfo.amount_in_words_prefix} ${paymentInfo.amount_in_words}`;
-    const amountLines = this.splitText(doc, amountText, this.CONTENT_WIDTH, 6);
-    amountLines.forEach(line => {
-      doc.text(line, this.MARGIN, currentY);
-      currentY += 3;
-    });
-    
-    currentY += 2;
-    
-    // Forma de pago
-    doc.setFontSize(7);
-    doc.text(`${paymentInfo.payment_method_label} ${paymentInfo.payment_method}`, this.MARGIN, currentY);
-    currentY += 4;
-    
-    return currentY;
-  }
   
   /**
    * BLOQUE 6: Añade el footer con QR real y URL de consulta
@@ -342,10 +336,12 @@ export class NormalTicketTemplate {
   private static async addFooter(doc: jsPDF, footer: TicketData['footer'], startY: number): Promise<number> {
     let currentY = startY;
     
-    // Línea separadora
+    // Línea separadora continua (gris)
     doc.setFontSize(7);
-    doc.text('------------------------------', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+    currentY += 3;
     
     // Texto de agradecimiento
     doc.setFontSize(8);
@@ -361,28 +357,20 @@ export class NormalTicketTemplate {
     doc.text(footer.consultation_url, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 5;
     
-    // Generar QR code real
+    // Usar directamente la imagen base64 del QR enviada por el backend
     if (footer.qr_code_base64) {
       try {
-        // Generar QR de 25mm x 25mm
+        // El backend ya envía el QR como imagen PNG en base64
         const qrSize = 25;
-        const qrDataUrl = await QRCode.toDataURL(footer.qr_code_base64, {
-          width: 100, // pixels para buena calidad
-          margin: 1,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        });
-        
+        const qrDataUrl = footer.qr_code_base64.startsWith('data:image')
+          ? footer.qr_code_base64
+          : `data:image/png;base64,${footer.qr_code_base64}`;
         // Centrar el QR
         const qrX = (this.TICKET_WIDTH - qrSize) / 2;
         doc.addImage(qrDataUrl, 'PNG', qrX, currentY, qrSize, qrSize);
         currentY += qrSize + 3;
-        
       } catch (error) {
         console.error('Error generando QR:', error);
-        // Fallback si falla el QR
         doc.setFontSize(5);
         doc.text('[ERROR QR]', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
         currentY += 8;

@@ -47,6 +47,7 @@ export interface TicketTripDetails {
 export interface TicketTripDetail {
   label: string;
   value: string;
+  col?: number; // Para layout en columnas
 }
 
 // BLOQUE 4: DESGLOSE FINANCIERO - Transparencia total para el cliente

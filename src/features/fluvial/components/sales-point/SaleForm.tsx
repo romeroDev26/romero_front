@@ -98,20 +98,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
 
   // Función para mostrar modal de preview de ticket
-  const handleShowTicketPreview = async () => {
-    try {
-      // Por ahora, usar los datos de prueba reales que ya funcionan
-      // En el futuro, esto se puede reemplazar con una transformación real de los datos de venta
-      const { getRealMockBackendData } = await import('./tickets/test/testTickets');
-      const backendData = getRealMockBackendData();
-      
-      setTicketBackendData(backendData);
-      setShowTicketPreview(true);
-      
-    } catch (error) {
-      console.error('Error preparando datos del ticket:', error);
-    }
-  };
+  // Eliminar función de mock, ahora el preview se activa solo con datos reales
+
   
   // Estados para representantes
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
@@ -453,14 +441,13 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           passengerData,
           representatives,
           branch.name,
-          () => {
-            // Callback de éxito: mostrar modal de preview de ticket
-            console.log('Venta RUC exitosa, mostrando preview de ticket...');
-            handleShowTicketPreview();
+          (invoiceData) => {
+            // Callback de éxito: mostrar modal de preview de ticket con datos reales
+            setTicketBackendData(invoiceData);
+            setShowTicketPreview(true);
           },
-          seatMap, //  NUEVO: Pasar seatMap
-          confirmPurchase, //  NUEVO: Pasar confirmPurchase como parámetro
-          // ← NUEVOS PARÁMETROS: Para construir item_config
+          seatMap,
+          confirmPurchase,
           basePrice || 0,
           seatMultiplier,
           extraCost,
@@ -470,7 +457,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         );
         return;
       }
-      
+
       await handleRegularSale(
         trip.id,
         selectedBoardingStopId!,
@@ -489,13 +476,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         isIgvGravado,
         isConfirmingMode,
         reservationToConfirm,
-        () => {
-          // Callback de éxito: mostrar modal de preview de ticket
-          console.log('Venta normal exitosa, mostrando preview de ticket...');
-          handleShowTicketPreview();
+        (invoiceData) => {
+          setTicketBackendData(invoiceData);
+          setShowTicketPreview(true);
         }
       );
-      
+
     } catch (error) {
       console.error('Error en la venta:', error);
       // Los errores ya son manejados por toast en los hooks internos

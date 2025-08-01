@@ -57,7 +57,7 @@ export const useSaleBusinessLogic = ({
     passengerData: PassengerData,
     representatives: Representative[],
     branchName: string,
-    onSuccess: () => void,
+    onSuccess: (invoiceData: any) => void,
     seatMap?: any[], //  NUEVO: Para convertir seat_number a seatId
     confirmPurchaseCallback?: (seatIds: number[]) => boolean, //  NUEVO: Para confirmar compra
     // ← NUEVOS PARÁMETROS: Para construir item_config
@@ -193,7 +193,7 @@ export const useSaleBusinessLogic = ({
         { autoClose: 5000 }
       );
       
-      onSuccess();
+      onSuccess(result);
 
     } catch (error: any) {
       toast.error(
@@ -222,7 +222,7 @@ export const useSaleBusinessLogic = ({
     isIgvGravado: boolean,
     isConfirmingMode: boolean,
     reservationToConfirm: any,
-    onSuccess: () => void
+    onSuccess: (invoiceData: any) => void
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -359,7 +359,7 @@ export const useSaleBusinessLogic = ({
         });
       }
 
-      onSuccess();
+      onSuccess(createdInvoice);
 
     } catch (error: any) {
       // Liberar reserva en caso de error

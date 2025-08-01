@@ -55,21 +55,21 @@ export function formatEmissionDateTime(issueDate: string, issueTime: string): st
  * Obtiene el punto de emisión derivado de la sucursal de venta
  * Por ahora usamos una implementación básica, el backend debería proporcionarlo
  */
-export function getEmissionPoint(branchOfficeName: string | null): string {
-  if (!branchOfficeName) {
-    return 'IQUITOS'; // Default
+// Mejorado: permite pasar un fallback (ej: nombre de sucursal del usuario) y nunca retorna 'IQUITOS' por defecto si no hay nada
+export function getEmissionPoint(branchOfficeName: string | null, fallback?: string): string {
+  if (branchOfficeName && branchOfficeName.trim() !== '') {
+    // Convertir nombre de sucursal a punto de emisión
+    const pointMap: Record<string, string> = {
+      'NAUTA': 'NAUTA',
+      'YURIMAGUAS': 'YURIMAGUAS', 
+      'PUCALLPA': 'PUCALLPA',
+      'IQUITOS': 'IQUITOS'
+    };
+    const upperBranch = branchOfficeName.toUpperCase();
+    return pointMap[upperBranch] || branchOfficeName;
   }
-  
-  // Convertir nombre de sucursal a punto de emisión
-  const pointMap: Record<string, string> = {
-    'NAUTA': 'NAUTA',
-    'YURIMAGUAS': 'YURIMAGUAS', 
-    'PUCALLPA': 'PUCALLPA',
-    'IQUITOS': 'IQUITOS'
-  };
-  
-  const upperBranch = branchOfficeName.toUpperCase();
-  return pointMap[upperBranch] || 'IQUITOS';
+  if (fallback && fallback.trim() !== '') return fallback;
+  return '';
 }
 
 /**
@@ -90,22 +90,18 @@ export function formatCompanyPhones(phone: string): string[] {
  * Extrae información del puerto de origen desde el primer item de servicio principal
  */
 export function extractOriginPort(items: any[]): string {
-  const mainServiceItem = items.find(item => 
-    item.trip_seat_id && item.boarding_port_name
-  );
-  
-  return mainServiceItem?.boarding_port_name || 'N/A';
+  // Buscar el primer item con boarding_port_name válido
+  const mainServiceItem = items.find(item => item.boarding_port_name && item.boarding_port_name.trim() !== '');
+  return mainServiceItem?.boarding_port_name || '';
 }
 
 /**
  * Extrae información del puerto de destino desde el primer item de servicio principal  
  */
 export function extractDestinationPort(items: any[]): string {
-  const mainServiceItem = items.find(item => 
-    item.trip_seat_id && item.disembarking_port_name
-  );
-  
-  return mainServiceItem?.disembarking_port_name || 'N/A';
+  // Buscar el primer item con disembarking_port_name válido
+  const mainServiceItem = items.find(item => item.disembarking_port_name && item.disembarking_port_name.trim() !== '');
+  return mainServiceItem?.disembarking_port_name || '';
 }
 
 /**

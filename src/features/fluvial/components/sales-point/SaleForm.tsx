@@ -23,7 +23,9 @@ import { PriceSummary } from "./PriceSummary";
 import { Spinner } from "../../../../components/common/Spinner";
 import { ReservationModal } from "./ReservationModal";
 import { RepresentativesManager } from "./representatives";
-import { PDFManager } from "./PDFManager";
+// ACTUALIZADO: Usar nuevo modal de preview de tickets
+import { TicketPreviewModal } from "./TicketPreviewModal";
+import { BackendInvoiceData } from "./tickets/types/backend.types";
 
 // ← NUEVO: Importar módulos refactorizados
 import { 
@@ -92,8 +94,24 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const [showSeatMap, setShowSeatMap] = useState(true);
   
   // Estados para PDF
-  const [showPDFManager, setShowPDFManager] = useState(false);
-  const [currentInvoiceData, setCurrentInvoiceData] = useState<any>(null);
+  const [showTicketPreview, setShowTicketPreview] = useState(false);
+  const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
+
+  // Función para mostrar modal de preview de ticket
+  const handleShowTicketPreview = async () => {
+    try {
+      // Por ahora, usar los datos de prueba reales que ya funcionan
+      // En el futuro, esto se puede reemplazar con una transformación real de los datos de venta
+      const { getRealMockBackendData } = await import('./tickets/test/testTickets');
+      const backendData = getRealMockBackendData();
+      
+      setTicketBackendData(backendData);
+      setShowTicketPreview(true);
+      
+    } catch (error) {
+      console.error('Error preparando datos del ticket:', error);
+    }
+  };
   
   // Estados para representantes
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
@@ -436,12 +454,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           representatives,
           branch.name,
           () => {
-            // Callback de éxito: crear datos simulados de factura y mostrar PDFManager
-            // NO llamar a onSaleSuccess aquí, esperar a que el usuario cierre el modal PDF
-            console.log('Venta RUC exitosa, generando PDFManager...');
-            const simulatedInvoiceData = createSimulatedInvoiceData();
-            setCurrentInvoiceData(simulatedInvoiceData);
-            setShowPDFManager(true);
+            // Callback de éxito: mostrar modal de preview de ticket
+            console.log('Venta RUC exitosa, mostrando preview de ticket...');
+            handleShowTicketPreview();
           },
           seatMap, //  NUEVO: Pasar seatMap
           confirmPurchase, //  NUEVO: Pasar confirmPurchase como parámetro
@@ -475,12 +490,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         isConfirmingMode,
         reservationToConfirm,
         () => {
-          // Callback de éxito: crear datos simulados de factura y mostrar PDFManager
-          // NO llamar a onSaleSuccess aquí, esperar a que el usuario cierre el modal PDF
-          console.log('Venta normal exitosa, generando PDFManager...');
-          const simulatedInvoiceData = createSimulatedInvoiceData();
-          setCurrentInvoiceData(simulatedInvoiceData);
-          setShowPDFManager(true);
+          // Callback de éxito: mostrar modal de preview de ticket
+          console.log('Venta normal exitosa, mostrando preview de ticket...');
+          handleShowTicketPreview();
         }
       );
       
@@ -488,82 +500,6 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       console.error('Error en la venta:', error);
       // Los errores ya son manejados por toast en los hooks internos
     }
-  };
-
-  // Función para crear datos simulados de factura (temporal hasta integrar con datos reales)
-  const createSimulatedInvoiceData = () => {
-    const actualInvoice = {
-      id: Date.now(), // ID temporal
-      series: isRuc ? selectedFacturaSeries : selectedBoletaSeries,
-      number: Math.floor(Math.random() * 1000) + 1, // Número temporal
-      document_type_code: isRuc ? "01" : "03",
-      issue_date: new Date().toISOString().split('T')[0],
-      issue_time: new Date().toTimeString().split(' ')[0],
-      total_payable: finalTicketPrice.toFixed(2),
-      total_in_words: `${finalTicketPrice.toFixed(2)} SOLES`,
-      client: {
-        doc_type: passengerData.docType,
-        doc_number: passengerData.docNumber,
-        name: passengerData.name,
-        address_line: passengerData.address || "Sin dirección",
-        phone: passengerData.phone || "",
-        email: passengerData.email || ""
-      },
-      company: {
-        ruc: "20123456789", // RUC de ejemplo
-        business_name: "TRANSPORTES ROMERO S.A.C.",
-        trade_name: "Transportes Romero",
-        address: branch.name,
-        phone: "065-123456",
-        email: "ventas@transportesromero.com"
-      },
-      items: isRuc && representatives.length > 0 
-        ? representatives.map(rep => ({
-            item_description: `Pasaje ${trip.trip_name || 'Viaje'} - Asiento ${rep.seat_number || 'N/A'}`,
-            quantity: "1",
-            unit_price: (finalTicketPrice / representatives.length).toFixed(2),
-            total_line: (finalTicketPrice / representatives.length).toFixed(2),
-            discount: "0.00",
-            recipient_name: rep.name,
-            recipient_doc_type: rep.document_type,
-            recipient_doc_number: rep.document_number
-          }))
-        : [{
-            item_description: `Pasaje ${trip.trip_name || 'Viaje'} - Asiento ${selectedSeat?.seat_number || 'N/A'}`,
-            quantity: "1",
-            unit_price: finalTicketPrice.toFixed(2),
-            total_line: finalTicketPrice.toFixed(2),
-            discount: discount.toFixed(2),
-            recipient_name: passengerData.name,
-            recipient_doc_type: passengerData.docType,
-            recipient_doc_number: passengerData.docNumber
-          }],
-      total_taxable: (subtotal - igvAmount).toFixed(2),
-      total_exonerated: "0.00",
-      total_igv: igvAmount.toFixed(2),
-      total_global_discount: discount.toFixed(2)
-    };
-
-    // Si es venta empresarial, envolver en estructura de CompanyInvoiceData
-    if (isRuc && representatives.length > 0) {
-      return {
-        invoice: actualInvoice,
-        representatives: representatives.map(rep => ({
-          passenger_name: rep.name,
-          passenger_doc_type: rep.document_type,
-          passenger_doc_number: rep.document_number,
-          passenger_phone: rep.phone,
-          seat_number: rep.seat_number || "Sin asiento"
-        })),
-        summary: {
-          invoice_id: actualInvoice.id,
-          current_count: representatives.length,
-          total_capacity: representatives.length
-        }
-      };
-    }
-
-    return actualInvoice;
   };
 
   const areActionsEnabled =
@@ -814,21 +750,18 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         />
       )}
       
-      {/* Modal de gestión de PDFs */}
-      {showPDFManager && currentInvoiceData && (
-        <PDFManager
-          isOpen={showPDFManager}
+      {/* Modal de preview de ticket */}
+      {showTicketPreview && ticketBackendData && (
+        <TicketPreviewModal
+          isOpen={showTicketPreview}
           onClose={() => {
-            setShowPDFManager(false);
-            setCurrentInvoiceData(null);
+            setShowTicketPreview(false);
+            setTicketBackendData(null);
           }}
-          invoiceData={currentInvoiceData}
-          authToken={localStorage.getItem('authToken') || ''}
-          onSaleSuccess={() => {
-            // NUEVO: Cuando el PDFManager termine, ejecutar el callback del padre  
-            console.log('PDFManager terminó, navegando de vuelta...');
-            setShowPDFManager(false);
-            setCurrentInvoiceData(null);
+          backendData={ticketBackendData}
+          onSuccess={() => {
+            setShowTicketPreview(false);
+            setTicketBackendData(null);
             onSaleSuccess();
           }}
         />

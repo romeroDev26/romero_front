@@ -111,6 +111,8 @@ export class NormalTicketTemplate {
     const sunat = ticketData.sunat_totals;
     // Tomar el valor de TOTAL A PAGAR exactamente como viene del transformer/backend
     const totalPagarRaw = ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value ?? '0.00';
+    // Limpiar el S/ del valor si viene incluido desde el backend
+    const totalPagarClean = totalPagarRaw.toString().replace(/^S\/\s*/, '').trim();
     const totales = [
       { label: 'OP. GRAVADA', value: sunat.total_taxable },
       { label: 'OP. EXONERADA', value: sunat.total_exonerated },
@@ -120,7 +122,7 @@ export class NormalTicketTemplate {
       { label: 'IGV', value: sunat.total_igv },
       { label: 'ISC', value: sunat.total_isc },
       { label: 'OTROS TRIBUTOS', value: sunat.total_other_taxes },
-      { label: 'TOTAL A PAGAR', value: totalPagarRaw },
+      { label: 'TOTAL A PAGAR', value: totalPagarClean },
     ];
     totales.forEach(t => {
       doc.text(t.label + ':', this.MARGIN, currentY);

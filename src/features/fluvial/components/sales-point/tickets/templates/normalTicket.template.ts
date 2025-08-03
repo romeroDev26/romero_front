@@ -19,14 +19,16 @@ export class NormalTicketTemplate {
    */
   static async generatePDF(ticketData: TicketData): Promise<jsPDF> {
     // Crear documento con altura automática (se ajustará al contenido)
+    // Aumentar la altura inicial del ticket en 30mm (3cm)
+    const INITIAL_HEIGHT = 230; // 200 + 30mm extra
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: [this.TICKET_WIDTH, 200] // Altura inicial, se ajustará después
+      format: [this.TICKET_WIDTH, INITIAL_HEIGHT] // Altura inicial aumentada
     });
     
     doc.setFont('helvetica');
-    let currentY = 0;
+    let currentY = -2; // Comenzar 2mm más arriba para subir todo el contenido
     
     // BLOQUE 1: CABECERA
     currentY = await this.addHeader(doc, ticketData.header, currentY);
@@ -50,8 +52,8 @@ export class NormalTicketTemplate {
     // BLOQUE 6: PIE DE PÁGINA CON QR
     currentY = await this.addFooter(doc, ticketData.footer, currentY);
 
-    // Ajustar la altura del documento al contenido
-    const finalHeight = currentY + 10;
+    // Ajustar la altura del documento al contenido, sumando los 30mm extra
+    const finalHeight = currentY + 40; // 10 + 30mm extra
     doc.internal.pageSize.height = finalHeight;
 
     return doc;
@@ -151,8 +153,10 @@ export class NormalTicketTemplate {
    * BLOQUE 1: Añade el encabezado completo con logo y datos de empresa
    */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-    // Colocar el logo exactamente en la parte superior (sin margen artificial)
-    let currentY = startY;
+    // Colocar SOLO el logo en la parte superior, sin margen inicial
+    let currentY = startY; // Comenzar desde la posición inicial sin añadir espacio
+    
+    // SOLO LOGO - sin texto adicional
     if (header.company_logo_url) {
       try {
         const logoImg = new Image();
@@ -162,28 +166,21 @@ export class NormalTicketTemplate {
           logoImg.onerror = () => reject(new Error('Error cargando logo'));
           logoImg.src = header.company_logo_url!;
         });
-        // Calcular dimensiones del logo (máximo 30mm de ancho)
-        const maxLogoWidth = 30;
+        // Calcular dimensiones del logo (máximo 40mm de ancho)
+        const maxLogoWidth = 40;
         const logoAspectRatio = logoImg.height / logoImg.width;
-        const logoWidth = Math.min(maxLogoWidth, 30);
+        const logoWidth = Math.min(maxLogoWidth, 40);
         const logoHeight = logoWidth * logoAspectRatio;
         // Centrar el logo
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-        // Dejar solo 2.5mm debajo del logo para evitar conflicto visual
+        // Colocar el logo con espacio mínimo
         doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
-        currentY += logoHeight + 2.5;
+        currentY += logoHeight + 5; // Espacio después del logo antes de continuar con el contenido
       } catch (error) {
         console.error('Error cargando logo:', error);
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'italic');
-        doc.text('[LOGO NO DISPONIBLE]', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-        currentY += 4;
+        // Si no hay logo, no mostrar nada - continuar directamente
+        currentY += 0;
       }
-    } else {
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'italic');
-      doc.text('[SIN LOGO]', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 4;
     }
     
     // Nombre de la empresa

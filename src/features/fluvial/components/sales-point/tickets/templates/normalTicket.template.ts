@@ -28,32 +28,29 @@ export class NormalTicketTemplate {
     });
     
     doc.setFont('helvetica');
-    let currentY = -2; // Comenzar 2mm más arriba para subir todo el contenido
+    let currentY = 0; // Comenzar desde el borde superior para subir el logo
     
     // BLOQUE 1: CABECERA
     currentY = await this.addHeader(doc, ticketData.header, currentY);
-    currentY += 1;
+    currentY += 1; // Pequeño espacio después de la cabecera
     
     // BLOQUE 2: INFORMACIÓN DEL PASAJERO
     currentY = this.addPassengerInfo(doc, ticketData.passenger_info, currentY);
-    currentY += 1;
+    currentY += 1; // Pequeño espacio después del pasajero
     
     // BLOQUE 3: DETALLES DEL VIAJE
     currentY = this.addTripDetails(doc, ticketData.trip_details, currentY);
-    currentY += 1;
+    currentY += 1; // Pequeño espacio después del viaje
     
-
-    
-
     // BLOQUE 5: DETALLE DE LA VENTA (tabla de items y totales SUNAT)
     currentY = this.addVentaDetailBlock(doc, ticketData, currentY);
-    currentY += 1;
+    currentY += 1; // Pequeño espacio después de la venta
 
     // BLOQUE 6: PIE DE PÁGINA CON QR
     currentY = await this.addFooter(doc, ticketData.footer, currentY);
 
-    // Ajustar la altura del documento al contenido, sumando los 30mm extra
-    const finalHeight = currentY + 40; // 10 + 30mm extra
+    // Ajustar la altura del documento al contenido
+    const finalHeight = currentY + 20; // Solo 20mm extra para el margen final
     doc.internal.pageSize.height = finalHeight;
 
     return doc;
@@ -65,11 +62,12 @@ export class NormalTicketTemplate {
    */
   private static addVentaDetailBlock(doc: jsPDF, ticketData: TicketData, startY: number): number {
     let currentY = startY;
+    
     // Título
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.text('DETALLE DE LA VENTA', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5;
+    currentY += 5; // Espacio adecuado después del título
     // Encabezado de tabla
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(7);
@@ -106,7 +104,7 @@ export class NormalTicketTemplate {
       doc.line(x, currentY, xEnd, currentY);
       x += 3.5;
     }
-    currentY += 3;
+    currentY += 4; // Espacio adecuado después del separador
     // Totales SUNAT
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
@@ -138,7 +136,7 @@ export class NormalTicketTemplate {
       doc.line(x, currentY, xEnd, currentY);
       x += 3.5;
     }
-    currentY += 3;
+    currentY += 4; // Espacio adecuado después del separador
     // Monto en palabras y forma de pago
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
@@ -153,8 +151,7 @@ export class NormalTicketTemplate {
    * BLOQUE 1: Añade el encabezado completo con logo y datos de empresa
    */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-    // Colocar SOLO el logo en la parte superior, sin margen inicial
-    let currentY = startY; // Comenzar desde la posición inicial sin añadir espacio
+    let currentY = startY; // Comenzar desde el valor positivo recibido
     
     // SOLO LOGO - sin texto adicional
     if (header.company_logo_url) {
@@ -173,9 +170,9 @@ export class NormalTicketTemplate {
         const logoHeight = logoWidth * logoAspectRatio;
         // Centrar el logo
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-        // Colocar el logo con espacio mínimo
+        // Colocar el logo completamente arriba
         doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
-        currentY += logoHeight + 5; // Espacio después del logo antes de continuar con el contenido
+        currentY += logoHeight + 3; // Espacio adecuado después del logo
       } catch (error) {
         console.error('Error cargando logo:', error);
         // Si no hay logo, no mostrar nada - continuar directamente
@@ -226,7 +223,7 @@ export class NormalTicketTemplate {
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 3;
+    currentY += 4; // Espacio adecuado después del separador
     
     // Tipo y número de documento
     doc.setFontSize(9);
@@ -234,7 +231,7 @@ export class NormalTicketTemplate {
     doc.text(header.document_title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 4;
     doc.text(header.document_id, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    currentY += 5; // Espacio adecuado después del documento
     
     // Fecha y hora de emisión
     doc.setFontSize(7);
@@ -260,7 +257,7 @@ export class NormalTicketTemplate {
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 3;
+    currentY += 4; // Espacio adecuado después del separador
     
     // Documento del pasajero
     doc.setFont('helvetica', 'normal');
@@ -274,6 +271,7 @@ export class NormalTicketTemplate {
       currentY += 3;
     });
     
+    currentY += 2; // Espacio antes del siguiente separador
     return currentY;
   }
   
@@ -287,7 +285,7 @@ export class NormalTicketTemplate {
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 3;
+    currentY += 4; // Espacio adecuado después del separador
     // Título
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
@@ -305,8 +303,17 @@ export class NormalTicketTemplate {
       const d1 = col1[i];
       const d2 = col2[i];
       let rowHeight = 3.5;
+      // Si la línea es DESTINO, agregar un salto extra después
+      if (d1 && d1.label === 'DESTINO') {
+        doc.text(`${d1.label}: ${d1.value}`, this.MARGIN, currentY);
+        if (d2) doc.text(`${d2.label}: ${d2.value}`, this.MARGIN + colWidth + 2, currentY);
+        currentY += rowHeight;
+        currentY += 3.5; // Salto extra después de DESTINO
+        continue;
+      }
+      // Si la línea es ASIENTO, agregar salto antes y después
       if (d1 && d1.label === 'ASIENTO') {
-        // Mostrar ASIENTO a la izquierda, más grande
+        currentY += 3.5; // Salto extra antes de ASIENTO
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.text(`${d1.label}: ${d1.value}`, this.MARGIN, currentY);
@@ -314,9 +321,11 @@ export class NormalTicketTemplate {
         doc.setFont('helvetica', 'normal');
         asientoY = currentY + 5; // Guardar Y para la línea separadora
         rowHeight = 6;
-      } else {
-        if (d1) doc.text(`${d1.label}: ${d1.value}`, this.MARGIN, currentY);
+        currentY += rowHeight;
+        currentY += 3.5; // Salto extra después de ASIENTO
+        continue;
       }
+      if (d1) doc.text(`${d1.label}: ${d1.value}`, this.MARGIN, currentY);
       if (d2) doc.text(`${d2.label}: ${d2.value}`, this.MARGIN + colWidth + 2, currentY);
       currentY += rowHeight;
     }
@@ -325,8 +334,9 @@ export class NormalTicketTemplate {
       doc.setLineWidth(0.2);
       doc.setDrawColor(180, 180, 180);
       doc.line(0, asientoY, this.TICKET_WIDTH, asientoY);
-      currentY = asientoY + 2;
+      currentY = asientoY + 4; // Espacio adecuado después del separador
     }
+    currentY += 2; // Espacio antes del siguiente separador
     return currentY;
   }
   
@@ -343,7 +353,7 @@ export class NormalTicketTemplate {
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 3;
+    currentY += 4; // Espacio adecuado después del separador
     
     // Texto de agradecimiento
     doc.setFontSize(8);

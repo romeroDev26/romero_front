@@ -1,7 +1,6 @@
 // src/features/fluvial/components/sales-point/tickets/templates/normalTicket.template.ts
 
 import jsPDF from 'jspdf';
-import QRCode from 'qrcode';
 import { TicketData } from '../types/ticket.types';
 
 /**
@@ -81,8 +80,12 @@ export class NormalTicketTemplate {
     // Items
     ticketData.financial_breakdown.items.forEach(item => {
       doc.text(String(item.quantity), this.MARGIN, currentY);
-      // Descripción multilínea
-      const descLines = this.splitText(doc, item.description, 32, 7);
+      // Descripción multilínea con descuento si aplica
+      let desc = item.description;
+      if (item.discount && item.discount > 0) {
+        desc += ` (descuento: ${item.discount.toFixed(2)})`;
+      }
+      const descLines = this.splitText(doc, desc, 32, 7);
       descLines.forEach((line, idx) => {
         doc.text(line, this.MARGIN + 12, currentY);
         if (idx < descLines.length - 1) currentY += 3;
@@ -106,6 +109,8 @@ export class NormalTicketTemplate {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     const sunat = ticketData.sunat_totals;
+    // Tomar el valor de TOTAL A PAGAR exactamente como viene del transformer/backend
+    const totalPagarRaw = ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value ?? '0.00';
     const totales = [
       { label: 'OP. GRAVADA', value: sunat.total_taxable },
       { label: 'OP. EXONERADA', value: sunat.total_exonerated },
@@ -115,12 +120,12 @@ export class NormalTicketTemplate {
       { label: 'IGV', value: sunat.total_igv },
       { label: 'ISC', value: sunat.total_isc },
       { label: 'OTROS TRIBUTOS', value: sunat.total_other_taxes },
-      { label: 'TOTAL A PAGAR', value: ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value || sunat.total_exonerated || sunat.total_taxable },
+      { label: 'TOTAL A PAGAR', value: totalPagarRaw },
     ];
     totales.forEach(t => {
       doc.text(t.label + ':', this.MARGIN, currentY);
       doc.text('S/', this.TICKET_WIDTH - this.MARGIN - 18, currentY, { align: 'right' });
-      doc.text(t.value ?? '0.00', this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+      doc.text((t.value ?? '0.00'), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
       currentY += 4;
     });
     // Línea separadora (gris)

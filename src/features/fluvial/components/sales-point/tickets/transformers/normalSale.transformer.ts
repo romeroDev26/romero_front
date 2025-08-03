@@ -15,8 +15,6 @@ import {
   formatTripDate,
   formatTripTime,
   formatBoardingTime,
-  calculateSubtotal,
-  calculateTotalDiscounts,
   formatCurrency
 } from '../utils/ticketHelpers';
 
@@ -128,15 +126,16 @@ export class NormalSaleTransformer {
       total_line: parseFloat(item.total_line)
     }));
     
-    // Calcular resumen
-    const subtotal = calculateSubtotal(data.items);
-    const totalDiscounts = calculateTotalDiscounts(data.items);
-    const totalPayable = parseFloat(data.total_payable);
+    // Usar directamente los valores calculados por el backend sin recalcular
+    // El backend ya nos envía todos los totales correctos
+    const subtotalBackend = parseFloat(data.total_taxable) + parseFloat(data.total_exonerated) + parseFloat(data.total_unaffected);
+    const totalDiscounts = parseFloat(data.total_global_discount) || 0;
     
+    // El resumen debe mostrar los valores exactos del backend
     const summary = [
-      { label: 'SUBTOTAL', value: formatCurrency(subtotal) },
-      { label: 'DESCUENTOS', value: `- ${formatCurrency(totalDiscounts)}` },
-      { label: 'TOTAL A PAGAR', value: formatCurrency(totalPayable), is_bold: true }
+      { label: 'SUBTOTAL', value: formatCurrency(subtotalBackend) },
+      { label: 'DESCUENTOS', value: totalDiscounts > 0 ? `- ${formatCurrency(totalDiscounts)}` : formatCurrency(0) },
+      { label: 'TOTAL A PAGAR', value: data.total_payable, is_bold: true }
     ];
     
     return {

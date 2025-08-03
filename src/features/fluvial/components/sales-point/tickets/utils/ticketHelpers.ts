@@ -174,13 +174,12 @@ export function formatBoardingTime(boardingTime: string): string {
 }
 
 /**
- * Calcula el subtotal de todos los items (suma de unit_price * quantity)
+ * Calcula el subtotal de todos los items usando total_line (valores ya calculados por el backend)
  */
 export function calculateSubtotal(items: any[]): number {
   return items.reduce((total, item) => {
-    const unitPrice = parseFloat(item.unit_price) || 0;
-    const quantity = parseFloat(item.quantity) || 0;
-    return total + (unitPrice * quantity);
+    const totalLine = parseFloat(item.total_line) || 0;
+    return total + totalLine;
   }, 0);
 }
 

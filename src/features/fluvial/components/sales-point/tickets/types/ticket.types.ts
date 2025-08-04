@@ -105,6 +105,31 @@ export interface TicketMetadata {
   client_id: number;
 }
 
+// BLOQUE 9: REPRESENTANTES (solo para tickets de empresa)
+export interface TicketRepresentative {
+  id: number;
+  passenger_name: string;
+  passenger_doc_type: string;
+  passenger_doc_number: string;
+  seat_number: string;
+  boarding_stop_id?: number;
+  disembarking_stop_id?: number;
+  special_notes?: string;
+}
+
+// BLOQUE 10: RESUMEN DE REPRESENTANTES (para el ticket resumen)
+export interface TicketCompanySummary {
+  invoice_id: number;
+  max_allowed: number;
+  current_count: number;
+  remaining: number;
+  can_add_more: boolean;
+  total_capacity: number;
+  used_capacity: number;
+  remaining_capacity: number;
+  is_complete: boolean;
+}
+
 // Tipos auxiliares para validaciones
 export interface TicketValidationResult {
   isValid: boolean;

@@ -42,16 +42,16 @@ export interface CompanyInvoiceWithRepresentatives {
     detraccion_percentage?: number | null; // ← CORREGIDO: Número o null
   };
   
-  // ← NUEVO: Configuración opcional de items
-  item_config?: {
-    unit_price?: number; // ← CORREGIDO: Número, no string
-    quantity?: number; // Cantidad de representantes/asientos
-    discount?: number; // ← CORREGIDO: Número, no string
-    discount_percentage?: number; // Descuento en porcentaje (0-100)
-    tax_category_code?: string; // "10"=Gravado, "20"=Exonerado, "30"=Inafecto
-    item_description?: string; // Descripción del servicio
-    unit_code?: string; // "NIU"=Unidad, "ZZ"=Servicio
-  };
+  // ← ACTUALIZADO: Configuración de items como array
+  items_config?: Array<{
+    product_id: number; // ← CLAVE: ID del producto/servicio
+    quantity: number; // Cantidad
+    unit_price: number; // Precio unitario
+    discount?: number; // Descuento
+    tax_category_code: string; // "10"=Gravado, "20"=Exonerado, "30"=Inafecto
+    item_description: string; // Descripción del servicio
+    unit_code: string; // "NIU"=Unidad, "ZZ"=Servicio, "KGM"=Kilogramo
+  }>;
   
   // Configuración adicional (OPCIONAL)
   special_notes?: string; // Máximo 500 caracteres

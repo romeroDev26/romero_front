@@ -116,7 +116,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             <input
               type="text"
               name="docNumber"
-              value={passengerData.docNumber}
+              value={passengerData.docNumber || ""}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-l-md disabled:bg-gray-100"
               placeholder="Ingrese el número"
@@ -139,7 +139,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
         <input
           type="text"
           name="name"
-          value={passengerData.name}
+          value={passengerData.name || ""}
           onChange={handleInputChange}
           className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
           placeholder="Nombres y apellidos o Razón Social"
@@ -152,7 +152,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           <input
             type="text"
             name="address"
-            value={passengerData.address}
+            value={passengerData.address || ""}
             onChange={handleInputChange}
             className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
             disabled={disabled}
@@ -204,7 +204,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           <input
             type="tel"
             name="phone"
-            value={passengerData.phone}
+            value={passengerData.phone || ""}
             onChange={handleInputChange}
             className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
             placeholder="Número de teléfono"
@@ -216,7 +216,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           <input
             type="email"
             name="email"
-            value={passengerData.email}
+            value={passengerData.email || ""}
             onChange={handleInputChange}
             className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100"
             placeholder="Correo electrónico"

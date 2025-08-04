@@ -25,7 +25,9 @@ import { ReservationModal } from "./ReservationModal";
 import { RepresentativesManager } from "./representatives";
 // ACTUALIZADO: Usar nuevo modal de preview de tickets
 import { TicketPreviewModal } from "./TicketPreviewModal";
-import { BackendInvoiceData } from "./tickets/types/backend.types";
+import { BackendInvoiceData, BackendCompanyInvoiceData } from "./tickets/types/backend.types";
+import { CompanySaleTransformer } from "./tickets/transformers/companySale.transformer";
+import { CompanyTicketTemplate } from "./tickets/templates/companyTicket.template";
 
 // ← NUEVO: Importar módulos refactorizados
 import { 
@@ -95,7 +97,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   
   // Estados para PDF
   const [showTicketPreview, setShowTicketPreview] = useState(false);
-  const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
+  const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | BackendCompanyInvoiceData | null>(null);
+  const [isCompanyTicket, setIsCompanyTicket] = useState(false); // Guarda el tipo de ticket
 
   // Función para mostrar modal de preview de ticket
   // Eliminar función de mock, ahora el preview se activa solo con datos reales
@@ -390,6 +393,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     return [...usedSeatNumbers, ...reservedNumbers, ...webSocketReservedNumbers];
   };
 
+  // Helper function para verificar si los datos son de venta empresarial
+  const isCompanyInvoiceData = (data: BackendInvoiceData | BackendCompanyInvoiceData): data is BackendCompanyInvoiceData => {
+    return 'invoice' in data && 'representatives' in data && 'summary' in data;
+  };
+
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
   // Hook de WebSocket para notificar selecciones de representantes
@@ -444,6 +452,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           (invoiceData) => {
             // Callback de éxito: mostrar modal de preview de ticket con datos reales
             setTicketBackendData(invoiceData);
+            setIsCompanyTicket(true); // ← NUEVO: Marcar como ticket empresarial
             setShowTicketPreview(true);
           },
           seatMap,
@@ -478,12 +487,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         reservationToConfirm,
         (invoiceData) => {
           setTicketBackendData(invoiceData);
+          setIsCompanyTicket(false); // ← NUEVO: Marcar como ticket regular
           setShowTicketPreview(true);
         }
       );
 
     } catch (error) {
-      console.error('Error en la venta:', error);
       // Los errores ya son manejados por toast en los hooks internos
     }
   };
@@ -738,19 +747,55 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       
       {/* Modal de preview de ticket */}
       {showTicketPreview && ticketBackendData && (
-        <TicketPreviewModal
-          isOpen={showTicketPreview}
-          onClose={() => {
-            setShowTicketPreview(false);
-            setTicketBackendData(null);
-          }}
-          backendData={ticketBackendData}
-          onSuccess={() => {
-            setShowTicketPreview(false);
-            setTicketBackendData(null);
-            onSaleSuccess();
-          }}
-        />
+        isCompanyTicket ? (
+          <TicketPreviewModal
+            isOpen={showTicketPreview}
+            onClose={() => {
+              setShowTicketPreview(false);
+              setTicketBackendData(null);
+              setIsCompanyTicket(false); // ← NUEVO: Limpiar tipo de ticket
+            }}
+            backendData={isCompanyInvoiceData(ticketBackendData) ? ticketBackendData.invoice : ticketBackendData}
+            onSuccess={() => {
+              setShowTicketPreview(false);
+              setTicketBackendData(null);
+              setIsCompanyTicket(false); // Limpiar tipo de ticket
+              onSaleSuccess();
+            }}
+            // NUEVO: Props para empresa
+            customGeneratePDF={async () => {
+              // Verificar que los datos sean de tipo empresarial
+              if (!isCompanyInvoiceData(ticketBackendData)) {
+                throw new Error('Los datos no corresponden a una venta empresarial válida');
+              }
+              
+              // Verificar que los datos sean válidos para venta empresarial
+              if (!ticketBackendData.invoice || !ticketBackendData.representatives || ticketBackendData.representatives.length === 0) {
+                throw new Error('Los datos no corresponden a una venta empresarial válida');
+              }
+              
+              // Transformar datos para el ticket resumen (pasar todo el objeto BackendCompanyInvoiceData)
+              const summaryData = CompanySaleTransformer.transformSummary(ticketBackendData);
+              return await CompanyTicketTemplate.generatePDF(summaryData);
+            }}
+          />
+        ) : (
+          <TicketPreviewModal
+            isOpen={showTicketPreview}
+            onClose={() => {
+              setShowTicketPreview(false);
+              setTicketBackendData(null);
+              setIsCompanyTicket(false); // Limpiar tipo de ticket
+            }}
+            backendData={isCompanyInvoiceData(ticketBackendData) ? ticketBackendData.invoice : ticketBackendData}
+            onSuccess={() => {
+              setShowTicketPreview(false);
+              setTicketBackendData(null);
+              setIsCompanyTicket(false); // Limpiar tipo de ticket
+              onSaleSuccess();
+            }}
+          />
+        )
       )}
     </>
   );

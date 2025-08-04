@@ -87,39 +87,45 @@ export const useSaleBusinessLogic = ({
     }
 
     try {
-      // ← NUEVO: Construir item_config según especificación del backend
-      const itemConfig: any = {};
+      // ← ACTUALIZADO: Construir items_config como array según especificación del backend
+      const itemsConfig: Array<{
+        product_id: number;
+        quantity: number;
+        unit_price: number;
+        discount: number;
+        tax_category_code: string;
+        item_description: string;
+        unit_code: string;
+      }> = [];
       
-      // Cantidad de representantes/asientos
-      itemConfig.quantity = representatives.length;
-      
-      // Precio unitario (sin IGV por pasajero) - incluye costo adicional
+      // ITEM 1: Servicio principal de transporte
       if (basePrice !== undefined && basePrice > 0) {
         const baseUnitPrice = basePrice * (seatMultiplier || 1.0);
-        const extraCostPerPassenger = (extraCost || 0) / representatives.length;
-        const finalUnitPrice = baseUnitPrice + extraCostPerPassenger;
-        itemConfig.unit_price = parseFloat(finalUnitPrice.toFixed(2)); // ← CORREGIDO: Número, no string
+        const transportItem = {
+          product_id: 1, // ← CLAVE: ID del servicio de transporte
+          quantity: representatives.length, // Cantidad de representantes/asientos
+          unit_price: parseFloat(baseUnitPrice.toFixed(2)),
+          discount: discount ? parseFloat(discount.toFixed(2)) : 0,
+          tax_category_code: isIgvGravado ? "10" : "20", // 10=Gravado, 20=Exonerado
+          item_description: "Servicio de Transporte de Pasajeros",
+          unit_code: "NIU" // NIU = Unidad
+        };
+        itemsConfig.push(transportItem);
       }
       
-      // Descuento fijo total (NO dividir entre representantes)
-      if (discount !== undefined && discount > 0) {
-        itemConfig.discount = parseFloat(discount.toFixed(2)); // ← CORREGIDO: Número, no string
+      // ITEM 2: Costo adicional/equipaje (si existe)
+      if (extraCost && extraCost > 0) {
+        const extraItem = {
+          product_id: 7, // ← CLAVE: ID del servicio adicional
+          quantity: 1, // Siempre 1 para costos adicionales
+          unit_price: parseFloat(extraCost.toFixed(2)),
+          discount: 0,
+          tax_category_code: isIgvGravado ? "10" : "20",
+          item_description: extraCostDescription?.trim() || "Equipaje en exceso",
+          unit_code: "KGM" // KGM = Kilogramo (para equipaje)
+        };
+        itemsConfig.push(extraItem);
       }
-      
-      // Categoría fiscal
-      if (isIgvGravado !== undefined) {
-        itemConfig.tax_category_code = isIgvGravado ? "10" : "20"; // 10=Gravado, 20=Exonerado
-      }
-      
-      // Descripción del item (incluir costo adicional si existe)
-      let itemDescription = "Servicio de transporte fluvial empresarial";
-      if (extraCostDescription && extraCostDescription.trim()) {
-        itemDescription += ` - ${extraCostDescription.trim()}`;
-      }
-      itemConfig.item_description = itemDescription;
-      
-      // Unidad de medida
-      itemConfig.unit_code = "ZZ"; // ZZ = Servicio
       
       // ← NUEVO: Construir invoice_config según especificación del backend
       const invoiceConfig: any = {};
@@ -164,8 +170,8 @@ export const useSaleBusinessLogic = ({
           seat_number: rep.seat_number || "Elección libre",
           special_notes: rep.special_notes || "", // ← NUEVO: Campo notas especiales
         })),
-        // ← NUEVO: Incluir item_config solo si tiene configuraciones
-        ...(Object.keys(itemConfig).length > 0 && { item_config: itemConfig }),
+        // ← ACTUALIZADO: Incluir items_config como array
+        ...(itemsConfig.length > 0 && { items_config: itemsConfig }),
         // ← NUEVO: Incluir invoice_config
         invoice_config: invoiceConfig,
         special_notes: `Punto de Venta: ${branchName} - Factura Empresarial${extraCost && extraCost > 0 ? ` - Costo adicional: S/. ${extraCost.toFixed(2)}` : ''}`

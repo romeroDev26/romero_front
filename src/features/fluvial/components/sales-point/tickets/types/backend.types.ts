@@ -82,6 +82,20 @@ export interface BackendInvoiceData {
   // Metadatos
   created_at: string;
   updated_at: string;
+  
+  // Solo para ventas con RUC/empresa
+  representatives?: any[]; // Lista de representantes (pasajeros)
+  summary?: any; // Resumen de la venta de empresa
+}
+
+/**
+ * Tipo específico para datos de venta empresarial
+ * Esta es la estructura que realmente devuelve el backend para ventas con RUC
+ */
+export interface BackendCompanyInvoiceData {
+  invoice: BackendInvoiceData; // La factura principal
+  representatives: any[]; // Lista de representantes
+  summary: any; // Resumen de la venta
 }
 
 export interface BackendInvoiceItem {

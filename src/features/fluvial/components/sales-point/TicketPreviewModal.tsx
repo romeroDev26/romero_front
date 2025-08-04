@@ -9,6 +9,7 @@ import {
   downloadNormalSaleTicket, 
   generateNormalSaleTicketBlob 
 } from './tickets';
+import jsPDF from 'jspdf';
 import { BackendInvoiceData } from './tickets/types/backend.types';
 
 interface TicketPreviewModalProps {
@@ -16,18 +17,22 @@ interface TicketPreviewModalProps {
   onClose: () => void;
   backendData: BackendInvoiceData;
   onSuccess: () => void;
+  // Props para tickets de empresa (RUC)
+  customGeneratePDF?: () => Promise<jsPDF>;
 }
 
 export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   isOpen,
   onClose,
   backendData,
-  onSuccess
+  onSuccess,
+  customGeneratePDF
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+
 
   // Generar el PDF inmediatamente cuando se abre el modal
   useEffect(() => {
@@ -47,17 +52,19 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const generatePreview = async () => {
     try {
       setIsGenerating(true);
-      
-      // Generar PDF como blob para previsualización
-      const pdfBlob = await generateNormalSaleTicketBlob(backendData);
-      
-      // Crear URL para el blob
+      let pdfBlob;
+      if (customGeneratePDF) {
+        // Usar lógica custom para empresa
+        const doc = await customGeneratePDF();
+        pdfBlob = doc.output('blob');
+      } else {
+        pdfBlob = await generateNormalSaleTicketBlob(backendData);
+      }
       const url = URL.createObjectURL(pdfBlob);
       setPreviewUrl(url);
-      
-      console.log('Vista previa del ticket generada');
+      // Eliminado console.log de depuración
     } catch (error) {
-      console.error('Error generando vista previa:', error);
+      // Eliminado console.error de depuración
     } finally {
       setIsGenerating(false);
     }
@@ -66,10 +73,16 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const handleDownloadTicket = async () => {
     try {
       setIsDownloading(true);
-      await downloadNormalSaleTicket(backendData);
-      console.log('Ticket descargado exitosamente');
+      if (customGeneratePDF) {
+        // Descargar ticket resumen de empresa
+        const doc = await customGeneratePDF();
+        doc.save('ticket_empresa_resumen.pdf');
+      } else {
+        await downloadNormalSaleTicket(backendData);
+      }
+      // Eliminado console.log de depuración
     } catch (error) {
-      console.error('Error descargando ticket:', error);
+      // Eliminado console.error de depuración
     } finally {
       setIsDownloading(false);
     }
@@ -78,29 +91,27 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const handlePrintTicket = async () => {
     try {
       setIsPrinting(true);
-      
-      // Generar PDF como blob para impresión
-      const pdfBlob = await generateNormalSaleTicketBlob(backendData);
-      
-      // Crear URL para el blob
+      let pdfBlob;
+      if (customGeneratePDF) {
+        const doc = await customGeneratePDF();
+        pdfBlob = doc.output('blob');
+      } else {
+        pdfBlob = await generateNormalSaleTicketBlob(backendData);
+      }
       const url = URL.createObjectURL(pdfBlob);
-      
-      // Abrir ventana de impresión
       const printWindow = window.open(url, '_blank');
       if (printWindow) {
         printWindow.onload = () => {
           printWindow.print();
-          // Limpiar URL después de imprimir
           setTimeout(() => {
             URL.revokeObjectURL(url);
             printWindow.close();
           }, 100);
         };
       }
-      
-      console.log('Ticket enviado a impresión');
+      // Eliminado console.log de depuración
     } catch (error) {
-      console.error('Error imprimiendo ticket:', error);
+      // Eliminado console.error de depuración
     } finally {
       setIsPrinting(false);
     }
@@ -167,7 +178,6 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
               </>
             )}
           </Button>
-          
           <Button
             onClick={handlePrintTicket}
             disabled={isGenerating || isDownloading || isPrinting}

@@ -26,7 +26,9 @@ export const calculatePriceDetails = (
   const quantity = isRuc ? Math.max(1, representatives.length) : 1;
   
   // Subtotal (precio base sin IGV)
-  const subtotal = (basePrice * seatMultiplier + extraCost) * quantity;
+  // CORRECCIÓN: Solo el precio base se multiplica por cantidad, el costo adicional es independiente
+  const baseSubtotal = (basePrice * seatMultiplier) * quantity;
+  const subtotal = baseSubtotal + extraCost;
   
   // IGV (18% del subtotal solo si está gravado)
   const igvAmount = isIgvGravado ? subtotal * 0.18 : 0;

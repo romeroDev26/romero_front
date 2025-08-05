@@ -6,8 +6,8 @@ import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { Download, Printer, Eye } from 'lucide-react';
 import { 
-  downloadNormalSaleTicket, 
-  generateNormalSaleTicketBlob 
+  downloadTicket, 
+  generateTicketBlob 
 } from './tickets';
 import jsPDF from 'jspdf';
 import { BackendInvoiceData } from './tickets/types/backend.types';
@@ -58,7 +58,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         const doc = await customGeneratePDF();
         pdfBlob = doc.output('blob');
       } else {
-        pdfBlob = await generateNormalSaleTicketBlob(backendData);
+        // Usar detección automática para tickets normales y sin asientos
+        pdfBlob = await generateTicketBlob(backendData);
       }
       const url = URL.createObjectURL(pdfBlob);
       setPreviewUrl(url);
@@ -78,7 +79,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         const doc = await customGeneratePDF();
         doc.save('ticket_empresa_resumen.pdf');
       } else {
-        await downloadNormalSaleTicket(backendData);
+        // Descargar ticket con detección automática
+        await downloadTicket(backendData);
       }
       // Eliminado console.log de depuración
     } catch (error) {
@@ -96,7 +98,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         const doc = await customGeneratePDF();
         pdfBlob = doc.output('blob');
       } else {
-        pdfBlob = await generateNormalSaleTicketBlob(backendData);
+        // Usar detección automática para tickets normales y sin asientos
+        pdfBlob = await generateTicketBlob(backendData);
       }
       const url = URL.createObjectURL(pdfBlob);
       const printWindow = window.open(url, '_blank');

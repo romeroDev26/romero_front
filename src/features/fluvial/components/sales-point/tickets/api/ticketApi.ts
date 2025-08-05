@@ -6,11 +6,35 @@ import { TicketGenerator } from '../generators/ticketGenerator';
 
 /**
  * API de conveniencia para funciones comunes de tickets
- * Simplifica el uso desde los componentes
+ * Simplifica el uso desde los componentes con detección automática del tipo de embarcación
  */
 
 /**
- * Genera un ticket de venta normal
+ * Genera un ticket con detección automática del tipo de embarcación
+ */
+export async function generateTicket(backendData: BackendInvoiceData): Promise<jsPDF> {
+  return TicketGenerator.generateTicket(backendData);
+}
+
+/**
+ * Genera y descarga un ticket con detección automática
+ */
+export async function downloadTicket(
+  backendData: BackendInvoiceData, 
+  filename?: string
+): Promise<void> {
+  return TicketGenerator.downloadTicket(backendData, filename);
+}
+
+/**
+ * Genera un ticket con detección automática como blob
+ */
+export async function generateTicketBlob(backendData: BackendInvoiceData): Promise<Blob> {
+  return TicketGenerator.generateTicketBlob(backendData);
+}
+
+/**
+ * Genera un ticket de venta normal (mantenido para compatibilidad)
  */
 export async function generateNormalSaleTicket(backendData: BackendInvoiceData): Promise<jsPDF> {
   return TicketGenerator.generateNormalSaleTicket(backendData);

@@ -79,7 +79,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
   isLocked = false,
   userId,
   userName,
-  occupiedSeatNumbers = [],
   isCompanyMode = false // Nueva prop con valor por defecto
 }) => {
   // Referencia estable para las selecciones actuales

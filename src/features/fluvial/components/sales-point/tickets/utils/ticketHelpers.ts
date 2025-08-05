@@ -108,21 +108,49 @@ export function extractDestinationPort(items: any[]): string {
  * Extrae el nombre de la embarcación desde el primer item
  */
 export function extractVehicleName(items: any[]): string {
+  // Primero buscar items con trip_seat_id (embarcaciones con asientos)
   const mainServiceItem = items.find(item => 
     item.trip_seat_id && item.vehicle_name
   );
   
-  return mainServiceItem?.vehicle_name || 'N/A';
+  if (mainServiceItem) {
+    return mainServiceItem.vehicle_name;
+  }
+  
+  // Si no hay asientos, buscar por trip_id (embarcaciones sin asientos)
+  const transportItem = items.find(item => 
+    item.trip_id && item.vehicle_name
+  );
+  
+  return transportItem?.vehicle_name || 'N/A';
 }
 
 /**
- * Extrae el número de asiento principal del primer item que tenga asiento
+ * Extrae el número de asiento principal o indica si es elección libre
  */
 export function extractMainSeatNumber(items: any[]): string {
   // Buscar el primer item que tenga seat_number válido
   for (const item of items) {
     if (item.seat_number && item.seat_number.trim() !== '') {
       return item.seat_number;
+    }
+  }
+  
+  // Si no hay asiento específico, verificar si es una embarcación sin asientos
+  // basándose en la descripción del item o si trip_seat_id es null
+  const hasTransportService = items.some(item => 
+    item.trip_id && (item.trip_seat_id === null || item.trip_seat_id === undefined)
+  );
+  
+  if (hasTransportService) {
+    // Verificar si la descripción indica "elección libre"
+    const transportItem = items.find(item => 
+      item.item_description && 
+      item.item_description.toLowerCase().includes('elección libre')
+    );
+    
+    if (transportItem) {
+      return 'Elección libre';
     }
   }
   
@@ -198,4 +226,17 @@ export function calculateTotalDiscounts(items: any[]): number {
  */
 export function formatCurrency(amount: number): string {
   return `S/ ${amount.toFixed(2)}`;
+}
+
+/**
+ * Detecta si la venta corresponde a una embarcación sin asientos
+ * Basándose en trip_seat_id null y descripción con "elección libre"
+ */
+export function isVesselWithoutSeats(items: any[]): boolean {
+  return items.some(item => 
+    item.trip_id && 
+    (item.trip_seat_id === null || item.trip_seat_id === undefined) &&
+    item.item_description && 
+    item.item_description.toLowerCase().includes('elección libre')
+  );
 }

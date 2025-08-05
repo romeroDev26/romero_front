@@ -3,6 +3,7 @@
 /**
  * API principal para la generación de tickets
  * Expone una interfaz simple y limpia para usar en los componentes
+ * Incluye soporte para detección automática de embarcaciones con/sin asientos
  */
 
 // Exportar tipos principales
@@ -30,17 +31,34 @@ export type {
 // Exportar el generador principal
 export { TicketGenerator } from './generators/ticketGenerator';
 
-// Exportar transformers (por si se necesitan individualmente)
+// Exportar generador especializado para sin asientos
+export { NoSeatsTicketGenerator } from './generators/noSeatsTicketGenerator';
+
+// Exportar transformers
 export { NormalSaleTransformer } from './transformers/normalSale.transformer';
+export { NoSeatsSaleTransformer } from './transformers/noSeatsSale.transformer';
 
-// Exportar templates (por si se necesitan individualmente)
+// Exportar templates
 export { NormalTicketTemplate } from './templates/normalTicket.template';
+export { NoSeatsTicketTemplate } from './templates/noSeatsTicket.template';
 
-// Funciones de conveniencia para casos comunes
+// Funciones de conveniencia con detección automática
 export { 
+  generateTicket,
+  downloadTicket,
+  generateTicketBlob,
   generateNormalSaleTicket,
   downloadNormalSaleTicket,
   generateNormalSaleTicketBlob,
   generateNormalSaleTicketBase64,
   validateNormalSaleData
 } from './api/ticketApi';
+
+// Funciones específicas para embarcaciones sin asientos
+export {
+  generateNoSeatsTicket,
+  downloadNoSeatsTicket,
+  generateNoSeatsTicketBlob,
+  generateNoSeatsTicketBase64,
+  validateNoSeatsData
+} from './api/noSeatsTicketApi';

@@ -4,15 +4,40 @@ import jsPDF from 'jspdf';
 import { BackendInvoiceData } from '../types/backend.types';
 import { NormalSaleTransformer } from '../transformers/normalSale.transformer';
 import { NormalTicketTemplate } from '../templates/normalTicket.template';
+import { NoSeatsTicketGenerator } from './noSeatsTicketGenerator';
+import { isVesselWithoutSeats } from '../utils/ticketHelpers';
 
 /**
  * Generador principal de tickets
- * Orquesta la transformación y generación de PDFs
+ * Orquesta la transformación y generación de PDFs con detección automática del tipo de embarcación
  */
 export class TicketGenerator {
   
   /**
-   * Genera un ticket de venta normal
+   * Genera un ticket con detección automática del tipo de embarcación
+   * Determina si usar template normal o sin asientos según la embarcación
+   */
+  static async generateTicket(backendData: BackendInvoiceData): Promise<jsPDF> {
+    try {
+      // Detectar si es embarcación sin asientos
+      const isWithoutSeats = isVesselWithoutSeats(backendData.items);
+      
+      if (isWithoutSeats) {
+        console.log('Detectada embarcación sin asientos - generando ticket con elección libre');
+        return NoSeatsTicketGenerator.generateNoSeatsTicket(backendData);
+      } else {
+        console.log('Detectada embarcación con asientos - generando ticket normal');
+        return this.generateNormalSaleTicket(backendData);
+      }
+      
+    } catch (error) {
+      console.error('Error generando ticket con detección automática:', error);
+      throw new Error(`Error al generar ticket: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
+  }
+  
+  /**
+   * Genera un ticket de venta normal (para mantener compatibilidad)
    */
   static async generateNormalSaleTicket(backendData: BackendInvoiceData): Promise<jsPDF> {
     try {
@@ -31,7 +56,42 @@ export class TicketGenerator {
   }
   
   /**
-   * Genera y descarga un ticket de venta normal
+   * Genera y descarga un ticket con detección automática
+   */
+  static async downloadTicket(
+    backendData: BackendInvoiceData, 
+    filename?: string
+  ): Promise<void> {
+    try {
+      const pdf = await this.generateTicket(backendData);
+      
+      // Generar nombre de archivo si no se proporciona
+      const finalFilename = filename || this.generateTicketFilename(backendData);
+      
+      pdf.save(finalFilename);
+      
+    } catch (error) {
+      console.error('Error descargando ticket:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Genera un ticket con detección automática como blob
+   */
+  static async generateTicketBlob(backendData: BackendInvoiceData): Promise<Blob> {
+    try {
+      const pdf = await this.generateTicket(backendData);
+      return pdf.output('blob');
+      
+    } catch (error) {
+      console.error('Error generando ticket blob:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Genera y descarga un ticket de venta normal (para mantener compatibilidad)
    */
   static async downloadNormalSaleTicket(
     backendData: BackendInvoiceData, 

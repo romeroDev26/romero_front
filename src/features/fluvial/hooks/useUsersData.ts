@@ -1,6 +1,5 @@
 // src/features/fluvial/hooks/useUsersData.ts
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { usersService } from '../../../services/users.service';
 import { rolesService } from '../../../services/roles.service';
 import { User, Role } from '../../../types';
@@ -24,10 +23,7 @@ export const useUsers = (params: {
 }) => {
   return useQuery<User[]>({
     queryKey: [USERS_QUERY_KEY, params],
-    queryFn: () => {
-      console.log('Buscando usuarios con params:', params); // Debug
-      return usersService.search({ ...params, limit: 200 });
-    },
+    queryFn: () => usersService.search({ ...params, limit: 200 }),
     // La query solo se habilita si role_id es un número mayor que 0
     enabled: typeof params.role_id === 'number' && params.role_id > 0,
     staleTime: 1000 * 60 * 5,
@@ -43,14 +39,7 @@ export const useCaptains = () => {
   const driverRole = roles?.find(role => role.name.toLowerCase() === 'driver');
   const driverRoleId = driverRole?.id;
 
-  // Debug
-  useEffect(() => {
-    if (!isLoadingRoles) {
-      console.log("Roles cargados:", roles);
-      console.log("Rol 'driver' encontrado:", driverRole);
-      console.log("ID del rol 'driver':", driverRoleId);
-    }
-  }, [roles, isLoadingRoles, driverRole, driverRoleId]);
+  // ...
 
   // Usamos el ID del rol para buscar solo a los usuarios que son 'drivers'
   const {

@@ -4,9 +4,37 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 /**
- * Funciones de ayuda para formateo y transformación de datos del ticket
- * Actualizado para la nueva estructura propuesta
+ * Funciones de ayuda para formateo y transformación de datos del tic/**
+ * Detecta si una embarcación no maneja asientos numerados
+ * CRITERIOS MEJORADOS:
+ * - trip_seat_id es null (no hay asiento asignado)
+ * - seat_number es null (no hay número de asiento)
+ * - O si hay representantes con "Sin asientos configurados"
+ * Basándose en trip_seat_id null y seat_number null
  */
+export function isVesselWithoutSeats(items: any[]): boolean {
+  // CRITERIO 1: Verificar si todos los items tienen trip_seat_id y seat_number null
+  const allItemsHaveNullSeats = items.every(item => 
+    (item.trip_seat_id === null || item.trip_seat_id === undefined) &&
+    (item.seat_number === null || item.seat_number === undefined)
+  );
+  
+  if (allItemsHaveNullSeats) {
+    return true;
+  }
+  
+  // CRITERIO 2: Verificar si item_description contiene "elección libre" (criterio anterior)
+  const hasEleccionLibre = items.some(item => 
+    item.item_description && 
+    item.item_description.toLowerCase().includes('elección libre')
+  );
+  
+  if (hasEleccionLibre) {
+    return true;
+  }
+  
+  return false;
+}
 
 /**
  * Obtiene la etiqueta del tipo de documento del cliente
@@ -46,7 +74,6 @@ export function formatEmissionDateTime(issueDate: string, issueTime: string): st
     const dateTime = parseISO(`${issueDate}T${issueTime}`);
     return format(dateTime, 'dd/MM/yyyy h:mm a', { locale: es }).toUpperCase();
   } catch (error) {
-    console.error('Error formateando fecha de emisión:', error);
     return 'N/A';
   }
 }
@@ -159,14 +186,23 @@ export function extractMainSeatNumber(items: any[]): string {
 
 /**
  * Formatea la fecha de viaje desde trip_departure_time
+ * CORREGIDO: Si trip_departure_time es solo hora, usar issue_date como fecha base
  */
-export function formatTripDate(tripDepartureTime: string): string {
+export function formatTripDate(tripDepartureTime: string, issueDate?: string): string {
   try {
-    const date = parseISO(tripDepartureTime);
-    return format(date, 'dd/MM/yyyy', { locale: es });
+    // Si trip_departure_time es solo hora "HH:MM:SS", usar issue_date o fecha actual
+    if (!tripDepartureTime.includes('T') && !tripDepartureTime.includes(' ') && tripDepartureTime.includes(':')) {
+      // Es solo hora, usar fecha de emisión o fecha actual
+      const dateToUse = issueDate || new Date().toISOString().split('T')[0];
+      return format(new Date(dateToUse), 'dd/MM/yyyy', { locale: es });
+    } else {
+      // Es datetime completo
+      const date = parseISO(tripDepartureTime);
+      return format(date, 'dd/MM/yyyy', { locale: es });
+    }
   } catch (error) {
-    console.error('Error formateando fecha de viaje:', error);
-    return 'N/A';
+    // Fallback: usar fecha actual
+    return format(new Date(), 'dd/MM/yyyy', { locale: es });
   }
 }
 
@@ -175,10 +211,21 @@ export function formatTripDate(tripDepartureTime: string): string {
  */
 export function formatTripTime(tripDepartureTime: string): string {
   try {
-    const date = parseISO(tripDepartureTime);
-    return format(date, 'h:mm a', { locale: es }).toUpperCase();
+    // CORRECCIÓN: Manejar tanto datetime ISO como solo tiempo "HH:MM:SS"
+    if (tripDepartureTime.includes('T') || tripDepartureTime.includes(' ')) {
+      // Es un datetime completo, usar parseISO
+      const date = parseISO(tripDepartureTime);
+      return format(date, 'h:mm a', { locale: es }).toUpperCase();
+    } else {
+      // Es solo tiempo "HH:MM:SS", usar la misma lógica que formatBoardingTime
+      const [hours, minutes] = tripDepartureTime.split(':');
+      const hour24 = parseInt(hours);
+      const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+      const ampm = hour24 >= 12 ? 'PM' : 'AM';
+      
+      return `${hour12}:${minutes} ${ampm}`;
+    }
   } catch (error) {
-    console.error('Error formateando hora de viaje:', error);
     return 'N/A';
   }
 }
@@ -196,7 +243,6 @@ export function formatBoardingTime(boardingTime: string): string {
     
     return `${hour12}:${minutes} ${ampm}`;
   } catch (error) {
-    console.error('Error formateando hora de embarque:', error);
     return 'N/A';
   }
 }
@@ -226,17 +272,4 @@ export function calculateTotalDiscounts(items: any[]): number {
  */
 export function formatCurrency(amount: number): string {
   return `S/ ${amount.toFixed(2)}`;
-}
-
-/**
- * Detecta si la venta corresponde a una embarcación sin asientos
- * Basándose en trip_seat_id null y descripción con "elección libre"
- */
-export function isVesselWithoutSeats(items: any[]): boolean {
-  return items.some(item => 
-    item.trip_id && 
-    (item.trip_seat_id === null || item.trip_seat_id === undefined) &&
-    item.item_description && 
-    item.item_description.toLowerCase().includes('elección libre')
-  );
 }

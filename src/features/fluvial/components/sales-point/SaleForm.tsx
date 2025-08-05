@@ -28,6 +28,9 @@ import { TicketPreviewModal } from "./TicketPreviewModal";
 import { BackendInvoiceData, BackendCompanyInvoiceData } from "./tickets/types/backend.types";
 import { CompanySaleTransformer } from "./tickets/transformers/companySale.transformer";
 import { CompanyTicketTemplate } from "./tickets/templates/companyTicket.template";
+// NUEVO: Importar sistema especializado para compañías sin asientos
+import { NoSeatsCompanyTicketGenerator } from "./tickets/generators/noSeatsCompanyTicket.generator";
+import { isVesselWithoutSeats } from "./tickets/utils/ticketHelpers";
 
 // ← NUEVO: Importar módulos refactorizados
 import { 
@@ -774,9 +777,17 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 throw new Error('Los datos no corresponden a una venta empresarial válida');
               }
               
-              // Transformar datos para el ticket resumen (pasar todo el objeto BackendCompanyInvoiceData)
-              const summaryData = CompanySaleTransformer.transformSummary(ticketBackendData);
-              return await CompanyTicketTemplate.generatePDF(summaryData);
+              // NUEVA LÓGICA: Detectar si es embarcación sin asientos y usar el generador especializado
+              const hasVesselWithoutSeats = isVesselWithoutSeats(ticketBackendData.invoice.items);
+              
+              if (hasVesselWithoutSeats) {
+                // Usar el nuevo generador especializado para compañías sin asientos
+                return await NoSeatsCompanyTicketGenerator.generate(ticketBackendData);
+              } else {
+                // Usar el generador tradicional para compañías con asientos numerados
+                const summaryData = CompanySaleTransformer.transformSummary(ticketBackendData);
+                return await CompanyTicketTemplate.generatePDF(summaryData);
+              }
             }}
           />
         ) : (

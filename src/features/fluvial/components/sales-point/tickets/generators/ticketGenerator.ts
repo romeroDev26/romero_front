@@ -27,26 +27,22 @@ export class TicketGenerator {
       
       // 1. Verificar si es encomienda/cargo
       if (isCargoInvoice(backendData)) {
-        console.log('Detectada encomienda/cargo - generando ticket específico de cargo');
         const ticketData = CargoSaleTransformer.transform(backendData);
         return await CargoTicketTemplate.generatePDF(ticketData);
       }
       
       // 2. Verificar si es empresa (RUC)
       if (backendData.client?.doc_type === '6') {
-        console.log('Detectada venta empresarial (RUC) - generando ticket de empresa');
         const ticketData = CompanySaleTransformer.transformSummary(backendData as any);
         return await CompanyTicketTemplate.generatePDF(ticketData);
       }
       
       // 3. Verificar si es embarcación sin asientos numerados
       if (backendData.items && isVesselWithoutSeats(backendData.items)) {
-        console.log('Detectada embarcación sin asientos - generando ticket con elección libre');
         return NoSeatsTicketGenerator.generateNoSeatsTicket(backendData);
       }
       
       // 4. Default: ticket normal con asientos
-      console.log('Detectada embarcación con asientos - generando ticket normal');
       return this.generateNormalSaleTicket(backendData);
       
     } catch (error) {

@@ -4,13 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
-import { Download, Printer, Eye } from 'lucide-react';
+import { Download, Printer, Eye, Cloud } from 'lucide-react';
 import { 
   downloadTicket, 
   generateTicketBlob 
 } from './tickets';
 import jsPDF from 'jspdf';
 import { BackendInvoiceData } from './tickets/types/backend.types';
+import { useTicketUpload } from '../../../../hooks/useTicketUpload';
 
 interface TicketPreviewModalProps {
   isOpen: boolean;
@@ -32,6 +33,10 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  
+  // Hook para manejar el upload de tickets
+  const { isUploading, error: uploadError, uploadTicketPdf, uploadTicketBlob } = useTicketUpload();
+  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
 
 
   // Generar el PDF inmediatamente cuando se abre el modal
@@ -46,6 +51,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
     if (!isOpen && previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl('');
+      // Limpiar también los estados de upload
+      setUploadSuccess(null);
     }
   }, [isOpen, previewUrl]);
 
@@ -53,16 +60,39 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
     try {
       setIsGenerating(true);
       let pdfBlob;
+      let pdfDoc: jsPDF | null = null;
+      
       if (customGeneratePDF) {
         // Usar lógica custom para empresa
-        const doc = await customGeneratePDF();
-        pdfBlob = doc.output('blob');
+        pdfDoc = await customGeneratePDF();
+        pdfBlob = pdfDoc.output('blob');
       } else {
         // Usar detección automática para tickets normales y sin asientos
         pdfBlob = await generateTicketBlob(backendData);
       }
+      
       const url = URL.createObjectURL(pdfBlob);
       setPreviewUrl(url);
+      
+      // UPLOAD AUTOMÁTICO AL BACKEND
+      try {
+        let uploadResult: string | null = null;
+        
+        if (pdfDoc) {
+          // Si tenemos el documento jsPDF (custom), usar ese método
+          uploadResult = await uploadTicketPdf(pdfDoc, backendData.id, 'pdf_ticket');
+        } else {
+          // Si solo tenemos el blob, usar ese método
+          uploadResult = await uploadTicketBlob(pdfBlob, backendData.id, 'pdf_ticket');
+        }
+        
+        if (uploadResult) {
+          setUploadSuccess(uploadResult);
+        }
+      } catch (uploadErr) {
+        // No se pudo subir el ticket automáticamente, pero la generación fue exitosa
+      }
+      
       // Eliminado console.log de depuración
     } catch (error) {
       // Eliminado console.error de depuración
@@ -134,6 +164,30 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       maxWidth="2xl"
     >
       <div className="p-6">
+        {/* Indicador de estado de upload */}
+        {uploadSuccess && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center text-green-800">
+              <Cloud className="h-4 w-4 mr-2" />
+              <p className="text-sm">
+                Ticket almacenado en el servidor correctamente
+                <span className="ml-1 font-mono text-xs block mt-1">{uploadSuccess}</span>
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {uploadError && !uploadSuccess && (
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-center text-yellow-800">
+              <Cloud className="h-4 w-4 mr-2" />
+              <p className="text-sm">
+                No se pudo almacenar automáticamente: {uploadError}
+              </p>
+            </div>
+          </div>
+        )}
+        
         {/* Vista previa del PDF real */}
         <div className="mb-6">
           <div className="border rounded-lg overflow-hidden bg-gray-100" style={{ height: '600px' }}>
@@ -141,8 +195,47 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <Spinner size="lg" className="mb-4" />
-                  <p className="text-gray-600">Generando vista previa del ticket...</p>
+                  <p className="text-gray-600">
+                    {isUploading ? 'Generando y subiendo ticket...' : 'Generando vista previa del ticket...'}
+                  </p>
                   <p className="text-sm text-gray-500">Sistema de 8 bloques con QR</p>
+                  
+                  {/* Barra de progreso para upload */}
+                  {isUploading && (
+                    <div className="mt-4 w-64 mx-auto">
+                      <div className="flex justify-between text-xs text-blue-600 mb-1">
+                        <span>Almacenando en el backend</span>
+                        <span>Subiendo...</span>
+                      </div>
+                      <div className="w-full bg-blue-100 rounded-full h-2">
+                        <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{width: '70%'}}></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {uploadSuccess && (
+                    <div className="mt-4 w-64 mx-auto">
+                      <div className="flex justify-between text-xs text-green-600 mb-1">
+                        <span>Almacenamiento completado</span>
+                        <span>100%</span>
+                      </div>
+                      <div className="w-full bg-green-100 rounded-full h-2">
+                        <div className="bg-green-600 h-2 rounded-full" style={{width: '100%'}}></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {uploadError && (
+                    <div className="mt-4 w-64 mx-auto">
+                      <div className="flex justify-between text-xs text-red-600 mb-1">
+                        <span>Error en almacenamiento</span>
+                        <span>Continuando...</span>
+                      </div>
+                      <div className="w-full bg-red-100 rounded-full h-2">
+                        <div className="bg-red-600 h-2 rounded-full" style={{width: '100%'}}></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : previewUrl ? (

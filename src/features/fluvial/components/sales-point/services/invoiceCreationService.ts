@@ -71,7 +71,7 @@ export const invoiceCreationService = {
         ? SunatTaxCategory.GRAVADO
         : SunatTaxCategory.EXONERADO,
       item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. ${seatDescription}${quantityDescription}`,
-      unit_code: "NIU",
+      unit_code: "ZZ", // ZZ = Servicio (CORREGIDO de NIU)
       trip_id: tripId,
       boarding_trip_stop_id: selectedBoardingStopId,
       disembarking_trip_stop_id: selectedDisembarkingStopId,
@@ -90,7 +90,7 @@ export const invoiceCreationService = {
           ? SunatTaxCategory.GRAVADO
           : SunatTaxCategory.EXONERADO,
         item_description: extraCostDescription.trim(),
-        unit_code: "NIU",
+        unit_code: "ZZ", // ZZ = Servicio (CORREGIDO de NIU)
         trip_id: tripId,
         boarding_trip_stop_id: selectedBoardingStopId,
         disembarking_trip_stop_id: selectedDisembarkingStopId,

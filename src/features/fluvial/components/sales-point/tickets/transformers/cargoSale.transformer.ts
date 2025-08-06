@@ -167,8 +167,8 @@ export class CargoSaleTransformer {
       'TNE': 'tonelada(s)',
       'MTR': 'metro(s)',
       'LTR': 'litro(s)',
-      'NIU': 'unidad(es)',
-      'ZZ': 'servicio(s)'
+      'NIU': 'unidad(es)', // Para encomiendas físicas
+      'ZZ': 'servicio(s)'   // Para servicios
     };
 
     const unitLabel = unitMap[item.unit_code] || item.unit_code;

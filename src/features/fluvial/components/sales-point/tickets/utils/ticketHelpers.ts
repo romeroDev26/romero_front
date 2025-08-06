@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 /**
- * Funciones de ayuda para formateo y transformación de datos del tic/**
+ * Funciones de ayuda para formateo y transformación de datos del ticket
  * Detecta si una embarcación no maneja asientos numerados
  * CRITERIOS MEJORADOS:
  * - trip_seat_id es null (no hay asiento asignado)
@@ -289,7 +289,7 @@ export function isCargoInvoice(invoiceData: any): boolean {
   
   // CRITERIO 2: Verificar si los items tienen unidades de encomienda
   if (invoiceData.items && invoiceData.items.length > 0) {
-    const cargoUnits = ['PAQ', 'XBX', 'KGM', 'TNE', 'MTR', 'MTQ', 'LTR', 'NIU'];
+    const cargoUnits = ['PAQ', 'XBX', 'KGM', 'TNE', 'MTR', 'MTQ', 'LTR', 'NIU']; // NIU se mantiene aquí para encomiendas físicas
     const hasCargoUnits = invoiceData.items.some((item: any) => 
       item.unit && cargoUnits.includes(item.unit)
     );

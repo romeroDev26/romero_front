@@ -1,172 +1,212 @@
-# Cambios Mínimos Requerido      // AGREGAR: Items a    // MANTENER: Todos los totales SUNAT actuales
-    "total_exonerated": "225.00", // RECALCULAR según nuevos items
-    "total_payable": "225.00", // RECALCULAR según nuevos items
-    "total_discount": "50.00" // RECALCULAR: suma de discounts de itemsonales SI HAY equipaje/seguros
-      {
-        "item_type": "additional_service", // NUEVO
-        "product_id": 2,
-        "product_name": "Exceso de Equipaje",
-        "item_description": "Exceso de Equipaje",
-        "quantity": "1.0000",
-        "unit_price": "57.0000000000",
-        "discount": "0.00",
-        "total_line": "57.00"
-        // ... resto de campos iguales a estructura actual
-      }ts Empresariales
-
-## 📋 **JSON Actual vs JSON Requerido**
-
-### 🔍 **Comparación con JSON Actual del Backend**
-
-Tu backend YA envía una estructura muy buena. Solo necesitas estos **cambios mínimos**:
-
-```json
 {
-  "invoice": {
-    // ... TODOS los campos actuales se mantienen igual ...
-    
-    "items": [
-      {
-        // ✅ MANTENER: Todos los campos actuales
-        "product_id": 1,
-        "quantity": "5.0000", // 🔄 CAMBIAR: de "1.0000" a número de asientos
-        "item_description": "Servicio de Transporte de Pasajeros. Asientos: 12,13,14,15,16. Descuento: ", // 🔄 CAMBIAR: incluir lista
-        "unit_price": "132.6000000000",
-        "discount": "50.00", // 🔄 CAMBIAR: de "0.00" a descuento real si aplica
-        "total_line": "613.00", // 🔄 RECALCULAR: quantity * unit_price - discount
-        
-        // ➕ AGREGAR: Solo estos 2 campos nuevos
-        "seat_numbers": ["12", "13", "14", "15", "16"], // NUEVO: array de asientos
-        "item_type": "transport_service" // NUEVO: identificador de tipo
-      },
-      // ➕ AGREGAR: Items adicionales SI HAY equipaje/
-      {
-        "item_type": "additional_service", // NUEVO
-        "product_id": 2,
-        "product_name": "Equipaje Adicional",
-        "item_description": "Equipaje extra",
-        "unit_price": "15.0000000000",
-        "discount": "0.00",
-        "total_line": "45.00"
-        // ... resto de campos iguales a estructura actual
-      }
+    "invoice": {
+        "client_id": 5,
+        "document_type_code": "01",
+        "series": "FN01",
+        "issue_date": "2025-08-06",
+        "issue_time": "22:34:32",
+        "operation_type_code": "0101",
+        "currency_code": "PEN",
+        "exchange_rate": null,
+        "payment_terms_description": null,
+        "due_date": null,
+        "payment_installments": null,
+        "detraccion_code": null,
+        "detraccion_percentage": null,
+        "related_documents": null,
+        "notes": null,
+        "total_discount": "9.80",
+        "id": 521,
+        "company_id": 1,
+        "number": 33,
+        "ubl_version": "2.1",
+        "created_by": "fb408cb6-9b5e-443e-840c-072a9f825a0f",
+        "total_taxable": "0.00",
+        "total_exonerated": "320.20",
+        "total_unaffected": "0.00",
+        "total_free": "0.00",
+        "total_igv": "0.00",
+        "total_isc": "0.00",
+        "total_other_taxes": "0.00",
+        "total_payable": "320.20",
+        "total_in_words": "TRESCIENTOS VEINTE CON 20/100 SOLES",
+        "detraccion_amount": null,
+        "sunat_status": "PENDING",
+        "sunat_ticket": null,
+        "items": [
+            {
+                "product_id": 1,
+                "quantity": "1.0000",
+                "trip_id": 206,
+                "trip_seat_id": 11451,
+                "boarding_trip_stop_id": 1425,
+                "disembarking_trip_stop_id": 1435,
+                "item_description": "Servicio de Transporte de Pasajeros. Asiento: 53.",
+                "unit_code": "NIU",
+                "unit_price": "150.0000000000",
+                "price_type_code": "01",
+                "discount": "9.80",
+                "tax_category_code": "20",
+                "recipient_name": null,
+                "recipient_doc_type": null,
+                "recipient_doc_number": null,
+                "recipient_phone": null,
+                "id": 638,
+                "invoice_id": 521,
+                "item_order": 1,
+                "product_internal_code": "SRV-PAS-001",
+                "product_name": "Servicio de Transporte de Pasajeros",
+                "seat_number": "53",
+                "route_name": "Nauta - Yurimaguas",
+                "vehicle_name": "Romero VIII",
+                "boarding_port_name": "Nauta",
+                "disembarking_port_name": "Yurimaguas",
+                "price_with_tax": "150.00",
+                "subtotal": "140.20",
+                "igv_percentage": "0.00",
+                "igv_amount": "0.00",
+                "isc_amount": null,
+                "other_tax_amount": null,
+                "total_line": "140.20"
+            },
+            {
+                "product_id": 7,
+                "quantity": "1.0000",
+                "trip_id": 206,
+                "trip_seat_id": null,
+                "boarding_trip_stop_id": 1425,
+                "disembarking_trip_stop_id": 1435,
+                "item_description": "test",
+                "unit_code": "KGM",
+                "unit_price": "180.0000000000",
+                "price_type_code": "01",
+                "discount": "0.00",
+                "tax_category_code": "20",
+                "recipient_name": null,
+                "recipient_doc_type": null,
+                "recipient_doc_number": null,
+                "recipient_phone": null,
+                "id": 639,
+                "invoice_id": 521,
+                "item_order": 2,
+                "product_internal_code": "SRV-EXT-001",
+                "product_name": "Exceso de Equipaje",
+                "seat_number": null,
+                "route_name": "Nauta - Yurimaguas",
+                "vehicle_name": "Romero VIII",
+                "boarding_port_name": "Nauta",
+                "disembarking_port_name": "Yurimaguas",
+                "price_with_tax": "180.00",
+                "subtotal": "180.00",
+                "igv_percentage": "0.00",
+                "igv_amount": "0.00",
+                "isc_amount": null,
+                "other_tax_amount": null,
+                "total_line": "180.00"
+            }
+        ],
+        "client": {
+            "doc_type": "6",
+            "doc_number": "10744984799",
+            "name": "LUNA VILLANUEVA JHON MARCOS",
+            "address_line": null,
+            "ubigeo": null,
+            "department": null,
+            "province": null,
+            "district": null,
+            "country_code": "PE",
+            "email": "test@gmail.com",
+            "phone": "968574321",
+            "is_active": true,
+            "id": 5,
+            "created_at": "2025-07-02T11:34:33.974222Z",
+            "updated_at": "2025-08-01T13:48:28.385751Z"
+        },
+        "company": {
+            "ruc": "20167700277",
+            "business_name": "EMPRESA DE TRANSPORTES ROMERO S.R.L.",
+            "trade_name": "EMPRESA DE TRANSPORTES ROMERO S.R.L.",
+            "address": "MZA. B LOTE. 19 Z.I. ZONA INDUSTRIAL (TALARA ALTA) PIURA - TALARA - PARIÑAS",
+            "ubigeo": "168626",
+            "phone": "968574321",
+            "email": "romero@example.com.pe",
+            "logo_url": "https://romero-cdn.b-cdn.net/1/2025/07/logos/logo_romero.png",
+            "sunat_username": "20167700277MODDATOS",
+            "certificate_path": "LLAMA-PE-CERTIFICADO-DEMO-20167700277.pfx",
+            "beta_mode": true,
+            "detraccion_account": "string",
+            "is_active": true,
+            "id": 1,
+            "created_at": "2025-06-09T18:56:14.940728Z",
+            "updated_at": "2025-07-30T22:48:29.091506Z"
+        },
+        "seller": {
+            "id": "fb408cb6-9b5e-443e-840c-072a9f825a0f",
+            "email": "test@gmail.com",
+            "full_name": "test system",
+            "is_active": true,
+            "role_id": 1,
+            "default_branch_office_id": null,
+            "current_city_id": null,
+            "created_at": "2025-06-26T10:19:08.742356Z",
+            "updated_at": "2025-07-19T21:09:57.518131Z",
+            "role_name": "admin"
+        },
+        "boarding_time": "22:00:00",
+        "trip_departure_time": "23:00:00",
+        "branch_office_name": null,
+        "branch_office_address": null,
+        "branch_office_phone": null,
+        "qr_code_data": "iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAADK0lEQVR4nO2cUY6jOhBFTw1I+TRSLyBLMTt4S2rNknoHsJQsoCX8GQl034dtOukZaTSv50EmFB8oCT6iLIpy+bocE799jN9+nwGHHHLIIYcccug5IStHmz/lS2MH1gOQaoN+F/Mc2h6KkqQJJM2YdWCvFzMNqcV6GkmS7qHtzHNoeyjVADB2oIElBwqzrjQws3Y/8xzaDGo//xAvLcRpQWNXfhLpD9zJob8Ysj6dBGGuX/+3Ozn0cFCNEUFAAsZ/5lYwQ5wQY1/Gj1sl68H75NBXIG4zRhoRp5+daoMoScOD98mhr0A5RtwEgPE855NIJTyUCLKHeQ7tBJl1i1mfWjQAOSiM5xI8NKQyuFi/i3kO7RIjZIQZi5d2FiwthKWFcDXi230y8eB9cugrUMkjPhSqIahOM4JE1PxDO88jjgAlM8azZK8TFN9ILRrSKbsKoytUh4DWd3+ufkBT9ex8KhMOjxEHgapHTABByi5AmO8usLqKe8SzQ6se0UgDjapbQNUsqyixeol7xCGgcLXiAqnF+iBJl9Otb8RLi/U7mefQZlB97Ws8kOrkIk8zSoLR5BTC84jjQKmFqGuRHYZ6Wd/tpLwkPq6lNH9Lnxz6L9C60vXeQuoAGuUnP3bvELUYsOrZG5vn0OZQGTWkuYhTsX6qJVXSx4zUR43nh9ZJZlMnnnz4AXmFIzvI4HONQ0B19hnmmkrmLHK+zSxz8JhwjzgAdBsjhixKlPJbshRxJ2b6qPH80E2dpUWBxanD4tDICO8m0ouMMN/VYz54nxz6ClSe9NhhkF5m8tNPL7PIVRGLZdWqzDq2Nc+hzaH7Gqo6Voznq4kgLL4BcQAjvfh+jQNA2SPqy9/MGrv3ljgtWHzraol+Dh5X84qZw0BrxQysVREDjey1LnJBOsn6fcxzaAcVu+zpsj5IpeySursrC9jh6nnEMaHFauXtNddVZXGqxI3dzXNoW6gMHZDlSutZzF6nRtaHGev/3J0cekzo854uI0xiPAuDRhaHhVKandfBtjXPoc2hH/Z0EdZdGkAtn1ItrnLN8tkh06/bfD78n8kccsghhxxyyCGAfwHk2zhuwt+ufQAAAABJRU5ErkJggg==",
+        "sunat_response_code": null,
+        "sunat_response_description": null,
+        "sunat_observations": null,
+        "xml_file_path": null,
+        "signed_xml_file_path": null,
+        "zip_file_path": null,
+        "cdr_file_path": null,
+        "pdf_file_path": null,
+        "pdf_a4_file_path": null,
+        "pdf_ticket_file_path": null,
+        "created_at": "2025-08-06T03:34:32.249987Z",
+        "updated_at": "2025-08-06T03:34:32.249987Z"
+    },
+    "representatives": [
+        {
+            "trip_id": 206,
+            "trip_seat_id": null,
+            "seat_number": "53",
+            "boarding_stop_id": 1425,
+            "disembarking_stop_id": 1435,
+            "special_notes": "",
+            "id": 102,
+            "invoice_id": 521,
+            "client_id": 4,
+            "seat_assignment_id": null,
+            "created_at": "2025-08-06T03:34:32.249987Z",
+            "updated_at": "2025-08-06T03:34:32.249987Z",
+            "passenger_name": "WILMER ALEXANDER EDQUÉN BARBOZA",
+            "passenger_doc_type": "1",
+            "passenger_doc_number": "76307497",
+            "passenger_phone": "987654321",
+            "passenger_email": "",
+            "trip_name": null,
+            "departure_datetime": null,
+            "boarding_port_id": null,
+            "disembarking_port_id": null,
+            "boarding_port_name": null,
+            "disembarking_port_name": null
+        }
     ],
-    
-    // ✅ MANTENER: Todos los totales SUNAT actuales
-    "total_exonerated": "658.00", // RECALCULAR según nuevos items
-    "total_payable": "717.00", // RECALCULAR según nuevos items
-    "total_discount": "50.00" // RECALCULAR: suma de discounts de items
-  },
-
-  "representatives": [
-    // ✅ MANTENER: Estructura actual exacta, solo asegurar que tienes 5+ representantes
-    {
-      "passenger_name": "WILMER ALEXANDER EDQUÉN BARBOZA",
-      "passenger_doc_type": "1",
-      "passenger_doc_number": "76307497", 
-      "seat_number": "12", // ✅ YA LO TIENES
-      // ... resto igual
+    "summary": {
+        "invoice_id": 521,
+        "max_allowed": 1,
+        "current_count": 1,
+        "remaining": 0,
+        "can_add_more": false,
+        "total_capacity": 1,
+        "used_capacity": 1,
+        "remaining_capacity": 0,
+        "is_complete": true
     }
-    // ... 4 representantes más
-  ],
-
-  "summary": {
-    // ✅ MANTENER: Campos actuales
-    "invoice_id": 488,
-    "max_allowed": 10, // ✅ YA LO TIENES
-    "current_count": 5, // 🔄 CAMBIAR: a número real de representantes
-    "remaining": 5, // 🔄 CALCULAR: max_allowed - current_count
-    "can_add_more": true,
-    
-    // ➕ AGREGAR: Solo este campo nuevo para el ticket
-    "seat_numbers_list": "12, 13, 14, 15, 16" // NUEVO: para mostrar en ticket
-  }
 }
-```
-
-## 🎯 **Resumen de Cambios Mínimos para tu Backend:**
-
-### 1. **En `items[0]` (servicio de transporte):**
-- `quantity`: Cambiar de `"1.0000"` a `"5.0000"` (número de asientos)
-- `item_description`: Incluir lista de asientos
-- `discount`: Poner descuento real si aplica (en soles)
-- `total_line`: Recalcular con descuento
-- **AGREGAR:** `seat_numbers: ["12","13","14","15","16"]`
-- **AGREGAR:** `item_type: "transport_service"`
-
-### 2. **Si hay servicios adicionales:**
-- **AGREGAR:** Items extra para equipaje, etc. (opcional)
-
-### 3. **En `summary`:**
-- `current_count`: Poner número real de representantes (5 en lugar de 1)
-- **AGREGAR:** `seat_numbers_list: "12, 13, 14, 15, 16"`
-
-### 4. **Recalcular totales:**
-- `total_exonerated`, `total_payable`, `total_discount` según nuevos items
-
-## Ventajas de esta Propuesta:
-- Mínima invasión: 90% de tu estructura actual se mantiene
-- Cambios puntuales: Solo quantity, descriptions y 2 campos nuevos
-- Dinámico: Lista de asientos y cantidades se generan automáticamente
-- Compatible: Funciona igual que ticket normal pero con múltiples asientos
-```
-
-## Beneficios de esta Estructura Corregida
-
-### 1. **Descuentos por Servicio Individual (en Soles)**
-- **Transporte:** S/ 50.00 de descuento aplicado solo al servicio de transporte
-- **Equipaje:** Sin descuento (S/ 0.00)
-- Cada servicio maneja su propio descuento independientemente
-
-### 2. **Estructura Simplificada en Items**
-```json
-"items": [
-  {
-    "item_type": "transport_service",      // Identifica el tipo de servicio
-    "quantity": "5.0000",                  // = número de asientos comprados
-    "seat_numbers": ["12","13","14","15","16"], // Lista dinámica de asientos
-    "discount": "50.00",                   // Descuento EN SOLES para este servicio
-    "total_line": "613.00"                // subtotal - discount
-  },
-  {
-    "item_type": "additional_service",     // Equipaje como servicio separado
-    "quantity": "1.0000",                  // Cantidad fija
-    "discount": "0.00",                    // Sin descuento en equipaje
-    "total_line": "57.00"                  // Precio total del servicio
-  }
-]
-```
-
-### 3. **Desglose en el Ticket (igual que ticket normal)**
-```
-DETALLE DE LA VENTA
-CANT. DESCRIPCIÓN                    P/U     TOTAL
-5     Transporte Nauta-Yurimaguas   132.60  663.00
-      Asientos: 12,13,14,15,16
-      (descuento: 50.00)                   613.00
-      
-1     Exceso de Equipaje             57.00   57.00
-                                    ---------------
-                             TOTAL A PAGAR: 670.00
-```
-
-### 4. **Información Dinámica Extraída**
-- **Lista de asientos:** Extraída del array `seat_numbers` en item de transporte
-- **Cantidad total:** Calculada dinámicamente desde `representatives.length`
-- **Resumen:** "12, 13, 14, 15, 16" generado automáticamente
-- **Descuentos:** Mostrados por servicio igual que en ticket normal
-
-## Cambios Clave para tu Backend
-
-### Lo que SÍ necesitas cambiar:
-1. **En items[0] (transporte):** Agregar `seat_numbers` array y `item_type`
-2. **Quantity:** Debe ser igual al número de asientos comprados  
-3. **Discount:** En soles, aplicado por servicio individual
-4. **Servicios adicionales:** Como items separados (equipaje, etc.)
-
-### Lo que NO necesitas:
-- Campos extras como `seat_breakdown`, `additional_services`, `applied_discounts`
-- Descuentos por porcentaje
-- Totales pre-calculados adicionales
-
-Todo se extrae dinámicamente del array `items` igual que en el ticket normal.

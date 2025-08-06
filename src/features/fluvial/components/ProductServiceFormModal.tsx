@@ -7,7 +7,6 @@ import {
   SERVICE_CATEGORY_OPTIONS,
   CURRENCY_OPTIONS,
   UNIT_CODE_OPTIONS,
-  TAX_CATEGORY_OPTIONS,
   UNSPCS_CODE_OPTIONS,
   TAX_CATEGORY_CODE_SUNAT_OPTIONS,
   UnitCode,
@@ -31,7 +30,7 @@ const INITIAL_FORM_DATA: ProductServiceFormData = {
   description: '',
   item_type: 'SERVICE',
   service_category: 'PASAJES',
-  unit_code: 'NIU',
+  unit_code: 'ZZ', // ZZ = Servicio (CORREGIDO de NIU)
   purchase_price: 0,
   sale_price: 0,
   currency_code: 'PEN',
@@ -56,7 +55,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
       if (isEditMode && item) {
         const validUnitCode = (code: string): UnitCode => {
           const validCodes: UnitCode[] = ['NIU', 'KGM', 'PAQ', 'XBX', 'TNE', 'MTR', 'MTQ', 'LTR', 'ZZ'];
-          return validCodes.includes(code as UnitCode) ? (code as UnitCode) : 'NIU';
+          return validCodes.includes(code as UnitCode) ? (code as UnitCode) : 'ZZ'; // ZZ por defecto para servicios
         };
 
         const validCurrencyCode = (code: string): CurrencyCode => {

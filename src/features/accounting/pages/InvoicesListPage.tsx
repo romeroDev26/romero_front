@@ -120,7 +120,6 @@ export const InvoicesListPage: React.FC = () => {
 
   // Componente de paginación simple
   const PaginationControls = () => {
-    const hasResults = invoices.length > 0;
     const hasNextPage = invoices.length === itemsPerPage; // Si recibimos el límite completo, probablemente hay más páginas
     const hasPrevPage = currentPage > 0;
 

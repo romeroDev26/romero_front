@@ -4,7 +4,7 @@
 export type CurrencyCode = 'PEN' | 'USD' | 'EUR';
 
 export type UnitCode =
- | 'NIU' // Unidad (para bienes)
+ | 'NIU' // Unidad (para bienes físicos/encomiendas)
  | 'KGM' // Kilogramo
  | 'PAQ' // Paquete
  | 'XBX' // Caja
@@ -12,7 +12,7 @@ export type UnitCode =
  | 'MTR' // Metro
  | 'MTQ' // Metro Cúbico
  | 'LTR' // Litro
- | 'ZZ'; // Unidad (para servicios)
+ | 'ZZ'; // Unidad (para servicios de transporte)
 
 export interface ProductServiceFormData {
  internal_code: string;
@@ -60,7 +60,8 @@ export const CURRENCY_OPTIONS = [
 ] as const;
 
 export const UNIT_CODE_OPTIONS = [
- { value: 'NIU', label: 'Unidad (para bienes)' },
+ { value: 'ZZ', label: 'Servicio (transporte de pasajeros)' }, // ZZ primero para servicios
+ { value: 'NIU', label: 'Unidad (para bienes físicos)' },
  { value: 'KGM', label: 'Kilogramo' },
  { value: 'PAQ', label: 'Paquete' },
  { value: 'XBX', label: 'Caja' },

@@ -133,23 +133,28 @@ export class CompanySaleTransformer {
    * BLOQUE 4: Transforma desglose financiero (para ticket resumen con lista de asientos)
    */
   private static transformFinancialBreakdown(data: BackendInvoiceData) {
-    const item = data.items[0];
-    const seatNumbers = data.representatives?.map(rep => rep.seat_number).filter(Boolean).join(', ') || '-';
-    
-    // Descripción con lista de asientos
-    const descriptionWithSeats = `${item.item_description || item.product_name} - Asientos: ${seatNumbers}`;
+    // Procesar TODOS los items, no solo el primero
+    const processedItems = data.items.map(item => {
+      // Usar el nombre del producto en lugar de item_description
+      let description = item.product_name || 'Servicio';
+      
+      // Si es un servicio de transporte con asiento, agregar el número de asiento
+      if (item.seat_number) {
+        description += ` - Asiento: ${item.seat_number}`;
+      }
+      
+      return {
+        description,
+        quantity: parseFloat(item.quantity),
+        unit_price: parseFloat(item.unit_price),
+        discount: parseFloat(item.discount || '0'),
+        total_line: parseFloat(item.total_line)
+      };
+    });
     
     return {
       title: 'DETALLE DE LA VENTA',
-      items: [
-        {
-          description: descriptionWithSeats,
-          quantity: parseFloat(item.quantity),
-          unit_price: parseFloat(item.unit_price),
-          discount: parseFloat(item.discount || '0'),
-          total_line: parseFloat(item.total_line)
-        }
-      ],
+      items: processedItems,
       summary: [
         { label: 'TOTAL A PAGAR', value: formatCurrency(parseFloat(data.total_payable)), is_bold: true }
       ]

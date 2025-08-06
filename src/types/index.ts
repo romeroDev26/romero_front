@@ -591,6 +591,8 @@ export interface Invoice {
   zip_file_path?: string;
   cdr_file_path?: string;
   pdf_file_path?: string;
+  pdf_a4_file_path?: string;
+  pdf_ticket_file_path?: string;
   related_gre_series_number?: string;
   payment_terms?: string;
   payment_method_code?: string;

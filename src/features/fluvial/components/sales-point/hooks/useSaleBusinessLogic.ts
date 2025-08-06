@@ -108,7 +108,7 @@ export const useSaleBusinessLogic = ({
           discount: discount ? parseFloat(discount.toFixed(2)) : 0,
           tax_category_code: isIgvGravado ? "10" : "20", // 10=Gravado, 20=Exonerado
           item_description: "Servicio de Transporte de Pasajeros",
-          unit_code: "NIU" // NIU = Unidad
+          unit_code: "ZZ" // ZZ = Servicio (CORREGIDO de NIU)
         };
         itemsConfig.push(transportItem);
       }

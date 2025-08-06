@@ -3,7 +3,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
-import { Bars3Icon } from '@heroicons/react/24/outline';
+import { 
+  Bars3Icon, 
+  TicketIcon, 
+  CubeIcon, 
+  ClipboardDocumentListIcon, 
+  DocumentTextIcon 
+} from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import { User } from '../../types';
@@ -12,6 +18,42 @@ import Sidebar from './Sidebar'; // Importa el nuevo componente
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
 const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
+
+// Accesos rápidos para las funciones más comerciales
+const quickAccessItems = [
+  {
+    name: 'Punto de Venta',
+    path: '/fluvial/operations/sales-point',
+    icon: TicketIcon,
+    bgColor: 'bg-blue-500',
+    hoverColor: 'hover:bg-blue-600',
+    textColor: 'text-white'
+  },
+  {
+    name: 'Encomiendas',
+    path: '/fluvial/operations/cargo-sale',
+    icon: CubeIcon,
+    bgColor: 'bg-green-500',
+    hoverColor: 'hover:bg-green-600',
+    textColor: 'text-white'
+  },
+  {
+    name: 'Reservas',
+    path: '/fluvial/operations/reservations',
+    icon: ClipboardDocumentListIcon,
+    bgColor: 'bg-purple-500',
+    hoverColor: 'hover:bg-purple-600',
+    textColor: 'text-white'
+  },
+  {
+    name: 'Manifiestos',
+    path: '/fluvial/operations/manifests',
+    icon: DocumentTextIcon,
+    bgColor: 'bg-orange-500',
+    hoverColor: 'hover:bg-orange-600',
+    textColor: 'text-white'
+  }
+];
 
 
 export const Dashboard: React.FC = () => {
@@ -138,6 +180,22 @@ export const Dashboard: React.FC = () => {
                   </span>
                 ) : null}
               </div>
+            </div>
+
+            {/* Accesos Rápidos */}
+            <div className="hidden md:flex items-center space-x-3">
+              <span className="text-sm text-gray-500 font-medium mr-2">Accesos Rápidos:</span>
+              {quickAccessItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors ${item.bgColor} ${item.hoverColor} ${item.textColor} shadow-sm hover:shadow-md`}
+                  title={`Ir a ${item.name}`}
+                >
+                  <item.icon className="w-4 h-4 mr-1.5" />
+                  <span>{item.name}</span>
+                </button>
+              ))}
             </div>
           </div>
         </header>

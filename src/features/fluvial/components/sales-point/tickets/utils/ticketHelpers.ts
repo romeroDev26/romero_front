@@ -282,16 +282,23 @@ export function formatCurrency(amount: number): string {
  * - No tiene trip_seat_id ni seat_number (no maneja asientos)
  */
 export function isCargoInvoice(invoiceData: any): boolean {
-  // CRITERIO 1: Verificar si tiene recipient_name
-  if (invoiceData.recipient_name && invoiceData.recipient_name.trim() !== '') {
-    return true;
+  // CRITERIO 1: Verificar si algún item tiene recipient_name
+  if (invoiceData.items && invoiceData.items.length > 0) {
+    const hasRecipientInItems = invoiceData.items.some((item: any) => 
+      item.recipient_name && item.recipient_name.trim() !== ''
+    );
+    
+    if (hasRecipientInItems) {
+      return true;
+    }
   }
   
   // CRITERIO 2: Verificar si los items tienen unidades de encomienda
   if (invoiceData.items && invoiceData.items.length > 0) {
-    const cargoUnits = ['PAQ', 'XBX', 'KGM', 'TNE', 'MTR', 'MTQ', 'LTR', 'NIU']; // NIU se mantiene aquí para encomiendas físicas
+    const cargoUnits = ['ZZ', 'PAQ', 'XBX', 'KGM', 'TNE', 'MTR', 'MTQ', 'LTR', 'NIU']; // Agregar 'ZZ' para servicios de encomienda
     const hasCargoUnits = invoiceData.items.some((item: any) => 
-      item.unit && cargoUnits.includes(item.unit)
+      (item.unit && cargoUnits.includes(item.unit)) || 
+      (item.unit_code && cargoUnits.includes(item.unit_code)) // Buscar también en unit_code
     );
     
     if (hasCargoUnits) {
@@ -299,20 +306,28 @@ export function isCargoInvoice(invoiceData: any): boolean {
     }
   }
   
-  // CRITERIO 3: Verificar si no tiene información de asientos (todos los items sin trip_seat_id)
+  // CRITERIO 3: Verificar por palabras clave en notas
+  if (invoiceData.notes && 
+      (invoiceData.notes.toLowerCase().includes('encomienda') || 
+       invoiceData.notes.toLowerCase().includes('carga'))) {
+    return true;
+  }
+  
+  // CRITERIO 4: Verificar si no tiene información de asientos y tiene indicadores de cargo
   if (invoiceData.items && invoiceData.items.length > 0) {
     const allItemsWithoutSeats = invoiceData.items.every((item: any) => 
       !item.trip_seat_id && !item.seat_number
     );
     
     // Solo considerar cargo si además tiene algún indicador específico
-    if (allItemsWithoutSeats && (invoiceData.recipient_name || 
+    if (allItemsWithoutSeats && 
         invoiceData.items.some((item: any) => 
           item.item_description && 
           (item.item_description.toLowerCase().includes('encomienda') ||
            item.item_description.toLowerCase().includes('cargo') ||
-           item.item_description.toLowerCase().includes('paquete'))
-        ))) {
+           item.item_description.toLowerCase().includes('paquete') ||
+           item.item_description.toLowerCase().includes('envío'))
+        )) {
       return true;
     }
   }

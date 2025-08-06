@@ -55,7 +55,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
     if (isOpen) {
       if (isEditMode && item) {
         const validUnitCode = (code: string): UnitCode => {
-          const validCodes: UnitCode[] = ['NIU', 'KGM', 'MTR', 'LTR', 'M2', 'M3', 'HUR', 'ZZ'];
+          const validCodes: UnitCode[] = ['NIU', 'KGM', 'PAQ', 'XBX', 'TNE', 'MTR', 'MTQ', 'LTR', 'ZZ'];
           return validCodes.includes(code as UnitCode) ? (code as UnitCode) : 'NIU';
         };
 

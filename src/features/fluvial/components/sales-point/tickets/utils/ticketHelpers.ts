@@ -273,3 +273,49 @@ export function calculateTotalDiscounts(items: any[]): number {
 export function formatCurrency(amount: number): string {
   return `S/ ${amount.toFixed(2)}`;
 }
+
+/**
+ * Detecta si una factura es de encomienda/cargo
+ * CRITERIOS:
+ * - Tiene recipient_name (información del destinatario)
+ * - Los items tienen units como "PAQ", "XBX", "KGM", "TNE" (unidades de encomienda)
+ * - No tiene trip_seat_id ni seat_number (no maneja asientos)
+ */
+export function isCargoInvoice(invoiceData: any): boolean {
+  // CRITERIO 1: Verificar si tiene recipient_name
+  if (invoiceData.recipient_name && invoiceData.recipient_name.trim() !== '') {
+    return true;
+  }
+  
+  // CRITERIO 2: Verificar si los items tienen unidades de encomienda
+  if (invoiceData.items && invoiceData.items.length > 0) {
+    const cargoUnits = ['PAQ', 'XBX', 'KGM', 'TNE', 'MTR', 'MTQ', 'LTR', 'NIU'];
+    const hasCargoUnits = invoiceData.items.some((item: any) => 
+      item.unit && cargoUnits.includes(item.unit)
+    );
+    
+    if (hasCargoUnits) {
+      return true;
+    }
+  }
+  
+  // CRITERIO 3: Verificar si no tiene información de asientos (todos los items sin trip_seat_id)
+  if (invoiceData.items && invoiceData.items.length > 0) {
+    const allItemsWithoutSeats = invoiceData.items.every((item: any) => 
+      !item.trip_seat_id && !item.seat_number
+    );
+    
+    // Solo considerar cargo si además tiene algún indicador específico
+    if (allItemsWithoutSeats && (invoiceData.recipient_name || 
+        invoiceData.items.some((item: any) => 
+          item.item_description && 
+          (item.item_description.toLowerCase().includes('encomienda') ||
+           item.item_description.toLowerCase().includes('cargo') ||
+           item.item_description.toLowerCase().includes('paquete'))
+        ))) {
+      return true;
+    }
+  }
+  
+  return false;
+}

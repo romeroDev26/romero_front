@@ -8,6 +8,7 @@
 // Transformadores
 export { NormalSaleTransformer } from './normalSale.transformer';
 export { NoSeatsSaleTransformer } from './noSeatsSale.transformer';
+export { CargoSaleTransformer } from './cargoSale.transformer';
 
 // Factory para selección automática
 export { TransformerFactory } from './transformerFactory';

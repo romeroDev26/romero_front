@@ -24,6 +24,8 @@ import { BranchOffice } from '../../../types';
 import { SunatDocType, SunatInvoiceType } from '../../fluvial/types/sunat.types';
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { useTripDetails } from '../../fluvial/hooks/useTripDetails';
+import { TicketPreviewModal } from '../../fluvial/components/sales-point/TicketPreviewModal';
+import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 
 type CargoSaleView = 'clientSelection' | 'tripSelection' | 'tripSegmentSelection' | 'itemsDefinition';
 
@@ -62,6 +64,10 @@ export const CargoSalePage: React.FC = () => {
 
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CargoItemData | null>(null);
+
+  // Estados para el modal de ticket
+  const [showTicketPreview, setShowTicketPreview] = useState(false);
+  const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
 
   // --- INICIO: Lógica de Series Replicada ---
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>("");
@@ -203,29 +209,42 @@ export const CargoSalePage: React.FC = () => {
         })),
       };
 
-      await createInvoice({
+      const createdInvoice = await createInvoice({
         invoiceData: invoicePayload,
         tripId: selectedTrip.id
       });
-      toast.success('¡Venta de encomienda completada!');
-      // Resetear completamente para una nueva venta
-      setRemitter({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
-      setRecipient({
-        isSameAsSender: true,
-        name: '',
-        docType: SunatDocType.DNI,
-        docNumber: '',
-        phone: '',
-      });
-      setSelectedTrip(null);
-      setSelectedOriginId(null);
-      setSelectedDestinationId(null);
-      setCargoItems([]);
-      setCurrentView('clientSelection');
-
+      
+      // Mostrar modal de ticket con los datos de la factura creada
+      setTicketBackendData(createdInvoice as unknown as BackendInvoiceData);
+      setShowTicketPreview(true);
+      
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Error al procesar la venta.');
+      console.error('Error creando venta de encomienda:', error);
+      toast.error(error.response?.data?.detail || 'Error al crear la venta');
     }
+  };
+
+  const handleTicketSuccess = () => {
+    // Resetear completamente para una nueva venta después del ticket
+    setRemitter({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
+    setRecipient({
+      isSameAsSender: true,
+      name: '',
+      docType: SunatDocType.DNI,
+      docNumber: '',
+      phone: '',
+    });
+    setSelectedTrip(null);
+    setSelectedOriginId(null);
+    setSelectedDestinationId(null);
+    setCargoItems([]);
+    setCurrentView('clientSelection');
+    
+    // Limpiar datos del ticket
+    setShowTicketPreview(false);
+    setTicketBackendData(null);
+    
+    toast.success('¡Venta de encomienda completada y ticket generado!');
   };
 
   const isRuc = remitter.docType === SunatDocType.RUC;
@@ -528,6 +547,19 @@ export const CargoSalePage: React.FC = () => {
           defaultRecipient={recipient}
         />
       </Modal>
+
+      {/* Modal de preview de ticket para encomiendas */}
+      {showTicketPreview && ticketBackendData && (
+        <TicketPreviewModal
+          isOpen={showTicketPreview}
+          onClose={() => {
+            setShowTicketPreview(false);
+            setTicketBackendData(null);
+          }}
+          backendData={ticketBackendData}
+          onSuccess={handleTicketSuccess}
+        />
+      )}
     </div>
   );
 };

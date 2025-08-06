@@ -99,7 +99,7 @@ export type DocumentTypeCode = '01' | '03'; // 01: Factura, 03: Boleta
 export type CreditNoteTypeCode = '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12' | '13';
 
 // Códigos de Unidad de Medida
-export type UnitCode = 'KGM' | 'TNE' | 'NIU' | 'PAC' | 'MTR' | 'LTR' | 'MTQ';
+export type UnitCode = 'NIU' | 'KGM' | 'PAQ' | 'XBX' | 'TNE' | 'MTR' | 'MTQ' | 'LTR' | 'ZZ';
 
 // Códigos de Categoría de Impuesto
 export type TaxCategoryCode = '10' | '20' | '30' | '40' | 'EXO' | 'INA' | 'GRA' | 'EXP';

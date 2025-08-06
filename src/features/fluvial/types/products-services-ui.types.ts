@@ -4,14 +4,15 @@
 export type CurrencyCode = 'PEN' | 'USD' | 'EUR';
 
 export type UnitCode =
- | 'NIU' // Unidad (número de elementos)
+ | 'NIU' // Unidad (para bienes)
  | 'KGM' // Kilogramo
+ | 'PAQ' // Paquete
+ | 'XBX' // Caja
+ | 'TNE' // Tonelada
  | 'MTR' // Metro
+ | 'MTQ' // Metro Cúbico
  | 'LTR' // Litro
- | 'M2'  // Metro cuadrado
- | 'M3'  // Metro cúbico
- | 'HUR' // Hora
- | 'ZZ'; // Unidad no definida
+ | 'ZZ'; // Unidad (para servicios)
 
 export interface ProductServiceFormData {
  internal_code: string;
@@ -59,14 +60,15 @@ export const CURRENCY_OPTIONS = [
 ] as const;
 
 export const UNIT_CODE_OPTIONS = [
- { value: 'NIU', label: 'Unidad' },
+ { value: 'NIU', label: 'Unidad (para bienes)' },
  { value: 'KGM', label: 'Kilogramo' },
+ { value: 'PAQ', label: 'Paquete' },
+ { value: 'XBX', label: 'Caja' },
+ { value: 'TNE', label: 'Tonelada' },
  { value: 'MTR', label: 'Metro' },
+ { value: 'MTQ', label: 'Metro Cúbico' },
  { value: 'LTR', label: 'Litro' },
- { value: 'M2', label: 'Metro cuadrado' },
- { value: 'M3', label: 'Metro cúbico' },
- { value: 'HUR', label: 'Hora' },
- { value: 'ZZ', label: 'No definida' }
+ { value: 'ZZ', label: 'Unidad (para servicios)' }
 ] as const;
 
 // Códigos de categoría tributaria comunes

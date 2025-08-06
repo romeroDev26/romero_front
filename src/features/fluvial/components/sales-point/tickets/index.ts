@@ -31,6 +31,9 @@ export type {
 // Exportar el generador principal
 export { TicketGenerator } from './generators/ticketGenerator';
 
+// Exportar nuevo generador simplificado con detección automática
+export { TicketGenerator as AutoTicketGenerator } from './TicketGenerator';
+
 // Exportar generador especializado para sin asientos
 export { NoSeatsTicketGenerator } from './generators/noSeatsTicketGenerator';
 

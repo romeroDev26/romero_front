@@ -3,32 +3,51 @@
 import jsPDF from 'jspdf';
 import { BackendInvoiceData } from '../types/backend.types';
 import { NormalSaleTransformer } from '../transformers/normalSale.transformer';
+import { CompanySaleTransformer } from '../transformers/companySale.transformer';
+import { CargoSaleTransformer } from '../transformers/cargoSale.transformer';
 import { NormalTicketTemplate } from '../templates/normalTicket.template';
+import { CompanyTicketTemplate } from '../templates/companyTicket.template';
+import { CargoTicketTemplate } from '../templates/cargoTicket.template';
 import { NoSeatsTicketGenerator } from './noSeatsTicketGenerator';
-import { isVesselWithoutSeats } from '../utils/ticketHelpers';
+import { isVesselWithoutSeats, isCargoInvoice } from '../utils/ticketHelpers';
 
 /**
  * Generador principal de tickets
- * Orquesta la transformación y generación de PDFs con detección automática del tipo de embarcación
+ * Orquesta la transformación y generación de PDFs con detección automática completa
  */
 export class TicketGenerator {
   
   /**
-   * Genera un ticket con detección automática del tipo de embarcación
-   * Determina si usar template normal o sin asientos según la embarcación
+   * Genera un ticket con detección automática completa del tipo de invoice
+   * Detecta: cargo/encomienda, empresa (RUC), embarcación sin asientos, o ticket normal
    */
   static async generateTicket(backendData: BackendInvoiceData): Promise<jsPDF> {
     try {
-      // Detectar si es embarcación sin asientos
-      const isWithoutSeats = isVesselWithoutSeats(backendData.items);
+      // DETECCIÓN AUTOMÁTICA COMPLETA:
       
-      if (isWithoutSeats) {
+      // 1. Verificar si es encomienda/cargo
+      if (isCargoInvoice(backendData)) {
+        console.log('Detectada encomienda/cargo - generando ticket específico de cargo');
+        const ticketData = CargoSaleTransformer.transform(backendData);
+        return await CargoTicketTemplate.generatePDF(ticketData);
+      }
+      
+      // 2. Verificar si es empresa (RUC)
+      if (backendData.client?.doc_type === '6') {
+        console.log('Detectada venta empresarial (RUC) - generando ticket de empresa');
+        const ticketData = CompanySaleTransformer.transformSummary(backendData as any);
+        return await CompanyTicketTemplate.generatePDF(ticketData);
+      }
+      
+      // 3. Verificar si es embarcación sin asientos numerados
+      if (backendData.items && isVesselWithoutSeats(backendData.items)) {
         console.log('Detectada embarcación sin asientos - generando ticket con elección libre');
         return NoSeatsTicketGenerator.generateNoSeatsTicket(backendData);
-      } else {
-        console.log('Detectada embarcación con asientos - generando ticket normal');
-        return this.generateNormalSaleTicket(backendData);
       }
+      
+      // 4. Default: ticket normal con asientos
+      console.log('Detectada embarcación con asientos - generando ticket normal');
+      return this.generateNormalSaleTicket(backendData);
       
     } catch (error) {
       console.error('Error generando ticket con detección automática:', error);

@@ -24,13 +24,15 @@ interface CargoItemFormProps {
 type FormValues = Omit<CargoItemData, 'id'>;
 
 const UNIT_OF_MEASURE_OPTIONS = [
-  { code: 'KGM', name: 'Kilogramos' },
-  { code: 'TNE', name: 'Toneladas' },
-  { code: 'NIU', name: 'Unidades' },
-  { code: 'PAC', name: 'Paquete' },
-  { code: 'MTR', name: 'Metros' },
-  { code: 'LTR', name: 'Litros' },
-  { code: 'MTQ', name: 'Metros Cúbicos' },
+  { code: 'NIU', name: 'Unidad (para bienes)' },
+  { code: 'KGM', name: 'Kilogramo' },
+  { code: 'PAQ', name: 'Paquete' },
+  { code: 'XBX', name: 'Caja' },
+  { code: 'TNE', name: 'Tonelada' },
+  { code: 'MTR', name: 'Metro' },
+  { code: 'MTQ', name: 'Metro Cúbico' },
+  { code: 'LTR', name: 'Litro' },
+  { code: 'ZZ', name: 'Unidad (para servicios)' },
 ];
 
 export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose, existingItem, defaultRecipient }) => {

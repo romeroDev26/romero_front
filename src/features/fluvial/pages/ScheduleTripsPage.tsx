@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PlusIcon, CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import { format, startOfWeek } from 'date-fns';
 import { toast } from 'react-toastify';
 import { useTripsView } from '../hooks/useTripsView';
 import { useTripMutations } from '../hooks/useTrips';
@@ -19,14 +18,21 @@ import { ScheduledTemplateFormModal } from '../components/schedule/ScheduledTemp
 import { TripFormModal } from '../components/schedule/TripFormModal';
 import { TripFilters } from '../components/schedule/TripFilters';
 import { CalendarView } from '../components/schedule/CalendarView';
+import { ManifestGenerationModal } from '../components/schedule/ManifestGenerationModal';
+import { ManifestPreviewModal } from '../../manifests/components/ManifestPreviewModal';
+import { Manifest } from '../../manifests/types/manifest.types';
 
 type ViewFilterMode = 'upcoming' | 'week' | 'history';
 
 export const ScheduleTripsPage: React.FC = () => {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
+  const [isManifestModalOpen, setIsManifestModalOpen] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ScheduledRouteTemplate | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<UnifiedTripViewItem | null>(null);
+  const [selectedTripForManifest, setSelectedTripForManifest] = useState<UnifiedTripViewItem | null>(null);
+  const [createdManifest, setCreatedManifest] = useState<Manifest | null>(null);
   const [initialDateForNewTrip, setInitialDateForNewTrip] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const [viewFilter, setViewFilter] = useState<ViewFilterMode>('upcoming');
@@ -38,7 +44,7 @@ export const ScheduleTripsPage: React.FC = () => {
 
   const COMPANY_ID = 1;
 
-  const { data: currentUser, isLoading: isLoadingUser } = useQuery<User>({
+  const { isLoading: isLoadingUser } = useQuery<User>({
     queryKey: ['currentUser'],
     queryFn: () => authService.getProfile(),
   });
@@ -125,6 +131,42 @@ export const ScheduleTripsPage: React.FC = () => {
     } catch (error) {
       toast.error('Error al guardar el viaje');
     }
+  };
+
+  const handleGenerateManifest = (trip: UnifiedTripViewItem) => {
+    setSelectedTripForManifest(trip);
+    setIsManifestModalOpen(true);
+  };
+
+  const handleManifestGenerated = () => {
+    // Actualizar la lista de viajes si es necesario
+    refetch();
+  };
+
+  const handleManifestCreated = (manifest: Manifest, _type: 'PASSENGER' | 'CARGO') => {
+    setCreatedManifest(manifest);
+    // Cerrar modal de generación y abrir modal de previsualización
+    setIsManifestModalOpen(false);
+    setIsPreviewModalOpen(true);
+  };
+
+  // Función para mapear Manifest a la estructura esperada
+  const mapManifestToManifestData = (manifest: Manifest): Manifest => {
+    const result = {
+      ...manifest,
+      vessel_name: selectedTripForManifest?.vessel_name || undefined,
+      route_name: undefined, // No disponible en UnifiedTripViewItem
+      departure_datetime: selectedTripForManifest?.departure_datetime || manifest.generation_date,
+      total_passengers: manifest.total_passengers || 0,
+      total_cargo_weight_kg: manifest.total_cargo_weight_kg || 0,
+      items: manifest.items || []
+    };
+    return result;
+  };
+
+  const handleClosePreview = () => {
+    setIsPreviewModalOpen(false);
+    setCreatedManifest(null);
   };
 
   const handleRefresh = () => {
@@ -250,6 +292,7 @@ export const ScheduleTripsPage: React.FC = () => {
               trips={trips}
               onEdit={handleEditTrip}
               onCancel={handleCancelTrip}
+              onGenerateManifest={handleGenerateManifest}
             />
           ) : (
             <CalendarView
@@ -291,6 +334,24 @@ export const ScheduleTripsPage: React.FC = () => {
           onSave={handleSaveTrip}
           isLoading={isCreatingTrip || isUpdatingTrip}
           initialDate={initialDateForNewTrip}
+        />
+      )}
+
+      {isManifestModalOpen && selectedTripForManifest && (
+        <ManifestGenerationModal
+          isOpen={isManifestModalOpen}
+          onClose={() => setIsManifestModalOpen(false)}
+          trip={selectedTripForManifest}
+          onManifestGenerated={handleManifestGenerated}
+          onManifestCreated={handleManifestCreated}
+        />
+      )}
+
+      {isPreviewModalOpen && createdManifest && selectedTripForManifest && (
+        <ManifestPreviewModal
+          isOpen={isPreviewModalOpen}
+          onClose={handleClosePreview}
+          manifestData={mapManifestToManifestData(createdManifest)}
         />
       )}
     </div>

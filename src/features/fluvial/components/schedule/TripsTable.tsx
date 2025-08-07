@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import {
   PencilIcon,
   TrashIcon,
-  DocumentDuplicateIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { UnifiedTripViewItem } from '../../hooks/useTripsView';
@@ -15,6 +15,7 @@ interface TripsTableProps {
   trips: UnifiedTripViewItem[];
   onEdit: (trip: UnifiedTripViewItem) => void;
   onCancel: (trip: UnifiedTripViewItem) => void;
+  onGenerateManifest?: (trip: UnifiedTripViewItem) => void;
 }
 
 // Componente para el estado visual
@@ -53,6 +54,7 @@ export const TripsTable: React.FC<TripsTableProps> = ({
   trips,
   onEdit,
   onCancel,
+  onGenerateManifest,
 }) => {
   const columns: Column<UnifiedTripViewItem>[] = useMemo(
     () => [
@@ -108,14 +110,25 @@ export const TripsTable: React.FC<TripsTableProps> = ({
         accessor: (trip) => <StatusBadge status={trip.status} />,
       },
       {
-        key: 'sales',
-        header: 'Ventas',
-        accessor: () => (
-          <Button variant="outline" size="sm">
-            <DocumentDuplicateIcon className="h-4 w-4 mr-2" />
-            Consultar
-          </Button>
-        ),
+        key: 'manifests',
+        header: 'Manifiestos',
+        accessor: (trip) => {
+          // Solo mostrar el botón si el viaje está programado o en embarque
+          const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
+          
+          return (
+            <Button 
+              variant={canGenerateManifest ? "outline" : "secondary"}
+              size="sm"
+              onClick={canGenerateManifest ? () => onGenerateManifest?.(trip) : undefined}
+              disabled={!canGenerateManifest}
+              title={canGenerateManifest ? "Generar manifiesto para este viaje" : "No se puede generar manifiesto para este estado"}
+            >
+              <DocumentTextIcon className="h-4 w-4 mr-2" />
+              {canGenerateManifest ? 'Generar' : 'N/A'}
+            </Button>
+          );
+        },
       },
       {
         key: 'actions',

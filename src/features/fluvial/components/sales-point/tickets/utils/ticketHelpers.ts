@@ -276,13 +276,15 @@ export function formatCurrency(amount: number): string {
 
 /**
  * Detecta si una factura es de encomienda/cargo
- * CRITERIOS:
- * - Tiene recipient_name (información del destinatario)
- * - Los items tienen units como "PAQ", "XBX", "KGM", "TNE" (unidades de encomienda)
- * - No tiene trip_seat_id ni seat_number (no maneja asientos)
+ * CRITERIOS MEJORADOS Y MÁS ESPECÍFICOS:
+ * - Debe tener recipient_name (información del destinatario) - ES EL CRITERIO MÁS IMPORTANTE
+ * - Los items deben tener palabras clave específicas de encomienda en la descripción
+ * - Solo unidades específicas de carga (sin 'ZZ' ni 'NIU' que pueden ser de pasajeros)
+ * - Verificación estricta para evitar falsos positivos con pasajes
  */
 export function isCargoInvoice(invoiceData: any): boolean {
-  // CRITERIO 1: Verificar si algún item tiene recipient_name
+  // CRITERIO 1 (PRINCIPAL): Verificar si algún item tiene recipient_name
+  // Este es el criterio más confiable para distinguir encomiendas
   if (invoiceData.items && invoiceData.items.length > 0) {
     const hasRecipientInItems = invoiceData.items.some((item: any) => 
       item.recipient_name && item.recipient_name.trim() !== ''
@@ -293,44 +295,65 @@ export function isCargoInvoice(invoiceData: any): boolean {
     }
   }
   
-  // CRITERIO 2: Verificar si los items tienen unidades de encomienda
+  // CRITERIO 2: Verificar palabras clave específicas de encomienda en item_description
+  // IMPORTANTE: Este criterio debe ser EXPLÍCITO para evitar falsos positivos
   if (invoiceData.items && invoiceData.items.length > 0) {
-    const cargoUnits = ['ZZ', 'PAQ', 'XBX', 'KGM', 'TNE', 'MTR', 'MTQ', 'LTR', 'NIU']; // Agregar 'ZZ' para servicios de encomienda
-    const hasCargoUnits = invoiceData.items.some((item: any) => 
-      (item.unit && cargoUnits.includes(item.unit)) || 
-      (item.unit_code && cargoUnits.includes(item.unit_code)) // Buscar también en unit_code
-    );
+    const hasCargoKeywords = invoiceData.items.some((item: any) => {
+      if (!item.item_description) return false;
+      
+      const description = item.item_description.toLowerCase();
+      return (
+        description.includes('encomienda') ||
+        description.includes('paquete') ||
+        description.includes('envío de carga') ||
+        description.includes('servicio de carga') ||
+        description.includes('transporte de mercancía') ||
+        description.includes('flete')
+      );
+    });
     
-    if (hasCargoUnits) {
+    if (hasCargoKeywords) {
       return true;
     }
   }
   
-  // CRITERIO 3: Verificar por palabras clave en notas
-  if (invoiceData.notes && 
-      (invoiceData.notes.toLowerCase().includes('encomienda') || 
-       invoiceData.notes.toLowerCase().includes('carga'))) {
-    return true;
-  }
-  
-  // CRITERIO 4: Verificar si no tiene información de asientos y tiene indicadores de cargo
+  // CRITERIO 3: Verificar unidades ESPECÍFICAS de encomienda (sin ZZ ni NIU)
+  // Solo unidades que definitivamente NO se usan para pasajeros
   if (invoiceData.items && invoiceData.items.length > 0) {
-    const allItemsWithoutSeats = invoiceData.items.every((item: any) => 
-      !item.trip_seat_id && !item.seat_number
+    const specificCargoUnits = ['PAQ', 'XBX', 'KGM', 'TNE', 'MTR', 'MTQ', 'LTR']; // Removido 'ZZ' y 'NIU'
+    const hasSpecificCargoUnits = invoiceData.items.some((item: any) => 
+      (item.unit && specificCargoUnits.includes(item.unit)) || 
+      (item.unit_code && specificCargoUnits.includes(item.unit_code))
     );
     
-    // Solo considerar cargo si además tiene algún indicador específico
-    if (allItemsWithoutSeats && 
-        invoiceData.items.some((item: any) => 
-          item.item_description && 
-          (item.item_description.toLowerCase().includes('encomienda') ||
-           item.item_description.toLowerCase().includes('cargo') ||
-           item.item_description.toLowerCase().includes('paquete') ||
-           item.item_description.toLowerCase().includes('envío'))
-        )) {
+    // SOLO si también no tiene información de asientos Y tiene palabras clave de cargo
+    if (hasSpecificCargoUnits) {
+      const allItemsWithoutSeats = invoiceData.items.every((item: any) => 
+        !item.trip_seat_id && !item.seat_number
+      );
+      
+      if (allItemsWithoutSeats) {
+        return true;
+      }
+    }
+  }
+  
+  // CRITERIO 4: Verificar por palabras clave específicas en notas
+  if (invoiceData.notes) {
+    const notes = invoiceData.notes.toLowerCase();
+    const hasCargoNotes = notes.includes('encomienda') || 
+                         notes.includes('paquete') || 
+                         notes.includes('flete') ||
+                         notes.includes('carga') ||
+                         notes.includes('mercancía');
+    
+    if (hasCargoNotes) {
       return true;
     }
   }
+  
+  // CRITERIO ELIMINADO: El criterio anterior que solo verificaba ausencia de asientos
+  // era demasiado amplio y causaba falsos positivos con pasajes sin asientos numerados
   
   return false;
 }

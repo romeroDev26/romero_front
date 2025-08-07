@@ -31,9 +31,15 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Si no hay conexión con el servidor
+    // Si no hay conexión con el servidor o es un error CORS
     if (!error.response) {
-      console.error('Error de red');
+      // Detectar si es un error CORS específicamente
+      if (error.message?.includes('CORS') || 
+          error.message?.includes('Access-Control-Allow-Origin')) {
+        console.debug('Error CORS detectado - usando método alternativo');
+      } else {
+        console.error('Error de red');
+      }
       return Promise.reject(error);
     }
 

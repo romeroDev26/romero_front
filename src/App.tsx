@@ -41,6 +41,8 @@ import { DocumentSeriesPage } from './features/fluvial/pages/DocumentSeriesPage'
 import { DocumentSeriesPage as SeriesAndOfficesPage } from './features/fluvial/pages/SeriesAndOfficesPage';
 import { ReservationsPage } from './features/fluvial/pages/ReservationsPage';
 import { CargoSalePage } from './features/cargo/pages/CargoSalePage';
+import { ManifestsPage } from './features/manifests/pages/ManifestsPage';
+import { TripManifestsPage } from './features/manifests/pages/TripManifestsPage';
 
 //páginas de contabilidad
 import { InvoiceDetailPage } from './features/accounting/pages/InvoiceDetailPage';
@@ -53,7 +55,7 @@ import { VoidsPage } from './features/accounting/pages/VoidsPage';
 
 
 // Operaciones Fluviales (pendientes de implementar)
-const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
+// const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
 
 
 // Reportes Fluviales (pendientes de implementar)
@@ -117,6 +119,7 @@ function App() {
                 <Route path="reservations" element={<ReservationsPage />} />
                 <Route path="cargo-sale" element={<CargoSalePage />} />
                 <Route path="manifests" element={<ManifestsPage />} />
+                <Route path="manifests/trip/:tripId" element={<TripManifestsPage />} />
               </Route>
               
               {/* Reportes Fluviales */}

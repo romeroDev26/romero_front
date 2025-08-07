@@ -20,7 +20,7 @@ export const SalesPointPage: React.FC = () => {
   const navigate = useNavigate();
   const reservationToConfirm = location.state?.reservationToConfirm;
   const [tripIdToLoad, setTripIdToLoad] = useState<number | null>(reservationToConfirm?.trip_id || null);
-  const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripIdToLoad);
+  const { data: tripDetails } = useTripDetails(tripIdToLoad);
 
   useEffect(() => {
     const savedBranchJson = localStorage.getItem('selectedSalesBranch');

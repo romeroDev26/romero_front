@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { 
   DocumentTextIcon, 
-  PlusIcon, 
   EyeIcon,
   UsersIcon,
   CubeIcon,
@@ -17,11 +15,9 @@ import {
 import { Ship } from 'lucide-react';
 import { Button } from '../../../components/common/Button';
 import { DataTable } from '../../../components/common/DataTable';
-import { Modal } from '../../../components/common/Modal';
-import ManifestForm from '../components/ManifestForm';
 // import ManifestDetails from '../components/ManifestDetails';
 import { manifestService } from '../services/manifest.service';
-import { Manifest, ManifestFormData } from '../types/manifest.types';
+import { Manifest } from '../types/manifest.types';
 
 // Tipo para viajes agrupados
 interface GroupedTrip {
@@ -38,8 +34,6 @@ import { BranchOffice } from '../../../types';
 
 export const ManifestsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [showBranchSelector, setShowBranchSelector] = useState(false);
 
@@ -92,27 +86,6 @@ export const ManifestsPage: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 minutos
     retry: 1
   });
-
-  const handleCreateManifest = async (data: ManifestFormData) => {
-    setIsCreating(true);
-    try {
-      const result = await manifestService.createOrRegenerateManifest(data);
-      
-      if (result.isRegeneration) {
-        toast.success('Manifiesto regenerado correctamente');
-      } else {
-        toast.success('Manifiesto generado correctamente');
-      }
-      
-      setShowCreateModal(false);
-      refetch(); // Actualizar la lista
-    } catch (error: any) {
-      console.error('Error creating/regenerating manifest:', error);
-      toast.error(error.message || 'Error al generar el manifiesto');
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const handleBranchChange = (branch: BranchOffice) => {
     setSelectedBranch(branch);
@@ -384,15 +357,6 @@ export const ManifestsPage: React.FC = () => {
                 )}
               </div>
             </div>
-            
-            <Button
-              variant="primary"
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center space-x-2"
-            >
-              <PlusIcon className="w-4 h-4" />
-              <span>Generar Manifiesto</span>
-            </Button>
           </div>
         </div>
       </div>
@@ -436,19 +400,6 @@ export const ManifestsPage: React.FC = () => {
           )}
         />
       </div>
-
-      {/* Modal para crear manifiesto */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title="Generar Manifiesto"
-      >
-        <ManifestForm
-          onSubmit={handleCreateManifest}
-          onCancel={() => setShowCreateModal(false)}
-          isLoading={isCreating}
-        />
-      </Modal>
     </div>
   );
 };

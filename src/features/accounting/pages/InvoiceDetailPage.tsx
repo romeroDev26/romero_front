@@ -91,6 +91,9 @@ export const InvoiceDetailPage: React.FC = () => {
   if (!invoice) return <div className="p-6 text-center text-gray-500">No se encontró la factura.</div>;
 
   const hasTicketPdf = invoice.pdf_ticket_file_path && invoice.pdf_ticket_file_path.trim() !== '';
+  const hasAnyPdf = hasTicketPdf || 
+                    (invoice.pdf_a4_file_path && invoice.pdf_a4_file_path.trim() !== '') ||
+                    (invoice.pdf_file_path && invoice.pdf_file_path.trim() !== '');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,18 +148,23 @@ export const InvoiceDetailPage: React.FC = () => {
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                     Descargar
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleWhatsAppClick}
-                    className="flex items-center text-green-600 border-green-300 hover:bg-green-50"
-                    title="Enviar por WhatsApp"
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    WhatsApp
-                  </Button>
                 </>
               )}
+              
+              {/* Botón WhatsApp - disponible si hay cualquier tipo de PDF */}
+              {hasAnyPdf && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleWhatsAppClick}
+                  className="flex items-center text-green-600 border-green-300 hover:bg-green-50"
+                  title="Enviar por WhatsApp"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  WhatsApp
+                </Button>
+              )}
+              
               <Button
                 variant="danger"
                 size="sm"
@@ -273,7 +281,6 @@ export const InvoiceDetailPage: React.FC = () => {
           backendData={invoice as unknown as BackendInvoiceData}
           initialPhoneNumber={invoice.client?.phone || ''}
           isFromInvoiceList={true}
-          invoicePdfUrl={invoice.pdf_file_path || invoice.pdf_a4_file_path || invoice.pdf_ticket_file_path}
         />
       )}
     </div>

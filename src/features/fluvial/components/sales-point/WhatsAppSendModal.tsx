@@ -20,8 +20,6 @@ interface WhatsAppSendModalProps {
   onClearForm?: () => void;
   // Nueva prop para identificar el contexto
   isFromInvoiceList?: boolean;
-  // Nueva prop para el PDF URL directo (para facturas)
-  invoicePdfUrl?: string;
 }
 
 export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
@@ -31,8 +29,7 @@ export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
   customGeneratePDF,
   initialPhoneNumber = '',
   onClearForm,
-  isFromInvoiceList = false,
-  invoicePdfUrl
+  isFromInvoiceList = false
 }) => {
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
   const [customMessage, setCustomMessage] = useState('');
@@ -71,43 +68,43 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         pdfBase64 = whatsappService.pdfDocToBase64(doc);
         fileName = `ticket_empresa_${backendData.series}-${backendData.number}.pdf`;
       } else if (isFromInvoiceList) {
-        // Para facturas de la lista de contabilidad
-        if (invoicePdfUrl) {
-          try {
-            // Intentar usar el PDF directamente desde el CDN
-            // Nota: Esto puede fallar por CORS en desarrollo
-            const response = await fetch(invoicePdfUrl, { mode: 'no-cors' });
-            
-            // Como no-cors no nos permite leer el contenido, vamos a usar una alternativa
-            // Crear un enlace temporal para descargar y convertir
-            const tempLink = document.createElement('a');
-            tempLink.href = invoicePdfUrl;
-            tempLink.style.display = 'none';
-            document.body.appendChild(tempLink);
-            
-            // Abrir el PDF en una nueva ventana para que el usuario lo descargue manualmente
-            window.open(invoicePdfUrl, '_blank');
-            
-            setSendResult({
-              success: false,
-              error: 'Debido a restricciones de seguridad, no podemos enviar el PDF automáticamente. Se ha abierto el PDF en una nueva ventana. Por favor, descárgalo y envíalo manualmente por WhatsApp.'
-            });
-            return;
-            
-          } catch (error) {
-            setSendResult({
-              success: false,
-              error: 'No se pudo acceder al PDF de la factura. Esto puede deberse a restricciones de CORS del CDN.'
-            });
-            return;
-          }
-        } else {
-          setSendResult({
-            success: false,
-            error: 'No se encontró el PDF de esta factura. Asegúrese de que la factura tenga un archivo PDF generado.'
-          });
-          return;
+        // Para facturas de la lista de contabilidad - usar endpoint directo del backend
+        // Detectar qué tipo de PDF está disponible basándose en los campos del backendData
+        let pdfType: 'a4' | 'ticket' | 'legacy' = 'ticket'; // Por defecto ticket
+        
+        // Si backendData tiene información de archivos PDF, usar esa lógica
+        const invoiceData = backendData as any;
+        if (invoiceData.pdf_ticket_file_path) {
+          pdfType = 'ticket';
+        } else if (invoiceData.pdf_a4_file_path) {
+          pdfType = 'a4';
+        } else if (invoiceData.pdf_file_path) {
+          pdfType = 'legacy';
         }
+
+        const result = await whatsappService.sendInvoicePdf({
+          invoiceId: backendData.id as number,
+          phoneNumber,
+          customMessage: customMessage.trim() || undefined,
+          pdfType: pdfType
+        });
+
+        setSendResult(result);
+        
+        if (result.success) {
+          // Limpiar el formulario después del éxito
+          setTimeout(() => {
+            onClose();
+            setPhoneNumber('');
+            setCustomMessage('');
+            setSendResult(null);
+            // Limpiar el formulario principal de venta
+            if (onClearForm) {
+              onClearForm();
+            }
+          }, 2000);
+        }
+        return;
       } else {
         // Usar detección automática para tickets normales
         const pdfBlob = await generateTicketBlob(backendData);

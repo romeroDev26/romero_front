@@ -16,7 +16,70 @@ export interface WhatsAppSendResponse {
   error?: string;
 }
 
+export interface WhatsAppSendInvoiceRequest {
+  invoice_id: number;
+  phone_number: string;
+  custom_message?: string;
+  pdf_type?: 'a4' | 'ticket' | 'legacy';
+  instance_name?: string;
+}
+
 class WhatsAppService {
+  /**
+   * Envía una factura/boleta por WhatsApp usando el endpoint directo del backend
+   * @param invoiceId ID del comprobante
+   * @param phoneNumber Número de teléfono con código de país
+   * @param customMessage Mensaje personalizado (opcional)
+   * @param pdfType Tipo de PDF a enviar
+   */
+  async sendInvoicePdf({
+    invoiceId,
+    phoneNumber,
+    customMessage,
+    pdfType = 'a4'
+  }: {
+    invoiceId: number;
+    phoneNumber: string;
+    customMessage?: string;
+    pdfType?: 'a4' | 'ticket' | 'legacy';
+  }): Promise<WhatsAppSendResponse> {
+    try {
+      const defaultMessage = `¡Hola!
+
+Nos alegra mucho que hayas decidido confiar en nosotros.
+Adjuntamos a continuación tu comprobante electrónico correspondiente.
+
+Gracias por tu preferencia.
+Atentamente,
+El equipo de GLOBAL ROMERO S.A.C.`;
+
+      const requestData: WhatsAppSendInvoiceRequest = {
+        invoice_id: invoiceId,
+        phone_number: this.formatPhoneNumber(phoneNumber),
+        custom_message: customMessage || defaultMessage,
+        pdf_type: pdfType,
+        instance_name: 'romero_ventas'
+      };
+
+      await api.post('/external/whatsapp/send-invoice-pdf', requestData);
+      
+      return {
+        success: true,
+        message: 'Comprobante enviado exitosamente por WhatsApp'
+      };
+    } catch (error: any) {
+      console.error('Error enviando comprobante por WhatsApp:', error);
+      
+      return {
+        success: false,
+        error: error.response?.data?.detail?.[0]?.msg || 
+               error.response?.data?.message || 
+               error.message || 
+               'Error desconocido al enviar comprobante'
+      };
+    }
+  }
+
   /**
    * Envía un documento PDF por WhatsApp
    * @param phoneNumber Número de teléfono con código de país (ej: 51987654321)

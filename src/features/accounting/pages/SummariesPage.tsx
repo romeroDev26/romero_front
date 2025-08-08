@@ -3,9 +3,6 @@
 import React, { useState } from 'react';
 import { 
   DocumentTextIcon, 
-  CheckCircleIcon, 
-  XCircleIcon, 
-  ClockIcon,
   ArrowPathIcon,
   PlusIcon
 } from '@heroicons/react/24/outline';
@@ -13,6 +10,7 @@ import { useSunatSummaries, useCreateSunatSummary, useCheckSummaryStatus } from 
 import { Button } from '../../../components/common/Button';
 import { Modal } from '../../../components/common/Modal';
 import { SunatStatusBadge } from '../components/SunatStatusBadge';
+import { DailySummary } from '../types';
 
 export const SummariesPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -113,16 +111,16 @@ export const SummariesPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {summaries.map((summary) => (
+                {summaries.map((summary: DailySummary) => (
                   <tr key={summary.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
-                        {summary.batch_number}
+                        {summary.identifier}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {new Date(summary.issue_date).toLocaleDateString('es-ES')}
+                        {new Date(summary.summary_date).toLocaleDateString('es-ES')}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

@@ -8,11 +8,11 @@ import { Input } from '../../../components/common/Input';
 import { useSunatVoids, useCreateSunatVoid, useCheckVoidStatus, useVoidableInvoices } from '../hooks/useSunatVoids';
 import { InvoiceSelectorModal } from '../components/InvoiceSelectorModal';
 import { SunatStatusBadge } from '../components/SunatStatusBadge';
-import { Void, VoidItem, VoidableInvoice } from '../types';
+import { VoidDocument, VoidDocumentItem, VoidableInvoice } from '../types';
 
 export const VoidsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [itemsToVoid, setItemsToVoid] = useState<Omit<VoidItem, 'reason'>[]>([]);
+  const [itemsToVoid, setItemsToVoid] = useState<Omit<VoidDocumentItem, 'reason'>[]>([]);
   const [reason, setReason] = useState('');
   const companyId = 1;
 
@@ -21,7 +21,7 @@ export const VoidsPage: React.FC = () => {
   const { mutate: createVoid, isPending: isCreatingVoid } = useCreateSunatVoid();
   const { mutate: checkStatus, isPending: isCheckingStatus } = useCheckVoidStatus();
 
-  const handleSelectInvoices = (selectedItems: Omit<VoidItem, 'reason'>[]) => {
+  const handleSelectInvoices = (selectedItems: Omit<VoidDocumentItem, 'reason'>[]) => {
     setItemsToVoid(selectedItems);
     setIsModalOpen(false);
   };
@@ -59,11 +59,11 @@ export const VoidsPage: React.FC = () => {
     });
   };
 
-  const columns: Column<Void>[] = [
+  const columns: Column<VoidDocument>[] = [
     {
-      key: 'batch_number',
+      key: 'identifier',
       header: 'Lote',
-      accessor: (item) => item.batch_number,
+      accessor: (item) => item.identifier,
     },
     {
       key: 'generation_date',

@@ -12,6 +12,7 @@ import {
   ArrowDownTrayIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import { MessageCircle } from 'lucide-react';
 
 // Importamos el servicio real
 import { invoicesService } from '../../../services/invoices.service';
@@ -19,11 +20,14 @@ import { invoicesService } from '../../../services/invoices.service';
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
 import { SunatStatusBadge } from '../../accounting/components/SunatStatusBadge';
+import { WhatsAppSendModal } from '../../fluvial/components/sales-point/WhatsAppSendModal';
+import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showPdfError, setShowPdfError] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
   const invoiceId = Number(id);
 
@@ -76,6 +80,10 @@ export const InvoiceDetailPage: React.FC = () => {
     } else {
       toast.error('No hay ticket PDF disponible para descargar');
     }
+  };
+
+  const handleWhatsAppClick = () => {
+    setShowWhatsAppModal(true);
   };
 
   if (isLoading) return <div className="flex justify-center p-8"><Spinner size="lg" /></div>;
@@ -136,6 +144,16 @@ export const InvoiceDetailPage: React.FC = () => {
                   >
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                     Descargar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleWhatsAppClick}
+                    className="flex items-center text-green-600 border-green-300 hover:bg-green-50"
+                    title="Enviar por WhatsApp"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    WhatsApp
                   </Button>
                 </>
               )}
@@ -246,6 +264,18 @@ export const InvoiceDetailPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de WhatsApp */}
+      {showWhatsAppModal && invoice && (
+        <WhatsAppSendModal
+          isOpen={showWhatsAppModal}
+          onClose={() => setShowWhatsAppModal(false)}
+          backendData={invoice as unknown as BackendInvoiceData}
+          initialPhoneNumber={invoice.client?.phone || ''}
+          isFromInvoiceList={true}
+          invoicePdfUrl={invoice.pdf_file_path || invoice.pdf_a4_file_path || invoice.pdf_ticket_file_path}
+        />
+      )}
     </div>
   );
 };

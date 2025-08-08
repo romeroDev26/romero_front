@@ -18,6 +18,10 @@ interface WhatsAppSendModalProps {
   customGeneratePDF?: () => Promise<jsPDF>;
   initialPhoneNumber?: string;
   onClearForm?: () => void;
+  // Nueva prop para identificar el contexto
+  isFromInvoiceList?: boolean;
+  // Nueva prop para el PDF URL directo (para facturas)
+  invoicePdfUrl?: string;
 }
 
 export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
@@ -26,7 +30,9 @@ export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
   backendData,
   customGeneratePDF,
   initialPhoneNumber = '',
-  onClearForm
+  onClearForm,
+  isFromInvoiceList = false,
+  invoicePdfUrl
 }) => {
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
   const [customMessage, setCustomMessage] = useState('');
@@ -64,6 +70,44 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         const doc = await customGeneratePDF();
         pdfBase64 = whatsappService.pdfDocToBase64(doc);
         fileName = `ticket_empresa_${backendData.series}-${backendData.number}.pdf`;
+      } else if (isFromInvoiceList) {
+        // Para facturas de la lista de contabilidad
+        if (invoicePdfUrl) {
+          try {
+            // Intentar usar el PDF directamente desde el CDN
+            // Nota: Esto puede fallar por CORS en desarrollo
+            const response = await fetch(invoicePdfUrl, { mode: 'no-cors' });
+            
+            // Como no-cors no nos permite leer el contenido, vamos a usar una alternativa
+            // Crear un enlace temporal para descargar y convertir
+            const tempLink = document.createElement('a');
+            tempLink.href = invoicePdfUrl;
+            tempLink.style.display = 'none';
+            document.body.appendChild(tempLink);
+            
+            // Abrir el PDF en una nueva ventana para que el usuario lo descargue manualmente
+            window.open(invoicePdfUrl, '_blank');
+            
+            setSendResult({
+              success: false,
+              error: 'Debido a restricciones de seguridad, no podemos enviar el PDF automáticamente. Se ha abierto el PDF en una nueva ventana. Por favor, descárgalo y envíalo manualmente por WhatsApp.'
+            });
+            return;
+            
+          } catch (error) {
+            setSendResult({
+              success: false,
+              error: 'No se pudo acceder al PDF de la factura. Esto puede deberse a restricciones de CORS del CDN.'
+            });
+            return;
+          }
+        } else {
+          setSendResult({
+            success: false,
+            error: 'No se encontró el PDF de esta factura. Asegúrese de que la factura tenga un archivo PDF generado.'
+          });
+          return;
+        }
       } else {
         // Usar detección automática para tickets normales
         const pdfBlob = await generateTicketBlob(backendData);
@@ -226,7 +270,7 @@ El equipo de GLOBAL ROMERO S.A.C.`;
           <Button
             onClick={handleSend}
             disabled={isSending || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber)}
-            className="flex-1 bg-green-600 hover:bg-green-700"
+            className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSending ? (
               <>

@@ -92,10 +92,20 @@ class InvoicesService {
       Object.entries(filters).filter(([_, value]) => value !== undefined && value !== '')
     );
     
-    const response = await api.get<Invoice[]>(this.basePath, {
+    const response = await api.get(this.basePath, {
       params: cleanParams
     });
-    return response.data;
+    
+    // Manejar diferentes formatos de respuesta de la API
+    if (response.data && response.data.invoices && Array.isArray(response.data.invoices)) {
+      return response.data.invoices;
+    } else if (response.data && Array.isArray(response.data)) {
+      return response.data;
+    }
+    
+    // Si no es array, devolver array vacío para evitar errores
+    console.warn('Invoices response is not in expected format:', response.data);
+    return [];
   }
 
   // NUEVO MÉTODO: Para obtener una factura por su ID
@@ -105,12 +115,17 @@ class InvoicesService {
   }
 
   // NUEVO MÉTODO: Para obtener la lista de facturas anulables
-  // Lo movemos aquí para mantener todo lo de 'invoices' en un solo lugar.
+  // Usa el mismo endpoint de listado pero filtrado por estado ACCEPTED
   async getVoidableInvoices(companyId: number): Promise<any[]> {
-    const response = await api.get<any[]>(`${this.basePath}voidable`, {
-      params: { company_id: companyId }
+    const response = await api.get<any>(this.basePath, {
+      params: { 
+        company_id: companyId,
+        sunat_status: 'ACCEPTED', // Solo facturas aceptadas por SUNAT
+        limit: 100
+      }
     });
-    return response.data;
+    // Extraer el array de facturas del formato de respuesta
+    return response.data?.invoices || response.data || [];
   }
 }
 

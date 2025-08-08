@@ -43,7 +43,7 @@ export const InvoiceDetailPage: React.FC = () => {
     }
 
     // Navegamos al formulario de la Nota de Crédito, pasando la factura completa en el state
-    navigate('/accounting/credit-notes/new', {
+    navigate('/accounting/credit-notes/annul', {
       state: {
         affectedInvoice: invoice,
       },

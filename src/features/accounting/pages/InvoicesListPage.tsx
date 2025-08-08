@@ -9,6 +9,8 @@ import {
   EyeIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  PlusIcon,
+  MinusIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
@@ -349,14 +351,41 @@ export const InvoicesListPage: React.FC = () => {
           isLoading={isLoading}
           keyExtractor={(item) => item.id}
           customActions={(invoice) => (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate(`/accounting/invoices/${invoice.id}`)}
-            >
-              <EyeIcon className="h-4 w-4 mr-1" />
-              Ver
-            </Button>
+            <div className="flex space-x-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/accounting/invoices/${invoice.id}`)}
+                title="Ver detalle"
+              >
+                <EyeIcon className="h-4 w-4" />
+              </Button>
+              
+              {/* Solo mostrar acciones de notas si el documento está aceptado por SUNAT */}
+              {invoice.sunat_status === 'ACCEPTED' && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                    onClick={() => navigate(`/accounting/credit-notes/new?invoice_id=${invoice.id}`)}
+                    title="Crear Nota de Crédito"
+                  >
+                    <MinusIcon className="h-4 w-4" />
+                  </Button>
+                  
+                  <Button
+                    size="sm"
+                    variant="outline" 
+                    className="text-green-600 border-green-300 hover:bg-green-50"
+                    onClick={() => navigate(`/accounting/debit-notes/new?invoice_id=${invoice.id}`)}
+                    title="Crear Nota de Débito"
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
           )}
           emptyMessage={
             clientSearch || series || documentNumber || sunatStatusFilter || startDate || endDate || period

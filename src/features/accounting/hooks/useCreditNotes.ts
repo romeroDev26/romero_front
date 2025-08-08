@@ -2,7 +2,11 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { creditNotesService } from '../services/creditNotes.service';
-import { CreditNotesListParams, CreditNoteCreateData } from '../types';
+import { 
+  CreditNotesListParams, 
+  CreditNoteCreateData, 
+  CreditNoteAnnulData 
+} from '../types';
 import { toast } from 'react-toastify';
 
 // Hook para listar notas de crédito
@@ -24,19 +28,52 @@ export const useCreditNote = (id: number | null) => {
   });
 };
 
-// Hook para crear una nota de crédito
+// Hook para crear una nota de crédito (método principal)
 export const useCreateCreditNote = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: (data: CreditNoteCreateData) => creditNotesService.create(data),
     onSuccess: (data) => {
-      toast.success(`Nota de Crédito ${data.series}-${data.number} generada correctamente. Se está enviando a SUNAT.`);
+      toast.success(`Nota de Crédito ${data.identifier} generada correctamente. Se está enviando a SUNAT.`);
       queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.detail || 'Error al crear la nota de crédito');
     },
+  });
+};
+
+// Hook para crear nota de crédito por anulación
+export const useCreateCreditNoteByAnnulment = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: CreditNoteAnnulData) => creditNotesService.createByAnnulment(data),
+    onSuccess: (data) => {
+      toast.success(`Nota de Crédito ${data.identifier} por anulación creada correctamente.`);
+      queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Error al crear la nota de crédito por anulación');
+    },
+  });
+};
+
+// Hook para consultar estado SUNAT
+export const useCreditNoteSunatStatus = (id: number | null) => {
+  return useQuery({
+    queryKey: ['creditNoteSunatStatus', id],
+    queryFn: () => creditNotesService.checkSunatStatus(id!),
+    enabled: !!id,
+    refetchInterval: (data) => {
+      // Polling cada 30 segundos si está en estado PENDING o SENT
+      if (data?.state.data?.sunat_status === 'PENDING' || data?.state.data?.sunat_status === 'SENT') {
+        return 30000;
+      }
+      return false;
+    },
+    staleTime: 1000 * 15, // 15 segundos
   });
 };
 
@@ -47,5 +84,22 @@ export const useVoidableInvoices = (companyId: number) => {
     queryFn: () => creditNotesService.getVoidableInvoices(companyId),
     enabled: !!companyId,
     staleTime: 1000 * 60 * 2, // 2 minutos
+  });
+};
+
+// Hook para refrescar estados pendientes
+export const useRefreshPendingStatuses = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (limit?: number) => creditNotesService.refreshPendingStatuses(limit),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
+      queryClient.invalidateQueries({ queryKey: ['creditNoteSunatStatus'] });
+      toast.info('Estados SUNAT actualizados');
+    },
+    onError: () => {
+      toast.error('Error al actualizar estados SUNAT');
+    },
   });
 };

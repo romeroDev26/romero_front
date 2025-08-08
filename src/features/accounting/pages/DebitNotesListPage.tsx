@@ -1,234 +1,266 @@
 // src/features/accounting/pages/DebitNotesListPage.tsx
 
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { format, parseISO } from 'date-fns';
-import { 
-  MagnifyingGlassIcon, 
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  MagnifyingGlassIcon,
+  ArrowPathIcon,
+  DocumentArrowDownIcon,
   EyeIcon,
-  DocumentTextIcon
+  PlusIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
-import { DataTable, Column } from '../../../components/common/DataTable';
-import { Input } from '../../../components/common/Input';
-import { useDebounce } from '../../../hooks/useDebounce';
 import { SunatStatusBadge } from '../components/SunatStatusBadge';
-
-interface DebitNote {
-  id: number;
-  series: string;
-  number: number;
-  document_type_code: string;
-  issue_date: string;
-  total_amount: number;
-  currency_code: string;
-  sunat_status: string;
-  client: {
-    name: string;
-    doc_number: string;
-  };
-  affected_invoice?: {
-    series: string;
-    number: number;
-  };
-}
+import { useDebitNotes, useRefreshDebitNotePendingStatuses } from '../hooks/useDebitNotes';
+import { DebitNotesListParams } from '../types';
+import { DebitNote } from '../../../types';
 
 export const DebitNotesListPage: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-  // TODO: Obtener company_id del contexto de autenticación
-  const companyId = 1;
-
-  // TODO: Implementar servicio de notas de débito
-  const { data: debitNotes = [], isLoading } = useQuery({
-    queryKey: ['debitNotes', companyId],
-    queryFn: () => Promise.resolve([] as DebitNote[]), // Placeholder hasta implementar el servicio
-    staleTime: 5 * 60 * 1000, // 5 minutos
+  const [filters, setFilters] = useState<DebitNotesListParams>({
+    company_id: 1, // TODO: Obtener de contexto de usuario
+    skip: 0,
+    limit: 50,
   });
 
-  const filteredDebitNotes = useMemo(() => {
-    let filtered = debitNotes;
+  const { data: debitNotes, isLoading, refetch } = useDebitNotes(filters);
+  const { mutate: refreshStatuses, isPending: isRefreshing } = useRefreshDebitNotePendingStatuses();
 
-    // Filtro por búsqueda
-    if (debouncedSearchTerm) {
-      filtered = filtered.filter(note =>
-        note.client.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        `${note.series}-${note.number}`.includes(debouncedSearchTerm) ||
-        note.client.doc_number.includes(debouncedSearchTerm)
+  // Polling automático cada 2 minutos para documentos pendientes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const hasPendingDocs = debitNotes?.some(note => 
+        note.sunat_status === 'PENDING' || note.sunat_status === 'SENT'
       );
-    }
+      if (hasPendingDocs) {
+        refetch();
+      }
+    }, 120000); // 2 minutos
 
-    // Filtro por estado
-    if (statusFilter) {
-      filtered = filtered.filter(note => note.sunat_status === statusFilter);
-    }
+    return () => clearInterval(interval);
+  }, [debitNotes, refetch]);
 
-    // Filtro por fecha
-    if (dateFilter) {
-      const now = new Date();
-      const days = parseInt(dateFilter);
-      const filterDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(note => new Date(note.issue_date) >= filterDate);
-    }
+  const handleFilterChange = (field: keyof DebitNotesListParams, value: any) => {
+    setFilters(prev => ({ ...prev, [field]: value, skip: 0 }));
+  };
 
-    return filtered;
-  }, [debitNotes, debouncedSearchTerm, statusFilter, dateFilter]);
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-PE', {
+      style: 'currency',
+      currency: 'PEN'
+    }).format(amount);
+  };
 
-  const columns: Column<DebitNote>[] = [
-    {
-      key: 'document',
-      header: 'Documento',
-      accessor: (note: DebitNote) => (
-        <div>
-          <div className="font-medium text-gray-900">Nota de Débito</div>
-          <div className="text-sm text-gray-500">
-            {note.series}-{String(note.number).padStart(8, '0')}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'client',
-      header: 'Cliente',
-      accessor: (note: DebitNote) => (
-        <div>
-          <div className="font-medium text-gray-900">{note.client.name}</div>
-          <div className="text-sm text-gray-500">{note.client.doc_number}</div>
-        </div>
-      ),
-    },
-    {
-      key: 'affected_invoice',
-      header: 'Factura Afectada',
-      accessor: (note: DebitNote) => (
-        <div className="text-sm text-gray-900">
-          {note.affected_invoice 
-            ? `${note.affected_invoice.series}-${note.affected_invoice.number}`
-            : 'N/A'
-          }
-        </div>
-      ),
-    },
-    {
-      key: 'issue_date',
-      header: 'Fecha',
-      accessor: (note: DebitNote) => (
-        <div className="text-sm text-gray-900">
-          {format(parseISO(note.issue_date), 'dd/MM/yyyy')}
-        </div>
-      ),
-    },
-    {
-      key: 'amount',
-      header: 'Monto',
-      accessor: (note: DebitNote) => (
-        <div className="text-right">
-          <div className="font-medium text-gray-900">
-            {note.currency_code === 'PEN' ? 'S/ ' : '$ '}
-            {note.total_amount.toFixed(2)}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'status',
-      header: 'Estado',
-      accessor: (note: DebitNote) => <SunatStatusBadge status={note.sunat_status} />,
-    },
-  ];
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-PE');
+  };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notas de Débito</h1>
-          <p className="text-gray-600">Gestión de notas de débito electrónicas</p>
+          <h1 className="text-3xl font-bold text-gray-900">Notas de Débito</h1>
+          <p className="text-gray-600">Gestiona los cargos adicionales y notas de débito</p>
+        </div>
+        <div className="flex space-x-3">
+          <Button
+            variant="outline"
+            onClick={() => refreshStatuses(10)}
+            isLoading={isRefreshing}
+            className="flex items-center"
+          >
+            <ArrowPathIcon className="h-4 w-4 mr-2" />
+            Actualizar Estados
+          </Button>
+          <Link to="/accounting/debit-notes/new">
+            <Button className="flex items-center">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Nueva Nota de Débito
+            </Button>
+          </Link>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Buscar
+              Serie
             </label>
-            <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-              <Input
-                type="text"
-                placeholder="Cliente, documento..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="FD01, BD01..."
+              className="w-full p-2 border border-gray-300 rounded-md"
+              onChange={(e) => handleFilterChange('series', e.target.value || undefined)}
+            />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Estado
+              Estado SUNAT
             </label>
             <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white"
+              className="w-full p-2 border border-gray-300 rounded-md"
+              onChange={(e) => handleFilterChange('sunat_status', e.target.value || undefined)}
             >
-              <option value="">Todos</option>
+              <option value="">Todos los estados</option>
               <option value="PENDING">Pendiente</option>
+              <option value="SENT">Enviado</option>
               <option value="ACCEPTED">Aceptado</option>
               <option value="REJECTED">Rechazado</option>
             </select>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Período
+              Fecha de Emisión
             </label>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white"
+            <input
+              type="date"
+              className="w-full p-2 border border-gray-300 rounded-md"
+              onChange={(e) => handleFilterChange('issue_date', e.target.value || undefined)}
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              variant="outline"
+              className="flex items-center"
+              onClick={() => refetch()}
             >
-              <option value="">Todos</option>
-              <option value="7">Última semana</option>
-              <option value="30">Último mes</option>
-              <option value="90">Últimos 3 meses</option>
-              <option value="365">Último año</option>
-            </select>
+              <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
+              Buscar
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <DataTable
-          columns={columns}
-          data={filteredDebitNotes}
-          isLoading={isLoading}
-          keyExtractor={(item) => item.id}
-          customActions={(note) => (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate(`/accounting/debit-notes/${note.id}`)}
-            >
-              <EyeIcon className="h-4 w-4 mr-1" />
-              Ver
-            </Button>
-          )}
-          emptyMessage={
-            searchTerm || statusFilter || dateFilter
-              ? 'No se encontraron notas de débito con los filtros aplicados'
-              : 'No se encontraron notas de débito'
-          }
-        />
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        {isLoading ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Cargando notas de débito...</p>
+          </div>
+        ) : debitNotes?.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-600">No se encontraron notas de débito</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Documento
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cliente
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Documento Afectado
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Motivo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Monto
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estado SUNAT
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {debitNotes?.map((debitNote: DebitNote) => (
+                  <tr key={debitNote.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
+                      </div>
+                      <div className="text-sm text-gray-500">ND</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{debitNote.client?.name}</div>
+                      <div className="text-sm text-gray-500">{debitNote.client?.doc_number}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {debitNote.affected_document_series_number}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {debitNote.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900 max-w-xs truncate">
+                        {debitNote.reason}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Tipo: {debitNote.debit_note_type_code}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatCurrency(debitNote.total_payable)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <SunatStatusBadge status={debitNote.sunat_status} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(debitNote.issue_date)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex space-x-2">
+                        <Link
+                          to={`/accounting/debit-notes/${debitNote.id}`}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                        </Link>
+                        {debitNote.pdf_file_path && (
+                          <a
+                            href={debitNote.pdf_file_path}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-600 hover:text-green-900"
+                          >
+                            <DocumentArrowDownIcon className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+
+      {/* Información adicional */}
+      {debitNotes && debitNotes.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-amber-800">
+                ℹ️ Información sobre Notas de Débito
+              </h3>
+              <div className="mt-2 text-sm text-amber-700">
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>Pendiente:</strong> Documento creado, esperando envío a SUNAT</li>
+                  <li><strong>Enviado:</strong> Documento enviado, esperando respuesta de SUNAT</li>
+                  <li><strong>Aceptado:</strong> Documento válido y procesado correctamente</li>
+                  <li><strong>Rechazado:</strong> Documento con errores, revisar observaciones</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }; 

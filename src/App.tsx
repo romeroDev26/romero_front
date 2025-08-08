@@ -47,11 +47,20 @@ import { TripManifestsPage } from './features/manifests/pages/TripManifestsPage'
 //páginas de contabilidad
 import { InvoiceDetailPage } from './features/accounting/pages/InvoiceDetailPage';
 import { InvoicesListPage } from './features/accounting/pages/InvoicesListPage';
-import { CreditNoteFormPage } from './features/accounting/pages/CreditNoteFormPage';
+import { CreditNoteAnnulFormPage } from './features/accounting/pages/CreditNoteFormPage';
+import { CreditNoteNewPage } from './features/accounting/pages/CreditNoteNewPage';
+import { CreditNotesListPage } from './features/accounting/pages/CreditNotesListPage';
+import { CreditNoteDetailPage } from './features/accounting/pages/CreditNoteDetailPage';
 import { DebitNotesListPage } from './features/accounting/pages/DebitNotesListPage';
+import { DebitNoteFormPage } from './features/accounting/pages/DebitNoteFormPage';
+import { DebitNoteDetailPage } from './features/accounting/pages/DebitNoteDetailPage';
 import { AccountingDashboardPage } from './features/accounting/pages/AccountingDashboardPage';
-import { SummariesPage } from './features/accounting/pages/SummariesPage';
-import { VoidsPage } from './features/accounting/pages/VoidsPage';
+import { DailySummariesListPage } from './features/accounting/pages/DailySummariesListPage';
+import { DailySummaryFormPage } from './features/accounting/pages/DailySummaryFormPage';
+import { DailySummaryDetailPage } from './features/accounting/pages/DailySummaryDetailPage';
+import { VoidDocumentsListPage } from './features/accounting/pages/VoidDocumentsListPage';
+import { VoidDocumentFormPage } from './features/accounting/pages/VoidDocumentFormPage';
+import { VoidDocumentDetailPage } from './features/accounting/pages/VoidDocumentDetailPage';
 
 
 // Operaciones Fluviales (pendientes de implementar)
@@ -138,11 +147,19 @@ function App() {
               <Route path="dashboard" element={<AccountingDashboardPage />} />
               <Route path="invoices" element={<InvoicesListPage />} />
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
-              <Route path="credit-notes" element={<CreditNoteFormPage />} />
-              <Route path="credit-notes/new" element={<CreditNoteFormPage />} />
+              <Route path="credit-notes" element={<CreditNotesListPage />} />
+              <Route path="credit-notes/new" element={<CreditNoteNewPage />} />
+              <Route path="credit-notes/annul" element={<CreditNoteAnnulFormPage />} />
+              <Route path="credit-notes/:id" element={<CreditNoteDetailPage />} />
               <Route path="debit-notes" element={<DebitNotesListPage />} />
-              <Route path="summaries" element={<SummariesPage />} />
-              <Route path="voids" element={<VoidsPage />} />
+              <Route path="debit-notes/new" element={<DebitNoteFormPage />} />
+              <Route path="debit-notes/:id" element={<DebitNoteDetailPage />} />
+              <Route path="summaries" element={<DailySummariesListPage />} />
+              <Route path="summaries/new" element={<DailySummaryFormPage />} />
+              <Route path="summaries/:id" element={<DailySummaryDetailPage />} />
+              <Route path="voids" element={<VoidDocumentsListPage />} />
+              <Route path="voids/new" element={<VoidDocumentFormPage />} />
+              <Route path="voids/:id" element={<VoidDocumentDetailPage />} />
             </Route>
             
             {/* Guías de Remisión (importante para carga) */}

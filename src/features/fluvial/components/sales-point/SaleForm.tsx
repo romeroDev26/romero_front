@@ -199,6 +199,38 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     }
   }, [reservationToConfirm, tripDetails]);
 
+  // Función para limpiar el formulario después de una venta exitosa
+  const clearFormAfterSale = () => {
+    // Limpiar datos del pasajero
+    setPassengerData(initialPassengerData);
+    
+    // Limpiar selecciones de paradas y asiento
+    setSelectedSeat(null);
+    // No limpiar selectedBoardingStopId porque se basa en la sucursal del usuario
+    setSelectedDisembarkingStopId(null);
+    
+    // Limpiar costos adicionales y descuentos
+    setExtraCost(0);
+    setExtraCostDescription("");
+    setDiscount(0);
+    
+    // Limpiar representantes
+    setRepresentatives([]);
+    setShowRepresentatives(false);
+    setMaxPassengers(1);
+    setShowAddForm(false);
+    setSelectedSeatForRepresentative(null);
+    
+    // Limpiar estados de modal
+    setReservationModalOpen(false);
+    setIsConfirmingMode(false);
+    
+    // Limpiar datos del ticket
+    setShowTicketPreview(false);
+    setTicketBackendData(null);
+    setIsCompanyTicket(false);
+  };
+
   // Helper functions
   const getPortIdFromStopId = (stopId: number | null): number | null => {
     if (!stopId || !tripDetails?.stops) return null;
@@ -789,6 +821,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 return await CompanyTicketTemplate.generatePDF(summaryData);
               }
             }}
+            initialPhoneNumber={passengerData.phone}
+            onClearForm={clearFormAfterSale}
           />
         ) : (
           <TicketPreviewModal
@@ -805,6 +839,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
               setIsCompanyTicket(false); // Limpiar tipo de ticket
               onSaleSuccess();
             }}
+            initialPhoneNumber={passengerData.phone}
+            onClearForm={clearFormAfterSale}
           />
         )
       )}

@@ -247,6 +247,32 @@ export const CargoSalePage: React.FC = () => {
     toast.success('¡Venta de encomienda completada y ticket generado!');
   };
 
+  // Función para limpiar el formulario cuando se cierre el modal (sin éxito)
+  const clearCargoFormAfterSale = () => {
+    // Resetear todos los estados al inicial
+    setRemitter({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
+    setRecipient({
+      isSameAsSender: true,
+      name: '',
+      docType: SunatDocType.DNI,
+      docNumber: '',
+      phone: '',
+    });
+    setSelectedTrip(null);
+    setSelectedOriginId(null);
+    setSelectedDestinationId(null);
+    setCargoItems([]);
+    
+    // Volver al paso inicial
+    setCurrentView('clientSelection');
+    
+    // Limpiar datos del ticket
+    setShowTicketPreview(false);
+    setTicketBackendData(null);
+    
+    toast.info('Formulario de encomienda reiniciado');
+  };
+
   const isRuc = remitter.docType === SunatDocType.RUC;
   const currentSeriesNumber = useMemo(() => {
     const seriesList = isRuc ? availableFacturaSeries : availableBoletaSeries;
@@ -558,6 +584,8 @@ export const CargoSalePage: React.FC = () => {
           }}
           backendData={ticketBackendData}
           onSuccess={handleTicketSuccess}
+          initialPhoneNumber={remitter.phone}
+          onClearForm={clearCargoFormAfterSale}
         />
       )}
     </div>

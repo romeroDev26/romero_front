@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
-import { Download, Printer, Eye, Cloud } from 'lucide-react';
+import { Download, Printer, Eye, Cloud, MessageCircle } from 'lucide-react';
 import { 
   downloadTicket, 
   generateTicketBlob 
@@ -12,6 +12,7 @@ import {
 import jsPDF from 'jspdf';
 import { BackendInvoiceData } from './tickets/types/backend.types';
 import { useTicketUpload } from '../../../../hooks/useTicketUpload';
+import { WhatsAppSendModal } from './WhatsAppSendModal';
 
 interface TicketPreviewModalProps {
   isOpen: boolean;
@@ -20,6 +21,10 @@ interface TicketPreviewModalProps {
   onSuccess: () => void;
   // Props para tickets de empresa (RUC)
   customGeneratePDF?: () => Promise<jsPDF>;
+  // Número de teléfono inicial para WhatsApp
+  initialPhoneNumber?: string;
+  // Función para limpiar el formulario cuando se cierre el modal
+  onClearForm?: () => void;
 }
 
 export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
@@ -27,12 +32,15 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   onClose,
   backendData,
   onSuccess,
-  customGeneratePDF
+  customGeneratePDF,
+  initialPhoneNumber = '',
+  onClearForm
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   
   // Hook para manejar el upload de tickets
   const { isUploading, error: uploadError, uploadTicketPdf, uploadTicketBlob } = useTicketUpload();
@@ -153,6 +161,10 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const handleClose = () => {
     if (!isGenerating) {
       onClose();
+      // Limpiar el formulario cuando se cierre el modal
+      if (onClearForm) {
+        onClearForm();
+      }
     }
   };
 
@@ -256,7 +268,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         </div>
 
         {/* Botones de acción */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           <Button
             onClick={handleDownloadTicket}
             disabled={isGenerating || isDownloading || isPrinting}
@@ -270,10 +282,11 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
             ) : (
               <>
                 <Download className="h-4 w-4 mr-2" />
-                Descargar Ticket
+                Descargar
               </>
             )}
           </Button>
+          
           <Button
             onClick={handlePrintTicket}
             disabled={isGenerating || isDownloading || isPrinting}
@@ -287,9 +300,18 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
             ) : (
               <>
                 <Printer className="h-4 w-4 mr-2" />
-                Imprimir Ticket
+                Imprimir
               </>
             )}
+          </Button>
+
+          <Button
+            onClick={() => setShowWhatsAppModal(true)}
+            disabled={isGenerating || isDownloading || isPrinting}
+            className="bg-green-500 hover:bg-green-600 py-3"
+          >
+            <MessageCircle className="h-4 w-4 mr-2" />
+            WhatsApp
           </Button>
         </div>
 
@@ -308,6 +330,10 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
               handleDownloadTicket().then(() => {
                 onClose();
                 onSuccess();
+                // Limpiar el formulario también cuando se descarga y finaliza
+                if (onClearForm) {
+                  onClearForm();
+                }
               });
             }}
             disabled={isGenerating || isDownloading || isPrinting}
@@ -316,6 +342,16 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
             Descargar y Finalizar
           </Button>
         </div>
+
+        {/* Modal de WhatsApp */}
+        <WhatsAppSendModal
+          isOpen={showWhatsAppModal}
+          onClose={() => setShowWhatsAppModal(false)}
+          backendData={backendData}
+          customGeneratePDF={customGeneratePDF}
+          initialPhoneNumber={initialPhoneNumber || backendData.client?.phone || ''}
+          onClearForm={onClearForm}
+        />
       </div>
     </Modal>
   );

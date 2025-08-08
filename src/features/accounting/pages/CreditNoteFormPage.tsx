@@ -56,7 +56,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
     isLoading: isLoadingSeries,
   } = useAccountingDocumentSeriesForBranch(
     currentUser?.default_branch_office_id || null,
-    currentUser?.company_id || 1
+    currentUser?.company_id || 1 // Valor por defecto si no está definido
   );
 
   const { control, handleSubmit, formState: { errors } } = useForm<CreditNoteFormData>({

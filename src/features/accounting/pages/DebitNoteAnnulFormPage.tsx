@@ -47,6 +47,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
     queryKey: ['currentUser'],
     queryFn: async (): Promise<User> => {
       const data = await authService.getProfile();
+      console.log('🔍 DebitNoteAnnulFormPage - Current user data:', data);
       return data;
     },
     staleTime: 1000 * 60 * 5,
@@ -59,7 +60,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
     isLoading: isLoadingSeries,
   } = useAccountingDocumentSeriesForBranch(
     currentUser?.default_branch_office_id || null,
-    currentUser?.company_id || 1
+    currentUser?.company_id || 1 // Valor por defecto si no está definido
   );
 
   const { control, handleSubmit, formState: { errors } } = useForm<DebitNoteFormData>({

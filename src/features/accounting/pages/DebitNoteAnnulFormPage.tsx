@@ -47,7 +47,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
     queryKey: ['currentUser'],
     queryFn: async (): Promise<User> => {
       const data = await authService.getProfile();
-      console.log('🔍 DebitNoteAnnulFormPage - Current user data:', data);
+      console.log('DebitNoteAnnulFormPage - Current user data:', data);
       return data;
     },
     staleTime: 1000 * 60 * 5,

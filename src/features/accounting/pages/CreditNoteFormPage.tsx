@@ -15,11 +15,16 @@ import { Invoice, User } from '../../../types';
 import { useAccountingDocumentSeriesForBranch } from '../../../hooks/useAccountingDocumentSeries';
 import { authService } from '../../../services/auth.service'; 
 
-// Catálogo 09 de SUNAT para motivos de Nota de Crédito
+// Catálogo 09 de SUNAT para motivos de Nota de Crédito (Actualizado según backend)
 const CREDIT_NOTE_REASONS = [
   { code: '01', description: 'Anulación de la operación' },
   { code: '02', description: 'Anulación por error en el RUC' },
   { code: '03', description: 'Corrección por error en la descripción' },
+  { code: '04', description: 'Descuento global' },
+  { code: '05', description: 'Descuento por ítem' },
+  { code: '06', description: 'Devolución total' },
+  { code: '07', description: 'Devolución por ítem' },
+  { code: '09', description: 'Disminución en el valor' },
 ];
 
 const creditNoteSchema = z.object({

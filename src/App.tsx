@@ -49,6 +49,7 @@ import { InvoiceDetailPage } from './features/accounting/pages/InvoiceDetailPage
 import { InvoicesListPage } from './features/accounting/pages/InvoicesListPage';
 import { CreditNoteAnnulFormPage } from './features/accounting/pages/CreditNoteFormPage';
 import { CreditNoteNewPage } from './features/accounting/pages/CreditNoteNewPage';
+import { CreditNoteFullFormPage } from './features/accounting/pages/CreditNoteFullFormPage';
 import { CreditNotesListPage } from './features/accounting/pages/CreditNotesListPage';
 import { CreditNoteDetailPage } from './features/accounting/pages/CreditNoteDetailPage';
 import { DebitNotesListPage } from './features/accounting/pages/DebitNotesListPage';
@@ -149,6 +150,7 @@ function App() {
               <Route path="invoices/:id" element={<InvoiceDetailPage />} />
               <Route path="credit-notes" element={<CreditNotesListPage />} />
               <Route path="credit-notes/new" element={<CreditNoteNewPage />} />
+              <Route path="credit-notes/create" element={<CreditNoteFullFormPage />} />
               <Route path="credit-notes/annul" element={<CreditNoteAnnulFormPage />} />
               <Route path="credit-notes/:id" element={<CreditNoteDetailPage />} />
               <Route path="debit-notes" element={<DebitNotesListPage />} />
@@ -167,8 +169,7 @@ function App() {
             <Route path="remission-guides/new" element={<RemissionGuideFormPage />} />
             <Route path="remission-guides/:id" element={<RemissionGuideFormPage />} />
             
-            {/* Reportes SUNAT */}
-            <Route path="sunat-reports" element={<div className="p-6"><h1 className="text-2xl font-bold">Reportes SUNAT</h1></div>} />
+            {/* Reportes SUNAT eliminados */}
             
             {/* Finanzas */}
             <Route path="finance">

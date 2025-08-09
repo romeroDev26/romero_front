@@ -166,7 +166,7 @@ export const VoidDocumentFormPage: React.FC = () => {
         <div className="flex">
           <ExclamationTriangleIcon className="h-6 w-6 text-red-600 mt-1" />
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-red-800">⚠️ Consideraciones Importantes</h3>
+            <h3 className="text-lg font-medium text-red-800">Consideraciones Importantes</h3>
             <div className="mt-2 text-sm text-red-700">
               <ul className="list-disc list-inside space-y-1">
                 <li><strong>Solo se pueden anular documentos previamente ACEPTADOS</strong> por SUNAT</li>
@@ -351,7 +351,7 @@ export const VoidDocumentFormPage: React.FC = () => {
 
           {/* Resumen */}
           <div className="bg-blue-50 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">📋 Resumen de la Comunicación</h4>
+            <h4 className="font-medium text-blue-900 mb-2">Resumen de la Comunicación</h4>
             <div className="text-sm text-blue-800">
               <p><strong>Fecha:</strong> {formatDateForDisplay(watch('generation_date'))}</p>
               <p><strong>Documentos a anular:</strong> {fields.length}</p>

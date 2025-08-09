@@ -100,12 +100,7 @@ const navGroups = [
       { name: 'Anulaciones', path: '/accounting/voids', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
     ]
   },
-  {
-    title: 'Informes y Reportes',
-    items: [
-      { name: 'Reportes SUNAT', path: '/sunat-reports', icon: DocumentTextIcon, iconColor: 'text-cyan-500' }
-    ]
-  },
+
   {
     title: 'Finanzas',
     items: [

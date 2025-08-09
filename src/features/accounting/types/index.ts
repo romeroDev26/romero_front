@@ -1,27 +1,27 @@
 // src/features/accounting/types/index.ts
 
-// Tipos para Notas de Crédito - Actualizados según backend
+// Tipos para Notas de Crédito - Actualizados según documentación backend
 export interface CreditNoteItemCreateData {
-  product_service_id: number; // Cambió de product_id
+  product_id: number; // Según documentación del backend
   quantity: number;
+  unit_code: string; // Requerido según backend - ej: "NIU"
   unit_price: number;
-  description: string; // Nuevo campo
-  tax_category_code?: string; // Ahora opcional
-  unit_code?: string; // Ahora opcional
-  price_type_code?: string; // Ahora opcional
+  price_with_tax: number; // Nuevo campo requerido según backend
+  price_type_code: string; // Requerido - ej: "01"
+  tax_category_code: string; // Requerido - ej: "10"
+  description: string;
 }
 
 export interface CreditNoteCreateData {
   company_id: number;
   client_id: number;
-  credit_note_series: string; // Cambió de 'series'
-  currency_code?: string; // Nuevo campo opcional
-  issue_date?: string; // Nuevo campo opcional
-  issue_time?: string; // Nuevo campo opcional
-  affected_document_type_code: string;
-  affected_document_series: string; // Separado del número
-  affected_document_number: number; // Nuevo campo separado
-  credit_note_type_code: string;
+  series: string; // Según backend se llama 'series', no 'credit_note_series'
+  currency_code: string; // Requerido según backend - ej: "PEN"
+  issue_date?: string; // Opcional - formato "YYYY-MM-DD"
+  issue_time?: string; // Opcional - formato "HH:MM:SS"
+  affected_document_type_code: string; // "01" o "03"
+  affected_document_series_number: string; // Campo completo "F001-00000456"
+  credit_note_type_code: string; // Código del catálogo 09
   reason: string;
   items: CreditNoteItemCreateData[];
 }
@@ -87,13 +87,44 @@ export interface CreditNotesListParams {
   series?: string;
 }
 
-// Respuesta del backend al crear nota de crédito
+// Respuesta del backend al crear nota de crédito (según documentación)
 export interface CreditNoteResponse {
   id: number;
-  identifier: string;
+  company_id: number;
+  client_id: number;
+  document_type_code: string; // "07" para notas de crédito
+  series: string;
+  number: number;
+  issue_date: string;
+  issue_time: string;
+  currency_code: string;
+  affected_document_type_code: string;
+  affected_document_series_number: string;
+  credit_note_type_code: string;
+  reason: string;
+  total_payable: number;
+  total_in_words: string | null;
   sunat_status: 'PENDING' | 'SENT' | 'ACCEPTED' | 'REJECTED';
-  total_amount: number;
+  sunat_response_description: string | null;
+  qr_code_data: string | null;
+  created_by: string;
   created_at: string;
+  updated_at: string | null;
+  items: {
+    id: number;
+    product_id: number;
+    quantity: number;
+    unit_code: string;
+    unit_price: number;
+    price_with_tax: number;
+    price_type_code: string;
+    tax_category_code: string;
+    igv_percentage: number;
+    igv_amount: number;
+    subtotal: number;
+    total_line: number;
+    description: string;
+  }[];
 }
 
 // Tipo para consultar estado SUNAT

@@ -151,7 +151,7 @@ export const VoidDocumentDetailPage: React.FC = () => {
           <div className="flex">
             <CheckCircleIcon className="h-6 w-6 text-green-600 mt-1" />
             <div className="ml-3">
-              <h3 className="text-lg font-medium text-green-800">✅ Documentos Anulados Exitosamente</h3>
+              <h3 className="text-lg font-medium text-green-800">Documentos Anulados Exitosamente</h3>
               <p className="mt-2 text-sm text-green-700">
                 Los {voidDocument.total_items} documentos incluidos en esta comunicación han sido 
                 <strong> oficialmente anulados</strong> por SUNAT y ya no tienen validez tributaria.

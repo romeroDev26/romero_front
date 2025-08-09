@@ -84,11 +84,11 @@ export const DailySummaryFormPage: React.FC = () => {
     yesterday.setDate(yesterday.getDate() - 1);
     
     if (selectedDate.toDateString() === today.toDateString()) {
-      return '⚠️ Resumen del día actual (se incluirán todas las boletas hasta el momento)';
+      return 'Resumen del día actual (se incluirán todas las boletas hasta el momento)';
     } else if (selectedDate.toDateString() === yesterday.toDateString()) {
-      return '✅ Resumen de ayer (recomendado para procesamiento completo)';
+      return 'Resumen de ayer (recomendado para procesamiento completo)';
     } else if (selectedDate < yesterday) {
-      return '📋 Resumen de fecha pasada';
+      return 'Resumen de fecha pasada';
     }
     
     return '';

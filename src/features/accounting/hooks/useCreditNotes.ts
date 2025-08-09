@@ -35,7 +35,9 @@ export const useCreateCreditNote = () => {
   return useMutation({
     mutationFn: (data: CreditNoteCreateData) => creditNotesService.create(data),
     onSuccess: (data) => {
-      toast.success(`Nota de Crédito ${data.identifier} generada correctamente. Se está enviando a SUNAT.`);
+      // Usar el formato correcto del backend
+      const identifier = `${data.series}-${String(data.number).padStart(8, '0')}`;
+      toast.success(`Nota de Crédito ${identifier} generada correctamente. Se está enviando a SUNAT.`);
       queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
     },
     onError: (error: any) => {
@@ -51,7 +53,9 @@ export const useCreateCreditNoteByAnnulment = () => {
   return useMutation({
     mutationFn: (data: CreditNoteAnnulData) => creditNotesService.createByAnnulment(data),
     onSuccess: (data) => {
-      toast.success(`Nota de Crédito ${data.identifier} por anulación creada correctamente.`);
+      // Usar el formato correcto del backend
+      const identifier = `${data.series}-${String(data.number).padStart(8, '0')}`;
+      toast.success(`Nota de Crédito ${identifier} por anulación creada correctamente.`);
       queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
     },
     onError: (error: any) => {

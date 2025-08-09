@@ -24,15 +24,21 @@ class CreditNotesService {
     return response.data;
   }
 
-  // Listar notas de crédito
+  // Listar notas de crédito (actualizado según documentación)
   async getAll(params: CreditNotesListParams): Promise<CreditNote[]> {
     const response = await api.get('/sunat/credit-notes/', { 
       params: {
-        ...params
+        company_id: params.company_id,
+        skip: params.skip || 0,
+        limit: params.limit || 50,
+        sunat_status: params.sunat_status,
+        issue_date: params.issue_date,
+        series: params.series
       }
     });
     
-    // Según la documentación, la respuesta tiene formato: { credit_notes: [...], total: 0, skip: 0, limit: 0 }
+    // Según la documentación, la respuesta tiene formato: 
+    // { credit_notes: [...], total: 0, skip: 0, limit: 0, message: "..." }
     if (response.data && response.data.credit_notes && Array.isArray(response.data.credit_notes)) {
       return response.data.credit_notes;
     }
@@ -40,8 +46,6 @@ class CreditNotesService {
     // Fallback para otros formatos
     if (response.data && Array.isArray(response.data)) {
       return response.data;
-    } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
-      return response.data.data;
     }
     
     // Si no es array, devolver array vacío para evitar errores

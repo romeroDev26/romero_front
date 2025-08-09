@@ -364,7 +364,7 @@ export const DebitNoteFormPage: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Información Importante</h2>
               <div className="space-y-3 text-sm text-gray-600">
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                  <p className="font-medium text-amber-800 mb-1">⚠️ Importante</p>
+                  <p className="font-medium text-amber-800 mb-1">Importante</p>
                   <ul className="space-y-1 text-amber-700">
                     <li>• Las notas de débito aumentan el valor de la deuda</li>
                     <li>• Se enviarán automáticamente a SUNAT</li>

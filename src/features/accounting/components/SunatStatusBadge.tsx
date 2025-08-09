@@ -9,7 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface SunatStatusBadgeProps {
-  status: 'PENDING' | 'SENT' | 'ACCEPTED' | 'REJECTED' | string;
+  status: 'PENDING' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'OBSERVED' | string;
   showIcon?: boolean;
   className?: string;
 }
@@ -39,7 +39,7 @@ export const SunatStatusBadge: React.FC<SunatStatusBadgeProps> = ({
         return {
           icon: ClockIcon,
           color: 'bg-yellow-100 text-yellow-800',
-          text: 'Pendiente',
+          text: 'Procesando',
           iconColor: 'text-yellow-500'
         };
       case 'SENT':
@@ -48,6 +48,13 @@ export const SunatStatusBadge: React.FC<SunatStatusBadgeProps> = ({
           color: 'bg-blue-100 text-blue-800',
           text: 'Enviado',
           iconColor: 'text-blue-500'
+        };
+      case 'OBSERVED':
+        return {
+          icon: ExclamationTriangleIcon,
+          color: 'bg-orange-100 text-orange-800',
+          text: 'Observado',
+          iconColor: 'text-orange-500'
         };
       default:
         return {

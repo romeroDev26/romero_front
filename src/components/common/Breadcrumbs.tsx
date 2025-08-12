@@ -42,6 +42,9 @@ const routeNameMap: { [key: string]: string } = {
   'quotations': 'Cotizaciones',
   'orders': 'Órdenes de Venta',
   
+  // Contabilidad
+  'accounting': 'Contabilidad',
+  
   // Configuración
   'users': 'Usuarios',
   'roles': 'Roles',

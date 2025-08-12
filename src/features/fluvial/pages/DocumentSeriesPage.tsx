@@ -24,7 +24,8 @@ const DOCUMENT_TYPE_OPTIONS = [
   { code: '03', name: 'Boleta de Venta Electrónica' },
   { code: '07', name: 'Nota de Crédito' },
   { code: '08', name: 'Nota de Débito' },
-  { code: '09', name: 'Guía de Remisión' },
+  { code: 'COT', name: 'Cotizaciones' }, // Corregido: usar 'COT' en lugar de '09'
+  { code: '20', name: 'Guía de Remisión' },
 ];
 
 // Modal de Sucursales

@@ -50,6 +50,9 @@ export type TripStatus =
 export type SeatAssignmentStatus = 
   | 'CONFIRMED' | 'BOARDED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
 
+// Estados de cotización
+export type QuotationStatus = 'DRAFT' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED' | 'CONVERTED';
+
 export type ManifestItemType = 
   | 'PASSENGER' | 'CARGO' | 'PACKAGE';
 

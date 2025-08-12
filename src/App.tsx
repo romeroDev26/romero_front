@@ -19,9 +19,10 @@ import { UsersPage } from './features/settings/pages/UsersPage';
 import { RolesPage } from './features/settings/pages/RolesPage'; 
 import SettingsIndexPage from './features/settings/pages/SettingslndexPage';
 
-// Páginas de ventas (cotizaciones - se mantienen para casos especiales)
+// Páginas de ventas (cotizaciones)
 import { QuotationsListPage } from './features/sales/pages/QuotationsListPage';
-import { QuotationFormPage } from './features/sales/pages/QuotationFormPage';
+import { QuotationNewPage } from './features/quotations/pages/QuotationNewPage';
+import { QuotationDetailPage } from './features/quotations/pages/QuotationDetailPage';
 
 // Páginas de guías de remisión (importante para carga)
 import { RemissionGuidesListPage } from './features/remissionGuides/pages/RemissionGuidesListPage';
@@ -62,11 +63,6 @@ import { DailySummaryDetailPage } from './features/accounting/pages/DailySummary
 import { VoidDocumentsListPage } from './features/accounting/pages/VoidDocumentsListPage';
 import { VoidDocumentFormPage } from './features/accounting/pages/VoidDocumentFormPage';
 import { VoidDocumentDetailPage } from './features/accounting/pages/VoidDocumentDetailPage';
-
-
-// Operaciones Fluviales (pendientes de implementar)
-// const ManifestsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Manifiestos</h1><p>Generación y gestión de manifiestos</p></div>;
-
 
 // Reportes Fluviales (pendientes de implementar)
 const FluvialReportsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Reportes Fluviales</h1><p>Reportes específicos del transporte fluvial</p></div>;
@@ -139,8 +135,9 @@ function App() {
             {/* Operaciones Comerciales */}
             <Route path="sales">
               <Route path="quotations" element={<QuotationsListPage />} />
-              <Route path="quotations/new" element={<QuotationFormPage />} />
-              <Route path="quotations/:id" element={<QuotationFormPage />} />
+              <Route path="quotations/new" element={<QuotationNewPage />} />
+              <Route path="quotations/:id" element={<QuotationDetailPage />} />
+              <Route path="quotations/:id/edit" element={<QuotationDetailPage />} />
             </Route>
             
             {/* Contabilidad */}

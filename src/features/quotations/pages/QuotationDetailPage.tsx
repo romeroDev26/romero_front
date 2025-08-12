@@ -3,8 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
+import { useQuotationPDFGeneration } from '../hooks/useQuotationPDFGeneration';
+import { QuotationWhatsAppModal } from '../components/QuotationWhatsAppModal';
 import { quotationsService } from '../services/quotations.service';
 import { Quotation, QuotationStatus } from '../types';
+import { toast } from 'react-toastify';
 
 const statusLabels: Record<QuotationStatus, string> = {
   DRAFT: 'Borrador',
@@ -31,12 +34,127 @@ export const QuotationDetailPage: React.FC = () => {
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pdfExists, setPdfExists] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  
+  // Hook para manejo de PDFs
+  const {
+    generateAndUploadPDF,
+    checkPDFExists,
+    getPDFUrl,
+    isGenerating,
+    isUploading,
+    isProcessing
+  } = useQuotationPDFGeneration();
 
   useEffect(() => {
     if (id) {
       fetchQuotation(parseInt(id));
     }
   }, [id]);
+
+  // Verificar PDF después de un delay cuando viene de creación (para dar tiempo a que se genere)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromCreation = urlParams.get('from') === 'creation';
+    
+    if (fromCreation && quotation && !pdfExists) {
+      console.log('🔄 Iniciando polling para PDF automático...');
+      
+      // Hacer polling para verificar si el PDF se generó automáticamente
+      const pollForPDF = async () => {
+        let attempts = 0;
+        const maxAttempts = 20; // máximo 10 segundos (500ms * 20)
+        
+        const poll = async () => {
+          try {
+            console.log(`🔍 Polling intento ${attempts + 1}/${maxAttempts}`);
+            
+            // Refrescar los datos de la cotización primero
+            const refreshedQuotation = await quotationsService.getById(quotation.id);
+            
+            if (refreshedQuotation.pdf_file_path && refreshedQuotation.pdf_file_path.trim() !== '') {
+              console.log('✅ PDF detectado en cotización refrescada:', refreshedQuotation.pdf_file_path);
+              setQuotation(refreshedQuotation);
+              setPdfExists(true);
+              setPdfUrl(refreshedQuotation.pdf_file_path);
+              return true;
+            }
+            
+            // Fallback: usar el servicio
+            const token = localStorage.getItem('token') || '';
+            const exists = await checkPDFExists(quotation.id, token);
+            
+            if (exists) {
+              console.log('✅ PDF detectado vía servicio');
+              const url = await getPDFUrl(quotation.id, token);
+              setPdfExists(true);
+              setPdfUrl(url);
+              // Refrescar la cotización completa
+              const updatedQuotation = await quotationsService.getById(quotation.id);
+              setQuotation(updatedQuotation);
+              return true;
+            }
+            
+            return false;
+          } catch (error) {
+            console.error('❌ Error en polling:', error);
+            return false;
+          }
+        };
+        
+        // Ejecutar polling
+        while (attempts < maxAttempts) {
+          const found = await poll();
+          if (found) break;
+          
+          attempts++;
+          if (attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        if (attempts >= maxAttempts) {
+          console.log('⏰ Polling terminado sin encontrar PDF');
+        }
+      };
+      
+      // Empezar el polling después de un pequeño delay
+      setTimeout(pollForPDF, 1000);
+    }
+  }, [quotation, pdfExists, checkPDFExists, getPDFUrl]);
+
+  // Verificar si existe PDF cuando se carga la cotización
+  useEffect(() => {
+    const checkPDF = async () => {
+      if (quotation) {
+        try {
+          // Verificar si la cotización ya tiene pdf_file_path
+          if (quotation.pdf_file_path && quotation.pdf_file_path.trim() !== '') {
+            setPdfExists(true);
+            setPdfUrl(quotation.pdf_file_path);
+            return;
+          }
+          
+          // Si no tiene pdf_file_path, usar el servicio para verificar
+          const token = localStorage.getItem('token') || '';
+          const exists = await checkPDFExists(quotation.id, token);
+          setPdfExists(exists);
+          
+          // Si existe, obtener la URL
+          if (exists) {
+            const url = await getPDFUrl(quotation.id, token);
+            setPdfUrl(url);
+          }
+        } catch (error) {
+          console.error('Error checking PDF:', error);
+        }
+      }
+    };
+
+    checkPDF();
+  }, [quotation, checkPDFExists, getPDFUrl]);
 
   const fetchQuotation = async (quotationId: number) => {
     setLoading(true);
@@ -51,28 +169,56 @@ export const QuotationDetailPage: React.FC = () => {
     }
   };
 
-  const handlePrintPDF = () => {
-    if (quotation) {
-      // Aquí implementaremos la generación de PDF
-      console.log('Generar PDF para cotización:', quotation.id);
-      // TODO: Implementar generación de PDF
-    }
-  };
-
-  const handleSendEmail = async () => {
-    if (quotation) {
-      try {
-        await quotationsService.sendByEmail(quotation.id);
-        setQuotation(prev => prev ? { ...prev, status: 'SENT' } : null);
-      } catch (err) {
-        alert('Error al marcar como enviada');
-      }
-    }
+  const handleSendWhatsApp = () => {
+    setShowWhatsAppModal(true);
   };
 
   const handleConvertToInvoice = () => {
     if (quotation) {
       navigate(`/sales/quotations/${quotation.id}/convert-to-invoice`);
+    }
+  };
+
+  // Funciones para manejo de PDF
+  const handleGenerateAndUploadPDF = async () => {
+    if (!quotation) return;
+    
+    try {
+      const token = localStorage.getItem('token') || '';
+      const result = await generateAndUploadPDF(quotation, token);
+      
+      if (result.success) {
+        setPdfExists(true);
+        // Obtener la URL del PDF recién subido
+        const url = await getPDFUrl(quotation.id, token);
+        setPdfUrl(url);
+        // Refrescar la cotización completa
+        const updatedQuotation = await quotationsService.getById(quotation.id);
+        setQuotation(updatedQuotation);
+      }
+    } catch (error) {
+      toast.error('Error al generar PDF');
+    }
+  };
+  
+  // Función para refrescar manualmente
+  const handleRefreshPDF = async () => {
+    if (!quotation) return;
+    
+    try {
+      console.log('🔄 Refrescando estado del PDF...');
+      const updatedQuotation = await quotationsService.getById(quotation.id);
+      setQuotation(updatedQuotation);
+      
+      if (updatedQuotation.pdf_file_path && updatedQuotation.pdf_file_path.trim() !== '') {
+        setPdfExists(true);
+        setPdfUrl(updatedQuotation.pdf_file_path);
+        console.log('✅ PDF encontrado después de refrescar');
+      } else {
+        console.log('❌ PDF aún no disponible después de refrescar');
+      }
+    } catch (error) {
+      console.error('Error al refrescar:', error);
     }
   };
 
@@ -129,22 +275,37 @@ export const QuotationDetailPage: React.FC = () => {
           </h1>
         </div>
         <div className="flex space-x-2">
-          <Button variant="outline" onClick={handlePrintPDF}>
-            Imprimir PDF
-          </Button>
-          {quotation.status === 'DRAFT' && (
+          {/* Botones de PDF - Solo mostrar "Generar PDF" si no existe */}
+          {!pdfExists && (
             <>
               <Button 
-                variant="outline" 
-                onClick={() => navigate(`/sales/quotations/${quotation.id}/edit`)}
+                onClick={handleGenerateAndUploadPDF} 
+                disabled={isProcessing}
+                variant="outline"
               >
-                Editar
+                {isGenerating && <Spinner />}
+                {isGenerating ? 'Generando...' : isUploading ? 'Subiendo...' : 'Generar PDF'}
               </Button>
-              <Button onClick={handleSendEmail}>
-                Enviar por Email
+              
+              {/* Botón de refrescar para verificar si el PDF ya está listo */}
+              <Button 
+                onClick={handleRefreshPDF}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                🔄 Refrescar
               </Button>
             </>
           )}
+          
+          {/* Botón de WhatsApp - Solo si hay PDF */}
+          {pdfExists && pdfUrl && (
+            <Button onClick={handleSendWhatsApp}>
+              Enviar por WhatsApp
+            </Button>
+          )}
+          
           {quotation.status === 'ACCEPTED' && (
             <Button onClick={handleConvertToInvoice}>
               Convertir a Factura
@@ -159,10 +320,10 @@ export const QuotationDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Estado y validez */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex justify-between items-start">
-          <div>
+      {/* Información resumida de la cotización */}
+      <div className="bg-gray-50 rounded-lg p-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
             <div className="flex items-center space-x-4">
               <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${statusColors[quotation.status]}`}>
                 {statusLabels[quotation.status]}
@@ -173,198 +334,74 @@ export const QuotationDetailPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-600 mt-2">
-              Válida hasta: {new Date(quotation.valid_until).toLocaleDateString('es-ES')}
-            </p>
+            <div className="text-sm text-gray-600 space-y-1">
+              <p><span className="font-medium">Cliente:</span> {quotation.client.name}</p>
+              <p><span className="font-medium">Documento:</span> {quotation.client.doc_number}</p>
+              <p><span className="font-medium">Fecha de emisión:</span> {new Date(quotation.issue_date).toLocaleDateString('es-ES')}</p>
+              <p><span className="font-medium">Válida hasta:</span> {new Date(quotation.valid_until).toLocaleDateString('es-ES')}</p>
+              <p><span className="font-medium">Vendedor:</span> {quotation.seller.full_name}</p>
+            </div>
           </div>
+          
           <div className="text-right">
             <p className="text-2xl font-bold text-gray-900">
               {quotation.currency_code} {parseFloat(quotation.total_payable).toFixed(2)}
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 max-w-xs">
               {quotation.total_in_words}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Información general */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Información de la empresa */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Empresa</h3>
-          <div className="space-y-2">
-            <p><span className="font-medium">Nombre:</span> {quotation.company.business_name}</p>
-            <p><span className="font-medium">RUC:</span> {quotation.company.ruc}</p>
-            <p><span className="font-medium">Dirección:</span> {quotation.company.address}</p>
-            <p><span className="font-medium">Teléfono:</span> {quotation.company.phone}</p>
-            <p><span className="font-medium">Email:</span> {quotation.company.email}</p>
-          </div>
-        </div>
-
-        {/* Información del cliente */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cliente</h3>
-          <div className="space-y-2">
-            <p><span className="font-medium">Nombre:</span> {quotation.client.name}</p>
-            <p><span className="font-medium">Documento:</span> {quotation.client.doc_number}</p>
-            <p><span className="font-medium">Dirección:</span> {quotation.client.address_line}</p>
-            <p><span className="font-medium">Teléfono:</span> {quotation.client.phone}</p>
-            <p><span className="font-medium">Email:</span> {quotation.client.email}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Información de la cotización */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Detalles de la Cotización</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-600">Fecha de Emisión</p>
-            <p className="font-medium">{new Date(quotation.issue_date).toLocaleDateString('es-ES')}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Vendedor</p>
-            <p className="font-medium">{quotation.seller.full_name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Moneda</p>
-            <p className="font-medium">{quotation.currency_code}</p>
-          </div>
-          {quotation.payment_terms && (
-            <div>
-              <p className="text-sm text-gray-600">Términos de Pago</p>
-              <p className="font-medium">{quotation.payment_terms}</p>
+      {/* Visor de PDF - Solo si existe PDF en el servidor */}
+      {pdfExists && pdfUrl && (
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6 border-b">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-900">Vista Previa del PDF</h3>
+              <Button
+                variant="outline"
+                onClick={() => window.open(pdfUrl, '_blank')}
+              >
+                Abrir en Nueva Pestaña
+              </Button>
             </div>
-          )}
-          <div>
-            <p className="text-sm text-gray-600">Tipo de Cambio</p>
-            <p className="font-medium">{quotation.exchange_rate}</p>
           </div>
-        </div>
-      </div>
-
-      {/* Items */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Items</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  #
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descripción
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Cantidad
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  P. Unitario
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descuento
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subtotal
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  IGV
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {quotation.items.map((item, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {index + 1}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    <div>
-                      <div className="font-medium">{item.item_description}</div>
-                      <div className="text-xs text-gray-500">
-                        Código: {item.product_id} | Unidad: {item.unit_code}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    {item.quantity}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    {item.unit_price.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    {item.discount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    {(item.quantity * item.unit_price).toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                    {(item.quantity * item.unit_price * 0.18).toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right font-medium">
-                    {(item.quantity * item.unit_price * 1.18).toFixed(2)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Totales */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Totales</h3>
-        <div className="space-y-2 max-w-md ml-auto">
-          <div className="flex justify-between">
-            <span>Subtotal:</span>
-            <span>{quotation.currency_code} {parseFloat(quotation.total_taxable).toFixed(2)}</span>
+          <div className="p-6">
+            <div className="border rounded-lg overflow-hidden" style={{ height: '800px' }}>
+              <iframe
+                src={pdfUrl}
+                width="100%"
+                height="100%"
+                frameBorder="0"
+                title="Vista previa del PDF de la cotización"
+                className="w-full h-full"
+              />
+            </div>
           </div>
-          {parseFloat(quotation.total_discount) > 0 && (
-            <div className="flex justify-between">
-              <span>Descuento:</span>
-              <span>{quotation.currency_code} {parseFloat(quotation.total_discount).toFixed(2)}</span>
-            </div>
-          )}
-          <div className="flex justify-between">
-            <span>IGV (18%):</span>
-            <span>{quotation.currency_code} {parseFloat(quotation.total_igv).toFixed(2)}</span>
-          </div>
-          {parseFloat(quotation.total_isc) > 0 && (
-            <div className="flex justify-between">
-              <span>ISC:</span>
-              <span>{quotation.currency_code} {parseFloat(quotation.total_isc).toFixed(2)}</span>
-            </div>
-          )}
-          <div className="border-t pt-2 flex justify-between font-bold text-lg">
-            <span>Total:</span>
-            <span>{quotation.currency_code} {parseFloat(quotation.total_payable).toFixed(2)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Notas */}
-      {(quotation.notes || quotation.internal_notes) && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Notas</h3>
-          {quotation.notes && (
-            <div className="mb-4">
-              <h4 className="font-medium text-gray-900 mb-2">Notas del Cliente:</h4>
-              <p className="text-gray-700">{quotation.notes}</p>
-            </div>
-          )}
-          {quotation.internal_notes && (
-            <div>
-              <h4 className="font-medium text-gray-900 mb-2">Notas Internas:</h4>
-              <p className="text-gray-700">{quotation.internal_notes}</p>
-            </div>
-          )}
         </div>
       )}
+
+      {/* Mensaje si no hay PDF */}
+      {!pdfExists && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6">
+          <div className="text-yellow-800">
+            <h3 className="font-medium mb-2">PDF no disponible</h3>
+            <p className="text-sm">
+              El PDF de esta cotización aún no está disponible. Haz clic en "Generar PDF" para crear el documento.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de WhatsApp */}
+      <QuotationWhatsAppModal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
+        quotation={quotation}
+        pdfUrl={pdfUrl}
+      />
     </div>
   );
 };

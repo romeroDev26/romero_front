@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
+import { Pagination } from '../../../components/common/Pagination';
 import { Spinner } from '../../../components/common/Spinner';
 import { Input } from '../../../components/common/Input';
 import { useQuotations } from '../hooks/useQuotations';
@@ -29,7 +30,7 @@ const statusColors: Record<QuotationStatus, string> = {
 
 export const QuotationsListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { quotations, loading, error, fetchQuotations, updateQuotationStatus, deleteQuotation } = useQuotations();
+  const { quotations, pagination, loading, error, fetchQuotations, updateQuotationStatus, deleteQuotation } = useQuotations();
   
   const [filters, setFilters] = useState({
     series: '',
@@ -38,18 +39,28 @@ export const QuotationsListPage: React.FC = () => {
     start_date: '',
     end_date: ''
   });
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    handleSearch();
+    handleSearch(1);
   }, []);
 
-  const handleSearch = () => {
+  const handleSearch = (page: number = currentPage) => {
     const params = Object.entries(filters).reduce((acc, [key, value]) => {
       if (value) acc[key] = value;
       return acc;
     }, {} as any);
     
+    // Agregar parámetros de paginación
+    params.skip = (page - 1) * 15;
+    params.limit = 15;
+    
+    setCurrentPage(page);
     fetchQuotations(params);
+  };
+
+  const handlePageChange = (page: number) => {
+    handleSearch(page);
   };
 
   const handleFilterChange = (field: string, value: string) => {
@@ -59,7 +70,7 @@ export const QuotationsListPage: React.FC = () => {
   const handleStatusChange = async (quotationId: number, status: QuotationStatus) => {
     const success = await updateQuotationStatus(quotationId, { status });
     if (success) {
-      handleSearch();
+      handleSearch(currentPage);
     }
   };
 
@@ -67,7 +78,12 @@ export const QuotationsListPage: React.FC = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta cotización?')) {
       const success = await deleteQuotation(quotationId);
       if (success) {
-        handleSearch();
+        // Si estamos en la última página y se elimina el último registro, ir a la página anterior
+        const shouldGoToPreviousPage = 
+          currentPage > 1 && 
+          quotations.length === 1;
+        
+        handleSearch(shouldGoToPreviousPage ? currentPage - 1 : currentPage);
       }
     }
   };
@@ -189,7 +205,7 @@ export const QuotationsListPage: React.FC = () => {
           />
         </div>
         <div className="mt-4 flex space-x-2">
-          <Button onClick={handleSearch} disabled={loading}>
+          <Button onClick={() => handleSearch(1)} disabled={loading}>
             <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
             Buscar
           </Button>
@@ -203,7 +219,8 @@ export const QuotationsListPage: React.FC = () => {
                 start_date: '',
                 end_date: ''
               });
-              fetchQuotations();
+              setCurrentPage(1);
+              fetchQuotations({ skip: 0, limit: 15 });
             }}
           >
             Limpiar
@@ -232,15 +249,6 @@ export const QuotationsListPage: React.FC = () => {
                 >
                   Ver
                 </Button>
-                {quotation.status === 'DRAFT' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/sales/quotations/${quotation.id}/edit`)}
-                  >
-                    Editar
-                  </Button>
-                )}
                 {quotation.status !== 'CONVERTED' && (
                   <select
                     value={quotation.status}
@@ -269,6 +277,20 @@ export const QuotationsListPage: React.FC = () => {
           />
         )}
       </div>
+        
+      {/* Paginación */}
+      {!loading && quotations.length > 0 && (
+        <div className="bg-white rounded-lg shadow mt-4">
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.total_pages}
+            total={pagination.total}
+            limit={pagination.limit}
+            onPageChange={handlePageChange}
+            loading={loading}
+          />
+        </div>
+      )}
     </div>
   );
 };

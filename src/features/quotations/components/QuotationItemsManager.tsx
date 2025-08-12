@@ -22,16 +22,25 @@ export interface SimpleItem {
   precio_unitario: number;
   descuento: number; // ahora es monto en soles
   importe_total: number;
+  service_id?: number;
 }
 
 interface QuotationItemsManagerProps {
   items: SimpleItem[];
   onItemsChange: (items: SimpleItem[]) => void;
+  selectedService?: {
+    id: number;
+    name: string;
+    description: string;
+    unit_code: string;
+    sale_price: string;
+  } | null;
 }
 
 export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
   items,
-  onItemsChange
+  onItemsChange,
+  selectedService
 }) => {
   // Estados para el formulario de nuevo item
   const [newItem, setNewItem] = useState<SimpleItem>({
@@ -42,6 +51,18 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
     descuento: 0, // monto en soles
     importe_total: 0
   });
+
+    // Prellenar campos del ítem cuando cambia el servicio
+    useEffect(() => {
+      if (selectedService) {
+        setNewItem(prev => ({
+          ...prev,
+          descripcion: selectedService.description,
+          unidad: selectedService.unit_code,
+          precio_unitario: parseFloat(selectedService.sale_price)
+        }));
+      }
+    }, [selectedService]);
 
   // Calcular el importe total del nuevo item
   useEffect(() => {
@@ -69,13 +90,14 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
       toast.error('El descuento no puede ser mayor al importe total');
       return;
     }
-    onItemsChange([...items, { ...newItem }]);
+    // Agregar el id del servicio al ítem
+    onItemsChange([...items, { ...newItem, service_id: selectedService?.id }]);
     // Reset form
     setNewItem({
       cantidad: 1,
-      unidad: 'NIU',
-      descripcion: '',
-      precio_unitario: 0,
+      unidad: selectedService?.unit_code || 'NIU',
+      descripcion: selectedService?.description || '',
+      precio_unitario: parseFloat(selectedService?.sale_price || '0'),
       descuento: 0,
       importe_total: 0
     });

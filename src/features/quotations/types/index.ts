@@ -222,3 +222,20 @@ export type UnitCode = 'NIU' | 'KGM' | 'MTR' | 'LTR' | 'PAQ';
 
 // Códigos de tipo de precio
 export type PriceTypeCode = '01' | '02' | '03';
+
+// Respuesta paginada para cotizaciones
+export interface QuotationsPaginatedResponse {
+  data: Quotation[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
+// Metadata de paginación
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}

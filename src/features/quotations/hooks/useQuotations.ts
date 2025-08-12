@@ -6,11 +6,18 @@ import {
   QuotationsListParams, 
   QuotationCreate,
   QuotationStatusUpdate,
-  ConvertToInvoiceData
+  ConvertToInvoiceData,
+  PaginationMeta
 } from '../types';
 
 export const useQuotations = () => {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [pagination, setPagination] = useState<PaginationMeta>({
+    total: 0,
+    page: 1,
+    limit: 15,
+    total_pages: 0
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,8 +25,14 @@ export const useQuotations = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await quotationsService.getList(params);
-      setQuotations(data);
+      const response = await quotationsService.getList(params);
+      setQuotations(response.data);
+      setPagination({
+        total: response.total,
+        page: response.page,
+        limit: response.limit,
+        total_pages: response.total_pages
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar cotizaciones');
     } finally {
@@ -118,6 +131,7 @@ export const useQuotations = () => {
 
   return {
     quotations,
+    pagination,
     loading,
     error,
     fetchQuotations,

@@ -6,7 +6,8 @@ import {
   QuotationsListParams,
   QuotationStatusUpdate,
   QuotationsSummary,
-  ConvertToInvoiceData
+  ConvertToInvoiceData,
+  QuotationsPaginatedResponse
 } from '../types';
 
 export const quotationsService = {
@@ -23,10 +24,10 @@ export const quotationsService = {
    * Obtener lista de cotizaciones con filtros
    * GET /quotations/
    */
-  getList: async (params: QuotationsListParams = {}): Promise<Quotation[]> => {
+  getList: async (params: QuotationsListParams = {}): Promise<QuotationsPaginatedResponse> => {
     const { 
       skip = 0, 
-      limit = 100, 
+      limit = 15, 
       series,
       number,
       start_date,
@@ -47,7 +48,34 @@ export const quotationsService = {
     if (status) queryParams.append('status', status);
 
     const response = await api.get<Quotation[]>(`/quotations/?${queryParams.toString()}`);
-    return response.data;
+    
+    // Si el API devuelve los headers de paginación
+    const totalHeader = response.headers['x-total-count'] || response.headers['X-Total-Count'];
+    
+    // Si no hay header de total, hacer una estimación
+    let total: number;
+    if (totalHeader) {
+      total = parseInt(totalHeader, 10);
+    } else {
+      // Si recibimos el límite exacto de registros, probablemente hay más
+      // Esta es una estimación temporal
+      if (response.data.length === limit) {
+        total = skip + response.data.length + 1; // Mínimo una página más
+      } else {
+        total = skip + response.data.length; // Esta es la última página
+      }
+    }
+    
+    const page = Math.floor(skip / limit) + 1;
+    const total_pages = Math.ceil(total / limit);
+
+    return {
+      data: response.data,
+      total,
+      page,
+      limit,
+      total_pages
+    };
   },
 
   /**

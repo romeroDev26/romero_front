@@ -37,7 +37,7 @@ export const QuotationSeriesSelector: React.FC<QuotationSeriesSelectorProps> = (
         </option>
         {quotationSeries.map(series => (
           <option key={series.id} value={series.series_code}>
-            {series.series_code} - #{series.current_number.toString().padStart(6, '0')}
+            {series.series_code}
           </option>
         ))}
       </select>

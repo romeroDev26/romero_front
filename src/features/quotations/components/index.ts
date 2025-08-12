@@ -3,5 +3,8 @@ export { ClientSelector } from './ClientSelector';
 export { ServiceSelector } from './ServiceSelector';
 export { QuotationItemsManager } from './QuotationItemsManager';
 export { QuotationSummary } from './QuotationSummary';
+export { QuotationPDFViewer } from './QuotationPDFViewer';
+export { QuotationPreviewModal } from './QuotationPreviewModal';
+export { QuotationWhatsAppModal } from './QuotationWhatsAppModal';
 export type { LocalClient } from './ClientSelector';
 export type { SimpleItem } from './QuotationItemsManager';

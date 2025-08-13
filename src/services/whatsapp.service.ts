@@ -24,7 +24,65 @@ export interface WhatsAppSendInvoiceRequest {
   instance_name?: string;
 }
 
+export interface WhatsAppSendQuotationRequest {
+  quotation_id: number;
+  phone_number: string;
+  custom_message?: string;
+  instance_name?: string;
+}
+
 class WhatsAppService {
+  /**
+   * Envía una cotización por WhatsApp usando el endpoint directo del backend
+   * @param quotationId ID de la cotización
+   * @param phoneNumber 
+   * @param customMessage 
+   */
+  async sendQuotationPdf({
+    quotationId,
+    phoneNumber,
+    customMessage
+  }: {
+    quotationId: number;
+    phoneNumber: string;
+    customMessage?: string;
+  }): Promise<WhatsAppSendResponse> {
+    try {
+      const defaultMessage = `¡Hola!
+
+Nos complace enviarle su cotización correspondiente.
+Adjuntamos el documento PDF para su revisión.
+
+Gracias por su confianza.
+Atentamente,
+El equipo de GLOBAL ROMERO S.A.C.`;
+
+      const requestData: WhatsAppSendQuotationRequest = {
+        quotation_id: quotationId,
+        phone_number: this.formatPhoneNumber(phoneNumber),
+        custom_message: customMessage || defaultMessage,
+        instance_name: 'romero_ventas'
+      };
+
+      await api.post('/external/whatsapp/send-quotation-pdf', requestData);
+      
+      return {
+        success: true,
+        message: 'Cotización enviada exitosamente por WhatsApp'
+      };
+    } catch (error: any) {
+      console.error('Error enviando cotización por WhatsApp:', error);
+      
+      return {
+        success: false,
+        error: error.response?.data?.detail?.[0]?.msg || 
+               error.response?.data?.message || 
+               error.message || 
+               'Error desconocido al enviar cotización'
+      };
+    }
+  }
+
   /**
    * Envía una factura/boleta por WhatsApp usando el endpoint directo del backend
    * @param invoiceId ID del comprobante

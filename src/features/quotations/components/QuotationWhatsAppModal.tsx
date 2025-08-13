@@ -13,14 +13,13 @@ interface QuotationWhatsAppModalProps {
   isOpen: boolean;
   onClose: () => void;
   quotation: Quotation;
-  pdfUrl: string | null;
+  pdfUrl?: string | null; // Ahora opcional ya que no lo necesitamos
 }
 
 export const QuotationWhatsAppModal: React.FC<QuotationWhatsAppModalProps> = ({
   isOpen,
   onClose,
-  quotation,
-  pdfUrl
+  quotation
 }) => {
   const [phoneNumber, setPhoneNumber] = useState(quotation.client?.phone || '');
   const [customMessage, setCustomMessage] = useState('');
@@ -49,32 +48,14 @@ El equipo de GLOBAL ROMERO S.A.C.`;
       return;
     }
 
-    if (!pdfUrl) {
-      setSendResult({
-        success: false,
-        error: 'PDF no disponible para enviar'
-      });
-      return;
-    }
-
     try {
       setIsSending(true);
       setSendResult(null);
 
-      // Obtener el blob del PDF desde la URL
-      const response = await fetch(pdfUrl);
-      const blob = await response.blob();
-      
-      // Convertir a base64
-      const pdfBase64 = await whatsappService.blobToBase64(blob);
-      
-      // Enviar por WhatsApp
-      const fileName = `cotizacion-${quotation.series}-${quotation.number.toString().padStart(6, '0')}.pdf`;
-      
-      const result = await whatsappService.sendDocument({
+      // Usar el nuevo endpoint específico para cotizaciones
+      const result = await whatsappService.sendQuotationPdf({
+        quotationId: quotation.id,
         phoneNumber,
-        pdfBase64,
-        fileName,
         customMessage: customMessage.trim() || undefined
       });
 

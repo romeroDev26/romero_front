@@ -54,6 +54,8 @@ export const QuotationsListPage: React.FC = () => {
     // Agregar parámetros de paginación
     params.skip = (page - 1) * 15;
     params.limit = 15;
+    // Agregar company_id fijo
+    params.company_id = 1;
     
     setCurrentPage(page);
     fetchQuotations(params);

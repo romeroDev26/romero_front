@@ -39,6 +39,8 @@ export const quotationsService = {
     const queryParams = new URLSearchParams();
     queryParams.append('skip', skip.toString());
     queryParams.append('limit', limit.toString());
+    // Agregar company_id fijo
+    queryParams.append('company_id', '1');
     
     if (series) queryParams.append('series', series);
     if (number !== undefined) queryParams.append('number', number.toString());

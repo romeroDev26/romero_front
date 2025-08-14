@@ -25,7 +25,7 @@ export interface DataTableProps<T> {
 
 export type SunatDocumentStatus = 
   | 'PENDING' | 'GENERATED' | 'SIGNED' | 'SENT' 
-  | 'ACCEPTED' | 'REJECTED' | 'OBSERVED' | 'VOIDED' | 'ERROR';
+  | 'ACCEPTED' | 'RECEIVED' | 'REJECTED' | 'OBSERVED' | 'VOIDED' | 'ERROR';
 
 export type InventoryMovementType = 
   | 'PURCHASE_ENTRY' | 'SALE_EXIT' | 'INITIAL_STOCK' 

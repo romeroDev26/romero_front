@@ -8,14 +8,13 @@ import {
   TruckIcon,
   DocumentTextIcon,
   UserIcon,
-  MapPinIcon,
-  EyeIcon,
-  PencilIcon
+  MapPinIcon
 } from '@heroicons/react/24/outline';
 import { format, parseISO } from 'date-fns';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
-import { Input } from '../../../components/common/Input';
+import { SunatStatusBadge } from '../../accounting/components/SunatStatusBadge';
+import { RemissionGuideActions } from '../components/RemissionGuideActions';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useRemissionGuides } from '../hooks/useRemissionGuides';
@@ -70,46 +69,6 @@ export const RemissionGuidesListPage: React.FC = () => {
 
     return filtered;
   }, [guides, debouncedSearchTerm, statusFilter, dateFilter]);
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'PENDING':
-        return 'bg-gray-50 text-gray-700 ring-gray-600/20';
-      case 'GENERATED':
-        return 'bg-blue-50 text-blue-700 ring-blue-600/20';
-      case 'SIGNED':
-        return 'bg-indigo-50 text-indigo-700 ring-indigo-600/20';
-      case 'SENT':
-        return 'bg-yellow-50 text-yellow-800 ring-yellow-600/20';
-      case 'ACCEPTED':
-        return 'bg-green-50 text-green-700 ring-green-600/20';
-      case 'REJECTED':
-        return 'bg-red-50 text-red-700 ring-red-600/20';
-      case 'OBSERVED':
-        return 'bg-orange-50 text-orange-700 ring-orange-600/20';
-      case 'VOIDED':
-        return 'bg-purple-50 text-purple-700 ring-purple-600/20';
-      case 'ERROR':
-        return 'bg-red-50 text-red-700 ring-red-600/20';
-      default:
-        return 'bg-gray-50 text-gray-700 ring-gray-600/20';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'Pendiente';
-      case 'GENERATED': return 'Generado';
-      case 'SIGNED': return 'Firmado';
-      case 'SENT': return 'Enviado';
-      case 'ACCEPTED': return 'Aceptado';
-      case 'REJECTED': return 'Rechazado';
-      case 'OBSERVED': return 'Observado';
-      case 'VOIDED': return 'Anulado';
-      case 'ERROR': return 'Error';
-      default: return status;
-    }
-  };
 
   const columns: Column<RemissionGuideTransportista>[] = [
     {
@@ -191,31 +150,19 @@ export const RemissionGuidesListPage: React.FC = () => {
       key: 'status',
       header: 'Estado SUNAT',
       accessor: (item) => (
-        <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${getStatusBadgeClass(item.sunat_status)}`}>
-          {getStatusText(item.sunat_status)}
-        </span>
+        <SunatStatusBadge status={item.sunat_status} />
       ),
     },
     {
       key: 'actions',
       header: 'Acciones',
       accessor: (item) => (
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => navigate(`/remission-guides/${item.id}`)}
-            className="inline-flex items-center p-1.5 border border-transparent rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            title="Ver detalles"
-          >
-            <EyeIcon className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => navigate(`/remission-guides/${item.id}/edit`)}
-            className="inline-flex items-center p-1.5 border border-transparent rounded-md text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-            title="Editar"
-          >
-            <PencilIcon className="h-4 w-4" />
-          </button>
-        </div>
+        <RemissionGuideActions
+          guide={item}
+          companyId={companyId || 0}
+          onView={(guide) => navigate(`/remission-guides/${guide.id}`)}
+          onEdit={(guide) => navigate(`/remission-guides/${guide.id}/edit`)}
+        />
       ),
     },
   ];

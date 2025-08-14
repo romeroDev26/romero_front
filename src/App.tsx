@@ -27,6 +27,7 @@ import { QuotationDetailPage } from './features/quotations/pages/QuotationDetail
 // Páginas de guías de remisión (importante para carga)
 import { RemissionGuidesListPage } from './features/remissionGuides/pages/RemissionGuidesListPage';
 import { RemissionGuideFormPage } from './features/remissionGuides/pages/RemissionGuideFormPage';
+import { RemissionGuideDetailPage } from './features/remissionGuides/pages/RemissionGuideDetailPage';
 
 // Páginas del módulo fluvial
 import { SalesPointPage } from './features/fluvial/pages/SalesPointPage';
@@ -164,7 +165,8 @@ function App() {
             {/* Guías de Remisión (importante para carga) */}
             <Route path="remission-guides" element={<RemissionGuidesListPage />} />
             <Route path="remission-guides/new" element={<RemissionGuideFormPage />} />
-            <Route path="remission-guides/:id" element={<RemissionGuideFormPage />} />
+            <Route path="remission-guides/:id" element={<RemissionGuideDetailPage />} />
+            <Route path="remission-guides/:id/edit" element={<RemissionGuideFormPage />} />
             
             {/* Reportes SUNAT eliminados */}
             

@@ -75,7 +75,9 @@ export interface BackendInvoiceData {
   branch_office_name: string | null;
   branch_office_address: string | null;
   branch_office_phone: string | null;
-  
+  branch_office_port_name?: string | null; // nuevo: nombre del puerto de la sucursal
+  branch_office_port_address?: string | null; // nuevo: dirección del puerto de la sucursal
+
   // QR Code data
   qr_code_data: string;
   

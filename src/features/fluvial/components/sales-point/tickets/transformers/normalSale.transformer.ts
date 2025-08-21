@@ -75,6 +75,8 @@ export class NormalSaleTransformer {
       company_address: data.company.address,
       company_phones: formatCompanyPhones(data.company.phone),
       emission_point: getEmissionPoint(data.branch_office_name, data.branch_office_name || ''),
+      branch_office_address: data.branch_office_address || '',
+      branch_office_phone: data.branch_office_phone || '',
       document_title: getDocumentTitle(data.document_type_code),
       document_id: `${data.series}-${String(data.number).padStart(5, '0')}`,
       emission_datetime: formatEmissionDateTime(data.issue_date, data.issue_time),
@@ -109,7 +111,10 @@ export class NormalSaleTransformer {
         { label: 'HORA VIAJE', value: formatTripTime(data.trip_departure_time), col: 2 },
         { label: 'EMBARQUE', value: formatBoardingTime(data.boarding_time), col: 2 },
         { label: 'ASIENTO', value: extractMainSeatNumber(data.items) }
-      ]
+      ],
+      // Campos nuevos: puerto asociado a la sucursal (puede venir vacío)
+      port_name: (data as any).branch_office_port_name || '',
+      port_address: (data as any).branch_office_port_address || ''
     };
   }
   

@@ -25,7 +25,7 @@ const DOCUMENT_TYPE_OPTIONS = [
   { code: '07', name: 'Nota de Crédito' },
   { code: '08', name: 'Nota de Débito' },
   { code: 'COT', name: 'Cotizaciones' }, // Corregido: usar 'COT' en lugar de '09'
-  { code: '20', name: 'Guía de Remisión' },
+  { code: '31', name: 'Guía de Remisión' },
 ];
 
 // Modal de Sucursales

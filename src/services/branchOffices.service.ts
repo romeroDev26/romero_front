@@ -8,6 +8,8 @@ export interface BranchOfficeCreateData {
   name: string;
   code?: string;
   port_id: number;
+  port_name: string;
+  port_address: string;
   address_line: string;
   phone?: string;
   email?: string;
@@ -18,6 +20,8 @@ export interface BranchOfficeUpdateData {
   name?: string;
   code?: string;
   port_id?: number;
+  port_name?: string;
+  port_address?: string;
   address_line?: string;
   phone?: string;
   email?: string;

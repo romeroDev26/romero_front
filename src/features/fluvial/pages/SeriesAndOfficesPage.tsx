@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon, ClipboardDocumentListIcon, BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
@@ -22,7 +22,7 @@ import { usePorts } from '../../../hooks/useCitiesPortsData';
 const DOCUMENT_TYPE_OPTIONS = [
   { code: '01', name: 'Factura Electrónica' }, { code: '03', name: 'Boleta de Venta Electrónica' },
   { code: '07', name: 'Nota de Crédito' }, { code: '08', name: 'Nota de Débito' },
-  { code: '09', name: 'Guía de Remisión' },
+  { code: '31', name: 'Guía de Remisión' },
 ];
 
 // =============== COMPONENTES DE MODAL ===============
@@ -36,16 +36,47 @@ interface BranchOfficeFormModalProps {
 
 const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({ isOpen, onClose, onSubmit, office, companyId, ports }) => {
   const isEditing = !!office;
-  const [formData, setFormData] = useState({
-    name: '', code: '', port_id: 0, address_line: '', phone: '', email: '', is_main_office: false, is_active: true
+  interface BranchOfficeFormData {
+    name: string;
+    code: string;
+    port_id: number;
+    port_name: string;
+    port_address: string;
+    address_line: string;
+    phone: string;
+    email: string;
+    is_main_office: boolean;
+    is_active: boolean;
+  }
+
+  const [formData, setFormData] = useState<BranchOfficeFormData>({
+    name: '', code: '', port_id: 0, port_name: '', port_address: '', address_line: '', phone: '', email: '', is_main_office: false, is_active: true
   });
 
   React.useEffect(() => {
     if (isOpen) {
+      const officeObj: any = office as any;
+      const initialPortId: number = (() => {
+        // Prefer the explicit port object id if available. If editing and none, keep 0 (no selection).
+        if (isEditing) {
+          if (officeObj && officeObj.port && typeof officeObj.port.id === 'number') return officeObj.port.id;
+          return 0;
+        }
+        // Creating: try to preselect linked port if provided, otherwise default to first available port.
+        if (officeObj && officeObj.port && typeof officeObj.port.id === 'number') return officeObj.port.id;
+        return ports.length > 0 ? ports[0].id : 0;
+      })();
+
       setFormData({
         name: office?.name || '',
         code: office?.code || '',
-        port_id: office?.port_id || (ports.length > 0 ? ports[0].id : 0),
+        // If editing: keep the office's port_id as-is (may be null/0) so we don't auto-select the first port.
+        // If creating: default to first available port when none provided.
+        port_id: initialPortId,
+        // IMPORTANT: do NOT fallback to office.port.* here. We must show only explicit branch-office fields when editing.
+        // Keep port_name/port_address empty if not provided by the office itself.
+        port_name: office?.port_name ?? '',
+        port_address: office?.port_address ?? '',
         address_line: office?.address_line || '',
         phone: office?.phone || '',
         email: office?.email || '',
@@ -54,6 +85,27 @@ const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({ isOpen, o
       });
     }
   }, [isOpen, office, ports]);
+
+  // Auto-fill port_name / port_address when user selects a port from dropdown
+  // Ref to detect when the user changes the port select. We only want to autofill after user interaction,
+  // not automatically when opening the modal for editing (to avoid inheriting linked port data).
+  const portSelectChangedRef = useRef(false);
+
+  React.useEffect(() => {
+    if (!ports || ports.length === 0) return;
+    const selected = ports.find(p => p.id === formData.port_id);
+    if (!selected) return;
+
+    // If editing and the user didn't change the select, skip autofill to avoid inheriting the linked port data.
+    if (isEditing && !portSelectChangedRef.current) return;
+
+    // Populate only when user selected a port (or when creating and user changed it).
+    setFormData(prev => ({
+      ...prev,
+      port_name: prev.port_name?.trim() ? prev.port_name : (selected.name || prev.port_name),
+      port_address: prev.port_address?.trim() ? prev.port_address : (selected.address || prev.port_address),
+    }));
+  }, [formData.port_id, ports, isEditing]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +113,17 @@ const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({ isOpen, o
       toast.error("Por favor, seleccione un puerto principal para la sucursal.");
       return;
     }
+    if (!formData.port_name.trim()) {
+      toast.error("Por favor, ingrese el nombre del puerto.");
+      return;
+    }
+    if (!formData.port_address.trim()) {
+      toast.error("Por favor, ingrese la dirección del puerto.");
+      return;
+    }
     const dataToSubmit = {
       name: formData.name, code: formData.code || undefined, port_id: formData.port_id,
+      port_name: formData.port_name, port_address: formData.port_address,
       address_line: formData.address_line, phone: formData.phone, email: formData.email,
       is_main_office: formData.is_main_office, is_active: formData.is_active,
     };
@@ -76,16 +137,40 @@ const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({ isOpen, o
   if (!isOpen) return null;
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Editar Sucursal' : 'Nueva Sucursal'}>
-      <form onSubmit={handleSubmit} className="p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="Nombre de la Sucursal" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
         <div className="grid grid-cols-2 gap-4">
           <Input label="Código (Opcional, 4 chars)" value={formData.code} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})} maxLength={4} />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Puerto Principal (Hub)</label>
-            <select value={formData.port_id} onChange={e => setFormData({...formData, port_id: Number(e.target.value)})} className="w-full p-2 border border-gray-300 rounded-md" required>
+            <select value={formData.port_id} onChange={e => { setFormData({...formData, port_id: Number(e.target.value)}); portSelectChangedRef.current = true; }} className="w-full p-2 border border-gray-300 rounded-md" required>
               <option value={0}>Seleccione un puerto</option>
               {ports.map(port => <option key={port.id} value={port.id}>{port.name}</option>)}
             </select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Puerto</label>
+            <input 
+              type="text"
+              value={formData.port_name} 
+              onChange={e => setFormData({...formData, port_name: e.target.value})} 
+              className="w-full p-2 border border-gray-300 rounded-md"
+              placeholder="Ej: Puerto Fluvial Masusa"
+              required 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Dirección del Puerto</label>
+            <input 
+              type="text"
+              value={formData.port_address} 
+              onChange={e => setFormData({...formData, port_address: e.target.value})} 
+              className="w-full p-2 border border-gray-300 rounded-md"
+              placeholder="Ej: Av. La Marina 1234"
+              required 
+            />
           </div>
         </div>
         <Input label="Dirección de la Sucursal" value={formData.address_line} onChange={e => setFormData({...formData, address_line: e.target.value})} required/>
@@ -272,24 +357,34 @@ export const DocumentSeriesPage: React.FC = () => {
         activeTab === 'offices' ? (
           <div className="bg-white rounded-lg shadow-md overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50"><tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <th className="px-6 py-3">Sucursal</th><th className="px-6 py-3">Puerto Asociado</th>
-                    <th className="px-6 py-3">Contacto</th><th className="px-6 py-3 text-center">Principal</th>
-                    <th className="px-6 py-3 text-center">Estado</th><th className="px-6 py-3 text-right">Acciones</th>
-                </tr></thead>
-                <tbody className="divide-y divide-gray-200">
-                    {filteredOffices.map(office => (<tr key={office.id}>
-                        <td className="px-6 py-4"><div className="font-medium">{office.name}</div><div className="text-sm text-gray-500">{office.code}</div></td>
-                        <td className="px-6 py-4"><div className="text-sm">{office.port?.name || 'N/A'}</div><div className="text-sm text-gray-500">{office.port?.city?.name || 'Sin ciudad'}</div></td>
-                        <td className="px-6 py-4"><div className="text-sm">{office.phone}</div><div className="text-sm text-gray-500">{office.email}</div></td>
-                        <td className="px-6 py-4 text-center">{office.is_main_office ? 'Sí' : 'No'}</td>
-                        <td className="px-6 py-4 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{office.is_active ? 'Activa' : 'Inactiva'}</span></td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                            <button onClick={() => handleOpenModal(office)} className="text-blue-600 hover:text-blue-900"><PencilIcon className="h-5 w-5"/></button>
-                            {office.is_active && <button onClick={() => handleDelete(office.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-5 w-5"/></button>}
-                        </td>
-                    </tr>))}
-                </tbody>
+        <thead className="bg-gray-50"><tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <th className="px-6 py-3">Sucursal</th>
+          <th className="px-6 py-3">Dirección de la Sucursal</th>
+          <th className="px-6 py-3">Puerto</th>
+          <th className="px-6 py-3">Dirección del Puerto</th>
+          <th className="px-6 py-3">Contacto</th>
+          <th className="px-6 py-3 text-center">Principal</th>
+          <th className="px-6 py-3 text-center">Estado</th>
+          <th className="px-6 py-3 text-right">Acciones</th>
+        </tr></thead>
+        <tbody className="divide-y divide-gray-200">
+          {filteredOffices.map(office => (<tr key={office.id}>
+            <td className="px-6 py-4">
+              <div className="font-medium">{office.name}</div>
+              <div className="text-sm text-gray-500">{office.code}</div>
+            </td>
+            <td className="px-6 py-4"><div className="text-sm text-gray-700">{office.address_line || 'Sin dirección'}</div></td>
+            <td className="px-6 py-4"><div className="text-sm">{office.port_name && office.port_name.trim() ? office.port_name : 'N/A'}</div></td>
+            <td className="px-6 py-4"><div className="text-sm text-gray-500">{office.port_address && office.port_address.trim() ? office.port_address : 'Sin dirección'}</div></td>
+            <td className="px-6 py-4"><div className="text-sm">{office.phone || '-'}</div><div className="text-sm text-gray-500">{office.email || '-'}</div></td>
+            <td className="px-6 py-4 text-center">{office.is_main_office ? 'Sí' : 'No'}</td>
+            <td className="px-6 py-4 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{office.is_active ? 'Activa' : 'Inactiva'}</span></td>
+            <td className="px-6 py-4 text-right space-x-2">
+              <button onClick={() => handleOpenModal(office)} className="text-blue-600 hover:text-blue-900"><PencilIcon className="h-5 w-5"/></button>
+              {office.is_active && <button onClick={() => handleDelete(office.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-5 w-5"/></button>}
+            </td>
+          </tr>))}
+        </tbody>
             </table>
           </div>
         ) : (

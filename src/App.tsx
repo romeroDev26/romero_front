@@ -39,7 +39,6 @@ import { RoutesPage } from './features/fluvial/pages/RoutesPage';
 import { SeatTypesPage } from './features/fluvial/pages/SeatTypesPage';
 import { ProductsServicesPage } from './features/fluvial/pages/ProductsServicesPage.tsx';
 import { ScheduleTripsPage } from './features/fluvial/pages/ScheduleTripsPage';
-import { DocumentSeriesPage } from './features/fluvial/pages/DocumentSeriesPage';
 import { DocumentSeriesPage as SeriesAndOfficesPage } from './features/fluvial/pages/SeriesAndOfficesPage';
 import { ReservationsPage } from './features/fluvial/pages/ReservationsPage';
 import { CargoSalePage } from './features/cargo/pages/CargoSalePage';
@@ -115,7 +114,7 @@ function App() {
                 <Route path="fares" element={<FaresPage />} />
                 <Route path="seat-types" element={<SeatTypesPage />} />
                 <Route path="products-services" element={<ProductsServicesPage />} />
-                <Route path="document-series" element={<DocumentSeriesPage />} />
+                <Route path="document-series" element={<SeriesAndOfficesPage />} />
                 <Route path="series-and-offices" element={<SeriesAndOfficesPage />} />
               </Route>
               

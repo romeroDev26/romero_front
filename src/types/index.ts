@@ -168,6 +168,8 @@ export interface BranchOffice {
   created_at: string;
   updated_at: string;
   port_id: number;
+  port_name?: string;
+  port_address?: string;
   port?: Port;
 }
 

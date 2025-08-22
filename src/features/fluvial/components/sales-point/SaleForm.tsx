@@ -497,7 +497,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
           extraCost,
           extraCostDescription,
           discount,
-          isIgvGravado
+          isIgvGravado,
+          selectedFacturaSeries // ← NUEVO: pasar la serie seleccionada para facturas
         );
         return;
       }

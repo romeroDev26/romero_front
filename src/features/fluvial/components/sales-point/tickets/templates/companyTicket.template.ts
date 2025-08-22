@@ -698,11 +698,4 @@ export class CompanyTicketTemplate {
     return lines;
 }
 
-  /** Asegura que hay espacio vertical suficiente en el documento; si no lo hay, aumenta pageSize.height */
-  private static ensureSpace(doc: jsPDF, needed: number, currentY: number) {
-    const pageHeight = doc.internal.pageSize.height as number;
-    if (currentY + needed + 10 > pageHeight) {
-      doc.internal.pageSize.height = pageHeight + Math.max(needed + 40, 100);
-    }
-  }
 }

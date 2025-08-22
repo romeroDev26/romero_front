@@ -67,6 +67,7 @@ export const useSaleBusinessLogic = ({
     extraCostDescription?: string,
     discount?: number,
     isIgvGravado?: boolean,
+  series?: string,
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -170,6 +171,8 @@ export const useSaleBusinessLogic = ({
           seat_number: rep.seat_number || "Elección libre",
           special_notes: rep.special_notes || "", // ← NUEVO: Campo notas especiales
         })),
+  // ← NUEVO: Incluir la serie si fue proporcionada (requerida para Facturas)
+  ...(series ? { series } : {}),
         // ← ACTUALIZADO: Incluir items_config como array
         ...(itemsConfig.length > 0 && { items_config: itemsConfig }),
         // ← NUEVO: Incluir invoice_config

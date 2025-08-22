@@ -42,6 +42,9 @@ export interface CompanyInvoiceWithRepresentatives {
     detraccion_percentage?: number | null; // ← CORREGIDO: Número o null
   };
   
+  // Serie de documento (opcional, requerida para Facturas)
+  series?: string;
+
   // ← ACTUALIZADO: Configuración de items como array
   items_config?: Array<{
     product_id: number; // ← CLAVE: ID del producto/servicio

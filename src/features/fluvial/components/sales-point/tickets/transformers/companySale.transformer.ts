@@ -88,6 +88,9 @@ export class CompanySaleTransformer {
       company_name: data.company.business_name,
       company_ruc: data.company.ruc,
       company_address: data.company.address,
+  // Dirección y teléfono de la sucursal (branch office)
+  branch_office_address: data.branch_office_address || '',
+  branch_office_phone: data.branch_office_phone || '',
       company_phones: formatCompanyPhones(data.company.phone),
       emission_point: getEmissionPoint(data.branch_office_name, data.branch_office_name || ''),
       document_title: getDocumentTitle(data.document_type_code),
@@ -105,7 +108,8 @@ export class CompanySaleTransformer {
       doc_label: getDocumentLabel(data.client.doc_type),
       doc_number: data.client.doc_number,
       name_label: data.client.doc_type === '6' ? 'RAZÓN SOCIAL' : 'EMPRESA',
-      full_name: data.client.name
+  full_name: data.client.name,
+  address: data.client.address_line || ''
     };
   }
 
@@ -121,11 +125,15 @@ export class CompanySaleTransformer {
         { label: 'ORIGEN', value: item.boarding_port_name || extractOriginPort(data.items) },
         { label: 'DESTINO', value: item.disembarking_port_name || extractDestinationPort(data.items) },
         { label: 'EMBARCACIÓN', value: item.vehicle_name || extractVehicleName(data.items) },
-        { label: 'F. SALIDA', value: formatTripDate(data.trip_departure_time), col: 1 },
+        { label: 'F. SALIDA', value: formatTripDate(data.trip_departure_time, data.issue_date), col: 1 },
         { label: 'H. SALIDA', value: formatTripTime(data.trip_departure_time), col: 2 },
         { label: 'H. ABORDAJE', value: formatBoardingTime(data.boarding_time), col: 1 },
         { label: 'RUTA', value: item.route_name || '-', col: 2 }
       ]
+  ,
+  // Nombre y dirección del puerto de la sucursal (para mostrar en dos columnas)
+  port_name: data.branch_office_port_name || '',
+  port_address: data.branch_office_port_address || ''
     };
   }
 

@@ -134,19 +134,26 @@ export class NormalTicketTemplate {
       x += 3.5;
     }
   currentY += 4; // Espacio adecuado después del separador
-  // Monto en palabras y forma de pago
+    // Monto en palabras y forma de pago (wrap para evitar cortes)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    doc.text('SON: ' + ticketData.payment_info.amount_in_words, this.MARGIN, currentY);
-    currentY += 4;
-    doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.MARGIN, currentY);
+    const amountText = 'SON: ' + (ticketData.payment_info.amount_in_words || '');
+    const amountLines = this.splitText(doc, amountText, this.CONTENT_WIDTH, 8);
+    amountLines.forEach(line => {
+      doc.text(line, this.MARGIN, currentY);
+      currentY += 3;
+    });
+    // Espacio pequeño antes de la forma de pago
+    currentY += 1;
+    const paymentLabel = ticketData.payment_info.payment_method_label || 'FORMA DE PAGO';
+    doc.text(`${paymentLabel}: ${ticketData.payment_info.payment_method}`, this.MARGIN, currentY);
     currentY += 4;
     return currentY;
   }
   
   /** BLOQUE 1: Añade el encabezado completo con logo y datos de empresa */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-    let currentY = Math.max(startY, 0.5);
+    let currentY = Math.max(startY, 0); // Reducido de 0.5 a 0 para subir más el logo
      
     // SOLO LOGO - sin texto adicional
   if (header.company_logo_url) {
@@ -167,11 +174,11 @@ export class NormalTicketTemplate {
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
         // Colocar el logo completamente arriba
   doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
-    currentY += logoHeight + 4;
+    currentY += logoHeight + 2.5; // Aumentado de 1.5 a 2.5 para evitar interferencia con las letras
       } catch (error) {
         console.error('Error cargando logo:', error);
         // Si no hay logo, no mostrar nada - continuar directamente
-        currentY += 6;
+        currentY += 2.5; // Aumentado de 1.5 a 2.5 para mantener consistencia
       }
     }
 
@@ -183,7 +190,7 @@ export class NormalTicketTemplate {
     } catch (e) {
       console.error('Error escribiendo frase estática en ticket:', e);
     }
-  currentY += 6;
+  currentY += 4.5; // Aumentado de 4 a 4.5 para mejor separación
     
   // Nombre de la empresa
   doc.setFontSize(11);
@@ -191,29 +198,29 @@ export class NormalTicketTemplate {
   const companyLines = this.splitText(doc, header.company_name, this.CONTENT_WIDTH, 11);
     companyLines.forEach(line => {
       doc.text(line.toString().toUpperCase(), this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 4.0; // más separación entre líneas del nombre de la empresa
+      currentY += 3.8; // Aumentado de 3.5 a 3.8 para mejor legibilidad
     });
     
   // RUC
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
     doc.text(`RUC: ${header.company_ruc}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    currentY += 3.5; // Aumentado de 3 a 3.5
     
   // Dirección
   doc.setFontSize(8);
   const addressLines = this.splitText(doc, header.company_address, this.CONTENT_WIDTH, 8);
     addressLines.forEach(line => {
       doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3.0; // mayor interlineado para dirección
+      currentY += 2.8; // Aumentado de 2.5 a 2.8 para mejor legibilidad
     });
-    currentY += 2.0; // espacio después de dirección
+    currentY += 1.2; // Aumentado de 1 a 1.2 para mejor separación
     
   // Teléfonos
     if (header.company_phones.length > 0) {
       const phonesText = `Tel: ${header.company_phones.join(', ')}`;
       doc.text(phonesText, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3.5; // más espacio para que coincida con el ejemplo
+      currentY += 3.2; // Aumentado de 3 a 3.2 para mejor separación
     }
     
   // Punto de emisión
@@ -221,7 +228,7 @@ export class NormalTicketTemplate {
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
       doc.text(`PUNTO DE EMISIÓN: ${header.emission_point}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3.2;
+      currentY += 3.2; // Aumentado de 3 a 3.2 para mejor separación
     }
   // Dirección de la sucursal
     if (header.branch_office_address) {
@@ -230,41 +237,41 @@ export class NormalTicketTemplate {
       const addrLines = this.splitText(doc, header.branch_office_address, this.CONTENT_WIDTH, 8);
       addrLines.forEach(line => {
         doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-        currentY += 2.2;
+        currentY += 2.2; // Aumentado de 2 a 2.2 para mejor legibilidad
       });
-      currentY += 1;
+      currentY += 1.2; // Aumentado de 1 a 1.2 para mejor separación
     }
   // Teléfono de la sucursal
     if (header.branch_office_phone) {
       doc.setFontSize(8);
       doc.setFont('helvetica', 'normal');
       doc.text(`Contacto de sucursal: ${header.branch_office_phone}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 2.6;
+      currentY += 2.8; // Aumentado de 2.5 a 2.8 para mejor separación
     }
 
   // Línea separadora continua (gris)
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 4; // Espacio adecuado después del separador
+    currentY += 4; // Aumentado de 3 a 4 para dar más espaciado a la primera separadora
     
   // Tipo y número de documento
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
     doc.text(header.document_title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    currentY += 3.5; // Reducido de 4 a 3.5
     doc.text(header.document_id, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5; // Espacio adecuado después del documento
+    currentY += 4; // Reducido de 5 a 4
     
   // Fecha y hora de emisión
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
     doc.text(header.emission_datetime, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    currentY += 3; // Reducido de 4 a 3
     
   // Vendedor
   doc.text(`Vendedor: ${header.seller_name}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+    currentY += 3; // Reducido de 4 a 3
     
     return currentY;
   }
@@ -311,13 +318,13 @@ export class NormalTicketTemplate {
     doc.setFontSize(7);
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
-    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+      doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4; // Espacio adecuado después del separador
-    // Título
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text(tripDetails.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5;
+  // Título
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text(tripDetails.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 6;
 
   // Preparar columnas
     doc.setFont('helvetica', 'normal');
@@ -338,86 +345,91 @@ export class NormalTicketTemplate {
     const seatItem = findByLabel(/ASIENTO/);
 
   // FILA 1: etiquetas (EMBARCACIÓN / FECHA VIAJE)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
     doc.text('EMBARCACIÓN:', leftX, currentY);
     doc.text('FECHA VIAJE:', rightX, currentY);
-    currentY += 2.5; // menor espacio antes de los valores
+    currentY += 3; // espacio antes de los valores
 
-    // FILA 1b: valores debajo de las etiquetas
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value, colWidth, 7) : [''];
-    const dateLines = dateItem ? this.splitText(doc, dateItem.value, colWidth, 7) : [''];
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 8.5)
+    doc.setFontSize(8.5);
+    const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value, colWidth, 8.5) : [''];
+    const dateLines = dateItem ? this.splitText(doc, dateItem.value, colWidth, 8.5) : [''];
     const maxLines1 = Math.max(vesselLines.length, dateLines.length);
     for (let i = 0; i < maxLines1; i++) {
-      doc.text(vesselLines[i] ?? '', leftX, currentY);
-      doc.text(dateLines[i] ?? '', rightX, currentY);
-      currentY += 2.5; // linea más ajustada
+  // Embarcación: normal
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.text(vesselLines[i] ?? '', leftX, currentY);
+  // Fecha de viaje: valor en negrita (misma medida)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8.5);
+  doc.text(dateLines[i] ?? '', rightX, currentY);
+  currentY += 3; // línea con más espacio
     }
-  currentY += 3; // espacio reducido entre bloques
+    currentY += 4; // espacio aumentado entre bloques
 
   // --- PUERTO y DIRECCIÓN DEL PUERTO
     if (tripDetails.port_name || tripDetails.port_address) {
-      const portNameLines = this.splitText(doc, tripDetails.port_name ?? '', colWidth, 9);
-      const portAddrLines = this.splitText(doc, tripDetails.port_address ?? '', colWidth, 9);
-  // Etiquetas
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
+  const portNameLines = this.splitText(doc, tripDetails.port_name ?? '', colWidth, 9);
+  const portAddrLines = this.splitText(doc, tripDetails.port_address ?? '', colWidth, 9);
+      // Etiquetas PUERTO (normal) y valores en 8.5
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
       doc.text('PUERTO:', leftX, currentY);
       doc.text('DIRECCIÓN PUERTO:', rightX, currentY);
-      currentY += 2.7;
+      currentY += 3;
 
-  // Valores
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
+      // Valores
       const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
       for (let i = 0; i < maxPortLines; i++) {
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
         doc.text(portNameLines[i] ?? '', leftX, currentY);
         doc.text(portAddrLines[i] ?? '', rightX, currentY);
         currentY += 3;
       }
 
-  currentY += 2; // espacio después del bloque de puerto
+      currentY += 3; // espacio después del bloque de puerto
     }
 
-  // FILA 2: etiquetas (EMBARQUE / SALIDA)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
+    // FILA 2: etiquetas (EMBARQUE / SALIDA)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
     doc.text('EMBARQUE:', leftX, currentY);
     doc.text('SALIDA:', rightX, currentY);
-    currentY += 2.5;
+    currentY += 3;
 
-    // FILA 2b: valores debajo
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value, colWidth, 7) : [''];
-    const departureLines = departureItem ? this.splitText(doc, departureItem.value, colWidth, 7) : [''];
+    // FILA 2b: valores debajo (tamaño 8.5)
+    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value, colWidth, 8.5) : [''];
+    const departureLines = departureItem ? this.splitText(doc, departureItem.value, colWidth, 8.5) : [''];
     const maxLines2 = Math.max(boardingLines.length, departureLines.length);
     for (let i = 0; i < maxLines2; i++) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
       doc.text(boardingLines[i] ?? '', leftX, currentY);
       doc.text(departureLines[i] ?? '', rightX, currentY);
-      currentY += 2.5;
+      currentY += 3;
     }
     currentY += 3;
 
-  // FILA 3: etiquetas (ORIGEN / DESTINO)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
+    // FILA 3: etiquetas (ORIGEN / DESTINO)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
     doc.text('ORIGEN:', leftX, currentY);
     doc.text('DESTINO:', rightX, currentY);
-    currentY += 2.5;
+    currentY += 3;
 
-    // FILA 3b: valores debajo
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    const originLines = originItem ? this.splitText(doc, originItem.value, colWidth, 7) : [''];
-    const destLines = destItem ? this.splitText(doc, destItem.value, colWidth, 7) : [''];
+    // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, un poco más grandes)
+    const originLines = originItem ? this.splitText(doc, originItem.value, colWidth, 9) : [''];
+    const destLines = destItem ? this.splitText(doc, destItem.value, colWidth, 9) : [''];
     const maxLines3 = Math.max(originLines.length, destLines.length);
     for (let i = 0; i < maxLines3; i++) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
       doc.text(originLines[i] ?? '', leftX, currentY);
       doc.text(destLines[i] ?? '', rightX, currentY);
-      currentY += 2.5;
+      currentY += 3.5; // un poco más de espacio por el tamaño mayor
     }
     currentY += 3;
 

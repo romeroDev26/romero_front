@@ -24,6 +24,7 @@ export interface TicketHeader {
   company_address: string;
   company_phones: string[];
   emission_point: string;
+  branch_office_name?: string; // nombre de la sucursal (desde backend)
   branch_office_address?: string; // dirección de la sucursal (desde backend)
   branch_office_phone?: string; // teléfono de la sucursal (desde backend)
   document_title: string;

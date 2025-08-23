@@ -95,7 +95,10 @@ export class NoSeatsSaleTransformer {
       company_ruc: data.company.ruc,
       company_address: data.company.address,
       company_phones: formatCompanyPhones(data.company.phone),
-      emission_point: getEmissionPoint(data.branch_office_name, data.branch_office_name || ''),
+  emission_point: getEmissionPoint(data.branch_office_name, data.branch_office_name || ''),
+  // Datos de sucursal para que el template los muestre (address y phone)
+  branch_office_address: data.branch_office_address || '',
+  branch_office_phone: data.branch_office_phone || '',
       document_title: getDocumentTitle(data.document_type_code),
       document_id: `${data.series}-${String(data.number).padStart(5, '0')}`,
       emission_datetime: formatEmissionDateTime(data.issue_date, data.issue_time),

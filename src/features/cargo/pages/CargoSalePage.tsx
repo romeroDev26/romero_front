@@ -195,7 +195,7 @@ export const CargoSalePage: React.FC = () => {
         items: cargoItems.map(item => ({
           product_id: item.product.id,
           quantity: item.quantity,
-          unit_price: item.price,
+          unit_price: parseFloat(item.price.toFixed(10)),
           tax_category_code: item.product.tax_category_code,
           item_description: item.description,
           unit_code: item.unitOfMeasure,

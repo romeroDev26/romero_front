@@ -105,8 +105,8 @@ export const useSaleBusinessLogic = ({
         const transportItem = {
           product_id: 1, // ← CLAVE: ID del servicio de transporte
           quantity: representatives.length, // Cantidad de representantes/asientos
-          unit_price: parseFloat(baseUnitPrice.toFixed(2)),
-          discount: discount ? parseFloat(discount.toFixed(2)) : 0,
+          unit_price: parseFloat(baseUnitPrice.toFixed(10)),
+          discount: discount ? parseFloat(discount.toFixed(10)) : 0,
           tax_category_code: isIgvGravado ? "10" : "20", // 10=Gravado, 20=Exonerado
           item_description: "Servicio de Transporte de Pasajeros",
           unit_code: "ZZ" // ZZ = Servicio (CORREGIDO de NIU)
@@ -119,7 +119,7 @@ export const useSaleBusinessLogic = ({
         const extraItem = {
           product_id: 7, // ← CLAVE: ID del servicio adicional
           quantity: 1, // Siempre 1 para costos adicionales
-          unit_price: parseFloat(extraCost.toFixed(2)),
+          unit_price: parseFloat(extraCost.toFixed(10)),
           discount: 0,
           tax_category_code: isIgvGravado ? "10" : "20",
           item_description: extraCostDescription?.trim() || "Equipaje en exceso",

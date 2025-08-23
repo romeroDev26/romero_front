@@ -65,7 +65,7 @@ export const invoiceCreationService = {
     items.push({
       product_id: passengerService.id,
       quantity: quantity,
-      unit_price: baseServiceWithIgv,
+      unit_price: parseFloat(baseServiceWithIgv.toFixed(10)),
       discount: discount,
       tax_category_code: isIgvGravado
         ? SunatTaxCategory.GRAVADO
@@ -84,7 +84,7 @@ export const invoiceCreationService = {
       items.push({
         product_id: 7, // ID específico para exceso de equipaje/costos adicionales
         quantity: 1,
-        unit_price: extraCostWithIgv,
+        unit_price: parseFloat(extraCostWithIgv.toFixed(10)),
         discount: 0,
         tax_category_code: isIgvGravado
           ? SunatTaxCategory.GRAVADO

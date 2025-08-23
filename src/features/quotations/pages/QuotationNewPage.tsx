@@ -168,10 +168,10 @@ export const QuotationNewPage: React.FC = () => {
       const quotationItems: QuotationItemCreate[] = items.map(item => ({
         product_id: selectedService?.id || 0, // Usar el ID del servicio seleccionado
         quantity: item.cantidad,
-        unit_price: item.precio_unitario,
+        unit_price: parseFloat(item.precio_unitario.toFixed(10)),
         unit_code: item.unidad,
         price_type_code: '01',
-        discount: item.descuento,
+        discount: parseFloat(item.descuento.toFixed(10)),
         tax_category_code: includeIGV ? '10' : '20', // 10 = Con IGV, 20 = Sin IGV
         item_description: item.descripcion
       }));

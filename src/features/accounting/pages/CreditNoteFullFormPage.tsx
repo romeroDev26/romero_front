@@ -158,8 +158,8 @@ export const CreditNoteFullFormPage: React.FC = () => {
         product_id: item.product_id,
         quantity: item.quantity,
         unit_code: item.unit_code,
-        unit_price: item.unit_price,
-        price_with_tax: item.price_with_tax,
+        unit_price: parseFloat(item.unit_price.toFixed(10)),
+        price_with_tax: parseFloat(item.price_with_tax.toFixed(10)),
         price_type_code: item.price_type_code,
         tax_category_code: item.tax_category_code,
         description: item.description,
@@ -205,7 +205,7 @@ export const CreditNoteFullFormPage: React.FC = () => {
       setValue(`items.${selectedItemIndex}.unit_price`, product.sale_price || 0);
       // Calcular precio con IGV (18%)
       const priceWithTax = (product.sale_price || 0) * 1.18;
-      setValue(`items.${selectedItemIndex}.price_with_tax`, priceWithTax);
+      setValue(`items.${selectedItemIndex}.price_with_tax`, parseFloat(priceWithTax.toFixed(10)));
     }
     setShowProductModal(false);
     setProductSearch('');
@@ -467,7 +467,7 @@ export const CreditNoteFullFormPage: React.FC = () => {
                                 field.onChange(unitPrice);
                                 // Auto-calcular precio con IGV
                                 const priceWithTax = unitPrice * 1.18;
-                                setValue(`items.${index}.price_with_tax`, parseFloat(priceWithTax.toFixed(2)));
+                                setValue(`items.${index}.price_with_tax`, parseFloat(priceWithTax.toFixed(10)));
                               }}
                               className="w-full p-2 border border-gray-300 rounded-md" 
                             />

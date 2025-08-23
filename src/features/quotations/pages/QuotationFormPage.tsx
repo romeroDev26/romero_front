@@ -50,7 +50,17 @@ export const QuotationFormPage: React.FC = () => {
       return;
     }
 
-    const result = await createQuotation(formData);
+    // Formatear los datos para asegurar máximo 10 decimales
+    const formattedData = {
+      ...formData,
+      items: formData.items.map(item => ({
+        ...item,
+        unit_price: parseFloat(item.unit_price.toFixed(10)),
+        discount: parseFloat(item.discount.toFixed(10))
+      }))
+    };
+
+    const result = await createQuotation(formattedData);
     if (result) {
       toast.success('Cotización creada exitosamente');
       navigate('/sales/quotations');

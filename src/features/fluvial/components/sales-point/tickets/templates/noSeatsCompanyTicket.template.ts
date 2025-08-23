@@ -66,10 +66,10 @@ export class NoSeatsCompanyTicketTemplate {
    * (Igual que CompanyTicketTemplate)
    */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-    // Aumentar el margen superior para evitar corte
-    let currentY = startY + 55;
+    // Empezar compactado, igual que en normalTicket
+    let currentY = Math.max(startY, 0);
 
-    // LOGO (máximo 30mm de alto, 40mm de ancho)
+  // LOGO (máximo 45mm de alto, 60mm de ancho)
     let logoHeight = 0;
     if (header.company_logo_url) {
       try {
@@ -80,8 +80,8 @@ export class NoSeatsCompanyTicketTemplate {
           logoImg.onerror = () => reject(new Error('Error cargando logo'));
           logoImg.src = header.company_logo_url!;
         });
-        const maxLogoWidth = 40;
-        const maxLogoHeight = 30;
+  const maxLogoWidth = 60;
+  const maxLogoHeight = 45;
         const logoAspectRatio = logoImg.height / logoImg.width;
         let logoWidth = Math.min(maxLogoWidth, logoImg.width);
         logoHeight = logoWidth * logoAspectRatio;
@@ -89,67 +89,112 @@ export class NoSeatsCompanyTicketTemplate {
           logoHeight = maxLogoHeight;
           logoWidth = logoHeight / logoAspectRatio;
         }
-        const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-        doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
-        currentY += logoHeight + 4;
+  const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
+  // Bajar el logo más para que se note en impresoras térmicas
+  const logoYOffset = 18; // mm (aumentado desde 8)
+  const logoY = currentY + logoYOffset;
+  doc.addImage(logoImg, 'PNG', logoX, logoY, logoWidth, logoHeight);
+  currentY = logoY + logoHeight + 2.5;
       } catch (error) {
         console.error('Error cargando logo:', error);
-        currentY += 8; // Deja espacio si no hay logo
+        currentY += 2.5; // Deja espacio si no hay logo (compacto)
       }
     } else {
-      currentY += 8; // Deja espacio si no hay logo configurado
+      currentY += 2.5; // Deja espacio si no hay logo configurado
     }
 
+    // Frase estática de la empresa (slogan)
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    try {
+      doc.text('Sirviendo a la Amazonía Peruana', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+    } catch (e) {
+      console.error('Error escribiendo frase estática en ticket:', e);
+    }
+    currentY += 4.5;
+
     // Nombre de la empresa (máximo 3 líneas, fuente más pequeña si es muy largo)
-    let companyFontSize = 9;
+    let companyFontSize = 11; // Aumentado de 9 a 11
     let companyLines = this.splitText(doc, header.company_name, this.CONTENT_WIDTH, companyFontSize);
     if (companyLines.length > 3) {
-      companyFontSize = 7;
+      companyFontSize = 9; // Aumentado de 7 a 9
       companyLines = this.splitText(doc, header.company_name, this.CONTENT_WIDTH, companyFontSize);
     }
     doc.setFontSize(companyFontSize);
     doc.setFont('helvetica', 'bold');
     companyLines.forEach(line => {
-      doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3;
+      doc.text(line.toString().toUpperCase(), this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+      currentY += 3.8; // Aumentado de 3 a 3.8
     });
-    currentY += 1;
+  currentY += 1;
 
     // RUC y dirección
-    doc.setFontSize(7);
+    doc.setFontSize(9); // Aumentado de 7 a 9
     doc.setFont('helvetica', 'normal');
     doc.text(`RUC: ${header.company_ruc}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 3;
+    currentY += 3.5; // Aumentado de 3 a 3.5
 
-    const addressLines = this.splitText(doc, header.company_address, this.CONTENT_WIDTH, 7);
+    const addressLines = this.splitText(doc, header.company_address, this.CONTENT_WIDTH, 8); // Aumentado de 7 a 8
     addressLines.forEach(line => {
       doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3;
+      currentY += 2.8; // Aumentado de 3 a 2.8
     });
-    currentY += 1;
+    currentY += 1.2; // Aumentado de 1 a 1.2
 
-    // Teléfonos
+    // Teléfonos (empresa) — se muestran antes de PUNTO DE EMISIÓN para coincidir con el diseño
     if (header.company_phones && header.company_phones.length > 0) {
+      doc.setFontSize(8); // Aumentado de 7 a 8
+      doc.setFont('helvetica', 'normal');
       doc.text(`Tel: ${header.company_phones[0]}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3;
+      currentY += 3.2; // Aumentado de 3 a 3.2
+    }
+
+    // PUNTO DE EMISIÓN (usar branch_office_name si está disponible)
+    const branchName = (header as any).branch_office_name || header.emission_point || '';
+    if (branchName) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`PUNTO DE EMISIÓN: ${branchName}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+      currentY += 3.2;
+    }
+
+    // Dirección de la sucursal (si viene) — aparecerá debajo del PUNTO DE EMISIÓN
+    if ((header as any).branch_office_address) {
+      const addrLines = this.splitText(doc, (header as any).branch_office_address, this.CONTENT_WIDTH, 8); // Aumentado de 7 a 8
+      addrLines.forEach(line => { doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); currentY += 2.2; }); // Aumentado de 3 a 2.2
+      currentY += 1.2; // Aumentado de 1 a 1.2
+    }
+
+    // Contacto de la sucursal
+    if ((header as any).branch_office_phone) {
+      doc.setFontSize(8); // Aumentado de 7 a 8
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Contacto de sucursal: ${(header as any).branch_office_phone}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+      currentY += 2.8; // Aumentado de 3 a 2.8
     }
     currentY += 1;
 
-    // Tipo de documento y numeración
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text(header.document_title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 3;
-    doc.text(header.document_id, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+  // Línea separadora antes del documento (p.ej. FACTURA ELECTRÓNICA)
+  doc.setLineWidth(0.2);
+  doc.setDrawColor(180, 180, 180);
+  doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+  currentY += 4;
+
+  // Tipo de documento y numeración
+  doc.setFontSize(10); // Aumentado de 8 a 10
+  doc.setFont('helvetica', 'bold');
+  doc.text(header.document_title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3.5; // Aumentado de 3 a 3.5
+  doc.text(header.document_id, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 4;
 
     // Fecha de emisión
-    doc.setFontSize(7);
+    doc.setFontSize(8); // Aumentado de 7 a 8
     doc.setFont('helvetica', 'normal');
     doc.text(header.emission_datetime, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 3;
     doc.text(`Vendedor: ${header.seller_name}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5;
+    currentY += 3; // Reducido de 5 a 3
 
     // Asegurar que el header no se solape con el borde superior
     if (currentY < 35) {
@@ -171,12 +216,14 @@ export class NoSeatsCompanyTicketTemplate {
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4;
     
-    doc.setFontSize(7);
+    doc.setFontSize(8); // Aumentado de 7 a 8
     doc.setFont('helvetica', 'normal');
     
     // Cliente (empresa)
+    doc.setFont('helvetica', 'bold'); // Añadido bold para etiqueta
     doc.text('CLIENTE:', this.MARGIN, currentY);
-    const clientLines = this.splitText(doc, passenger.full_name, this.CONTENT_WIDTH - 15, 7);
+    doc.setFont('helvetica', 'normal'); // Volver a normal para valor
+    const clientLines = this.splitText(doc, passenger.full_name, this.CONTENT_WIDTH - 15, 8); // Aumentado de 7 a 8
     doc.text(clientLines[0], this.MARGIN + 15, currentY);
     currentY += 3;
     
@@ -186,7 +233,9 @@ export class NoSeatsCompanyTicketTemplate {
     }
     
     // Documento (RUC)
+    doc.setFont('helvetica', 'bold'); // Añadido bold para etiqueta
     doc.text('RUC:', this.MARGIN, currentY);
+    doc.setFont('helvetica', 'normal'); // Volver a normal para valor
     doc.text(passenger.doc_number, this.MARGIN + 15, currentY);
     currentY += 3;
     
@@ -200,48 +249,158 @@ export class NoSeatsCompanyTicketTemplate {
    */
   private static addTripDetails(doc: jsPDF, trip: TicketData['trip_details'], startY: number): number {
     let currentY = startY;
-    
+    // Línea separadora
+    doc.setFontSize(7);
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+    currentY += 4;
+
+    // Título
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(trip.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+    currentY += 6;
+
+    // Preparar columnas
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
+
+    // Helpers: buscar por etiquetas conocidas (case-insensitive)
+    const findByLabel = (pattern: RegExp) => (trip.details || []).find(d => pattern.test((d.label || '').toString().toUpperCase()));
+
+    const vesselItem = findByLabel(/EMBARC|EMBARCACIÓN|EMBARCACION/);
+    const dateItem = findByLabel(/FECHA/);
+    const boardingItem = findByLabel(/EMBARQ|EMBARQUE|HORA\s*EMBARQUE/);
+    const departureItem = findByLabel(/SALIDA|HORA\s*SALIDA|HORA\s*DE?\s*VIAJE|HORA\s*VIAJE/);
+    const originItem = findByLabel(/ORIGEN/);
+    const destItem = findByLabel(/DESTINO/);
+    const seatItem = findByLabel(/ASIENTO/);
+
+    // FILA 1: etiquetas (EMBARCACIÓN / FECHA VIAJE)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.text('EMBARCACIÓN:', leftX, currentY);
+    doc.text('FECHA VIAJE:', rightX, currentY);
+    currentY += 3; // espacio antes de los valores
+
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 8.5)
+    doc.setFontSize(8.5);
+    const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value, colWidth, 8.5) : [''];
+    const dateLines = dateItem ? this.splitText(doc, dateItem.value, colWidth, 8.5) : [''];
+    const maxLines1 = Math.max(vesselLines.length, dateLines.length);
+    for (let i = 0; i < maxLines1; i++) {
+      // Embarcación: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text(vesselLines[i] ?? '', leftX, currentY);
+      // Fecha de viaje: valor en negrita (misma medida)
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8.5);
+      doc.text(dateLines[i] ?? '', rightX, currentY);
+      currentY += 3; // línea con más espacio
+    }
+    currentY += 4; // espacio aumentado entre bloques
+
+    // --- PUERTO y DIRECCIÓN DEL PUERTO
+    if (trip.port_name || trip.port_address) {
+      const portNameLines = this.splitText(doc, trip.port_name ?? '', colWidth, 9);
+      const portAddrLines = this.splitText(doc, trip.port_address ?? '', colWidth, 9);
+      // Etiquetas PUERTO (normal) y valores en 8.5
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text('PUERTO:', leftX, currentY);
+      doc.text('DIRECCIÓN PUERTO:', rightX, currentY);
+      currentY += 3;
+
+      // Valores
+      const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
+      for (let i = 0; i < maxPortLines; i++) {
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
+        doc.text(portNameLines[i] ?? '', leftX, currentY);
+        doc.text(portAddrLines[i] ?? '', rightX, currentY);
+        currentY += 3;
+      }
+
+      currentY += 3; // espacio después del bloque de puerto
+    }
+
+    // FILA 2: etiquetas (EMBARQUE / SALIDA)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.text('EMBARQUE:', leftX, currentY);
+    doc.text('SALIDA:', rightX, currentY);
+    currentY += 3;
+
+    // FILA 2b: valores debajo (tamaño 8.5)
+    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value, colWidth, 8.5) : [''];
+    const departureLines = departureItem ? this.splitText(doc, departureItem.value, colWidth, 8.5) : [''];
+    const maxLines2 = Math.max(boardingLines.length, departureLines.length);
+    for (let i = 0; i < maxLines2; i++) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8.5);
+      doc.text(boardingLines[i] ?? '', leftX, currentY);
+      doc.text(departureLines[i] ?? '', rightX, currentY);
+      currentY += 3;
+    }
+    currentY += 3;
+
+    // FILA 3: etiquetas (ORIGEN / DESTINO)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.text('ORIGEN:', leftX, currentY);
+    doc.text('DESTINO:', rightX, currentY);
+    currentY += 3;
+
+    // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, un poco más grandes)
+    const originLines = originItem ? this.splitText(doc, originItem.value, colWidth, 9) : [''];
+    const destLines = destItem ? this.splitText(doc, destItem.value, colWidth, 9) : [''];
+    const maxLines3 = Math.max(originLines.length, destLines.length);
+    for (let i = 0; i < maxLines3; i++) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(originLines[i] ?? '', leftX, currentY);
+      doc.text(destLines[i] ?? '', rightX, currentY);
+      currentY += 3.5; // un poco más de espacio por el tamaño mayor
+    }
+    currentY += 3;
+
+    // ASIENTO en su propia línea (aunque en no-seats normalmente no se muestra)
+    if (seatItem) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9); // mismo tamaño que los valores de PUERTO
+      // ASIENTO a la izquierda
+      doc.text(`ASIENTO: ${seatItem.value}`, leftX, currentY);
+
+      // Etiqueta N° EQUIPAJE en la columna derecha
+      const baggageLabel = 'N° EQUIPAJE:';
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(baggageLabel, rightX, currentY);
+
+      // Dibujar un cuadrado para N° EQUIPAJE
+      const boxSize = 12; // mm
+      const boxX = this.TICKET_WIDTH - this.MARGIN - boxSize; // posición derecha
+      const boxTopY = currentY - (boxSize - 4); // ajustar para alinear verticalmente con el texto
+      doc.setLineWidth(0.8);
+      doc.rect(boxX, boxTopY, boxSize, boxSize);
+
+      // Restaurar fuente y avanzar
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      currentY += 6;
+    }
+
     // Línea separadora
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4;
-    
-    // Título
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text(trip.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5;
-    
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    
-    // Iterar sobre los detalles del viaje, pero excluir campo ASIENTO si existe
-    trip.details.forEach(detail => {
-      // Saltar el campo ASIENTO en detalles del viaje para embarcaciones sin asientos
-      if (detail.label === 'ASIENTO') {
-        return; // No mostrar información de asientos específicos en trip details
-      }
-      
-      doc.text(detail.label + ':', this.MARGIN, currentY);
-      
-      // Calcular el ancho disponible para el valor
-      const labelWidth = doc.getTextWidth(detail.label + ':');
-      const valueMaxWidth = this.CONTENT_WIDTH - labelWidth - 3;
-      
-      // Si el valor es muy largo, dividirlo en líneas
-      const valueLines = this.splitText(doc, detail.value, valueMaxWidth, 7);
-      doc.text(valueLines[0], this.MARGIN + labelWidth + 3, currentY);
-      currentY += 3;
-      
-      // Líneas adicionales si el valor es muy largo
-      for (let i = 1; i < valueLines.length; i++) {
-        doc.text(valueLines[i], this.MARGIN + labelWidth + 3, currentY);
-        currentY += 3;
-      }
-    });
-    
-    currentY += 2;
+
     return currentY;
   }
 
@@ -250,23 +409,17 @@ export class NoSeatsCompanyTicketTemplate {
    * Muestra "Elección libre" en lugar de números de asiento específicos
    */
   private static addRepresentativesSummary(doc: jsPDF, representatives: TicketRepresentative[], startY: number): number {
-    let currentY = startY;
+  let currentY = startY;
+
+  // Título (se evita dibujar separador aquí porque el bloque anterior ya lo dejó)
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10); // Aumentado de 9 a 10 para coincidir con títulos del ticket normal
+  doc.text('RESUMEN DE PASAJEROS', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 6;
     
-    // Línea separadora
-    doc.setLineWidth(0.2);
-    doc.setDrawColor(180, 180, 180);
-    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 4;
-    
-    // Título
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('RESUMEN DE PASAJEROS', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5;
-    
-    // ESPECIALIZACIÓN PARA SIN ASIENTOS: Mostrar "Elección libre" limpio sin recuadro
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
+  // ESPECIALIZACIÓN PARA SIN ASIENTOS: Mostrar "Elección libre" limpio sin recuadro
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
     
     // Texto centrado y destacado (sin recuadro azul)
     doc.text('ASIENTOS: Elección libre', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
@@ -274,7 +427,7 @@ export class NoSeatsCompanyTicketTemplate {
     
     // Resumen numérico
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
+    doc.setFontSize(8); // Aumentado de 7 a 8
     doc.text(`TOTAL REPRESENTANTES: ${representatives.length}`, this.MARGIN, currentY);
     currentY += 5;
     
@@ -296,13 +449,13 @@ export class NoSeatsCompanyTicketTemplate {
     
     // Título
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
+    doc.setFontSize(9); // Aumentado de 8 a 9
     doc.text('DETALLE DE LA VENTA', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 5;
     
     // Encabezado de tabla
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
+    doc.setFontSize(8); // Aumentado de 7 a 8
     doc.text('CANT.', this.MARGIN, currentY);
     doc.text('DESCRIPCIÓN', this.MARGIN + 12, currentY);
     doc.text('P/U', this.TICKET_WIDTH - this.MARGIN - 22, currentY, { align: 'right' });
@@ -320,7 +473,7 @@ export class NoSeatsCompanyTicketTemplate {
       if (item.discount && item.discount > 0) {
         desc += ` (descuento: ${item.discount.toFixed(2)})`;
       }
-      const descLines = this.splitText(doc, desc, 32, 7);
+      const descLines = this.splitText(doc, desc, 32, 8); // Aumentado de 7 a 8
       descLines.forEach((line, idx) => {
         doc.text(line, this.MARGIN + 12, currentY);
         if (idx < descLines.length - 1) currentY += 3;
@@ -345,7 +498,7 @@ export class NoSeatsCompanyTicketTemplate {
     
     // Totales SUNAT
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
+    doc.setFontSize(9); // Aumentado de 7 a 9
     const sunat = ticketData.sunat_totals;
     
     const totalPagarRaw = ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value ?? '0.00';
@@ -382,9 +535,14 @@ export class NoSeatsCompanyTicketTemplate {
     
     // Monto en palabras y forma de pago
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.text('SON: ' + ticketData.payment_info.amount_in_words, this.MARGIN, currentY);
-    currentY += 4;
+    doc.setFontSize(8); // Aumentado de 7 a 8
+    const amountText = 'SON: ' + ticketData.payment_info.amount_in_words;
+    const amountLines = this.splitText(doc, amountText, this.CONTENT_WIDTH, 8);
+    amountLines.forEach(line => {
+      doc.text(line, this.MARGIN, currentY);
+      currentY += 3;
+    });
+    currentY += 1;
     doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.MARGIN, currentY);
     currentY += 4;
     
@@ -412,7 +570,7 @@ export class NoSeatsCompanyTicketTemplate {
     currentY += 6;
     
     // Texto de consulta
-    doc.setFontSize(6);
+    doc.setFontSize(7); // Aumentado de 6 a 7
     doc.setFont('helvetica', 'normal');
     doc.text(footer.consultation_text, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 3;
@@ -435,6 +593,17 @@ export class NoSeatsCompanyTicketTemplate {
         doc.text('[ERROR QR]', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
         currentY += 8;
       }
+    }
+    // Añadir líneas legales si el transformer las proporcionó
+    if ((footer as any).legal_lines && Array.isArray((footer as any).legal_lines)) {
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'normal');
+      const legalLines: string[] = (footer as any).legal_lines;
+      legalLines.forEach(line => {
+        const wrapped = this.splitText(doc, line, this.CONTENT_WIDTH - 6, 7);
+        wrapped.forEach(wl => { doc.text(wl, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); currentY += 3; });
+        currentY += 1;
+      });
     }
     
     return currentY;

@@ -71,23 +71,22 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       try {
         const response = await api.get(`/operations/trips/${tripId}/seat-map`);
         if (response.status === 204) {
-          return null; // Sin asientos configurados
+          return []; // Sin asientos configurados -> devolver array vacío
         }
         return response.data as SeatMapItem[];
       } catch (error) {
-        return null;
+        return [];
       }
     },
     enabled: !!tripId,
   });
 
   // Filtrar asientos disponibles
-  const availableSeats = seatMap?.filter(seat => 
-    seat.is_available && 
-    !usedSeatNumbers.includes(seat.seat_number)
-  ) || [];
+  const availableSeats = Array.isArray(seatMap)
+    ? seatMap.filter(seat => seat.is_available && !usedSeatNumbers.includes(seat.seat_number))
+    : [];
 
-  const hasSeats = seatMap && seatMap.length > 0;
+  const hasSeats = Array.isArray(seatMap) && seatMap.length > 0;
 
   // Función para consultar DNI
   const handleDniQuery = async (dni: string) => {

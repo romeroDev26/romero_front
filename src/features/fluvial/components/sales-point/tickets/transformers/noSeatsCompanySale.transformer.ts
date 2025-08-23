@@ -100,7 +100,10 @@ export class NoSeatsCompanySaleTransformer {
       company_ruc: data.company.ruc,
       company_address: data.company.address,
       company_phones: formatCompanyPhones(data.company.phone),
-      emission_point: getEmissionPoint(data.branch_office_name, data.branch_office_name || ''),
+  emission_point: getEmissionPoint(data.branch_office_name, data.branch_office_name || ''),
+  // Información de sucursal para mostrar debajo del punto de emisión
+  branch_office_address: data.branch_office_address || '',
+  branch_office_phone: data.branch_office_phone || '',
       document_title: getDocumentTitle(data.document_type_code),
       document_id: `${data.series}-${String(data.number).padStart(5, '0')}`,
       emission_datetime: formatEmissionDateTime(data.issue_date, data.issue_time),
@@ -129,14 +132,20 @@ export class NoSeatsCompanySaleTransformer {
     
     return {
       title: 'DETALLES DEL VIAJE',
+  // Añadir nombre y dirección del puerto para que la plantilla pueda renderizarlos como en el ticket normal
+  // Preferir valores explícitos de la sucursal si vienen en el payload
+  port_name: (data as any).branch_office_port_name || item.boarding_port_name || extractOriginPort(data.items),
+  port_address: (data as any).branch_office_port_address || (item as any).boarding_port_address || (data.branch_office_address || ''),
       details: [
-        { label: 'ORIGEN', value: item.boarding_port_name || extractOriginPort(data.items) },
-        { label: 'DESTINO', value: item.disembarking_port_name || extractDestinationPort(data.items) },
+        // Orden y etiquetas ajustadas para coincidir con la plantilla 2-columnas
         { label: 'EMBARCACIÓN', value: item.vehicle_name || extractVehicleName(data.items) },
-        { label: 'F. SALIDA', value: formatTripDate(data.trip_departure_time, data.issue_date), col: 1 },
-        { label: 'H. SALIDA', value: formatTripTime(data.trip_departure_time), col: 2 },
-        { label: 'H. ABORDAJE', value: formatBoardingTime(data.boarding_time), col: 1 },
-        { label: 'RUTA', value: item.route_name || '-', col: 2 }
+        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time, data.issue_date) },
+        { label: 'PUERTO', value: (data as any).branch_office_port_name || item.boarding_port_name || extractOriginPort(data.items) },
+        { label: 'DIRECCIÓN PUERTO', value: (data as any).branch_office_port_address || (item as any).boarding_port_address || (data.branch_office_address || '') },
+        { label: 'EMBARQUE', value: formatBoardingTime(data.boarding_time) },
+        { label: 'SALIDA', value: formatTripTime(data.trip_departure_time) },
+        { label: 'ORIGEN', value: item.boarding_port_name || extractOriginPort(data.items) },
+        { label: 'DESTINO', value: item.disembarking_port_name || extractDestinationPort(data.items) }
         // NOTA: NO incluimos campo ASIENTO porque es una embarcación sin asientos
       ]
     };
@@ -197,10 +206,20 @@ export class NoSeatsCompanySaleTransformer {
    * BLOQUE 6: Transforma footer
    */
   private static transformFooter(data: BackendInvoiceData) {
+    // Construir la leyenda legal basada en el tipo de documento
+    const docTitle = getDocumentTitle(data.document_type_code) || '';
+    const titleLower = docTitle.toLowerCase();
+    const docType = titleLower.includes('boleta') ? 'BOLETA' : titleLower.includes('factura') ? 'FACTURA' : (docTitle ? docTitle.toString().toUpperCase() : 'DOCUMENTO');
+    const legalLines = [
+      'Bienes y servicios Transferidos en la amazonía región selva para ser consumidos en la misma',
+      `Representación impresa de la ${docType} DE VENTA ELECTRÓNICA, autorizado mediante la resolución N° 0340050001931 - SUNAT.`
+    ];
+
     return {
       qr_code_base64: data.qr_code_data,
       consultation_text: 'Consulte la validez de este documento en:',
-      consultation_url: 'www.sunat.gob.pe'
+      consultation_url: 'www.sunat.gob.pe',
+      legal_lines: legalLines
     };
   }
 

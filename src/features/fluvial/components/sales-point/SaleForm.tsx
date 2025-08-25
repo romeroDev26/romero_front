@@ -476,6 +476,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   // ← NUEVO: Handler principal de venta usando el hook de lógica de negocio
   const handleConfirmSale = async () => {
     try {
+      // Validación: si se agrega un costo adicional, la descripción debe ser obligatoria
+      if ((extraCost || 0) > 0 && (!extraCostDescription || !extraCostDescription.trim())) {
+        toast.error('Ingrese una descripción para el costo adicional antes de confirmar la venta.');
+        return;
+      }
       if (isRuc) {
         await handleCompanyInvoiceWithRepresentatives(
           trip.id,

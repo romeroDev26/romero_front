@@ -195,7 +195,7 @@ export const TripManifestsPage: React.FC = () => {
                 </div>
               </div>
               
-              <div className="bg-gray-50 rounded border" style={{ height: '500px' }}>
+              <div className="bg-gray-50 rounded border" style={{ height: '80vh', minHeight: '520px' }}>
                 <iframe
                   src={manifest.pdf_file_path}
                   className="w-full h-full rounded"

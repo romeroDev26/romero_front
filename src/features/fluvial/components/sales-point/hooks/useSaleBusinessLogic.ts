@@ -102,10 +102,12 @@ export const useSaleBusinessLogic = ({
       // ITEM 1: Servicio principal de transporte
       if (basePrice !== undefined && basePrice > 0) {
         const baseUnitPrice = basePrice * (seatMultiplier || 1.0);
+        // Aplicar IGV al precio unitario si corresponde (misma lógica que invoiceCreationService)
+        const baseUnitPriceWithIgv = isIgvGravado ? baseUnitPrice * 1.18 : baseUnitPrice;
         const transportItem = {
           product_id: 1, // ← CLAVE: ID del servicio de transporte
           quantity: representatives.length, // Cantidad de representantes/asientos
-          unit_price: parseFloat(baseUnitPrice.toFixed(10)),
+          unit_price: parseFloat(baseUnitPriceWithIgv.toFixed(10)),
           discount: discount ? parseFloat(discount.toFixed(10)) : 0,
           tax_category_code: isIgvGravado ? "10" : "20", // 10=Gravado, 20=Exonerado
           item_description: "Servicio de Transporte de Pasajeros",
@@ -116,10 +118,12 @@ export const useSaleBusinessLogic = ({
       
       // ITEM 2: Costo adicional/equipaje (si existe)
       if (extraCost && extraCost > 0) {
+        // Aplicar IGV al costo adicional si corresponde
+        const extraCostWithIgv = isIgvGravado ? extraCost * 1.18 : extraCost;
         const extraItem = {
           product_id: 7, // ← CLAVE: ID del servicio adicional
           quantity: 1, // Siempre 1 para costos adicionales
-          unit_price: parseFloat(extraCost.toFixed(10)),
+          unit_price: parseFloat(extraCostWithIgv.toFixed(10)),
           discount: 0,
           tax_category_code: isIgvGravado ? "10" : "20",
           item_description: extraCostDescription?.trim() || "Equipaje en exceso",

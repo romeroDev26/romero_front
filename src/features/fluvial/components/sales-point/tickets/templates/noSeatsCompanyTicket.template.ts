@@ -467,12 +467,19 @@ export class NoSeatsCompanyTicketTemplate {
     // Items
     ticketData.financial_breakdown.items.forEach(item => {
       doc.text(String(item.quantity), this.MARGIN, currentY);
-      
-      // Descripción multilínea con descuento si aplica
-      let desc = item.description;
+
+      // Descripción multilínea: eliminar la frase 'Elección libre de ubicación' (y variantes)
+      let desc = item.description || '';
+      // Quitar frases comunes que indican elección libre de asiento
+      desc = desc.replace(/Elección\s*libre\s*(de\s*ubicación)?/gi, '').trim();
+      // Limpiar puntos o espacios sobrantes al final
+      desc = desc.replace(/\s{2,}/g, ' ').replace(/\s*\.\s*$/, '');
+
+      // Añadir nota de descuento si aplica, manteniendo espacio correcto
       if (item.discount && item.discount > 0) {
-        desc += ` (descuento: ${item.discount.toFixed(2)})`;
+        desc = desc ? `${desc} (descuento: ${item.discount.toFixed(2)})` : `(descuento: ${item.discount.toFixed(2)})`;
       }
+
       const descLines = this.splitText(doc, desc, 32, 8); // Aumentado de 7 a 8
       descLines.forEach((line, idx) => {
         doc.text(line, this.MARGIN + 12, currentY);

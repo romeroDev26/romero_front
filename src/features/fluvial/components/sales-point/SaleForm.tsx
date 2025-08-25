@@ -351,7 +351,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   // Handler para descuento con validación del módulo
   const handleDiscountChange = (newDiscount: number) => {
-    const validation = validateDiscount(newDiscount, subtotal, igvAmount, representatives);
+    const validation = validateDiscount(newDiscount, basePrice || 0, seatMultiplier, extraCost, representatives);
     if (!validation.isValid) {
       toast.error(validation.errorMessage);
       return;

@@ -25,16 +25,18 @@ export const calculatePriceDetails = (
   const isRuc = passengerData.docType === SunatDocType.RUC;
   const quantity = isRuc ? Math.max(1, representatives.length) : 1;
   
-  // Subtotal (precio base sin IGV)
-  // CORRECCIÓN: Solo el precio base se multiplica por cantidad, el costo adicional es independiente
+  // LÓGICA DEL BACKEND - PASO 1: Precio Unitario Base (sin IGV)
   const baseSubtotal = (basePrice * seatMultiplier) * quantity;
-  const subtotal = baseSubtotal + extraCost;
+  const totalBeforeDiscount = baseSubtotal + extraCost;
   
-  // IGV (18% del subtotal solo si está gravado)
+  // LÓGICA DEL BACKEND - PASO 2: Aplicar descuentos para obtener el Subtotal Imponible
+  const subtotal = Math.max(0, totalBeforeDiscount - discount);
+  
+  // LÓGICA DEL BACKEND - PASO 3: Calcular Monto del IGV (18% del Subtotal Imponible)
   const igvAmount = isIgvGravado ? subtotal * 0.18 : 0;
   
-  // Precio final incluye IGV y descuenta el descuento manual
-  const finalTicketPrice = Math.max(0, subtotal + igvAmount - discount);
+  // LÓGICA DEL BACKEND - PASO 4: Total a Pagar = Subtotal Imponible + Monto del IGV
+  const finalTicketPrice = subtotal + igvAmount;
 
   return {
     basePrice,
@@ -47,20 +49,25 @@ export const calculatePriceDetails = (
 
 export const validateDiscount = (
   discount: number,
-  subtotal: number,
-  igvAmount: number,
+  basePrice: number,
+  seatMultiplier: number,
+  extraCost: number,
   representatives: Representative[]
 ): { isValid: boolean; errorMessage?: string } => {
-  const maxDiscount = subtotal + igvAmount;
+  // Calcular el máximo descuento posible (precio total antes de descuentos)
+  const isRuc = representatives.length > 0;
+  const quantity = isRuc ? Math.max(1, representatives.length) : 1;
+  const baseSubtotal = (basePrice * seatMultiplier) * quantity;
+  const totalBeforeDiscount = baseSubtotal + extraCost;
   
-  if (discount > maxDiscount) {
+  if (discount > totalBeforeDiscount) {
     const quantityText = representatives.length > 0 
       ? ` para ${representatives.length} representante${representatives.length !== 1 ? 's' : ''}` 
       : '';
     
     return {
       isValid: false,
-      errorMessage: `El descuento no puede ser mayor a S/ ${maxDiscount.toFixed(2)} (monto total sin descuento${quantityText})`
+      errorMessage: `El descuento no puede ser mayor a S/ ${totalBeforeDiscount.toFixed(2)} (monto total sin descuento${quantityText})`
     };
   }
   

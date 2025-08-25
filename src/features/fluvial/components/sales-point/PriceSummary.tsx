@@ -40,10 +40,15 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   isRuc = false,
   representativesCount = 1
 }) => {
-  // Calcular el precio del ticket basado en el subtotal (más preciso)
+  // Calcular el precio del ticket y límites
   const quantity = isRuc ? Math.max(1, representativesCount) : 1;
   const ticketPricePerUnit = (basePrice || 0) * seatMultiplier;
-  const ticketPriceTotal = (subtotal - extraCost);
+  
+  // Calcular el total antes de descuentos para mostrar y para límite máximo
+  const baseSubtotal = ticketPricePerUnit * quantity;
+  const totalBeforeDiscount = baseSubtotal + extraCost;
+  const maxDiscountAllowed = totalBeforeDiscount;
+  
   const isIgvDisabled = taxCategoryCodeDefault === null;
 
   return (
@@ -63,13 +68,13 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           </div>
           <div className="flex justify-between text-sm border-t pt-2">
             <span className="text-gray-600 font-medium">Total Pasajes:</span>
-            <span className="font-medium">{ticketPriceTotal > 0 ? `S/ ${ticketPriceTotal.toFixed(2)}` : 'N/A'}</span>
+            <span className="font-medium">{baseSubtotal > 0 ? `S/ ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
           </div>
         </>
       ) : (
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Tarifa Pasaje:</span>
-          <span className="font-medium">{ticketPriceTotal > 0 ? `S/ ${ticketPriceTotal.toFixed(2)}` : 'N/A'}</span>
+          <span className="font-medium">{baseSubtotal > 0 ? `S/ ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
         </div>
       )}
 
@@ -154,7 +159,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
             placeholder="S/ 0.00"
             step="0.10"
             min="0"
-            max={subtotal + igvAmount}
+            max={maxDiscountAllowed}
           />
         </div>
         

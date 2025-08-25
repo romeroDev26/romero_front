@@ -1,4 +1,4 @@
-// src/features/accounting/pages/DebitNoteAnnulFormPage.tsx
+// src/features/accounting/debit-notes/pages/DebitNoteAnnulFormPage.tsx
 
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -8,12 +8,12 @@ import { z } from 'zod';
 import { toast } from 'react-toastify';
 import { useQuery } from '@tanstack/react-query';
 
-import { Button } from '../../../components/common/Button';
+import { Button } from '../../../../components/common/Button';
 import { useCreateDebitNote } from '../hooks/useDebitNotes';
-import { DebitNoteCreateData } from '../types';
-import { Invoice, User } from '../../../types'; 
-import { useAccountingDocumentSeriesForBranch } from '../../../hooks/useAccountingDocumentSeries';
-import { authService } from '../../../services/auth.service';
+import { DebitNoteCreateData } from '../../types';
+import { Invoice, User } from '../../../../types'; 
+import { useAccountingDocumentSeriesForBranch } from '../../../../hooks/useAccountingDocumentSeries';
+import { authService } from '../../../../services/auth.service';
 
 // Catálogo de motivos para Nota de Débito (Catálogo 10 SUNAT)
 const DEBIT_NOTE_REASONS = [

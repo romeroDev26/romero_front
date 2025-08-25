@@ -1,4 +1,4 @@
-// src/features/accounting/pages/DailySummariesListPage.tsx
+// src/features/accounting/daily-summaries/pages/DailySummariesListPage.tsx
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,8 +12,8 @@ import {
   CalendarDaysIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../components/common/Button';
-import { Input } from '../../../components/common/Input';
+import { Button } from '../../../../components/common/Button';
+import { Input } from '../../../../components/common/Input';
 import { useDailySummaries, useRefreshPendingSummaries } from '../hooks/useDailySummaries';
 
 export const DailySummariesListPage: React.FC = () => {

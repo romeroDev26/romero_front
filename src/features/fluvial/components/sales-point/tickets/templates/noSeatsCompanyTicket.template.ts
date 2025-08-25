@@ -501,8 +501,9 @@ export class NoSeatsCompanyTicketTemplate {
     doc.setFontSize(9); // Aumentado de 7 a 9
     const sunat = ticketData.sunat_totals;
     
-    const totalPagarRaw = ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value ?? '0.00';
-    const totalPagarClean = totalPagarRaw.toString().replace(/^S\/\s*/, '').trim();
+  // Buscar específicamente la línea 'TOTAL A PAGAR' o la etiqueta exacta 'TOTAL'
+  const totalPagarRaw = ticketData.financial_breakdown.summary.find(s => /TOTAL\s*A\s*PAGAR/i.test(s.label) || /^TOTAL$/i.test(s.label))?.value ?? '0.00';
+  const totalPagarClean = totalPagarRaw.toString().replace(/^S\/\s*/, '').trim();
     
     const totales = [
       { label: 'OP. GRAVADA', value: sunat.total_taxable },

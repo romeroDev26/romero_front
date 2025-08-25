@@ -152,17 +152,20 @@ export class NoSeatsSaleTransformer {
       discount: parseFloat(item.discount),
       total_line: parseFloat(item.total_line)
     }));
-    
-    // Usar directamente los valores calculados por el backend sin recalcular
-    // El backend ya nos envía todos los totales correctos
+    // Calcular totales tomando en cuenta el total_line de cada item (ej: "total_line": "141.60")
+    // Si por alguna razón no hubiera items, fallback a los totales enviados por el backend
     const subtotalBackend = parseFloat(data.total_taxable) + parseFloat(data.total_exonerated) + parseFloat(data.total_unaffected);
     const totalDiscounts = parseFloat(data.total_global_discount) || 0;
-    
-    // El resumen debe mostrar los valores exactos del backend
+
+    // Sumar total_line de los items para obtener el TOTAL A PAGAR preferido
+    const totalFromItems = items.reduce((acc, it) => acc + (Number.isFinite(it.total_line) ? it.total_line : 0), 0);
+    const totalToShow = totalFromItems > 0 ? totalFromItems : parseFloat(data.total_payable || '0');
+
+    // El resumen mostrará los valores formateados (formatCurrency)
     const summary = [
       { label: 'SUBTOTAL', value: formatCurrency(subtotalBackend) },
       { label: 'DESCUENTOS', value: totalDiscounts > 0 ? `- ${formatCurrency(totalDiscounts)}` : formatCurrency(0) },
-      { label: 'TOTAL A PAGAR', value: data.total_payable, is_bold: true }
+      { label: 'TOTAL A PAGAR', value: formatCurrency(totalToShow), is_bold: true }
     ];
     
     return {

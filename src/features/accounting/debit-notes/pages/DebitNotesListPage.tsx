@@ -1,4 +1,4 @@
-// src/features/accounting/pages/DebitNotesListPage.tsx
+// src/features/accounting/debit-notes/pages/DebitNotesListPage.tsx
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -9,11 +9,11 @@ import {
   EyeIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../components/common/Button';
-import { SunatStatusBadge } from '../components/SunatStatusBadge';
+import { Button } from '../../../../components/common/Button';
+import { SunatStatusBadge } from '../../components/SunatStatusBadge';
 import { useDebitNotes, useRefreshDebitNotePendingStatuses } from '../hooks/useDebitNotes';
-import { DebitNotesListParams } from '../types';
-import { DebitNote } from '../../../types';
+import { DebitNotesListParams } from '../../types';
+import { DebitNote } from '../../../../types';
 
 export const DebitNotesListPage: React.FC = () => {
   const [filters, setFilters] = useState<DebitNotesListParams>({
@@ -28,7 +28,7 @@ export const DebitNotesListPage: React.FC = () => {
   // Polling automático cada 2 minutos para documentos pendientes
   useEffect(() => {
     const interval = setInterval(() => {
-      const hasPendingDocs = debitNotes?.some(note => 
+      const hasPendingDocs = debitNotes?.some((note: DebitNote) => 
         note.sunat_status === 'PENDING' || note.sunat_status === 'SENT'
       );
       if (hasPendingDocs) {
@@ -263,4 +263,4 @@ export const DebitNotesListPage: React.FC = () => {
       )}
     </div>
   );
-}; 
+};

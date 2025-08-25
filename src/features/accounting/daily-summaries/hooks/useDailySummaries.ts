@@ -1,4 +1,4 @@
-// src/features/accounting/hooks/useDailySummaries.ts
+// src/features/accounting/daily-summaries/hooks/useDailySummaries.ts
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -6,7 +6,7 @@ import { dailySummariesService } from '../services/dailySummaries.service';
 import type { 
   DailySummaryCreateData,
   DailySummariesListParams
-} from '../types';
+} from '../../types';
 
 // Hook para listar resúmenes diarios
 export const useDailySummaries = (companyId: number, params?: Omit<DailySummariesListParams, 'company_id'>) => {
@@ -32,7 +32,7 @@ export const useCreateDailySummary = () => {
 
   return useMutation({
     mutationFn: (data: DailySummaryCreateData) => dailySummariesService.create(data),
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast.success(
         `Resumen diario ${data.identifier} creado exitosamente. Se está enviando a SUNAT...`,
         { autoClose: 5000 }

@@ -1,4 +1,4 @@
-// src/features/accounting/pages/DebitNoteFormPage.tsx
+// src/features/accounting/debit-notes/pages/DebitNoteFormPage.tsx
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,9 +11,9 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 
-import { Button } from '../../../components/common/Button';
+import { Button } from '../../../../components/common/Button';
 import { useCreateDebitNote } from '../hooks/useDebitNotes';
-import { DebitNoteCreateData } from '../types';
+import { DebitNoteCreateData } from '../../types';
 
 // Catálogo de motivos para Nota de Débito
 const DEBIT_NOTE_REASONS = [

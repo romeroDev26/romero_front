@@ -12,12 +12,12 @@ Esta guía proporciona ejemplos detallados de JSON para cada tipo de *Nota de Cr
 
 #### *Endpoint Principal*
 http
-POST /api/v1/sunat/credit-notes/
+POST /sunat/credit-notes/
 
 
 #### *Endpoint de Anulación Simplificada*
 http
-POST /api/v1/sunat/credit-notes/annul
+POST /sunat/credit-notes/annul
 
 *Uso:* Para anular facturas/boletas de forma rápida sin especificar ítems.
 
@@ -327,7 +327,7 @@ json
 
 ### Endpoint Base
 http
-POST /api/v1/sunat/debit-notes/
+POST /sunat/debit-notes/
 
 
 ### Códigos Disponibles
@@ -473,12 +473,12 @@ json
 
 ### Para Notas de Crédito
 http
-GET /api/v1/sunat/tickets/documents/credit_note/{id}/status
+GET /sunat/tickets/documents/credit_note/{id}/status
 
 
 ### Para Notas de Débito
 http
-GET /api/v1/sunat/tickets/documents/debit_note/{id}/status
+GET /sunat/tickets/documents/debit_note/{id}/status
 
 
 ### Respuesta de Estado
@@ -524,7 +524,7 @@ json
 
 *Para anulaciones (código 01), usa preferiblemente el **endpoint simplificado*:
 http
-POST /api/v1/sunat/credit-notes/annul
+POST /sunat/credit-notes/annul
 
 
 Este endpoint:

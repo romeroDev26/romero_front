@@ -526,7 +526,12 @@ export class CompanyTicketTemplate {
   doc.setFontSize(9);
     const sunat = ticketData.sunat_totals;
     
-    const totalPagarRaw = ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value ?? '0.00';
+    // Buscar específicamente la línea 'TOTAL A PAGAR' o la etiqueta exacta 'TOTAL'
+    const totalSummaryEntry = ticketData.financial_breakdown.summary.find(s => {
+      const lab = (s.label || '').toString().toUpperCase().trim();
+      return lab === 'TOTAL A PAGAR' || lab === 'TOTAL' || lab.includes('TOTAL A PAGAR');
+    });
+    const totalPagarRaw = totalSummaryEntry?.value ?? '0.00';
     const totalPagarClean = totalPagarRaw.toString().replace(/^S\/\s*/, '').trim();
     
     const totales = [

@@ -1,13 +1,13 @@
-// src/features/accounting/services/dailySummaries.service.ts
+// src/features/accounting/daily-summaries/services/dailySummaries.service.ts
 
-import apiClient from '../../../config/api';
+import apiClient from '../../../../config/api';
 import type { 
   DailySummary, 
   DailySummaryCreateData, 
   DailySummaryResponse,
   DailySummariesListParams,
   SunatStatusResponse 
-} from '../types';
+} from '../../types';
 
 export class DailySummariesService {
   // Crear resumen diario

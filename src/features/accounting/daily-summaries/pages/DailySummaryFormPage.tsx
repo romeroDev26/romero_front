@@ -1,4 +1,4 @@
-// src/features/accounting/pages/DailySummaryFormPage.tsx
+// src/features/accounting/daily-summaries/pages/DailySummaryFormPage.tsx
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,8 +10,8 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../components/common/Button';
-import { Input } from '../../../components/common/Input';
+import { Button } from '../../../../components/common/Button';
+import { Input } from '../../../../components/common/Input';
 import { useCreateDailySummary } from '../hooks/useDailySummaries';
 
 // Esquema de validación

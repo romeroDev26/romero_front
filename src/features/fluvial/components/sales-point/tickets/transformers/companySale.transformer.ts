@@ -160,11 +160,15 @@ export class CompanySaleTransformer {
       };
     });
     
+    // Calcular total a pagar preferiendo la suma de total_line de los items
+    const totalFromItems = processedItems.reduce((acc, it) => acc + (Number.isFinite(it.total_line) ? it.total_line : 0), 0);
+    const totalToShow = totalFromItems > 0 ? totalFromItems : parseFloat(data.total_payable || '0');
+
     return {
       title: 'DETALLE DE LA VENTA',
       items: processedItems,
       summary: [
-        { label: 'TOTAL A PAGAR', value: formatCurrency(parseFloat(data.total_payable)), is_bold: true }
+        { label: 'TOTAL A PAGAR', value: formatCurrency(totalToShow), is_bold: true }
       ]
     };
   }

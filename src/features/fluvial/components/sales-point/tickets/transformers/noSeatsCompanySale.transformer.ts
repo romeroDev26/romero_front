@@ -184,9 +184,13 @@ export class NoSeatsCompanySaleTransformer {
     return {
       title: 'DETALLE DE LA VENTA',
       items: items, // Ahora incluye TODOS los servicios
-      summary: [
-        { label: 'TOTAL A PAGAR', value: formatCurrency(parseFloat(data.total_payable)), is_bold: true }
-      ]
+      // Calcular TOTAL A PAGAR preferentemente desde la suma de item.total_line (por ejemplo "141.60").
+      // Si no hay items o la suma es 0, usar el valor enviado por el backend en data.total_payable
+      summary: (() => {
+        const totalFromItems = items.reduce((acc, it) => acc + (Number.isFinite(it.total_line) ? it.total_line : 0), 0);
+        const totalToShow = totalFromItems > 0 ? totalFromItems : parseFloat(data.total_payable || '0');
+        return [ { label: 'TOTAL A PAGAR', value: formatCurrency(totalToShow), is_bold: true } ];
+      })()
     };
   }
 

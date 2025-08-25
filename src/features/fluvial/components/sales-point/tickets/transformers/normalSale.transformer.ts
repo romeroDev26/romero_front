@@ -131,16 +131,18 @@ export class NormalSaleTransformer {
       total_line: parseFloat(item.total_line)
     }));
     
-    // Usar directamente los valores calculados por el backend sin recalcular
-    // El backend ya nos envía todos los totales correctos
+    // Calcular totales: preferimos la suma de item.total_line (ej. "total_line": "141.60")
+    // Si no hay items o la suma da 0, se hace fallback a data.total_payable
     const subtotalBackend = parseFloat(data.total_taxable) + parseFloat(data.total_exonerated) + parseFloat(data.total_unaffected);
     const totalDiscounts = parseFloat(data.total_global_discount) || 0;
-    
-    // El resumen debe mostrar los valores exactos del backend
+
+    const totalFromItems = items.reduce((acc, it) => acc + (Number.isFinite(it.total_line) ? it.total_line : 0), 0);
+    const totalToShow = totalFromItems > 0 ? totalFromItems : parseFloat(data.total_payable || '0');
+
     const summary = [
       { label: 'SUBTOTAL', value: formatCurrency(subtotalBackend) },
       { label: 'DESCUENTOS', value: totalDiscounts > 0 ? `- ${formatCurrency(totalDiscounts)}` : formatCurrency(0) },
-      { label: 'TOTAL A PAGAR', value: data.total_payable, is_bold: true }
+      { label: 'TOTAL A PAGAR', value: formatCurrency(totalToShow), is_bold: true }
     ];
     
     return {

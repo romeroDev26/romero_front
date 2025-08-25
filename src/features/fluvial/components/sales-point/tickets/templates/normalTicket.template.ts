@@ -104,9 +104,13 @@ export class NormalTicketTemplate {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     const sunat = ticketData.sunat_totals;
-    // Tomar el valor de TOTAL A PAGAR exactamente como viene del transformer/backend
-    const totalPagarRaw = ticketData.financial_breakdown.summary.find(s => s.label.toUpperCase().includes('TOTAL'))?.value ?? '0.00';
-    // Limpiar el S/ del valor si viene incluido desde el backend
+    // Buscar específicamente la línea 'TOTAL A PAGAR' o la etiqueta exacta 'TOTAL' (evita 'SUBTOTAL')
+    const totalSummaryEntry = ticketData.financial_breakdown.summary.find(s => {
+      const lab = (s.label || '').toString().toUpperCase().trim();
+      return lab === 'TOTAL A PAGAR' || lab === 'TOTAL' || lab.includes('TOTAL A PAGAR');
+    });
+    const totalPagarRaw = totalSummaryEntry?.value ?? '0.00';
+    // Limpiar el prefijo 'S/' si viene incluido desde el backend
     const totalPagarClean = totalPagarRaw.toString().replace(/^S\/\s*/, '').trim();
     const totales = [
       { label: 'OP. GRAVADA', value: sunat.total_taxable },

@@ -1,4 +1,4 @@
-// src/features/accounting/pages/DailySummaryDetailPage.tsx
+// src/features/accounting/daily-summaries/pages/DailySummaryDetailPage.tsx
 
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -13,7 +13,7 @@ import {
   CurrencyDollarIcon,
   DocumentDuplicateIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../components/common/Button';
+import { Button } from '../../../../components/common/Button';
 import { useDailySummary, useDailySummarySunatStatus } from '../hooks/useDailySummaries';
 
 export const DailySummaryDetailPage: React.FC = () => {

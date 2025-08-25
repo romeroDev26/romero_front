@@ -1,4 +1,4 @@
-// src/features/accounting/pages/CreditNotesListPage.tsx
+// src/features/accounting/credit-notes/pages/CreditNotesListPage.tsx
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -8,11 +8,11 @@ import {
   DocumentArrowDownIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../components/common/Button';
-import { SunatStatusBadge } from '../components/SunatStatusBadge';
+import { Button } from '../../../../components/common/Button';
+import { SunatStatusBadge } from '../../components/SunatStatusBadge';
 import { useCreditNotes, useRefreshPendingStatuses } from '../hooks/useCreditNotes';
-import { CreditNotesListParams } from '../types';
-import { CreditNote } from '../../../types';
+import { CreditNotesListParams } from '../../types';
+import { CreditNote } from '../../../../types';
 
 export const CreditNotesListPage: React.FC = () => {
   const [filters, setFilters] = useState<CreditNotesListParams>({

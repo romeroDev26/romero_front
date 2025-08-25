@@ -1,4 +1,4 @@
-// src/features/accounting/pages/CreditNoteFormPage.tsx
+// src/features/accounting/credit-notes/pages/CreditNoteAnnulFormPage.tsx
 
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -8,12 +8,12 @@ import { z } from 'zod';
 import { toast } from 'react-toastify';
 import { useQuery } from '@tanstack/react-query';
 
-import { Button } from '../../../components/common/Button';
+import { Button } from '../../../../components/common/Button';
 import { useCreateCreditNoteByAnnulment } from '../hooks/useCreditNotes';
-import { CreditNoteAnnulData } from '../types';
-import { Invoice, User } from '../../../types'; 
-import { useAccountingDocumentSeriesForBranch } from '../../../hooks/useAccountingDocumentSeries';
-import { authService } from '../../../services/auth.service'; 
+import { CreditNoteAnnulData } from '../../types';
+import { Invoice, User } from '../../../../types'; 
+import { useAccountingDocumentSeriesForBranch } from '../../../../hooks/useAccountingDocumentSeries';
+import { authService } from '../../../../services/auth.service'; 
 
 // Catálogo 09 de SUNAT para motivos de Nota de Crédito (Actualizado según backend)
 const CREDIT_NOTE_REASONS = [

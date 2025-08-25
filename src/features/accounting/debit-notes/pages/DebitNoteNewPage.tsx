@@ -1,4 +1,4 @@
-// src/features/accounting/pages/DebitNoteNewPage.tsx
+// src/features/accounting/debit-notes/pages/DebitNoteNewPage.tsx
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -7,9 +7,9 @@ import {
   ArrowLeftIcon,
   CreditCardIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../components/common/Button';
-import { useVoidableInvoices } from '../hooks/useCreditNotes';
-import { VoidableInvoice } from '../types';
+import { Button } from '../../../../components/common/Button';
+import { useVoidableInvoices } from '../../credit-notes/hooks/useCreditNotes';
+import { VoidableInvoice } from '../../types';
 
 export const DebitNoteNewPage: React.FC = () => {
   const navigate = useNavigate();

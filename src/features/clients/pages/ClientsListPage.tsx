@@ -1,5 +1,5 @@
 // src/features/clients/pages/ClientsListPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -72,6 +72,9 @@ export const ClientsListPage: React.FC = () => {
   const [filterCountry, setFilterCountry] = useState<string>('ALL');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  // Paginación
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 20;
   
   // Query para obtener clientes
   const { 
@@ -138,6 +141,24 @@ export const ClientsListPage: React.FC = () => {
     
     return matchesDocType && matchesActive && matchesCountry && matchesSearch;
   }) : [];
+
+  // Ajustar la página actual si cambia la cantidad de elementos filtrados
+  const totalPages = Math.max(1, Math.ceil(filteredClients.length / itemsPerPage));
+
+  useEffect(() => {
+    // Si los filtros cambian, volver a la primera página
+    setCurrentPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, filterDocType, filterActive, filterCountry, clients?.length]);
+
+  useEffect(() => {
+    // Asegurar que la página actual no exceda el total de páginas
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedClients = filteredClients.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   
   const handleDelete = (client: Client) => {
     setSelectedClient(client);
@@ -214,57 +235,63 @@ export const ClientsListPage: React.FC = () => {
       </div>
       
       {/* Filtros y búsqueda */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-grow">
+      <div className="relative flex flex-col md:flex-row gap-4 items-start">
+        <div className="relative flex-1 min-w-0">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
           </div>
           <input
             type="text"
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+            className="pl-10 block w-full min-w-0 rounded-md border-gray-300 shadow-sm p-2 border"
             placeholder="Buscar por nombre, documento, email, teléfono o dirección..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
-        <div className="flex gap-2 flex-wrap">
-          <select
-            className="rounded-md border-gray-300 shadow-sm p-2 border"
-            value={filterDocType}
-            onChange={(e) => setFilterDocType(e.target.value as DocType | 'ALL')}
-          >
-            <option value="ALL">Todos los documentos</option>
-            <option value="6">RUC</option>
-            <option value="1">DNI</option>
-            <option value="4">Carnet de Extranjería</option>
-            <option value="7">Pasaporte</option>
-            <option value="0">Otros</option>
-          </select>
-          
-          <select
-            className="rounded-md border-gray-300 shadow-sm p-2 border"
-            value={filterActive}
-            onChange={(e) => setFilterActive(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
-          >
-            <option value="ALL">Todos los estados</option>
-            <option value="ACTIVE">Activos</option>
-            <option value="INACTIVE">Inactivos</option>
-          </select>
-          
-          {uniqueCountries.length > 0 && (
+
+        <div className="relative flex gap-3 flex-wrap items-center">
+          <div className="relative">
             <select
-              className="rounded-md border-gray-300 shadow-sm p-2 border"
-              value={filterCountry}
-              onChange={(e) => setFilterCountry(e.target.value)}
+              className="rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[200px] text-sm"
+              value={filterDocType}
+              onChange={(e) => setFilterDocType(e.target.value as DocType | 'ALL')}
             >
-              <option value="ALL">Todos los países</option>
-              {uniqueCountries.map((countryCode) => (
-                <option key={countryCode} value={countryCode}>
-                  {getCountryName(countryCode)}
-                </option>
-              ))}
+              <option value="ALL">Todos los documentos</option>
+              <option value="6">RUC</option>
+              <option value="1">DNI</option>
+              <option value="4">Carnet de Extranjería</option>
+              <option value="7">Pasaporte</option>
+              <option value="0">Otros</option>
             </select>
+          </div>
+
+          <div className="relative">
+            <select
+              className="rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[160px] text-sm"
+              value={filterActive}
+              onChange={(e) => setFilterActive(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
+            >
+              <option value="ALL">Todos los estados</option>
+              <option value="ACTIVE">Activos</option>
+              <option value="INACTIVE">Inactivos</option>
+            </select>
+          </div>
+
+          {uniqueCountries.length > 0 && (
+            <div className="relative">
+              <select
+                className="rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[160px] text-sm"
+                value={filterCountry}
+                onChange={(e) => setFilterCountry(e.target.value)}
+              >
+                <option value="ALL">Todos los países</option>
+                {uniqueCountries.map((countryCode) => (
+                  <option key={countryCode} value={countryCode}>
+                    {getCountryName(countryCode)}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
       </div>
@@ -332,7 +359,7 @@ export const ClientsListPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredClients.map((client) => (
+              {paginatedClients.map((client) => (
                 <tr key={client.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-xs bg-gray-100 px-2 py-1 rounded">
@@ -409,6 +436,57 @@ export const ClientsListPage: React.FC = () => {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Controles de paginación */}
+      <div className="flex items-center justify-between bg-white mt-4 p-4 rounded-lg">
+        <div className="text-sm text-gray-600">
+          Mostrando <span className="font-medium">{filteredClients.length === 0 ? 0 : (filteredClients.length === 0 ? 0 : ( (currentPage - 1) * itemsPerPage + 1 ))}</span>
+          {' - '}
+          <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredClients.length)}</span>
+          {' de '}
+          <span className="font-medium">{filteredClients.length}</span>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-md text-sm border ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
+            « Primero
+          </button>
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-md text-sm border ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
+            ‹ Prev
+          </button>
+
+          {/* Números de página simples: mostrar algunas páginas alrededor de la actual */}
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2)).map((p) => (
+              <button
+                key={p}
+                onClick={() => setCurrentPage(p)}
+                className={`px-3 py-1 rounded-md text-sm border ${p === currentPage ? 'bg-primary text-white' : 'hover:bg-gray-100'}`}>
+                {p}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-md text-sm border ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
+            Next ›
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-md text-sm border ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
+            Último »
+          </button>
         </div>
       </div>
       

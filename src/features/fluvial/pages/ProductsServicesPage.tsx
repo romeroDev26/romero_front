@@ -5,14 +5,12 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   PencilIcon,
-  TrashIcon,
   EyeIcon
 } from '@heroicons/react/24/outline';
 import {
   useProductsServicesData,
   useCreateProductService,
-  useUpdateProductService,
-  useDeleteProductService
+  useUpdateProductService
 } from '../hooks/useProductsServicesData';
 import {
   ProductServiceFilters,
@@ -42,7 +40,6 @@ export const ProductsServicesPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ProductService | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
 
   const queryFilters = useMemo(() => ({
@@ -55,7 +52,7 @@ export const ProductsServicesPage: React.FC = () => {
   const { data: productsServices, isLoading, error, refetch } = useProductsServicesData(queryFilters);
   const createMutation = useCreateProductService();
   const updateMutation = useUpdateProductService();
-  const deleteMutation = useDeleteProductService();
+  // deleteMutation removed: deletion disabled from UI
 
   const handleFormSubmit = (data: ProductServiceFormData) => {
     if (selectedItem) {
@@ -86,17 +83,7 @@ export const ProductsServicesPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = () => {
-    if (selectedItem) {
-      deleteMutation.mutate(selectedItem.id, {
-        onSuccess: () => {
-          setShowDeleteModal(false);
-          setSelectedItem(null);
-          refetch();
-        }
-      });
-    }
-  };
+  // handleDelete removed: deletion disabled from UI
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -179,13 +166,7 @@ export const ProductsServicesPage: React.FC = () => {
           >
             <PencilIcon className="w-5 h-5" />
           </button>
-          <button
-            onClick={() => { setSelectedItem(item); setShowDeleteModal(true); }}
-            className="text-gray-500 hover:text-red-700"
-            title="Eliminar"
-          >
-            <TrashIcon className="w-5 h-5" />
-          </button>
+          {/* Delete action removed - deletion disabled in UI */}
         </div>
       ),
       className: 'text-left'
@@ -329,34 +310,7 @@ export const ProductsServicesPage: React.FC = () => {
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
 
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        title="Confirmar eliminación"
-      >
-        <div className="space-y-4">
-          <p>
-            ¿Estás seguro de que deseas eliminar el{' '}
-            {selectedItem?.item_type === 'SERVICE' ? 'servicio' : 'producto'}{' '}
-            <strong>"{selectedItem?.name}"</strong>?
-          </p>
-          <p className="text-sm text-gray-600">
-            Esta acción desactivará el elemento pero no lo eliminará permanentemente.
-          </p>
-          <div className="flex justify-end space-x-3">
-            <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDelete}
-              isLoading={deleteMutation.isPending}
-            >
-              Eliminar
-            </Button>
-          </div>
-        </div>
-      </Modal>
+  {/* Delete confirmation modal removed - deletion disabled in UI */}
 
       <Modal
         isOpen={showViewModal}

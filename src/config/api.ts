@@ -44,7 +44,14 @@ api.interceptors.response.use(
     }
 
     // Si hay respuesta pero es un error
+    // Permitir que llamadas que incluyan la cabecera 'X-Skip-Auth-Redirect'
+    // puedan manejar 401 por su cuenta (ej. peticiones de diagnóstico o polling)
+    const skipRedirect = error.config?.headers && (error.config.headers['X-Skip-Auth-Redirect'] || error.config.headers['x-skip-auth-redirect']);
     if (error.response.status === 401) {
+      if (skipRedirect) {
+        // Dejar que el caller maneje el 401
+        return Promise.reject(error);
+      }
       localStorage.removeItem('authToken');
       window.location.href = '/login';
     }

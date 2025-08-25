@@ -81,8 +81,22 @@ export const manifestService = {
   // Obtener un manifiesto por ID
   getManifestById: async (id: number): Promise<Manifest> => {
     try {
-      const response = await api.get(`/dispatch/manifests/${id}/`);
-      return response.data;
+      // Intentar GET con slash. Si el servidor responde 307/redirect a http o falla,
+      // reintentar sin slash final. Usamos la cabecera X-Skip-Auth-Redirect para que
+      // el interceptor no fuerce el logout en caso de 401 durante el diagnóstico.
+      // Intentar SIN barra final primero para evitar redirecciones que rompen el preflight CORS
+      try {
+        const response = await api.get(`/dispatch/manifests/${id}`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
+        return response.data;
+      } catch (err: any) {
+        // Si falla, reintentar con slash final como fallback
+        try {
+          const response2 = await api.get(`/dispatch/manifests/${id}/`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
+          return response2.data;
+        } catch (err2: any) {
+          throw err2;
+        }
+      }
     } catch (error: any) {
       console.error('Error fetching manifest:', error);
       throw new Error(
@@ -96,8 +110,9 @@ export const manifestService = {
   // Crear un nuevo manifiesto
   createManifest: async (data: ManifestFormData): Promise<ManifestResponse> => {
     try {
-      // Usar la API real según la documentación
-      const response = await api.post('/dispatch/manifests/', data);
+      // El endpoint de "regenerate" en el backend crea o regenera el manifiesto.
+      // Usamos ese endpoint en lugar del POST original para unificar comportamiento.
+      const response = await api.put('/dispatch/manifests/regenerate', data);
       // Si la respuesta no incluye los items completos, obtener el manifiesto completo
       let manifestData = response.data;
       if (!manifestData.items || manifestData.items.length === 0) {
@@ -106,7 +121,7 @@ export const manifestService = {
       return {
         success: true,
         data: manifestData,
-        message: 'Manifiesto creado exitosamente'
+        message: 'Manifiesto creado/regenerado exitosamente'
       };
     } catch (error: any) {
       // Manejo específico de errores de validación (422)
@@ -117,7 +132,7 @@ export const manifestService = {
       }
       // Manejo específico de conflicto (409) - mantener el error original para que createOrRegenerateManifest pueda detectarlo
       if (error.response?.status === 409) {
-        throw error; // Preservar el error original con status 409
+        throw error; // Preservar el error original con status 409 (compatibilidad)
       }
       throw new Error(
         error.response?.data?.message || 

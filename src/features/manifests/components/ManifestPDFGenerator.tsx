@@ -140,57 +140,135 @@ export const generatePassengerManifestPDF = (
   currentY += 12;
 
   // ============ TABLA DE PASAJEROS ============
-  // Preparar datos de la tabla según los campos solicitados:
-  // N°, APELLIDOS Y NOMBRES, N° IDENTIDAD, VENDEDOR (PRIMER NOMBRE), ASIENTO, ORIGEN, DESTINO, TELÉFONO
-  const tableData = manifestData.items.map((item, index) => [
-    (index + 1).toString(), // N°
-    item.passenger_name || 'N/A', // APELLIDOS Y NOMBRES
-    `${item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS'}: ${item.passenger_doc_number || 'N/A'}`, // N° IDENTIDAD
-    manifestData.generated_by_name ? manifestData.generated_by_name.split(' ')[0] : 'VENDEDOR', // VENDEDOR (PRIMER NOMBRE)
-    item.seat_number || 'N/A', // ASIENTO
-    item.boarding_port_name || 'N/A', // ORIGEN
-    item.disembarking_port_name || 'N/A', // DESTINO
-    item.passenger_phone || 'N/A' // TELÉFONO
-  ]);
+  // Si es manifiesto de CARGO y el backend devuelve grupos, generar tablas separadas por destino
+  if (manifestData.manifest_type === 'CARGO') {
+    const grouped = (manifestData as any).cargo_grouped_by_stops;
+    if (grouped && Array.isArray(grouped.groups) && grouped.groups.length > 0) {
+      for (const group of grouped.groups) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(11);
+        pdf.text(`${group.origin_port_name || 'N/A'} → ${group.destination_port_name || 'N/A'}`, margin, currentY);
+        currentY += 6;
 
-  // Configurar la tabla con los campos específicos solicitados
-  autoTable(pdf, {
-    startY: currentY,
-    head: [['N°', 'APELLIDOS Y NOMBRES', 'N° IDENTIDAD', 'VENDEDOR', 'ASIENTO', 'ORIGEN', 'DESTINO', 'TELÉFONO']],
-    body: tableData,
-    theme: 'grid',
-    headStyles: {
-      fillColor: [41, 128, 185], // Azul corporativo
-      textColor: 255,
-      fontSize: 8,
-      fontStyle: 'bold',
-      halign: 'center',
-      valign: 'middle'
-    },
-    bodyStyles: {
-      fontSize: 7,
-      cellPadding: 2,
-      valign: 'middle'
-    },
-    columnStyles: {
-      0: { halign: 'center', cellWidth: 12 }, // N°
-      1: { halign: 'left', cellWidth: 50 },   // APELLIDOS Y NOMBRES
-      2: { halign: 'center', cellWidth: 28 }, // N° IDENTIDAD
-      3: { halign: 'center', cellWidth: 22 }, // VENDEDOR
-      4: { halign: 'center', cellWidth: 16 }, // ASIENTO
-      5: { halign: 'center', cellWidth: 24 }, // ORIGEN
-      6: { halign: 'center', cellWidth: 24 }, // DESTINO
-      7: { halign: 'center', cellWidth: 24 }  // TELÉFONO
-    },
-    margin: { left: margin, right: margin },
-    tableWidth: 'wrap',
-    styles: {
-      overflow: 'linebreak',
-      fontSize: 7,
-      lineColor: [0, 0, 0],
-      lineWidth: 0.1
+        const tableData = (group.items || []).map((item: any, index: number) => [
+          (index + 1).toString(),
+          item.cargo_description || 'N/A',
+          `${item.cargo_weight_kg} Kg`,
+          item.unit_code || 'N/A',
+          item.remitente_nombre || 'N/A',
+          item.remitente_doc?.replace('1-', 'DNI: ') || 'N/A',
+          item.destinatario_nombre || 'N/A',
+          item.destinatario_doc?.replace('1-', 'DNI: ') || 'N/A',
+          item.source_document || 'N/A'
+        ]);
+
+        autoTable(pdf, {
+          startY: currentY,
+          head: [['N°', 'DESCRIPCIÓN', 'PESO', 'UNIDAD', 'REMITENTE', 'DOC. REM.', 'DESTINATARIO', 'DOC. DEST.', 'DOCUMENTO']],
+          body: tableData,
+          theme: 'grid',
+          headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 7, fontStyle: 'bold' },
+          bodyStyles: { fontSize: 6, cellPadding: 2 },
+          columnStyles: {
+            0: { halign: 'center', cellWidth: 12 },
+            1: { halign: 'left', cellWidth: 60 },
+            2: { halign: 'center', cellWidth: 20 },
+            3: { halign: 'center', cellWidth: 18 },
+            4: { halign: 'left', cellWidth: 40 },
+            5: { halign: 'center', cellWidth: 30 },
+            6: { halign: 'left', cellWidth: 40 },
+            7: { halign: 'center', cellWidth: 30 },
+            8: { halign: 'center', cellWidth: 30 }
+          },
+          margin: { left: margin, right: margin },
+          tableWidth: 'wrap'
+        });
+
+        const finalY = (pdf as any).lastAutoTable?.finalY || currentY + 8;
+        const groupWeight = group.items?.reduce((s: number, it: any) => s + (Number(it.cargo_weight_kg) || 0), 0);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.text(`Subtotal: ${groupWeight} Kg`, margin, finalY + 8);
+        currentY = finalY + 16;
+      }
+    } else {
+      // Fallback a tabla única con items planos
+      const tableData = manifestData.items.map((item, index) => [
+        (index + 1).toString(),
+        item.cargo_description || 'N/A',
+        `${item.cargo_weight_kg} Kg`,
+        item.unit_code || 'N/A',
+        item.remitente_nombre || 'N/A',
+        item.remitente_doc?.replace('1-', 'DNI: ') || 'N/A',
+        item.destinatario_nombre || 'N/A',
+        item.destinatario_doc?.replace('1-', 'DNI: ') || 'N/A',
+        item.source_document || 'N/A'
+      ]);
+
+      autoTable(pdf, {
+        startY: currentY,
+        head: [['N°', 'DESCRIPCIÓN', 'PESO', 'UNIDAD', 'REMITENTE', 'DOC. REM.', 'DESTINATARIO', 'DOC. DEST.', 'DOCUMENTO']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 7, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 6, cellPadding: 2 },
+        margin: { left: margin, right: margin },
+        tableWidth: 'wrap'
+      });
     }
-  });
+  } else {
+    // Preparar datos de la tabla según los campos solicitados (PASAJEROS):
+    // N°, APELLIDOS Y NOMBRES, N° IDENTIDAD, VENDEDOR (PRIMER NOMBRE), ASIENTO, ORIGEN, DESTINO, TELÉFONO
+    const tableData = manifestData.items.map((item, index) => [
+      (index + 1).toString(), // N°
+      item.passenger_name || 'N/A', // APELLIDOS Y NOMBRES
+      `${item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS'}: ${item.passenger_doc_number || 'N/A'}`, // N° IDENTIDAD
+      manifestData.generated_by_name ? manifestData.generated_by_name.split(' ')[0] : 'VENDEDOR', // VENDEDOR (PRIMER NOMBRE)
+      item.seat_number || 'N/A', // ASIENTO
+      item.boarding_port_name || 'N/A', // ORIGEN
+      item.disembarking_port_name || 'N/A', // DESTINO
+      item.passenger_phone || 'N/A' // TELÉFONO
+    ]);
+
+    // Configurar la tabla con los campos específicos solicitados
+    autoTable(pdf, {
+      startY: currentY,
+      head: [['N°', 'APELLIDOS Y NOMBRES', 'N° IDENTIDAD', 'VENDEDOR', 'ASIENTO', 'ORIGEN', 'DESTINO', 'TELÉFONO']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [41, 128, 185], // Azul corporativo
+        textColor: 255,
+        fontSize: 8,
+        fontStyle: 'bold',
+        halign: 'center',
+        valign: 'middle'
+      },
+      bodyStyles: {
+        fontSize: 7,
+        cellPadding: 2,
+        valign: 'middle'
+      },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 12 }, // N°
+        1: { halign: 'left', cellWidth: 50 },   // APELLIDOS Y NOMBRES
+        2: { halign: 'center', cellWidth: 28 }, // N° IDENTIDAD
+        3: { halign: 'center', cellWidth: 22 }, // VENDEDOR
+        4: { halign: 'center', cellWidth: 16 }, // ASIENTO
+        5: { halign: 'center', cellWidth: 24 }, // ORIGEN
+        6: { halign: 'center', cellWidth: 24 }, // DESTINO
+        7: { halign: 'center', cellWidth: 24 }  // TELÉFONO
+      },
+      margin: { left: margin, right: margin },
+      tableWidth: 'wrap',
+      styles: {
+        overflow: 'linebreak',
+        fontSize: 7,
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1
+      }
+    });
+  }
 
   // ============ OBSERVACIONES ============
   if (manifestData.observations) {

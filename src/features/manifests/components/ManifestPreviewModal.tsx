@@ -263,38 +263,60 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         currentY += 8;
       }
     } else {
-      // PASAJEROS
+      // PASAJEROS: usar el mismo estilo que la tabla de carga y centrar correctamente
       if (manifestData.items && manifestData.items.length > 0) {
-        const tableData = manifestData.items.map((item: any, idx: number) => [
-          (idx + 1).toString(),
-          item.passenger_name || 'N/A',
-          `${item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS'}: ${item.passenger_doc_number || 'N/A'}`,
-          manifestData.generated_by_name ? manifestData.generated_by_name.split(' ')[0] : 'VENDEDOR',
-          item.seat_number || 'N/A',
-          item.boarding_port_name || 'N/A',
-          item.disembarking_port_name || 'N/A',
-          item.passenger_phone || 'N/A'
-        ]);
+        const tableData = manifestData.items.map((item: any, idx: number) => {
+          const rawSeller = item.seller_name ?? item?.seller?.name ?? manifestData.generated_by_name ?? manifestData.generated_by;
+          const sellerDisplay = rawSeller ? String(rawSeller).trim().split(' ')[0] : 'VENDEDOR';
+          const identityLabel = item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS';
+          return [
+            (idx + 1).toString(),
+            item.passenger_name || 'N/A',
+            `${identityLabel}: ${item.passenger_doc_number || 'N/A'}`,
+            sellerDisplay,
+            item.seat_number || 'N/A',
+            item.boarding_port_name || 'N/A',
+            item.disembarking_port_name || 'N/A',
+            item.passenger_phone || 'N/A'
+          ];
+        });
+
+        // Configurar anchos de columna para centrar la tabla como en carga
+        const passengerColumnStyles: any = {
+          0: { halign: 'center', cellWidth: 10 }, // N°
+          1: { halign: 'left', cellWidth: 50 },   // APELLIDOS Y NOMBRES
+          2: { halign: 'center', cellWidth: 25 }, // N° IDENTIDAD
+          3: { halign: 'center', cellWidth: 20 }, // VENDEDOR
+          4: { halign: 'center', cellWidth: 15 }, // ASIENTO
+          5: { halign: 'center', cellWidth: 20 }, // ORIGEN
+          6: { halign: 'center', cellWidth: 20 }, // DESTINO
+          7: { halign: 'center', cellWidth: 20 }, // TELÉFONO
+        };
+
+        // Calcular el ancho total de la tabla
+        const totalTableWidth = Object.values(passengerColumnStyles).reduce((sum: number, col: any) => sum + col.cellWidth, 0);
+        const leftMargin = Math.max(margin, (pageWidth - totalTableWidth) / 2);
 
         autoTable(pdf, {
           startY: currentY,
           head: [['N°', 'APELLIDOS Y NOMBRES', 'N° IDENTIDAD', 'VENDEDOR', 'ASIENTO', 'ORIGEN', 'DESTINO', 'TELÉFONO']],
           body: tableData,
-          theme: 'grid',
-          headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 8, fontStyle: 'bold' },
-          bodyStyles: { fontSize: 7, cellPadding: 2 },
-          columnStyles: {
-            0: { halign: 'center', cellWidth: 12 },
-            1: { halign: 'left', cellWidth: 50 },
-            2: { halign: 'center', cellWidth: 28 },
-            3: { halign: 'center', cellWidth: 22 },
-            4: { halign: 'center', cellWidth: 16 },
-            5: { halign: 'center', cellWidth: 24 },
-            6: { halign: 'center', cellWidth: 24 },
-            7: { halign: 'center', cellWidth: 24 }
+          styles: {
+            fontSize: 6,
+            cellPadding: 1.5,
+            halign: 'center',
+            valign: 'middle',
           },
-          margin: { left: margin, right: margin },
-          tableWidth: 'wrap'
+          headStyles: {
+            fillColor: [100, 100, 100], // Mismo color gris que la tabla de carga
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 6,
+          },
+          columnStyles: passengerColumnStyles,
+          margin: { left: leftMargin, right: leftMargin },
+          tableWidth: 'auto',
+          theme: 'grid'
         });
       } else {
         pdf.setFont('helvetica', 'normal');

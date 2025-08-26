@@ -3,155 +3,99 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Manifest } from '../types/manifest.types';
 
-interface ManifestPDFGeneratorProps {
-  manifestData: Manifest;
-}
+export const generatePassengerManifestPDF = (manifestData: Manifest): { pdf: jsPDF; blob: Blob } => {
 
-export const generatePassengerManifestPDF = (
-  manifestData: Manifest
-): { pdf: jsPDF; blob: Blob } => {
-  
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.width;
   const margin = 15;
   let currentY = 20;
 
-  // ============ HEADER CON INFORMACIÓN DE LA EMPRESA ============
+  // HEADER
   if (manifestData.company) {
     const company = manifestData.company;
-    
-    // Logo de la empresa (si está disponible)
-    if (company.logo_url) {
-      try {
-        // TODO: Cargar logo desde la URL y agregarlo al PDF
-        // Por ahora dejamos un espacio reservado para el logo
-        const logoSize = 25;
+    try {
+      if (company.logo_url) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        // carga sin bloquear: no esperamos promesa aquí (mejor fallback si falla)
+        img.src = company.logo_url as string;
+        const logoW = 30;
+        const logoH = 15;
         pdf.setDrawColor(200, 200, 200);
-        pdf.setLineWidth(0.5);
-        pdf.rect(margin, currentY, logoSize, logoSize);
-        pdf.setFontSize(8);
-        pdf.setTextColor(150, 150, 150);
-        pdf.text('LOGO', margin + logoSize/2, currentY + logoSize/2, { align: 'center' });
-        pdf.setTextColor(0, 0, 0);
-        
-        // Información de la empresa al lado del logo
+        pdf.rect(margin, currentY - 4, logoW, logoH);
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
-        pdf.text(company.name, margin + logoSize + 8, currentY + 6);
-        
+        pdf.text(company.name, margin + logoW + 8, currentY + 4);
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(9);
-        pdf.text(`RUC: ${company.ruc}`, margin + logoSize + 8, currentY + 12);
-        
-        pdf.setFontSize(8);
-        const addressLines = pdf.splitTextToSize(company.address, pageWidth - margin - logoSize - 20);
-        pdf.text(addressLines, margin + logoSize + 8, currentY + 17);
-        
-        const addressHeight = addressLines.length * 3;
-        pdf.text(`Teléfono: ${company.phone}`, margin + logoSize + 8, currentY + 17 + addressHeight + 3);
-        
-        currentY += Math.max(logoSize, 25) + 15;
-      } catch (error) {
-        console.error('Error loading company logo:', error);
-        // Continuar sin logo en caso de error
+        pdf.text(`RUC: ${company.ruc}`, margin + logoW + 8, currentY + 9);
+        currentY += Math.max(logoH, 16);
+      } else {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.text(company.name, pageWidth / 2, currentY, { align: 'center' });
+        currentY += 8;
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+        pdf.text(`RUC: ${company.ruc} | Tel: ${company.phone}`, pageWidth / 2, currentY, { align: 'center' });
         currentY += 10;
       }
-    } else {
-      // Sin logo, solo información de texto
+    } catch (e) {
+      // fallback
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(14);
       pdf.text(company.name, pageWidth / 2, currentY, { align: 'center' });
-      
-      currentY += 8;
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.text(`RUC: ${company.ruc}`, pageWidth / 2, currentY, { align: 'center' });
-      
-      currentY += 6;
-      pdf.setFontSize(9);
-      const addressLines = pdf.splitTextToSize(company.address, pageWidth - (margin * 2));
-      pdf.text(addressLines, pageWidth / 2, currentY, { align: 'center' });
-      
-      currentY += addressLines.length * 4 + 3;
-      pdf.text(`Teléfono: ${company.phone}`, pageWidth / 2, currentY, { align: 'center' });
-      
-      currentY += 15;
+      currentY += 10;
     }
   }
 
-  // Línea separadora después del header de empresa
-  pdf.setDrawColor(0, 0, 0);
+  // Separador y título
   pdf.setLineWidth(0.8);
   pdf.line(margin, currentY, pageWidth - margin, currentY);
   currentY += 10;
-
-  // ============ TÍTULO DEL MANIFIESTO ============
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(16);
   pdf.text('MANIFIESTO DE PASAJEROS', pageWidth / 2, currentY, { align: 'center' });
-  
   currentY += 8;
   pdf.setFontSize(12);
   pdf.text(`N° ${manifestData.manifest_number}`, pageWidth / 2, currentY, { align: 'center' });
-  
-  currentY += 15;
-
-  // ============ INFORMACIÓN DEL VIAJE ============
-  pdf.setFontSize(10);
-  pdf.setFont('helvetica', 'normal');
-  
-  // Fecha de generación
-  pdf.text(`Fecha de Generación: ${new Date(manifestData.generation_date).toLocaleDateString('es-PE')}`, margin, currentY);
-  pdf.text(`Estado: ${manifestData.status}`, pageWidth - margin - 60, currentY);
-  
-  currentY += 8;
-  
-  // Información del viaje si está disponible
-  if (manifestData.vessel_name || manifestData.route_name) {
-    if (manifestData.vessel_name) {
-      pdf.text(`Embarcación: ${manifestData.vessel_name}`, margin, currentY);
-    }
-    if (manifestData.route_name) {
-      pdf.text(`Ruta: ${manifestData.route_name}`, pageWidth / 2, currentY);
-    }
-    currentY += 8;
-  }
-  
-  if (manifestData.departure_datetime) {
-    const departureDate = new Date(manifestData.departure_datetime);
-    pdf.text(
-      `Fecha/Hora de Salida: ${departureDate.toLocaleDateString('es-PE')} ${departureDate.toLocaleTimeString('es-PE')}`, 
-      margin, 
-      currentY
-    );
-    currentY += 8;
-  }
-  
-  // Línea separadora
-  pdf.setDrawColor(0, 0, 0);
-  pdf.setLineWidth(0.5);
-  pdf.line(margin, currentY, pageWidth - margin, currentY);
-  currentY += 8;
-  
-  // Total de pasajeros
-  pdf.setFont('helvetica', 'bold');
-  pdf.text(`Total de Pasajeros: ${manifestData.total_passengers}`, margin, currentY);
-  
   currentY += 12;
 
-  // ============ TABLA DE PASAJEROS ============
-  // Si es manifiesto de CARGO y el backend devuelve grupos, generar tablas separadas por destino
+  // Trip info
+  pdf.setFontSize(9);
+  const genDate = manifestData.generation_date ? new Date(manifestData.generation_date).toLocaleDateString('es-PE') : '';
+  const depInfo = manifestData.departure_datetime ? new Date(manifestData.departure_datetime) : null;
+  let tripInfo = `Fecha: ${genDate}`;
+  if (manifestData.vessel_name) tripInfo += ` | Embarcación: ${manifestData.vessel_name}`;
+  if (depInfo) tripInfo += ` | Salida: ${depInfo.toLocaleDateString('es-PE')} ${depInfo.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`;
+  tripInfo += ` | Estado: ${manifestData.status}`;
+  pdf.text(tripInfo, margin, currentY);
+  currentY += 10;
+
+  // Totales
+  pdf.setFont('helvetica', 'bold');
   if (manifestData.manifest_type === 'CARGO') {
+    pdf.text(`Total de Carga: ${manifestData.total_cargo_weight_kg} Kg`, margin, currentY);
+  } else {
+    pdf.text(`Total de Pasajeros: ${manifestData.total_passengers}`, margin, currentY);
+  }
+  currentY += 12;
+
+  // TABLAS
+  if (manifestData.manifest_type === 'CARGO') {
+    // Reutilizar la lógica existente para cargo (agrupado o plano)
     const grouped = (manifestData as any).cargo_grouped_by_stops;
     if (grouped && Array.isArray(grouped.groups) && grouped.groups.length > 0) {
       for (const group of grouped.groups) {
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.text(`${group.origin_port_name || 'N/A'} → ${group.destination_port_name || 'N/A'}`, margin, currentY);
-        currentY += 6;
+        pdf.setFontSize(10);
+        const origin = (group.origin_port_name || 'N/A').toString();
+        const dest = (group.destination_port_name || 'N/A').toString();
+        pdf.text(`${origin} → ${dest}`, pageWidth / 2, currentY, { align: 'center' });
+        currentY += 8;
 
-        const tableData = (group.items || []).map((item: any, index: number) => [
-          (index + 1).toString(),
+        const tableData = (group.items || []).map((item: any, idx: number) => [
+          (idx + 1).toString(),
           item.cargo_description || 'N/A',
           `${item.cargo_weight_kg} Kg`,
           item.unit_code || 'N/A',
@@ -162,39 +106,40 @@ export const generatePassengerManifestPDF = (
           item.source_document || 'N/A'
         ]);
 
+        const columnStyles: any = {
+          0: { halign: 'center', cellWidth: 10 },
+          1: { halign: 'left', cellWidth: 30 },
+          2: { halign: 'center', cellWidth: 15 },
+          3: { halign: 'center', cellWidth: 12 },
+          4: { halign: 'left', cellWidth: 25 },
+          5: { halign: 'center', cellWidth: 20 },
+          6: { halign: 'left', cellWidth: 25 },
+          7: { halign: 'center', cellWidth: 20 },
+          8: { halign: 'center', cellWidth: 22 }
+        };
+
         autoTable(pdf, {
           startY: currentY,
           head: [['N°', 'DESCRIPCIÓN', 'PESO', 'UNIDAD', 'REMITENTE', 'DOC. REM.', 'DESTINATARIO', 'DOC. DEST.', 'DOCUMENTO']],
           body: tableData,
-          theme: 'grid',
-          headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 7, fontStyle: 'bold' },
-          bodyStyles: { fontSize: 6, cellPadding: 2 },
-          columnStyles: {
-            0: { halign: 'center', cellWidth: 12 },
-            1: { halign: 'left', cellWidth: 60 },
-            2: { halign: 'center', cellWidth: 20 },
-            3: { halign: 'center', cellWidth: 18 },
-            4: { halign: 'left', cellWidth: 40 },
-            5: { halign: 'center', cellWidth: 30 },
-            6: { halign: 'left', cellWidth: 40 },
-            7: { halign: 'center', cellWidth: 30 },
-            8: { halign: 'center', cellWidth: 30 }
-          },
+          styles: { fontSize: 6, cellPadding: 1.5, halign: 'center', valign: 'middle' },
+          headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold', fontSize: 6 },
+          columnStyles,
           margin: { left: margin, right: margin },
-          tableWidth: 'wrap'
+          tableWidth: 'wrap',
+          theme: 'grid'
         });
 
         const finalY = (pdf as any).lastAutoTable?.finalY || currentY + 8;
-        const groupWeight = group.items?.reduce((s: number, it: any) => s + (Number(it.cargo_weight_kg) || 0), 0);
+        const groupWeight = group.items?.reduce((s: number, it: any) => s + (Number(it.cargo_weight_kg) || 0), 0) || 0;
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(9);
         pdf.text(`Subtotal: ${groupWeight} Kg`, margin, finalY + 8);
         currentY = finalY + 16;
       }
-    } else {
-      // Fallback a tabla única con items planos
-      const tableData = manifestData.items.map((item, index) => [
-        (index + 1).toString(),
+    } else if (manifestData.items && manifestData.items.length > 0) {
+      const tableData = manifestData.items.map((item: any, idx: number) => [
+        (idx + 1).toString(),
         item.cargo_description || 'N/A',
         `${item.cargo_weight_kg} Kg`,
         item.unit_code || 'N/A',
@@ -205,117 +150,123 @@ export const generatePassengerManifestPDF = (
         item.source_document || 'N/A'
       ]);
 
+      const columnStyles2: any = {
+        0: { halign: 'center', cellWidth: 10 },
+        1: { halign: 'left', cellWidth: 30 },
+        2: { halign: 'center', cellWidth: 15 },
+        3: { halign: 'center', cellWidth: 12 },
+        4: { halign: 'left', cellWidth: 25 },
+        5: { halign: 'center', cellWidth: 20 },
+        6: { halign: 'left', cellWidth: 25 },
+        7: { halign: 'center', cellWidth: 20 },
+        8: { halign: 'center', cellWidth: 22 }
+      };
+
       autoTable(pdf, {
         startY: currentY,
         head: [['N°', 'DESCRIPCIÓN', 'PESO', 'UNIDAD', 'REMITENTE', 'DOC. REM.', 'DESTINATARIO', 'DOC. DEST.', 'DOCUMENTO']],
         body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontSize: 7, fontStyle: 'bold' },
-        bodyStyles: { fontSize: 6, cellPadding: 2 },
+        styles: { fontSize: 6, cellPadding: 1.5, halign: 'center', valign: 'middle' },
+        headStyles: { fillColor: [100, 100, 100], textColor: 255, fontStyle: 'bold', fontSize: 6 },
+        columnStyles: columnStyles2,
         margin: { left: margin, right: margin },
-        tableWidth: 'wrap'
+        tableWidth: 'wrap',
+        theme: 'grid'
       });
+    } else {
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.text('No hay registros de carga para mostrar.', margin, currentY);
+      currentY += 8;
     }
   } else {
-    // Preparar datos de la tabla según los campos solicitados (PASAJEROS):
-    // N°, APELLIDOS Y NOMBRES, N° IDENTIDAD, VENDEDOR (PRIMER NOMBRE), ASIENTO, ORIGEN, DESTINO, TELÉFONO
-    const tableData = manifestData.items.map((item, index) => [
-      (index + 1).toString(), // N°
-      item.passenger_name || 'N/A', // APELLIDOS Y NOMBRES
-      `${item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS'}: ${item.passenger_doc_number || 'N/A'}`, // N° IDENTIDAD
-      manifestData.generated_by_name ? manifestData.generated_by_name.split(' ')[0] : 'VENDEDOR', // VENDEDOR (PRIMER NOMBRE)
-      item.seat_number || 'N/A', // ASIENTO
-      item.boarding_port_name || 'N/A', // ORIGEN
-      item.disembarking_port_name || 'N/A', // DESTINO
-      item.passenger_phone || 'N/A' // TELÉFONO
-    ]);
+    // PASAJEROS: construir tabla centrada y con estilo similar a carga
+    if (manifestData.items && manifestData.items.length > 0) {
+      const tableData = manifestData.items.map((item: any, idx: number) => {
+        const rawSeller = item.seller_name ?? item?.seller?.name ?? manifestData.generated_by_name ?? manifestData.generated_by;
+        const sellerDisplay = rawSeller ? String(rawSeller).trim().split(' ')[0] : 'VENDEDOR';
+        const identityLabel = item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS';
+        return [
+          (idx + 1).toString(),
+          item.passenger_name || 'N/A',
+          `${identityLabel}: ${item.passenger_doc_number || 'N/A'}`,
+          sellerDisplay,
+          item.seat_number || 'N/A',
+          item.boarding_port_name || 'N/A',
+          item.disembarking_port_name || 'N/A',
+          item.passenger_phone || 'N/A'
+        ];
+      });
 
-    // Configurar la tabla con los campos específicos solicitados
-    autoTable(pdf, {
-      startY: currentY,
-      head: [['N°', 'APELLIDOS Y NOMBRES', 'N° IDENTIDAD', 'VENDEDOR', 'ASIENTO', 'ORIGEN', 'DESTINO', 'TELÉFONO']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [41, 128, 185], // Azul corporativo
-        textColor: 255,
-        fontSize: 8,
-        fontStyle: 'bold',
-        halign: 'center',
-        valign: 'middle'
-      },
-      bodyStyles: {
-        fontSize: 7,
-        cellPadding: 2,
-        valign: 'middle'
-      },
-      columnStyles: {
-        0: { halign: 'center', cellWidth: 12 }, // N°
-        1: { halign: 'left', cellWidth: 50 },   // APELLIDOS Y NOMBRES
-        2: { halign: 'center', cellWidth: 28 }, // N° IDENTIDAD
-        3: { halign: 'center', cellWidth: 22 }, // VENDEDOR
-        4: { halign: 'center', cellWidth: 16 }, // ASIENTO
-        5: { halign: 'center', cellWidth: 24 }, // ORIGEN
-        6: { halign: 'center', cellWidth: 24 }, // DESTINO
-        7: { halign: 'center', cellWidth: 24 }  // TELÉFONO
-      },
-      margin: { left: margin, right: margin },
-      tableWidth: 'wrap',
-      styles: {
-        overflow: 'linebreak',
-        fontSize: 7,
-        lineColor: [0, 0, 0],
-        lineWidth: 0.1
-      }
-    });
+      // Column widths (mm) y centrado
+      const colWidths = [12, 60, 32, 28, 14, 28, 28, 24];
+      const totalTableWidth = colWidths.reduce((s, w) => s + w, 0);
+      const leftMargin = Math.max(margin, (pageWidth - totalTableWidth) / 2);
+      const passengerColumnStyles: any = {
+        0: { halign: 'center', cellWidth: colWidths[0] },
+        1: { halign: 'left', cellWidth: colWidths[1] },
+        2: { halign: 'center', cellWidth: colWidths[2] },
+        3: { halign: 'center', cellWidth: colWidths[3] },
+        4: { halign: 'center', cellWidth: colWidths[4] },
+        5: { halign: 'center', cellWidth: colWidths[5] },
+        6: { halign: 'center', cellWidth: colWidths[6] },
+        7: { halign: 'center', cellWidth: colWidths[7] }
+      };
+
+      autoTable(pdf, {
+        startY: currentY,
+        head: [['N°', 'APELLIDOS Y NOMBRES', 'N° IDENTIDAD', 'VENDEDOR', 'ASIENTO', 'ORIGEN', 'DESTINO', 'TELÉFONO']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [100, 100, 100], textColor: 255, fontSize: 7, fontStyle: 'bold', halign: 'center', valign: 'middle' },
+        bodyStyles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
+        columnStyles: passengerColumnStyles,
+        margin: { left: leftMargin, right: leftMargin },
+        tableWidth: 'auto',
+        styles: { overflow: 'linebreak', fontSize: 7, lineColor: [0, 0, 0], lineWidth: 0.1 }
+      });
+      const lastY = (pdf as any).lastAutoTable?.finalY || currentY;
+      currentY = lastY + 8;
+    } else {
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.text('No hay registros para mostrar en este manifiesto.', margin, currentY);
+      currentY += 8;
+    }
   }
 
-  // ============ OBSERVACIONES ============
+  // OBSERVACIONES
   if (manifestData.observations) {
-    const finalY = (pdf as any).lastAutoTable.finalY + 15;
+    const finalY = (pdf as any).lastAutoTable?.finalY || currentY + 20;
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(9);
-    pdf.text('Observaciones:', margin, finalY);
-    
+    pdf.text('Observaciones:', margin, finalY + 8);
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(8);
-    const splitObservations = pdf.splitTextToSize(manifestData.observations, pageWidth - (margin * 2));
-    pdf.text(splitObservations, margin, finalY + 8);
+    pdf.text(pdf.splitTextToSize(manifestData.observations, pageWidth - margin * 2), margin, finalY + 14);
+    currentY = finalY + 24;
   }
 
-  // ============ FOOTER ============
+  // FOOTER
   const footerY = pdf.internal.pageSize.height - 25;
   pdf.setDrawColor(0, 0, 0);
   pdf.setLineWidth(0.3);
   pdf.line(margin, footerY - 5, pageWidth - margin, footerY - 5);
-  
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8);
-  pdf.text(
-    `Generado el: ${new Date().toLocaleString('es-PE')}`,
-    margin,
-    footerY + 3
-  );
-  
-  if (manifestData.generated_by_name) {
-    pdf.text(
-      `Por: ${manifestData.generated_by_name}`,
-      margin,
-      footerY + 8
-    );
-  }
-  
-  pdf.text(
-    'Sistema de Gestión - Transportes Romero',
-    pageWidth - margin - 60,
-    footerY + 3
-  );
+  pdf.text(`Generado el: ${new Date().toLocaleString('es-PE')}`, margin, footerY + 3);
+  if (manifestData.generated_by_name) pdf.text(`Por: ${manifestData.generated_by_name}`, margin, footerY + 8);
+  pdf.text('Sistema de Gestión - Transportes Romero', pageWidth - margin - 60, footerY + 3);
 
-  // Crear blob del PDF
+  // Crear blob del PDF y devolver
   const blob = new Blob([pdf.output('blob')], { type: 'application/pdf' });
-
   return { pdf, blob };
 };
+
+// Props del componente
+interface ManifestPDFGeneratorProps {
+  manifestData: Manifest;
+}
 
 // Componente React para generar y manejar el PDF
 export const ManifestPDFGenerator: React.FC<ManifestPDFGeneratorProps> = ({ 

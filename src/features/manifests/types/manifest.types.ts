@@ -24,6 +24,9 @@ export interface ManifestItem {
   seat_type_name?: string;
   seat_number?: string | null;
   special_notes?: string | null;
+  // Vendedor asociado a la venta del pasajero (opcional)
+  seller_name?: string;
+  seller_id?: string | number;
   
   // Campos para CARGO
   cargo_description?: string;

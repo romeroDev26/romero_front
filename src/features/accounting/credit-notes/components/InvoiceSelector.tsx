@@ -1,8 +1,10 @@
 // src/features/accounting/credit-notes/components/InvoiceSelector.tsx
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { /*MagnifyingGlassIcon*/ } from '@heroicons/react/24/outline';
 import { Modal } from '../../../../components/common/Modal';
+import { Button } from '../../../../components/common/Button';
 import { useVoidableInvoices } from '../../hooks/useCreditNotes';
 import { invoicesService } from '../../../../services/invoices.service';
 import { toast } from 'react-toastify';
@@ -12,6 +14,12 @@ interface InvoiceSelectorProps {
 	selectedInvoiceDetail: any;
 	onInvoiceSelect: (invoiceDetail: any) => void;
 	disabled?: boolean;
+	/**
+	 * Si es true, al seleccionar una factura se cerrará el modal y se navegará
+	 * automáticamente a `/accounting/credit-notes/annul` pasando el detalle
+	 * de la factura en location.state as { affectedInvoice }
+	 */
+	redirectToAnnulOnSelect?: boolean;
 }
 
 export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
@@ -19,10 +27,13 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 	selectedInvoiceDetail,
 	onInvoiceSelect,
 	disabled = false
+	, redirectToAnnulOnSelect = false
 }) => {
 	const [showModal, setShowModal] = useState(false);
+	const [confirmInvoice, setConfirmInvoice] = useState<any | null>(null);
 	const [search, setSearch] = useState('');
 	const [loadingDetail, setLoadingDetail] = useState(false);
+	const navigate = useNavigate();
 
 	const { data: voidableInvoices = [], isLoading } = useVoidableInvoices(companyId);
 
@@ -30,6 +41,14 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 		try {
 			setLoadingDetail(true);
 			const invoiceDetail = await invoicesService.getById(invoice.id);
+			// Si se solicita redireccionar a la página de anulación, cerramos
+			// el modal y navegamos enviando el detalle en location.state
+			if (redirectToAnnulOnSelect) {
+				// En lugar de navegar inmediatamente, mostramos un modal de confirmación
+				setShowModal(false);
+				setConfirmInvoice(invoiceDetail);
+				return;
+			}
 			onInvoiceSelect(invoiceDetail);
 			setShowModal(false);
 			setSearch('');
@@ -182,6 +201,46 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 						</div>
 					</div>
 				</div>
+			</Modal>
+
+			{/* Modal de confirmación: muestra detalle y botón para anular (cuando redirectToAnnulOnSelect=true) */}
+			<Modal
+				isOpen={!!confirmInvoice}
+				onClose={() => setConfirmInvoice(null)}
+				title="Confirmar anulación">
+				{confirmInvoice && (
+					<div className="space-y-4">
+						<div>
+							<div className="font-medium">{confirmInvoice.series}-{String(confirmInvoice.number).padStart(8, '0')}</div>
+							<div className="text-sm text-gray-600">Cliente: {confirmInvoice.client?.name}</div>
+							<div className="text-sm text-gray-600">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || confirmInvoice.client?.doc || ''}</div>
+							{(confirmInvoice.client?.address || confirmInvoice.client_address) && (
+								<div className="text-sm text-gray-600">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
+							)}
+							<div className="text-sm text-gray-600">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
+						</div>
+
+						{/* Resumen breve de items/servicios */}
+						{confirmInvoice.items && confirmInvoice.items.length > 0 && (
+							<div className="mt-2 border-t pt-2">
+								<div className="text-sm font-medium text-gray-700 mb-1">Servicios / Ítems incluidos</div>
+								<ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
+									{confirmInvoice.items.slice(0,5).map((it: any, idx: number) => (
+										<li key={idx}>{it.item_description || it.product_name || it.description || 'Servicio'} — {it.quantity || it.qty || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
+									))}
+									{confirmInvoice.items.length > 5 && <li className="text-xs text-gray-500">+{confirmInvoice.items.length - 5} más</li>}
+								</ul>
+							</div>
+						)}
+
+						<div className="flex justify-end space-x-3 pt-4 border-t">
+							<Button variant="outline" onClick={() => setConfirmInvoice(null)}>Cancelar</Button>
+							<Button onClick={() => { setConfirmInvoice(null); navigate('/accounting/credit-notes/annul', { state: { affectedInvoice: confirmInvoice, simplifiedAnnul: true } }); }}>
+								Anular
+							</Button>
+						</div>
+					</div>
+				)}
 			</Modal>
 		</>
 	);

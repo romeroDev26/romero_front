@@ -39,6 +39,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
   const { affectedInvoice } = (location.state as { affectedInvoice: Invoice }) || {};
 
   const [selectedDebitNoteSeries, setSelectedDebitNoteSeries] = useState<string>("");
+  const [igvEnabled, setIgvEnabled] = useState(true); // Estado para controlar IGV
 
   const { mutate: createDebitNote, isPending } = useCreateDebitNote();
 
@@ -109,21 +110,24 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
     const payload: DebitNoteCreateData = {
       company_id: currentUser?.company_id || 1,
       client_id: affectedInvoice.client?.id || 0,
-      debit_note_series: selectedDebitNoteSeries,
+      document_type_code: '08', // Siempre 08 para notas de débito
+      series: selectedDebitNoteSeries,
+      issue_date: new Date().toISOString().split('T')[0], // Fecha actual
+      issue_time: new Date().toTimeString().split(' ')[0], // Hora actual
       currency_code: "PEN",
       affected_document_type_code: affectedInvoice.document_type_code || "01",
-      affected_document_series: affectedInvoice.series || "",
-      affected_document_number: affectedInvoice.number || 0,
+      affected_document_series_number: `${affectedInvoice.series}-${String(affectedInvoice.number).padStart(8,'0')}`,
       debit_note_type_code: data.debit_note_type_code,
       reason: data.reason,
       items: [
         {
-          product_service_id: 1, // ID de servicio genérico - debería venir de configuración
+          product_id: 1, // ID de producto genérico - debería venir de configuración
           quantity: 1,
+          unit_code: 'NIU', // Unidad común
           unit_price: data.additional_amount,
-          description: `${DEBIT_NOTE_REASONS.find(r => r.code === data.debit_note_type_code)?.description || 'Ajuste adicional'}`,
+          price_with_tax: igvEnabled ? data.additional_amount * 1.18 : data.additional_amount,
           price_type_code: "01",
-          tax_category_code: "10" // Gravado
+          tax_category_code: igvEnabled ? "10" : "20" // 10=Gravado, 20=Exonerado
         }
       ]
     };
@@ -142,7 +146,12 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           Crear Nota de Débito para: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
         </h1>
-        <p className="text-gray-600 mb-6">Cliente: {affectedInvoice.client.name}</p>
+        <p className="text-gray-600 mb-6">
+          Cliente: {affectedInvoice.client.name}
+          <span className="ml-4 text-sm text-blue-600">
+            • IGV: {igvEnabled ? 'Activado (18%)' : 'Desactivado (exonerado)'}
+          </span>
+        </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
@@ -204,6 +213,24 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
               )}
             />
             {errors.additional_amount && <p className="text-sm text-error mt-1">{errors.additional_amount.message}</p>}
+          </div>
+
+          <div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="igvEnabled"
+                checked={igvEnabled}
+                onChange={(e) => setIgvEnabled(e.target.checked)}
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="igvEnabled" className="ml-2 block text-sm text-gray-900">
+                Aplicar IGV (18%) - {igvEnabled ? 'Activado' : 'Desactivado'}
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {igvEnabled ? 'Se aplicará IGV 18% sobre el precio base' : 'Precio sin IGV (región amazónica exonerada)'}
+            </p>
           </div>
 
           <div>

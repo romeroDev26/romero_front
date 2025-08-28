@@ -39,7 +39,6 @@ class DebitNotesService {
     }
     
     // Si no es array, devolver array vacío para evitar errores
-    console.warn('Debit notes response is not in expected format:', response.data);
     return [];
   }
 

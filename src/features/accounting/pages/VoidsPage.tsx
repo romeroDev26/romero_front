@@ -192,8 +192,9 @@ export const VoidsPage: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         companyId={companyId}
-        onSubmit={handleSelectInvoices}
+  onSubmit={handleSelectInvoices}
         isSubmitting={false}
+  redirectToAnnulOnSelect={true}
       />
     </div>
   );

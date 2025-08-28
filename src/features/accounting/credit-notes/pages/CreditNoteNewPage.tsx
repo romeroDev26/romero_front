@@ -10,7 +10,6 @@ import {
 import { Button } from '../../../../components/common/Button';
 import { useVoidableInvoices } from '../../hooks/useCreditNotes';
 import { VoidableInvoice } from '../../types';
-import { invoicesService } from '../../../../services/invoices.service';
 
 export const CreditNoteNewPage: React.FC = () => {
 	const navigate = useNavigate();
@@ -34,42 +33,9 @@ export const CreditNoteNewPage: React.FC = () => {
 		}
 	}, [invoiceIdParam, voidableInvoices]);
 
-	// Estado para selector modal de tipo de nota
-	const [modalOpen, setModalOpen] = useState(false);
-	const [selectedInvoiceForModal, setSelectedInvoiceForModal] = useState<any | null>(null);
-	const [selectedType, setSelectedType] = useState('01');
-	const [loadingInvoiceDetail, setLoadingInvoiceDetail] = useState(false);
+    
 
-	const creditNoteTypes: { code: string; label: string; description: string }[] = [
-		{ code: '01', label: 'Anulación de la operación', description: 'Anulación total de la operación (usa endpoint simplificado).' },
-		{ code: '02', label: 'Anulación por error en el RUC', description: 'Emitida cuando el RUC del cliente es incorrecto.' },
-		{ code: '03', label: 'Corrección por error en la descripción', description: 'Corrección en la descripción del producto/servicio.' },
-		{ code: '04', label: 'Descuento global', description: 'Aplicar descuento global sobre toda la factura.' },
-		{ code: '05', label: 'Descuento por ítem', description: 'Aplicar descuento específico a productos individuales.' },
-		{ code: '06', label: 'Devolución total', description: 'Devolución completa de mercadería.' },
-		{ code: '07', label: 'Devolución por ítem', description: 'Devolución parcial de algunos productos específicos.' },
-		{ code: '08', label: 'Bonificación', description: 'Otorgar bonificaciones o créditos adicionales al cliente.' },
-		{ code: '09', label: 'Disminución en el valor', description: 'Reducción del valor por cambios en condiciones comerciales.' },
-		{ code: '10', label: 'Otros conceptos', description: 'Otros ajustes no contemplados en códigos anteriores.' },
-	];
 
-	const openTypeSelector = (invoice: VoidableInvoice) => {
-		setSelectedType('01');
-		setModalOpen(true);
-		// fetch invoice detail to have items before editing (recommended)
-		(async () => {
-			try {
-				setLoadingInvoiceDetail(true);
-				const detail = await invoicesService.getById(invoice.id);
-				setSelectedInvoiceForModal(detail || invoice);
-			} catch (e) {
-				console.error('Could not fetch invoice detail', e);
-				setSelectedInvoiceForModal(invoice);
-			} finally {
-				setLoadingInvoiceDetail(false);
-			}
-		})();
-	};
 
 	const filteredInvoices = voidableInvoices?.filter((invoice) =>
 		invoice.series.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -100,27 +66,7 @@ export const CreditNoteNewPage: React.FC = () => {
 		});
 	};
 
-	const handleConfirmType = () => {
-		if (!selectedInvoiceForModal) return;
-		const affectedInvoice = buildAffectedInvoice(selectedInvoiceForModal);
-		setModalOpen(false);
-
-		if (selectedType === '01') {
-			// usar endpoint simplificado - mantener flujo existente
-			navigate('/accounting/credit-notes/annul', { state: { affectedInvoice } });
-		} else {
-			// para otros tipos abrir el formulario completo donde se podrá editar items/montos
-			const stateToSend: any = { selectedType };
-			// si ya cargamos el detalle, pásalo para evitar otro fetch
-			if (selectedInvoiceForModal && selectedInvoiceForModal.id === affectedInvoice.id) {
-				stateToSend.affectedInvoice = selectedInvoiceForModal;
-			} else {
-				stateToSend.affectedInvoice = affectedInvoice;
-			}
-
-			navigate('/accounting/credit-notes/create', { state: stateToSend });
-		}
-	};
+    
 
 	const formatCurrency = (amount: string) => {
 		return new Intl.NumberFormat('es-PE', {
@@ -219,7 +165,7 @@ export const CreditNoteNewPage: React.FC = () => {
 							<div
 								key={invoice.id}
 								className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
-								onClick={() => openTypeSelector(invoice)}
+								onClick={() => handleSelectInvoice(invoice)}
 							>
 								<div className="flex items-center justify-between">
 									<div className="flex-1">
@@ -279,45 +225,7 @@ export const CreditNoteNewPage: React.FC = () => {
 				</div>
 			</div>
 
-			{/* Modal selector de tipo de nota */}
-			{modalOpen && selectedInvoiceForModal && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center">
-					<div className="absolute inset-0 bg-black opacity-40" onClick={() => setModalOpen(false)} />
-					<div className="bg-white rounded-lg shadow-lg z-10 w-full max-w-lg p-6">
-						<h3 className="text-lg font-medium text-gray-900">Selecciona el tipo de Nota de Crédito</h3>
-						<p className="text-sm text-gray-600 mt-1">Elige el motivo que corresponde a esta nota para mostrar los campos adecuados.</p>
-
-						<div className="mt-4">
-							<label className="block text-sm font-medium text-gray-700">Tipo</label>
-							<select
-								value={selectedType}
-								onChange={(e) => setSelectedType(e.target.value)}
-								className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-							>
-								{creditNoteTypes.map(t => (
-									<option key={t.code} value={t.code}>{t.code} - {t.label}</option>
-								))}
-							</select>
-						</div>
-
-						<div className="mt-4 p-3 bg-gray-50 rounded">
-							<p className="text-sm text-gray-700">{creditNoteTypes.find(t => t.code === selectedType)?.description}</p>
-							{loadingInvoiceDetail ? (
-								<div className="mt-2 text-xs text-gray-500">Cargando detalle de la factura...</div>
-							) : selectedInvoiceForModal ? (
-								<div className="mt-2 text-xs text-gray-500">Documento: {selectedInvoiceForModal.series}-{String(selectedInvoiceForModal.number).padStart(8, '0')} • Cliente: {selectedInvoiceForModal.client_name || selectedInvoiceForModal.client?.name} • Total: {formatCurrency(String(selectedInvoiceForModal.total_payable || selectedInvoiceForModal.total_payable))}</div>
-							) : (
-								<div className="mt-2 text-xs text-gray-500">Documento seleccionado</div>
-							)}
-						</div>
-
-						<div className="mt-6 flex justify-end space-x-3">
-							<Button variant="outline" onClick={() => setModalOpen(false)}>Cancelar</Button>
-							<Button onClick={handleConfirmType}>{selectedType === '01' ? 'Usar anulación simplificada' : 'Editar nota'}</Button>
-						</div>
-					</div>
-				</div>
-			)}
+			{/* Modal selector de tipo de nota eliminado: la selección ahora redirige directamente a la anulación simplificada */}
 		</div>
 	);
 };

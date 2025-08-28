@@ -49,7 +49,6 @@ class CreditNotesService {
     }
     
     // Si no es array, devolver array vacío para evitar errores
-    console.warn('Credit notes response is not in expected format:', response.data);
     return [];
   }
 
@@ -75,24 +74,50 @@ class CreditNotesService {
     // En lugar de usar un endpoint específico, usamos el listado de facturas
     // filtradas por estado ACCEPTED (que son las que se pueden anular)
     const response = await api.get('/sunat/invoices/', {
-      params: { 
+      params: {
         company_id: companyId,
         sunat_status: 'ACCEPTED', // Solo facturas aceptadas por SUNAT
         limit: 100 // Límite razonable para selección
       }
     });
-    
+
     // Convertir las facturas al formato esperado por VoidableInvoice
     const invoices = response.data?.invoices || response.data || [];
-    return invoices.map((invoice: any) => ({
-      id: invoice.id,
-      series: invoice.series,
-      number: invoice.number,
-      document_type_code: invoice.document_type_code,
-      client_name: invoice.client?.name || 'N/A',
-      total_payable: invoice.total_payable?.toString() || '0.00',
-      issue_date: invoice.issue_date
-    }));
+    
+    const mappedInvoices = invoices.map((invoice: any) => {
+      // Intentar obtener client_id de múltiples fuentes
+      let clientId = 0;
+      let clientName = 'N/A';
+
+      // Prioridad 1: client_id directo
+      if (invoice.client_id && invoice.client_id !== 0) {
+        clientId = invoice.client_id;
+      }
+      // Prioridad 2: client.id
+      else if (invoice.client?.id && invoice.client.id !== 0) {
+        clientId = invoice.client.id;
+      }
+
+      // Obtener nombre del cliente
+      if (invoice.client?.name) {
+        clientName = invoice.client.name;
+      } else if (invoice.client_name) {
+        clientName = invoice.client_name;
+      }
+
+      return {
+        id: invoice.id,
+        series: invoice.series,
+        number: invoice.number,
+        document_type_code: invoice.document_type_code,
+        client_id: clientId,
+        client_name: clientName,
+        total_payable: invoice.total_payable?.toString() || '0.00',
+        issue_date: invoice.issue_date
+      };
+    });
+
+    return mappedInvoices;
   }
 }
 

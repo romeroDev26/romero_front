@@ -38,7 +38,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Tipamos explícitamente el estado que esperamos recibir
-  const { affectedInvoice } = (location.state as { affectedInvoice: Invoice }) || {};
+  const { affectedInvoice, simplifiedAnnul } = (location.state as { affectedInvoice: Invoice; simplifiedAnnul?: boolean }) || {};
 
   const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>("");
 
@@ -99,6 +99,26 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
     return null;
   }
   
+  // Modo simplificado: mostrar tarjeta con info y botón único para anular
+  const handleSimplifiedAnnul = () => {
+    if (!selectedCreditNoteSeries) {
+      toast.error("No hay serie de nota de crédito seleccionada.");
+      return;
+    }
+
+    const payload: CreditNoteAnnulData = {
+      invoice_id: affectedInvoice.id,
+      credit_note_series: selectedCreditNoteSeries,
+      reason: 'Anulación simplificada',
+    };
+
+    createCreditNote(payload, {
+      onSuccess: () => {
+        navigate('/accounting/credit-notes');
+      }
+    });
+  };
+  
   const onSubmit: SubmitHandler<CreditNoteFormData> = (data) => {
     if (!selectedCreditNoteSeries) {
       toast.error("Debe seleccionar una serie para la nota de crédito");
@@ -119,13 +139,105 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
     });
   };
 
+  // Si estamos en modo simplificado renderizamos opción única
+  if (simplifiedAnnul) {
+    return (
+      <div className="p-6 bg-gray-50">
+        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Anular Comprobante</h1>
+          <div className="mb-4">
+            <div className="font-medium">{affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}</div>
+            <div className="text-sm text-gray-600">Cliente: {affectedInvoice.client.name}</div>
+            <div className="text-sm text-gray-600">Documento: {affectedInvoice.client.doc_type} - {affectedInvoice.client.doc_number}</div>
+            {(affectedInvoice.client.address_line || affectedInvoice.client.address) && (
+              <div className="text-sm text-gray-600">Dirección: {affectedInvoice.client.address_line ?? affectedInvoice.client.address}</div>
+            )}
+            <div className="text-sm text-gray-600">Total: S/ {affectedInvoice.total_payable}</div>
+
+            {/* Resumen breve de servicios / ítems */}
+            <div className="mt-3">
+              <div className="text-sm font-medium text-gray-700 mb-1">Servicios incluidos</div>
+              {affectedInvoice.items && affectedInvoice.items.length > 0 ? (
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {affectedInvoice.items.slice(0, 5).map((it) => (
+                    <li key={it.id} className="flex justify-between">
+                      <span className="truncate">{it.item_description ?? it.product?.name ?? 'Ítem'} x{it.quantity}</span>
+                      <span>S/ {it.total_line}</span>
+                    </li>
+                  ))}
+                  {affectedInvoice.items.length > 5 && (
+                    <li className="text-sm text-gray-500">+{affectedInvoice.items.length - 5} más</li>
+                  )}
+                </ul>
+              ) : (
+                <div className="text-sm text-gray-500">Sin servicios listados</div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Serie NC a usar</label>
+            {isLoadingSeries ? (
+              <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100">Cargando series...</div>
+            ) : availableCreditNoteSeries.length > 0 ? (
+              <select
+                value={selectedCreditNoteSeries}
+                onChange={(e) => handleCreditNoteSeriesChange(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md bg-white"
+              >
+                {availableCreditNoteSeries.map((series) => (
+                  <option key={series.id} value={series.series_code}>{series.series_code}</option>
+                ))}
+              </select>
+            ) : (
+              <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 text-red-600">No hay series disponibles</div>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-6 border-t">
+            <Button variant="outline" onClick={() => navigate(-1)}>Cancelar</Button>
+            <Button variant="primary" onClick={handleSimplifiedAnnul} isLoading={isPending} disabled={!selectedCreditNoteSeries}>
+              Usar anulación simplificada
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 bg-gray-50">
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           Anular Comprobante: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
         </h1>
-        <p className="text-gray-600 mb-6">Cliente: {affectedInvoice.client.name}</p>
+        <div className="text-gray-600 mb-6">
+          <div>Cliente: <span className="font-medium">{affectedInvoice.client.name}</span></div>
+          <div>Documento: <span className="font-medium">{affectedInvoice.client.doc_type} - {affectedInvoice.client.doc_number}</span></div>
+          {(affectedInvoice.client.address_line || affectedInvoice.client.address) && (
+            <div>Dirección: <span className="font-medium">{affectedInvoice.client.address_line ?? affectedInvoice.client.address}</span></div>
+          )}
+
+          {/* Resumen breve de servicios */}
+          <div className="mt-3">
+            <div className="text-sm font-medium text-gray-700 mb-1">Servicios incluidos</div>
+            {affectedInvoice.items && affectedInvoice.items.length > 0 ? (
+              <ul className="text-sm text-gray-600 space-y-1">
+                {affectedInvoice.items.slice(0, 5).map((it) => (
+                  <li key={it.id} className="flex justify-between">
+                    <span className="truncate">{it.item_description ?? it.product?.name ?? 'Ítem'} x{it.quantity}</span>
+                    <span>S/ {it.total_line}</span>
+                  </li>
+                ))}
+                {affectedInvoice.items.length > 5 && (
+                  <li className="text-sm text-gray-500">+{affectedInvoice.items.length - 5} más</li>
+                )}
+              </ul>
+            ) : (
+              <div className="text-sm text-gray-500">Sin servicios listados</div>
+            )}
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>

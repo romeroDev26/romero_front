@@ -10,6 +10,8 @@ interface AffectedDocumentSectionProps {
 	companyId: number;
 	selectedInvoiceDetail: any;
 	onInvoiceSelect: (invoiceDetail: any) => void;
+	/** Si true, al seleccionar una factura se navegará a la página de anulación */
+	redirectToAnnulOnSelect?: boolean;
 }
 
 export const AffectedDocumentSection: React.FC<AffectedDocumentSectionProps> = ({
@@ -17,7 +19,8 @@ export const AffectedDocumentSection: React.FC<AffectedDocumentSectionProps> = (
 	errors,
 	companyId,
 	selectedInvoiceDetail,
-	onInvoiceSelect
+	onInvoiceSelect,
+	redirectToAnnulOnSelect = false,
 }) => {
 	return (
 		<div className="bg-white rounded-lg shadow p-6">
@@ -28,6 +31,7 @@ export const AffectedDocumentSection: React.FC<AffectedDocumentSectionProps> = (
 				companyId={companyId}
 				selectedInvoiceDetail={selectedInvoiceDetail}
 				onInvoiceSelect={onInvoiceSelect}
+				redirectToAnnulOnSelect={redirectToAnnulOnSelect}
 			/>
 
 			{/* Campos autocompletados (readonly) */}

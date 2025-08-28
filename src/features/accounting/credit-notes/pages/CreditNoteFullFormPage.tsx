@@ -321,6 +321,7 @@ export const CreditNoteFullFormPage: React.FC = () => {
 							companyId={currentUser?.company_id || 0}
 							selectedInvoiceDetail={selectedInvoiceDetail}
 							onInvoiceSelect={handleInvoiceSelect}
+							redirectToAnnulOnSelect={true}
 						/>
 
 						{/* Motivo */}

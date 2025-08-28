@@ -48,15 +48,16 @@ import { TripManifestsPage } from './features/manifests/pages/TripManifestsPage'
 //páginas de contabilidad
 import { InvoiceDetailPage } from './features/accounting/pages/InvoiceDetailPage';
 import { InvoicesListPage } from './features/accounting/pages/InvoicesListPage';
+import { AccountingDashboardPage } from './features/accounting/pages/AccountingDashboardPage';
 import { CreditNoteAnnulFormPage } from './features/accounting/credit-notes/pages/CreditNoteAnnulFormPage';
 import { CreditNoteNewPage } from './features/accounting/credit-notes/pages/CreditNoteNewPage';
 import { CreditNoteFullFormPage } from './features/accounting/credit-notes/pages/CreditNoteFullFormPage';
 import { CreditNotesListPage } from './features/accounting/credit-notes/pages/CreditNotesListPage';
 import { CreditNoteDetailPage } from './features/accounting/credit-notes/pages/CreditNoteDetailPage';
 import { DebitNotesListPage } from './features/accounting/debit-notes/pages/DebitNotesListPage';
+import { DebitNoteNewPage } from './features/accounting/debit-notes/pages/DebitNoteNewPage';
 import { DebitNoteFormPage } from './features/accounting/debit-notes/pages/DebitNoteFormPage';
 import { DebitNoteDetailPage } from './features/accounting/debit-notes/pages/DebitNoteDetailPage';
-import { AccountingDashboardPage } from './features/accounting/pages/AccountingDashboardPage';
 import { DailySummariesListPage } from './features/accounting/daily-summaries/pages/DailySummariesListPage';
 import { DailySummaryFormPage } from './features/accounting/daily-summaries/pages/DailySummaryFormPage';
 import { DailySummaryDetailPage } from './features/accounting/daily-summaries/pages/DailySummaryDetailPage';
@@ -151,7 +152,8 @@ function App() {
               <Route path="credit-notes/annul" element={<CreditNoteAnnulFormPage />} />
               <Route path="credit-notes/:id" element={<CreditNoteDetailPage />} />
               <Route path="debit-notes" element={<DebitNotesListPage />} />
-              <Route path="debit-notes/new" element={<DebitNoteFormPage />} />
+              <Route path="debit-notes/new" element={<DebitNoteNewPage />} />
+              <Route path="debit-notes/create" element={<DebitNoteFormPage />} />
               <Route path="debit-notes/:id" element={<DebitNoteDetailPage />} />
               <Route path="summaries" element={<DailySummariesListPage />} />
               <Route path="summaries/new" element={<DailySummaryFormPage />} />

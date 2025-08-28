@@ -39,7 +39,13 @@ export const DebitNoteNewPage: React.FC = () => {
   ) || [];
 
   const handleSelectInvoice = (invoice: VoidableInvoice) => {
-    // Convertir VoidableInvoice a formato compatible con DebitNoteAnnulFormPage
+    // Validar que tenemos los datos necesarios
+    if (!invoice.client_id || invoice.client_id === 0) {
+      alert('Error: La factura seleccionada no tiene un cliente válido asociado. No se puede crear una nota de débito.');
+      return;
+    }
+
+    // Usar los datos que ya tenemos disponibles
     const affectedInvoice = {
       id: invoice.id,
       series: invoice.series,
@@ -47,20 +53,23 @@ export const DebitNoteNewPage: React.FC = () => {
       document_type_code: invoice.document_type_code,
       company_id: companyId,
       client: {
-        id: 0, // No disponible en VoidableInvoice
+        id: invoice.client_id,
         name: invoice.client_name,
-        doc_number: '', // No disponible
+        doc_number: '', // Este campo puede estar vacío por ahora
       },
+      client_id: invoice.client_id,
+      client_name: invoice.client_name, // Agregar este campo para compatibilidad
       total_payable: parseFloat(invoice.total_payable),
       issue_date: invoice.issue_date,
     };
 
-    navigate('/accounting/debit-notes/annul', { 
+    // Usar sessionStorage como backup
+    sessionStorage.setItem('debitNoteAffectedInvoice', JSON.stringify(affectedInvoice));
+    
+    navigate('/accounting/debit-notes/create', { 
       state: { affectedInvoice } 
     });
-  };
-
-  const formatCurrency = (amount: string) => {
+  };  const formatCurrency = (amount: string) => {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
       currency: 'PEN'
@@ -85,7 +94,7 @@ export const DebitNoteNewPage: React.FC = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Nueva Nota de Débito</h1>
-            <p className="text-gray-600">Selecciona la factura para generar un cargo adicional</p>
+            <p className="text-gray-600">Selecciona la factura para agregar cargos adicionales</p>
           </div>
         </div>
       </div>
@@ -115,10 +124,10 @@ export const DebitNoteNewPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
-            Facturas Disponibles para Nota de Débito
+            Facturas Disponibles para Agregar Cargos
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Selecciona una factura para generar un cargo adicional
+            Selecciona una factura para agregar cargos adicionales
           </p>
         </div>
 
@@ -188,7 +197,7 @@ export const DebitNoteNewPage: React.FC = () => {
                   </div>
                   <div className="ml-6">
                     <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                      Generar Débito
+                      Agregar Cargos
                     </Button>
                   </div>
                 </div>
@@ -207,8 +216,8 @@ export const DebitNoteNewPage: React.FC = () => {
             </h3>
             <div className="mt-2 text-sm text-orange-700">
               <ul className="list-disc pl-5 space-y-1">
-                <li>Las notas de débito se utilizan para aplicar cargos adicionales a una factura</li>
-                <li>Puedes incluir intereses por mora, penalidades u otros conceptos</li>
+                <li>Las notas de débito se utilizan para aplicar cargos adicionales a una factura existente</li>
+                <li>Puedes incluir intereses por mora, penalidades, recargos u otros conceptos no incluidos inicialmente</li>
                 <li>El documento será enviado automáticamente a SUNAT para su procesamiento</li>
                 <li>Podrás descargar el PDF una vez que SUNAT lo procese</li>
               </ul>

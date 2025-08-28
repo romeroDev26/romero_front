@@ -3,21 +3,25 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+// Icon imports removed (no usados)
 import { Modal } from '../../../components/common/Modal';
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
-import { Input } from '../../../components/common/Input';
+// Input import removed (no usado)
+import { useNavigate } from 'react-router-dom';
+import { invoicesService } from '../../../services/invoices.service';
 // Importamos el hook desde su nueva ubicación
 import { useVoidableInvoices } from '../hooks/useSunatVoids';
-import { VoidableInvoice, VoidItem } from '../types';
+import { VoidableInvoice } from '../types';
 
 interface InvoiceSelectorModalProps {
   isOpen: boolean;
   onClose: () => void;
   companyId: number | null;
-  onSubmit: (items: Omit<VoidItem, 'reason'>[]) => void; // El modal solo devuelve los ítems, no la razón
+  onSubmit: (items: any[]) => void; // El modal solo devuelve los ítems, no la razón
   isSubmitting: boolean;
+  /** Si true, al hacer click en una factura navegamos a la página de anulación */
+  redirectToAnnulOnSelect?: boolean;
 }
 
 export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
@@ -26,9 +30,13 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
   companyId,
   onSubmit,
   isSubmitting,
+  redirectToAnnulOnSelect = false,
 }) => {
   const { data: voidableInvoices = [], isLoading } = useVoidableInvoices(companyId);
   const [selectedInvoices, setSelectedInvoices] = useState<Set<number>>(new Set());
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [confirmInvoice, setConfirmInvoice] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   const handleToggleSelection = (invoiceId: number) => {
     setSelectedInvoices(prev => {
@@ -55,31 +63,129 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
     
     onSubmit(itemsToVoid);
   };
-  
-  return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Seleccionar Facturas para Anular" maxWidth="3xl">
-      <div className="space-y-4">
-        {isLoading ? (
-          <div className="flex justify-center p-8"><Spinner /></div>
-        ) : voidableInvoices.length === 0 ? (
-          <div className="text-center p-8 border rounded-md bg-gray-50">
-            <p className="text-gray-600">No hay facturas disponibles para dar de baja.</p>
-          </div>
-        ) : (
-          <div className="max-h-96 overflow-y-auto border rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200">
-              {/* ... (código de la tabla sin cambios) ... */}
-            </table>
-          </div>
-        )}
 
-        <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button variant="danger" onClick={handleSubmit} isLoading={isSubmitting} disabled={isLoading || voidableInvoices.length === 0}>
-            Añadir a la Comunicación de Baja
-          </Button>
+  const handleInvoiceClick = async (invoice: VoidableInvoice) => {
+    if (redirectToAnnulOnSelect) {
+      // En lugar de navegar inmediatamente, cargamos detalle y mostramos confirmación
+      try {
+        setLoadingDetail(true);
+        const invoiceDetail = await invoicesService.getById(invoice.id);
+        setConfirmInvoice(invoiceDetail);
+      } catch (error) {
+        console.error('Error al cargar detalle de factura:', error);
+        toast.error('No se pudo cargar la factura seleccionada');
+      } finally {
+        setLoadingDetail(false);
+      }
+      return;
+    }
+
+    // Modo multi-selección habitual
+    handleToggleSelection(invoice.id);
+  };
+
+  return (
+    <>
+      <Modal isOpen={isOpen} onClose={onClose} title="Seleccionar Facturas para Anular" maxWidth="3xl">
+        <div className="space-y-4">
+          {isLoading ? (
+            <div className="flex justify-center p-8"><Spinner /></div>
+          ) : voidableInvoices.length === 0 ? (
+            <div className="text-center p-8 border rounded-md bg-gray-50">
+              <p className="text-gray-600">No hay facturas disponibles para dar de baja.</p>
+            </div>
+          ) : (
+            <div className="max-h-96 overflow-y-auto border rounded-lg">
+              <div className="space-y-2 p-3">
+                {voidableInvoices.map(inv => (
+                  <div
+                    key={inv.id}
+                    onClick={() => handleInvoiceClick(inv)}
+                    className="p-3 hover:bg-gray-50 cursor-pointer border rounded-md transition-colors flex justify-between items-start"
+                  >
+                    <div className="flex-1">
+                      <div className="font-medium">{inv.series}-{String(inv.number).padStart(8, '0')} <span className="ml-2 text-sm text-gray-500">({inv.document_type_code === '01' ? 'Factura' : 'Boleta'})</span></div>
+                      <div className="text-sm text-gray-600 mt-1">{inv.client_name}</div>
+                      <div className="text-xs text-gray-500 mt-1">Emitida: {format(new Date(inv.issue_date), 'dd/MM/yyyy')}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">S/ {inv.total_payable}</div>
+                      {redirectToAnnulOnSelect ? (
+                        loadingDetail && <div className="text-xs text-blue-600 mt-1">Cargando detalles...</div>
+                      ) : (
+                        <input
+                          type="checkbox"
+                          checked={selectedInvoices.has(inv.id)}
+                          onChange={() => handleToggleSelection(inv.id)}
+                          className="ml-3"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {voidableInvoices.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <div>No hay facturas disponibles para anular</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+            <div className="text-sm text-yellow-800">
+              <strong>Nota:</strong> Solo se muestran facturas que pueden ser afectadas por notas de crédito.
+              Al seleccionar una factura, se cargarán automáticamente todos sus datos y productos.
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4 border-t">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            {!redirectToAnnulOnSelect && (
+              <Button variant="danger" onClick={handleSubmit} isLoading={isSubmitting} disabled={isLoading || voidableInvoices.length === 0}>
+                Añadir a la Comunicación de Baja
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    </Modal>
+      </Modal>
+
+      {/* Modal de confirmación para anulación simplificada (fuera del modal principal) */}
+      {confirmInvoice && (
+        <Modal isOpen={!!confirmInvoice} onClose={() => setConfirmInvoice(null)} title="Confirmar anulación">
+          <div className="space-y-4">
+            <div>
+              <div className="font-medium">{confirmInvoice.series}-{String(confirmInvoice.number).padStart(8, '0')}</div>
+              <div className="text-sm text-gray-600">Cliente: {confirmInvoice.client?.name || confirmInvoice.client_name}</div>
+              <div className="text-sm text-gray-600">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || ''}</div>
+              {(confirmInvoice.client?.address || confirmInvoice.client_address) && (
+                <div className="text-sm text-gray-600">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
+              )}
+              <div className="text-sm text-gray-600">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
+            </div>
+
+            {confirmInvoice.items && confirmInvoice.items.length > 0 && (
+              <div className="mt-2 border-t pt-2">
+                <div className="text-sm font-medium text-gray-700 mb-1">Servicios / Ítems incluidos</div>
+                <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
+                  {confirmInvoice.items.slice(0,5).map((it: any, idx: number) => (
+                    <li key={idx}>{it.item_description || it.product_name || it.description || 'Servicio'} — {it.quantity || it.qty || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
+                  ))}
+                  {confirmInvoice.items.length > 5 && <li className="text-xs text-gray-500">+{confirmInvoice.items.length - 5} más</li>}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex justify-end space-x-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setConfirmInvoice(null)}>Cancelar</Button>
+              <Button onClick={() => { onClose(); setConfirmInvoice(null); navigate('/accounting/credit-notes/annul', { state: { affectedInvoice: confirmInvoice, simplifiedAnnul: true } }); }}>
+                Anular
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 };

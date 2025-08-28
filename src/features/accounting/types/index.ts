@@ -33,28 +33,28 @@ export interface CreditNoteAnnulData {
   reason: string;
 }
 
-// Tipos para Notas de Débito
+// Tipos para Notas de Débito - Actualizados según API backend
 export interface DebitNoteItemCreateData {
-  product_service_id: number;
+  product_id: number; // Según API backend
   quantity: number;
+  unit_code: string; // Requerido - ej: "NIU"
   unit_price: number;
-  description: string;
-  tax_category_code?: string;
-  unit_code?: string;
-  price_type_code?: string;
+  price_with_tax: number; // Nuevo campo requerido
+  price_type_code: string; // Requerido - ej: "01"
+  tax_category_code: string; // Requerido - ej: "10"
 }
 
 export interface DebitNoteCreateData {
   company_id: number;
   client_id: number;
-  debit_note_series: string;
-  currency_code?: string;
-  issue_date?: string;
-  issue_time?: string;
-  affected_document_type_code: string;
-  affected_document_series: string;
-  affected_document_number: number;
-  debit_note_type_code: string;
+  document_type_code: string; // Siempre "08" para notas de débito
+  series: string; // Según backend se llama 'series', no 'debit_note_series'
+  issue_date: string; // Requerido - formato "YYYY-MM-DD"
+  issue_time: string; // Requerido - formato "HH:MM:SS"
+  currency_code: string; // Requerido - ej: "PEN"
+  affected_document_type_code: string; // "01" o "03"
+  affected_document_series_number: string; // Campo completo "F001-00000456"
+  debit_note_type_code: string; // Código del catálogo 10
   reason: string;
   items: DebitNoteItemCreateData[];
 }
@@ -242,6 +242,7 @@ export interface VoidableInvoice {
   document_type_code: string;
   series: string;
   number: number;
+  client_id: number;
   client_name: string;
   total_payable: string;
   issue_date: string;

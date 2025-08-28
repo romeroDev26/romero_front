@@ -56,6 +56,12 @@ export const useWebSocketConnection = (
         
         const connectMessage = { type: 'CONNECT' };
         ws.send(JSON.stringify(connectMessage));
+        
+        //  CORRECCIÓN: Solicitar estado inicial inmediatamente después de conectar
+        setTimeout(() => {
+          const initialStateMessage = { type: 'REQUEST_INITIAL_STATE' };
+          ws.send(JSON.stringify(initialStateMessage));
+        }, 500);
       };
 
       ws.onmessage = (event) => {

@@ -137,6 +137,18 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     }
   }, [initialSeatMap, pendingWebSocketSelections, userId, addSelection]);
 
+  // CORRECCIÓN: Forzar reconexión cuando cambie el tripId o se monte el componente
+  useEffect(() => {
+    if (enabled && tripId && userId && userName) {
+      // Pequeño delay para asegurar que el componente esté completamente montado
+      const timer = setTimeout(() => {
+        forceReconnect();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [tripId, userId, userName, enabled]); // Dependencias críticas para reconexión
+
   // === API PÚBLICA DEL HOOK ===
 
   // Operaciones básicas de asientos

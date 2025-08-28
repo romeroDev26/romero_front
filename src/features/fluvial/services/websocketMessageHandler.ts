@@ -28,6 +28,10 @@ export class WebSocketMessageHandler {
   }
 
   handleMessage(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Received message', message);
+    }
+
     switch (message.type) {
       case 'INITIAL_STATE':
         this.handleInitialState(message);
@@ -58,32 +62,50 @@ export class WebSocketMessageHandler {
         break;
 
       case 'PONG':
-        // Confirmación de conexión activa
+        if (this.enableDebugLogs) {
+          console.log('WebSocket: PONG received');
+        }
         break;
 
       default:
-        // Tipo de mensaje no manejado - silencioso en producción
+        if (this.enableDebugLogs) {
+          console.log('WebSocket: Unhandled message type', message.type);
+        }
         break;
     }
   }
 
   private handleInitialState(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling INITIAL_STATE', message);
+    }
+
     if (message.seats) {
       const initialSelections: SeatSelection[] = message.seats
         .filter(selection => selection.userId !== this.userId)
         .map(selection => ({
           seatId: selection.seatId,
-          userId: selection.userId,
-          userName: selection.userName,
+          userId: selection.userId!,
+          userName: selection.userName!,
           timestamp: message.timestamp,
           type: 'temporary'
         }));
 
+      if (this.enableDebugLogs) {
+        console.log('WebSocket: Setting initial selections', initialSelections);
+      }
+
       this.onInitialState(initialSelections);
+    } else if (this.enableDebugLogs) {
+      console.warn('WebSocket: INITIAL_STATE message received but no seats data');
     }
   }
 
   private handleSeatUpdate(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling SEAT_UPDATE', message);
+    }
+
     if (message.seatId !== undefined && message.status) {
       this.onSeatMapUpdate(message.seatId, message.status);
       this.onSelectionRemove(message.seatId);
@@ -91,6 +113,10 @@ export class WebSocketMessageHandler {
   }
 
   private handleSeatSelection(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling SEAT_SELECTION', message);
+    }
+
     if (message.userId !== this.userId && message.seatId !== undefined) {
       const selection: SeatSelection = {
         seatId: message.seatId,
@@ -105,30 +131,36 @@ export class WebSocketMessageHandler {
   }
 
   private handleSeatReleased(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling SEAT_RELEASED', message);
+    }
+
     if (message.userId !== this.userId && message.seatId !== undefined) {
       this.onSelectionRemove(message.seatId);
     }
   }
 
   private handleTempReserveResponse(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling SEAT_TEMP_RESERVE_RESPONSE', message);
+    }
+
     if (message.seatId !== undefined) {
       if (!message.success) {
-        // Solo mostrar error al usuario, log detallado opcional
         this.showReserveError(message);
       }
-      // Success case: no necesitamos log, la UI se actualiza automáticamente
     }
   }
 
   private handleTempReserved(message: SeatUpdateMessage): void {
-    // Para reservas de representantes, siempre agregar a selecciones
-    // incluso si el userId base es el mismo, porque es para mostrar a otros vendedores
-    const isRepresentativeReservation = message.reservationType === 'REPRESENTATIVE_TEMP_RESERVATION' || 
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling SEAT_TEMP_RESERVED', message);
+    }
+
+    const isRepresentativeReservation = message.reservationType === 'REPRESENTATIVE_TEMP_RESERVATION' ||
                                        message.reservationType === 'representative' ||
                                        (message as any).reservationCategory === 'representative';
-    
-    // Para representantes, SIEMPRE mostrar en el mapa (propios y ajenos)
-    // Para otras selecciones, solo mostrar las de otros usuarios
+
     const shouldAddSelection = isRepresentativeReservation || (message.userId !== this.userId);
 
     if (shouldAddSelection && message.seatId !== undefined) {
@@ -152,6 +184,10 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReleased(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling SEAT_TEMP_RELEASED', message);
+    }
+
     if (message.userId !== this.userId && message.seatId !== undefined) {
       this.onSelectionRemove(message.seatId);
     }
@@ -159,8 +195,7 @@ export class WebSocketMessageHandler {
 
   private showReserveError(message: SeatUpdateMessage): void {
     const errorMessage = message.error || 'Este asiento ya no está disponible';
-    
-    // Mostrar notificación al usuario
+
     setTimeout(() => {
       import('react-toastify').then(({ toast }) => {
         toast.error(`Asiento ${message.seatId}: ${errorMessage}`, {
@@ -171,7 +206,6 @@ export class WebSocketMessageHandler {
           pauseOnHover: true,
         });
       }).catch(() => {
-        // Fallback silencioso
         if (this.enableDebugLogs) {
           console.error(`Asiento ${message.seatId}: ${errorMessage}`);
         }

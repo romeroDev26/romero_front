@@ -443,15 +443,25 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     releaseSeat: releaseSeatWebSocket,
     confirmPurchase,
     isConnected: isWebSocketConnected,
-    activeSeatSelections // Agregar para obtener selecciones activas de WebSocket
-  } = useSeatMapRealtime({
+    activeSeatSelections  } = useSeatMapRealtime({
     tripId: trip.id,
     userId: currentUser?.id || 'unknown',
     userName: currentUser?.full_name || currentUser?.first_name || 'Usuario',
     enabled: true,
     companyName: isRuc ? passengerData.name : undefined,
-    isCompanyMode: isRuc
+    isCompanyMode: isRuc,
+    enableDebugLogs: false
   });
+
+  // Configurar asiento automáticamente cuando se carga una reservación
+  React.useEffect(() => {
+    if (reservationToConfirm && seatMap && seatMap.length > 0 && !selectedSeat) {
+      const reservationSeat = seatMap.find(seat => seat.id === reservationToConfirm.trip_seat_id);
+      if (reservationSeat) {
+        setSelectedSeat(reservationSeat);
+      }
+    }
+  }, [reservationToConfirm, seatMap, selectedSeat]);
 
   // NUEVA función para obtener IDs de asientos seleccionados por representantes
   const representativeSelectedSeatIds = useMemo((): number[] => {
@@ -544,6 +554,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     !!passengerData.docNumber.trim() &&
     !!passengerData.name.trim() &&
     (isRuc ? representatives.length > 0 : (!showSeatMap || !!selectedSeat));
+
+  // Log detallado de las condiciones de areActionsEnabled
+  React.useEffect(() => {
+    // Logging removed for production
+  }, [selectedBoardingStopId, selectedDisembarkingStopId, passengerData.docNumber, passengerData.name, isRuc, representatives.length, showSeatMap, selectedSeat, areActionsEnabled, isConfirmingMode]);
 
   return (
     <>
@@ -714,9 +729,14 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                 <h3 className="font-semibold text-center text-gray-700">
                   Acciones
                 </h3>
+                
                 <Button
                   onClick={handleConfirmSale}
-                  className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
+                  className={`w-full text-lg py-3 ${
+                    areActionsEnabled 
+                      ? 'bg-green-600 hover:bg-green-700' 
+                      : 'bg-gray-400 cursor-not-allowed'
+                  }`}
                   isLoading={
                     isProcessingClient ||
                     isCreatingInvoice ||
@@ -733,6 +753,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                       ? "Crear Factura Empresarial con Representantes"
                       : "Generar y Cobrar"
                   }
+                  {!areActionsEnabled && (
+                    <span className="ml-2 text-xs opacity-75">(Desactivado)</span>
+                  )}
                 </Button>
                 {!isConfirmingMode && showSeatMap && !isRuc && (
                   <Button

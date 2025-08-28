@@ -19,6 +19,7 @@ interface SeatMapRealtimeProps {
   userName: string;
   occupiedSeatNumbers?: string[]; // Nueva prop para asientos ocupados por representantes
   isCompanyMode?: boolean; // Nueva prop para indicar si está en modo empresa (RUC)
+  reservationSeatId?: number; // Nueva prop para seleccionar asiento de reservación automáticamente
 }
 
 type SeatRow = SeatMapItem[];
@@ -79,7 +80,8 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
   isLocked = false,
   userId,
   userName,
-  isCompanyMode = false // Nueva prop con valor por defecto
+  isCompanyMode = false, // Nueva prop con valor por defecto
+  reservationSeatId // Nueva prop para asiento de reservación
 }) => {
   // Referencia estable para las selecciones actuales
   const selectedSeatsRef = useRef<Set<number>>(selectedSeats);
@@ -107,16 +109,45 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
     userId,
     userName,
     enabled: !isLocked, // Solo habilitar WebSocket si no está bloqueado
-    // ← NUEVO: Configuración mejorada para empresa
+    // Configuración mejorada para empresa
     companyName: undefined, // No es modo empresa en este componente
     isCompanyMode // Pasar el modo empresa al hook
   });
+
+  // Log de los datos del mapa de asientos
+  React.useEffect(() => {
+    if (seatMap && seatMap.length > 0) {
+      const nonAvailableSeats = seatMap.filter(seat => seat.status !== 'AVAILABLE');
+      if (nonAvailableSeats.length > 0) {
+        // Logging removed for production
+      }
+      
+      // Log completo del estado del mapa
+      // Logging removed for production
+    }
+  }, [seatMap?.length, connectionStatus, isWebSocketAvailable, canUseRealtime]);
+
+  // Seleccionar automáticamente el asiento de la reservación
+  React.useEffect(() => {
+    if (reservationSeatId && seatMap && seatMap.length > 0 && !isLocked) {
+      const reservationSeat = seatMap.find(seat => seat.id === reservationSeatId);
+      if (reservationSeat && !selectedSeats.has(reservationSeatId)) {
+        // Logging removed for production
+        // Seleccionar el asiento automáticamente
+        onSeatToggle(reservationSeat);
+      } else if (reservationSeat && selectedSeats.has(reservationSeatId)) {
+        // Logging removed for production
+      } else if (!reservationSeat) {
+        // Logging removed for production
+      }
+    }
+  }, [reservationSeatId, seatMap, selectedSeats, onSeatToggle, isLocked]);
 
   // Manejar selección/deselección de asientos con notificación WebSocket
   const handleSeatToggle = (seat: SeatMapItem) => {
     if (isLocked) return;
 
-    // 🔧 CORRECCIÓN: En modo empresa, NO hacer selección automática vía WebSocket
+    // En modo empresa, NO hacer selección automática vía WebSocket
     // En modo empresa, la selección la maneja el SaleForm directamente
     if (!isCompanyMode) {
       const isCurrentlySelected = selectedSeats.has(seat.id);
@@ -330,12 +361,12 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
                     <div className="w-3 h-3 bg-orange-400 rounded animate-pulse"></div>
                     <span>Otro vendedor</span>
                   </div>
-                  {/* ← NUEVO: Leyenda para reservas temporales de representantes */}
+                  {/* Leyenda para reservas temporales de representantes */}
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-purple-400 rounded animate-pulse"></div>
                     <span>Reserva temporal (30min)</span>
                   </div>
-                  {/* ← NUEVO: Leyenda para representantes de otros vendedores */}
+                  {/* Leyenda para representantes de otros vendedores */}
                   <div className="flex items-center gap-2">
                     <div className="w-3 h-3 bg-purple-500 rounded animate-pulse"></div>
                     <span>Rep. otra empresa</span>
@@ -353,7 +384,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
             </div>
             {connectionStatus === 'failed' && (
               <div className="mt-2 text-xs text-gray-600 italic">
-                💡 Modo normal: Las ventas funcionan normalmente, pero sin vista en tiempo real de otros vendedores.
+                Modo normal: Las ventas funcionan normalmente, pero sin vista en tiempo real de otros vendedores.
               </div>
             )}
           </div>

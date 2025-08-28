@@ -180,6 +180,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   return (
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-gray-800">Tramo y Asiento</h2>
+      
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Origen (Embarque)</label>
@@ -247,6 +248,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           userName={userName}
           occupiedSeatNumbers={occupiedSeatNumbers}
           isCompanyMode={isCompanyMode}
+          reservationSeatId={isConfirmingMode && reservationToConfirm ? reservationToConfirm.trip_seat_id : undefined}
         />
       </div>
     </div>

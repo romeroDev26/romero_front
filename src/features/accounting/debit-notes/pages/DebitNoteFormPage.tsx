@@ -41,7 +41,7 @@ const DEFAULT_ITEM = {
   unit_price: 0,
   price_with_tax: 0,
   price_type_code: "01",
-  tax_category_code: "10", // Se actualizará automáticamente según el estado del IGV
+  tax_category_code: "20", // Por defecto exonerado (IGV desactivado)
 };
 
 const debitNoteSchema = z.object({
@@ -159,7 +159,7 @@ export const DebitNoteFormPage: React.FC = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [preparedPayload, setPreparedPayload] =
     useState<DebitNoteCreateData | null>(null);
-  const [igvEnabled, setIgvEnabled] = useState(true); // Estado para controlar IGV
+  const [igvEnabled, setIgvEnabled] = useState(false); // Estado para controlar IGV - desactivado por defecto
 
   const {
     control,
@@ -185,7 +185,7 @@ export const DebitNoteFormPage: React.FC = () => {
             finalAffectedInvoice.number
           ).padStart(8, "0")}`
         : "",
-      items: [{ ...DEFAULT_ITEM }],
+      items: [{ ...DEFAULT_ITEM, tax_category_code: "20" }], // Iniciar con IGV desactivado
     },
   });
 

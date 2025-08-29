@@ -158,7 +158,7 @@ export const generatePassengerManifestPDF = (
   pdf.setFont("helvetica", "bold");
   if (manifestData.manifest_type === "CARGO") {
     pdf.text(
-      `Total de Carga: ${manifestData.total_cargo_weight_kg} Kg`,
+      `Total de carga: ${Math.round(manifestData.total_cargo_weight_kg)}`,
       margin,
       currentY
     );
@@ -176,6 +176,8 @@ export const generatePassengerManifestPDF = (
     // Reutilizar la lógica existente para cargo (agrupado o plano)
     const grouped = (manifestData as any).cargo_grouped_by_stops;
     if (grouped && Array.isArray(grouped.groups) && grouped.groups.length > 0) {
+      let globalItemNumber = 1; // Numeración continua entre grupos
+      
       for (const group of grouped.groups) {
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(10);
@@ -186,28 +188,30 @@ export const generatePassengerManifestPDF = (
         });
         currentY += 8;
 
-        const tableData = (group.items || []).map((item: any, idx: number) => [
-          (idx + 1).toString(),
+        const tableData = (group.items || []).map((item: any) => [
+          globalItemNumber++, // Numeración continua
           item.cargo_description || "N/A",
-          `${item.cargo_weight_kg} Kg`,
-          item.unit_code || "N/A",
+          item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
           item.remitente_nombre || "N/A",
           item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
           item.destinatario_nombre || "N/A",
           item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
           item.source_document || "N/A",
+          item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
+          item.payment_status === "PAID" ? "PAGADO" : item.payment_status === "PENDING" ? "PENDIENTE" : item.payment_status || "N/A",
         ]);
 
         const columnStyles: any = {
-          0: { halign: "center", cellWidth: 10 },
-          1: { halign: "left", cellWidth: 30 },
-          2: { halign: "center", cellWidth: 15 },
-          3: { halign: "center", cellWidth: 12 },
-          4: { halign: "left", cellWidth: 25 },
-          5: { halign: "center", cellWidth: 20 },
-          6: { halign: "left", cellWidth: 25 },
+          0: { halign: "center", cellWidth: 8 },
+          1: { halign: "left", cellWidth: 30 }, // Reducido para hacer espacio
+          2: { halign: "center", cellWidth: 15 }, // Reducido para hacer espacio
+          3: { halign: "left", cellWidth: 24 },
+          4: { halign: "center", cellWidth: 18 },
+          5: { halign: "left", cellWidth: 24 },
+          6: { halign: "center", cellWidth: 18 },
           7: { halign: "center", cellWidth: 20 },
-          8: { halign: "center", cellWidth: 22 },
+          8: { halign: "center", cellWidth: 15 }, // Nueva columna Monto
+          9: { halign: "center", cellWidth: 18 }, // Nueva columna Estado
         };
 
         autoTable(pdf, {
@@ -216,13 +220,14 @@ export const generatePassengerManifestPDF = (
             [
               "N°",
               "DESCRIPCIÓN",
-              "PESO",
-              "UNIDAD",
+              "CANTIDAD",
               "REMITENTE",
               "DOC. REM.",
               "DESTINATARIO",
               "DOC. DEST.",
               "DOCUMENTO",
+              "MONTO",
+              "ESTADO",
             ],
           ],
           body: tableData,
@@ -245,39 +250,37 @@ export const generatePassengerManifestPDF = (
         });
 
         const finalY = (pdf as any).lastAutoTable?.finalY || currentY + 8;
-        const groupWeight =
-          group.items?.reduce(
-            (s: number, it: any) => s + (Number(it.cargo_weight_kg) || 0),
-            0
-          ) || 0;
+        const groupItemCount = group.items?.length || 0; // Contar elementos en lugar de sumar pesos
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(9);
-        pdf.text(`Subtotal: ${groupWeight} Kg`, margin, finalY + 8);
+        pdf.text(`Total: ${groupItemCount}`, margin, finalY + 8); // Mostrar cantidad de elementos
         currentY = finalY + 16;
       }
     } else if (manifestData.items && manifestData.items.length > 0) {
       const tableData = manifestData.items.map((item: any, idx: number) => [
         (idx + 1).toString(),
         item.cargo_description || "N/A",
-        `${item.cargo_weight_kg} Kg`,
-        item.unit_code || "N/A",
+        item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
         item.remitente_nombre || "N/A",
         item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
         item.destinatario_nombre || "N/A",
         item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
         item.source_document || "N/A",
+        item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
+        item.payment_status === "PAID" ? "PAGADO" : item.payment_status === "PENDING" ? "PENDIENTE" : item.payment_status || "N/A",
       ]);
 
       const columnStyles2: any = {
-        0: { halign: "center", cellWidth: 10 },
-        1: { halign: "left", cellWidth: 30 },
-        2: { halign: "center", cellWidth: 15 },
-        3: { halign: "center", cellWidth: 12 },
-        4: { halign: "left", cellWidth: 25 },
-        5: { halign: "center", cellWidth: 20 },
-        6: { halign: "left", cellWidth: 25 },
+        0: { halign: "center", cellWidth: 8 },
+        1: { halign: "left", cellWidth: 30 }, // Reducido para hacer espacio
+        2: { halign: "center", cellWidth: 15 }, // Reducido para hacer espacio
+        3: { halign: "left", cellWidth: 24 },
+        4: { halign: "center", cellWidth: 18 },
+        5: { halign: "left", cellWidth: 24 },
+        6: { halign: "center", cellWidth: 18 },
         7: { halign: "center", cellWidth: 20 },
-        8: { halign: "center", cellWidth: 22 },
+        8: { halign: "center", cellWidth: 15 }, // Nueva columna Monto
+        9: { halign: "center", cellWidth: 18 }, // Nueva columna Estado
       };
 
       autoTable(pdf, {
@@ -286,13 +289,14 @@ export const generatePassengerManifestPDF = (
           [
             "N°",
             "DESCRIPCIÓN",
-            "PESO",
-            "UNIDAD",
+            "CANTIDAD",
             "REMITENTE",
             "DOC. REM.",
             "DESTINATARIO",
             "DOC. DEST.",
             "DOCUMENTO",
+            "MONTO",
+            "ESTADO",
           ],
         ],
         body: tableData,

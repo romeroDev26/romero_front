@@ -41,6 +41,8 @@ export interface ManifestItem {
   destinatario_doc?: string;
   destinatario_phone?: string;
   source_document?: string;
+  amount?: number;
+  payment_status?: string;
 }
 
 export interface Manifest {

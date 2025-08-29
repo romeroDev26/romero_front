@@ -317,7 +317,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
               fontSize: 6,
             },
             columnStyles,
-            margin: { left: margin, right: margin },
+            margin: { left: 11, right: 17 }, // 11mm izquierda, 17mm derecha
             tableWidth: "wrap",
             theme: "grid",
           });
@@ -391,7 +391,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             fontSize: 6,
           },
           columnStyles: columnStyles2,
-          margin: { left: margin, right: margin },
+          margin: { left: 11, right: 17 }, // 11mm izquierda, 17mm derecha
           tableWidth: "wrap",
           theme: "grid",
         });

@@ -177,7 +177,7 @@ export const generatePassengerManifestPDF = (
     const grouped = (manifestData as any).cargo_grouped_by_stops;
     if (grouped && Array.isArray(grouped.groups) && grouped.groups.length > 0) {
       let globalItemNumber = 1; // Numeración continua entre grupos
-      
+
       for (const group of grouped.groups) {
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(10);
@@ -188,18 +188,36 @@ export const generatePassengerManifestPDF = (
         });
         currentY += 8;
 
-        const tableData = (group.items || []).map((item: any) => [
-          globalItemNumber++, // Numeración continua
-          item.cargo_description || "N/A",
-          item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
-          item.remitente_nombre || "N/A",
-          item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
-          item.destinatario_nombre || "N/A",
-          item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
-          item.source_document || "N/A",
-          item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
-          item.payment_status === "PAID" ? "PAGADO" : item.payment_status === "PENDING" ? "PENDIENTE" : item.payment_status || "N/A",
-        ]);
+        const tableData = (group.items || []).map((item: any) => {
+          // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
+          let contactos = "";
+          const remitentePhone = item.remitente_phone && item.remitente_phone.trim() !== "" ? item.remitente_phone : null;
+          const destinatarioPhone = item.destinatario_phone && item.destinatario_phone.trim() !== "" ? item.destinatario_phone : null;
+          
+          if (remitentePhone) contactos += `R: ${remitentePhone}`;
+          if (destinatarioPhone) {
+            if (contactos) contactos += "\n";
+            contactos += `D: ${destinatarioPhone}`;
+          }
+          if (!contactos) contactos = "N/A";
+
+          return [
+            globalItemNumber++, // Numeración continua
+            item.cargo_description || "N/A",
+            item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
+            item.remitente_nombre || "N/A",
+            item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
+            item.destinatario_nombre || "N/A",
+            item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
+            contactos, // Mostrar teléfonos en formato R: D:
+            item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
+            item.payment_status === "PAID"
+              ? "PAGADO"
+              : item.payment_status === "PENDING"
+              ? "PENDIENTE"
+              : item.payment_status || "N/A",
+          ];
+        });
 
         const columnStyles: any = {
           0: { halign: "center", cellWidth: 8 },
@@ -225,7 +243,7 @@ export const generatePassengerManifestPDF = (
               "DOC. REM.",
               "DESTINATARIO",
               "DOC. DEST.",
-              "DOCUMENTO",
+              "CONTACTO",
               "MONTO",
               "ESTADO",
             ],
@@ -257,18 +275,36 @@ export const generatePassengerManifestPDF = (
         currentY = finalY + 16;
       }
     } else if (manifestData.items && manifestData.items.length > 0) {
-      const tableData = manifestData.items.map((item: any, idx: number) => [
-        (idx + 1).toString(),
-        item.cargo_description || "N/A",
-        item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
-        item.remitente_nombre || "N/A",
-        item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
-        item.destinatario_nombre || "N/A",
-        item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
-        item.source_document || "N/A",
-        item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
-        item.payment_status === "PAID" ? "PAGADO" : item.payment_status === "PENDING" ? "PENDIENTE" : item.payment_status || "N/A",
-      ]);
+      const tableData = manifestData.items.map((item: any, idx: number) => {
+        // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
+        let contactos = "";
+        const remitentePhone = item.remitente_phone && item.remitente_phone.trim() !== "" ? item.remitente_phone : null;
+        const destinatarioPhone = item.destinatario_phone && item.destinatario_phone.trim() !== "" ? item.destinatario_phone : null;
+        
+        if (remitentePhone) contactos += `R: ${remitentePhone}`;
+        if (destinatarioPhone) {
+          if (contactos) contactos += "\n";
+          contactos += `D: ${destinatarioPhone}`;
+        }
+        if (!contactos) contactos = "N/A";
+
+        return [
+          (idx + 1).toString(),
+          item.cargo_description || "N/A",
+          item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
+          item.remitente_nombre || "N/A",
+          item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
+          item.destinatario_nombre || "N/A",
+          item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
+          contactos, // Mostrar teléfonos en formato R: D:
+          item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
+          item.payment_status === "PAID"
+            ? "PAGADO"
+            : item.payment_status === "PENDING"
+            ? "PENDIENTE"
+            : item.payment_status || "N/A",
+        ];
+      });
 
       const columnStyles2: any = {
         0: { halign: "center", cellWidth: 8 },
@@ -294,7 +330,7 @@ export const generatePassengerManifestPDF = (
             "DOC. REM.",
             "DESTINATARIO",
             "DOC. DEST.",
-            "DOCUMENTO",
+            "CONTACTO",
             "MONTO",
             "ESTADO",
           ],

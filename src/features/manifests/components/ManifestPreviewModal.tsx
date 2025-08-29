@@ -256,22 +256,42 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           pdf.text(routeText, pageWidth / 2, currentY, { align: "center" });
           currentY += 8;
 
-          const tableData = (group.items || []).map((item: any) => [
-            globalItemNumber++, // Numeración continua
-            item.cargo_description || "N/A",
-            item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
-            item.remitente_nombre || "N/A",
-            item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
-            item.destinatario_nombre || "N/A",
-            item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
-            item.source_document || "N/A",
-            item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
-            item.payment_status === "PAID"
-              ? "PAGADO"
-              : item.payment_status === "PENDING"
-              ? "PENDIENTE"
-              : item.payment_status || "N/A",
-          ]);
+          const tableData = (group.items || []).map((item: any) => {
+            // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
+            let contactos = "";
+            const remitentePhone =
+              item.remitente_phone && item.remitente_phone.trim() !== ""
+                ? item.remitente_phone
+                : null;
+            const destinatarioPhone =
+              item.destinatario_phone && item.destinatario_phone.trim() !== ""
+                ? item.destinatario_phone
+                : null;
+
+            if (remitentePhone) contactos += `R: ${remitentePhone}`;
+            if (destinatarioPhone) {
+              if (contactos) contactos += "\n";
+              contactos += `D: ${destinatarioPhone}`;
+            }
+            if (!contactos) contactos = "N/A";
+
+            return [
+              globalItemNumber++, // Numeración continua
+              item.cargo_description || "N/A",
+              item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
+              item.remitente_nombre || "N/A",
+              item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
+              item.destinatario_nombre || "N/A",
+              item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
+              contactos, // Mostrar teléfonos en formato R: D:
+              item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
+              item.payment_status === "PAID"
+                ? "PAGADO"
+                : item.payment_status === "PENDING"
+                ? "PENDIENTE"
+                : item.payment_status || "N/A",
+            ];
+          });
 
           // Calcular anchos de columna con las nuevas columnas
           const columnStyles: any = {
@@ -282,7 +302,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             4: { halign: "center", cellWidth: 18 }, // DOC. REM.
             5: { halign: "left", cellWidth: 24 }, // DESTINATARIO
             6: { halign: "center", cellWidth: 18 }, // DOC. DEST.
-            7: { halign: "center", cellWidth: 20 }, // DOCUMENTO
+            7: { halign: "center", cellWidth: 20 }, // CONTACTO
             8: { halign: "center", cellWidth: 15 }, // MONTO
             9: { halign: "center", cellWidth: 18 }, // ESTADO
           };
@@ -298,7 +318,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
                 "DOC. REM.",
                 "DESTINATARIO",
                 "DOC. DEST.",
-                "DOCUMENTO",
+                "CONTACTO",
                 "MONTO",
                 "ESTADO",
               ],
@@ -330,22 +350,42 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           currentY = finalY + 16;
         }
       } else if (manifestData.items && manifestData.items.length > 0) {
-        const tableData = manifestData.items.map((item: any, idx: number) => [
-          (idx + 1).toString(),
-          item.cargo_description || "N/A",
-          item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
-          item.remitente_nombre || "N/A",
-          item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
-          item.destinatario_nombre || "N/A",
-          item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
-          item.source_document || "N/A",
-          item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
-          item.payment_status === "PAID"
-            ? "PAGADO"
-            : item.payment_status === "PENDING"
-            ? "PENDIENTE"
-            : item.payment_status || "N/A",
-        ]);
+        const tableData = manifestData.items.map((item: any, idx: number) => {
+          // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
+          let contactos = "";
+          const remitentePhone =
+            item.remitente_phone && item.remitente_phone.trim() !== ""
+              ? item.remitente_phone
+              : null;
+          const destinatarioPhone =
+            item.destinatario_phone && item.destinatario_phone.trim() !== ""
+              ? item.destinatario_phone
+              : null;
+
+          if (remitentePhone) contactos += `R: ${remitentePhone}`;
+          if (destinatarioPhone) {
+            if (contactos) contactos += "\n";
+            contactos += `D: ${destinatarioPhone}`;
+          }
+          if (!contactos) contactos = "N/A";
+
+          return [
+            (idx + 1).toString(),
+            item.cargo_description || "N/A",
+            item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
+            item.remitente_nombre || "N/A",
+            item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
+            item.destinatario_nombre || "N/A",
+            item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
+            contactos, // Mostrar teléfonos en formato R: D:
+            item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
+            item.payment_status === "PAID"
+              ? "PAGADO"
+              : item.payment_status === "PENDING"
+              ? "PENDIENTE"
+              : item.payment_status || "N/A",
+          ];
+        });
 
         // Calcular anchos de columna con las nuevas columnas
         const columnStyles2: any = {
@@ -356,7 +396,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           4: { halign: "center", cellWidth: 18 }, // DOC. REM.
           5: { halign: "left", cellWidth: 24 }, // DESTINATARIO
           6: { halign: "center", cellWidth: 18 }, // DOC. DEST.
-          7: { halign: "center", cellWidth: 20 }, // DOCUMENTO
+          7: { halign: "center", cellWidth: 20 }, // CONTACTO
           8: { halign: "center", cellWidth: 15 }, // MONTO
           9: { halign: "center", cellWidth: 18 }, // ESTADO
         };
@@ -372,7 +412,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
               "DOC. REM.",
               "DESTINATARIO",
               "DOC. DEST.",
-              "DOCUMENTO",
+              "CONTACTO",
               "MONTO",
               "ESTADO",
             ],

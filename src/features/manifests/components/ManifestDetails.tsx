@@ -13,6 +13,7 @@ import {
 import { Button } from '../../../components/common/Button';
 import { Manifest } from '../types/manifest.types';
 import { manifestService } from '../services/manifest.service';
+import { generatePassengerManifestPDF } from './ManifestPDFGenerator';
 import { toast } from 'react-toastify';
 
 interface ManifestDetailsProps {
@@ -157,29 +158,32 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
             Pasajeros ({manifest.total_passengers})
           </h3>
           
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto flex justify-center">
+            <table className="min-w-max table-auto mx-auto divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     N°
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Pasajero
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Documento
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nacionalidad
+                  </th>
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Asiento
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Origen - Destino
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Teléfono
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-8 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tipo Asiento
                   </th>
                 </tr>
@@ -187,10 +191,10 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
               <tbody className="bg-white divide-y divide-gray-200">
                 {manifest.items.map((item, index) => (
                   <tr key={item.seat_assignment_id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-8 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <UserIcon className="w-5 h-5 text-gray-400 mr-2" />
                         <span className="text-sm font-medium text-gray-900">
@@ -198,15 +202,27 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS'}: {item.passenger_doc_number}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {
+                        // Priorizar nombre de nacionalidad; si código 'PE' mostrar 'PERÚ'; si no mostrar código o 'N/A'
+                        item.passenger_country_name
+                          ? item.passenger_country_name
+                          : item.passenger_country_code
+                          ? item.passenger_country_code === 'PE'
+                            ? 'PERÚ'
+                            : item.passenger_country_code
+                          : 'N/A'
+                      }
+                    </td>
+                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
                         {item.seat_number || 'N/A'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full mr-1">
                         {item.boarding_port_name}
                       </span>
@@ -215,10 +231,10 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
                         {item.disembarking_port_name}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.passenger_phone || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900">
                       {item.seat_type_name}
                     </td>
                   </tr>
@@ -339,14 +355,43 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
         </Button>
         
         {manifest.status === 'GENERATED' && (
-          <Button
-            variant="primary"
-            onClick={handleDownloadPDF}
-            className="flex items-center space-x-2"
-          >
-            <DocumentArrowDownIcon className="w-4 h-4" />
-            <span>Descargar PDF</span>
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                // Descargar PDF generado localmente por el frontend (usa la nueva plantilla)
+                try {
+                  const { pdf } = generatePassengerManifestPDF(manifest);
+                  const blob = new Blob([pdf.output('blob')], { type: 'application/pdf' });
+                  const url = window.URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.download = `manifiesto-${manifest.manifest_number}-local.pdf`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  window.URL.revokeObjectURL(url);
+                  toast.success('PDF (local) descargado correctamente');
+                } catch (e) {
+                  console.error('Error descargando PDF local:', e);
+                  toast.error('Error al descargar PDF (local)');
+                }
+              }}
+              className="flex items-center space-x-2"
+            >
+              <DocumentArrowDownIcon className="w-4 h-4" />
+              <span>Descargar PDF (local)</span>
+            </Button>
+
+            <Button
+              variant="primary"
+              onClick={handleDownloadPDF}
+              className="flex items-center space-x-2"
+            >
+              <DocumentArrowDownIcon className="w-4 h-4" />
+              <span>Descargar PDF (backend)</span>
+            </Button>
+          </>
         )}
       </div>
     </div>

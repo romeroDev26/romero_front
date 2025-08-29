@@ -21,14 +21,14 @@ interface Manifest {
   generated_by: string;
   printed_at?: string | null;
   printed_by?: string | null;
-  status: 'DRAFT' | 'GENERATED' | 'PRINTED' | 'CANCELLED';
+  status: "DRAFT" | "GENERATED" | "PRINTED" | "CANCELLED";
   total_passengers: number;
   total_cargo_weight_kg: number;
   observations?: string | null;
   pdf_file_path?: string | null;
   created_at: string;
   updated_at: string;
-  manifest_type: 'PASSENGER' | 'CARGO';
+  manifest_type: "PASSENGER" | "CARGO";
   departure_datetime?: string;
   trip_status?: string;
   route_name?: string;
@@ -44,7 +44,7 @@ interface Manifest {
 ```typescript
 interface ManifestItem {
   item_order: number;
-  item_type: 'PASSENGER' | 'CARGO';
+  item_type: "PASSENGER" | "CARGO";
   seat_assignment_id: number;
   passenger_name: string;
   passenger_doc_type: string;
@@ -78,13 +78,15 @@ interface Company {
 Genera PDFs con el nuevo formato solicitado.
 
 **Uso:**
-```tsx
-import { ManifestPDFGenerator } from '../components/ManifestPDFGenerator';
 
-<ManifestPDFGenerator manifestData={manifestData} />
+```tsx
+import { ManifestPDFGenerator } from "../components/ManifestPDFGenerator";
+
+<ManifestPDFGenerator manifestData={manifestData} />;
 ```
 
 **Características:**
+
 - Header con información de la empresa
 - Logo de la empresa (si está disponible en `company.logo_url`)
 - Tabla con campos específicos requeridos
@@ -95,17 +97,19 @@ import { ManifestPDFGenerator } from '../components/ManifestPDFGenerator';
 Modal de previsualización con vista previa HTML y generación de PDF.
 
 **Uso:**
+
 ```tsx
-import { ManifestPreviewModal } from '../components/ManifestPreviewModal';
+import { ManifestPreviewModal } from "../components/ManifestPreviewModal";
 
 <ManifestPreviewModal
   isOpen={isOpen}
   onClose={() => setIsOpen(false)}
   manifestData={manifestData}
-/>
+/>;
 ```
 
 **Características:**
+
 - Vista previa HTML que coincide con el PDF
 - Botones para imprimir, descargar y guardar PDF
 - Subida automática del PDF al backend
@@ -116,16 +120,15 @@ import { ManifestPreviewModal } from '../components/ManifestPreviewModal';
 Componente para mostrar detalles completos del manifiesto.
 
 **Uso:**
-```tsx
-import ManifestDetails from '../components/ManifestDetails';
 
-<ManifestDetails
-  manifest={manifest}
-  onClose={() => setShowDetails(false)}
-/>
+```tsx
+import ManifestDetails from "../components/ManifestDetails";
+
+<ManifestDetails manifest={manifest} onClose={() => setShowDetails(false)} />;
 ```
 
 **Características:**
+
 - Vista detallada de la información del manifiesto
 - Tabla adaptativa según el tipo (PASSENGER/CARGO)
 - Información del viaje y empresa
@@ -197,16 +200,18 @@ La tabla del PDF incluye los siguientes campos en este orden:
 
 1. **N°**: Número secuencial
 2. **APELLIDOS Y NOMBRES**: `passenger_name`
-3. **N° IDENTIDAD**: Tipo de documento + número (`passenger_doc_type` + `passenger_doc_number`)
-4. **VENDEDOR**: Primer nombre del generador (`generated_by_name`)
-5. **ASIENTO**: Número de asiento (`seat_number`)
-6. **ORIGEN**: Puerto de embarque (`boarding_port_name`)
-7. **DESTINO**: Puerto de desembarque (`disembarking_port_name`)
-8. **TELÉFONO**: Por implementar (actualmente "N/A")
+3. **DOC DE IDENT**: Tipo de documento + número (`passenger_doc_type` + `passenger_doc_number`)
+4. **NACIONALIDAD**: Nombre o código de país (`passenger_country_name` o `passenger_country_code`)
+5. **VENDEDOR**: Primer nombre del generador (`generated_by_name`)
+6. **ASIENTO**: Número de asiento (`seat_number`)
+7. **ORIGEN**: Puerto de embarque (`boarding_port_name`)
+8. **DESTINO**: Puerto de desembarque (`disembarking_port_name`)
+9. **TELÉFONO**: Por implementar (actualmente "N/A")
 
 ### Formato del Header
 
 El header incluye:
+
 - Logo de la empresa (si está disponible)
 - Nombre de la empresa
 - RUC
@@ -227,6 +232,7 @@ El header incluye:
 ## Migración desde Versión Anterior
 
 Si tienes componentes usando la estructura anterior con `passengers` y `cargo_items`, actualiza para usar:
+
 - `manifest.items` en lugar de `manifest.passengers` o `manifest.cargo_items`
 - `manifest.vessel_name` en lugar de `manifest.trip.vessel.name`
 - `manifest.route_name` en lugar de `manifest.trip.route.name`
@@ -235,9 +241,9 @@ Si tienes componentes usando la estructura anterior con `passengers` y `cargo_it
 ## Ejemplo de Uso Completo
 
 ```tsx
-import React, { useState } from 'react';
-import { ManifestPreviewModal } from '../components/ManifestPreviewModal';
-import { Manifest } from '../types/manifest.types';
+import React, { useState } from "react";
+import { ManifestPreviewModal } from "../components/ManifestPreviewModal";
+import { Manifest } from "../types/manifest.types";
 
 export const MyComponent: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
@@ -251,7 +257,7 @@ export const MyComponent: React.FC = () => {
   return (
     <div>
       {/* Tu contenido aquí */}
-      
+
       {showPreview && manifestData && (
         <ManifestPreviewModal
           isOpen={showPreview}

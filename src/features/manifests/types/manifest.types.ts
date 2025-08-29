@@ -19,6 +19,8 @@ export interface ManifestItem {
   passenger_doc_type?: string;
   passenger_doc_number?: string;
   passenger_phone?: string;
+  passenger_country_code?: string;
+  passenger_country_name?: string | null;
   boarding_port_name?: string;
   disembarking_port_name?: string;
   seat_type_name?: string;
@@ -61,6 +63,9 @@ export interface Manifest {
   trip_status?: string;
   route_name?: string;
   vessel_name?: string;
+  vessel_registration_number?: string;
+  origin_port_name?: string;
+  destination_port_name?: string;
   generated_by_name?: string;
   company?: Company;
   items: ManifestItem[];

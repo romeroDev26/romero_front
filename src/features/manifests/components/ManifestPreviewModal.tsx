@@ -67,11 +67,18 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
     const margin = 15;
     let currentY = 20;
 
-    // Header
+    // NUEVO HEADER SEGÚN DISEÑO DEL CLIENTE
     if (manifestData.company) {
       const company = manifestData.company;
-      if (company.logo_url) {
-        try {
+      
+      // Lado izquierdo: Logo y datos de empresa
+      const logoX = margin;
+      const logoY = currentY;
+      const logoW = 45;
+      const logoH = 20;
+      
+      try {
+        if (company.logo_url) {
           const img = new Image();
           img.crossOrigin = 'anonymous';
           await new Promise((res, rej) => {
@@ -79,57 +86,105 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             img.onerror = rej;
             img.src = company.logo_url as string;
           });
-          const logoW = 30;
-          const logoH = 15;
-          pdf.addImage(img, 'PNG', margin, currentY - 5, logoW, logoH);
-          const contentStartX = margin + logoW + 10;
-          const availableWidth = pageWidth - contentStartX - margin;
-          pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(12);
-          pdf.text(company.name, contentStartX, currentY);
-          pdf.setFont('helvetica', 'normal');
+          pdf.addImage(img, 'PNG', logoX, logoY, logoW, logoH);
+        } else {
+          // Placeholder para logo
+          pdf.setDrawColor(200, 200, 200);
+          pdf.rect(logoX, logoY, logoW, logoH);
           pdf.setFontSize(8);
-          const info = `RUC: ${company.ruc} | ${company.address} | Tel: ${company.phone}`;
-          pdf.text(pdf.splitTextToSize(info, availableWidth), contentStartX, currentY + 6);
-          currentY += Math.max(logoH, 12);
-        } catch (e) {
-          pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(12);
-          pdf.text(manifestData.company.name, pageWidth / 2, currentY, { align: 'center' });
-          currentY += 8;
+          pdf.text('LOGO', logoX + logoW/2, logoY + logoH/2, { align: 'center' });
         }
-      } else {
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text(manifestData.company.name, pageWidth / 2, currentY, { align: 'center' });
-        currentY += 8;
+      } catch (e) {
+        // Placeholder para logo si falla la carga
+        pdf.setDrawColor(200, 200, 200);
+        pdf.rect(logoX, logoY, logoW, logoH);
+        pdf.setFontSize(8);
+        pdf.text('LOGO', logoX + logoW/2, logoY + logoH/2, { align: 'center' });
       }
+      
+      // Info empresa (al lado del logo)
+      const infoX = logoX + logoW + 5;
+      const maxInfoWidth = pageWidth - infoX - 75; // Dejar más espacio para el recuadro
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(10);
+      pdf.text(company.name, infoX, logoY + 4);
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      // Dividir la dirección en líneas si es muy larga
+      const addressLines = pdf.splitTextToSize(company.address, maxInfoWidth);
+      let addressY = logoY + 8;
+      for (let i = 0; i < Math.min(addressLines.length, 2); i++) {
+        pdf.text(addressLines[i], infoX, addressY);
+        addressY += 4;
+      }
+      
+      pdf.text(`Tel: ${company.phone}`, infoX, addressY);
+      pdf.text(company.email, infoX, addressY + 4);
+      
+      // Lado derecho: Recuadro con RUC, TIPO DE DOC, CORRELATIVO
+      const boxW = 50;
+      const boxH = 25;
+      const boxX = pageWidth - margin - boxW;
+      const boxY = logoY;
+      
+      pdf.setDrawColor(0, 0, 0);
+      pdf.setLineWidth(0.5);
+      pdf.rect(boxX, boxY, boxW, boxH);
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.text(company.ruc, boxX + boxW/2, boxY + 5, { align: 'center' });
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      const docType = manifestData.manifest_type === 'CARGO' ? 'MANIFIESTO DE CARGA' : 'MANIFIESTO DE PASAJEROS';
+      pdf.text(docType, boxX + boxW/2, boxY + 13, { align: 'center' });
+      
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      pdf.text(manifestData.manifest_number, boxX + boxW/2, boxY + 21, { align: 'center' });
+      
+      currentY += Math.max(logoH, boxH) + 8;
     }
 
-    // Title
+    // Información de viaje en la parte inferior del header
+    const depInfo = manifestData.departure_datetime ? new Date(manifestData.departure_datetime) : null;
+    const fechaSalida = depInfo ? depInfo.toLocaleDateString('es-PE') : 'N/A';
+    const horaSalida = depInfo ? depInfo.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : 'N/A';
+    
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(12);
-    const manifestTitle = manifestData.manifest_type === 'CARGO' ? 'MANIFIESTO DE CARGA' : 'MANIFIESTO DE PASAJEROS';
-    pdf.text(manifestTitle, margin, currentY);
-    pdf.setFontSize(10);
-    pdf.text(`N° ${manifestData.manifest_number}`, pageWidth - margin - 30, currentY, { align: 'right' });
-    currentY += 8;
-
-    // Trip info
     pdf.setFontSize(9);
-    let tripInfo = `Fecha: ${new Date(manifestData.generation_date).toLocaleDateString('es-PE')}`;
-    if (manifestData.vessel_name) tripInfo += ` | Embarcación: ${manifestData.vessel_name}`;
-    if (manifestData.departure_datetime) {
-      const d = new Date(manifestData.departure_datetime);
-      tripInfo += ` | Salida: ${d.toLocaleDateString('es-PE')} ${d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}`;
-    }
-    tripInfo += ` | Estado: ${manifestData.status}`;
-    pdf.text(tripInfo, margin, currentY);
-    currentY += 8;
-    pdf.setDrawColor(0, 0, 0);
-    pdf.setLineWidth(0.5);
-    pdf.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 8;
+    pdf.text('FECHA SALIDA:', margin, currentY);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(fechaSalida, margin + 30, currentY);
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('HORA DE SALIDA:', pageWidth/2 + 10, currentY);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(horaSalida, pageWidth/2 + 40, currentY);
+    
+    currentY += 6;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('ORIGEN:', margin, currentY);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(manifestData.origin_port_name || 'N/A', margin + 20, currentY);
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('DESTINO:', pageWidth/2 + 10, currentY);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(manifestData.destination_port_name || 'N/A', pageWidth/2 + 30, currentY);
+    
+    currentY += 6;
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('PLACA:', margin, currentY);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(manifestData.vessel_registration_number || 'N/A', margin + 15, currentY);
+    
+    currentY += 10;
 
     // Totals
     pdf.setFont('helvetica', 'bold');
@@ -269,10 +324,17 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           const rawSeller = item.seller_name ?? item?.seller?.name ?? manifestData.generated_by_name ?? manifestData.generated_by;
           const sellerDisplay = rawSeller ? String(rawSeller).trim().split(' ')[0] : 'VENDEDOR';
           const identityLabel = item.passenger_doc_type === '1' ? 'DNI' : item.passenger_doc_type === '2' ? 'CE' : 'PAS';
+          // Nueva columna: Nacionalidad (priorizar nombre; si código 'PE' => 'PERÚ'; si no código o nombre => 'N/A')
+          let nationality = 'N/A';
+          if (item.passenger_country_name) nationality = item.passenger_country_name;
+          else if (item.passenger_country_code) {
+            nationality = item.passenger_country_code === 'PE' ? 'PERÚ' : item.passenger_country_code;
+          }
           return [
             (idx + 1).toString(),
             item.passenger_name || 'N/A',
             `${identityLabel}: ${item.passenger_doc_number || 'N/A'}`,
+            nationality,
             sellerDisplay,
             item.seat_number || 'N/A',
             item.boarding_port_name || 'N/A',
@@ -281,25 +343,61 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           ];
         });
 
-        // Configurar anchos de columna para centrar la tabla como en carga
+        // Configurar anchos de columna optimizados para mejor visualización
+        const initialColWidths = [12, 48, 26, 24, 18, 22, 20, 20, 18];
+        const availableWidth = pageWidth - margin * 2;
+        let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
+        let adjustedColWidths = [...initialColWidths];
+
+        if (totalTableWidth > availableWidth) {
+          // Escalar hacia abajo proporcionalmente cuando excede el área imprimible
+          const scale = availableWidth / totalTableWidth;
+          adjustedColWidths = initialColWidths.map(w => Math.floor(w * scale));
+          // corregir posible exceso por redondeo
+          let sumAdj = adjustedColWidths.reduce((s, w) => s + w, 0);
+          let i = adjustedColWidths.length - 1;
+          while (sumAdj > availableWidth && i >= 0) {
+            const reduceBy = Math.min(sumAdj - availableWidth, 1);
+            adjustedColWidths[i] = Math.max(6, adjustedColWidths[i] - reduceBy);
+            sumAdj = adjustedColWidths.reduce((s, w) => s + w, 0);
+            i -= 1;
+          }
+          totalTableWidth = adjustedColWidths.reduce((s, w) => s + w, 0);
+        } else {
+          // Si hay espacio, ampliar ligeramente la tabla (hasta 20%) para mejor legibilidad
+          const expansionFactor = 1.20; // hasta +20%
+          const desiredWidth = Math.round(totalTableWidth * expansionFactor);
+          let extra = Math.max(0, desiredWidth - totalTableWidth);
+          adjustedColWidths = [...initialColWidths];
+          const expandOrder = [1, 5, 3, 2, 4, 6, 7, 8, 0];
+          let idx = 0;
+          while (extra > 0) {
+            const column = expandOrder[idx % expandOrder.length];
+            adjustedColWidths[column] = adjustedColWidths[column] + 1;
+            extra -= 1;
+            idx += 1;
+          }
+          totalTableWidth = adjustedColWidths.reduce((s, w) => s + w, 0);
+        }
+
+        // Centrar la tabla incluso si esto coloca parte fuera del margen del PDF
+        const leftMargin = (pageWidth - totalTableWidth) / 2;
+
         const passengerColumnStyles: any = {
-          0: { halign: 'center', cellWidth: 10 }, // N°
-          1: { halign: 'left', cellWidth: 50 },   // APELLIDOS Y NOMBRES
-          2: { halign: 'center', cellWidth: 25 }, // N° IDENTIDAD
-          3: { halign: 'center', cellWidth: 20 }, // VENDEDOR
-          4: { halign: 'center', cellWidth: 15 }, // ASIENTO
-          5: { halign: 'center', cellWidth: 20 }, // ORIGEN
-          6: { halign: 'center', cellWidth: 20 }, // DESTINO
-          7: { halign: 'center', cellWidth: 20 }, // TELÉFONO
+          0: { halign: 'center', cellWidth: adjustedColWidths[0] },
+          1: { halign: 'left', cellWidth: adjustedColWidths[1] },
+          2: { halign: 'center', cellWidth: adjustedColWidths[2], overflow: 'ellipsize' },
+          3: { halign: 'center', cellWidth: adjustedColWidths[3] },
+          4: { halign: 'center', cellWidth: adjustedColWidths[4] },
+          5: { halign: 'center', cellWidth: adjustedColWidths[5] }, // ASIENTO sin overflow
+          6: { halign: 'center', cellWidth: adjustedColWidths[6] },
+          7: { halign: 'center', cellWidth: adjustedColWidths[7] },
+          8: { halign: 'center', cellWidth: adjustedColWidths[8] },
         };
 
-        // Calcular el ancho total de la tabla
-        const totalTableWidth = Object.values(passengerColumnStyles).reduce((sum: number, col: any) => sum + col.cellWidth, 0);
-        const leftMargin = Math.max(margin, (pageWidth - totalTableWidth) / 2);
-
-        autoTable(pdf, {
+          autoTable(pdf, {
           startY: currentY,
-          head: [['N°', 'APELLIDOS Y NOMBRES', 'N° IDENTIDAD', 'VENDEDOR', 'ASIENTO', 'ORIGEN', 'DESTINO', 'TELÉFONO']],
+          head: [['N°', 'APELLIDOS Y NOMBRES', 'DOC DE IDENT', 'NACIONALIDAD', 'VENDEDOR', 'ASIENTO', 'ORIGEN', 'DESTINO', 'TELÉFONO']],
           body: tableData,
           styles: {
             fontSize: 6,
@@ -312,6 +410,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             textColor: [255, 255, 255],
             fontStyle: 'bold',
             fontSize: 6,
+            halign: 'center',
+            valign: 'middle'
           },
           columnStyles: passengerColumnStyles,
           margin: { left: leftMargin, right: leftMargin },

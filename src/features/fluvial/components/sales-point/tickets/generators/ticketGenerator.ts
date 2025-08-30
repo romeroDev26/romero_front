@@ -205,7 +205,7 @@ export class TicketGenerator {
     // Validaciones de items
     if (backendData.items && backendData.items.length > 0) {
       backendData.items.forEach((item, index) => {
-        if (!item.product_name) {
+        if (!item.product_name && !item.item_description) {
           errors.push(`Descripción requerida en item ${index + 1}`);
         }
         

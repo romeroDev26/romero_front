@@ -143,13 +143,10 @@ export class CompanySaleTransformer {
   private static transformFinancialBreakdown(data: BackendInvoiceData) {
     // Procesar TODOS los items, no solo el primero
     const processedItems = data.items.map(item => {
-      // Usar el nombre del producto en lugar de item_description
-      let description = item.product_name || 'Servicio';
+      // Usar item_description completo que incluye toda la información
+      let description = item.item_description || item.product_name || 'Servicio';
       
-      // Si es un servicio de transporte con asiento, agregar el número de asiento
-      if (item.seat_number) {
-        description += ` - Asiento: ${item.seat_number}`;
-      }
+      // No agregar información adicional del asiento ya que item_description ya lo incluye
       
       return {
         description,

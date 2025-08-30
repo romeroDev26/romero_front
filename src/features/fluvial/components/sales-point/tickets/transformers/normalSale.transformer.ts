@@ -124,7 +124,7 @@ export class NormalSaleTransformer {
   private static transformFinancialBreakdown(data: BackendInvoiceData) {
     // Procesar items
     const items = data.items.map(item => ({
-      description: item.product_name,
+      description: item.item_description || item.product_name,
       quantity: parseFloat(item.quantity),
       unit_price: parseFloat(item.unit_price),
       discount: parseFloat(item.discount),

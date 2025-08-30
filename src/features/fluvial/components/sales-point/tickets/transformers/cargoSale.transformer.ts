@@ -83,7 +83,6 @@ export class CargoSaleTransformer {
     
     if (firstItem) {
       details.push(
-        { label: 'Ruta', value: firstItem.route_name || 'No especificada' },
         { label: 'Embarcación', value: firstItem.vehicle_name || 'No especificada' },
         { label: 'Origen', value: firstItem.boarding_port_name || 'No especificado' },
         { label: 'Destino', value: firstItem.disembarking_port_name || 'No especificado' }
@@ -102,13 +101,7 @@ export class CargoSaleTransformer {
       }
     }
 
-    // Agregar horarios si están disponibles
-    if (data.boarding_time) {
-      details.push({ label: 'Hora Embarque', value: data.boarding_time });
-    }
-    if (data.trip_departure_time) {
-      details.push({ label: 'Hora Salida', value: data.trip_departure_time });
-    }
+  // No agregar ruta ni horarios específicos para tickets de encomienda aquí
 
     return {
       title: 'DETALLES DEL ENVÍO',

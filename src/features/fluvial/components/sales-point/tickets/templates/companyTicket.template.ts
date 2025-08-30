@@ -656,7 +656,7 @@ export class CompanyTicketTemplate {
     doc.setFontSize(fontSize);
     if (!text || text.toString().trim() === '') return [''];
 
-    // Primero intentamos separar por espacios
+    // Primero intentamos separar por espacios, pero si una palabra es ms larga que el ancho, la partimos
     const words = text.toString().split(' ');
     const lines: string[] = [];
     let currentLine = '';
@@ -667,15 +667,10 @@ export class CompanyTicketTemplate {
     };
 
     words.forEach(word => {
-      // Si la palabra individual es más larga que el ancho, partiremos la palabra
+      // Si la palabra individual es ms larga que el ancho, partiremos la palabra
       doc.setFontSize(fontSize);
       if (doc.getTextWidth(word) > maxWidth) {
-        // Si hay contenido en currentLine lo empujamos
-        if (currentLine) {
-          pushLine(currentLine);
-          currentLine = '';
-        }
-        // Partir la palabra por caracteres agrupados que quepan
+        if (currentLine) { pushLine(currentLine); currentLine = ''; }
         let sub = '';
         for (let ch of word) {
           const test = sub + ch;

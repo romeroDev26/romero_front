@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { PassengerData, Representative } from "../core/types";
 import { SunatInvoiceType, SunatTaxCategory } from "../../../types/sunat.types";
+import { productsServicesService } from '../../../../../services/products-services.service';
 
 export interface InvoiceItemData {
   product_id: number;
@@ -30,7 +31,7 @@ export interface InvoiceCreationData {
 }
 
 export const invoiceCreationService = {
-  createInvoiceItems: (
+  createInvoiceItems: async (
     passengerData: PassengerData,
     representatives: Representative[],
     basePrice: number,
@@ -47,7 +48,7 @@ export const invoiceCreationService = {
     destinationPortName: string,
     selectedSeat: any,
     itemDescription?: string // ← NUEVO: Descripción opcional
-  ): InvoiceItemData[] => {
+  ): Promise<InvoiceItemData[]> => {
     const items: InvoiceItemData[] = [];
     
     // Calcular cantidad según tipo de documento
@@ -79,10 +80,22 @@ export const invoiceCreationService = {
       disembarking_trip_stop_id: selectedDisembarkingStopId,
     });
 
-    // Item adicional: Costo adicional (si existe)
-    if (extraCost > 0 && extraCostDescription.trim()) {
+  // Item adicional: Costo adicional (si existe)
+  if (extraCost > 0 && extraCostDescription.trim()) {
       const extraCostWithIgv = isIgvGravado ? extraCost * 1.18 : extraCost;
-      
+      // Intentar obtener el nombre del producto/servicio con id 7 y componer la descripción
+      let extraProductName = '';
+      try {
+        const prod = await productsServicesService.getById(7);
+        extraProductName = prod?.name || '';
+      } catch (e) {
+        extraProductName = '';
+      }
+
+      const composedExtraDescription = extraProductName
+        ? `${extraProductName} - ${extraCostDescription.trim()}`
+        : extraCostDescription.trim();
+
       items.push({
         product_id: 7, // ID específico para exceso de equipaje/costos adicionales
         quantity: 1,
@@ -91,7 +104,7 @@ export const invoiceCreationService = {
         tax_category_code: isIgvGravado
           ? SunatTaxCategory.GRAVADO
           : SunatTaxCategory.EXONERADO,
-        item_description: extraCostDescription.trim(),
+        item_description: composedExtraDescription,
         unit_code: "ZZ", // ZZ = Servicio (CORREGIDO de NIU)
         trip_id: tripId,
         boarding_trip_stop_id: selectedBoardingStopId,

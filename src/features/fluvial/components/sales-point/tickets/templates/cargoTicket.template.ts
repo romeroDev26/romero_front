@@ -69,7 +69,8 @@ export class CargoTicketTemplate {
    * Basado en la estructura del NormalTicketTemplate que funciona correctamente
    */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-    let currentY = startY + 20; // Bajar el logo mucho más (5mm de espacio inicial)
+  // Aumentar el offset superior para bajar el logo y compensar el espacio eliminado
+  let currentY = startY + 28; // antes 20, ahora +28mm
     
     // LOGO REAL - igual que en NormalTicketTemplate
     if (header.company_logo_url) {
@@ -277,10 +278,20 @@ export class CargoTicketTemplate {
     doc.setFontSize(7);
 
     // Mostrar detalles del viaje basados en la estructura de la interfaz
-    // Filtrar solo los detalles que no sean del destinatario (ya mostrados arriba)
-    const shipmentDetails = tripDetails.details.filter(detail => 
-      !['Destinatario', 'Doc. Destinatario', 'Tel. Destinatario'].includes(detail.label)
-    );
+    // Excluir destinatario y variantes de hora de embarque, ruta y hora de salida
+    const shipmentDetails = tripDetails.details.filter(detail => {
+      const label = detail.label ? String(detail.label).trim().toLowerCase() : '';
+      if (!label) return true;
+
+      // Etiquetas exactas que debemos ignorar (destinatario ya manejado en otro bloque)
+      const exactIgnored = ['destinatario', 'doc. destinatario', 'tel. destinatario'];
+      if (exactIgnored.includes(label)) return false;
+
+      // Ignorar cualquier etiqueta que contenga estas palabras clave (cubre variantes como 'Hora Embarque', 'Hora de embarque', 'HORA DE SALIDA', etc.)
+      if (label.includes('embar') || label.includes('salid') || label.includes('ruta')) return false;
+
+      return true;
+    });
     
     shipmentDetails.forEach(detail => {
       doc.text(`${detail.label}: ${detail.value}`, this.MARGIN, currentY);
@@ -470,26 +481,30 @@ export class CargoTicketTemplate {
    */
   private static splitText(doc: jsPDF, text: string, maxWidth: number, fontSize: number): string[] {
     doc.setFontSize(fontSize);
-    const words = text.split(' ');
+    if (!text || text.toString().trim() === '') return [''];
+
+    const words = text.toString().split(' ');
     const lines: string[] = [];
     let currentLine = '';
-    
+
+    const pushLine = (line: string) => { if (line === '') return; lines.push(line); };
+
     words.forEach(word => {
-      const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      const testWidth = doc.getTextWidth(testLine);
-      
-      if (testWidth > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
+      if (doc.getTextWidth(word) > maxWidth) {
+        if (currentLine) { pushLine(currentLine); currentLine = ''; }
+        let sub = '';
+        for (let ch of word) {
+          const test = sub + ch;
+          if (doc.getTextWidth(test) > maxWidth) { pushLine(sub); sub = ch; } else { sub = test; }
+        }
+        if (sub) pushLine(sub);
       } else {
-        currentLine = testLine;
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (doc.getTextWidth(testLine) > maxWidth && currentLine) { pushLine(currentLine); currentLine = word; } else { currentLine = testLine; }
       }
     });
-    
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-    
+
+    if (currentLine) pushLine(currentLine);
     return lines;
   }
 }

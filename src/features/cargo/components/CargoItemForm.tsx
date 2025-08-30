@@ -40,10 +40,11 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
 
   const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
-      product: existingItem?.product || undefined,
-      quantity: existingItem?.quantity || 1,
-      description: existingItem?.description || '',
-      price: existingItem?.price || 0,
+  product: existingItem?.product || undefined,
+  quantity: existingItem?.quantity || 1,
+  description: existingItem?.description || '',
+  // Dejar el precio indefinido cuando no hay un ítem existente para forzar la entrada del usuario
+  price: existingItem?.price ?? undefined,
       recipient: existingItem?.recipient || defaultRecipient || {
         isSameAsSender: true,
         name: '',
@@ -76,8 +77,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
 
   useEffect(() => {
     if (selectedProduct) {
-      // CORRECCIÓN: Aseguramos que el precio sea un número antes de asignarlo
-      setValue('price', Number(selectedProduct.sale_price));
+      // No rellenar automáticamente el precio al seleccionar un servicio.
+      // Sólo rellenamos la descripción cuando se crea un nuevo ítem.
       if (!existingItem) {
         setValue('description', selectedProduct.name);
       }
@@ -150,14 +151,11 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
 
   // CORRECCIÓN: Convertimos `sale_price` a número antes de usar `.toFixed()`
   const productOptions = useMemo(() => {
-    return cargoServices.map(service => {
-      // Convertimos a número aquí para asegurar que la operación sea segura.
-      const priceAsNumber = Number(service.sale_price); 
-      return {
-        value: service,
-        label: `${service.name} (S/ ${priceAsNumber.toFixed(2)})`
-      };
-    });
+    // Mostrar solo el nombre del servicio en la lista (sin precio)
+    return cargoServices.map(service => ({
+      value: service,
+      label: service.name,
+    }));
   }, [cargoServices]);
 
   const isRecipientSearchable = recipientDocType === SunatDocType.DNI || recipientDocType === SunatDocType.RUC;
@@ -218,8 +216,9 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
               step="0.01"
               {...register('price', { 
                 valueAsNumber: true, 
-                min: { value: 0, message: 'El precio no puede ser negativo' },
-                required: 'El precio es obligatorio'
+                // Precio obligatorio y mayor que 0
+                required: 'El precio es obligatorio',
+                min: { value: 0.01, message: 'El precio debe ser mayor que 0' },
               })}
               error={errors.price?.message}
             />

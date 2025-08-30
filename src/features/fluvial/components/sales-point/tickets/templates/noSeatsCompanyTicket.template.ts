@@ -621,31 +621,31 @@ export class NoSeatsCompanyTicketTemplate {
    * Divide texto en múltiples líneas para que quepa en el ancho especificado
    */
   private static splitText(doc: jsPDF, text: string, maxWidth: number, fontSize: number): string[] {
-    if (!text || text.trim() === '') {
-      return [''];
-    }
-    
+    if (!text || text.trim() === '') return [''];
     doc.setFontSize(fontSize);
+
     const words = text.split(' ');
     const lines: string[] = [];
     let currentLine = '';
-    
+
+    const pushLine = (line: string) => { if (line === '') return; lines.push(line); };
+
     words.forEach(word => {
-      const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      const testWidth = doc.getTextWidth(testLine);
-      
-      if (testWidth > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
+      if (doc.getTextWidth(word) > maxWidth) {
+        if (currentLine) { pushLine(currentLine); currentLine = ''; }
+        let sub = '';
+        for (let ch of word) {
+          const test = sub + ch;
+          if (doc.getTextWidth(test) > maxWidth) { pushLine(sub); sub = ch; } else { sub = test; }
+        }
+        if (sub) pushLine(sub);
       } else {
-        currentLine = testLine;
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (doc.getTextWidth(testLine) > maxWidth && currentLine) { pushLine(currentLine); currentLine = word; } else { currentLine = testLine; }
       }
     });
-    
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-    
+
+    if (currentLine) pushLine(currentLine);
     return lines;
   }
 }

@@ -65,12 +65,24 @@ export class NoSeatsTicketTemplate {
       doc.text(String(item.quantity), this.MARGIN, currentY);
       let desc = item.description;
       if (item.discount && item.discount > 0) desc += ` (descuento: ${item.discount.toFixed(2)})`;
-      const descLines = this.splitText(doc, desc, 32, 8);
+
+      // Calcular ancho disponible para la columna DESCRIPCIÓN (entre descX y la columna de P/U)
+  const descX = this.MARGIN + 12;
+  const priceX = this.TICKET_WIDTH - this.MARGIN - 22;
+  // Añadir un padding extra para evitar que la descripción invada la columna de precios
+  const DESC_RIGHT_PADDING = 8; // mm adicionales de separación
+  const descMaxWidth = Math.max(10, priceX - descX - DESC_RIGHT_PADDING);
+
+      // Obtener líneas envueltas; splitText ahora rompe palabras largas sin espacios
+      const descLines = this.splitText(doc, desc, descMaxWidth, 8);
+
       descLines.forEach((line, idx) => {
-        doc.text(line, this.MARGIN + 12, currentY);
+        doc.text(line, descX, currentY);
         if (idx < descLines.length - 1) currentY += 3;
       });
-      doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.MARGIN - 22, currentY, { align: 'right' });
+
+      // Alinear los precios en la misma Y que la última línea de descripción
+      doc.text(item.unit_price.toFixed(2), priceX, currentY, { align: 'right' });
       doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
       currentY += 4;
     });
@@ -282,15 +294,45 @@ export class NoSeatsTicketTemplate {
 
   private static splitText(doc: jsPDF, text: string, maxWidth: number, fontSize: number): string[] {
     doc.setFontSize(fontSize);
-    const words = (text || '').toString().split(' ');
+    const raw = (text || '').toString();
+    const words = raw.split(' ');
     const lines: string[] = [];
     let currentLine = '';
-    words.forEach(word => {
-      const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      const testWidth = doc.getTextWidth(testLine);
-      if (testWidth > maxWidth && currentLine) { lines.push(currentLine); currentLine = word; } else { currentLine = testLine; }
-    });
-    if (currentLine) lines.push(currentLine);
+
+    const pushLine = (line: string) => { if (line !== undefined && line !== null && line !== '') lines.push(line); };
+
+    for (const word of words) {
+      const prefix = currentLine ? currentLine + ' ' : '';
+      const testLine = prefix + word;
+      if (doc.getTextWidth(testLine) <= maxWidth) {
+        currentLine = testLine;
+        continue;
+      }
+
+      // Si la palabra por sí sola cabe en una nueva línea, empujar la línea actual y empezar nueva
+      if (doc.getTextWidth(word) <= maxWidth) {
+        if (currentLine) { pushLine(currentLine); }
+        currentLine = word;
+        continue;
+      }
+
+      // La palabra es demasiado larga (sin espacios). Romperla en fragmentos que quepan.
+      if (currentLine) { pushLine(currentLine); currentLine = ''; }
+      let fragment = '';
+      for (const ch of word) {
+        const testFrag = fragment + ch;
+        if (doc.getTextWidth(testFrag) <= maxWidth) {
+          fragment = testFrag;
+        } else {
+          // empujar fragmento y empezar uno nuevo
+          pushLine(fragment);
+          fragment = ch;
+        }
+      }
+      if (fragment) pushLine(fragment);
+    }
+
+    if (currentLine) pushLine(currentLine);
     return lines;
   }
 }

@@ -12,6 +12,8 @@ export class NormalTicketTemplate {
   private static readonly TICKET_WIDTH = 80; // mm
   private static readonly MARGIN = 2; // mm
   private static readonly CONTENT_WIDTH = NormalTicketTemplate.TICKET_WIDTH - (NormalTicketTemplate.MARGIN * 2);
+  // Offset superior aplicable al header; puede ser negativo para subir el logo sobre el margen
+  private static readonly HEADER_TOP_OFFSET = 2; // mm, ajustar a valores negativos si se desea reducir espacio
   
   /** Genera el PDF del ticket usando los datos transformados */
   static async generatePDF(ticketData: TicketData): Promise<jsPDF> {
@@ -157,7 +159,8 @@ export class NormalTicketTemplate {
   
   /** BLOQUE 1: Añade el encabezado completo con logo y datos de empresa */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-    let currentY = Math.max(startY, 0); // Reducido de 0.5 a 0 para subir más el logo
+  // Usar la constante HEADER_TOP_OFFSET para permitir ajustes finos (puede ser negativo)
+  let currentY = startY + (this.HEADER_TOP_OFFSET || 0);
      
     // SOLO LOGO - sin texto adicional
   if (header.company_logo_url) {
@@ -552,26 +555,52 @@ export class NormalTicketTemplate {
   /** Divide texto en múltiples líneas para que quepa en el ancho especificado */
   private static splitText(doc: jsPDF, text: string, maxWidth: number, fontSize: number): string[] {
     doc.setFontSize(fontSize);
-    const words = text.split(' ');
+    if (!text || text.toString().trim() === '') return [''];
+
+    // Primero intentamos separar por espacios, pero si una palabra es ms larga que el ancho, la partimos
+    const words = text.toString().split(' ');
     const lines: string[] = [];
     let currentLine = '';
-    
+
+    const pushLine = (line: string) => {
+      if (line === '') return;
+      lines.push(line);
+    };
+
     words.forEach(word => {
-      const testLine = currentLine + (currentLine ? ' ' : '') + word;
-      const testWidth = doc.getTextWidth(testLine);
-      
-      if (testWidth > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
+      // Si la palabra individual es ms larga que el ancho, partiremos la palabra
+      doc.setFontSize(fontSize);
+      if (doc.getTextWidth(word) > maxWidth) {
+        // Si hay contenido en currentLine lo empujamos
+        if (currentLine) {
+          pushLine(currentLine);
+          currentLine = '';
+        }
+        // Partir la palabra por caracteres agrupados que quepan
+        let sub = '';
+        for (let ch of word) {
+          const test = sub + ch;
+          if (doc.getTextWidth(test) > maxWidth) {
+            pushLine(sub);
+            sub = ch;
+          } else {
+            sub = test;
+          }
+        }
+        if (sub) pushLine(sub);
       } else {
-        currentLine = testLine;
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = doc.getTextWidth(testLine);
+        if (testWidth > maxWidth && currentLine) {
+          pushLine(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
       }
     });
-    
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-    
+
+    if (currentLine) pushLine(currentLine);
     return lines;
   }
 }

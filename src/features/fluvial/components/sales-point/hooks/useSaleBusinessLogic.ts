@@ -6,6 +6,7 @@ import { PassengerData, Representative } from "../core/types";
 import { saleValidationService } from "../services/saleValidationService";
 import { invoiceCreationService } from "../services/invoiceCreationService";
 import { SeatMapItem } from "../../../../../types";
+import { productsServicesService } from "../../../../../services/products-services.service";
 
 interface UseSaleBusinessLogicProps {
   // Dependencias de hooks externos
@@ -123,13 +124,27 @@ export const useSaleBusinessLogic = ({
       if (extraCost && extraCost > 0) {
         // Aplicar IGV al costo adicional si corresponde
         const extraCostWithIgv = isIgvGravado ? extraCost * 1.18 : extraCost;
+        // Intentar obtener el nombre del producto/servicio desde el catálogo
+        let extraProductName = '';
+        try {
+          const prod = await productsServicesService.getById(7);
+          extraProductName = prod?.name || '';
+        } catch (e) {
+          // Si falla la consulta, usamos la descripción provista o un texto por defecto
+          extraProductName = '';
+        }
+
+        const composedExtraDescription = extraProductName
+          ? (extraCostDescription?.trim() ? `${extraProductName} - ${extraCostDescription.trim()}` : extraProductName)
+          : (extraCostDescription?.trim() || 'Equipaje en exceso');
+
         const extraItem = {
           product_id: 7, // ← CLAVE: ID del servicio adicional
           quantity: 1, // Siempre 1 para costos adicionales
           unit_price: parseFloat(extraCostWithIgv.toFixed(10)),
           discount: 0,
           tax_category_code: isIgvGravado ? "10" : "20",
-          item_description: extraCostDescription?.trim() || "Equipaje en exceso",
+          item_description: composedExtraDescription,
           unit_code: "KGM" // KGM = Kilogramo (para equipaje)
         };
         itemsConfig.push(extraItem);
@@ -295,7 +310,7 @@ export const useSaleBusinessLogic = ({
       const originPortName = boardingStop?.port?.name || "";
       const destinationPortName = disembarkingStop?.port?.name || "";
 
-      const invoiceItems = invoiceCreationService.createInvoiceItems(
+  const invoiceItems = await invoiceCreationService.createInvoiceItems(
         passengerData,
         representatives,
         basePrice,

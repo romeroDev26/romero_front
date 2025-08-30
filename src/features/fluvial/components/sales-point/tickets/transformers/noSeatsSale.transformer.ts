@@ -145,13 +145,28 @@ export class NoSeatsSaleTransformer {
    */
   private static transformFinancialBreakdown(data: BackendInvoiceData) {
     // Procesar items
-    const items = data.items.map(item => ({
-      description: item.item_description || item.product_name,
-      quantity: parseFloat(item.quantity),
-      unit_price: parseFloat(item.unit_price),
-      discount: parseFloat(item.discount),
-      total_line: parseFloat(item.total_line)
-    }));
+    const items = data.items.map(item => {
+      // Tomar descripción enviada por backend o el nombre del producto
+      let description = item.item_description || item.product_name || 'Servicio';
+
+      // Eliminar patrones no deseados para embarcaciones sin asientos:
+      // - "Tramo: Origen - Destino." (y variantes)
+      // - "Elección libre de ubicación" o "Elección libre"
+      description = description.replace(/Tramo:\s*[^.]+\.?/gi, '');
+      description = description.replace(/Elecci[oó]n\s*libre(\s*de\s*ubicaci[oó]n)?/gi, '');
+
+      // Limpiar espacios y puntuación sobrante
+      description = description.replace(/[\-–—]\s*$/g, '');
+      description = description.replace(/\s{2,}/g, ' ').trim();
+
+      return {
+        description: description,
+        quantity: parseFloat(item.quantity),
+        unit_price: parseFloat(item.unit_price),
+        discount: parseFloat(item.discount || '0'),
+        total_line: parseFloat(item.total_line)
+      };
+    });
     // Calcular totales tomando en cuenta el total_line de cada item (ej: "total_line": "141.60")
     // Si por alguna razón no hubiera items, fallback a los totales enviados por el backend
     const subtotalBackend = parseFloat(data.total_taxable) + parseFloat(data.total_exonerated) + parseFloat(data.total_unaffected);

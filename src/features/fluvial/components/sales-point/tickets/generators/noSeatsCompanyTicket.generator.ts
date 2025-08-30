@@ -116,8 +116,8 @@ export class NoSeatsCompanyTicketGenerator {
           ...item,
           quantity: '1',
           total_line: item.unit_price,
-          // ESPECIALIZACIÓN: Sin asientos específicos, descripción genérica
-          item_description: `${item.item_description || item.product_name} - Pasajero individual - Elección libre`
+          // ESPECIALIZACIÓN: Sin asientos específicos, mantener solo la descripción del servicio
+          item_description: item.item_description || item.product_name
         })),
         // Ajustar totales para un solo pasajero
         total_payable: companyData.invoice.items[0]?.unit_price || '0.00',

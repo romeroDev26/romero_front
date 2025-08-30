@@ -166,10 +166,6 @@ export class NoSeatsCompanySaleTransformer {
         description = item.product_name || 'Servicio';
       }
       
-      // Si es servicio de transporte, agregar nota de elección libre
-      if (item.product_internal_code === 'SRV-PAS-001' || description.toLowerCase().includes('transporte')) {
-        description = `${description} - Elección libre de ubicación`;
-      }
       // Para otros servicios (equipaje, etc.) mantener descripción original
       
       return {

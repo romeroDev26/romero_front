@@ -45,7 +45,8 @@ export const invoiceCreationService = {
     selectedDisembarkingStopId: number,
     originPortName: string,
     destinationPortName: string,
-    selectedSeat: any
+    selectedSeat: any,
+    itemDescription?: string // ← NUEVO: Descripción opcional
   ): InvoiceItemData[] => {
     const items: InvoiceItemData[] = [];
     
@@ -61,6 +62,7 @@ export const invoiceCreationService = {
       ? `Asiento: ${selectedSeat.seat_number}` 
       : "Elección libre de ubicación";
     const quantityDescription = quantity > 1 ? ` (${quantity} pasajeros)` : "";
+    const optionalDescription = itemDescription?.trim() ? ` - ${itemDescription.trim()}` : "";
     
     items.push({
       product_id: passengerService.id,
@@ -70,7 +72,7 @@ export const invoiceCreationService = {
       tax_category_code: isIgvGravado
         ? SunatTaxCategory.GRAVADO
         : SunatTaxCategory.EXONERADO,
-      item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. ${seatDescription}${quantityDescription}`,
+      item_description: `Servicio de Transporte Fluvial. Tramo: ${originPortName} - ${destinationPortName}. ${seatDescription}${quantityDescription}${optionalDescription}`,
       unit_code: "ZZ", // ZZ = Servicio (CORREGIDO de NIU)
       trip_id: tripId,
       boarding_trip_stop_id: selectedBoardingStopId,

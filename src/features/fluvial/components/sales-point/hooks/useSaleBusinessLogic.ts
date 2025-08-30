@@ -67,7 +67,8 @@ export const useSaleBusinessLogic = ({
     extraCostDescription?: string,
     discount?: number,
     isIgvGravado?: boolean,
-  series?: string,
+    series?: string,
+    itemDescription?: string, // ← NUEVO: Descripción opcional
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -110,7 +111,9 @@ export const useSaleBusinessLogic = ({
           unit_price: parseFloat(baseUnitPriceWithIgv.toFixed(10)),
           discount: discount ? parseFloat(discount.toFixed(10)) : 0,
           tax_category_code: isIgvGravado ? "10" : "20", // 10=Gravado, 20=Exonerado
-          item_description: "Servicio de Transporte de Pasajeros",
+          item_description: itemDescription?.trim() 
+            ? `Servicio de Transporte de Pasajeros - ${itemDescription.trim()}`
+            : "Servicio de Transporte de Pasajeros",
           unit_code: "ZZ" // ZZ = Servicio (CORREGIDO de NIU)
         };
         itemsConfig.push(transportItem);
@@ -235,7 +238,8 @@ export const useSaleBusinessLogic = ({
     isIgvGravado: boolean,
     isConfirmingMode: boolean,
     reservationToConfirm: any,
-    onSuccess: (invoiceData: any) => void
+    onSuccess: (invoiceData: any) => void,
+    itemDescription?: string // ← NUEVO: Descripción opcional
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -306,7 +310,8 @@ export const useSaleBusinessLogic = ({
         selectedDisembarkingStopId,
         originPortName,
         destinationPortName,
-        selectedSeat
+        selectedSeat,
+        itemDescription // ← NUEVO: pasar la descripción opcional
       );
 
       const invoicePayload = invoiceCreationService.createInvoicePayload(

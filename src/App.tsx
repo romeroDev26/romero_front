@@ -69,7 +69,7 @@ import { VoidDocumentDetailPage } from './features/accounting/pages/VoidDocument
 const FluvialReportsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Reportes Fluviales</h1><p>Reportes específicos del transporte fluvial</p></div>;
 
 // Páginas de finanzas
-const ReceivablesPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Cuentas por Cobrar</h1><p>Gestión de cuentas por cobrar</p></div>;
+import ReceivablesPage from './features/finance/pages/ReceivablesPage';
 const ExpensesPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Gastos</h1><p>Gestión de gastos operativos</p></div>;
 
 // Crear cliente para React Query

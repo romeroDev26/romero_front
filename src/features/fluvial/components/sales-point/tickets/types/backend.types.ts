@@ -23,6 +23,7 @@ export interface BackendInvoiceData {
   created_by: string;
   exchange_rate: string | null;
   payment_terms_description: string | null;
+  payment_detail_message: string | null;
   due_date: string | null;
   payment_installments: string | null;
   detraccion_code: string | null;

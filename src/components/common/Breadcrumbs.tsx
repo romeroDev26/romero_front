@@ -34,7 +34,7 @@ const routeNameMap: { [key: string]: string } = {
   'manifests': 'Manifiestos',
   
   // Finanzas
-  'receivables': 'Cuentas por Cobrar',
+  'receivables': 'Encomiendas por Cobrar',
   'expenses': 'Gastos',
   'payables': 'Cuentas por Pagar',
   

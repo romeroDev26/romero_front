@@ -38,6 +38,7 @@ export const CargoSalePage: React.FC = () => {
   const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<CargoSaleView>('clientSelection');
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
+  const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
   
   const [remitter, setRemitter] = useState<ClientData>({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
   const [recipient, setRecipient] = useState<RecipientFormData>({
@@ -191,6 +192,7 @@ export const CargoSalePage: React.FC = () => {
         issue_time: format(new Date(), 'HH:mm:ss'),
         operation_type_code: '0101',
         currency_code: 'PEN',
+        is_credit_sale: isContraentrega,
         notes: `Venta de Encomiendas. Sucursal: ${selectedBranch.name}`,
         items: cargoItems.map(item => ({
           product_id: item.product.id,
@@ -238,6 +240,7 @@ export const CargoSalePage: React.FC = () => {
     setSelectedOriginId(null);
     setSelectedDestinationId(null);
     setCargoItems([]);
+    setIsContraentrega(false); // Asegurar que el switch esté desactivado
     setCurrentView('clientSelection');
     
     // Limpiar datos del ticket
@@ -262,6 +265,7 @@ export const CargoSalePage: React.FC = () => {
     setSelectedOriginId(null);
     setSelectedDestinationId(null);
     setCargoItems([]);
+    setIsContraentrega(false); // Asegurar que el switch esté desactivado
     
     // Volver al paso inicial
     setCurrentView('clientSelection');
@@ -532,15 +536,31 @@ export const CargoSalePage: React.FC = () => {
                 <div className="text-right">
                   <p className="text-lg text-gray-600 mb-2">Total a Pagar:</p>
                   <p className="text-3xl font-bold text-gray-800 mb-4">S/ {totalSaleAmount.toFixed(2)}</p>
-                  <Button 
-                    onClick={handleFinalizeSale} 
-                    size="lg"
-                    isLoading={isProcessingClient || isCreatingInvoice} 
-                    disabled={cargoItems.length === 0}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <CreditCard className="w-5 mr-2" /> Generar Venta y Comprobante
-                  </Button>
+                  <div className="flex items-center justify-end gap-4">
+                    {/* Switch de Contraentrega (UI only por ahora) */}
+                    <div className="flex items-center space-x-3">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={isContraentrega}
+                        onClick={() => setIsContraentrega(!isContraentrega)}
+                        className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isContraentrega ? 'bg-blue-600' : 'bg-gray-300'}`}
+                      >
+                        <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </button>
+                      <span className="text-sm font-medium text-gray-700 select-none">Contraentrega</span>
+                    </div>
+
+                    <Button 
+                      onClick={handleFinalizeSale} 
+                      size="lg"
+                      isLoading={isProcessingClient || isCreatingInvoice} 
+                      disabled={cargoItems.length === 0}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <CreditCard className="w-5 mr-2" /> Generar Venta y Comprobante
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

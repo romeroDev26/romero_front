@@ -97,17 +97,17 @@ const navGroups = [
       { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Resúmenes', path: '/accounting/summaries', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
-      { name: 'Anulaciones', path: '/accounting/voids', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
+            { name: 'Anulaciones', path: '/accounting/voids', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
     ]
   },
 
   {
     title: 'Finanzas',
     items: [
-      { name: 'Cuentas por Cobrar', path: '/finance/receivables', icon: CreditCardIcon, iconColor: 'text-pink-500' },
-      { name: 'Gastos', path: '/finance/expenses', icon: CreditCardIcon, iconColor: 'text-pink-500' }
+      { name: 'Encomiendas por cobrar', path: '/finance/receivables', icon: CreditCardIcon, iconColor: 'text-pink-500' }
     ]
   },
+
   {
     title: 'Administración del Sistema',
     expandable: true,

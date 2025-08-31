@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/tickets/transformers/cargoSale.transformer.ts
 
-import { BackendInvoiceData } from '../types/backend.types';
+import { BackendInvoiceData, BackendInvoiceItem } from '../types/backend.types';
 import { TicketData } from '../types/ticket.types';
 
 /**
@@ -101,7 +101,7 @@ export class CargoSaleTransformer {
       }
     }
 
-  // No agregar ruta ni horarios específicos para tickets de encomienda aquí
+    // No agregar ruta ni horarios específicos para tickets de encomienda aquí
 
     return {
       title: 'DETALLES DEL ENVÍO',
@@ -149,7 +149,7 @@ export class CargoSaleTransformer {
   /**
    * Construye la descripción detallada del item de encomienda
    */
-  private static buildCargoItemDescription(item: any): string {
+  private static buildCargoItemDescription(item: BackendInvoiceItem): string {
     let description = item.item_description || 'Servicio de Envío';
     
     // Agregar unidad SUNAT si está disponible
@@ -183,7 +183,8 @@ export class CargoSaleTransformer {
       amount_in_words_prefix: 'SON:',
       amount_in_words: data.total_in_words || 'MONTO EN PALABRAS NO DISPONIBLE',
       payment_method_label: 'FORMA DE PAGO:',
-      payment_method: 'CONTADO' // Por defecto para encomiendas
+      payment_method: data.payment_terms_description || 'CONTADO',
+      payment_detail_message: data.payment_detail_message || undefined
     };
   }
 

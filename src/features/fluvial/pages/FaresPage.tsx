@@ -18,15 +18,15 @@ import { routeHelpers } from '../../../services/routes.service'; // Importar par
 import { toast } from 'react-toastify';
 
 // ... (constantes SERVICE_CATEGORIES y FARE_TYPES se mantienen igual) ...
+// Opciones que mostramos al usuario. El campo `value` es el valor real enviado al API
+// (por compatibilidad mantenemos 'PASAJES' y 'OTROS'), mientras que `label` es lo que
+// ve el usuario. Varias opciones pueden mapear al mismo `value`.
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
-  { value: 'PASAJES', label: 'Pasajes' },
-  { value: 'ENCOMIENDA_PEQUENA', label: 'Encomienda Pequeña' },
-  { value: 'ENCOMIENDA_MEDIANA', label: 'Encomienda Mediana' },
-  { value: 'ENCOMIENDA_GRANDE', label: 'Encomienda Grande' },
-  { value: 'CARGA_GENERAL_KGM', label: 'Carga General (kg)' },
-  { value: 'CARGA_GENERAL_VOL', label: 'Carga General (m³)' },
-  { value: 'OTROS', label: 'Otros' }
+  { value: 'PASAJES', label: 'Romero Express' },
+  { value: 'OTROS', label: 'Romero Cargo' }
 ];
+
+// (Ya no usamos mapeos de categorías históricas)
 
 const FARE_TYPES: { value: FareType; label: string }[] = [
   { value: 'FULL_ROUTE', label: 'Ruta Completa' },
@@ -64,7 +64,7 @@ const FareFormModal: React.FC<{
   const [formData, setFormData] = useState<FareFormData>({
     origin_port_id: fare?.origin_port_id || 0,
     destination_port_id: fare?.destination_port_id || 0,
-    service_category: fare?.service_category || 'PASAJES',
+  service_category: (fare?.service_category as ServiceCategory) || 'PASAJES',
     price: fare?.price || 0,
     currency_code: fare?.currency_code || 'PEN',
     tax_category_code: fare?.tax_category_code || '10',
@@ -85,7 +85,7 @@ const FareFormModal: React.FC<{
       setFormData({
         origin_port_id: fare.origin_port_id,
         destination_port_id: fare.destination_port_id,
-        service_category: fare.service_category,
+  service_category: fare.service_category as ServiceCategory,
         price: fare.price,
         currency_code: fare.currency_code,
         tax_category_code: fare.tax_category_code,
@@ -119,7 +119,7 @@ const FareFormModal: React.FC<{
     setError(null);
 
     try {
-      await onSubmit(formData);
+  await onSubmit(formData);
       onClose();
     } catch (err: any) {
       setError(err.message || 'Error al guardar la tarifa');
@@ -355,14 +355,21 @@ export const FaresPage: React.FC = () => {
         fare.origin_port?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         fare.destination_port?.name.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesCategory = selectedCategory === '' || fare.service_category === selectedCategory;
+      // Si selectedCategory está vacío, pasar. Si el valor seleccionado es 'OTROS',
+      // aceptamos tarifas cuyo service_category actual sea 'OTROS' o categorías históricas
+      // como ENCOMIENDA_* / CARGA_*.
+      let matchesCategory = false;
+      if (selectedCategory === '') matchesCategory = true;
+      else {
+        matchesCategory = fare.service_category === selectedCategory;
+      }
 
       return matchesSearch && matchesCategory;
     });
   }, [enrichedFares, searchTerm, selectedCategory]);
 
   const getServiceCategoryLabel = (category: ServiceCategory) => {
-    return SERVICE_CATEGORIES.find(c => c.value === category)?.label || category;
+  return SERVICE_CATEGORIES.find(c => c.value === category)?.label || category;
   };
 
   const getFareTypeLabel = (type: FareType) => {
@@ -440,7 +447,7 @@ export const FaresPage: React.FC = () => {
   const stats = useMemo(() => ({
     total: fares.length,
     pasajes: fares.filter(f => f.service_category === 'PASAJES').length,
-    encomiendas: fares.filter(f => f.service_category.includes('ENCOMIENDA')).length,
+  encomiendas: fares.filter(f => f.service_category === 'OTROS').length,
     porVencer: fares.filter(f => isExpiringSoon(f.expiration_date)).length,
     vencidas: fares.filter(f => isExpired(f.expiration_date)).length
   }), [fares]);

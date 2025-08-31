@@ -82,6 +82,7 @@ export interface TicketPaymentInfo {
   amount_in_words: string;
   payment_method_label: string;
   payment_method: string;
+  payment_detail_message?: string;
 }
 
 // BLOQUE 6: PIE DE PÁGINA

@@ -415,6 +415,13 @@ export class CargoTicketTemplate {
     doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.MARGIN, currentY);
     currentY += 4;
 
+    // Agregar mensaje de detalle de pago si existe (para contraentrega)
+    if (ticketData.payment_info.payment_detail_message) {
+      doc.setFontSize(7);
+      doc.text(ticketData.payment_info.payment_detail_message.toUpperCase(), this.MARGIN, currentY);
+      currentY += 4;
+    }
+
     return currentY;
   }
 

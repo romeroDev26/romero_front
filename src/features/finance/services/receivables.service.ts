@@ -4,7 +4,7 @@ import api from '../../../config/api';
 import {
   ReceivablesQueryParams,
   ReceivablesResponse,
-  ReceivablesItem
+  PaymentConfirmationResponse
 } from '../types/receivables.types';
 
 export const receivablesService = {
@@ -38,9 +38,9 @@ export const receivablesService = {
   /**
    * Marca una encomienda como pagada
    */
-  async markAsPaid(receivableId: number): Promise<ReceivablesItem> {
+  async markAsPaid(invoiceItemId: number): Promise<PaymentConfirmationResponse> {
     try {
-      const response = await api.patch(`/dispatch/manifests/cash-on-delivery/${receivableId}/mark-paid`);
+      const response = await api.post<PaymentConfirmationResponse>(`/manifests/confirm-payment/${invoiceItemId}`);
       return response.data;
     } catch (error: any) {
       console.error('Error marking receivable as paid:', error);

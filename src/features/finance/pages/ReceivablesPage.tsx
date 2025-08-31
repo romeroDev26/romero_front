@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
@@ -13,11 +13,28 @@ import {
   CreditCardIcon
 } from 'lucide-react';
 import { useReceivables } from '../hooks/useReceivables';
+import { useBranchOffices } from '../../../hooks/useBranchOffices';
+import { authService } from '../../../services/auth.service';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Spinner } from '../../../components/common/Spinner';
+import { Modal } from '../../../components/common/Modal';
 
 const ReceivablesPage: React.FC = () => {
+  const [companyId, setCompanyId] = useState<number | undefined>();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  
+  // Obtener companyId del usuario actual
+  useEffect(() => {
+    const user = authService.getCurrentUser();
+    if (user) {
+      setCompanyId(user.company_id);
+    }
+  }, []);
+
+  const { data: branchOffices = [], isLoading: loadingBranchOffices } = useBranchOffices(companyId);
+
   const {
     items,
     loading,
@@ -37,11 +54,24 @@ const ReceivablesPage: React.FC = () => {
 
   const [showFilters, setShowFilters] = useState(false);
 
-  const handleMarkAsPaid = async (receivableId: number) => {
-    const success = await markAsPaid(receivableId);
-    if (!success) {
-      // El error ya se maneja en el hook
+  const handleMarkAsPaidClick = (item: any) => {
+    setSelectedItem(item);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!selectedItem) return;
+    
+    const success = await markAsPaid(selectedItem.invoice_item_id || selectedItem.id);
+    if (success) {
+      setShowConfirmModal(false);
+      setSelectedItem(null);
     }
+  };
+
+  const handleCancelPayment = () => {
+    setShowConfirmModal(false);
+    setSelectedItem(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -140,7 +170,28 @@ const ReceivablesPage: React.FC = () => {
         {showFilters && (
           <div className="bg-white rounded-lg shadow-sm border p-6">
             <h2 className="text-lg font-semibold mb-4">Filtros de Búsqueda</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Sucursal
+                </label>
+                <select
+                  value={filters.branch_office_id || ''}
+                  onChange={(e) => updateFilters({
+                    branch_office_id: e.target.value ? Number(e.target.value) : null
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                  disabled={loadingBranchOffices}
+                >
+                  <option value="">Todas las sucursales</option>
+                  {branchOffices.map((office) => (
+                    <option key={office.id} value={office.id}>
+                      {office.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Estado de Pago
@@ -304,7 +355,7 @@ const ReceivablesPage: React.FC = () => {
                           {item.payment_status === 'NO PAGADO' && (
                             <Button
                               size="sm"
-                              onClick={() => handleMarkAsPaid(item.id)}
+                              onClick={() => handleMarkAsPaidClick(item)}
                               disabled={isMarkingPaid}
                               className="bg-green-600 hover:bg-green-700"
                             >
@@ -394,6 +445,112 @@ const ReceivablesPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de confirmación de pago */}
+      <Modal
+        isOpen={showConfirmModal}
+        onClose={handleCancelPayment}
+        title="Confirmar Pago de Encomienda"
+        maxWidth="lg"
+      >
+        {selectedItem && (
+          <div className="space-y-6">
+            {/* Detalles de la encomienda */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Detalles de la Encomienda #{selectedItem.id}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Remitente</h4>
+                  <div className="text-sm text-gray-600">
+                    <p className="font-medium">{selectedItem.sender_name}</p>
+                    <p>DNI/RUC: {selectedItem.sender_doc_number}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Destinatario</h4>
+                  <div className="text-sm text-gray-600">
+                    <p className="font-medium">{selectedItem.recipient_name}</p>
+                    <p>DNI/RUC: {selectedItem.recipient_doc_number}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Viaje</h4>
+                  <div className="text-sm text-gray-600">
+                    <p>{selectedItem.trip_name}</p>
+                    <p>Sucursal: {selectedItem.branch_office_name}</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Monto</h4>
+                  <div className="text-lg font-bold text-green-600">
+                    S/ {selectedItem.amount.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              
+              {selectedItem.description && (
+                <div className="mt-4">
+                  <h4 className="font-medium text-gray-700 mb-2">Descripción</h4>
+                  <p className="text-sm text-gray-600">{selectedItem.description}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Mensaje de confirmación */}
+            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <CheckCircleIcon className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div className="ml-3">
+                  <h4 className="text-sm font-medium text-yellow-800">
+                    Confirmar Pago
+                  </h4>
+                  <p className="mt-1 text-sm text-yellow-700">
+                    ¿Está seguro de que desea marcar esta encomienda como pagada? 
+                    Esta acción confirmará que el cliente ha pagado el monto de S/ {selectedItem.amount.toFixed(2)} 
+                    y que la encomienda ha sido entregada correctamente.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botones de acción */}
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={handleCancelPayment}
+                disabled={isMarkingPaid}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleConfirmPayment}
+                disabled={isMarkingPaid}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {isMarkingPaid ? (
+                  <>
+                    <Spinner className="w-4 h-4 mr-2" />
+                    Confirmando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircleIcon className="w-4 h-4 mr-2" />
+                    Confirmar Pago
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

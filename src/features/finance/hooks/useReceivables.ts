@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { receivablesService } from '../services/receivables.service';
 import {
   ReceivablesFilters,
@@ -49,10 +50,16 @@ export const useReceivables = () => {
   const queryClient = useQueryClient();
   const markAsPaidMutation = useMutation({
     mutationFn: (receivableId: number) => receivablesService.markAsPaid(receivableId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Mostrar mensaje de éxito
+      toast.success(data.message || 'Pago confirmado exitosamente');
+      
       // Invalidar queries para refrescar los datos
       queryClient.invalidateQueries({ queryKey: ['receivables'] });
       queryClient.invalidateQueries({ queryKey: ['receivables-stats'] });
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Error al confirmar el pago');
     },
   });
 
@@ -93,7 +100,7 @@ export const useReceivables = () => {
       await markAsPaidMutation.mutateAsync(receivableId);
       return true;
     } catch (error) {
-      console.error('Error marking as paid:', error);
+      // El error ya se maneja en el mutation con toast
       return false;
     }
   }, [markAsPaidMutation]);

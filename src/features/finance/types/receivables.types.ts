@@ -17,6 +17,7 @@ export interface ReceivablesQueryParams extends ReceivablesFilters, ReceivablesP
 
 export interface ReceivablesItem {
   id: number;
+  invoice_item_id?: number; // ID del item de factura para confirmación de pago
   trip_id: number;
   branch_office_id: number;
   payment_status: 'NO PAGADO' | 'PAGADO';
@@ -31,6 +32,14 @@ export interface ReceivablesItem {
   recipient_name?: string;
   recipient_doc_number?: string;
   description?: string;
+}
+
+export interface PaymentConfirmationResponse {
+  message: string;
+  invoice_item_id: number;
+  payment_status: 'PAGADO';
+  confirmed_by: string;
+  confirmed_at: string;
 }
 
 export interface ReceivablesResponse {

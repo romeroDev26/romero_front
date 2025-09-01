@@ -282,24 +282,24 @@ export class NoSeatsCompanyTicketTemplate {
 
     // FILA 1: etiquetas (EMBARCACIÓN / FECHA VIAJE)
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(7);
     doc.text('EMBARCACIÓN:', leftX, currentY);
     doc.text('FECHA VIAJE:', rightX, currentY);
     currentY += 3; // espacio antes de los valores
 
-    // FILA 1b: valores debajo de las etiquetas (usar tamaño 8.5)
-    doc.setFontSize(8.5);
-    const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value, colWidth, 8.5) : [''];
-    const dateLines = dateItem ? this.splitText(doc, dateItem.value, colWidth, 8.5) : [''];
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
+    doc.setFontSize(11);
+    const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value.toUpperCase(), colWidth, 11) : [''];
+    const dateLines = dateItem ? this.splitText(doc, dateItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines1 = Math.max(vesselLines.length, dateLines.length);
     for (let i = 0; i < maxLines1; i++) {
       // Embarcación: normal
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
+      doc.setFontSize(11);
       doc.text(vesselLines[i] ?? '', leftX, currentY);
       // Fecha de viaje: valor en negrita (misma medida)
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8.5);
+      doc.setFontSize(11);
       doc.text(dateLines[i] ?? '', rightX, currentY);
       currentY += 3; // línea con más espacio
     }
@@ -307,11 +307,11 @@ export class NoSeatsCompanyTicketTemplate {
 
     // --- PUERTO y DIRECCIÓN DEL PUERTO
     if (trip.port_name || trip.port_address) {
-      const portNameLines = this.splitText(doc, trip.port_name ?? '', colWidth, 9);
-      const portAddrLines = this.splitText(doc, trip.port_address ?? '', colWidth, 9);
-      // Etiquetas PUERTO (normal) y valores en 8.5
+      const portNameLines = this.splitText(doc, (trip.port_name ?? '').toUpperCase(), colWidth, 11);
+      const portAddrLines = this.splitText(doc, (trip.port_address ?? '').toUpperCase(), colWidth, 11);
+      // Etiquetas PUERTO (normal) y valores en 7
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
+      doc.setFontSize(7);
       doc.text('PUERTO:', leftX, currentY);
       doc.text('DIRECCIÓN PUERTO:', rightX, currentY);
       currentY += 3;
@@ -319,7 +319,7 @@ export class NoSeatsCompanyTicketTemplate {
       // Valores
       const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
       for (let i = 0; i < maxPortLines; i++) {
-        doc.setFontSize(8.5);
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
         doc.text(portNameLines[i] ?? '', leftX, currentY);
         doc.text(portAddrLines[i] ?? '', rightX, currentY);
@@ -331,18 +331,18 @@ export class NoSeatsCompanyTicketTemplate {
 
     // FILA 2: etiquetas (EMBARQUE / SALIDA)
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(7);
     doc.text('EMBARQUE:', leftX, currentY);
     doc.text('SALIDA:', rightX, currentY);
     currentY += 3;
 
-    // FILA 2b: valores debajo (tamaño 8.5)
-    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value, colWidth, 8.5) : [''];
-    const departureLines = departureItem ? this.splitText(doc, departureItem.value, colWidth, 8.5) : [''];
+    // FILA 2b: valores debajo (tamaño 11)
+    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
+    const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines2 = Math.max(boardingLines.length, departureLines.length);
     for (let i = 0; i < maxLines2; i++) {
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8.5);
+      doc.setFontSize(11);
       doc.text(boardingLines[i] ?? '', leftX, currentY);
       doc.text(departureLines[i] ?? '', rightX, currentY);
       currentY += 3;
@@ -351,17 +351,17 @@ export class NoSeatsCompanyTicketTemplate {
 
     // FILA 3: etiquetas (ORIGEN / DESTINO)
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
+    doc.setFontSize(7);
     doc.text('ORIGEN:', leftX, currentY);
     doc.text('DESTINO:', rightX, currentY);
     currentY += 3;
 
-    // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, un poco más grandes)
-    const originLines = originItem ? this.splitText(doc, originItem.value, colWidth, 9) : [''];
-    const destLines = destItem ? this.splitText(doc, destItem.value, colWidth, 9) : [''];
+    // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, tamaño 11)
+    const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
+    const destLines = destItem ? this.splitText(doc, destItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines3 = Math.max(originLines.length, destLines.length);
     for (let i = 0; i < maxLines3; i++) {
-      doc.setFontSize(9);
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
       doc.text(originLines[i] ?? '', leftX, currentY);
       doc.text(destLines[i] ?? '', rightX, currentY);
@@ -372,13 +372,13 @@ export class NoSeatsCompanyTicketTemplate {
     // ASIENTO en su propia línea (aunque en no-seats normalmente no se muestra)
     if (seatItem) {
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9); // mismo tamaño que los valores de PUERTO
+      doc.setFontSize(11); // tamaño 11 para valores
       // ASIENTO a la izquierda
-      doc.text(`ASIENTO: ${seatItem.value}`, leftX, currentY);
+      doc.text(`ASIENTO: ${seatItem.value.toUpperCase()}`, leftX, currentY);
 
       // Etiqueta N° EQUIPAJE en la columna derecha
       const baggageLabel = 'N° EQUIPAJE:';
-      doc.setFontSize(9);
+      doc.setFontSize(7);
       doc.setFont('helvetica', 'bold');
       doc.text(baggageLabel, rightX, currentY);
 

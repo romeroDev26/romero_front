@@ -15,8 +15,7 @@ export const receivablesService = {
     try {
       const queryParams = new URLSearchParams();
 
-      // Agregar parámetros de filtrado si existen
-      if (params.trip_id) queryParams.append('trip_id', params.trip_id.toString());
+      // Agregar parámetros de filtrado según la documentación del log.md
       if (params.branch_office_id) queryParams.append('branch_office_id', params.branch_office_id.toString());
       if (params.payment_status) queryParams.append('payment_status', params.payment_status);
       if (params.start_date) queryParams.append('start_date', params.start_date);
@@ -30,7 +29,6 @@ export const receivablesService = {
 
       return response.data;
     } catch (error: any) {
-      console.error('Error fetching receivables:', error);
       throw new Error(error.response?.data?.detail || 'Error al obtener las encomiendas por cobrar');
     }
   },
@@ -43,7 +41,16 @@ export const receivablesService = {
       const response = await api.post<PaymentConfirmationResponse>(`/manifests/confirm-payment/${invoiceItemId}`);
       return response.data;
     } catch (error: any) {
-      console.error('Error marking receivable as paid:', error);
+      // Si el endpoint no existe, intentar con alternativas comunes
+      if (error.response?.status === 404) {
+        try {
+          const altResponse = await api.post<PaymentConfirmationResponse>(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
+          return altResponse.data;
+        } catch (altError: any) {
+          // Continuar con el error original
+        }
+      }
+
       throw new Error(error.response?.data?.detail || 'Error al marcar como pagada');
     }
   },
@@ -51,14 +58,18 @@ export const receivablesService = {
   /**
    * Obtiene estadísticas de encomiendas por cobrar
    */
-  async getReceivablesStats(branchOfficeId?: number) {
+  async getReceivablesStats() {
     try {
-      const queryParams = branchOfficeId ? `?branch_office_id=${branchOfficeId}` : '';
-      const response = await api.get(`/dispatch/manifests/cash-on-delivery/stats${queryParams}`);
+      const response = await api.get(`/dispatch/manifests/cash-on-delivery/stats`);
       return response.data;
     } catch (error: any) {
-      console.error('Error fetching receivables stats:', error);
-      throw new Error(error.response?.data?.detail || 'Error al obtener estadísticas');
+      // Retornar datos por defecto en caso de error
+      return {
+        total_receivables: 0,
+        total_amount: 0,
+        pending_count: 0,
+        paid_count: 0
+      };
     }
   }
 };

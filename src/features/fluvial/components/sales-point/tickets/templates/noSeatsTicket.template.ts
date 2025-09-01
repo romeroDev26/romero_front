@@ -216,44 +216,44 @@ export class NoSeatsTicketTemplate {
     const seatItem = findByLabel(/ASIENTO/);
 
     // Row 1 labels
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('EMBARCACIÓN:', leftX, currentY); doc.text('FECHA VIAJE:', rightX, currentY); currentY += 3;
-    doc.setFontSize(8.5);
-    const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value, colWidth, 8.5) : [''];
-    const dateLines = dateItem ? this.splitText(doc, dateItem.value, colWidth, 8.5) : [''];
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARCACIÓN:', leftX, currentY); doc.text('FECHA VIAJE:', rightX, currentY); currentY += 3;
+    doc.setFontSize(11);
+    const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value.toUpperCase(), colWidth, 11) : [''];
+    const dateLines = dateItem ? this.splitText(doc, dateItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines1 = Math.max(vesselLines.length, dateLines.length);
-    for (let i = 0; i < maxLines1; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text(vesselLines[i] ?? '', leftX, currentY); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.text(dateLines[i] ?? '', rightX, currentY); currentY += 3; }
+    for (let i = 0; i < maxLines1; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(vesselLines[i] ?? '', leftX, currentY); doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(dateLines[i] ?? '', rightX, currentY); currentY += 3; }
     currentY += 4;
 
     // Port
     if (tripDetails.port_name || tripDetails.port_address) {
-      const portNameLines = this.splitText(doc, tripDetails.port_name ?? '', colWidth, 9);
-      const portAddrLines = this.splitText(doc, tripDetails.port_address ?? '', colWidth, 9);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('PUERTO:', leftX, currentY); doc.text('DIRECCIÓN PUERTO:', rightX, currentY); currentY += 3;
+      const portNameLines = this.splitText(doc, (tripDetails.port_name ?? '').toUpperCase(), colWidth, 11);
+      const portAddrLines = this.splitText(doc, (tripDetails.port_address ?? '').toUpperCase(), colWidth, 11);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('PUERTO:', leftX, currentY); doc.text('DIRECCIÓN PUERTO:', rightX, currentY); currentY += 3;
       const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
-      for (let i = 0; i < maxPortLines; i++) { doc.setFontSize(8.5); doc.setFont('helvetica', 'normal'); doc.text(portNameLines[i] ?? '', leftX, currentY); doc.text(portAddrLines[i] ?? '', rightX, currentY); currentY += 3; }
+      for (let i = 0; i < maxPortLines; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text(portNameLines[i] ?? '', leftX, currentY); doc.text(portAddrLines[i] ?? '', rightX, currentY); currentY += 3; }
       currentY += 3;
     }
 
     // Embark / Departure
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('EMBARQUE:', leftX, currentY); doc.text('SALIDA:', rightX, currentY); currentY += 3;
-    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value, colWidth, 8.5) : [''];
-    const departureLines = departureItem ? this.splitText(doc, departureItem.value, colWidth, 8.5) : [''];
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARQUE:', leftX, currentY); doc.text('SALIDA:', rightX, currentY); currentY += 3;
+    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
+    const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines2 = Math.max(boardingLines.length, departureLines.length);
-    for (let i = 0; i < maxLines2; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text(boardingLines[i] ?? '', leftX, currentY); doc.text(departureLines[i] ?? '', rightX, currentY); currentY += 3; }
+    for (let i = 0; i < maxLines2; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(boardingLines[i] ?? '', leftX, currentY); doc.text(departureLines[i] ?? '', rightX, currentY); currentY += 3; }
     currentY += 3;
 
     // Origin / Destination
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.text('ORIGEN:', leftX, currentY); doc.text('DESTINO:', rightX, currentY); currentY += 3;
-    const originLines = originItem ? this.splitText(doc, originItem.value, colWidth, 9) : [''];
-    const destLines = destItem ? this.splitText(doc, destItem.value, colWidth, 9) : [''];
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('ORIGEN:', leftX, currentY); doc.text('DESTINO:', rightX, currentY); currentY += 3;
+    const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
+    const destLines = destItem ? this.splitText(doc, destItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines3 = Math.max(originLines.length, destLines.length);
-    for (let i = 0; i < maxLines3; i++) { doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.text(originLines[i] ?? '', leftX, currentY); doc.text(destLines[i] ?? '', rightX, currentY); currentY += 3.5; }
+    for (let i = 0; i < maxLines3; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.text(originLines[i] ?? '', leftX, currentY); doc.text(destLines[i] ?? '', rightX, currentY); currentY += 3.5; }
     currentY += 3;
 
     // Seat
     if (seatItem) {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.text(`ASIENTO: ${seatItem.value}`, leftX, currentY);
-      const baggageLabel = 'N° EQUIPAJE:'; doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.text(baggageLabel, rightX, currentY);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(`ASIENTO: ${seatItem.value.toUpperCase()}`, leftX, currentY);
+      const baggageLabel = 'N° EQUIPAJE:'; doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.text(baggageLabel, rightX, currentY);
       const boxSize = 12; const boxX = this.TICKET_WIDTH - this.MARGIN - boxSize; const boxTopY = currentY - (boxSize - 4);
       doc.setLineWidth(0.8); doc.rect(boxX, boxTopY, boxSize, boxSize);
       doc.setFontSize(7); doc.setFont('helvetica', 'normal'); currentY += 6;

@@ -11,7 +11,6 @@ import {
 } from '../types/receivables.types';
 
 const initialFilters: ReceivablesFilters = {
-  trip_id: null,
   branch_office_id: null,
   payment_status: null,
   start_date: null,
@@ -41,8 +40,8 @@ export const useReceivables = () => {
 
   // Query para estadísticas
   const { data: statsData } = useQuery({
-    queryKey: ['receivables-stats', filters.branch_office_id],
-    queryFn: () => receivablesService.getReceivablesStats(filters.branch_office_id || undefined),
+    queryKey: ['receivables-stats'],
+    queryFn: () => receivablesService.getReceivablesStats(),
     staleTime: 10 * 60 * 1000, // 10 minutos
   });
 

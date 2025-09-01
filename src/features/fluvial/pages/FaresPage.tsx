@@ -4,6 +4,7 @@ import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, CurrencyDollarIco
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
+import { Pagination } from '../../../components/common/Pagination';
 import { Fare, Port, ServiceCategory, FareType } from '../../../types';
 import { useFares } from '../../../hooks/useFares';
 // ===================================================================
@@ -314,6 +315,8 @@ const FareFormModal: React.FC<{
 export const FaresPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
   
   // ===================================================================
   // CAMBIO 2: Usar el helper para obtener companyId de forma segura
@@ -321,8 +324,7 @@ export const FaresPage: React.FC = () => {
   const companyId = routeHelpers.getCurrentCompanyId();
 
   const initialFilters = useMemo(() => ({
-    limit: 200,
-    is_active: true
+    // Sin filtros adicionales, cargar todos los registros
   }), []);
 
   const { fares, loading: isLoadingFares, error: errorFares, createFare, updateFare, deactivateFare } = useFares(companyId, initialFilters);
@@ -341,6 +343,7 @@ export const FaresPage: React.FC = () => {
   // ... (toda tu lógica de `enrichedFares`, `filteredFares`, `getServiceCategoryLabel`, etc., se mantiene igual) ...
   const enrichedFares = useMemo(() => {
     if (ports.length === 0) return fares; // Devolver tarifas sin enriquecer si los puertos aún no cargan
+    
     return fares.map(fare => ({
       ...fare,
       origin_port: ports.find(p => p.id === fare.origin_port_id),
@@ -350,6 +353,9 @@ export const FaresPage: React.FC = () => {
 
   const filteredFares = useMemo(() => {
     return enrichedFares.filter(fare => {
+      // Filtrar solo tarifas activas
+      if (!fare.is_active) return false;
+
       const matchesSearch =
         fare.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         fare.origin_port?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -367,6 +373,17 @@ export const FaresPage: React.FC = () => {
       return matchesSearch && matchesCategory;
     });
   }, [enrichedFares, searchTerm, selectedCategory]);
+
+  // Lógica de paginación
+  const totalPages = Math.ceil(filteredFares.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFares = filteredFares.slice(startIndex, endIndex);
+
+  // Reset de página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
 
   const getServiceCategoryLabel = (category: ServiceCategory) => {
   return SERVICE_CATEGORIES.find(c => c.value === category)?.label || category;
@@ -444,13 +461,18 @@ export const FaresPage: React.FC = () => {
     return expDate < today;
   };
 
-  const stats = useMemo(() => ({
-    total: fares.length,
-    pasajes: fares.filter(f => f.service_category === 'PASAJES').length,
-  encomiendas: fares.filter(f => f.service_category === 'OTROS').length,
-    porVencer: fares.filter(f => isExpiringSoon(f.expiration_date)).length,
-    vencidas: fares.filter(f => isExpired(f.expiration_date)).length
-  }), [fares]);
+  const stats = useMemo(() => {
+    // Filtrar solo tarifas activas para las estadísticas
+    const activeFares = fares.filter(f => f.is_active);
+    
+    return {
+      total: activeFares.length,
+      pasajes: activeFares.filter(f => f.service_category === 'PASAJES').length,
+      encomiendas: activeFares.filter(f => f.service_category === 'OTROS').length,
+      porVencer: activeFares.filter(f => isExpiringSoon(f.expiration_date)).length,
+      vencidas: activeFares.filter(f => isExpired(f.expiration_date)).length
+    };
+  }, [fares]);
   
   // ===================================================================
   // CAMBIO 4: Actualizar la condición de carga
@@ -529,31 +551,13 @@ export const FaresPage: React.FC = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <CurrencyDollarIcon className="h-8 w-8 text-green-500" />
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Tarifas</p>
               <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <CurrencyDollarIcon className="h-8 w-8 text-blue-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pasajes</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pasajes}</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center">
-            <CurrencyDollarIcon className="h-8 w-8 text-purple-500" />
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Encomiendas</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.encomiendas}</p>
             </div>
           </div>
         </div>
@@ -605,7 +609,7 @@ export const FaresPage: React.FC = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredFares.map((fare) => (
+            {paginatedFares.map((fare) => (
               <tr key={fare.id} className={`hover:bg-gray-50 ${!fare.is_active ? 'bg-gray-100 opacity-60' : ''}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
@@ -693,6 +697,18 @@ export const FaresPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Información de paginación y controles */}
+      {filteredFares.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          total={filteredFares.length}
+          limit={itemsPerPage}
+          onPageChange={setCurrentPage}
+          loading={isLoadingFares}
+        />
+      )}
 
       {filteredFares.length === 0 && (
         <div className="text-center py-12">

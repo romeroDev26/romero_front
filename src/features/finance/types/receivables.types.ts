@@ -1,7 +1,6 @@
 // src/features/finance/types/receivables.types.ts
 
 export interface ReceivablesFilters {
-  trip_id?: number | null;
   branch_office_id?: number | null;
   payment_status?: 'NO PAGADO' | 'PAGADO' | null;
   start_date?: string | null;

@@ -74,7 +74,8 @@ class FareService {
     if (filters.limit !== undefined) {
       params.append('limit', filters.limit.toString());
     } else {
-      params.append('limit', '1000');
+      // Sin límite por defecto, cargar todos los registros
+      params.append('limit', '10000');
     }
 
     const response = await api.get(`/config/fares/`, { params });

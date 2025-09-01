@@ -231,7 +231,10 @@ const ReceivablesPage: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-end">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 opacity-0">
+                  Acción
+                </label>
                 <Button
                   variant="outline"
                   onClick={clearFilters}

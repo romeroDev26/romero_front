@@ -1,9 +1,8 @@
 // src/hooks/useFares.ts (archivo renombrado desde useFaresData.ts)
 import { useState, useEffect, useCallback } from 'react';
-import { Fare, ServiceCategory } from '../types'; // Asumo que tienes Port, Route también
+import { Fare } from '../types'; // Asumo que tienes Port, Route también
 import fareService, { CreateFareData, UpdateFareData, FareFilters } from '../services/fareService';
 // Importa tus otros servicios si son necesarios
- import { portsConfigService } from '../services/ports.cities.service';
 
 // CAMBIO: Renombramos el hook para que coincida con el uso en FaresPage
 export const useFares = (companyId: number, initialFilters?: Partial<FareFilters>) => {

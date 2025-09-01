@@ -94,6 +94,9 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
     if (!formData.departure_time) {
       newErrors.departure_time = 'La hora de salida es requerida';
     }
+    if (!isEditing && (!formData.vessel_id || formData.vessel_id === 0)) {
+      newErrors.vessel_id = 'Debe seleccionar una embarcación';
+    }
     if (formData.generate_weeks_ahead < 1 || formData.generate_weeks_ahead > 52) {
       newErrors.generate_weeks_ahead = 'Debe ser entre 1 y 52 semanas';
     }
@@ -202,7 +205,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Embarcación (Opcional)
+            Embarcación {!isEditing && <span className="text-red-500">*</span>}
           </label>
           <select
             value={formData.vessel_id}
@@ -217,6 +220,9 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
               </option>
             ))}
           </select>
+          {errors.vessel_id && (
+            <p className="mt-1 text-sm text-red-600">{errors.vessel_id}</p>
+          )}
         </div>
 
         <Input

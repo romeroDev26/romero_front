@@ -6,6 +6,7 @@ import { Modal } from '../../../components/common/Modal';
 import { Spinner } from '../../../components/common/Spinner';
 import { DocumentSeries, BranchOffice, Port } from '../../../types';
 import { toast } from 'react-toastify';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 // Hooks para Series
 import { useDocumentSeries, useCreateDocumentSeries, useUpdateDocumentSeries, useDeactivateDocumentSeries } from '../../../hooks/useDocumentSeries';
@@ -246,6 +247,7 @@ export const DocumentSeriesPage: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<BranchOffice | DocumentSeries | undefined>();
   const companyId = 1;
+  const { hasPermission } = usePermissions();
 
   // Obtención de datos
   const { data: offices = [], isLoading: isLoadingOffices } = useBranchOffices(companyId);
@@ -361,7 +363,7 @@ export const DocumentSeriesPage: React.FC = () => {
                     <button onClick={() => handleOpenModal(office)} className="text-blue-600 hover:text-blue-900">
                       <PencilIcon className="h-5 w-5" />
                     </button>
-                    {office.is_active && (
+                    {office.is_active && hasPermission('accounting', 'series', 'accountant') && (
                       <button onClick={() => handleDelete(office.id)} className="text-red-600 hover:text-red-900">
                         <TrashIcon className="h-5 w-5" />
                       </button>
@@ -406,7 +408,7 @@ export const DocumentSeriesPage: React.FC = () => {
                     <button onClick={() => handleOpenModal(s)} className="text-blue-600 hover:text-blue-900">
                       <PencilIcon className="h-5 w-5" />
                     </button>
-                    {s.is_active && (
+                    {s.is_active && hasPermission('accounting', 'series', 'accountant') && (
                       <button onClick={() => handleDelete(s.id)} className="text-red-600 hover:text-red-900">
                         <TrashIcon className="h-5 w-5" />
                       </button>

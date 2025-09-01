@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
+import { usePermissions } from '../../hooks/usePermissions';
 import {
   HomeIcon, UserGroupIcon, DocumentTextIcon, CreditCardIcon, TruckIcon,
   ChartBarIcon, CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
@@ -125,16 +126,87 @@ const navGroups = [
 const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile }) => {
   const location = useLocation();
   const { scrollRef, handleScroll } = useSidebarScroll();
+  const { hasPermission } = usePermissions();
   
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_EXPANDED_MENUS);
     return saved ? JSON.parse(saved) : {};
   });
 
+  // Filtrar grupos basados en permisos
+  const filteredNavGroups = useCallback(() => {
+    // Obtener el rol del usuario de manera más robusta
+    let userRole = '';
+    if (currentUser) {
+      userRole = currentUser.role?.name?.toLowerCase() ||
+                 currentUser.role_name?.toLowerCase() || '';
+    }
+    return navGroups.filter(group => {
+      if (group.title === 'Dashboard') return hasPermission('dashboard', undefined, userRole);
+      if (group.title === 'Gestión de Clientes') return hasPermission('clients', undefined, userRole);
+      if (group.title === 'Sistema de Transporte Fluvial') return hasPermission('fluvial', undefined, userRole);
+      if (group.title === 'Operaciones Comerciales') return hasPermission('commerce', undefined, userRole);
+      if (group.title === 'Contabilidad') return hasPermission('accounting', undefined, userRole);
+      if (group.title === 'Finanzas') return hasPermission('finance', undefined, userRole);
+      if (group.title === 'Administración del Sistema') return hasPermission('administration', undefined, userRole);
+      return false;
+    }).map(group => {
+      if (group.expandable && group.items) {
+        const filteredItems = group.items.filter(item => {
+          if (item.name === 'Dashboard Fluvial') return hasPermission('fluvial', 'dashboard', userRole);
+          if (item.name === 'Configuración') return hasPermission('fluvial', 'config', userRole);
+          if (item.name === 'Operaciones') return hasPermission('fluvial', 'operations', userRole);
+          if (item.name === 'Reportes Fluviales') return hasPermission('fluvial', 'reports', userRole);
+          if (item.name === 'Cotizaciones') return hasPermission('commerce', 'quotations', userRole);
+          if (item.name === 'Guías de Remisión') return hasPermission('commerce', 'remission-guides', userRole);
+          // Filtrar items de contabilidad por rol - SALES tiene acceso completo
+          if (item.name === 'Dashboard Contable') return hasPermission('accounting', 'dashboard', userRole);
+          if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
+          if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
+          if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);
+          if (item.name === 'Resúmenes') return hasPermission('accounting', 'summaries', userRole);
+          if (item.name === 'Anulaciones') return hasPermission('accounting', 'voids', userRole);
+          return true; // Para otros items
+        }).map(item => {
+          if (item.isSubmenu && item.subitems) {
+            const filteredSubitems = item.subitems.filter(subitem => {
+              if (userRole === 'driver') {
+                // DRIVER solo acceso limitado a manifiestos
+                return subitem.name === 'Manifiestos';
+              }
+              if (userRole === 'sales' && item.name === 'Configuración') {
+                // SALES solo lectura en config, mostrar todos pero quizás marcar como solo lectura
+                return true;
+              }
+              if (userRole === 'dispatcher' && item.name === 'Configuración') {
+                // DISPATCHER CRUD en config
+                return true;
+              }
+              if (userRole === 'sales' && item.name === 'Operaciones') {
+                // SALES solo lectura en operaciones
+                return true;
+              }
+              if (userRole === 'dispatcher' && item.name === 'Operaciones') {
+                // DISPATCHER CRUD en operaciones
+                return true;
+              }
+              return true; // Por defecto mostrar
+            });
+            return { ...item, subitems: filteredSubitems };
+          }
+          return item;
+        });
+        return { ...group, items: filteredItems };
+      }
+      return group;
+    });
+  }, [currentUser, hasPermission]);
+
   useEffect(() => {
     const currentPath = location.pathname;
     const newExpanded: { [key: string]: boolean } = { ...expandedMenus };
 
+    // Expandir automáticamente grupos basados en la ruta actual
     navGroups.forEach(group => {
       if (group.expandable) {
         const isGroupActive = group.items.some(item =>
@@ -157,10 +229,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       }
     });
 
+    // Forzar expansión del grupo de contabilidad para SALES si no está expandido
+    if (currentUser && (currentUser.role?.name?.toLowerCase() === 'sales' || currentUser.role_name?.toLowerCase() === 'sales')) {
+      if (!newExpanded['accounting']) {
+        newExpanded['accounting'] = true;
+      }
+    }
+
     if (JSON.stringify(expandedMenus) !== JSON.stringify(newExpanded)) {
       setExpandedMenus(newExpanded);
     }
-  }, [location.pathname]);
+  }, [location.pathname, currentUser]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_EXPANDED_MENUS, JSON.stringify(expandedMenus));
@@ -310,7 +389,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
         }}
       >
         <nav className="space-y-2">
-          {navGroups.map((group, idx) =>
+          {filteredNavGroups().map((group, idx) =>
             group.expandable
               ? renderExpandableGroup(group)
               : renderSimpleGroup(group, idx)

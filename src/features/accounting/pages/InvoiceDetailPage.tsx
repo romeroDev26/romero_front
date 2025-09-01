@@ -22,12 +22,14 @@ import { Button } from '../../../components/common/Button';
 import { SunatStatusBadge } from '../../accounting/components/SunatStatusBadge';
 import { WhatsAppSendModal } from '../../fluvial/components/sales-point/WhatsAppSendModal';
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [showPdfError, setShowPdfError] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const { hasPermission } = usePermissions();
 
   const invoiceId = Number(id);
 
@@ -169,8 +171,14 @@ export const InvoiceDetailPage: React.FC = () => {
                 variant="danger"
                 size="sm"
                 onClick={handleAnular}
-                disabled={invoice.sunat_status !== 'ACCEPTED'}
-                title={invoice.sunat_status !== 'ACCEPTED' ? 'Solo se pueden anular facturas ACEPTADAS' : 'Anular este comprobante'}
+                disabled={invoice.sunat_status !== 'ACCEPTED' || !hasPermission('accounting', 'invoices', 'sales')}
+                title={
+                  invoice.sunat_status !== 'ACCEPTED' 
+                    ? 'Solo se pueden anular facturas ACEPTADAS' 
+                    : !hasPermission('accounting', 'invoices', 'sales')
+                    ? 'No tienes permisos para anular facturas'
+                    : 'Anular este comprobante'
+                }
               >
                 Anular
               </Button>

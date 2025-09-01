@@ -12,9 +12,11 @@ import { UserFilters } from '../components/users/UserFilters';
 import { PasswordResetForm } from '../components/users/PasswordResetForm';
 import { usersService } from '../../../services/users.service';
 import { User } from '../../../types';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 export const UsersPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -121,13 +123,15 @@ export const UsersPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Usuarios del Sistema</h1>
         <div className="flex space-x-2">
-          <Button
-            onClick={handleCreateUser}
-            className="flex items-center"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Nuevo Usuario
-          </Button>
+          {hasPermission('settings', 'users', 'admin') && (
+            <Button
+              onClick={handleCreateUser}
+              className="flex items-center"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Nuevo Usuario
+            </Button>
+          )}
         </div>
       </div>
       
@@ -196,34 +200,44 @@ export const UsersPage: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <span className={`h-2.5 w-2.5 rounded-full mr-2 ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                        <button
-                          onClick={() => handleToggleUserStatus(user)}
-                          className={`text-sm ${user.is_active ? 'text-green-800 hover:text-green-900' : 'text-red-800 hover:text-red-900'}`}
-                        >
-                          {user.is_active ? 'Activo' : 'Inactivo'}
-                        </button>
+                        {hasPermission('settings', 'users', 'admin') ? (
+                          <button
+                            onClick={() => handleToggleUserStatus(user)}
+                            className={`text-sm ${user.is_active ? 'text-green-800 hover:text-green-900' : 'text-red-800 hover:text-red-900'}`}
+                          >
+                            {user.is_active ? 'Activo' : 'Inactivo'}
+                          </button>
+                        ) : (
+                          <span className={`text-sm ${user.is_active ? 'text-green-800' : 'text-red-800'}`}>
+                            {user.is_active ? 'Activo' : 'Inactivo'}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleResetPassword(user)}
-                        className="text-gray-600 hover:text-gray-900 mr-3"
-                        title="Cambiar contraseña"
-                      >
-                        <KeyIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        className="text-primary hover:text-primary/80 mr-3"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
+                      {hasPermission('settings', 'users', 'admin') && (
+                        <>
+                          <button
+                            onClick={() => handleResetPassword(user)}
+                            className="text-gray-600 hover:text-gray-900 mr-3"
+                            title="Cambiar contraseña"
+                          >
+                            <KeyIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="text-primary hover:text-primary/80 mr-3"
+                          >
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))

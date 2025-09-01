@@ -10,9 +10,11 @@ import { Modal } from '../../../components/common/Modal';
 import { Input } from '../../../components/common/Input';
 import { rolesService, CreateRoleData, UpdateRoleData } from '../../../services/roles.service';
 import { Role } from '../../../types';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 export const RolesPage: React.FC = () => {
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -169,13 +171,15 @@ export const RolesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Roles del Sistema</h1>
-        <Button
-          onClick={handleOpenCreateModal}
-          className="flex items-center"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Nuevo Rol
-        </Button>
+        {hasPermission('settings', 'roles', 'admin') && (
+          <Button
+            onClick={handleOpenCreateModal}
+            className="flex items-center"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Nuevo Rol
+          </Button>
+        )}
       </div>
       
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -219,19 +223,23 @@ export const RolesPage: React.FC = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleOpenEditModal(role)}
-                    className="text-primary hover:text-primary/80 mr-4"
-                  >
-                    <PencilIcon className="h-5 w-5" />
-                  </button>
-                  <button
-                    onClick={() => handleOpenDeleteModal(role)}
-                    className="text-red-600 hover:text-red-900"
-                    disabled={!role.is_active}
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
+                  {hasPermission('settings', 'roles', 'admin') && (
+                    <>
+                      <button
+                        onClick={() => handleOpenEditModal(role)}
+                        className="text-primary hover:text-primary/80 mr-4"
+                      >
+                        <PencilIcon className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenDeleteModal(role)}
+                        className="text-red-600 hover:text-red-900"
+                        disabled={!role.is_active}
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

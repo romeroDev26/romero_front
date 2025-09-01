@@ -6,6 +6,7 @@ import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
 import { Supplier, DocType } from '../../../types';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 // Este servicio tendría que ser implementado
 // import { suppliersService } from '../../../services/suppliers.service';
@@ -24,6 +25,7 @@ const getDocTypeDisplay = (type: DocType): string => {
 
 export const SuppliersListPage: React.FC = () => {
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDocType, setFilterDocType] = useState<DocType | 'ALL'>('ALL');
   const [filterActive, setFilterActive] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
@@ -241,12 +243,14 @@ export const SuppliersListPage: React.FC = () => {
                   >
                     <PencilIcon className="h-5 w-5" />
                   </button>
-                  <button
-                    onClick={() => handleDelete(supplier.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
+                  {hasPermission('inventory', 'suppliers', 'warehouse') && (
+                    <button
+                      onClick={() => handleDelete(supplier.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

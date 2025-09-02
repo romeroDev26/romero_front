@@ -275,7 +275,9 @@ export const generatePassengerManifestPDF = (
         currentY = finalY + 16;
       }
     } else if (manifestData.items && manifestData.items.length > 0) {
-      const tableData = manifestData.items.map((item: any, idx: number) => {
+      const tableData = manifestData.items
+        .sort((a: any, b: any) => a.item_order - b.item_order)
+        .map((item: any, idx: number) => {
         // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
         let contactos = "";
         const remitentePhone = item.remitente_phone && item.remitente_phone.trim() !== "" ? item.remitente_phone : null;
@@ -362,7 +364,9 @@ export const generatePassengerManifestPDF = (
   } else {
     // PASAJEROS: construir tabla centrada y con estilo similar a carga
     if (manifestData.items && manifestData.items.length > 0) {
-      const tableData = manifestData.items.map((item: any, idx: number) => {
+      const tableData = manifestData.items
+        .sort((a: any, b: any) => a.item_order - b.item_order)
+        .map((item: any, idx: number) => {
         const rawSeller =
           item.seller_name ??
           item?.seller?.name ??

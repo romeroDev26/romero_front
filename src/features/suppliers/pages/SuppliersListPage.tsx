@@ -1,7 +1,6 @@
 // src/features/suppliers/pages/SuppliersListPage.tsx
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';

@@ -189,7 +189,9 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {manifest.items.map((item, index) => (
+                {manifest.items
+                  .sort((a, b) => a.item_order - b.item_order)
+                  .map((item, index) => (
                   <tr key={item.seat_assignment_id}>
                     <td className="px-8 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                       {index + 1}
@@ -283,7 +285,9 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {manifest.items.map((item, index) => (
+                {manifest.items
+                  .sort((a, b) => a.item_order - b.item_order)
+                  .map((item, index) => (
                   <tr key={item.seat_assignment_id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                       {index + 1}

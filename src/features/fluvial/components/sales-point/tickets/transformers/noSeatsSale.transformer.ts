@@ -26,7 +26,8 @@ import {
   formatTripDate,
   formatTripTime,
   formatBoardingTime,
-  formatCurrency
+  formatCurrency,
+  buildCleanItemDescription
 } from '../utils/ticketHelpers';
 
 export class NoSeatsSaleTransformer {
@@ -146,8 +147,9 @@ export class NoSeatsSaleTransformer {
   private static transformFinancialBreakdown(data: BackendInvoiceData) {
     // Procesar items
     const items = data.items.map(item => {
-      // Tomar descripción enviada por backend o el nombre del producto
-      let description = item.item_description || item.product_name || 'Servicio';
+      // Usar función helper que construye descripción limpia sin tramo ni asiento
+      // pero conserva información adicional como "Exceso de Equipaje - detalles"
+      let description = buildCleanItemDescription(item);
 
       // Eliminar patrones no deseados para embarcaciones sin asientos:
       // - "Tramo: Origen - Destino." (y variantes)

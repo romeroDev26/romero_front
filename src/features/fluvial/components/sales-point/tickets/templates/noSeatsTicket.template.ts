@@ -4,8 +4,15 @@ import jsPDF from 'jspdf';
 import { TicketData } from '../types/ticket.types';
 
 /**
- * Template para generar PDFs de tickets de venta para embarcaciones sin asientos
- * Formato térmico de 80mm de ancho
+ * Template para generar PDFs de tickets de venta para embarcaciones sin a    // Port
+    if (tripDetails.port_name || tripDetails.port_address) {
+      const portNameLines = this.splitText(doc, (tripDetails.port_name ?? '').toUpperCase(), colWidth, 11);
+      const portAddrLines = this.splitText(doc, (tripDetails.port_address ?? '').toUpperCase(), colWidth, 11);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('PUERTO:', leftX, currentY); doc.text('DIRECCIÓN PUERTO:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
+      const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
+      for (let i = 0; i < maxPortLines; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text((portNameLines[i] ?? '').toUpperCase(), leftX, currentY); doc.text((portAddrLines[i] ?? '').toUpperCase(), rightX, currentY); currentY += 4; } // aumentado de 3 a 4
+      currentY += 4; // aumentado de 3 a 4
+    } * Formato térmico de 80mm de ancho
  */
 export class NoSeatsTicketTemplate {
   private static readonly TICKET_WIDTH = 80; // mm
@@ -146,7 +153,7 @@ export class NoSeatsTicketTemplate {
         await new Promise<void>((resolve, reject) => { logoImg.onload = () => resolve(); logoImg.onerror = () => reject(new Error('Error cargando logo')); logoImg.src = header.company_logo_url!; });
         const maxLogoWidth = 46; const logoAspectRatio = logoImg.height / logoImg.width; const logoWidth = Math.min(maxLogoWidth, 46); const logoHeight = logoWidth * logoAspectRatio;
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-    currentY += 5; // bajar logo 12mm (reducción para ocupar menos espacio en blanco)
+    currentY -= 2; // subir logo para reducir espacio superior
         doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
         currentY += logoHeight + 2.5;
       } catch (e) { console.error('Error cargando logo:', e); currentY += 2.5; }
@@ -193,8 +200,38 @@ export class NoSeatsTicketTemplate {
   private static addPassengerInfo(doc: jsPDF, passengerInfo: TicketData['passenger_info'], startY: number): number {
     let currentY = startY;
     doc.setFontSize(8); doc.setLineWidth(0.2); doc.setDrawColor(180, 180, 180); doc.line(0, currentY, this.TICKET_WIDTH, currentY); currentY += 4;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text('PASAJERO:', this.MARGIN, currentY); currentY += 4;
-    doc.setFont('helvetica', 'normal'); const nameLines = this.splitText(doc, passengerInfo.full_name, this.CONTENT_WIDTH, 7); nameLines.forEach(line => { doc.text(line, this.MARGIN, currentY); currentY += 3; }); currentY += 1; doc.setFontSize(7); doc.text(`${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, this.MARGIN, currentY); currentY += 4;
+    
+    // Preparar columnas
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
+
+    // FILA 1: etiquetas (NOMBRE / DOCUMENTO)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('NOMBRE:', leftX, currentY);
+    doc.text('DOCUMENTO:', rightX, currentY);
+    currentY += 4; // espacio antes de los valores (aumentado de 3 a 4)
+
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
+    doc.setFontSize(11);
+    const nameLines = this.splitText(doc, passengerInfo.full_name, colWidth, 11);
+    const docLines = this.splitText(doc, `${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, colWidth, 11);
+    const maxLines = Math.max(nameLines.length, docLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      // Nombre: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((nameLines[i] ?? '').toUpperCase(), leftX, currentY);
+      // Documento: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((docLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
+    }
+    currentY += 4; // espacio aumentado entre bloques
     return currentY;
   }
 
@@ -216,13 +253,13 @@ export class NoSeatsTicketTemplate {
     const seatItem = findByLabel(/ASIENTO/);
 
     // Row 1 labels
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARCACIÓN:', leftX, currentY); doc.text('FECHA VIAJE:', rightX, currentY); currentY += 3;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARCACIÓN:', leftX, currentY); doc.text('FECHA VIAJE:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
     doc.setFontSize(11);
     const vesselLines = vesselItem ? this.splitText(doc, vesselItem.value.toUpperCase(), colWidth, 11) : [''];
     const dateLines = dateItem ? this.splitText(doc, dateItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines1 = Math.max(vesselLines.length, dateLines.length);
-    for (let i = 0; i < maxLines1; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(vesselLines[i] ?? '', leftX, currentY); doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(dateLines[i] ?? '', rightX, currentY); currentY += 3; }
-    currentY += 4;
+    for (let i = 0; i < maxLines1; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(vesselLines[i] ?? '', leftX, currentY); doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(dateLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3 a 4
+    currentY += 4; // aumentado de 4 a 4 (ya estaba)
 
     // Port
     if (tripDetails.port_name || tripDetails.port_address) {
@@ -235,28 +272,25 @@ export class NoSeatsTicketTemplate {
     }
 
     // Embark / Departure
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARQUE:', leftX, currentY); doc.text('SALIDA:', rightX, currentY); currentY += 3;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARQUE:', leftX, currentY); doc.text('SALIDA:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
     const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
     const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines2 = Math.max(boardingLines.length, departureLines.length);
-    for (let i = 0; i < maxLines2; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(boardingLines[i] ?? '', leftX, currentY); doc.text(departureLines[i] ?? '', rightX, currentY); currentY += 3; }
-    currentY += 3;
+    for (let i = 0; i < maxLines2; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(boardingLines[i] ?? '', leftX, currentY); doc.text(departureLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3 a 4
+    currentY += 4; // aumentado de 3 a 4
 
     // Origin / Destination
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('ORIGEN:', leftX, currentY); doc.text('DESTINO:', rightX, currentY); currentY += 3;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('ORIGEN:', leftX, currentY); doc.text('DESTINO:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
     const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
     const destLines = destItem ? this.splitText(doc, destItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines3 = Math.max(originLines.length, destLines.length);
-    for (let i = 0; i < maxLines3; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.text(originLines[i] ?? '', leftX, currentY); doc.text(destLines[i] ?? '', rightX, currentY); currentY += 3.5; }
-    currentY += 3;
+    for (let i = 0; i < maxLines3; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.text(originLines[i] ?? '', leftX, currentY); doc.text(destLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3.5 a 4
+    currentY += 4; // aumentado de 3 a 4
 
     // Seat
     if (seatItem) {
       doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(`ASIENTO: ${seatItem.value.toUpperCase()}`, leftX, currentY);
-      const baggageLabel = 'N° EQUIPAJE:'; doc.setFontSize(7); doc.setFont('helvetica', 'bold'); doc.text(baggageLabel, rightX, currentY);
-      const boxSize = 12; const boxX = this.TICKET_WIDTH - this.MARGIN - boxSize; const boxTopY = currentY - (boxSize - 4);
-      doc.setLineWidth(0.8); doc.rect(boxX, boxTopY, boxSize, boxSize);
-      doc.setFontSize(7); doc.setFont('helvetica', 'normal'); currentY += 6;
+      currentY += 6;
     }
 
     doc.setLineWidth(0.2); doc.setDrawColor(180, 180, 180); doc.line(0, currentY, this.TICKET_WIDTH, currentY); currentY += 4;

@@ -3,11 +3,6 @@
 import jsPDF from 'jspdf';
 import { TicketData, TicketRepresentative, TicketCompanySummary } from '../types/ticket.types';
 
-/**
- * Template para generar PDFs de tickets de venta empresarial (RESUMEN)
- * Basado en NormalTicketTemplate pero adaptado para ventas con RUC
- * Formato térmico de 80mm de ancho
- */
 export class CompanyTicketTemplate {
   
   private static readonly TICKET_WIDTH = 80; // mm
@@ -64,8 +59,8 @@ export class CompanyTicketTemplate {
    * (Igual que NormalTicketTemplate)
    */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-    // Añadir un offset superior mayor para 'bajar' el header y hacerlo visible en previews/impresiones
-  const TOP_OFFSET = 24; // mm (ajustado: bajar más el header para que el logo sea visible)
+    // Reducir significativamente el offset para subir el logo y aprovechar mejor el espacio
+    const TOP_OFFSET = 2; // mm (reducido de 10 a 2 para subir el logo)
     let currentY = Math.max(startY + TOP_OFFSET, 0);
      
     // SOLO LOGO - sin texto adicional
@@ -91,7 +86,7 @@ export class CompanyTicketTemplate {
       } catch (error) {
         console.error('Error cargando logo:', error);
         // Si no hay logo, no mostrar nada - continuar directamente
-        currentY += 2.5; // Aumentado de 1.5 a 2.5 para mantener consistencia
+        currentY += 1.0; // Reducido de 2.5 a 1.0 para mantener consistencia
       }
     }
 
@@ -201,59 +196,53 @@ export class CompanyTicketTemplate {
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4;
     
-    doc.setFontSize(7);
+    // Preparar columnas
     doc.setFont('helvetica', 'normal');
-    
-    // Cliente (empresa)
-    doc.text('CLIENTE:', this.MARGIN, currentY);
-    const clientLines = this.splitText(doc, passenger.full_name, this.CONTENT_WIDTH - 15, 7);
-    doc.text(clientLines[0], this.MARGIN + 15, currentY);
-    currentY += 3;
-    
-    for (let i = 1; i < clientLines.length; i++) {
-      doc.text(clientLines[i], this.MARGIN + 15, currentY);
-      currentY += 3;
+    doc.setFontSize(7);
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
+
+    // FILA 1: etiquetas (CLIENTE / RUC)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('CLIENTE:', leftX, currentY);
+    doc.text('RUC:', rightX, currentY);
+    currentY += 4; // espacio antes de los valores (aumentado de 3 a 4)
+
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
+    doc.setFontSize(11);
+    const clientLines = this.splitText(doc, passenger.full_name, colWidth, 11);
+    const rucLines = this.splitText(doc, passenger.doc_number, colWidth, 11);
+    const maxLines = Math.max(clientLines.length, rucLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      // Cliente: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((clientLines[i] ?? '').toUpperCase(), leftX, currentY);
+      // RUC: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((rucLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
     }
-    
-    // Documento (RUC)
-    doc.text('RUC:', this.MARGIN, currentY);
-    doc.text(passenger.doc_number, this.MARGIN + 15, currentY);
-    currentY += 3;
-    
-    // Dirección del cliente si está disponible
+    currentY += 4; // espacio aumentado entre bloques
+
+    // Dirección del cliente si está disponible (en línea separada)
     if ((passenger as any).address && (passenger as any).address.toString().trim() !== '') {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
       doc.text('DIRECCIÓN:', this.MARGIN, currentY);
-      const clientAddrLines = this.splitText(doc, (passenger as any).address, this.CONTENT_WIDTH - 15, 7);
-      doc.text(clientAddrLines[0], this.MARGIN + 15, currentY);
-      currentY += 3;
-      for (let i = 1; i < clientAddrLines.length; i++) {
-        doc.text(clientAddrLines[i], this.MARGIN + 15, currentY);
-        currentY += 3;
-      }
+      currentY += 4; // aumentado de 3 a 4
+      const clientAddrLines = this.splitText(doc, (passenger as any).address, this.CONTENT_WIDTH, 11);
+      clientAddrLines.forEach(line => {
+        doc.setFontSize(11);
+        doc.text(line.toUpperCase(), this.MARGIN, currentY);
+        currentY += 4; // aumentado de 3 a 4
+      });
+      currentY += 4; // espacio después
     }
     
-    // Email si está disponible (comentado porque no está en el tipo)
-    // if (passenger.email) {
-    //   doc.text('EMAIL:', this.MARGIN, currentY);
-    //   const emailText = this.truncateText(doc, passenger.email, this.CONTENT_WIDTH - 15, 7);
-    //   doc.text(emailText, this.MARGIN + 15, currentY);
-    //   currentY += 3;
-    // }
-    
-    // Dirección si está disponible (comentado porque no está en el tipo)
-    // if (passenger.address) {
-    //   doc.text('DIRECCIÓN:', this.MARGIN, currentY);
-    //   const addressLines = this.splitText(doc, passenger.address, this.CONTENT_WIDTH - 20, 7);
-    //   doc.text(addressLines[0], this.MARGIN + 20, currentY);
-    //   currentY += 3;
-    //   
-    //   for (let i = 1; i < addressLines.length; i++) {
-    //     doc.text(addressLines[i], this.MARGIN + 20, currentY);
-    //     currentY += 3;
-    //   }
-    // }
-    
-    currentY += 2;
     return currentY;
   }
 
@@ -299,7 +288,7 @@ export class CompanyTicketTemplate {
     doc.setFontSize(7);
     doc.text('EMBARCACIÓN:', leftX, currentY);
     doc.text('FECHA VIAJE:', rightX, currentY);
-    currentY += 3; // espacio antes de los valores
+    currentY += 4; // espacio antes de los valores (aumentado de 3 a 4)
 
     // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
     doc.setFontSize(11);
@@ -315,7 +304,7 @@ export class CompanyTicketTemplate {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.text((dateLines[i] ?? '').toUpperCase(), rightX, currentY);
-      currentY += 3; // línea con más espacio
+      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
     }
     currentY += 4; // espacio aumentado entre bloques
 
@@ -328,7 +317,7 @@ export class CompanyTicketTemplate {
       doc.setFontSize(7);
       doc.text('PUERTO:', leftX, currentY);
       doc.text('DIRECCIÓN PUERTO:', rightX, currentY);
-      currentY += 3;
+      currentY += 4; // aumentado de 3 a 4
 
       // Valores
       const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
@@ -337,10 +326,10 @@ export class CompanyTicketTemplate {
         doc.setFont('helvetica', 'normal');
         doc.text((portNameLines[i] ?? '').toUpperCase(), leftX, currentY);
         doc.text((portAddrLines[i] ?? '').toUpperCase(), rightX, currentY);
-        currentY += 3;
+        currentY += 4; // aumentado de 3 a 4
       }
 
-      currentY += 3; // espacio después del bloque de puerto
+      currentY += 4; // espacio después del bloque de puerto (aumentado de 3 a 4)
     }
 
     // FILA 2: etiquetas (EMBARQUE / SALIDA)
@@ -348,9 +337,9 @@ export class CompanyTicketTemplate {
     doc.setFontSize(7);
     doc.text('EMBARQUE:', leftX, currentY);
     doc.text('SALIDA:', rightX, currentY);
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
-    // FILA 2b: valores debajo (tamaño 11)
+     // FILA 2b: valores debajo (tamaño 11)
     const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value, colWidth, 11) : [''];
     const departureLines = departureItem ? this.splitText(doc, departureItem.value, colWidth, 11) : [''];
     const maxLines2 = Math.max(boardingLines.length, departureLines.length);
@@ -359,16 +348,14 @@ export class CompanyTicketTemplate {
       doc.setFontSize(11);
       doc.text((boardingLines[i] ?? '').toUpperCase(), leftX, currentY);
       doc.text((departureLines[i] ?? '').toUpperCase(), rightX, currentY);
-      currentY += 3;
+      currentY += 4; // aumentado de 3 a 4
     }
-    currentY += 3;
-
-    // FILA 3: etiquetas (ORIGEN / DESTINO)
+    currentY += 4; // aumentado de 3 a 4    // FILA 3: etiquetas (ORIGEN / DESTINO)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text('ORIGEN:', leftX, currentY);
     doc.text('DESTINO:', rightX, currentY);
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
     // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, tamaño 11)
     const originLines = originItem ? this.splitText(doc, originItem.value, colWidth, 11) : [''];
@@ -379,31 +366,15 @@ export class CompanyTicketTemplate {
       doc.setFont('helvetica', 'bold');
       doc.text((originLines[i] ?? '').toUpperCase(), leftX, currentY);
       doc.text((destLines[i] ?? '').toUpperCase(), rightX, currentY);
-      currentY += 3.5; // un poco más de espacio por el tamaño mayor
+      currentY += 4; // aumentado de 3.5 a 4 para consistencia
     }
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
-    // En esta plantilla de empresa NO imprimimos "ASIENTO: <valor>" aquí
-    // En su lugar mostramos etiqueta N° EQUIPAJE y el recuadro a la derecha
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    // Etiqueta N° EQUIPAJE en la columna derecha
-    const baggageLabel = 'N° EQUIPAJE:';
-    doc.text(baggageLabel, rightX, currentY);
-
-    // Dibujar un cuadrado para N° EQUIPAJE en la esquina derecha
-    const boxSize = 12; // mm
-    const boxX = this.TICKET_WIDTH - this.MARGIN - boxSize; // posición derecha
-    const boxTopY = currentY - (boxSize - 4); // ajustar para alinear verticalmente con el texto
-    doc.setLineWidth(0.8);
-    doc.rect(boxX, boxTopY, boxSize, boxSize);
-
-    // Restaurar fuente y avanzar
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    currentY += 6;
-
-  // (Se eliminó la línea separadora que estaba debajo de "N° EQUIPAJE")
+  // Línea separadora
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+    currentY += 4;
 
     return currentY;
   }
@@ -414,48 +385,47 @@ export class CompanyTicketTemplate {
   private static addRepresentativesSummary(doc: jsPDF, representatives: TicketRepresentative[], startY: number): number {
     let currentY = startY;
     
-    // Línea separadora
-    doc.setLineWidth(0.2);
-    doc.setDrawColor(180, 180, 180);
-    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 4;
-    
-  // Título
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('RESUMEN DE PASAJEROS', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-  currentY += 5;
-    
-  // Lista de asientos (más legible: 8.5)
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.5);
-    
-    doc.text('ASIENTOS:', this.MARGIN, currentY);
+    // Título (mismo tamaño que otros títulos del bloque)
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('RESUMEN DE PASAJEROS', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+    currentY += 6;
+
+    // Preparar columnas
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
+
+    // FILA 1: etiquetas (ASIENTO(S) / TOTAL REPRESENTANTES)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('ASIENTO(S):', leftX, currentY);
+    doc.text('TOTAL REPRESENTANTES:', rightX, currentY);
+    currentY += 4; // espacio antes de los valores
+
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
+    doc.setFontSize(11);
     const seatNumbers = representatives
       .map(rep => rep.seat_number)
       .filter(seat => seat != null && seat !== '')
       .join(', ');
-    
-    if (seatNumbers) {
-      const seatLines = this.splitText(doc, seatNumbers, this.CONTENT_WIDTH - 18, 8.5);
-      if (seatLines && seatLines.length > 0) {
-        doc.text(seatLines[0], this.MARGIN + 18, currentY);
-        currentY += 3;
-        
-        for (let i = 1; i < seatLines.length; i++) {
-          doc.text(seatLines[i], this.MARGIN + 18, currentY);
-          currentY += 3;
-        }
-      }
-    } else {
-      doc.text('N/A', this.MARGIN + 18, currentY);
-      currentY += 3;
+    const seatLines = seatNumbers ? this.splitText(doc, seatNumbers, colWidth, 11) : ['N/A'];
+    const totalLines = this.splitText(doc, representatives.length.toString(), colWidth, 11);
+    const maxLines = Math.max(seatLines.length, totalLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      // Asientos: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((seatLines[i] ?? '').toUpperCase(), leftX, currentY);
+      // Total representantes: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((totalLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4; // línea con más espacio
     }
-    
-  // Resumen numérico
-  doc.setFont('helvetica', 'bold');
-  doc.text(`TOTAL REPRESENTANTES: ${representatives.length}`, this.MARGIN, currentY);
-  currentY += 5;
+    currentY += 4; // espacio aumentado entre bloques
     
     return currentY;
   }

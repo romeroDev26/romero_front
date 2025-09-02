@@ -2,14 +2,6 @@
 
 import jsPDF from 'jspdf';
 import { TicketData, TicketRepresentative, TicketCompanySummary } from '../types/ticket.types';
-
-/**
- * Template para generar PDFs de tickets de venta empresarial SIN ASIENTOS
- * Especializado para embarcaciones que no manejan asientos numerados (como lanchas colectivas) 
- * con ventas empresariales (RUC con múltiples representantes)
- * Muestra "Elección libre" en lugar de números de asiento específicos
- * Formato térmico de 80mm de ancho
- */
 export class NoSeatsCompanyTicketTemplate {
   
   private static readonly TICKET_WIDTH = 80; // mm
@@ -91,7 +83,7 @@ export class NoSeatsCompanyTicketTemplate {
         }
   const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
   // Bajar el logo más para que se note en impresoras térmicas
-  const logoYOffset = 18; // mm (aumentado desde 8)
+  const logoYOffset = 8; // mm 
   const logoY = currentY + logoYOffset;
   doc.addImage(logoImg, 'PNG', logoX, logoY, logoWidth, logoHeight);
   currentY = logoY + logoHeight + 2.5;
@@ -216,30 +208,37 @@ export class NoSeatsCompanyTicketTemplate {
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4;
     
-    doc.setFontSize(8); // Aumentado de 7 a 8
+    // Preparar columnas
     doc.setFont('helvetica', 'normal');
-    
-    // Cliente (empresa)
-    doc.setFont('helvetica', 'bold'); // Añadido bold para etiqueta
-    doc.text('CLIENTE:', this.MARGIN, currentY);
-    doc.setFont('helvetica', 'normal'); // Volver a normal para valor
-    const clientLines = this.splitText(doc, passenger.full_name, this.CONTENT_WIDTH - 15, 8); // Aumentado de 7 a 8
-    doc.text(clientLines[0], this.MARGIN + 15, currentY);
-    currentY += 3;
-    
-    for (let i = 1; i < clientLines.length; i++) {
-      doc.text(clientLines[i], this.MARGIN + 15, currentY);
-      currentY += 3;
+    doc.setFontSize(7);
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
+
+    // FILA 1: etiquetas (CLIENTE / RUC)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('CLIENTE:', leftX, currentY);
+    doc.text('RUC:', rightX, currentY);
+    currentY += 4; // espacio antes de los valores (aumentado de 3 a 4)
+
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
+    doc.setFontSize(11);
+    const clientLines = this.splitText(doc, passenger.full_name, colWidth, 11);
+    const rucLines = this.splitText(doc, passenger.doc_number, colWidth, 11);
+    const maxLines = Math.max(clientLines.length, rucLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      // Cliente: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((clientLines[i] ?? '').toUpperCase(), leftX, currentY);
+      // RUC: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((rucLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
     }
-    
-    // Documento (RUC)
-    doc.setFont('helvetica', 'bold'); // Añadido bold para etiqueta
-    doc.text('RUC:', this.MARGIN, currentY);
-    doc.setFont('helvetica', 'normal'); // Volver a normal para valor
-    doc.text(passenger.doc_number, this.MARGIN + 15, currentY);
-    currentY += 3;
-    
-    currentY += 2;
+    currentY += 4; // espacio aumentado entre bloques
     return currentY;
   }
 
@@ -285,7 +284,7 @@ export class NoSeatsCompanyTicketTemplate {
     doc.setFontSize(7);
     doc.text('EMBARCACIÓN:', leftX, currentY);
     doc.text('FECHA VIAJE:', rightX, currentY);
-    currentY += 3; // espacio antes de los valores
+    currentY += 4; // espacio antes de los valores (aumentado de 3 a 4)
 
     // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
     doc.setFontSize(11);
@@ -301,7 +300,7 @@ export class NoSeatsCompanyTicketTemplate {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11);
       doc.text(dateLines[i] ?? '', rightX, currentY);
-      currentY += 3; // línea con más espacio
+      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
     }
     currentY += 4; // espacio aumentado entre bloques
 
@@ -314,7 +313,7 @@ export class NoSeatsCompanyTicketTemplate {
       doc.setFontSize(7);
       doc.text('PUERTO:', leftX, currentY);
       doc.text('DIRECCIÓN PUERTO:', rightX, currentY);
-      currentY += 3;
+      currentY += 4; // aumentado de 3 a 4
 
       // Valores
       const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
@@ -323,10 +322,10 @@ export class NoSeatsCompanyTicketTemplate {
         doc.setFont('helvetica', 'normal');
         doc.text(portNameLines[i] ?? '', leftX, currentY);
         doc.text(portAddrLines[i] ?? '', rightX, currentY);
-        currentY += 3;
+        currentY += 4; // aumentado de 3 a 4
       }
 
-      currentY += 3; // espacio después del bloque de puerto
+      currentY += 4; // espacio después del bloque de puerto (aumentado de 3 a 4)
     }
 
     // FILA 2: etiquetas (EMBARQUE / SALIDA)
@@ -334,9 +333,9 @@ export class NoSeatsCompanyTicketTemplate {
     doc.setFontSize(7);
     doc.text('EMBARQUE:', leftX, currentY);
     doc.text('SALIDA:', rightX, currentY);
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
-    // FILA 2b: valores debajo (tamaño 11)
+     // FILA 2b: valores debajo (tamaño 11)
     const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
     const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines2 = Math.max(boardingLines.length, departureLines.length);
@@ -345,11 +344,9 @@ export class NoSeatsCompanyTicketTemplate {
       doc.setFontSize(11);
       doc.text(boardingLines[i] ?? '', leftX, currentY);
       doc.text(departureLines[i] ?? '', rightX, currentY);
-      currentY += 3;
+      currentY += 4; // aumentado de 3 a 4
     }
-    currentY += 3;
-
-    // FILA 3: etiquetas (ORIGEN / DESTINO)
+    currentY += 4; // aumentado de 3 a 4    // FILA 3: etiquetas (ORIGEN / DESTINO)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text('ORIGEN:', leftX, currentY);
@@ -373,25 +370,7 @@ export class NoSeatsCompanyTicketTemplate {
     if (seatItem) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11); // tamaño 11 para valores
-      // ASIENTO a la izquierda
       doc.text(`ASIENTO: ${seatItem.value.toUpperCase()}`, leftX, currentY);
-
-      // Etiqueta N° EQUIPAJE en la columna derecha
-      const baggageLabel = 'N° EQUIPAJE:';
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
-      doc.text(baggageLabel, rightX, currentY);
-
-      // Dibujar un cuadrado para N° EQUIPAJE
-      const boxSize = 12; // mm
-      const boxX = this.TICKET_WIDTH - this.MARGIN - boxSize; // posición derecha
-      const boxTopY = currentY - (boxSize - 4); // ajustar para alinear verticalmente con el texto
-      doc.setLineWidth(0.8);
-      doc.rect(boxX, boxTopY, boxSize, boxSize);
-
-      // Restaurar fuente y avanzar
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
       currentY += 6;
     }
 

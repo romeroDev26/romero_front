@@ -12,8 +12,6 @@ export class NormalTicketTemplate {
   private static readonly TICKET_WIDTH = 80; // mm
   private static readonly MARGIN = 2; // mm
   private static readonly CONTENT_WIDTH = NormalTicketTemplate.TICKET_WIDTH - (NormalTicketTemplate.MARGIN * 2);
-  // Offset superior aplicable al header; puede ser negativo para subir el logo sobre el margen
-  private static readonly HEADER_TOP_OFFSET = 2; // mm, ajustar a valores negativos si se desea reducir espacio
   
   /** Genera el PDF del ticket usando los datos transformados */
   static async generatePDF(ticketData: TicketData): Promise<jsPDF> {
@@ -23,10 +21,14 @@ export class NormalTicketTemplate {
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: [this.TICKET_WIDTH, INITIAL_HEIGHT] // Altura inicial aumentada
+      format: [this.TICKET_WIDTH, INITIAL_HEIGHT], // Altura inicial aumentada
+      compress: true,
+      // Intentar eliminar márgenes automáticos de jsPDF
+      putOnlyUsedFonts: true
     });
     
   doc.setFont('helvetica');
+  // Iniciar desde coordenada 0 absoluta
   let currentY = 0;
     
   // BLOQUE 1: CABECERA
@@ -77,7 +79,11 @@ export class NormalTicketTemplate {
     // Items
     ticketData.financial_breakdown.items.forEach(item => {
       doc.text(String(item.quantity), this.MARGIN, currentY);
+      
       // Descripción multilínea con descuento si aplica
+      // Nota: item.description ya viene limpio desde el transformer usando buildCleanItemDescription()
+      // Esta función preserva el nombre del servicio + información adicional del usuario desde el saleform
+      // mientras elimina información del sistema como tramos, asientos, y ubicaciones generadas automáticamente
       let desc = item.description;
       if (item.discount && item.discount > 0) {
         desc += ` (descuento: ${item.discount.toFixed(2)})`;
@@ -159,8 +165,8 @@ export class NormalTicketTemplate {
   
   /** BLOQUE 1: Añade el encabezado completo con logo y datos de empresa */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-  // Usar la constante HEADER_TOP_OFFSET para permitir ajustes finos (puede ser negativo)
-  let currentY = startY + (this.HEADER_TOP_OFFSET || 0);
+  // Usar directamente startY sin offset complicado
+  let currentY = startY;
      
     // SOLO LOGO - sin texto adicional
   if (header.company_logo_url) {
@@ -179,14 +185,18 @@ export class NormalTicketTemplate {
   const logoHeight = logoWidth * logoAspectRatio;
         // Centrar el logo
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-        // Colocar el logo completamente arriba
-  doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
-    currentY += logoHeight + 2.5; // Aumentado de 1.5 a 2.5 para evitar interferencia con las letras
+        // Colocar el logo en la coordenada Y absoluta más pequeña posible
+        const logoY = 0.1; // Posición Y fija muy pequeña, independiente de currentY
+  doc.addImage(logoImg, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    currentY = logoY + logoHeight + 2.5; // Ajustar currentY basado en la nueva posición del logo
       } catch (error) {
         console.error('Error cargando logo:', error);
-        // Si no hay logo, no mostrar nada - continuar directamente
-        currentY += 2.5; // Aumentado de 1.5 a 2.5 para mantener consistencia
+        // Si no hay logo, empezar desde una posición muy pequeña
+        currentY = 0.1;
       }
+    } else {
+      // Si no hay URL de logo, empezar desde posición muy pequeña
+      currentY = 0.1;
     }
 
   // Frase estática de la empresa
@@ -287,35 +297,46 @@ export class NormalTicketTemplate {
   private static addPassengerInfo(doc: jsPDF, passengerInfo: TicketData['passenger_info'], startY: number): number {
     let currentY = startY;
     
-  // Línea separadora continua (gris)
-  doc.setFontSize(8);
-  doc.setLineWidth(0.2);
-  doc.setDrawColor(180, 180, 180);
+    // Línea separadora continua (gris)
+    doc.setFontSize(8);
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4; // Espacio adecuado después del separador
     
-  // PASAJERO:
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('PASAJERO:', this.MARGIN, currentY);
-    currentY += 4;
-
-    // Nombre del pasajero (una o varias líneas)
+    // Preparar columnas
     doc.setFont('helvetica', 'normal');
-    const nameLines = this.splitText(doc, passengerInfo.full_name, this.CONTENT_WIDTH, 7);
-    nameLines.forEach(line => {
-      doc.text(line, this.MARGIN, currentY);
-      currentY += 3;
-    });
-
-  currentY += 1;
-
-    // Documento del pasajero en su propia línea
     doc.setFontSize(7);
-    doc.text(`${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, this.MARGIN, currentY);
-    currentY += 4;
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
+
+    // FILA 1: etiquetas (NOMBRE / DOCUMENTO)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('NOMBRE:', leftX, currentY);
+    doc.text('DOCUMENTO:', rightX, currentY);
+    currentY += 4; // espacio antes de los valores (aumentado de 3 a 4)
+
+    // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
+    doc.setFontSize(11);
+    const nameLines = this.splitText(doc, passengerInfo.full_name, colWidth, 11);
+    const docLines = this.splitText(doc, `${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, colWidth, 11);
+    const maxLines = Math.max(nameLines.length, docLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      // Nombre: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((nameLines[i] ?? '').toUpperCase(), leftX, currentY);
+      // Documento: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((docLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
+    }
+    currentY += 4; // espacio aumentado entre bloques
     
-  return currentY;
+    return currentY;
   }
   
   /** BLOQUE 3: Añade los detalles del viaje */
@@ -356,7 +377,7 @@ export class NormalTicketTemplate {
     doc.setFontSize(7);
     doc.text('EMBARCACIÓN:', leftX, currentY);
     doc.text('FECHA VIAJE:', rightX, currentY);
-    currentY += 3; // espacio antes de los valores
+    currentY += 4; // espacio antes de los valores (aumentado de 3 a 4)
 
     // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
     doc.setFontSize(11);
@@ -364,19 +385,17 @@ export class NormalTicketTemplate {
     const dateLines = dateItem ? this.splitText(doc, dateItem.value, colWidth, 11) : [''];
     const maxLines1 = Math.max(vesselLines.length, dateLines.length);
     for (let i = 0; i < maxLines1; i++) {
-  // Embarcación: normal
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(11);
-  doc.text((vesselLines[i] ?? '').toUpperCase(), leftX, currentY);
-  // Fecha de viaje: valor en negrita (misma medida)
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text((dateLines[i] ?? '').toUpperCase(), rightX, currentY);
-  currentY += 3; // línea con más espacio
+      // Embarcación: normal
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text((vesselLines[i] ?? '').toUpperCase(), leftX, currentY);
+      // Fecha de viaje: valor en negrita (misma medida)
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.text((dateLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
     }
-    currentY += 4; // espacio aumentado entre bloques
-
-  // --- PUERTO y DIRECCIÓN DEL PUERTO
+    currentY += 4; // espacio aumentado entre bloques  // --- PUERTO y DIRECCIÓN DEL PUERTO
     if (tripDetails.port_name || tripDetails.port_address) {
   const portNameLines = this.splitText(doc, tripDetails.port_name ?? '', colWidth, 11);
   const portAddrLines = this.splitText(doc, tripDetails.port_address ?? '', colWidth, 11);
@@ -385,7 +404,7 @@ export class NormalTicketTemplate {
       doc.setFontSize(7);
       doc.text('PUERTO:', leftX, currentY);
       doc.text('DIRECCIÓN PUERTO:', rightX, currentY);
-      currentY += 3;
+      currentY += 4; // aumentado de 3 a 4
 
       // Valores
       const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
@@ -394,10 +413,10 @@ export class NormalTicketTemplate {
         doc.setFont('helvetica', 'normal');
         doc.text((portNameLines[i] ?? '').toUpperCase(), leftX, currentY);
         doc.text((portAddrLines[i] ?? '').toUpperCase(), rightX, currentY);
-        currentY += 3;
+        currentY += 4; // aumentado de 3 a 4
       }
 
-      currentY += 3; // espacio después del bloque de puerto
+      currentY += 4; // espacio después del bloque de puerto (aumentado de 3 a 4)
     }
 
     // FILA 2: etiquetas (EMBARQUE / SALIDA)
@@ -405,7 +424,7 @@ export class NormalTicketTemplate {
     doc.setFontSize(7);
     doc.text('EMBARQUE:', leftX, currentY);
     doc.text('SALIDA:', rightX, currentY);
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
     // FILA 2b: valores debajo (tamaño 11)
     const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value, colWidth, 11) : [''];
@@ -416,16 +435,16 @@ export class NormalTicketTemplate {
       doc.setFontSize(11);
       doc.text((boardingLines[i] ?? '').toUpperCase(), leftX, currentY);
       doc.text((departureLines[i] ?? '').toUpperCase(), rightX, currentY);
-      currentY += 3;
+      currentY += 4; // aumentado de 3 a 4
     }
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
     // FILA 3: etiquetas (ORIGEN / DESTINO)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.text('ORIGEN:', leftX, currentY);
     doc.text('DESTINO:', rightX, currentY);
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
     // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, tamaño 11)
     const originLines = originItem ? this.splitText(doc, originItem.value, colWidth, 11) : [''];
@@ -436,33 +455,15 @@ export class NormalTicketTemplate {
       doc.setFont('helvetica', 'bold');
       doc.text((originLines[i] ?? '').toUpperCase(), leftX, currentY);
       doc.text((destLines[i] ?? '').toUpperCase(), rightX, currentY);
-      currentY += 3.5; // un poco más de espacio por el tamaño mayor
+      currentY += 4; // aumentado de 3.5 a 4
     }
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
   // ASIENTO en su propia línea
     if (seatItem) {
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9); // mismo tamaño que los valores de PUERTO
-      // ASIENTO a la izquierda
+      doc.setFontSize(11); // mismo tamaño que los demás valores
       doc.text(`ASIENTO: ${seatItem.value}`, leftX, currentY);
-
-  // Etiqueta N° EQUIPAJE en la columna derecha
-      const baggageLabel = 'N° EQUIPAJE:';
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      doc.text(baggageLabel, rightX, currentY);
-
-  // Dibujar un cuadrado para N° EQUIPAJE
-      const boxSize = 12; // mm
-      const boxX = this.TICKET_WIDTH - this.MARGIN - boxSize; // posición derecha
-      const boxTopY = currentY - (boxSize - 4); // ajustar para alinear verticalmente con el texto
-      doc.setLineWidth(0.8);
-      doc.rect(boxX, boxTopY, boxSize, boxSize);
-
-      // Restaurar fuente y avanzar
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
       currentY += 6;
     }
 

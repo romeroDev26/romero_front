@@ -357,3 +357,111 @@ export function isCargoInvoice(invoiceData: any): boolean {
   
   return false;
 }
+
+/**
+ * Construye una descripción limpia del item para el ticket
+ * REGLA: Solo mostrar product_name + información adicional del usuario desde saleform
+ * Eliminar completamente información de tramo, asiento, destinos, etc.
+ */
+export function buildCleanItemDescription(item: any): string {
+  const productName = item.product_name || 'Servicio';
+  const itemDescription = item.item_description || '';
+  
+  // Si no hay item_description, usar solo product_name
+  if (!itemDescription) {
+    return productName;
+  }
+  
+  // Para servicios de transporte: buscar información del usuario después del asiento
+  if (itemDescription.includes('Servicio de Transporte')) {
+    // PATRÓN NUEVO: Buscar información después de ". Asiento: [número] - "
+    // Ejemplo: "Servicio de Transporte Fluvial. Tramo: SARAMURO - NAUTA. Asiento: 28 - asdasdasdasdadasdadasd"
+    const afterSeatMatch = itemDescription.match(/\.\s*Asiento:\s*\d+\s*-\s*(.+)$/);
+    
+    if (afterSeatMatch && afterSeatMatch[1].trim()) {
+      const userInfo = afterSeatMatch[1].trim();
+      
+      // Verificar que no sea información del sistema
+      const systemInfoPatterns = [
+        /^[A-Z\s]+ - [A-Z\s]+$/, // Tramos: "ORIGEN - DESTINO"
+        /^[A-Z\s]+$/, // Solo nombres de ciudades/puertos en mayúsculas
+        /^Tramo:/i,
+        /^Asiento:/i,
+        /^Ruta:/i,
+      ];
+      
+      const isSystemInfo = systemInfoPatterns.some(pattern => pattern.test(userInfo));
+      
+      if (!isSystemInfo && userInfo.length > 2) {
+        return `${productName} - ${userInfo}`;
+      }
+    }
+    
+    // PATRÓN ANTERIOR: Buscar información después de "- " pero antes de ". Asiento:" (por compatibilidad)
+    const beforeSeatMatch = itemDescription.match(/Servicio de Transporte[^-]*-\s*(.+?)\.\s*Asiento:/);
+    
+    if (beforeSeatMatch && beforeSeatMatch[1].trim()) {
+      const additionalInfo = beforeSeatMatch[1].trim();
+      
+      const systemInfoPatterns = [
+        /^[A-Z\s]+ - [A-Z\s]+$/, // Tramos: "ORIGEN - DESTINO"
+        /^[A-Z\s]+$/, // Solo nombres de ciudades/puertos en mayúsculas
+        /^Tramo:/i,
+        /^Asiento:/i,
+        /^Ruta:/i,
+      ];
+      
+      const isSystemInfo = systemInfoPatterns.some(pattern => pattern.test(additionalInfo));
+      
+      if (!isSystemInfo && additionalInfo.length > 2) {
+        return `${productName} - ${additionalInfo}`;
+      }
+    }
+    
+    // Si no hay información útil del usuario, solo devolver product_name
+    return productName;
+  }
+  
+  // Para otros servicios (como Exceso de Equipaje)
+  if (itemDescription.includes('Asiento:')) {
+    // Extraer información antes del asiento
+    const beforeAsiento = itemDescription.split('. Asiento:')[0];
+    const lastDashIndex = beforeAsiento.lastIndexOf(' - ');
+    if (lastDashIndex !== -1) {
+      const additionalInfo = beforeAsiento.substring(lastDashIndex + 3).trim();
+      
+      // Aplicar los mismos filtros para otros servicios
+      const systemInfoPatterns = [
+        /^[A-Z\s]+ - [A-Z\s]+$/, // Tramos
+        /^[A-Z\s]+$/, // Solo nombres en mayúsculas
+      ];
+      
+      const isSystemInfo = systemInfoPatterns.some(pattern => pattern.test(additionalInfo));
+      
+      if (!isSystemInfo && additionalInfo.length > 2) {
+        return `${productName} - ${additionalInfo}`;
+      }
+    }
+  }
+  
+  // Para servicios sin asiento, buscar información después del último guión
+  const lastDashIndex = itemDescription.lastIndexOf(' - ');
+  if (lastDashIndex !== -1) {
+    const additionalInfo = itemDescription.substring(lastDashIndex + 3).trim();
+    
+    // Aplicar filtros
+    const systemInfoPatterns = [
+      /^[A-Z\s]+ - [A-Z\s]+$/, // Tramos
+      /^[A-Z\s]+$/, // Solo nombres en mayúsculas como "NAUTA"
+    ];
+    
+    const isSystemInfo = systemInfoPatterns.some(pattern => pattern.test(additionalInfo));
+    
+    if (!isSystemInfo && additionalInfo.length > 2) {
+      return `${productName} - ${additionalInfo}`;
+    }
+  }
+  
+  // Si no hay información adicional válida del usuario, usar solo product_name
+  return productName;
+}

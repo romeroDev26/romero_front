@@ -14,7 +14,8 @@ import {
   formatTripDate,
   formatTripTime,
   formatBoardingTime,
-  formatCurrency
+  formatCurrency,
+  buildCleanItemDescription
 } from '../utils/ticketHelpers';
 
 /**
@@ -143,10 +144,9 @@ export class CompanySaleTransformer {
   private static transformFinancialBreakdown(data: BackendInvoiceData) {
     // Procesar TODOS los items, no solo el primero
     const processedItems = data.items.map(item => {
-      // Usar item_description completo que incluye toda la información
-      let description = item.item_description || item.product_name || 'Servicio';
-      
-      // No agregar información adicional del asiento ya que item_description ya lo incluye
+      // Usar función helper que construye descripción limpia sin tramo ni asiento
+      // pero conserva información adicional como "Exceso de Equipaje - detalles"
+      const description = buildCleanItemDescription(item);
       
       return {
         description,

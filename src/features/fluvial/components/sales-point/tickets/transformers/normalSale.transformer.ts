@@ -15,7 +15,8 @@ import {
   formatTripDate,
   formatTripTime,
   formatBoardingTime,
-  formatCurrency
+  formatCurrency,
+  buildCleanItemDescription
 } from '../utils/ticketHelpers';
 
 /**
@@ -124,7 +125,7 @@ export class NormalSaleTransformer {
   private static transformFinancialBreakdown(data: BackendInvoiceData) {
     // Procesar items
     const items = data.items.map(item => ({
-      description: item.item_description || item.product_name,
+      description: buildCleanItemDescription(item),
       quantity: parseFloat(item.quantity),
       unit_price: parseFloat(item.unit_price),
       discount: parseFloat(item.discount),

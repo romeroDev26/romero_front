@@ -1,6 +1,6 @@
 // src/features/accounting/pages/InvoiceDetailPage.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -29,6 +29,7 @@ export const InvoiceDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPdfError, setShowPdfError] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   const { hasPermission } = usePermissions();
 
   const invoiceId = Number(id);
@@ -57,16 +58,37 @@ export const InvoiceDetailPage: React.FC = () => {
   };
 
   const handlePrint = () => {
-    if (invoice?.pdf_ticket_file_path) {
-      // Abrir en ventana nueva para imprimir
-      const printWindow = window.open(invoice.pdf_ticket_file_path, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-        };
+    if (pdfIframeRef.current) {
+      try {
+        // Intentar imprimir directamente desde el iframe visible
+        const iframeWindow = pdfIframeRef.current.contentWindow;
+        if (iframeWindow) {
+          iframeWindow.print();
+        } else {
+          throw new Error('No se puede acceder al contenido del iframe');
+        }
+      } catch (error) {
+        console.warn('Error al imprimir desde iframe:', error);
+        // Fallback: abrir en nueva ventana
+        try {
+          const printWindow = window.open(invoice?.pdf_ticket_file_path, '_blank', 'width=800,height=600');
+          if (printWindow) {
+            printWindow.onload = () => {
+              try {
+                printWindow.print();
+              } catch (fallbackError) {
+                toast.info('Haz clic en "Imprimir" en la ventana que se abrió');
+              }
+            };
+          } else {
+            toast.error('El navegador bloqueó la ventana emergente');
+          }
+        } catch (fallbackError) {
+          toast.error('Error al abrir el PDF para imprimir');
+        }
       }
     } else {
-      toast.error('No hay ticket PDF disponible para imprimir');
+      toast.error('El visor PDF no está disponible');
     }
   };
 
@@ -209,6 +231,7 @@ export const InvoiceDetailPage: React.FC = () => {
               <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
                 {!showPdfError ? (
                   <iframe
+                    ref={pdfIframeRef}
                     src={`${invoice.pdf_ticket_file_path}#toolbar=0&navpanes=0&scrollbar=0`}
                     className="w-full h-full border-0"
                     style={{ minHeight: '600px' }}

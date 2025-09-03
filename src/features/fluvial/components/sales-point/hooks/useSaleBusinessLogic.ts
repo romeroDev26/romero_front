@@ -304,13 +304,8 @@ export const useSaleBusinessLogic = ({
       
       const client = await findOrCreateClient(clientData);
 
-      // Crear factura
-      const boardingStop = tripDetails?.stops.find((s: any) => s.id === selectedBoardingStopId);
-      const disembarkingStop = tripDetails?.stops.find((s: any) => s.id === selectedDisembarkingStopId);
-      const originPortName = boardingStop?.port?.name || "";
-      const destinationPortName = disembarkingStop?.port?.name || "";
-
-  const invoiceItems = await invoiceCreationService.createInvoiceItems(
+      // Crear factura - la detección de embarcaciones sin asientos se hace por trip_seat_id null
+      const invoiceItems = await invoiceCreationService.createInvoiceItems(
         passengerData,
         representatives,
         basePrice,
@@ -323,10 +318,7 @@ export const useSaleBusinessLogic = ({
         tripId,
         selectedBoardingStopId,
         selectedDisembarkingStopId,
-        originPortName,
-        destinationPortName,
-        selectedSeat,
-        itemDescription // ← NUEVO: pasar la descripción opcional
+        itemDescription // ← Descripción opcional del usuario
       );
 
       const invoicePayload = invoiceCreationService.createInvoicePayload(

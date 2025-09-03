@@ -18,9 +18,6 @@ import { routeHelpers } from '../../../services/routes.service'; // Importar par
 // ===================================================================
 import { toast } from 'react-toastify';
 
-// ... (constantes SERVICE_CATEGORIES y FARE_TYPES se mantienen igual) ...
-// Opciones que mostramos al usuario. El campo `value` es el valor real enviado al API
-// (por compatibilidad mantenemos 'PASAJES' y 'OTROS'), mientras que `label` es lo que
 // ve el usuario. Varias opciones pueden mapear al mismo `value`.
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
   { value: 'PASAJES', label: 'Romero Express' },
@@ -356,10 +353,18 @@ export const FaresPage: React.FC = () => {
       // Filtrar solo tarifas activas
       if (!fare.is_active) return false;
 
-      const matchesSearch =
-        fare.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        fare.origin_port?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        fare.destination_port?.name.toLowerCase().includes(searchTerm.toLowerCase());
+      // Dividir el término de búsqueda en palabras
+      const searchWords = searchTerm.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+
+      // Si no hay palabras de búsqueda, mostrar todas las tarifas activas
+      if (searchWords.length === 0) return true;
+
+      // Verificar que cada palabra de búsqueda coincida con al menos uno de los campos
+      const matchesSearch = searchWords.every(word =>
+        fare.description?.toLowerCase().includes(word) ||
+        fare.origin_port?.name.toLowerCase().includes(word) ||
+        fare.destination_port?.name.toLowerCase().includes(word)
+      );
 
       // Si selectedCategory está vacío, pasar. Si el valor seleccionado es 'OTROS',
       // aceptamos tarifas cuyo service_category actual sea 'OTROS' o categorías históricas

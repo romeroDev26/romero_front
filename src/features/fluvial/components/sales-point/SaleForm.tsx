@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Components & Utils
 import { Button } from "../../../../components/common/Button";
@@ -78,6 +78,8 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   onSaleSuccess,
   reservationToConfirm,
 }) => {
+  const queryClient = useQueryClient();
+  
   // Estados principales
   const [selectedBoardingStopId, setSelectedBoardingStopId] = useState<
     number | null
@@ -220,15 +222,34 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
     // Limpiar descripción opcional
     setItemDescription("");
+  };
 
-    // Limpiar representantes
+  // Función para limpiar completamente el estado al cambiar de embarcación
+  const clearStateForVesselChange = () => {
+    // Limpiar datos del pasajero (mantener solo datos básicos)
+    setPassengerData(initialPassengerData);
+
+    // Limpiar selecciones de paradas y asiento
+    setSelectedSeat(null);
+    setSelectedDisembarkingStopId(null);
+    // selectedBoardingStopId se mantiene porque depende de la sucursal
+
+    // Limpiar costos adicionales y descuentos
+    setExtraCost(0);
+    setExtraCostDescription("");
+    setDiscount(0);
+
+    // Limpiar descripción opcional
+    setItemDescription("");
+
+    // CRÍTICO: Limpiar completamente el sistema de representantes
     setRepresentatives([]);
     setShowRepresentatives(false);
     setMaxPassengers(1);
     setShowAddForm(false);
     setSelectedSeatForRepresentative(null);
 
-    // Limpiar estados de modal
+    // Limpiar estados de modal y confirmación
     setReservationModalOpen(false);
     setIsConfirmingMode(false);
 
@@ -236,6 +257,14 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     setShowTicketPreview(false);
     setTicketBackendData(null);
     setIsCompanyTicket(false);
+
+    // Limpiar series de documentos (forzar re-selección)
+    setSelectedBoletaSeries("");
+    setSelectedFacturaSeries("");
+
+    // NOTA: No resetear canSellWithoutSeats ni showSeatMap aquí
+    // Estos valores deben ser determinados por la consulta de la API del seat-map
+    // que se ejecuta automáticamente cuando cambia trip.id
   };
 
   // Helper functions
@@ -248,6 +277,16 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const getBoardingPortId = () => getPortIdFromStopId(selectedBoardingStopId);
   const getDisembarkingPortId = () =>
     getPortIdFromStopId(selectedDisembarkingStopId);
+
+  // Efecto para limpiar estado cuando cambia la embarcación
+  useEffect(() => {
+    // Limpiar estado cuando cambia el trip.id (nueva embarcación)
+    clearStateForVesselChange();
+    
+    // Invalidar caché de React Query para forzar nueva consulta del seat-map
+    // Esto asegura que se detecte correctamente el tipo de embarcación
+    queryClient.invalidateQueries({ queryKey: ["seatMap", trip.id] });
+  }, [trip.id]);
 
   // Hooks de datos
   const { data: passengerService } = usePassengerService();
@@ -649,7 +688,11 @@ export const SaleForm: React.FC<SaleFormProps> = ({
               Desde: <span className="font-semibold">{branch.name}</span>
             </p>
           </div>
-          <Button variant="outline" onClick={onBack}>
+          <Button variant="outline" onClick={() => {
+            // Limpiar completamente el estado antes de volver
+            clearStateForVesselChange();
+            onBack();
+          }}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
@@ -717,30 +760,92 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   </div>
                 </div>
               )}
-              <SeatAndFareSelector
-                tripId={trip.id}
-                selectedBoardingStopId={selectedBoardingStopId}
-                onBoardingStopChange={setSelectedBoardingStopId}
-                selectedDisembarkingStopId={selectedDisembarkingStopId}
-                onDisembarkingStopChange={setSelectedDisembarkingStopId}
-                selectedSeat={
-                  showAddForm ? selectedSeatForRepresentative : selectedSeat
-                }
-                onSeatSelect={
-                  showAddForm
-                    ? setSelectedSeatForRepresentative
-                    : setSelectedSeat
-                }
-                isConfirmingMode={isConfirmingMode}
-                reservationToConfirm={reservationToConfirm}
-                userId={currentUser?.id || "unknown"}
-                userName={
-                  currentUser?.full_name || currentUser?.first_name || "Usuario"
-                }
-                occupiedSeatNumbers={getAllOccupiedSeatNumbers()}
-                isCompanyMode={isRuc} // NUEVA: Pasar modo empresa basado en RUC
-                representativeSelectedSeatIds={representativeSelectedSeatIds} // CORRECCIÓN: Usar useMemo
-              />
+              {showSeatMap ? (
+                <SeatAndFareSelector
+                  tripId={trip.id}
+                  selectedBoardingStopId={selectedBoardingStopId}
+                  onBoardingStopChange={setSelectedBoardingStopId}
+                  selectedDisembarkingStopId={selectedDisembarkingStopId}
+                  onDisembarkingStopChange={setSelectedDisembarkingStopId}
+                  selectedSeat={
+                    showAddForm ? selectedSeatForRepresentative : selectedSeat
+                  }
+                  onSeatSelect={
+                    showAddForm
+                      ? setSelectedSeatForRepresentative
+                      : setSelectedSeat
+                  }
+                  isConfirmingMode={isConfirmingMode}
+                  reservationToConfirm={reservationToConfirm}
+                  userId={currentUser?.id || "unknown"}
+                  userName={
+                    currentUser?.full_name || currentUser?.first_name || "Usuario"
+                  }
+                  occupiedSeatNumbers={getAllOccupiedSeatNumbers()}
+                  isCompanyMode={isRuc} // NUEVA: Pasar modo empresa basado en RUC
+                  representativeSelectedSeatIds={representativeSelectedSeatIds} // CORRECCIÓN: Usar useMemo
+                />
+              ) : (
+                // UI alternativa para embarcaciones sin asientos
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                  <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
+                    <Ship className="h-6 w-6 mr-2 text-gray-500" />
+                    Tramo y Asiento
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Origen (Embarque)</label>
+                      <select
+                        value={selectedBoardingStopId || ''}
+                        onChange={(e) => setSelectedBoardingStopId(Number(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={isConfirmingMode}
+                      >
+                        <option value="" disabled>Seleccione embarque...</option>
+                        {tripDetails?.stops?.map(stop => (
+                          <option key={stop.id} value={stop.id}>
+                            {stop.port?.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Destino (Desembarque)</label>
+                      <select
+                        value={selectedDisembarkingStopId || ''}
+                        onChange={(e) => setSelectedDisembarkingStopId(Number(e.target.value))}
+                        className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled={!selectedBoardingStopId || isConfirmingMode}
+                      >
+                        <option value="" disabled>Seleccione desembarque...</option>
+                        {tripDetails?.stops
+                          ?.filter(stop => {
+                            if (!selectedBoardingStopId) return false;
+                            const boardingStop = tripDetails.stops.find(s => s.id === selectedBoardingStopId);
+                            const boardingStopOrder = boardingStop?.stop_order ?? -1;
+                            return stop.stop_order > boardingStopOrder;
+                          })
+                          .map(stop => (
+                            <option key={stop.id} value={stop.id}>
+                              {stop.port?.name}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">
+                    <div className="flex items-center justify-center gap-2 text-blue-700">
+                      <Ship className="h-5 w-5" />
+                      <span className="font-medium">Embarcación sin asientos numerados</span>
+                    </div>
+                    <p className="text-sm text-blue-600 mt-1">
+                      Esta embarcación utiliza sistema de elección libre de asientos
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

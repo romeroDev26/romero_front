@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  XMarkIcon,
   MapPinIcon,
   ClockIcon,
   DocumentTextIcon,

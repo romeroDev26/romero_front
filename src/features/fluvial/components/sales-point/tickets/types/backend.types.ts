@@ -71,6 +71,7 @@ export interface BackendInvoiceData {
   // Datos específicos de transporte fluvial
   boarding_time: string;
   trip_departure_time: string;
+  trip_departure_date?: string; // Campo adicional para fecha separada
   
   // Datos de sucursal
   branch_office_name: string | null;

@@ -126,9 +126,9 @@ export class CompanySaleTransformer {
         { label: 'ORIGEN', value: item.boarding_port_name || extractOriginPort(data.items) },
         { label: 'DESTINO', value: item.disembarking_port_name || extractDestinationPort(data.items) },
         { label: 'EMBARCACIÓN', value: item.vehicle_name || extractVehicleName(data.items) },
-        { label: 'F. SALIDA', value: formatTripDate(data.trip_departure_time, data.issue_date), col: 1 },
-        { label: 'H. SALIDA', value: formatTripTime(data.trip_departure_time), col: 2 },
-        { label: 'H. ABORDAJE', value: formatBoardingTime(data.boarding_time), col: 1 },
+        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time, (data as any).trip_departure_date || data.issue_date), col: 1 },
+        { label: 'HORA VIAJE', value: formatTripTime(data.trip_departure_time), col: 2 },
+        { label: 'EMBARQUE', value: formatBoardingTime(data.boarding_time), col: 1 },
         { label: 'RUTA', value: item.route_name || '-', col: 2 }
       ]
   ,

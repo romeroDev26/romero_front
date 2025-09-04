@@ -140,7 +140,7 @@ export class NoSeatsCompanySaleTransformer {
       details: [
         // Orden y etiquetas ajustadas para coincidir con la plantilla 2-columnas
         { label: 'EMBARCACIÓN', value: item.vehicle_name || extractVehicleName(data.items) },
-        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time, data.issue_date) },
+        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time, (data as any).trip_departure_date || data.issue_date) },
         { label: 'PUERTO', value: (data as any).branch_office_port_name || item.boarding_port_name || extractOriginPort(data.items) },
         { label: 'DIRECCIÓN PUERTO', value: (data as any).branch_office_port_address || (item as any).boarding_port_address || (data.branch_office_address || '') },
         { label: 'EMBARQUE', value: formatBoardingTime(data.boarding_time) },

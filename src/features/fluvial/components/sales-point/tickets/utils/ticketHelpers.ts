@@ -179,20 +179,36 @@ export function extractMainSeatNumber(items: any[]): string {
 /**
  * Formatea la fecha de viaje desde trip_departure_time
  * CORREGIDO: Si trip_departure_time es solo hora, usar issue_date como fecha base
+ * MEJORADO: Priorizar fecha específica si se proporciona
  */
-export function formatTripDate(tripDepartureTime: string, issueDate?: string): string {
+export function formatTripDate(tripDepartureTime: string, dateToUse?: string): string {
   try {
-    // Si trip_departure_time es solo hora "HH:MM:SS", usar issue_date o fecha actual
+    // Validación: verificar que tripDepartureTime exista
+    if (!tripDepartureTime || typeof tripDepartureTime !== 'string') {
+      console.warn('formatTripDate: trip_departure_time inválido:', tripDepartureTime);
+      return dateToUse && !dateToUse.includes('T') && !dateToUse.includes(':') 
+        ? format(new Date(dateToUse), 'dd/MM/yyyy', { locale: es })
+        : format(new Date(), 'dd/MM/yyyy', { locale: es });
+    }
+    
+    // Si tenemos una fecha específica (como trip_departure_date), usarla directamente
+    if (dateToUse && !dateToUse.includes('T') && !dateToUse.includes(':')) {
+      // Es una fecha en formato YYYY-MM-DD
+      return format(new Date(dateToUse), 'dd/MM/yyyy', { locale: es });
+    }
+    
+    // Si trip_departure_time es solo hora "HH:MM:SS", usar dateToUse o fecha actual
     if (!tripDepartureTime.includes('T') && !tripDepartureTime.includes(' ') && tripDepartureTime.includes(':')) {
       // Es solo hora, usar fecha de emisión o fecha actual
-      const dateToUse = issueDate || new Date().toISOString().split('T')[0];
-      return format(new Date(dateToUse), 'dd/MM/yyyy', { locale: es });
+      const fallbackDate = dateToUse || new Date().toISOString().split('T')[0];
+      return format(new Date(fallbackDate), 'dd/MM/yyyy', { locale: es });
     } else {
       // Es datetime completo
       const date = parseISO(tripDepartureTime);
       return format(date, 'dd/MM/yyyy', { locale: es });
     }
   } catch (error) {
+    console.error('formatTripDate error:', error);
     // Fallback: usar fecha actual
     return format(new Date(), 'dd/MM/yyyy', { locale: es });
   }
@@ -227,14 +243,27 @@ export function formatTripTime(tripDepartureTime: string): string {
  */
 export function formatBoardingTime(boardingTime: string): string {
   try {
+    // Validación: verificar que boardingTime exista y tenga formato correcto
+    if (!boardingTime || typeof boardingTime !== 'string' || !boardingTime.includes(':')) {
+      console.warn('formatBoardingTime: valor inválido:', boardingTime);
+      return 'N/A';
+    }
+    
     // boarding_time viene como "22:00:00"
     const [hours, minutes] = boardingTime.split(':');
     const hour24 = parseInt(hours);
+    
+    if (isNaN(hour24)) {
+      console.warn('formatBoardingTime: hora inválida:', hours);
+      return 'N/A';
+    }
+    
     const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
     const ampm = hour24 >= 12 ? 'PM' : 'AM';
     
     return `${hour12}:${minutes} ${ampm}`;
   } catch (error) {
+    console.error('formatBoardingTime error:', error);
     return 'N/A';
   }
 }

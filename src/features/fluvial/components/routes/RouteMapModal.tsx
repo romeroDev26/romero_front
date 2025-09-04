@@ -4,7 +4,6 @@ import {
   MinusCircleIcon,
   MapIcon,
   ListBulletIcon,
-  XMarkIcon,
   ClockIcon,
   UserGroupIcon,
   Bars3Icon,
@@ -18,16 +17,16 @@ import {
   HandRaisedIcon,
   CursorArrowRippleIcon
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
 import { RouteTimeline } from './RouteTimeline';
+import { AddStopModal } from './AddStopModal';
 import { usePortsData } from '../../../../hooks/usePorts';
 import {
   useUpdateRouteStops,
   routeHelpers
 } from '../../hooks/useVesselsRoutesData';
 import { RouteWithStops, RouteStopCreateData } from '../../../../services/routes.service';
-import { RouteStop, Port } from '../../../../types';
+import { RouteStop } from '../../../../types';
 
 interface RouteMapModalProps {
   isOpen: boolean;
@@ -44,12 +43,13 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
   const [selectedStop, setSelectedStop] = useState<Partial<RouteStop> | null>(null);
   const [isStopModalOpen, setIsStopModalOpen] = useState(false);
   const [editingStop, setEditingStop] = useState<Partial<RouteStop> | null>(null);
+  const [isAddStopModalOpen, setIsAddStopModalOpen] = useState(false);
+  const [addStopPosition, setAddStopPosition] = useState<number>(0);
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverItem, setDragOverItem] = useState<number | null>(null);
 
-  // Constante para el límite de paradas
-  const MAX_STOPS = 25;
+  // Eliminamos la limitación de paradas para permitir configuraciones flexibles
 
   // Estados para el río y las posiciones dinámicas
   const [dynamicRiverPath, setDynamicRiverPath] = useState('');
@@ -338,29 +338,25 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
     return 'text-blue-600 bg-blue-100 border-blue-300';
   };
 
-  // Añadir parada con validación del límite
-  const addStop = () => {
-    if (stops.length >= MAX_STOPS) {
-      alert(`No se pueden agregar más de ${MAX_STOPS} paradas.`);
-      return;
-    }
+  // Abrir modal para agregar parada
+  const openAddStopModal = () => {
     if (stops.length < 2) return;
-
-    const newStops = [...stops];
+    
+    // La nueva parada se insertará antes de la última (destino)
     const insertIndex = stops.length - 1;
-    const nextOrder = insertIndex + 1;
+    setAddStopPosition(insertIndex);
+    setIsAddStopModalOpen(true);
+  };
 
-    const newStop: Partial<RouteStop> = {
-      port_id: 0,
-      stop_order: nextOrder,
-      estimated_duration_from_origin: 'PT0S',
-      is_boarding_allowed: true,
-      is_disembarking_allowed: true,
-      notes: '',
-    };
+  // Agregar parada desde el modal
+  const handleAddStop = (stopData: Partial<RouteStop>) => {
+    const newStops = [...stops];
+    const insertIndex = addStopPosition;
 
-    newStops.splice(insertIndex, 0, newStop);
+    // Insertar la nueva parada en la posición correcta
+    newStops.splice(insertIndex, 0, stopData);
 
+    // Reordenar todas las paradas
     const finalStops = newStops.map((stop, index) => ({
       ...stop,
       stop_order: index + 1,
@@ -521,7 +517,7 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
               )}
 
               <button
-                onClick={addStop}
+                onClick={openAddStopModal}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all flex items-center space-x-2 text-sm font-medium"
               >
                 <PlusCircleIcon className="h-4 w-4" />
@@ -538,7 +534,7 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm z-10">
                   <div className="text-xs text-gray-600 space-y-1">
                     <div>Zoom: {Math.round(zoomLevel * 100)}%</div>
-                    <div>Paradas: {stops.length}/{MAX_STOPS}</div>
+                    <div>Paradas: {stops.length}</div>
                     <div className="text-xs text-gray-500 pt-1 border-t space-y-0.5">
                       <div className="flex items-center space-x-1">
                         <CursorArrowRaysIcon className="h-3 w-3" />
@@ -622,7 +618,7 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
                       const isFixed = isStopFixed(index);
 
                       return (
-                        <g key={stop.id || index}>
+                        <g key={stop.id || `map-stop-${index}-${stop.port_id || 'temp'}`}>
                           <circle
                             cx={riverPos.x - 35}
                             cy={riverPos.y - 35}
@@ -724,7 +720,17 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
               <div className="h-full overflow-y-auto p-6 bg-gray-50">
                 {/* Sección de visualización lineal */}
                 <div className="bg-white rounded-lg p-6 mb-6 border shadow-sm">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Visualización Lineal de la Ruta</h3>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-semibold text-gray-800">Visualización Lineal de la Ruta</h3>
+                    {/* Contador de paradas */}
+                    <div className="bg-blue-50 px-3 py-2 rounded-lg shadow-sm border border-blue-200">
+                      <div className="flex items-center space-x-2">
+                        <MapPinIcon className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-semibold text-gray-700">{stops.length}</span>
+                        <span className="text-xs text-gray-500">Paradas</span>
+                      </div>
+                    </div>
+                  </div>
                   <p className="text-sm text-gray-500 mb-4">
                     Arrastra las paradas intermedias para reordenarlas.
                     <span className="font-medium text-blue-600"> Las paradas de origen y destino están fijas.</span>
@@ -751,7 +757,7 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
 
                       return (
                         <div
-                          key={stop.id || index}
+                          key={stop.id || `list-stop-${index}-${stop.port_id || 'temp'}`}
                           draggable={!isFixed}
                           onDragStart={(e) => !isFixed && handleDragStart(e, index)}
                           onDragOver={(e) => !isFixed && handleDragOver(e, index)}
@@ -1073,6 +1079,16 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
           </div>
         </Modal>
       )}
+
+      {/* Modal para agregar parada */}
+      <AddStopModal
+        isOpen={isAddStopModalOpen}
+        onClose={() => setIsAddStopModalOpen(false)}
+        onAddStop={handleAddStop}
+        existingStops={stops}
+        ports={ports}
+        insertPosition={addStopPosition}
+      />
     </>
   );
 };

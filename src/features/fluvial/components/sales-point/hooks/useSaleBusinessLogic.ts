@@ -314,7 +314,6 @@ export const useSaleBusinessLogic = ({
         extraCostDescription,
         discount,
         isIgvGravado,
-        passengerService,
         tripId,
         selectedBoardingStopId,
         selectedDisembarkingStopId,

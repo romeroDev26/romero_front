@@ -98,9 +98,17 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           <Input
             type="text"
             value={extraCostDescription || ''}
-            onChange={(e) => onExtraCostDescriptionChange(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value.length <= 85) {
+                onExtraCostDescriptionChange(e.target.value);
+              }
+            }}
             placeholder="Ej: Exceso de equipaje, Bultos adicionales"
+            maxLength={85}
           />
+          <div className="text-xs text-gray-500 mt-1">
+            {(extraCostDescription || '').length}/85 caracteres
+          </div>
         </div>
       )}
       

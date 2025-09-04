@@ -4,53 +4,72 @@ import jsPDF from 'jspdf';
 import { TicketData, TicketRepresentative, TicketCompanySummary } from '../types/ticket.types';
 export class NoSeatsCompanyTicketTemplate {
   
-  private static readonly TICKET_WIDTH = 80; // mm
-  private static readonly MARGIN = 2; // mm
-  private static readonly CONTENT_WIDTH = NoSeatsCompanyTicketTemplate.TICKET_WIDTH - (NoSeatsCompanyTicketTemplate.MARGIN * 2);
+  // --- CONSTANTES DE DISEÑO (alineadas con CompanyTicketTemplate) ---
+  private static readonly TICKET_WIDTH = 80;
+  private static readonly BOTTOM_MARGIN = 6; // Margen final para asegurar que nada se corte
+  private static readonly HORIZONTAL_MARGIN = 2;
+  private static readonly CONTENT_WIDTH = NoSeatsCompanyTicketTemplate.TICKET_WIDTH - (NoSeatsCompanyTicketTemplate.HORIZONTAL_MARGIN * 2);
   
   /**
    * Genera el PDF del ticket empresarial sin asientos usando los datos transformados
    */
   static async generatePDF(ticketData: TicketData & { representatives: TicketRepresentative[]; summary: TicketCompanySummary }): Promise<jsPDF> {
-    // Crear documento con altura automática (se ajustará al contenido)
-    const INITIAL_HEIGHT = 350; // Altura inicial para empresas
+    // Calcular altura fija basada en límites conocidos de comentarios (85 chars cada uno = 170 total)
+    const FIXED_HEIGHT = this.calculateFixedTicketHeight(ticketData);
+    
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
-      format: [this.TICKET_WIDTH, INITIAL_HEIGHT]
+      format: [this.TICKET_WIDTH, FIXED_HEIGHT],
+      compress: true,
+      putOnlyUsedFonts: true
     });
     
     doc.setFont('helvetica');
     let currentY = 0; // Comenzamos desde 0, pero addHeader agregará el margen
     
-    // BLOQUE 1: CABECERA
     currentY = await this.addHeader(doc, ticketData.header, currentY);
-    currentY += 5; // Espacio después del header
+    currentY += 1;
     
-    // BLOQUE 2: INFORMACIÓN DE LA EMPRESA COMPRADORA
     currentY = this.addCompanyInfo(doc, ticketData.passenger_info, currentY);
-    currentY += 2;
+    currentY += 1;
     
-    // BLOQUE 3: DETALLES DEL VIAJE - ESPECIALIZADO PARA SIN ASIENTOS
     currentY = this.addTripDetails(doc, ticketData.trip_details, currentY);
-    currentY += 2;
+    currentY += 1;
     
-    // BLOQUE 4: RESUMEN DE REPRESENTANTES - ESPECIALIZADO PARA SIN ASIENTOS
     currentY = this.addRepresentativesSummary(doc, ticketData.representatives, currentY);
-    currentY += 2;
+    currentY += 1;
     
-    // BLOQUE 5: DETALLE DE LA VENTA
     currentY = this.addVentaDetailBlock(doc, ticketData, currentY);
     currentY += 1;
 
-    // BLOQUE 6: PIE DE PÁGINA CON QR
     currentY = await this.addFooter(doc, ticketData.footer, currentY);
 
-    // Ajustar la altura del documento al contenido
-    const finalHeight = currentY + 20;
-    doc.internal.pageSize.height = finalHeight;
-
     return doc;
+  }
+
+  /** Calcula la altura fija del ticket basada en límites conocidos de contenido */
+  private static calculateFixedTicketHeight(ticketData: TicketData): number {
+    const BASE_HEIGHT = 280; // Altura base para header, company info, trip details, representatives y footer (aumentada para más espacio al final)
+    
+    // Calcular altura del bloque de venta basado en número de items y longitud máxima de descripciones
+    const itemsCount = ticketData.financial_breakdown.items.length;
+    const MAX_CHARS_PER_DESCRIPTION = 170; // 85 + 85 (ambos comentarios limitados)
+    const CHARS_PER_LINE = 35; // Caracteres promedio por línea en el ticket
+    const MAX_LINES_PER_ITEM = Math.ceil(MAX_CHARS_PER_DESCRIPTION / CHARS_PER_LINE);
+    const LINE_HEIGHT = 3.5;
+    
+    // Altura del bloque de items
+    const itemsBlockHeight = itemsCount * (MAX_LINES_PER_ITEM * LINE_HEIGHT + 4); // +4 para espaciado
+    
+    // Altura del resumen financiero (fija)
+    const FINANCIAL_SUMMARY_HEIGHT = 60;
+    
+    // Altura total calculada
+    const calculatedHeight = BASE_HEIGHT + itemsBlockHeight + FINANCIAL_SUMMARY_HEIGHT + this.BOTTOM_MARGIN;
+    
+    // Asegurar altura mínima y máxima razonable
+    return Math.max(200, Math.min(400, calculatedHeight));
   }
 
   /**
@@ -212,8 +231,8 @@ export class NoSeatsCompanyTicketTemplate {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.MARGIN;
-    const rightX = this.MARGIN + colWidth + 2;
+    const leftX = this.HORIZONTAL_MARGIN;
+    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
 
     // FILA 1: etiquetas (CLIENTE / RUC)
     doc.setFont('helvetica', 'normal');
@@ -265,8 +284,8 @@ export class NoSeatsCompanyTicketTemplate {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.MARGIN;
-    const rightX = this.MARGIN + colWidth + 2;
+    const leftX = this.HORIZONTAL_MARGIN;
+    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
 
     // Helpers: buscar por etiquetas conocidas (case-insensitive)
     const findByLabel = (pattern: RegExp) => (trip.details || []).find(d => pattern.test((d.label || '').toString().toUpperCase()));
@@ -351,7 +370,7 @@ export class NoSeatsCompanyTicketTemplate {
     doc.setFontSize(7);
     doc.text('ORIGEN:', leftX, currentY);
     doc.text('DESTINO:', rightX, currentY);
-    currentY += 3;
+    currentY += 4; // aumentado de 3 a 4
 
     // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, tamaño 11)
     const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
@@ -407,7 +426,7 @@ export class NoSeatsCompanyTicketTemplate {
     // Resumen numérico
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8); // Aumentado de 7 a 8
-    doc.text(`TOTAL REPRESENTANTES: ${representatives.length}`, this.MARGIN, currentY);
+    doc.text(`TOTAL REPRESENTANTES: ${representatives.length}`, this.HORIZONTAL_MARGIN, currentY);
     currentY += 5;
     
     return currentY;
@@ -435,51 +454,49 @@ export class NoSeatsCompanyTicketTemplate {
     // Encabezado de tabla
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8); // Aumentado de 7 a 8
-    doc.text('CANT.', this.MARGIN, currentY);
-    doc.text('DESCRIPCIÓN', this.MARGIN + 12, currentY);
-    doc.text('P/U', this.TICKET_WIDTH - this.MARGIN - 22, currentY, { align: 'right' });
-    doc.text('TOTAL', this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+    doc.text('CANT.', this.HORIZONTAL_MARGIN, currentY);
+    doc.text('DESCRIPCIÓN', this.HORIZONTAL_MARGIN + 12, currentY);
+    doc.text('P/U', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 22, currentY, { align: 'right' });
+    doc.text('TOTAL', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY, { align: 'right' });
     currentY += 4;
     
     doc.setFont('helvetica', 'normal');
+    const LINE_HEIGHT = 3.5;
     
-    // Items
     ticketData.financial_breakdown.items.forEach(item => {
-      doc.text(String(item.quantity), this.MARGIN, currentY);
+        const itemStartY = currentY;
 
-      // Descripción multilínea: eliminar la frase 'Elección libre de ubicación' (y variantes)
-      let desc = item.description || '';
-      // Quitar frases comunes que indican elección libre de asiento
-      desc = desc.replace(/Elección\s*libre\s*(de\s*ubicación)?/gi, '').trim();
-      // Limpiar puntos o espacios sobrantes al final
-      desc = desc.replace(/\s{2,}/g, ' ').replace(/\s*\.\s*$/, '');
+        // 1. Dibujar las columnas estáticas
+        doc.text(String(item.quantity), this.HORIZONTAL_MARGIN, itemStartY);
+        doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 22, itemStartY, { align: 'right' });
+        doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, itemStartY, { align: 'right' });
 
-      // Añadir nota de descuento si aplica, manteniendo espacio correcto
-      if (item.discount && item.discount > 0) {
-        desc = desc ? `${desc} (descuento: ${item.discount.toFixed(2)})` : `(descuento: ${item.discount.toFixed(2)})`;
-      }
-
-      const descLines = this.splitText(doc, desc, 32, 8); // Aumentado de 7 a 8
-      descLines.forEach((line, idx) => {
-        doc.text(line, this.MARGIN + 12, currentY);
-        if (idx < descLines.length - 1) currentY += 3;
-      });
-      
-      // P/U y TOTAL solo en la primera línea
-      doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.MARGIN - 22, currentY, { align: 'right' });
-      doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
-      currentY += 4;
+        // 2. Preparar y dibujar la descripción con ancho fijo optimizado para 170 caracteres máximo
+        let desc = item.description || '';
+        // Quitar frases comunes que indican elección libre de asiento
+        desc = desc.replace(/Elección\s*libre\s*(de\s*ubicación)?/gi, '').trim();
+        // Limpiar puntos o espacios sobrantes al final
+        desc = desc.replace(/\s{2,}/g, ' ').replace(/\s*\.\s*$/, '');
+        
+        if (item.discount && item.discount > 0) {
+            desc += ` (descuento: ${item.discount.toFixed(2)})`;
+        }
+        
+        // Usar ancho fijo optimizado para máximo 170 caracteres (85+85)
+        const descLines = this.splitText(doc, desc, 35, 8);
+        
+        descLines.forEach((line, idx) => {
+            const yPos = itemStartY + (idx * LINE_HEIGHT);
+            doc.text(line, this.HORIZONTAL_MARGIN + 12, yPos);
+        });
+        
+        // Avanzar posición fija basada en máximo de líneas posibles (5 líneas para 170 chars)
+        currentY = itemStartY + (Math.max(descLines.length, 5) * LINE_HEIGHT) + 2;
     });
     
-    // Línea separadora
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
-    let x = 0;
-    while (x < this.TICKET_WIDTH) {
-      const xEnd = Math.min(x + 2, this.TICKET_WIDTH);
-      doc.line(x, currentY, xEnd, currentY);
-      x += 3.5;
-    }
+    doc.line(this.HORIZONTAL_MARGIN, currentY, this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY);
     currentY += 4;
     
     // Totales SUNAT
@@ -504,20 +521,15 @@ export class NoSeatsCompanyTicketTemplate {
     ];
     
     totales.forEach(t => {
-      doc.text(t.label + ':', this.MARGIN, currentY);
-      doc.text('S/', this.TICKET_WIDTH - this.MARGIN - 18, currentY, { align: 'right' });
-      doc.text((t.value ?? '0.00'), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+      doc.text(t.label + ':', this.HORIZONTAL_MARGIN, currentY);
+      doc.text('S/', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 18, currentY, { align: 'right' });
+      doc.text((t.value ?? '0.00'), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY, { align: 'right' });
       currentY += 4;
     });
     
-    // Línea separadora
-    x = 0;
+    doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
-    while (x < this.TICKET_WIDTH) {
-      const xEnd = Math.min(x + 2, this.TICKET_WIDTH);
-      doc.line(x, currentY, xEnd, currentY);
-      x += 3.5;
-    }
+    doc.line(this.HORIZONTAL_MARGIN, currentY, this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY);
     currentY += 4;
     
     // Monto en palabras y forma de pago
@@ -526,11 +538,11 @@ export class NoSeatsCompanyTicketTemplate {
     const amountText = 'SON: ' + ticketData.payment_info.amount_in_words;
     const amountLines = this.splitText(doc, amountText, this.CONTENT_WIDTH, 8);
     amountLines.forEach(line => {
-      doc.text(line, this.MARGIN, currentY);
+      doc.text(line, this.HORIZONTAL_MARGIN, currentY);
       currentY += 3;
     });
     currentY += 1;
-    doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.MARGIN, currentY);
+    doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.HORIZONTAL_MARGIN, currentY);
     currentY += 4;
     
     return currentY;

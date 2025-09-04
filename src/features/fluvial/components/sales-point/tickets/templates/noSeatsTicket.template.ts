@@ -4,24 +4,51 @@ import jsPDF from 'jspdf';
 import { TicketData } from '../types/ticket.types';
 
 /**
- * Template para generar PDFs de tickets de venta para embarcaciones sin a    // Port
-    if (tripDetails.port_name || tripDetails.port_address) {
-      const portNameLines = this.splitText(doc, (tripDetails.port_name ?? '').toUpperCase(), colWidth, 11);
-      const portAddrLines = this.splitText(doc, (tripDetails.port_address ?? '').toUpperCase(), colWidth, 11);
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('PUERTO:', leftX, currentY); doc.text('DIRECCIÓN PUERTO:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
-      const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
-      for (let i = 0; i < maxPortLines; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text((portNameLines[i] ?? '').toUpperCase(), leftX, currentY); doc.text((portAddrLines[i] ?? '').toUpperCase(), rightX, currentY); currentY += 4; } // aumentado de 3 a 4
-      currentY += 4; // aumentado de 3 a 4
-    } * Formato térmico de 80mm de ancho
+ * Template para generar PDFs de tickets de venta para embarcaciones sin asientos
+ * Formato térmico de 80mm de ancho
  */
 export class NoSeatsTicketTemplate {
   private static readonly TICKET_WIDTH = 80; // mm
-  private static readonly MARGIN = 2; // mm
-  private static readonly CONTENT_WIDTH = NoSeatsTicketTemplate.TICKET_WIDTH - (NoSeatsTicketTemplate.MARGIN * 2);
+  private static readonly HORIZONTAL_MARGIN = 2; // mm
+  private static readonly BOTTOM_MARGIN = 10; // mm
+  private static readonly CONTENT_WIDTH = NoSeatsTicketTemplate.TICKET_WIDTH - (NoSeatsTicketTemplate.HORIZONTAL_MARGIN * 2);
+  
+  // Constantes para cálculo de altura
+  private static readonly BASE_HEIGHT = 280; // mm
+  private static readonly MAX_CHARS_PER_DESCRIPTION = 170;
+  private static readonly CHARS_PER_LINE = 35;
+  private static readonly FINANCIAL_SUMMARY_HEIGHT = 60; // mm
+
+  /**
+   * Calcula la altura fija del ticket basada en el contenido
+   */
+  private static calculateFixedTicketHeight(ticketData: TicketData): number {
+    let totalDescriptionChars = 0;
+    
+    // Contar caracteres de todas las descripciones
+    ticketData.financial_breakdown.items.forEach(item => {
+      let desc = item.description;
+      if (item.discount && item.discount > 0) {
+        desc += ` (descuento: ${item.discount.toFixed(2)})`;
+      }
+      totalDescriptionChars += desc.length;
+    });
+    
+    // Calcular líneas adicionales necesarias
+    const extraChars = Math.max(0, totalDescriptionChars - this.MAX_CHARS_PER_DESCRIPTION);
+    const extraLines = Math.ceil(extraChars / this.CHARS_PER_LINE);
+    const extraHeight = extraLines * 4; // 4mm por línea adicional
+    
+    // Altura total = altura base + altura del resumen financiero + altura extra + margen inferior
+    const totalHeight = this.BASE_HEIGHT + this.FINANCIAL_SUMMARY_HEIGHT + extraHeight + this.BOTTOM_MARGIN;
+    
+    // Limitar entre 200 y 400mm
+    return Math.max(200, Math.min(400, totalHeight));
+  }
 
   static async generatePDF(ticketData: TicketData): Promise<jsPDF> {
-    const INITIAL_HEIGHT = 300; // altura inicial mayor para acomodar texto adicional
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [this.TICKET_WIDTH, INITIAL_HEIGHT] });
+    const calculatedHeight = this.calculateFixedTicketHeight(ticketData);
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [this.TICKET_WIDTH, calculatedHeight] });
     doc.setFont('helvetica');
     let currentY = 0;
 
@@ -44,14 +71,12 @@ export class NoSeatsTicketTemplate {
     // Footer with QR
     currentY = await this.addFooter(doc, ticketData.footer, ticketData.header, currentY);
 
-    // Ajustar altura final
-    const finalHeight = currentY + 40;
-    doc.internal.pageSize.height = finalHeight;
     return doc;
   }
 
   private static addVentaDetailBlock(doc: jsPDF, ticketData: TicketData, startY: number): number {
     let currentY = startY;
+    const LINE_HEIGHT = 3.5; // Altura de línea consistente
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
@@ -61,44 +86,43 @@ export class NoSeatsTicketTemplate {
     // Table header
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
-    doc.text('CANT.', this.MARGIN, currentY);
-    doc.text('DESCRIPCIÓN', this.MARGIN + 12, currentY);
-    doc.text('P/U', this.TICKET_WIDTH - this.MARGIN - 22, currentY, { align: 'right' });
-    doc.text('TOTAL', this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+    doc.text('CANT.', this.HORIZONTAL_MARGIN, currentY);
+    doc.text('DESCRIPCIÓN', this.HORIZONTAL_MARGIN + 12, currentY);
+    doc.text('P/U', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 22, currentY, { align: 'right' });
+    doc.text('TOTAL', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY, { align: 'right' });
     currentY += 4;
 
     doc.setFont('helvetica', 'normal');
     ticketData.financial_breakdown.items.forEach(item => {
-      doc.text(String(item.quantity), this.MARGIN, currentY);
+      // Dibujar columnas estáticas primero
+      doc.text(String(item.quantity), this.HORIZONTAL_MARGIN, currentY);
+      doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 22, currentY, { align: 'right' });
+      doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY, { align: 'right' });
+
+      // Preparar y dibujar descripción
       let desc = item.description;
       if (item.discount && item.discount > 0) desc += ` (descuento: ${item.discount.toFixed(2)})`;
 
-      // Calcular ancho disponible para la columna DESCRIPCIÓN (entre descX y la columna de P/U)
-  const descX = this.MARGIN + 12;
-  const priceX = this.TICKET_WIDTH - this.MARGIN - 22;
-  // Añadir un padding extra para evitar que la descripción invada la columna de precios
-  const DESC_RIGHT_PADDING = 8; // mm adicionales de separación
-  const descMaxWidth = Math.max(10, priceX - descX - DESC_RIGHT_PADDING);
+      const descX = this.HORIZONTAL_MARGIN + 12;
+      const priceX = this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 22;
+      const DESC_RIGHT_PADDING = 8;
+      const descMaxWidth = Math.max(10, priceX - descX - DESC_RIGHT_PADDING);
 
-      // Obtener líneas envueltas; splitText ahora rompe palabras largas sin espacios
-      const descLines = this.splitText(doc, desc, descMaxWidth, 8);
+      // Obtener líneas envueltas con ancho fijo (35 caracteres por línea, máximo 8 líneas)
+      const descLines = this.splitText(doc, desc, descMaxWidth, 8).slice(0, 8);
 
       descLines.forEach((line, idx) => {
-        doc.text(line, descX, currentY);
-        if (idx < descLines.length - 1) currentY += 3;
+        doc.text(line, descX, currentY + (idx * LINE_HEIGHT));
       });
 
-      // Alinear los precios en la misma Y que la última línea de descripción
-      doc.text(item.unit_price.toFixed(2), priceX, currentY, { align: 'right' });
-      doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
-      currentY += 4;
+      // Avanzar currentY basado en máximo de 5 líneas posibles
+      currentY += Math.max(5, descLines.length) * LINE_HEIGHT;
     });
 
-    // Dashed separator
+    // Línea separadora sólida
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
-    let x = 0;
-    while (x < this.TICKET_WIDTH) { const xEnd = Math.min(x + 2, this.TICKET_WIDTH); doc.line(x, currentY, xEnd, currentY); x += 3.5; }
+    doc.line(this.HORIZONTAL_MARGIN, currentY, this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY);
     currentY += 4;
 
     // Totals
@@ -111,7 +135,7 @@ export class NoSeatsTicketTemplate {
       const lab = (s.label || '').toString().toUpperCase().trim();
       return lab === 'TOTAL A PAGAR' || lab === 'TOTAL' || lab.includes('TOTAL A PAGAR');
     });
-  const totalPagarRaw = totalSummaryEntry?.value ?? '0.00';
+    const totalPagarRaw = totalSummaryEntry?.value ?? '0.00';
     const totalPagarClean = totalPagarRaw.toString().replace(/^S\/\s*/, '').trim();
     const totales = [
       { label: 'OP. GRAVADA', value: sunat.total_taxable },
@@ -125,20 +149,22 @@ export class NoSeatsTicketTemplate {
       { label: 'TOTAL A PAGAR', value: totalPagarClean },
     ];
     totales.forEach(t => {
-      doc.text(t.label + ':', this.MARGIN, currentY);
-      doc.text('S/', this.TICKET_WIDTH - this.MARGIN - 18, currentY, { align: 'right' });
-      doc.text((t.value ?? '0.00'), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+      doc.text(t.label + ':', this.HORIZONTAL_MARGIN, currentY);
+      doc.text('S/', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 18, currentY, { align: 'right' });
+      doc.text((t.value ?? '0.00'), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY, { align: 'right' });
       currentY += 4;
     });
 
-    // Separator
-    x = 0; doc.setDrawColor(180, 180, 180); while (x < this.TICKET_WIDTH) { const xEnd = Math.min(x + 2, this.TICKET_WIDTH); doc.line(x, currentY, xEnd, currentY); x += 3.5; }
+    // Línea separadora sólida
+    doc.setLineWidth(0.2);
+    doc.setDrawColor(180, 180, 180);
+    doc.line(this.HORIZONTAL_MARGIN, currentY, this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY);
     currentY += 4;
 
     doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-    doc.text('SON: ' + (ticketData.payment_info.amount_in_words || ''), this.MARGIN, currentY); currentY += 3;
+    doc.text('SON: ' + (ticketData.payment_info.amount_in_words || ''), this.HORIZONTAL_MARGIN, currentY); currentY += 3;
     const paymentLabel = ticketData.payment_info.payment_method_label || 'FORMA DE PAGO';
-    doc.text(`${paymentLabel}: ${ticketData.payment_info.payment_method}`, this.MARGIN, currentY); currentY += 4;
+    doc.text(`${paymentLabel}: ${ticketData.payment_info.payment_method}`, this.HORIZONTAL_MARGIN, currentY); currentY += 4;
 
     return currentY;
   }
@@ -153,7 +179,7 @@ export class NoSeatsTicketTemplate {
         await new Promise<void>((resolve, reject) => { logoImg.onload = () => resolve(); logoImg.onerror = () => reject(new Error('Error cargando logo')); logoImg.src = header.company_logo_url!; });
         const maxLogoWidth = 46; const logoAspectRatio = logoImg.height / logoImg.width; const logoWidth = Math.min(maxLogoWidth, 46); const logoHeight = logoWidth * logoAspectRatio;
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-    currentY -= 2; // subir logo para reducir espacio superior
+        currentY += 12; // bajar logo con más margen superior
         doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
         currentY += logoHeight + 2.5;
       } catch (e) { console.error('Error cargando logo:', e); currentY += 2.5; }
@@ -180,10 +206,20 @@ export class NoSeatsTicketTemplate {
     if (header.emission_point) { doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.text(`PUNTO DE EMISIÓN: ${header.emission_point}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); currentY += 3.2; }
 
     // Dirección de sucursal
-    if (header.branch_office_address) { doc.setFontSize(8); doc.setFont('helvetica', 'normal'); const addrLines = this.splitText(doc, header.branch_office_address, this.CONTENT_WIDTH, 8); addrLines.forEach(line => { doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); currentY += 2.8; }); currentY += 1.2; }
+    if (header.branch_office_address) { 
+      const addrLines = this.splitText(doc, header.branch_office_address, this.CONTENT_WIDTH, 8); // Aumentado de 7 a 8
+      addrLines.forEach(line => { doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); currentY += 2.2; }); // Aumentado de 3 a 2.2
+      currentY += 1.2; // Aumentado de 1 a 1.2
+    }
 
     // Teléfono de la sucursal
-    if (header.branch_office_phone) { doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.text(`Contacto de sucursal: ${header.branch_office_phone}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); currentY += 2.8; }
+    if (header.branch_office_phone) { 
+      doc.setFontSize(8); // Aumentado de 7 a 8
+      doc.setFont('helvetica', 'normal'); 
+      doc.text(`Contacto de sucursal: ${header.branch_office_phone}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); 
+      currentY += 2.8; // Aumentado de 3 a 2.8
+    }
+    currentY += 1;
 
     // Separador
     doc.setLineWidth(0.2); doc.setDrawColor(180, 180, 180); doc.line(0, currentY, this.TICKET_WIDTH, currentY); currentY += 4;
@@ -205,8 +241,8 @@ export class NoSeatsTicketTemplate {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.MARGIN;
-    const rightX = this.MARGIN + colWidth + 2;
+    const leftX = this.HORIZONTAL_MARGIN;
+    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
 
     // FILA 1: etiquetas (NOMBRE / DOCUMENTO)
     doc.setFont('helvetica', 'normal');
@@ -241,7 +277,7 @@ export class NoSeatsTicketTemplate {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text(tripDetails.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' }); currentY += 6;
 
     doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-    const colWidth = (this.CONTENT_WIDTH - 2) / 2; const leftX = this.MARGIN; const rightX = this.MARGIN + colWidth + 2;
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2; const leftX = this.HORIZONTAL_MARGIN; const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
 
     const findByLabel = (pattern: RegExp) => tripDetails.details.find(d => pattern.test((d.label || '').toString().toUpperCase()));
     const vesselItem = findByLabel(/EMBARC|EMBARCACIÓN|EMBARCACION/);

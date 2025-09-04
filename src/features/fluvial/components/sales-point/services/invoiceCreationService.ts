@@ -40,7 +40,6 @@ export const invoiceCreationService = {
     extraCostDescription: string,
     discount: number,
     isIgvGravado: boolean,
-    passengerService: any,
     tripId: number,
     selectedBoardingStopId: number,
     selectedDisembarkingStopId: number,
@@ -61,7 +60,7 @@ export const invoiceCreationService = {
     const optionalDescription = itemDescription?.trim() ? ` - ${itemDescription.trim()}` : "";
     
     items.push({
-      product_id: passengerService.id,
+      product_id: 1, // ID fijo del servicio de transporte
       quantity: quantity,
       unit_price: parseFloat(baseServiceWithIgv.toFixed(10)),
       discount: discount,

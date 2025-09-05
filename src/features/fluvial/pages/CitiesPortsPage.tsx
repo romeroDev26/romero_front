@@ -28,7 +28,8 @@ const CityFormModal: React.FC<{
     ubigeo: city?.ubigeo || '',
     department: city?.department || '',
     province: city?.province || '',
-    country_code: city?.country_code || 'PE'
+    country_code: city?.country_code || 'PE',
+    is_active: city?.is_active ?? true
   });
 
   React.useEffect(() => {
@@ -39,7 +40,8 @@ const CityFormModal: React.FC<{
         ubigeo: city?.ubigeo || '',
         department: city?.department || '',
         province: city?.province || '',
-        country_code: city?.country_code || 'PE'
+        country_code: city?.country_code || 'PE',
+        is_active: city?.is_active ?? true
       });
     }
   }, [isOpen, city]);
@@ -71,6 +73,19 @@ const CityFormModal: React.FC<{
           }} required maxLength={6} />
           <Input label="Departamento" value={formData.department} onChange={(e) => setFormData({ ...formData, department: e.target.value })} required />
           <Input label="Provincia" value={formData.province} onChange={(e) => setFormData({ ...formData, province: e.target.value })} required />
+        </div>
+        <div className="flex items-center space-x-3">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.is_active}
+              onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-sm font-medium text-gray-700">
+              Ciudad activa
+            </span>
+          </label>
         </div>
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>

@@ -305,29 +305,29 @@ export const CitiesPortsPage: React.FC = () => {
           </table>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+        <div className="bg-white rounded-lg shadow-md overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 table-fixed">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puerto</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudad</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubigeo</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puerto</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudad</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dirección</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubigeo</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Acciones</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredPorts.map((port) => (
                 <tr key={port.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap"><div className="flex items-center"><MapPinIcon className="h-5 w-5 text-blue-400 mr-3" /><div className="font-medium text-gray-900">{port.name}</div></div></td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{PORT_TYPE_LABELS[port.port_type] || port.port_type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{port.city?.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{port.address}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{port.ubigeo}</td>
-                  <td className="px-6 py-4 whitespace-nowrap"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${port.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{port.is_active ? 'Activo' : 'Inactivo'}</span></td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-4 py-4 whitespace-nowrap"><div className="flex items-center"><MapPinIcon className="h-5 w-5 text-blue-400 mr-2" /><div className="font-medium text-gray-900 text-sm">{port.name}</div></div></td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{PORT_TYPE_LABELS[port.port_type] || port.port_type}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{port.city?.name}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[200px]">{port.address}</td>
+                  <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{port.ubigeo}</td>
+                  <td className="px-3 py-4 whitespace-nowrap"><span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${port.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{port.is_active ? 'Activo' : 'Inactivo'}</span></td>
+                  <td className="px-3 py-4 whitespace-nowrap text-right text-sm font-medium sticky right-0 bg-white z-10 w-20">
                     <button onClick={() => { setEditingPort(port); setShowPortModal(true); }} className="text-blue-600 hover:text-blue-900 mr-3"><PencilIcon className="h-4 w-4" /></button>
                     <button onClick={() => handleDelete(port.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-4 w-4" /></button>
                   </td>

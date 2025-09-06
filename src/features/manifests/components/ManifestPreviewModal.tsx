@@ -48,7 +48,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
       try {
         const file = new File(
           [blob],
-          `manifiesto-${manifestData.manifest_number}.pdf`,
+          `manifiesto-${manifestData.id}.pdf`,
           { type: "application/pdf" }
         );
         await manifestService.uploadManifestPDF(manifestData.id, file, "a4");
@@ -96,9 +96,9 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           pdf.setDrawColor(200, 200, 200);
           pdf.rect(logoX, logoY, logoW, logoH);
           pdf.setFontSize(8);
-          pdf.text("LOGO", logoX + logoW / 2, logoY + logoH / 2, {
-            align: "center",
-          });
+          const logoText = "LOGO";
+          const logoTextWidth = pdf.getTextWidth(logoText);
+          pdf.text(logoText, logoX + (logoW - logoTextWidth) / 2, logoY + logoH / 2);
         }
       } catch (e) {
         // Placeholder para logo si falla la carga
@@ -116,20 +116,20 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
-      pdf.text(company.name, infoX, logoY + 4);
+      pdf.text(String((company as any).business_name || (company as any).trade_name || "N/A"), infoX, logoY + 4);
 
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8);
       // Dividir la dirección en líneas si es muy larga
-      const addressLines = pdf.splitTextToSize(company.address, maxInfoWidth);
+      const addressLines = pdf.splitTextToSize(String(company.address || "N/A"), maxInfoWidth);
       let addressY = logoY + 8;
       for (let i = 0; i < Math.min(addressLines.length, 2); i++) {
         pdf.text(addressLines[i], infoX, addressY);
         addressY += 4;
       }
 
-      pdf.text(`Tel: ${company.phone}`, infoX, addressY);
-      pdf.text(company.email, infoX, addressY + 4);
+      pdf.text(`Tel: ${String(company.phone || "N/A")}`, infoX, addressY);
+      pdf.text(String(company.email || "N/A"), infoX, addressY + 4);
 
       // Lado derecho: Recuadro con RUC, TIPO DE DOC, CORRELATIVO
       const boxW = 50;
@@ -143,7 +143,9 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(9);
-      pdf.text(company.ruc, boxX + boxW / 2, boxY + 5, { align: "center" });
+      const rucText = String(company.ruc || "N/A");
+      const rucWidth = pdf.getTextWidth(rucText);
+      pdf.text(rucText, boxX + boxW / 2 - rucWidth / 2, boxY + 5);
 
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(9);
@@ -151,20 +153,27 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         manifestData.manifest_type === "CARGO"
           ? "MANIFIESTO DE CARGA"
           : "MANIFIESTO DE PASAJEROS";
-      pdf.text(docType, boxX + boxW / 2, boxY + 13, { align: "center" });
+      const docTypeWidth = pdf.getTextWidth(docType);
+      pdf.text(docType, boxX + boxW / 2 - docTypeWidth / 2, boxY + 13);
 
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(8);
-      pdf.text(manifestData.manifest_number, boxX + boxW / 2, boxY + 21, {
-        align: "center",
-      });
+      // Correlativo: PASSENGER -> MP########, CARGO -> MC########, fallback id
+      let correlativo = String(manifestData.id || "N/A");
+      if (manifestData.manifest_type === "PASSENGER") {
+        correlativo = `MP${String(manifestData.id || "").padStart(8, "0")}`;
+      } else if (manifestData.manifest_type === "CARGO") {
+        correlativo = `MC${String(manifestData.id || "").padStart(8, "0")}`;
+      }
+      const correlativoWidth = pdf.getTextWidth(correlativo);
+      pdf.text(correlativo, boxX + boxW / 2 - correlativoWidth / 2, boxY + 21);
 
       currentY += Math.max(logoH, boxH) + 8;
     }
 
     // Información de viaje en la parte inferior del header
-    const depInfo = manifestData.departure_datetime
-      ? new Date(manifestData.departure_datetime)
+    const depInfo = (manifestData as any).trip_info?.departure_datetime
+      ? new Date((manifestData as any).trip_info.departure_datetime)
       : null;
     const fechaSalida = depInfo ? depInfo.toLocaleDateString("es-PE") : "N/A";
     const horaSalida = depInfo
@@ -178,25 +187,25 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
     pdf.setFontSize(9);
     pdf.text("FECHA SALIDA:", margin, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(fechaSalida, margin + 30, currentY);
+    pdf.text(String(fechaSalida), margin + 30, currentY);
 
     pdf.setFont("helvetica", "bold");
     pdf.text("HORA DE SALIDA:", pageWidth / 2 + 10, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(horaSalida, pageWidth / 2 + 40, currentY);
+    pdf.text(String(horaSalida), pageWidth / 2 + 40, currentY);
 
     currentY += 6;
 
     pdf.setFont("helvetica", "bold");
     pdf.text("ORIGEN:", margin, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(manifestData.origin_port_name || "N/A", margin + 20, currentY);
+    pdf.text(String((manifestData as any).trip_info?.origin_port_name || "N/A"), margin + 20, currentY);
 
     pdf.setFont("helvetica", "bold");
     pdf.text("DESTINO:", pageWidth / 2 + 10, currentY);
     pdf.setFont("helvetica", "normal");
     pdf.text(
-      manifestData.destination_port_name || "N/A",
+      String((manifestData as any).trip_info?.destination_port_name || "N/A"),
       pageWidth / 2 + 30,
       currentY
     );
@@ -207,7 +216,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
     pdf.text("PLACA:", margin, currentY);
     pdf.setFont("helvetica", "normal");
     pdf.text(
-      manifestData.vessel_registration_number || "N/A",
+      String((manifestData as any).trip_info?.vehicle_license_plate || "N/A"),
       margin + 15,
       currentY
     );
@@ -218,14 +227,15 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(9);
     if (manifestData.manifest_type === "CARGO") {
-      pdf.text(
-        `Total de carga: ${Math.round(manifestData.total_cargo_weight_kg)}`,
-        margin,
-        currentY
-      );
+      const rawTotalCargo = (manifestData as any).total_cargo_weight_kg;
+      const totalCargo =
+        rawTotalCargo && !isNaN(Number(rawTotalCargo))
+          ? Math.round(Number(rawTotalCargo))
+          : ( (manifestData as any).data?.length || 0 );
+      pdf.text(`Total de carga: ${totalCargo}`, margin, currentY);
     } else {
       pdf.text(
-        `Total de Pasajeros: ${manifestData.total_passengers}`,
+        `Total de Pasajeros: ${(manifestData as any).data?.length || 0}`,
         margin,
         currentY
       );
@@ -253,7 +263,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             .toString()
             .toUpperCase();
           const routeText = `${origin} - ${dest}`;
-          pdf.text(routeText, pageWidth / 2, currentY, { align: "center" });
+          const routeTextWidth = pdf.getTextWidth(routeText);
+          pdf.text(routeText, pageWidth / 2 - routeTextWidth / 2, currentY);
           currentY += 8;
 
           const tableData = (group.items || []).map((item: any) => {
@@ -349,8 +360,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           pdf.text(`Total: ${groupItemCount}`, margin, finalY + 8); // Mostrar cantidad de elementos
           currentY = finalY + 16;
         }
-      } else if (manifestData.items && manifestData.items.length > 0) {
-        const tableData = manifestData.items.map((item: any, idx: number) => {
+      } else if ((manifestData as any).data && (manifestData as any).data.length > 0) {
+        const tableData = (manifestData as any).data.map((item: any, idx: number) => {
           // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
           let contactos = "";
           const remitentePhone =
@@ -369,22 +380,27 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           }
           if (!contactos) contactos = "N/A";
 
-          return [
-            (idx + 1).toString(),
-            item.cargo_description || "N/A",
-            item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
-            item.remitente_nombre || "N/A",
-            item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
-            item.destinatario_nombre || "N/A",
-            item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
-            contactos, // Mostrar teléfonos en formato R: D:
-            item.amount ? `S/ ${item.amount.toFixed(2)}` : "N/A",
-            item.payment_status === "PAID"
-              ? "PAGADO"
-              : item.payment_status === "PENDING"
-              ? "PENDIENTE"
-              : item.payment_status || "N/A",
-          ];
+            // normalizar estado de pago (soporta "PAGADO"/"PENDIENTE" y "PAID"/"PENDING")
+            const rawStatus = (item.payment_status || "").toString().toUpperCase();
+            const paymentStatus =
+              rawStatus === "PAID" || rawStatus === "PAGADO"
+                ? "PAGADO"
+                : rawStatus === "PENDING" || rawStatus === "PENDIENTE"
+                ? "PENDIENTE"
+                : item.payment_status || "N/A";
+
+            return [
+              (idx + 1).toString(),
+              item.cargo_description || "N/A",
+              item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
+              item.remitente_nombre || "N/A",
+              item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
+              item.destinatario_nombre || "N/A",
+              item.destinatario_doc?.replace("1-", "DNI: ") || "N/A",
+              contactos, // Mostrar teléfonos en formato R: D:
+              item.amount ? `S/ ${Number(item.amount).toFixed(2)}` : "N/A",
+              paymentStatus,
+            ];
         });
 
         // Calcular anchos de columna con las nuevas columnas
@@ -443,42 +459,43 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
       }
     } else {
       // PASAJEROS: usar el mismo estilo que la tabla de carga y centrar correctamente
-      if (manifestData.items && manifestData.items.length > 0) {
-        const tableData = manifestData.items.map((item: any, idx: number) => {
-          const rawSeller =
-            item.seller_name ??
-            item?.seller?.name ??
-            manifestData.generated_by_name ??
-            manifestData.generated_by;
-          const sellerDisplay = rawSeller
-            ? String(rawSeller).trim().split(" ")[0]
-            : "VENDEDOR";
+      if ((manifestData as any).data && (manifestData as any).data.length > 0) {
+        const tableData = (manifestData as any).data.map((item: any, idx: number) => {
+          // Vendedor: preferir seller_name, luego generated_by_username/ generated_by, fallback
+          const sellerDisplay =
+            item.seller_name ||
+            (manifestData as any).generated_by_username ||
+            (manifestData as any).generated_by ||
+            "VENDEDOR";
+
           const identityLabel =
-            item.passenger_doc_type === "1"
+            item.document_type === "1"
               ? "DNI"
-              : item.passenger_doc_type === "2"
+              : item.document_type === "2"
               ? "CE"
               : "PAS";
-          // Nueva columna: Nacionalidad (priorizar nombre; si código 'PE' => 'PERÚ'; si no código o nombre => 'N/A')
+
+          // Nacionalidad: preferir passenger_country_name, luego code -> nombre, sino N/A
           let nationality = "N/A";
-          if (item.passenger_country_name)
+          if (item.passenger_country_name) {
             nationality = item.passenger_country_name;
-          else if (item.passenger_country_code) {
+          } else if (item.passenger_country_code) {
             nationality =
               item.passenger_country_code === "PE"
                 ? "PERÚ"
                 : item.passenger_country_code;
           }
+
           return [
             (idx + 1).toString(),
-            item.passenger_name || "N/A",
-            `${identityLabel}: ${item.passenger_doc_number || "N/A"}`,
+            item.full_name || "N/A",
+            `${identityLabel}: ${item.document_number || "N/A"}`,
             nationality,
             sellerDisplay,
             item.seat_number || "N/A",
-            item.boarding_port_name || "N/A",
-            item.disembarking_port_name || "N/A",
-            item.passenger_phone || "N/A",
+            item.boarding_port || "N/A",
+            item.destination_port || "N/A",
+            item.phone || "N/A",
           ];
         });
 
@@ -596,7 +613,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(9);
       pdf.text(
-        pdf.splitTextToSize(manifestData.observations, pageWidth - margin * 2),
+        pdf.splitTextToSize(String(manifestData.observations), pageWidth - margin * 2),
         margin,
         finalY + 16
       );
@@ -612,7 +629,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `manifiesto-${manifestData.manifest_number}.pdf`;
+      a.download = `manifiesto-${manifestData.id}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -651,7 +668,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
                 : "Manifiesto de Pasajeros"}
             </h2>
             <p className="text-sm text-gray-600 mt-1">
-              N° {manifestData.manifest_number}
+              N° {manifestData.id}
             </p>
           </div>
           <button

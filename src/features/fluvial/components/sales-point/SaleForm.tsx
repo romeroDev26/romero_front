@@ -1,5 +1,5 @@
 //src/features/fluvial/components/sales-point/SaleForm.tsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback, memo } from "react";
 import {
   ArrowLeft,
   Ship,
@@ -64,14 +64,13 @@ import { useSeatReservations } from "../../hooks/useSeatReservations";
 import { useCreateSeatAssignment } from "../../hooks/useSeatAssignments";
 import { useUpdateReservation } from "../../hooks/useReservations";
 import { useRepresentantes } from "../../hooks/useRepresentantes";
-import { useSeatMapRealtime } from "../../hooks/useSeatMapRealtime";
 import { seatValidationService } from "../../../../services/seatValidation.service";
 
 // Services
 import { authService } from "../../../../services/auth.service";
 import api from "../../../../config/api";
 
-export const SaleForm: React.FC<SaleFormProps> = ({
+export const SaleForm: React.FC<SaleFormProps> = memo(({
   trip,
   branch,
   onBack,
@@ -184,7 +183,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         setSelectedBoardingStopId(initialBoardingStop.id);
       }
     }
-  }, [branch.port_id, tripDetails?.stops]);
+  }, [branch.port_id, tripDetails?.id]); // Ya optimizado
 
   useEffect(() => {
     if (reservationToConfirm && tripDetails) {
@@ -203,7 +202,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       setSelectedBoardingStopId(reservationToConfirm.boarding_stop_id);
       setSelectedDisembarkingStopId(reservationToConfirm.disembarking_stop_id);
     }
-  }, [reservationToConfirm, tripDetails]);
+  }, [reservationToConfirm?.id, tripDetails?.id]); // Ya optimizado
 
   // Función para limpiar el formulario después de una venta exitosa
   const clearFormAfterSale = () => {
@@ -278,15 +277,15 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   const getDisembarkingPortId = () =>
     getPortIdFromStopId(selectedDisembarkingStopId);
 
-  // Efecto para limpiar estado cuando cambia la embarcación
+  // Efecto para limpiar estado cuando cambia la embarcación - Optimizado
   useEffect(() => {
     // Limpiar estado cuando cambia el trip.id (nueva embarcación)
     clearStateForVesselChange();
-    
+
     // Invalidar caché de React Query para forzar nueva consulta del seat-map
     // Esto asegura que se detecte correctamente el tipo de embarcación
     queryClient.invalidateQueries({ queryKey: ["seatMap", trip.id] });
-  }, [trip.id]);
+  }, [trip.id]); // Ya optimizado
 
   // Hooks de datos
   const { data: passengerService } = usePassengerService();
@@ -295,7 +294,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     return canSellWithoutSeats
       ? ("OTROS" as ServiceCategory)
       : ("PASAJES" as ServiceCategory);
-  }, [canSellWithoutSeats]);
+  }, [canSellWithoutSeats]); // Ya optimizado // Ya está optimizado
 
   const { data: foundFare } = useFindFare({
     originPortId: getBoardingPortId(),
@@ -324,7 +323,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         passengerService.tax_category_code === SunatTaxCategory.GRAVADO
       );
     }
-  }, [passengerService]);
+  }, [passengerService?.tax_category_code]); // Ya optimizado
 
   useEffect(() => {
     const isRuc = passengerData.docType === SunatDocType.RUC;
@@ -332,7 +331,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       passengerData.docNumber.trim() && passengerData.name.trim()
     );
     setShowRepresentatives(isRuc && hasBasicInfo);
-  }, [passengerData.docType, passengerData.docNumber, passengerData.name]);
+  }, [passengerData.docType, passengerData.docNumber, passengerData.name]); // Ya optimizado
 
   // Efectos para series de documentos
   useEffect(() => {
@@ -360,7 +359,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         setSelectedFacturaSeries(availableFacturaSeries[0].series_code);
       }
     }
-  }, [availableBoletaSeries, availableFacturaSeries]);
+  }, [availableBoletaSeries.length, availableFacturaSeries.length]); // Ya optimizado con longitudes
 
   // Handlers para series
   const handleBoletaSeriesChange = (seriesCode: string) => {
@@ -399,7 +398,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     const multiplier = enrichedSeat?.seat_type?.price_multiplier || 1.0;
 
     return { basePrice: price, seatMultiplier: multiplier };
-  }, [foundFare, selectedSeat, enrichSeatWithType]);
+  }, [foundFare?.price, selectedSeat?.id, enrichSeatWithType]); // Ya optimizado
 
   const priceCalculation = useMemo(() => {
     return calculatePriceDetails(
@@ -415,8 +414,9 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     basePrice,
     seatMultiplier,
     extraCost,
-    passengerData,
-    representatives,
+    passengerData.name, // Ya optimizado
+    passengerData.docType,
+    representatives.length, // Ya optimizado
     isIgvGravado,
     discount,
   ]);
@@ -442,7 +442,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
   // Funciones para gestionar representantes
   const handleAddRepresentative = async (representative: Representative) => {
     // Primero, reservar el asiento vía WebSocket si hay uno seleccionado
-    if (selectedSeatForRepresentative && isWebSocketConnected) {
+    if (selectedSeatForRepresentative && isWebSocketConnected && selectSeatForRepresentative) {
       selectSeatForRepresentative(
         selectedSeatForRepresentative.id,
         representatives.length,
@@ -469,8 +469,10 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
       if (seatId) {
         // Usar las funciones correctas con el seatId y el índice del representante
+      if (releaseSeatForRepresentative) {
         releaseSeatForRepresentative(seatId, index);
-        releaseSeatWebSocket(seatId);
+      }
+      // Remover referencia a releaseSeatWebSocket que ya no existe
       }
     }
 
@@ -526,26 +528,59 @@ export const SaleForm: React.FC<SaleFormProps> = ({
 
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
-  // Hook de WebSocket para notificar selecciones de representantes
-  const {
-    seatMap,
-    selectSeatForRepresentative,
-    releaseSeatForRepresentative,
-    releaseSeat: releaseSeatWebSocket,
-    confirmPurchase,
-    isConnected: isWebSocketConnected,
-    activeSeatSelections,
-  } = useSeatMapRealtime({
-    tripId: trip.id,
-    userId: currentUser?.id || "unknown",
-    userName: currentUser?.full_name || currentUser?.first_name || "Usuario",
-    enabled: true,
-    companyName: isRuc ? passengerData.name : undefined,
-    isCompanyMode: isRuc,
-    enableDebugLogs: false,
-  });
+  // Hook de WebSocket para notificar selecciones de representantes - Memoizado
+  // CORRECCIÓN: Solo usar passengerData.name cuando sea RUC y esté definido
+  // const companyNameForWS = useMemo(() => {
+  //   return isRuc && passengerData.name?.trim() ? passengerData.name.trim() : undefined;
+  // }, [isRuc, passengerData.name]);
+  
+  // Estabilizar configuración WebSocket para evitar reconexiones innecesarias
+  // const stableWebSocketConfig = useMemo(() => {
+  //   const config = {
+  //     tripId: trip.id,
+  //     userId: currentUser?.id || "unknown",
+  //     userName: currentUser?.full_name || currentUser?.first_name || "Usuario",
+  //     enabled: true,
+  //     companyName: companyNameForWS,
+  //     isCompanyMode: isRuc,
+  //     enableDebugLogs: false,
+  //   };
+  //   
+  //   // Solo recrear si los valores críticos realmente cambiaron
+  //   return config;
+  // }, [trip.id, currentUser?.id, currentUser?.full_name, currentUser?.first_name, isRuc, companyNameForWS]);
 
-  // Configurar asiento automáticamente cuando se carga una reservación
+  // Estado para las funciones del WebSocket obtenidas del SeatAndFareSelector
+  const [webSocketFunctions, setWebSocketFunctions] = useState<{
+    selectSeatForRepresentative: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
+    releaseSeatForRepresentative: (seatId: number, representativeIndex?: number) => boolean;
+    confirmPurchase: (seatIds?: number[]) => boolean;
+    activeSeatSelections: Map<number, any>;
+    seatMap: SeatMapItem[];
+    isWebSocketConnected: boolean;
+  } | null>(null);
+
+  // Callback para recibir las funciones del hook desde SeatAndFareSelector
+  const handleWebSocketReady = useCallback((functions: {
+    selectSeatForRepresentative: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
+    releaseSeatForRepresentative: (seatId: number, representativeIndex?: number) => boolean;
+    confirmPurchase: (seatIds?: number[]) => boolean;
+    activeSeatSelections: Map<number, any>;
+    seatMap: SeatMapItem[];
+    isWebSocketConnected: boolean;
+  }) => {
+    setWebSocketFunctions(functions);
+  }, []);
+
+  // Extraer las funciones para usarlas en el componente
+  const selectSeatForRepresentative = webSocketFunctions?.selectSeatForRepresentative;
+  const releaseSeatForRepresentative = webSocketFunctions?.releaseSeatForRepresentative;
+  const confirmPurchase = webSocketFunctions?.confirmPurchase;
+  const activeSeatSelections = webSocketFunctions?.activeSeatSelections || new Map();
+  const seatMap = webSocketFunctions?.seatMap || [];
+  const isWebSocketConnected = webSocketFunctions?.isWebSocketConnected || false;
+
+  // Configurar asiento automáticamente cuando se carga una reservación - Optimizado
   React.useEffect(() => {
     if (
       reservationToConfirm &&
@@ -560,10 +595,12 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         setSelectedSeat(reservationSeat);
       }
     }
-  }, [reservationToConfirm, seatMap, selectedSeat]);
+  }, [reservationToConfirm, seatMap.length]); // Remover selectedSeat de dependencias para evitar bucles
 
-  // NUEVA función para obtener IDs de asientos seleccionados por representantes
+  // NUEVA función para obtener IDs de asientos seleccionados por representantes - Optimizada
   const representativeSelectedSeatIds = useMemo((): number[] => {
+    if (!representatives.length || !seatMap.length) return [];
+
     const seatIds = representatives
       .map((rep) => {
         if (!rep.seat_number) return undefined;
@@ -574,16 +611,16 @@ export const SaleForm: React.FC<SaleFormProps> = ({
       .filter((id): id is number => id !== undefined);
 
     return seatIds;
-  }, [representatives, seatMap]);
+  }, [representatives.length, seatMap.length]); // Ya optimizado con longitudes
 
-  // Función para encontrar el seatId a partir del seat_number
-  const findSeatIdBySeatNumber = (seatNumber: string): number | null => {
+  // Función para encontrar el seatId a partir del seat_number - Memoizada
+  const findSeatIdBySeatNumber = useCallback((seatNumber: string): number | null => {
     const seat = seatMap.find((seat) => seat.seat_number === seatNumber);
     return seat ? seat.id : null;
-  };
+  }, [seatMap.length]); // Ya optimizado con longitud
 
-  // ← NUEVO: Handler principal de venta usando el hook de lógica de negocio
-  const handleConfirmSale = async () => {
+  // ← NUEVO: Handler principal de venta usando el hook de lógica de negocio - Optimizado
+  const handleConfirmSale = useCallback(async () => {
     try {
       // Validación: si se agrega un costo adicional, la descripción debe ser obligatoria
       if (
@@ -651,16 +688,53 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     } catch (error) {
       // Los errores ya son manejados por toast en los hooks internos
     }
-  };
+  }, [
+    extraCost,
+    extraCostDescription,
+    isRuc,
+    handleCompanyInvoiceWithRepresentatives,
+    trip.id,
+    selectedBoardingStopId,
+    selectedDisembarkingStopId,
+    passengerData.name, // Ya optimizado
+    passengerData.docType,
+    representatives.length, // Ya optimizado
+    branch.name,
+    confirmPurchase,
+    basePrice,
+    seatMultiplier,
+    handleRegularSale,
+    selectedSeat?.id, // Ya optimizado
+    itemDescription,
+    seatMap.length, // Ya optimizado
+    showSeatMap,
+    selectedFacturaSeries,
+    selectedBoletaSeries,
+    isIgvGravado,
+    discount,
+    isConfirmingMode,
+    reservationToConfirm?.id, // Ya optimizado
+  ]);
 
-  const areActionsEnabled =
-    !!selectedBoardingStopId &&
-    !!selectedDisembarkingStopId &&
-    !!passengerData.docNumber.trim() &&
-    !!passengerData.name.trim() &&
-    (isRuc ? representatives.length > 0 : !showSeatMap || !!selectedSeat);
+  // Optimización: Memoizar areActionsEnabled para evitar recálculos
+  const areActionsEnabled = useMemo(() => {
+    return !!selectedBoardingStopId &&
+      !!selectedDisembarkingStopId &&
+      !!passengerData.docNumber.trim() &&
+      !!passengerData.name.trim() &&
+      (isRuc ? representatives.length > 0 : !showSeatMap || !!selectedSeat);
+  }, [
+    selectedBoardingStopId,
+    selectedDisembarkingStopId,
+    passengerData.docNumber,
+    passengerData.name,
+    isRuc,
+    representatives.length,
+    showSeatMap,
+    selectedSeat?.id, // Ya optimizado
+  ]);
 
-  // Log detallado de las condiciones de areActionsEnabled
+  // Log detallado de las condiciones de areActionsEnabled - Optimizado
   React.useEffect(() => {
     // Logging removed for production
   }, [
@@ -671,8 +745,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
     isRuc,
     representatives.length,
     showSeatMap,
-    selectedSeat,
-    areActionsEnabled,
+    selectedSeat?.id, // Ya optimizado
     isConfirmingMode,
   ]);
 
@@ -784,6 +857,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
                   occupiedSeatNumbers={getAllOccupiedSeatNumbers()}
                   isCompanyMode={isRuc} // NUEVA: Pasar modo empresa basado en RUC
                   representativeSelectedSeatIds={representativeSelectedSeatIds} // CORRECCIÓN: Usar useMemo
+                  onWebSocketReady={handleWebSocketReady}
                 />
               ) : (
                 // UI alternativa para embarcaciones sin asientos
@@ -1124,4 +1198,7 @@ export const SaleForm: React.FC<SaleFormProps> = ({
         ))}
     </>
   );
-};
+});
+
+// Añadir displayName para mejor debugging
+SaleForm.displayName = 'SaleForm';

@@ -1,5 +1,5 @@
 // src/features/fluvial/hooks/useSeatMapRealtime.ts
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { SeatMapItem } from '../../../types';
 import { useSeatMap } from './useSeatMap';
 import { useWebSocketConnection } from './useWebSocketConnection';
@@ -36,8 +36,8 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
   const [seatMap, setSeatMap] = useState<SeatMapItem[]>([]);
   const [pendingWebSocketSelections, setPendingWebSocketSelections] = useState<SeatSelection[] | null>(null);
 
-  // Configuración WebSocket
-  const webSocketConfig = {
+  // Configuración WebSocket - Memoizada para evitar recreaciones innecesarias
+  const webSocketConfig = useMemo(() => ({
     tripId,
     userId,
     userName,
@@ -45,7 +45,7 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     maxReconnectAttempts,
     companyName,
     isCompanyMode
-  };
+  }), [tripId, userId, userName, enabled, maxReconnectAttempts, companyName, isCompanyMode]);
 
   // Hooks especializados - Separación de responsabilidades (antes del messageHandler)
   const {
@@ -65,27 +65,67 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     cleanupInterval
   });
 
+  // Debouncing para actualizaciones del mapa de asientos
+  const seatUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingSeatUpdatesRef = useRef<Map<number, string>>(new Map());
+
+  const debouncedSeatMapUpdate = useCallback((seatId: number, status: string) => {
+    // Acumular actualizaciones pendientes
+    pendingSeatUpdatesRef.current.set(seatId, status);
+    
+    // Limpiar timeout anterior
+    if (seatUpdateTimeoutRef.current) {
+      clearTimeout(seatUpdateTimeoutRef.current);
+    }
+    
+    // Aplicar actualizaciones después de 100ms de inactividad
+    seatUpdateTimeoutRef.current = setTimeout(() => {
+      const updates = new Map(pendingSeatUpdatesRef.current);
+      pendingSeatUpdatesRef.current.clear();
+      
+      setSeatMap(prevMap => {
+        let hasChanges = false;
+        const newMap = prevMap.map(seat => {
+          if (updates.has(seat.id)) {
+            hasChanges = true;
+            return { ...seat, status: updates.get(seat.id) as any };
+          }
+          return seat;
+        });
+        return hasChanges ? newMap : prevMap;
+      });
+    }, 100);
+  }, []);
+
+  // Refs para callbacks estables - Evitar recreaciones del messageHandler
+  const addSelectionRef = useRef(addSelection);
+  const removeSelectionRef = useRef(removeSelection);
+  const debouncedSeatMapUpdateRef = useRef(debouncedSeatMapUpdate);
+
+  // Actualizar refs en cada render para mantener referencias actualizadas
+  useEffect(() => {
+    addSelectionRef.current = addSelection;
+    removeSelectionRef.current = removeSelection;
+    debouncedSeatMapUpdateRef.current = debouncedSeatMapUpdate;
+  }, [addSelection, removeSelection, debouncedSeatMapUpdate]);
+
   // Handler de mensajes WebSocket - Memoizado para evitar recreaciones
   const messageHandler = useMemo(() => {
     return new WebSocketMessageHandler(userId, {
       onSeatMapUpdate: (seatId: number, status: string) => {
-        setSeatMap(prevMap => 
-          prevMap.map(seat => 
-            seat.id === seatId ? { ...seat, status: status as any } : seat
-          )
-        );
+        debouncedSeatMapUpdateRef.current(seatId, status);
       },
       onSelectionUpdate: (selection: SeatSelection) => {
-        addSelection(selection);
+        addSelectionRef.current(selection);
       },
       onSelectionRemove: (seatId: number) => {
-        removeSelection(seatId);
+        removeSelectionRef.current(seatId);
       },
       onInitialState: (selections: SeatSelection[]) => {
         // Usar una callback function para acceder al estado actual sin dependencias
         setSeatMap(currentSeatMap => {
           if (currentSeatMap.length > 0) {
-            selections.forEach(selection => addSelection(selection));
+            selections.forEach(selection => addSelectionRef.current(selection));
           } else {
             setPendingWebSocketSelections(selections);
           }
@@ -93,7 +133,7 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
         });
       }
     }, enableDebugLogs);
-  }, [userId, enableDebugLogs, addSelection, removeSelection]); // Removido seatMap.length
+  }, [userId, enableDebugLogs]); // Removidas dependencias cambiantes: addSelection, removeSelection, debouncedSeatMapUpdate
 
   const handleWebSocketMessage = useCallback((message: SeatUpdateMessage) => {
     messageHandler.handleMessage(message);
@@ -137,17 +177,43 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     }
   }, [initialSeatMap, pendingWebSocketSelections, userId, addSelection]);
 
-  // CORRECCIÓN: Forzar reconexión cuando cambie el tripId o se monte el componente
+  // CORRECCIÓN: Solo reconectar cuando cambien valores críticos de conexión
+  const previousConfigRef = useRef<{
+    tripId?: number, 
+    userId?: string, 
+    userName?: string, 
+    enabled?: boolean,
+    companyName?: string,
+    isCompanyMode?: boolean
+  }>({});
+  
   useEffect(() => {
     if (enabled && tripId && userId && userName) {
-      // Pequeño delay para asegurar que el componente esté completamente montado
-      const timer = setTimeout(() => {
-        forceReconnect();
-      }, 100);
-
-      return () => clearTimeout(timer);
+      const currentConfig = { tripId, userId, userName, enabled, companyName, isCompanyMode };
+      const prevConfig = previousConfigRef.current;
+      
+      // Solo reconectar si realmente cambió algo crítico
+      const shouldReconnect = 
+        prevConfig.tripId !== tripId ||
+        prevConfig.userId !== userId ||
+        prevConfig.userName !== userName ||
+        prevConfig.enabled !== enabled ||
+        prevConfig.companyName !== companyName ||
+        prevConfig.isCompanyMode !== isCompanyMode;
+      
+      if (shouldReconnect) {
+        // Pequeño delay para asegurar que el componente esté completamente montado
+        const timer = setTimeout(() => {
+          forceReconnect();
+        }, 100);
+        
+        previousConfigRef.current = currentConfig;
+        return () => clearTimeout(timer);
+      }
+      
+      previousConfigRef.current = currentConfig;
     }
-  }, [tripId, userId, userName, enabled]); // Dependencias críticas para reconexión
+  }, [tripId, userId, userName, enabled, companyName, isCompanyMode, forceReconnect]); // Dependencias críticas para reconexión
 
   // === API PÚBLICA DEL HOOK ===
 
@@ -273,6 +339,15 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     connectionStatus, isWebSocketAvailable, myReservedSeatsRef, // Usar referencia
     purchaseTimeRemaining, isPurchaseTimerActive, companyName, isCompanyMode
   ]); // Removido seatMap.length e initialSeatMap?.length que cambian constantemente
+
+  // Cleanup del debouncing al desmontar
+  useEffect(() => {
+    return () => {
+      if (seatUpdateTimeoutRef.current) {
+        clearTimeout(seatUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Funciones auxiliares (mantener compatibilidad con la API original)
   const setSeatTimeout = useCallback((_timeoutMs: number) => {

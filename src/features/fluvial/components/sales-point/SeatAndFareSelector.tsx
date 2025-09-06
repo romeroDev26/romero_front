@@ -1,10 +1,11 @@
 // src/features/fluvial/components/sales-point/SeatAndFareSelector.tsx
 
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useCallback } from 'react';
 import { Spinner } from '../../../../components/common/Spinner';
 import { useTripDetails } from '../../hooks/useTripDetails';
 import { useSeatTypesData } from '../../hooks/useSeatTypesData';
 import { useVessel } from '../../hooks/useVesselsData';
+import { useSeatMapRealtime } from '../../hooks/useSeatMapRealtime';
 import { SeatMapItem, TripStop, SeatReservation } from '../../../../types';
 import { SeatMapRealtime } from '../seat-map/SeatMapRealtime';
 import { getSeatZoneName } from '../../utils/seatUtils';
@@ -29,6 +30,15 @@ interface SeatAndFareSelectorProps {
   isCompanyMode?: boolean;
   // prop para asientos seleccionados de representantes (modo empresa)
   representativeSelectedSeatIds?: number[];
+  // Callbacks para exponer funciones del hook useSeatMapRealtime
+  onWebSocketReady?: (functions: {
+    selectSeatForRepresentative: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
+    releaseSeatForRepresentative: (seatId: number, representativeIndex?: number) => boolean;
+    confirmPurchase: (seatIds?: number[]) => boolean;
+    activeSeatSelections: Map<number, any>;
+    seatMap: SeatMapItem[];
+    isWebSocketConnected: boolean;
+  }) => void;
 }
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
@@ -46,35 +56,74 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   occupiedSeatNumbers = [],
   isCompanyMode = false,
   representativeSelectedSeatIds = [],
+  onWebSocketReady,
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
   
+  // Usar el hook useSeatMapRealtime para obtener las funciones necesarias
+  const {
+    seatMap,
+    selectSeatForRepresentative,
+    releaseSeatForRepresentative,
+    confirmPurchase,
+    activeSeatSelections,
+    isConnected: isWebSocketConnected,
+  } = useSeatMapRealtime({
+    tripId,
+    userId,
+    userName,
+    enabled: !isConfirmingMode, // Solo habilitar WebSocket si no está en modo confirmación
+    companyName: undefined, // No es modo empresa en este componente
+    isCompanyMode, // Pasar el modo empresa
+  });
+
+  // Exponer las funciones del hook al componente padre - Optimizado
+  useEffect(() => {
+    if (onWebSocketReady && seatMap) {
+      onWebSocketReady({
+        selectSeatForRepresentative,
+        releaseSeatForRepresentative,
+        confirmPurchase,
+        activeSeatSelections,
+        seatMap,
+        isWebSocketConnected,
+      });
+    }
+  }, [
+    onWebSocketReady,
+    seatMap?.length, // Solo la longitud para evitar recreaciones constantes
+    isWebSocketConnected,
+    // Remover activeSeatSelections y las funciones individuales que cambian frecuentemente
+  ]);
+
   // Obtener información de la embarcación para las configuraciones de asientos
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails } = useVessel(vesselId || null);
 
-  // Función utilitaria para enriquecer asientos con información de seat_type
+  // Función utilitaria para enriquecer asientos con información de seat_type - Memoizada
   // Esta función compensa la falta de seat_type en la respuesta del backend /seat-map
   // utilizando las configuraciones de embarcación que ya están disponibles
-  const enrichSeatWithType = (seat: SeatMapItem): SeatMapItem => {
-    if (!vesselDetails?.seat_configurations || !seat.vessel_seat_config_id) {
+  const enrichSeatWithType = useMemo(() => {
+    return (seat: SeatMapItem): SeatMapItem => {
+      if (!vesselDetails?.seat_configurations || !seat.vessel_seat_config_id) {
+        return seat;
+      }
+
+      const seatConfig = vesselDetails.seat_configurations.find(
+        config => config.id === seat.vessel_seat_config_id
+      );
+
+      if (seatConfig && seatConfig.seat_type) {
+        return {
+          ...seat,
+          seat_type: seatConfig.seat_type
+        };
+      }
+
       return seat;
-    }
-
-    const seatConfig = vesselDetails.seat_configurations.find(
-      config => config.id === seat.vessel_seat_config_id
-    );
-
-    if (seatConfig && seatConfig.seat_type) {
-      return {
-        ...seat,
-        seat_type: seatConfig.seat_type
-      };
-    }
-
-    return seat;
-  };
+    };
+  }, [vesselDetails?.seat_configurations]); // Solo dependencias estables
 
   // Este efecto se encarga de pre-seleccionar el asiento
   // cuando el formulario está en modo de confirmación de reserva.
@@ -92,7 +141,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     // 3. Para el modo de confirmación, necesitaremos buscar el asiento desde el backend
     // ya que el mapa de asientos ahora se maneja en el componente SeatMapRealtime
     // Por ahora, el efecto queda documentado pero la lógica se maneja en el componente hijo
-  }, [isConfirmingMode, reservationToConfirm, selectedSeat]);
+  }, [isConfirmingMode, reservationToConfirm?.id, selectedSeat?.id]); // Ya optimizado
 
   // Calcular selectedSeats dependiendo del modo empresa
   const selectedSeatsForMap = useMemo((): Set<number> => {
@@ -107,7 +156,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       // En modo individual, solo el asiento seleccionado
       return selectedSeat ? new Set([selectedSeat.id]) : new Set();
     }
-  }, [isCompanyMode, representativeSelectedSeatIds, selectedSeat]);
+  }, [isCompanyMode, representativeSelectedSeatIds.length, selectedSeat?.id]); // Ya optimizado
 
   // Calcular stops disponibles para destino basado en el stop de embarque seleccionado
   const { availableStops } = useMemo(() => {
@@ -120,9 +169,9 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     return {
       availableStops: stops as TripStop[],
     };
-  }, [tripDetails, selectedBoardingStopId]);
+  }, [tripDetails?.id, selectedBoardingStopId]); // Ya optimizado
 
-  const handleSeatToggleFromMap = (toggledSeat: SeatMapItem) => {
+  const handleSeatToggleFromMap = useCallback((toggledSeat: SeatMapItem) => {
     // Si estamos en modo de confirmación, no se permite ninguna interacción con el mapa.
     if (isConfirmingMode) return;
 
@@ -134,38 +183,40 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     } else {
       onSeatSelect(enrichedSeat);
     }
-  };
+  }, [isConfirmingMode, enrichSeatWithType, selectedSeat?.id, onSeatSelect]); // Dependencias estables
 
-  // Función para obtener información de zona del asiento seleccionado
-  const getSeatZoneInfo = (seat: SeatMapItem) => {
-    const enrichedSeat = enrichSeatWithType(seat);
-    const seatConfig = vesselDetails?.seat_configurations?.find(
-      config => config.id === seat.vessel_seat_config_id
-    );
-    const seatTypeName = seatConfig?.seat_type?.name || enrichedSeat.seat_type?.name;
-    
-    // Obtener colores de fondo y texto que contrasten
-    const getZoneColorWithText = (typeName?: string | null): { bgColor: string; textColor: string } => {
-      if (!typeName) return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+  // Función para obtener información de zona del asiento seleccionado - Memoizada
+  const getSeatZoneInfo = useMemo(() => {
+    return (seat: SeatMapItem) => {
+      const enrichedSeat = enrichSeatWithType(seat);
+      const seatConfig = vesselDetails?.seat_configurations?.find(
+        config => config.id === seat.vessel_seat_config_id
+      );
+      const seatTypeName = seatConfig?.seat_type?.name || enrichedSeat.seat_type?.name;
       
-      const name = typeName.toLowerCase();
-      if (name.includes('reclinable')) return { bgColor: 'bg-green-100/80 border border-green-200', textColor: 'text-green-800' };
-      if (name.includes('estático')) return { bgColor: 'bg-yellow-100/80 border border-yellow-200', textColor: 'text-yellow-800' };
-      if (name.includes('premium')) return { bgColor: 'bg-purple-100/80 border border-purple-200', textColor: 'text-purple-800' };
-      if (name.includes('vip')) return { bgColor: 'bg-indigo-100/80 border border-indigo-200', textColor: 'text-indigo-800' };
-      if (name.includes('económico') || name.includes('economico')) return { bgColor: 'bg-blue-100/80 border border-blue-200', textColor: 'text-blue-800' };
+      // Obtener colores de fondo y texto que contrasten
+      const getZoneColorWithText = (typeName?: string | null): { bgColor: string; textColor: string } => {
+        if (!typeName) return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+        
+        const name = typeName.toLowerCase();
+        if (name.includes('reclinable')) return { bgColor: 'bg-green-100/80 border border-green-200', textColor: 'text-green-800' };
+        if (name.includes('estático')) return { bgColor: 'bg-yellow-100/80 border border-yellow-200', textColor: 'text-yellow-800' };
+        if (name.includes('premium')) return { bgColor: 'bg-purple-100/80 border border-purple-200', textColor: 'text-purple-800' };
+        if (name.includes('vip')) return { bgColor: 'bg-indigo-100/80 border border-indigo-200', textColor: 'text-indigo-800' };
+        if (name.includes('económico') || name.includes('economico')) return { bgColor: 'bg-blue-100/80 border border-blue-200', textColor: 'text-blue-800' };
+        
+        return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+      };
       
-      return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+      const { bgColor, textColor } = getZoneColorWithText(seatTypeName);
+      
+      return {
+        zoneName: getSeatZoneName(enrichedSeat, vesselDetails?.seat_configurations),
+        zoneColor: `${bgColor} ${textColor}`,
+        seatTypeName
+      };
     };
-    
-    const { bgColor, textColor } = getZoneColorWithText(seatTypeName);
-    
-    return {
-      zoneName: getSeatZoneName(enrichedSeat, vesselDetails?.seat_configurations),
-      zoneColor: `${bgColor} ${textColor}`,
-      seatTypeName
-    };
-  };
+  }, [enrichSeatWithType, vesselDetails?.seat_configurations]); // Dependencias estables
 
   const isLoading = isLoadingTrip || isLoadingSeatTypes;
 
@@ -238,7 +289,6 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
 
       <div className="mt-4 border-t pt-4">
         <SeatMapRealtime
-          key={`seat-map-${representativeSelectedSeatIds.length}-${selectedSeat?.id || 'none'}`}
           tripId={tripId}
           vesselName={tripDetails?.vessel?.name || 'Embarcación'}
           selectedSeats={selectedSeatsForMap}

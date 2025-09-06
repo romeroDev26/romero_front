@@ -164,6 +164,7 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
   return (
     <div className="relative">
       <button
+        type="button"
         onClick={() => isClickable && onClick(seat)}
         disabled={!isClickable}
         className={`

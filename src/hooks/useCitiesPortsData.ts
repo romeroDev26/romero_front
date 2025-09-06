@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { citiesConfigService, portsConfigService } from '../services/ports.cities.service';
-import { City, Port } from '../types';
 import { CityCreateData, CityUpdateData, PortCreateData, PortUpdateData } from '../services/ports.cities.service';
 import { PortType } from '../types';
 

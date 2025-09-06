@@ -10,20 +10,32 @@ interface UseWebSocketConnectionReturn {
   forceReconnect: () => void;
   pingConnection: () => void;
   testConnection: (testUrl?: string) => void;
+  latency: number;
+  heartbeatInterval: number;
 }
 
 export const useWebSocketConnection = (
   config: WebSocketConfig,
   onMessage: (message: SeatUpdateMessage) => void
 ): UseWebSocketConnectionReturn => {
-  const { tripId, userId, userName, enabled = true, maxReconnectAttempts = 3 } = config;
+  const { tripId, userId, userName, enabled = true, maxReconnectAttempts = 5 } = config;
   
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('disconnected');
-  const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const [isWebSocketAvailable, setIsWebSocketAvailable] = useState(true);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
   
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef<number>(0); // Usar ref para evitar dependencias
+  
+  // Sistema de heartbeat optimizado
+  const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastPongRef = useRef<number>(Date.now());
+  const pingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [latency, setLatency] = useState<number>(0);
+  const [heartbeatInterval, setHeartbeatInterval] = useState<number>(30000); // Inicial: 30s
+
+  // Funciones del heartbeat optimizado integradas en connectWebSocket
 
   const connectWebSocket = useCallback(() => {
     if (!enabled || !tripId || !isWebSocketAvailable) return;
@@ -54,19 +66,104 @@ export const useWebSocketConnection = (
         setConnectionStatus('connected');
         setReconnectAttempts(0);
         
+        // Iniciar heartbeat usando la referencia directa
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+        }
+        
+        heartbeatIntervalRef.current = setInterval(() => {
+           if (wsRef.current?.readyState === WebSocket.OPEN) {
+             const pingTime = Date.now();
+             wsRef.current.send(JSON.stringify({ type: 'PING', timestamp: pingTime }));
+             
+             // Timeout más tolerante para detectar conexión perdida
+             if (pingTimeoutRef.current) {
+               clearTimeout(pingTimeoutRef.current);
+             }
+             
+             pingTimeoutRef.current = setTimeout(() => {
+               // Solo cerrar si realmente no hay respuesta y la conexión sigue abierta
+               if (wsRef.current?.readyState === WebSocket.OPEN) {
+                 const timeSinceLastPong = Date.now() - lastPongRef.current;
+                 // Solo cerrar si han pasado más de 20 segundos sin PONG
+                 if (timeSinceLastPong > 20000) {
+                   wsRef.current.close(1001, 'Ping timeout');
+                 }
+               }
+             }, 15000); // Timeout aumentado a 15 segundos
+           }
+         }, heartbeatIntervalRef.current ? 30000 : 30000); // Usar valor fijo inicialmente
+        
         const connectMessage = { type: 'CONNECT' };
         ws.send(JSON.stringify(connectMessage));
         
-        //  CORRECCIÓN: Solicitar estado inicial inmediatamente después de conectar
+        // Solicitar estado inicial
         setTimeout(() => {
-          const initialStateMessage = { type: 'REQUEST_INITIAL_STATE' };
-          ws.send(JSON.stringify(initialStateMessage));
+          if (wsRef.current?.readyState === WebSocket.OPEN) {
+            const initialStateMessage = { type: 'REQUEST_INITIAL_STATE' };
+            ws.send(JSON.stringify(initialStateMessage));
+          }
         }, 500);
       };
 
       ws.onmessage = (event) => {
         try {
           const message: SeatUpdateMessage = JSON.parse(event.data);
+          
+          // Manejar PONG para heartbeat
+            if (message.type === 'PONG') {
+              if (pingTimeoutRef.current) {
+                clearTimeout(pingTimeoutRef.current);
+                pingTimeoutRef.current = null;
+              }
+              
+              if (message.timestamp && typeof message.timestamp === 'number') {
+                const currentLatency = Math.max(0, Date.now() - message.timestamp);
+                
+                // Validar que la latencia sea razonable (menos de 30 segundos)
+                if (currentLatency < 30000) {
+                  setLatency(currentLatency);
+                  
+                  // Ajustar intervalo de heartbeat basado en latencia para optimizar
+                   const newInterval = currentLatency < 100 ? 45000 : // Baja latencia: 45s
+                                      currentLatency < 500 ? 35000 : // Media latencia: 35s
+                                      25000; // Alta latencia: 25s
+                   
+                   if (newInterval !== heartbeatInterval) {
+                     setHeartbeatInterval(newInterval);
+                     
+                     // Reiniciar heartbeat con nuevo intervalo usando referencia
+                     if (heartbeatIntervalRef.current) {
+                       clearInterval(heartbeatIntervalRef.current);
+                       
+                       heartbeatIntervalRef.current = setInterval(() => {
+                         if (wsRef.current?.readyState === WebSocket.OPEN) {
+                           const pingTime = Date.now();
+                           wsRef.current.send(JSON.stringify({ type: 'PING', timestamp: pingTime }));
+                           
+                           if (pingTimeoutRef.current) {
+                             clearTimeout(pingTimeoutRef.current);
+                           }
+                           
+                           pingTimeoutRef.current = setTimeout(() => {
+                             if (wsRef.current?.readyState === WebSocket.OPEN) {
+                               const timeSinceLastPong = Date.now() - lastPongRef.current;
+                               if (timeSinceLastPong > 20000) {
+                                 wsRef.current.close(1001, 'Ping timeout');
+                               }
+                             }
+                           }, 15000);
+                         }
+                       }, newInterval);
+                     }
+                   }
+                 }
+               }
+              
+              lastPongRef.current = Date.now();
+              return;
+            }
+          
           onMessage(message);
         } catch (error) {
           console.error('Error processing WebSocket message:', error);
@@ -76,17 +173,29 @@ export const useWebSocketConnection = (
       ws.onclose = (event) => {
         setConnectionStatus('disconnected');
         
-        if (enabled && event.code !== 1000 && reconnectAttempts < maxReconnectAttempts && isWebSocketAvailable) {
-          const nextAttempt = reconnectAttempts + 1;
+        // Detener heartbeat
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
+        }
+        if (pingTimeoutRef.current) {
+          clearTimeout(pingTimeoutRef.current);
+          pingTimeoutRef.current = null;
+        }
+        
+        // Solo reconectar si no fue un cierre intencional y no hemos excedido los intentos
+        if (enabled && event.code !== 1000 && reconnectAttemptsRef.current < maxReconnectAttempts && isWebSocketAvailable) {
+          const nextAttempt = reconnectAttemptsRef.current + 1;
           const delay = event.code === 1005 
             ? Math.min(1000 * nextAttempt, 5000) 
             : Math.min(3000 * nextAttempt, 15000);
           
           reconnectTimeoutRef.current = setTimeout(() => {
+            reconnectAttemptsRef.current = nextAttempt;
             setReconnectAttempts(nextAttempt);
             connectWebSocket();
           }, delay);
-        } else if (reconnectAttempts >= maxReconnectAttempts) {
+        } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
           setConnectionStatus('failed');
           setIsWebSocketAvailable(false);
         }
@@ -99,16 +208,18 @@ export const useWebSocketConnection = (
     } catch (error) {
       setConnectionStatus('disconnected');
       
-      if (reconnectAttempts < maxReconnectAttempts && isWebSocketAvailable) {
+      if (reconnectAttemptsRef.current < maxReconnectAttempts && isWebSocketAvailable) {
         setTimeout(() => {
-          setReconnectAttempts(prev => prev + 1);
-        }, 3000 * (reconnectAttempts + 1));
-      } else if (reconnectAttempts >= maxReconnectAttempts) {
+          reconnectAttemptsRef.current += 1;
+          setReconnectAttempts(reconnectAttemptsRef.current);
+          connectWebSocket();
+        }, 3000 * (reconnectAttemptsRef.current + 1));
+      } else if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
         setConnectionStatus('failed');
         setIsWebSocketAvailable(false);
       }
     }
-  }, [tripId, userId, userName, enabled, maxReconnectAttempts, isWebSocketAvailable, reconnectAttempts, onMessage]);
+  }, [tripId, userId, userName, enabled, maxReconnectAttempts, isWebSocketAvailable]); // Removida heartbeatInterval
 
   const sendMessage = useCallback((message: any) => {
     if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
@@ -119,14 +230,25 @@ export const useWebSocketConnection = (
   }, [isWebSocketAvailable]);
 
   const forceReconnect = useCallback(() => {
+    reconnectAttemptsRef.current = 0;
     setReconnectAttempts(0);
     setIsWebSocketAvailable(true);
     setConnectionStatus('disconnected');
-    connectWebSocket();
+    
+    // Limpiar timeouts existentes
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+    
+    // Llamar connectWebSocket directamente
+    setTimeout(() => connectWebSocket(), 100);
   }, [connectWebSocket]);
 
+
+
   const pingConnection = useCallback(() => {
-    sendMessage({ type: 'PING' });
+    sendMessage({ type: 'PING', timestamp: Date.now() });
   }, [sendMessage]);
 
   const testConnection = useCallback((testUrl?: string) => {
@@ -144,13 +266,26 @@ export const useWebSocketConnection = (
     testWs.onclose = () => clearTimeout(timeout);
   }, [tripId, userId, userName]);
 
-  // Conectar al montar
+  // Conectar al montar - Solo cuando cambien las props esenciales
   useEffect(() => {
     if (enabled && tripId && userId && userName) {
+      // Reset attempts cuando cambien las props críticas
+      reconnectAttemptsRef.current = 0;
+      setReconnectAttempts(0);
       connectWebSocket();
     }
 
     return () => {
+      // Limpiar heartbeat
+      if (heartbeatIntervalRef.current) {
+        clearInterval(heartbeatIntervalRef.current);
+        heartbeatIntervalRef.current = null;
+      }
+      if (pingTimeoutRef.current) {
+        clearTimeout(pingTimeoutRef.current);
+        pingTimeoutRef.current = null;
+      }
+      
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;
@@ -160,7 +295,7 @@ export const useWebSocketConnection = (
         wsRef.current = null;
       }
     };
-  }, [enabled, tripId, userId, userName]);
+  }, [enabled, tripId, userId, userName]); // Removida connectWebSocket de dependencias
 
   return {
     connectionStatus,
@@ -169,6 +304,8 @@ export const useWebSocketConnection = (
     sendMessage,
     forceReconnect,
     pingConnection,
-    testConnection
+    testConnection,
+    latency, // Exponer latencia para debugging
+    heartbeatInterval // Exponer intervalo actual
   };
 };

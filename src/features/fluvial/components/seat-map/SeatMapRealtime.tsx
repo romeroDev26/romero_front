@@ -72,7 +72,7 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
   );
 };
 
-export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({ 
+export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({ 
   tripId, 
   vesselName, 
   selectedSeats, 
@@ -392,4 +392,4 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = ({
       </div>
     </div>
   );
-};
+});

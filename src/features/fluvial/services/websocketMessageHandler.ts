@@ -8,6 +8,7 @@ export class WebSocketMessageHandler {
   private onSelectionRemove: (seatId: number) => void;
   private onInitialState: (selections: SeatSelection[]) => void;
   private enableDebugLogs: boolean;
+  private confirmedSeats: Set<number> = new Set(); // Rastrear asientos vendidos definitivamente
 
   constructor(
     userId: string,
@@ -61,6 +62,10 @@ export class WebSocketMessageHandler {
         this.handleTempReleased(message);
         break;
 
+      case 'SEATS_OCCUPIED':
+        this.handleSeatsOccupied(message);
+        break;
+
       case 'PONG':
         if (this.enableDebugLogs) {
           console.log('WebSocket: PONG received');
@@ -80,6 +85,7 @@ export class WebSocketMessageHandler {
       console.log('WebSocket: Handling INITIAL_STATE', message);
     }
 
+    // Procesar selecciones temporales (seats)
     if (message.seats) {
       const initialSelections: SeatSelection[] = message.seats
         .filter(selection => selection.userId !== this.userId)
@@ -96,8 +102,31 @@ export class WebSocketMessageHandler {
       }
 
       this.onInitialState(initialSelections);
-    } else if (this.enableDebugLogs) {
-      console.warn('WebSocket: INITIAL_STATE message received but no seats data');
+    }
+
+    // CORRECCIÓN: Procesar asientos ocupados/vendidos (occupiedSeats)
+    if ((message as any).occupiedSeats) {
+      const occupiedSeats = (message as any).occupiedSeats;
+      
+      if (this.enableDebugLogs) {
+        console.log('WebSocket: Processing occupied seats', occupiedSeats);
+      }
+
+      // Actualizar el estado de cada asiento ocupado a CONFIRMED (rojo)
+      occupiedSeats.forEach((occupiedSeat: any) => {
+        if (occupiedSeat.seatId) {
+          if (this.enableDebugLogs) {
+            console.log(`WebSocket: Setting seat ${occupiedSeat.seatId} to CONFIRMED (sold)`);
+          }
+          // Agregar al conjunto de asientos confirmados
+          this.confirmedSeats.add(occupiedSeat.seatId);
+          this.onSeatMapUpdate(occupiedSeat.seatId, 'CONFIRMED');
+        }
+      });
+    }
+
+    if (!message.seats && !(message as any).occupiedSeats && this.enableDebugLogs) {
+      console.warn('WebSocket: INITIAL_STATE message received but no seats or occupiedSeats data');
     }
   }
 
@@ -136,6 +165,14 @@ export class WebSocketMessageHandler {
     }
 
     if (message.userId !== this.userId && message.seatId !== undefined) {
+      // No liberar asientos que han sido vendidos definitivamente
+      if (this.confirmedSeats.has(message.seatId)) {
+        if (this.enableDebugLogs) {
+          console.log(`WebSocket: Ignoring SEAT_RELEASED for confirmed seat ${message.seatId}`);
+        }
+        return;
+      }
+      
       this.onSelectionRemove(message.seatId);
     }
   }
@@ -190,6 +227,27 @@ export class WebSocketMessageHandler {
 
     if (message.userId !== this.userId && message.seatId !== undefined) {
       this.onSelectionRemove(message.seatId);
+    }
+  }
+
+  private handleSeatsOccupied(message: SeatUpdateMessage): void {
+    if (this.enableDebugLogs) {
+      console.log('WebSocket: Handling SEATS_OCCUPIED', message);
+    }
+
+    // Marcar los asientos como vendidos definitivamente (CONFIRMED)
+    if (message.seatIds && Array.isArray(message.seatIds)) {
+      message.seatIds.forEach((seatId: number) => {
+        if (this.enableDebugLogs) {
+          console.log(`WebSocket: Marking seat ${seatId} as CONFIRMED (sold)`);
+        }
+        // Agregar al conjunto de asientos confirmados
+        this.confirmedSeats.add(seatId);
+        // Actualizar el estado del asiento a CONFIRMED (rojo)
+        this.onSeatMapUpdate(seatId, 'CONFIRMED');
+        // Remover cualquier selección temporal de este asiento
+        this.onSelectionRemove(seatId);
+      });
     }
   }
 

@@ -173,7 +173,26 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
         });
         setPendingWebSocketSelections(null);
       }
-      setSeatMap(initialSeatMap);
+      
+      // CORRECCIÓN: Preservar actualizaciones de estado que vienen del WebSocket
+      // No sobrescribir el seatMap si ya tiene datos actualizados
+      setSeatMap(currentSeatMap => {
+        if (currentSeatMap.length === 0) {
+          // Primera carga: usar datos iniciales
+          return initialSeatMap;
+        } else {
+          // Ya hay datos: preservar estados actualizados por WebSocket
+          // Solo actualizar asientos que no han sido modificados por WebSocket
+          return currentSeatMap.map(currentSeat => {
+            const initialSeat = initialSeatMap.find(s => s.id === currentSeat.id);
+            if (initialSeat) {
+              // Preservar el estado actual si es diferente al inicial (fue actualizado por WebSocket)
+              return currentSeat.status !== initialSeat.status ? currentSeat : initialSeat;
+            }
+            return currentSeat;
+          });
+        }
+      });
     }
   }, [initialSeatMap, pendingWebSocketSelections, userId, addSelection]);
 

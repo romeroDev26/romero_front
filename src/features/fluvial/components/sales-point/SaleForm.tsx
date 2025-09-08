@@ -683,7 +683,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           setIsCompanyTicket(false); // ← NUEVO: Marcar como ticket regular
           setShowTicketPreview(true);
         },
-        itemDescription // ← NUEVO: pasar la descripción opcional
+        itemDescription, // ← NUEVO: pasar la descripción opcional
+        confirmPurchase // ← NUEVO: pasar confirmPurchase para actualizar WebSocket
       );
     } catch (error) {
       // Los errores ya son manejados por toast en los hooks internos

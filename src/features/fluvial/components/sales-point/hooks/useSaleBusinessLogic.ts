@@ -275,7 +275,8 @@ export const useSaleBusinessLogic = ({
     isConfirmingMode: boolean,
     reservationToConfirm: any,
     onSuccess: (invoiceData: any) => void,
-    itemDescription?: string // ← NUEVO: Descripción opcional
+    itemDescription?: string, // ← NUEVO: Descripción opcional
+    confirmPurchaseCallback?: (seatIds: number[]) => boolean // ← NUEVO: Para confirmar compra
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -383,6 +384,11 @@ export const useSaleBusinessLogic = ({
           };
           await createSeatAssignment(assignmentPayload);
         }
+      }
+
+      // ← NUEVO: Confirmar compra vía WebSocket para actualizar el mapa de asientos
+      if (confirmPurchaseCallback && selectedSeat) {
+        confirmPurchaseCallback([selectedSeat.id]);
       }
 
       // Toast de éxito

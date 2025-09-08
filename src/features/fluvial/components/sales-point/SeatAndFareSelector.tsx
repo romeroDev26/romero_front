@@ -76,6 +76,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     enabled: !isConfirmingMode, // Solo habilitar WebSocket si no está en modo confirmación
     companyName: undefined, // No es modo empresa en este componente
     isCompanyMode, // Pasar el modo empresa
+    enableDebugLogs: true, // Habilitar logs de debug para investigar mensajes WebSocket
   });
 
   // Exponer las funciones del hook al componente padre - Optimizado

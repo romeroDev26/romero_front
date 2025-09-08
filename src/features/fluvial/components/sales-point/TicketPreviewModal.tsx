@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
-import { Download, Printer, Eye, Cloud, MessageCircle } from 'lucide-react';
+import { Download, Eye, Cloud, MessageCircle } from 'lucide-react';
 import { 
   downloadTicket, 
   generateTicketBlob 
@@ -38,7 +38,6 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   
@@ -128,35 +127,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
     }
   };
 
-  const handlePrintTicket = async () => {
-    try {
-      setIsPrinting(true);
-      let pdfBlob;
-      if (customGeneratePDF) {
-        const doc = await customGeneratePDF();
-        pdfBlob = doc.output('blob');
-      } else {
-        // Usar detección automática para tickets normales y sin asientos
-        pdfBlob = await generateTicketBlob(backendData);
-      }
-      const url = URL.createObjectURL(pdfBlob);
-      const printWindow = window.open(url, '_blank');
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.print();
-          setTimeout(() => {
-            URL.revokeObjectURL(url);
-            printWindow.close();
-          }, 100);
-        };
-      }
-      // Eliminado console.log de depuración
-    } catch (error) {
-      // Eliminado console.error de depuración
-    } finally {
-      setIsPrinting(false);
-    }
-  };
+
 
   const handleClose = () => {
     if (!isGenerating) {
@@ -272,7 +243,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           <Button
             onClick={handleDownloadTicket}
-            disabled={isGenerating || isDownloading || isPrinting}
+            disabled={isGenerating || isDownloading}
             className="bg-green-600 hover:bg-green-700 py-3"
           >
             {isDownloading ? (
@@ -289,43 +260,14 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           </Button>
           
           <Button
-            onClick={handlePrintTicket}
-            disabled={isGenerating || isDownloading || isPrinting}
-            className="bg-purple-600 hover:bg-purple-700 py-3"
-          >
-            {isPrinting ? (
-              <>
-                <Spinner size="sm" className="mr-2" />
-                Imprimiendo...
-              </>
-            ) : (
-              <>
-                <Printer className="h-4 w-4 mr-2" />
-                Imprimir
-              </>
-            )}
-          </Button>
-
-          <Button
             onClick={() => setShowWhatsAppModal(true)}
-            disabled={isGenerating || isDownloading || isPrinting}
+            disabled={isGenerating || isDownloading}
             className="bg-green-500 hover:bg-green-600 py-3"
           >
             <MessageCircle className="h-4 w-4 mr-2" />
             WhatsApp
           </Button>
-        </div>
 
-        {/* Botones de navegación */}
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isGenerating || isDownloading || isPrinting}
-          >
-            Cerrar
-          </Button>
-          
           <Button
             onClick={() => { 
               handleDownloadTicket().then(() => {
@@ -337,10 +279,21 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                 }
               });
             }}
-            disabled={isGenerating || isDownloading || isPrinting}
-            className="bg-emerald-600 hover:bg-emerald-700"
+            disabled={isGenerating || isDownloading}
+            className="bg-emerald-600 hover:bg-emerald-700 py-3"
           >
             Descargar y Finalizar
+          </Button>
+        </div>
+
+        {/* Botón de navegación */}
+        <div className="flex justify-start">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={isGenerating || isDownloading}
+          >
+            Cerrar
           </Button>
         </div>
 

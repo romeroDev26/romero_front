@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Modal } from '../../../../../components/common/Modal';
 import { Button } from '../../../../../components/common/Button';
 import { 
-  PrinterIcon, 
   DocumentArrowDownIcon, 
   EyeIcon,
   CheckCircleIcon
@@ -15,8 +14,6 @@ export interface PrintOptionsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPreview: () => void;
-  onPrintA4: () => void;
-  onPrintTicket: () => void;
   onDownloadA4: () => void;
   onDownloadTicket: () => void;
   invoiceNumber: string;
@@ -28,8 +25,6 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
   isOpen,
   onClose,
   onPreview,
-  onPrintA4,
-  onPrintTicket,
   onDownloadA4,
   onDownloadTicket,
   invoiceNumber,
@@ -57,12 +52,6 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
         case 'preview':
           onPreview();
           break;
-        case 'print-a4':
-          onPrintA4();
-          break;
-        case 'print-ticket':
-          onPrintTicket();
-          break;
         case 'download-a4':
           onDownloadA4();
           break;
@@ -80,34 +69,18 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
     {
       id: 'preview',
       label: 'Vista Previa',
-      description: 'Ver comprobantes antes de imprimir',
+      description: 'Ver comprobantes antes de descargar',
       icon: EyeIcon,
       color: 'bg-blue-50 border-blue-200 text-blue-700',
       recommended: true
-    },
-    {
-      id: 'print-a4',
-      label: 'Imprimir A4',
-      description: 'Formato estándar para archivo',
-      icon: PrinterIcon,
-      color: 'bg-green-50 border-green-200 text-green-700',
-      recommended: true
-    },
-    {
-      id: 'print-ticket',
-      label: 'Imprimir Ticket',
-      description: 'Formato térmico compacto',
-      icon: PrinterIcon,
-      color: 'bg-purple-50 border-purple-200 text-purple-700',
-      recommended: false
     },
     {
       id: 'download-a4',
       label: 'Descargar A4',
       description: 'Guardar PDF en formato A4',
       icon: DocumentArrowDownIcon,
-      color: 'bg-gray-50 border-gray-200 text-gray-700',
-      recommended: false
+      color: 'bg-green-50 border-green-200 text-green-700',
+      recommended: true
     },
     {
       id: 'download-ticket',
@@ -204,23 +177,23 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSelectedActions(['preview', 'print-a4'])}
-            >
-              Vista previa + Imprimir A4
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedActions(['print-a4', 'print-ticket'])}
-            >
-              Imprimir ambos formatos
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => setSelectedActions(['preview', 'download-a4'])}
             >
-              Vista previa + Descargar
+              Vista previa + Descargar A4
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedActions(['download-a4', 'download-ticket'])}
+            >
+              Descargar ambos formatos
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedActions(['preview'])}
+            >
+              Solo vista previa
             </Button>
           </div>
         </div>

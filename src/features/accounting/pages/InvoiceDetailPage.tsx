@@ -232,7 +232,7 @@ export const InvoiceDetailPage: React.FC = () => {
                 {!showPdfError ? (
                   <iframe
                     ref={pdfIframeRef}
-                    src={`${invoice.pdf_ticket_file_path}#toolbar=0&navpanes=0&scrollbar=0`}
+                    src={`${invoice.pdf_ticket_file_path}#toolbar=1&navpanes=1&scrollbar=1`}
                     className="w-full h-full border-0"
                     style={{ minHeight: '600px' }}
                     title={`Ticket ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}

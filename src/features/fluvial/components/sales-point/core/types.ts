@@ -23,6 +23,7 @@ export interface Representative {
   email?: string; // ← NUEVO: Campo email para representante
   seat_number?: string;
   special_notes?: string; // ← NUEVO: Campo notas especiales
+  trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
 }
 
 export interface SaleFormProps {

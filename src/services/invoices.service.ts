@@ -16,6 +16,7 @@ export interface InvoiceItemCreateData {
   
   // Campo para pasajes (asiento)
   trip_seat_id?: number;
+  seat_number?: string; // Número del asiento seleccionado por el vendedor
 
   // Campo para vincular con el viaje (nuevo campo del backend)
   trip_id?: number;

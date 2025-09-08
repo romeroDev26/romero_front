@@ -16,6 +16,9 @@ export interface InvoiceItemData {
   trip_id: number;
   boarding_trip_stop_id: number;
   disembarking_trip_stop_id: number;
+  // Campos para asientos
+  trip_seat_id?: number; // ID del asiento en la embarcación
+  seat_number?: string; // Número del asiento seleccionado por el vendedor
 }
 
 export interface InvoiceCreationData {
@@ -43,6 +46,7 @@ export const invoiceCreationService = {
     tripId: number,
     selectedBoardingStopId: number,
     selectedDisembarkingStopId: number,
+    selectedSeat?: any, // Asiento seleccionado para obtener seat_number y trip_seat_id
     itemDescription?: string // ← Descripción opcional del usuario
   ): Promise<InvoiceItemData[]> => {
     const items: InvoiceItemData[] = [];
@@ -72,6 +76,9 @@ export const invoiceCreationService = {
       trip_id: tripId,
       boarding_trip_stop_id: selectedBoardingStopId,
       disembarking_trip_stop_id: selectedDisembarkingStopId,
+      // Agregar información del asiento si está disponible
+      trip_seat_id: selectedSeat?.id || null,
+      seat_number: selectedSeat?.seat_number || null,
     });
 
   // Item adicional: Costo adicional (si existe)
@@ -103,6 +110,9 @@ export const invoiceCreationService = {
         trip_id: tripId,
         boarding_trip_stop_id: selectedBoardingStopId,
         disembarking_trip_stop_id: selectedDisembarkingStopId,
+        // Agregar información del asiento si está disponible
+        trip_seat_id: selectedSeat?.id || null,
+        seat_number: selectedSeat?.seat_number || null,
       });
     }
 

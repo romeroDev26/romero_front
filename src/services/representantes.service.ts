@@ -27,6 +27,7 @@ export interface CompanyInvoiceWithRepresentatives {
     passenger_email?: string; // ← AGREGADO: Campo email
     seat_number?: string; // "Elección libre" o número específico
     special_notes?: string; // ← AGREGADO: Campo notas especiales
+    trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
   }>;
   
   // ← NUEVO: Configuración opcional de factura
@@ -54,6 +55,9 @@ export interface CompanyInvoiceWithRepresentatives {
     tax_category_code: string; // "10"=Gravado, "20"=Exonerado, "30"=Inafecto
     item_description: string; // Descripción del servicio
     unit_code: string; // "NIU"=Unidad, "ZZ"=Servicio, "KGM"=Kilogramo
+    // Campos para asientos
+    trip_seat_id?: number; // ID del asiento en la embarcación
+    seat_number?: string; // Número del asiento seleccionado por el vendedor
   }>;
   
   // Configuración adicional (OPCIONAL)
@@ -105,6 +109,7 @@ export interface Representative {
   passenger_email?: string;
   seat_number?: string;
   special_notes?: string;
+  trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
 }
 
 class RepresentantesService {

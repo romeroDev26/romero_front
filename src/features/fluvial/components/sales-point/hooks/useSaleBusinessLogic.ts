@@ -70,6 +70,7 @@ export const useSaleBusinessLogic = ({
     isIgvGravado?: boolean,
     series?: string,
     itemDescription?: string, // ← NUEVO: Descripción opcional
+    selectedSeat?: any, // ← NUEVO: Asiento seleccionado para obtener trip_seat_id y seat_number
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -99,6 +100,8 @@ export const useSaleBusinessLogic = ({
         tax_category_code: string;
         item_description: string;
         unit_code: string;
+        trip_seat_id?: number;
+        seat_number?: string;
       }> = [];
       
       // ITEM 1: Servicio principal de transporte
@@ -115,7 +118,10 @@ export const useSaleBusinessLogic = ({
           item_description: itemDescription?.trim() 
             ? `Servicio de Transporte de Pasajeros - ${itemDescription.trim()}`
             : "Servicio de Transporte de Pasajeros",
-          unit_code: "ZZ" // ZZ = Servicio (CORREGIDO de NIU)
+          unit_code: "ZZ", // ZZ = Servicio (CORREGIDO de NIU)
+          // Agregar información del asiento si está disponible
+          trip_seat_id: selectedSeat?.id || null,
+          seat_number: selectedSeat?.seat_number || null,
         };
         itemsConfig.push(transportItem);
       }
@@ -145,7 +151,10 @@ export const useSaleBusinessLogic = ({
           discount: 0,
           tax_category_code: isIgvGravado ? "10" : "20",
           item_description: composedExtraDescription,
-          unit_code: "KGM" // KGM = Kilogramo (para equipaje)
+          unit_code: "KGM", // KGM = Kilogramo (para equipaje)
+          // Agregar información del asiento si está disponible
+          trip_seat_id: selectedSeat?.id || null,
+          seat_number: selectedSeat?.seat_number || null,
         };
         itemsConfig.push(extraItem);
       }
@@ -184,15 +193,27 @@ export const useSaleBusinessLogic = ({
         trip_id: tripId,
         boarding_stop_id: selectedBoardingStopId,
         disembarking_stop_id: selectedDisembarkingStopId,
-        representatives: representatives.map(rep => ({
-          passenger_name: rep.name,
-          passenger_doc_type: rep.document_type,
-          passenger_doc_number: rep.document_number,
-          passenger_phone: rep.phone || "",
-          passenger_email: rep.email || "", // ← NUEVO: Campo email
-          seat_number: rep.seat_number || "Elección libre",
-          special_notes: rep.special_notes || "", // ← NUEVO: Campo notas especiales
-        })),
+        representatives: representatives.map(rep => {
+          // Buscar trip_seat_id basado en seat_number si hay seatMap disponible
+          let tripSeatId = null;
+          if (seatMap && rep.seat_number && rep.seat_number !== "Elección libre") {
+            const seat = seatMap.find(s => s.seat_number === rep.seat_number);
+            if (seat) {
+              tripSeatId = seat.id;
+            }
+          }
+          
+          return {
+            passenger_name: rep.name,
+            passenger_doc_type: rep.document_type,
+            passenger_doc_number: rep.document_number,
+            passenger_phone: rep.phone || "",
+            passenger_email: rep.email || "", // ← NUEVO: Campo email
+            seat_number: rep.seat_number || "Elección libre",
+            special_notes: rep.special_notes || "", // ← NUEVO: Campo notas especiales
+            trip_seat_id: tripSeatId, // ← NUEVO: ID del asiento en la embarcación
+          };
+        }),
   // ← NUEVO: Incluir la serie si fue proporcionada (requerida para Facturas)
   ...(series ? { series } : {}),
         // ← ACTUALIZADO: Incluir items_config como array
@@ -317,6 +338,7 @@ export const useSaleBusinessLogic = ({
         tripId,
         selectedBoardingStopId,
         selectedDisembarkingStopId,
+        selectedSeat, // ← Asiento seleccionado para obtener seat_number y trip_seat_id
         itemDescription // ← Descripción opcional del usuario
       );
 

@@ -161,6 +161,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const handleClose = () => {
     if (!isGenerating) {
       onClose();
+      onSuccess(); // Forzar recarga del viaje para actualizar estado de asientos
       // Limpiar el formulario cuando se cierre el modal
       if (onClearForm) {
         onClearForm();
@@ -329,7 +330,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
             onClick={() => { 
               handleDownloadTicket().then(() => {
                 onClose();
-                onSuccess();
+                onSuccess(); // Forzar recarga del viaje para actualizar estado de asientos
                 // Limpiar el formulario también cuando se descarga y finaliza
                 if (onClearForm) {
                   onClearForm();

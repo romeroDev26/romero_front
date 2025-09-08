@@ -7,7 +7,6 @@ export class WebSocketMessageHandler {
   private onSelectionUpdate: (selection: SeatSelection) => void;
   private onSelectionRemove: (seatId: number) => void;
   private onInitialState: (selections: SeatSelection[]) => void;
-  private enableDebugLogs: boolean;
   private confirmedSeats: Set<number> = new Set(); // Rastrear asientos vendidos definitivamente
 
   constructor(
@@ -18,20 +17,17 @@ export class WebSocketMessageHandler {
       onSelectionRemove: (seatId: number) => void;
       onInitialState: (selections: SeatSelection[]) => void;
     },
-    enableDebugLogs: boolean = false
+    _enableDebugLogs: boolean = false
   ) {
     this.userId = userId;
     this.onSeatMapUpdate = callbacks.onSeatMapUpdate;
     this.onSelectionUpdate = callbacks.onSelectionUpdate;
     this.onSelectionRemove = callbacks.onSelectionRemove;
     this.onInitialState = callbacks.onInitialState;
-    this.enableDebugLogs = enableDebugLogs;
   }
 
   handleMessage(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Received message', message);
-    }
+
 
     switch (message.type) {
       case 'INITIAL_STATE':
@@ -67,23 +63,15 @@ export class WebSocketMessageHandler {
         break;
 
       case 'PONG':
-        if (this.enableDebugLogs) {
-          console.log('WebSocket: PONG received');
-        }
         break;
 
       default:
-        if (this.enableDebugLogs) {
-          console.log('WebSocket: Unhandled message type', message.type);
-        }
         break;
     }
   }
 
   private handleInitialState(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling INITIAL_STATE', message);
-    }
+
 
     // Procesar selecciones temporales (seats)
     if (message.seats) {
@@ -97,9 +85,7 @@ export class WebSocketMessageHandler {
           type: 'temporary'
         }));
 
-      if (this.enableDebugLogs) {
-        console.log('WebSocket: Setting initial selections', initialSelections);
-      }
+
 
       this.onInitialState(initialSelections);
     }
@@ -108,16 +94,12 @@ export class WebSocketMessageHandler {
     if ((message as any).occupiedSeats) {
       const occupiedSeats = (message as any).occupiedSeats;
       
-      if (this.enableDebugLogs) {
-        console.log('WebSocket: Processing occupied seats', occupiedSeats);
-      }
+
 
       // Actualizar el estado de cada asiento ocupado a CONFIRMED (rojo)
       occupiedSeats.forEach((occupiedSeat: any) => {
         if (occupiedSeat.seatId) {
-          if (this.enableDebugLogs) {
-            console.log(`WebSocket: Setting seat ${occupiedSeat.seatId} to CONFIRMED (sold)`);
-          }
+
           // Agregar al conjunto de asientos confirmados
           this.confirmedSeats.add(occupiedSeat.seatId);
           this.onSeatMapUpdate(occupiedSeat.seatId, 'CONFIRMED');
@@ -125,15 +107,11 @@ export class WebSocketMessageHandler {
       });
     }
 
-    if (!message.seats && !(message as any).occupiedSeats && this.enableDebugLogs) {
-      console.warn('WebSocket: INITIAL_STATE message received but no seats or occupiedSeats data');
-    }
+
   }
 
   private handleSeatUpdate(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling SEAT_UPDATE', message);
-    }
+
 
     if (message.seatId !== undefined && message.status) {
       this.onSeatMapUpdate(message.seatId, message.status);
@@ -142,9 +120,7 @@ export class WebSocketMessageHandler {
   }
 
   private handleSeatSelection(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling SEAT_SELECTION', message);
-    }
+
 
     if (message.userId !== this.userId && message.seatId !== undefined) {
       const selection: SeatSelection = {
@@ -160,16 +136,11 @@ export class WebSocketMessageHandler {
   }
 
   private handleSeatReleased(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling SEAT_RELEASED', message);
-    }
+
 
     if (message.userId !== this.userId && message.seatId !== undefined) {
       // No liberar asientos que han sido vendidos definitivamente
       if (this.confirmedSeats.has(message.seatId)) {
-        if (this.enableDebugLogs) {
-          console.log(`WebSocket: Ignoring SEAT_RELEASED for confirmed seat ${message.seatId}`);
-        }
         return;
       }
       
@@ -178,9 +149,7 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReserveResponse(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling SEAT_TEMP_RESERVE_RESPONSE', message);
-    }
+
 
     if (message.seatId !== undefined) {
       if (!message.success) {
@@ -190,9 +159,7 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReserved(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling SEAT_TEMP_RESERVED', message);
-    }
+
 
     const isRepresentativeReservation = message.reservationType === 'REPRESENTATIVE_TEMP_RESERVATION' ||
                                        message.reservationType === 'representative' ||
@@ -221,9 +188,7 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReleased(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling SEAT_TEMP_RELEASED', message);
-    }
+
 
     if (message.userId !== this.userId && message.seatId !== undefined) {
       this.onSelectionRemove(message.seatId);
@@ -231,16 +196,12 @@ export class WebSocketMessageHandler {
   }
 
   private handleSeatsOccupied(message: SeatUpdateMessage): void {
-    if (this.enableDebugLogs) {
-      console.log('WebSocket: Handling SEATS_OCCUPIED', message);
-    }
+
 
     // Marcar los asientos como vendidos definitivamente (CONFIRMED)
     if (message.seatIds && Array.isArray(message.seatIds)) {
       message.seatIds.forEach((seatId: number) => {
-        if (this.enableDebugLogs) {
-          console.log(`WebSocket: Marking seat ${seatId} as CONFIRMED (sold)`);
-        }
+
         // Agregar al conjunto de asientos confirmados
         this.confirmedSeats.add(seatId);
         // Actualizar el estado del asiento a CONFIRMED (rojo)
@@ -264,9 +225,7 @@ export class WebSocketMessageHandler {
           pauseOnHover: true,
         });
       }).catch(() => {
-        if (this.enableDebugLogs) {
-          console.error(`Asiento ${message.seatId}: ${errorMessage}`);
-        }
+
       });
     }, 50);
   }

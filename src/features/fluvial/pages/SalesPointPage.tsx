@@ -1,6 +1,7 @@
 // src/features/fluvial/pages/SalesPointPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { BranchOffice } from '../../../types';
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { useTripDetails } from '../hooks/useTripDetails';
@@ -18,6 +19,7 @@ export const SalesPointPage: React.FC = () => {
   const [selectedTrip, setSelectedTrip] = useState<AvailableTripByPort | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const reservationToConfirm = location.state?.reservationToConfirm;
   const [tripIdToLoad, setTripIdToLoad] = useState<number | null>(reservationToConfirm?.trip_id || null);
   const { data: tripDetails } = useTripDetails(tripIdToLoad);
@@ -56,6 +58,17 @@ export const SalesPointPage: React.FC = () => {
     }
   }, [tripIdToLoad, tripDetails, selectedTrip]);
 
+  // Efecto para cargar automáticamente el último viaje vendido después de recarga
+  useEffect(() => {
+    const lastSoldTripId = localStorage.getItem('lastSoldTripId');
+    if (lastSoldTripId && !tripIdToLoad && !selectedTrip) {
+      // Limpiar el localStorage para evitar bucles
+      localStorage.removeItem('lastSoldTripId');
+      // Establecer el trip ID para cargar
+      setTripIdToLoad(parseInt(lastSoldTripId));
+    }
+  }, [tripIdToLoad, selectedTrip]);
+
   const handleBranchSelect = (branch: BranchOffice) => {
     setSelectedBranch(branch);
     localStorage.setItem('selectedSalesBranch', JSON.stringify(branch));
@@ -85,8 +98,17 @@ export const SalesPointPage: React.FC = () => {
   };
 
   const handleSaleSuccess = () => {
-    toast.success("Operación completada. Seleccione un nuevo viaje.");
-    cleanUpStateAndNavigate('tripSelection');
+    toast.success("Venta completada exitosamente. Recargando página...");
+    
+    // Guardar el ID del viaje actual en localStorage para mantenerlo después de la recarga
+    if (selectedTrip) {
+      localStorage.setItem('lastSoldTripId', selectedTrip.id.toString());
+    }
+    
+    // Recargar la página completamente para asegurar sincronización del WebSocket
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000); // Dar tiempo para que se muestre el toast
   };
 
   const renderCurrentView = () => {

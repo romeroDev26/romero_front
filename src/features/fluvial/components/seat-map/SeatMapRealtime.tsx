@@ -147,6 +147,14 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
   const handleSeatToggle = (seat: SeatMapItem) => {
     if (isLocked) return;
 
+    //  SOLUCIÓN: Verificar que el asiento no esté siendo usado por otro vendedor
+    const existingSelection = activeSeatSelections?.get(seat.id);
+    if (existingSelection && existingSelection.userId !== userId) {
+      // El asiento está siendo usado por otro vendedor, no permitir interacción
+      console.warn(`Asiento ${seat.seat_number} está siendo usado por ${existingSelection.userName}`);
+      return;
+    }
+
     // En modo empresa, NO hacer selección automática vía WebSocket
     // En modo empresa, la selección la maneja el SaleForm directamente
     if (!isCompanyMode) {

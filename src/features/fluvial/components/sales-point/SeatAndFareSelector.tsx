@@ -178,12 +178,20 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     // Enriquecer el asiento con información de seat_type
     const enrichedSeat = enrichSeatWithType(toggledSeat);
 
+    //  SOLUCIÓN: Verificar que el asiento no esté siendo usado por otro vendedor
+    const existingSelection = activeSeatSelections?.get(enrichedSeat.id);
+    if (existingSelection && existingSelection.userId !== userId) {
+      // El asiento está siendo usado por otro vendedor, mostrar mensaje y no permitir selección
+      console.warn(`Asiento ${enrichedSeat.seat_number} está siendo usado por ${existingSelection.userName}`);
+      return;
+    }
+
     if (selectedSeat && selectedSeat.id === enrichedSeat.id) {
       onSeatSelect(null);
     } else {
       onSeatSelect(enrichedSeat);
     }
-  }, [isConfirmingMode, enrichSeatWithType, selectedSeat?.id, onSeatSelect]); // Dependencias estables
+  }, [isConfirmingMode, enrichSeatWithType, selectedSeat?.id, onSeatSelect, activeSeatSelections, userId]); // Dependencias estables
 
   // Función para obtener información de zona del asiento seleccionado - Memoizada
   const getSeatZoneInfo = useMemo(() => {

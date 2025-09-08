@@ -244,6 +244,13 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
       });
     }
     
+    //  SOLUCIÓN: Verificar que el asiento no esté siendo usado por otro vendedor
+    const existingSelection = activeSeatSelections.get(seatId);
+    if (existingSelection && existingSelection.userId !== userId) {
+      // El asiento está siendo usado por otro vendedor, no permitir la selección
+      return false;
+    }
+    
     const success = seatOperations.selectSeat(seatId, selectionType);
     if (success) {
       // Agregar mi propia selección al tracking
@@ -254,7 +261,7 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
       }
     }
     return success;
-  }, [seatOperations, addReservation, addMySelection, myActiveSelections, isCompanyMode, removeSelection]);
+  }, [seatOperations, addReservation, addMySelection, myActiveSelections, isCompanyMode, removeSelection, activeSeatSelections, userId]);
 
   const releaseSeat = useCallback((seatId: number, force: boolean = false) => {
     // Usar referencia para evitar dependencia en myReservedSeats que cambia constantemente

@@ -266,13 +266,21 @@ export const useWebSocketConnection = (
     testWs.onclose = () => clearTimeout(timeout);
   }, [tripId, userId, userName]);
 
-  // Conectar al montar - Solo cuando cambien las props esenciales
+  // Conectar al montar - Solo cuando cambien las props esenciales DESPUÉS del montaje inicial
+  const isInitialMountRef = useRef(true);
+  
   useEffect(() => {
     if (enabled && tripId && userId && userName) {
-      // Reset attempts cuando cambien las props críticas
-      reconnectAttemptsRef.current = 0;
-      setReconnectAttempts(0);
-      connectWebSocket();
+      // Solo conectar automáticamente si NO es el montaje inicial
+      if (!isInitialMountRef.current) {
+        // Reset attempts cuando cambien las props críticas
+        reconnectAttemptsRef.current = 0;
+        setReconnectAttempts(0);
+        connectWebSocket();
+      } else {
+        // Marcar que ya no es el montaje inicial
+        isInitialMountRef.current = false;
+      }
     }
 
     return () => {

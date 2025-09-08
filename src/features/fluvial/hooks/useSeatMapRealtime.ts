@@ -177,7 +177,7 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     }
   }, [initialSeatMap, pendingWebSocketSelections, userId, addSelection]);
 
-  // CORRECCIÓN: Solo reconectar cuando cambien valores críticos de conexión
+  // CORRECCIÓN: Solo reconectar cuando cambien valores críticos de conexión DESPUÉS del montaje inicial
   const previousConfigRef = useRef<{
     tripId?: number, 
     userId?: string, 
@@ -186,20 +186,33 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
     companyName?: string,
     isCompanyMode?: boolean
   }>({});
+  const isInitialMountRef = useRef(true);
   
   useEffect(() => {
     if (enabled && tripId && userId && userName) {
       const currentConfig = { tripId, userId, userName, enabled, companyName, isCompanyMode };
       const prevConfig = previousConfigRef.current;
       
-      // Solo reconectar si realmente cambió algo crítico
-      const shouldReconnect = 
+      // En el montaje inicial, iniciar la conexión directamente
+      if (isInitialMountRef.current) {
+        const timer = setTimeout(() => {
+          forceReconnect();
+        }, 50); // Delay mínimo para asegurar que el componente esté montado
+        
+        isInitialMountRef.current = false;
+        previousConfigRef.current = currentConfig;
+        return () => clearTimeout(timer);
+      }
+      
+      // Solo reconectar si realmente cambió algo crítico DESPUÉS del montaje inicial
+      const shouldReconnect = (
         prevConfig.tripId !== tripId ||
         prevConfig.userId !== userId ||
         prevConfig.userName !== userName ||
         prevConfig.enabled !== enabled ||
         prevConfig.companyName !== companyName ||
-        prevConfig.isCompanyMode !== isCompanyMode;
+        prevConfig.isCompanyMode !== isCompanyMode
+      );
       
       if (shouldReconnect) {
         // Pequeño delay para asegurar que el componente esté completamente montado

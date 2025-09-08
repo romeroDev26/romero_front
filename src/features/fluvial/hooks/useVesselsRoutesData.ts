@@ -6,7 +6,6 @@ import {
   RouteCreateData,
   RouteUpdateData,
   RouteStopCreateData,
-  RouteWithStops,
   routeHelpers
 } from '../../../services/routes.service';
 import {
@@ -14,7 +13,7 @@ import {
   SeatTypeCreateData,
   SeatTypeUpdateData
 } from '../../../services/seat-types.service';
-import { Route, RouteStop, SeatType } from '../../../types';
+import { SeatType } from '../../../types';
 
 // ========================================
 // HOOKS PARA RUTAS

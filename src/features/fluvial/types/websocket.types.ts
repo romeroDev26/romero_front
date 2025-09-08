@@ -1,5 +1,23 @@
 // src/features/fluvial/types/websocket.types.ts
 
+// Interfaces específicas para el INITIAL_STATE mejorado
+export interface SelectionSeat {
+  seatId: number;
+  userId: string;
+  userName: string;
+  timestamp: string;
+  status: 'SEAT_SELECTION';
+}
+
+export interface OccupiedSeat {
+  seatId: number;
+  userId: string;
+  userName: string;
+  timestamp: string;
+  status: 'OCCUPIED';
+  invoiceId: number;
+}
+
 export interface SeatUpdateMessage {
   type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG'
         | 'SEAT_TEMP_RESERVE' | 'SEAT_TEMP_RELEASE' | 'SEAT_TEMP_RESERVE_RESPONSE'
@@ -9,6 +27,9 @@ export interface SeatUpdateMessage {
   seatId?: number;
   seatIds?: number[];
   seats?: Array<{ seatId: number; userId: string; userName: string }>;
+  // Nuevos campos para INITIAL_STATE mejorado
+  selecctionSeats?: SelectionSeat[];
+  occupiedSeats?: OccupiedSeat[];
   status?: string;
   userId?: string;
   userName?: string;

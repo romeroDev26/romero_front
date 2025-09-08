@@ -1,7 +1,6 @@
 // src/features/fluvial/pages/SalesPointPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { BranchOffice } from '../../../types';
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { useTripDetails } from '../hooks/useTripDetails';
@@ -19,7 +18,6 @@ export const SalesPointPage: React.FC = () => {
   const [selectedTrip, setSelectedTrip] = useState<AvailableTripByPort | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const reservationToConfirm = location.state?.reservationToConfirm;
   const [tripIdToLoad, setTripIdToLoad] = useState<number | null>(reservationToConfirm?.trip_id || null);
   const { data: tripDetails } = useTripDetails(tripIdToLoad);

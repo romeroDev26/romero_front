@@ -1,5 +1,5 @@
 // src/features/fluvial/services/websocketMessageHandler.ts
-import { SeatUpdateMessage, SeatSelection } from '../types/websocket.types';
+import { SeatUpdateMessage, SeatSelection, SelectionSeat, OccupiedSeat } from '../types/websocket.types';
 
 export class WebSocketMessageHandler {
   private userId: string;
@@ -71,10 +71,37 @@ export class WebSocketMessageHandler {
   }
 
   private handleInitialState(message: SeatUpdateMessage): void {
+    // Procesar selecciones temporales usando el nuevo formato selecctionSeats
+    if (message.selecctionSeats && message.selecctionSeats.length > 0) {
+      const initialSelections: SeatSelection[] = message.selecctionSeats
+        .filter((selection: SelectionSeat) => selection.userId !== this.userId)
+        .map((selection: SelectionSeat) => ({
+          seatId: selection.seatId,
+          userId: selection.userId,
+          userName: selection.userName,
+          timestamp: selection.timestamp,
+          type: 'temporary'
+        }));
 
+      if (initialSelections.length > 0) {
+        this.onInitialState(initialSelections);
+      }
+    }
 
-    // Procesar selecciones temporales (seats)
-    if (message.seats) {
+    // Procesar asientos ocupados/vendidos usando el nuevo formato occupiedSeats
+    if (message.occupiedSeats && message.occupiedSeats.length > 0) {
+      message.occupiedSeats.forEach((occupiedSeat: OccupiedSeat) => {
+        if (occupiedSeat.seatId) {
+          // Agregar al conjunto de asientos confirmados
+          this.confirmedSeats.add(occupiedSeat.seatId);
+          // Actualizar el estado del asiento a CONFIRMED (rojo) para asientos vendidos
+          this.onSeatMapUpdate(occupiedSeat.seatId, 'CONFIRMED');
+        }
+      });
+    }
+
+    // Mantener compatibilidad con el formato anterior (seats) por si acaso
+    if (message.seats && (!message.selecctionSeats || message.selecctionSeats.length === 0)) {
       const initialSelections: SeatSelection[] = message.seats
         .filter(selection => selection.userId !== this.userId)
         .map(selection => ({
@@ -85,29 +112,10 @@ export class WebSocketMessageHandler {
           type: 'temporary'
         }));
 
-
-
-      this.onInitialState(initialSelections);
+      if (initialSelections.length > 0) {
+        this.onInitialState(initialSelections);
+      }
     }
-
-    // CORRECCIÓN: Procesar asientos ocupados/vendidos (occupiedSeats)
-    if ((message as any).occupiedSeats) {
-      const occupiedSeats = (message as any).occupiedSeats;
-      
-
-
-      // Actualizar el estado de cada asiento ocupado a CONFIRMED (rojo)
-      occupiedSeats.forEach((occupiedSeat: any) => {
-        if (occupiedSeat.seatId) {
-
-          // Agregar al conjunto de asientos confirmados
-          this.confirmedSeats.add(occupiedSeat.seatId);
-          this.onSeatMapUpdate(occupiedSeat.seatId, 'CONFIRMED');
-        }
-      });
-    }
-
-
   }
 
   private handleSeatUpdate(message: SeatUpdateMessage): void {

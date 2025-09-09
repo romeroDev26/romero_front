@@ -19,239 +19,268 @@ export class CargoTicketTemplate {
    * Genera el PDF del ticket usando los datos transformados para encomiendas
    */
   static async generatePDF(ticketData: TicketData): Promise<jsPDF> {
-    // Crear documento con altura automática (se ajustará al contenido)
-    const INITIAL_HEIGHT = 260; // Altura inicial aumentada para encomiendas
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: [this.TICKET_WIDTH, INITIAL_HEIGHT]
-    });
-    
-    doc.setFont('helvetica');
-    let currentY = 0;
-    
-    // BLOQUE 1: CABECERA
-    currentY = await this.addHeader(doc, ticketData.header, currentY);
-    currentY += 1;
-    
-    // BLOQUE 2: INFORMACIÓN DEL REMITENTE
-    currentY = this.addSenderInfo(doc, ticketData.passenger_info, currentY);
-    currentY += 1;
-    
-    // BLOQUE 3: INFORMACIÓN DEL DESTINATARIO (ESPECÍFICO PARA ENCOMIENDAS)
-    currentY = this.addRecipientInfo(doc, ticketData, currentY);
-    currentY += 1;
-    
-    // BLOQUE 4: DETALLES DEL ENVÍO
-    currentY = this.addShipmentDetails(doc, ticketData.trip_details, currentY);
-    currentY += 1;
-    
-    // BLOQUE 5: DETALLE DE LOS ITEMS DE ENCOMIENDA
-    currentY = this.addCargoItems(doc, ticketData, currentY);
-    currentY += 1;
-    
-    // BLOQUE 6: TOTALES SUNAT
-    currentY = this.addTotals(doc, ticketData, currentY);
-    currentY += 1;
+  // Estrategia: primera pasada sobre un doc temporal para medir altura usada,
+  // luego recrear el doc final con la altura exacta y volver a renderizar.
+  const INITIAL_HEIGHT = 450; // Tamaño amplio para la pasada de medición
 
-    // BLOQUE 7: PIE DE PÁGINA CON QR
-    currentY = await this.addFooter(doc, ticketData.footer, currentY);
+  // 1) Primera pasada: medición
+  const measureDoc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [this.TICKET_WIDTH, INITIAL_HEIGHT] });
+  measureDoc.setFont('helvetica');
+  let measuredY = 0;
 
-    // AJUSTE AUTOMÁTICO DE ALTURA
-    const finalHeight = currentY + 10; // 10mm de margen final
-    doc.internal.pageSize.height = finalHeight;
+  measuredY = await this.addHeader(measureDoc, ticketData.header, measuredY);
+  measuredY += 1;
+  measuredY = this.addSenderInfo(measureDoc, ticketData.passenger_info, measuredY);
+  measuredY += 1;
+  measuredY = this.addRecipientInfo(measureDoc, ticketData, measuredY);
+  measuredY += 1;
+  measuredY = this.addShipmentDetails(measureDoc, ticketData.trip_details, measuredY);
+  measuredY += 1;
+  measuredY = this.addCargoItems(measureDoc, ticketData, measuredY);
+  measuredY += 1;
+  measuredY = this.addTotals(measureDoc, ticketData, measuredY);
+  measuredY += 1;
+  measuredY = await this.addFooter(measureDoc, ticketData.footer, measuredY);
 
-    return doc;
+  const finalHeight = Math.max((measuredY + 60), 150); // margen final aumentado a 60mm y altura mínima 150mm
+
+  // 2) Segunda pasada: render final con altura correcta
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [this.TICKET_WIDTH, finalHeight] });
+  doc.setFont('helvetica');
+  let currentY = 0;
+
+  // Re-dibujar todos los bloques en el doc final (esperando las operaciones async donde corresponde)
+  currentY = await this.addHeader(doc, ticketData.header, currentY);
+  currentY += 1;
+  currentY = this.addSenderInfo(doc, ticketData.passenger_info, currentY);
+  currentY += 1;
+  currentY = this.addRecipientInfo(doc, ticketData, currentY);
+  currentY += 1;
+  currentY = this.addShipmentDetails(doc, ticketData.trip_details, currentY);
+  currentY += 1;
+  currentY = this.addCargoItems(doc, ticketData, currentY);
+  currentY += 1;
+  currentY = this.addTotals(doc, ticketData, currentY);
+  currentY += 1;
+  currentY = await this.addFooter(doc, ticketData.footer, currentY);
+
+  return doc;
   }
 
   /**
    * BLOQUE 1: Añade el encabezado completo con logo y datos de empresa
-   * Basado en la estructura del NormalTicketTemplate que funciona correctamente
+   * Siguiendo exactamente la estructura del NormalTicketTemplate
    */
   private static async addHeader(doc: jsPDF, header: TicketData['header'], startY: number): Promise<number> {
-  // Aumentar el offset superior para bajar el logo y compensar el espacio eliminado
-  let currentY = startY + 28; // antes 20, ahora +28mm
-    
-    // LOGO REAL - igual que en NormalTicketTemplate
+    let currentY = startY;
+     
+  const LOGO_TOP_Y = 8; // Bajar logo ligeramente para mejorar espaciado (antes -2)
+    currentY = LOGO_TOP_Y;
+
     if (header.company_logo_url) {
       try {
         const logoImg = new Image();
         logoImg.crossOrigin = 'anonymous';
         await new Promise<void>((resolve, reject) => {
           logoImg.onload = () => resolve();
-          logoImg.onerror = () => reject(new Error('Error cargando logo'));
+          logoImg.onerror = (err) => reject(new Error(`Error cargando logo: ${err}`));
           logoImg.src = header.company_logo_url!;
         });
-        // Calcular dimensiones del logo (máximo 40mm de ancho)
-        const maxLogoWidth = 40;
+
+        const maxLogoWidth = 46;
         const logoAspectRatio = logoImg.height / logoImg.width;
-        const logoWidth = Math.min(maxLogoWidth, 40);
+        const logoWidth = Math.min(maxLogoWidth, logoImg.width);
         const logoHeight = logoWidth * logoAspectRatio;
-        // Centrar el logo
+        
         const logoX = (this.TICKET_WIDTH - logoWidth) / 2;
-        // Colocar el logo completamente arriba
-        doc.addImage(logoImg, 'PNG', logoX, currentY, logoWidth, logoHeight);
-        currentY += logoHeight + 3; // Espacio adecuado después del logo
+        doc.addImage(logoImg, 'PNG', logoX, LOGO_TOP_Y, logoWidth, logoHeight);
+        currentY = LOGO_TOP_Y + logoHeight + 2.5;
       } catch (error) {
-        console.error('Error cargando logo:', error);
-        // Si no hay logo, no mostrar nada - continuar directamente
-        currentY += 0;
+        console.error('Error al cargar o añadir el logo:', error);
+        currentY = 4;
       }
+    } else {
+        currentY = 4;
     }
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Sirviendo a la Amazonía Peruana', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 4.5;
     
-    // Nombre de la empresa
-    doc.setFontSize(9);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    const companyLines = this.splitText(doc, header.company_name, this.CONTENT_WIDTH, 9);
+    const companyLines = this.splitText(doc, header.company_name, this.CONTENT_WIDTH, 11);
     companyLines.forEach(line => {
-      doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3;
+      doc.text(line.toUpperCase(), this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+      currentY += 3.8;
     });
     
-    // RUC
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`RUC: ${header.company_ruc}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 3;
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`RUC: ${header.company_ruc}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3.5;
     
-    // Dirección
-    doc.setFontSize(7);
-    const addressLines = this.splitText(doc, header.company_address, this.CONTENT_WIDTH, 7);
+    doc.setFontSize(8);
+    const addressLines = this.splitText(doc, header.company_address, this.CONTENT_WIDTH, 8);
     addressLines.forEach(line => {
       doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 2.5;
+      currentY += 2.8;
     });
-    currentY += 1;
+    currentY += 1.2;
     
-    // Teléfonos
-    if (header.company_phones && header.company_phones.length > 0) {
+    if (header.company_phones.length > 0) {
       const phonesText = `Tel: ${header.company_phones.join(', ')}`;
       doc.text(phonesText, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3;
+      currentY += 3.2;
     }
     
-    // Punto de emisión
     if (header.emission_point) {
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
       doc.text(`PUNTO DE EMISIÓN: ${header.emission_point}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-      currentY += 3;
+      currentY += 3.2;
     }
     
-    // Línea separadora continua (gris)
+    if (header.branch_office_address) {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      const addrLines = this.splitText(doc, header.branch_office_address, this.CONTENT_WIDTH, 8);
+      addrLines.forEach(line => {
+        doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+        currentY += 2.2;
+      });
+      currentY += 1.2;
+    }
+    
+    if (header.branch_office_phone) {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Contacto de sucursal: ${header.branch_office_phone}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+      currentY += 2.8;
+    }
+
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
-    doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 4; // Espacio adecuado después del separador
+  doc.line(0, currentY, this.TICKET_WIDTH, currentY);
+  currentY += 4;
     
-    // Tipo y número de documento
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text(header.document_title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
-    doc.text(header.document_id, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5; // Espacio adecuado después del documento
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(header.document_title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3.5;
+  doc.text(header.document_id, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 4;
     
-    // Fecha y hora de emisión
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.text(header.emission_datetime, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text(header.emission_datetime, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3;
     
-    // Vendedor
-    doc.text(`Vendedor: ${header.seller_name}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 4;
+  doc.text(`Vendedor: ${header.seller_name}`, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3;
     
     return currentY;
   }
 
   /**
    * BLOQUE 2: Añade la información del remitente
+   * Siguiendo el formato de dos columnas del normalTicket
    */
   private static addSenderInfo(doc: jsPDF, passengerInfo: TicketData['passenger_info'], startY: number): number {
     let currentY = startY;
-
-    // Línea separadora continua (gris)
+    
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 4; // Espacio adecuado después del separador
-
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('REMITENTE:', this.MARGIN, currentY);
     currentY += 4;
+
+    // Título de la sección centrado
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REMITENTE', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+    currentY += 4;
+    
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    
-    // Nombre del remitente
-    const nameLines = this.splitText(doc, passengerInfo.full_name, this.CONTENT_WIDTH, 7);
-    nameLines.forEach(line => {
-      doc.text(line, this.MARGIN, currentY);
-      currentY += 3;
-    });
-
-    // Documento del remitente
-    doc.text(`${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, this.MARGIN, currentY);
+    doc.text('NOMBRE:', leftX, currentY);
+    doc.text('DOCUMENTO:', rightX, currentY);
     currentY += 4;
 
+    doc.setFontSize(11);
+    const nameLines = this.splitText(doc, passengerInfo.full_name, colWidth, 11);
+    const docLines = this.splitText(doc, `${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, colWidth, 11);
+    const maxLines = Math.max(nameLines.length, docLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      doc.setFont('helvetica', 'normal');
+      doc.text((nameLines[i] ?? '').toUpperCase(), leftX, currentY);
+      doc.text((docLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4;
+    }
+    currentY += 2;
+    
     return currentY;
   }
 
   /**
    * BLOQUE 3: Añade la información del destinatario (específico para encomiendas)
+   * Siguiendo el formato de dos columnas del normalTicket
    */
   private static addRecipientInfo(doc: jsPDF, ticketData: TicketData, startY: number): number {
     let currentY = startY;
 
-    // Línea separadora continua (gris)
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 4; // Espacio adecuado después del separador
-
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DESTINATARIO:', this.MARGIN, currentY);
     currentY += 4;
 
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
+    // Título de la sección centrado
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DESTINATARIO', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+    currentY += 4;
+    
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
     
     // Extraer información del destinatario de trip_details
     const destinatarioDetail = ticketData.trip_details.details.find(d => d.label === 'Destinatario');
     const docDestinatarioDetail = ticketData.trip_details.details.find(d => d.label === 'Doc. Destinatario');
     const telDestinatarioDetail = ticketData.trip_details.details.find(d => d.label === 'Tel. Destinatario');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('NOMBRE:', leftX, currentY);
+    doc.text('DOCUMENTO:', rightX, currentY);
+    currentY += 4;
+
+    doc.setFontSize(11);
+    const nameLines = destinatarioDetail ? this.splitText(doc, destinatarioDetail.value, colWidth, 11) : [''];
+    const docLines = docDestinatarioDetail ? this.splitText(doc, docDestinatarioDetail.value, colWidth, 11) : [''];
+    const maxLines = Math.max(nameLines.length, docLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      doc.setFont('helvetica', 'normal');
+      doc.text((nameLines[i] ?? '').toUpperCase(), leftX, currentY);
+      doc.text((docLines[i] ?? '').toUpperCase(), rightX, currentY);
+      currentY += 4;
+    }
+    currentY += 2;
     
-    // Nombre del destinatario
-    if (destinatarioDetail) {
-      const nameLines = this.splitText(doc, destinatarioDetail.value, this.CONTENT_WIDTH, 7);
-      nameLines.forEach(line => {
-        doc.text(line, this.MARGIN, currentY);
-        currentY += 3;
-      });
-    } else {
-      doc.text('Por definir según estructura de datos', this.MARGIN, currentY);
-      currentY += 3;
-    }
-
-    // Documento del destinatario
-    if (docDestinatarioDetail) {
-      doc.text(docDestinatarioDetail.value, this.MARGIN, currentY);
-      currentY += 3;
-    } else {
-      doc.text('Doc: Por definir', this.MARGIN, currentY);
-      currentY += 3;
-    }
-
-    // Teléfono del destinatario
+    // Teléfono del destinatario en una sola línea
     if (telDestinatarioDetail) {
-      doc.text(`Tel: ${telDestinatarioDetail.value}`, this.MARGIN, currentY);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.text('TELÉFONO:', leftX, currentY);
       currentY += 4;
-    } else {
-      doc.text('Tel: Por definir', this.MARGIN, currentY);
-      currentY += 4;
+      
+      doc.setFontSize(11);
+      doc.text(telDestinatarioDetail.value.toUpperCase(), leftX, currentY);
+      currentY += 6;
     }
 
     return currentY;
@@ -259,52 +288,58 @@ export class CargoTicketTemplate {
 
   /**
    * BLOQUE 4: Añade los detalles del envío
+   * Siguiendo el formato de dos columnas del normalTicket
    */
   private static addShipmentDetails(doc: jsPDF, tripDetails: TicketData['trip_details'], startY: number): number {
     let currentY = startY;
 
-    // Línea separadora continua (gris)
     doc.setLineWidth(0.2);
     doc.setDrawColor(180, 180, 180);
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
-    currentY += 4; // Espacio adecuado después del separador
-
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DETALLES DEL ENVÍO:', this.MARGIN, currentY);
     currentY += 4;
 
+    // Título de la sección centrado
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('DETALLES DEL ENVÍO', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+    currentY += 4;
+    
+    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
+    const leftX = this.MARGIN;
+    const rightX = this.MARGIN + colWidth + 2;
+    
+    // Extraer información de los detalles del envío de trip_details
+    const origenDetail = tripDetails.details.find(d => d.label === 'Origen');
+    const destinoDetail = tripDetails.details.find(d => d.label === 'Destino');
+
+    // Solo mostrar Origen y Destino
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-
-    // Mostrar detalles del viaje basados en la estructura de la interfaz
-    // Excluir destinatario y variantes de hora de embarque, ruta y hora de salida
-    const shipmentDetails = tripDetails.details.filter(detail => {
-      const label = detail.label ? String(detail.label).trim().toLowerCase() : '';
-      if (!label) return true;
-
-      // Etiquetas exactas que debemos ignorar (destinatario ya manejado en otro bloque)
-      const exactIgnored = ['destinatario', 'doc. destinatario', 'tel. destinatario'];
-      if (exactIgnored.includes(label)) return false;
-
-      // Ignorar cualquier etiqueta que contenga estas palabras clave (cubre variantes como 'Hora Embarque', 'Hora de embarque', 'HORA DE SALIDA', etc.)
-      if (label.includes('embar') || label.includes('salid') || label.includes('ruta')) return false;
-
-      return true;
-    });
+    doc.text('ORIGEN', leftX, currentY);
+    doc.text('DESTINO', rightX, currentY);
+    currentY += 4;
     
-    shipmentDetails.forEach(detail => {
-      doc.text(`${detail.label}: ${detail.value}`, this.MARGIN, currentY);
-      currentY += 3;
-    });
-
-    currentY += 2; // Espacio antes del siguiente bloque
+    doc.setFontSize(11);
+    doc.text((origenDetail?.value || '').toUpperCase(), leftX, currentY);
+    doc.setFont('helvetica', 'bold');
+    
+    // Manejar destino largo con salto de línea
+     const destinoText = (destinoDetail?.value || '').toUpperCase();
+     const maxWidth = colWidth - 2;
+     const destinoLines = CargoTicketTemplate.splitText(doc, destinoText, maxWidth, 11);
+    
+    for (let i = 0; i < destinoLines.length; i++) {
+      doc.text(destinoLines[i], rightX, currentY + (i * 4));
+    }
+    
+    currentY += Math.max(6, destinoLines.length * 4 + 2);
 
     return currentY;
   }
 
   /**
    * BLOQUE 5: Añade los items de encomienda con detalles específicos
+   * Siguiendo el formato del normalTicket con descripción más ancha
    */
   private static addCargoItems(doc: jsPDF, ticketData: TicketData, startY: number): number {
     let currentY = startY;
@@ -320,37 +355,38 @@ export class CargoTicketTemplate {
     doc.text('ITEMS DE ENCOMIENDA:', this.MARGIN, currentY);
     currentY += 4;
 
-    // Encabezado de tabla
-    doc.setFontSize(7);
+    // Encabezado de tabla con más espacio para descripción
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.text('CANT.', this.MARGIN, currentY);
-    doc.text('DESCRIPCIÓN', this.MARGIN + 10, currentY); // Más espacio para descripción
-    doc.text('P/U', this.TICKET_WIDTH - this.MARGIN - 24, currentY, { align: 'right' }); // Ajustar posición
+    doc.text('DESCRIPCIÓN', this.MARGIN + 10, currentY);
+    doc.text('P/U', this.TICKET_WIDTH - this.MARGIN - 20, currentY, { align: 'right' });
     doc.text('TOTAL', this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
     currentY += 4;
 
-    // Items
+    // Items con fuente consistente con el resto del ticket
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7); // Tamaño consistente con 'total en palabras'
     ticketData.financial_breakdown.items.forEach(item => {
       // Cantidad
       doc.text(String(item.quantity), this.MARGIN, currentY);
       
-      // Descripción multilínea con descuento si aplica - ESPACIO REDUCIDO
+      // Descripción multilínea con más espacio disponible
       let desc = item.description;
       if (item.discount && item.discount > 0) {
         desc += ` (descuento: ${item.discount.toFixed(2)})`;
       }
-      // Reducir el espacio disponible para descripción de 38 a 30 caracteres para no invadir P/U
-      const descLines = this.splitText(doc, desc, 30, 7);
+      // Aumentar el espacio disponible para descripción de 30 a 42 caracteres
+      const descLines = this.splitText(doc, desc.toUpperCase(), 42, 7);
       descLines.forEach((line, idx) => {
-        doc.text(line, this.MARGIN + 10, currentY); // Misma posición horizontal
-        if (idx < descLines.length - 1) currentY += 3;
+        doc.text(line, this.MARGIN + 10, currentY);
+        if (idx < descLines.length - 1) currentY += 4; // Más espacio entre líneas
       });
       
-      // P/U y TOTAL solo en la primera línea - ajustar posición
-      doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.MARGIN - 24, currentY, { align: 'right' });
+      // P/U y TOTAL solo en la primera línea
+      doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.MARGIN - 20, currentY, { align: 'right' });
       doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
-      currentY += 4; // Espacio entre items
+      currentY += 5; // Más espacio entre items
     });
 
     // Línea separadora (gris)
@@ -444,13 +480,13 @@ export class CargoTicketTemplate {
     doc.text('¡Gracias por su preferencia!', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 6;
     
-    // Texto de consulta
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'normal');
-    doc.text(footer.consultation_text, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 3;
-    doc.text(footer.consultation_url, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 5;
+  // Texto de consulta (aumentado para coincidir con el tamaño de la forma de pago)
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  doc.text(footer.consultation_text, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3;
+  doc.text(footer.consultation_url, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 5;
     
     // Usar directamente la imagen base64 del QR enviada por el backend
     if (footer.qr_code_base64) {
@@ -472,13 +508,31 @@ export class CargoTicketTemplate {
       }
     }
     
-    // Información adicional
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Representación impresa del comprobante electrónico', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 3;
-    doc.text('CONSERVE ESTE COMPROBANTE', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
-    currentY += 3;
+  // Información adicional
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Representación impresa del comprobante electrónico', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3;
+  doc.text('CONSERVE ESTE COMPROBANTE', this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+  currentY += 3;
+
+    // Líneas legales completas como en normalTicket
+    const legalTexts = [
+      'Conserve este ticket como comprobante de su envío.',
+      'No nos hacemos responsables por objetos de valor no declarados.',
+      'El remitente debe presentarse 30 minutos antes de la salida.',
+      'Prohibido el transporte de sustancias peligrosas o ilegales.',
+      'Los horarios están sujetos a cambios por condiciones climáticas.',
+      'Reclamos hasta 24 horas después del servicio.'
+    ];
+    
+    legalTexts.forEach(text => {
+      const lines = this.splitText(doc, text, this.CONTENT_WIDTH, 7);
+      lines.forEach(line => {
+        doc.text(line, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
+        currentY += 3;
+      });
+    });
 
     return currentY;
   }

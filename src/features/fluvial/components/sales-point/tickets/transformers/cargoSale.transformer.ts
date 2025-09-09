@@ -45,6 +45,8 @@ export class CargoSaleTransformer {
       company_address: data.company?.address || 'Dirección no disponible',
       company_phones: data.company?.phone ? [data.company.phone] : [],
       emission_point: data.branch_office_name || 'Punto de Venta',
+      branch_office_address: data.branch_office_address || '',
+      branch_office_phone: data.branch_office_phone || '',
       document_title: documentTypeMap[data.document_type_code] || 'COMPROBANTE ELECTRÓNICO',
       document_id: `${data.series}-${String(data.number).padStart(8, '0')}`,
       emission_datetime: `${data.issue_date} ${data.issue_time}`,

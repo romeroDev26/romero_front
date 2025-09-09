@@ -60,6 +60,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
   const isSameAsSender = watch('recipient.isSameAsSender');
   const recipientDocType = watch('recipient.docType');
 
+  const isFormLocked = !selectedProduct; // true mientras no se seleccione un servicio
+
   const cargoServices = useMemo(() => {
     // Si no hay servicios, devolvemos un array vacío
     if (!allServices || allServices.length === 0) {
@@ -191,19 +193,24 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
           {errors.product && (
             <p className="text-sm text-red-500 mt-1">{errors.product.message}</p>
           )}
+          {isFormLocked && (
+            <p className="text-sm text-gray-500 mt-2">Seleccione un servicio para activar el resto del formulario.</p>
+          )}
         </div>
 
         {/* Cantidad y Precio */}
-        <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4">
           <div>
             <Input
               label="Cantidad *"
               type="number"
-              {...register('quantity', { 
+        {...register('quantity', { 
                 valueAsNumber: true, 
                 min: { value: 1, message: 'La cantidad debe ser al menos 1' },
                 required: 'La cantidad es obligatoria'
               })}
+              disabled={isFormLocked}
+              className={isFormLocked ? 'bg-gray-100' : ''}
               error={errors.quantity?.message}
               min="1"
               step="1"
@@ -214,14 +221,16 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
               label="Precio Unitario (S/) *"
               type="number"
               step="0.01"
-              {...register('price', { 
+        {...register('price', { 
                 valueAsNumber: true, 
                 // Precio obligatorio y mayor que 0
                 required: 'El precio es obligatorio',
                 min: { value: 0.01, message: 'El precio debe ser mayor que 0' },
               })}
-              error={errors.price?.message}
-            />
+        error={errors.price?.message}
+        disabled={isFormLocked}
+              className={isFormLocked ? 'bg-gray-100' : ''}
+              />
           </div>
         </div>
 
@@ -232,7 +241,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
           </label>
           <select
             {...register('unitOfMeasure', { required: 'La unidad de medida es obligatoria' })}
-            className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className={`w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${isFormLocked ? 'bg-gray-100' : 'bg-white'}`}
+            disabled={isFormLocked}
           >
             {UNIT_OF_MEASURE_OPTIONS.map(opt => (
               <option key={opt.code} value={opt.code}>
@@ -253,8 +263,9 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
           <textarea
             {...register('description', { required: 'La descripción es obligatoria' })}
             rows={4}
-            className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y"
+            className={`w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y ${isFormLocked ? 'bg-gray-100' : 'bg-white'}`}
             placeholder="Ej: Repuestos de motor, ropa, electrodomésticos, etc."
+            disabled={isFormLocked}
           />
           {errors.description && (
             <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
@@ -266,12 +277,13 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
           <>
             <div className="pt-4 border-t border-gray-200">
               <h4 className="font-semibold text-md text-gray-800 mb-3">Datos del Destinatario</h4>
-              <div className="flex items-center">
+                <div className="flex items-center">
                 <input
                   type="checkbox"
                   id="isSameAsSender"
                   {...register('recipient.isSameAsSender')}
                   className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  disabled={isFormLocked}
                 />
                 <label htmlFor="isSameAsSender" className="ml-2 block text-sm text-gray-900">
                   El destinatario es el mismo que el remitente
@@ -288,7 +300,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
                     </label>
                     <select 
                       {...register('recipient.docType')} 
-                      className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={`w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${isFormLocked ? 'bg-gray-100' : 'bg-white'}`}
+                      disabled={isFormLocked}
                     >
                       {DOCUMENT_TYPES.map(doc => (
                         <option key={doc.code} value={doc.code}>
@@ -297,23 +310,24 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
                       ))}
                     </select>
                   </div>
-                  <div className="col-span-2">
+                <div className="col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       N° Documento *
                     </label>
                     <div className="flex">
-                      <Input
+          <Input
                         {...register('recipient.docNumber', {
                           required: !isSameAsSender ? 'El número de documento es obligatorio' : false
                         })}
-                        error={errors.recipient?.docNumber?.message}
-                        className="rounded-r-none"
-                        placeholder={recipientDocType === SunatDocType.DNI ? '12345678' : '20123456789'}
+            error={errors.recipient?.docNumber?.message}
+            className={`rounded-r-none ${isFormLocked ? 'bg-gray-100' : ''}`}
+            placeholder={recipientDocType === SunatDocType.DNI ? '12345678' : '20123456789'}
+            disabled={isFormLocked}
                       />
                       <Button
                         type="button"
                         onClick={handleRecipientSearch}
-                        disabled={!isRecipientSearchable || isQueryingRecipient}
+            disabled={!isRecipientSearchable || isQueryingRecipient || isFormLocked}
                         className="rounded-l-none px-3 h-10 flex items-center justify-center"
                         title={isRecipientSearchable ? 'Buscar datos en SUNAT' : 'Búsqueda disponible solo para DNI y RUC'}
                       >
@@ -334,6 +348,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
                     })}
                     error={errors.recipient?.name?.message}
                     placeholder="Nombre completo o razón social"
+                    disabled={isFormLocked}
+                    className={isFormLocked ? 'bg-gray-100' : ''}
                   />
                 </div>
                 <div>
@@ -342,6 +358,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
                     {...register('recipient.phone')}
                     placeholder="Número de teléfono (opcional)"
                     type="tel"
+                    disabled={isFormLocked}
+                    className={isFormLocked ? 'bg-gray-100' : ''}
                   />
                 </div>
               </div>
@@ -360,9 +378,11 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
           </Button>
           <Button 
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700"
+            className={`bg-blue-600 hover:bg-blue-700 ${isFormLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+            disabled={isFormLocked}
+            title={isFormLocked ? 'Seleccione un servicio primero' : ''}
           >
-            {existingItem ? 'Actualizar Ítem' : 'Añadir Ítem'}
+            {isFormLocked ? 'Seleccione un servicio' : (existingItem ? 'Actualizar Ítem' : 'Añadir Ítem')}
           </Button>
         </div>
       </form>

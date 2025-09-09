@@ -211,8 +211,10 @@ export class CargoTicketTemplate {
     doc.text('DOCUMENTO:', rightX, currentY);
     currentY += 4;
 
-    doc.setFontSize(11);
-    const nameLines = this.splitText(doc, passengerInfo.full_name, colWidth, 11);
+  doc.setFontSize(11);
+  // Limitar un poco el ancho de la columna nombre para forzar saltos de línea
+  const nameMaxWidth = Math.max(20, colWidth - 6); // mm, clamp mínimo para evitar valores muy pequeños
+  const nameLines = this.splitText(doc, passengerInfo.full_name, nameMaxWidth, 11);
     const docLines = this.splitText(doc, `${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, colWidth, 11);
     const maxLines = Math.max(nameLines.length, docLines.length);
     for (let i = 0; i < maxLines; i++) {
@@ -259,8 +261,10 @@ export class CargoTicketTemplate {
     doc.text('DOCUMENTO:', rightX, currentY);
     currentY += 4;
 
-    doc.setFontSize(11);
-    const nameLines = destinatarioDetail ? this.splitText(doc, destinatarioDetail.value, colWidth, 11) : [''];
+  doc.setFontSize(11);
+  // Usar un ancho ligeramente menor para el nombre del destinatario para evitar que la última palabra "colapse" en la columna derecha
+  const destNameMaxWidth = Math.max(20, colWidth - 6);
+  const nameLines = destinatarioDetail ? this.splitText(doc, destinatarioDetail.value, destNameMaxWidth, 11) : [''];
     const docLines = docDestinatarioDetail ? this.splitText(doc, docDestinatarioDetail.value, colWidth, 11) : [''];
     const maxLines = Math.max(nameLines.length, docLines.length);
     for (let i = 0; i < maxLines; i++) {

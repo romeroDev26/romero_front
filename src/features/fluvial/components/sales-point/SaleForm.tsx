@@ -21,6 +21,7 @@ import { PassengerDataForm } from "./PassengerDataForm";
 import { SeatAndFareSelector } from "./SeatAndFareSelector";
 import { PriceSummary } from "./PriceSummary";
 import { Spinner } from "../../../../components/common/Spinner";
+import { SearchableSelect } from "../../../../components/common/SearchableSelect";
 import { ReservationModal } from "./ReservationModal";
 import { RepresentativesManager } from "./representatives";
 // ACTUALIZADO: Usar nuevo modal de preview de tickets
@@ -869,45 +870,35 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Origen (Embarque)</label>
-                      <select
-                        value={selectedBoardingStopId || ''}
-                        onChange={(e) => setSelectedBoardingStopId(Number(e.target.value))}
-                        className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        disabled={isConfirmingMode}
-                      >
-                        <option value="" disabled>Seleccione embarque...</option>
-                        {tripDetails?.stops?.map(stop => (
-                          <option key={stop.id} value={stop.id}>
-                            {stop.port?.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Destino (Desembarque)</label>
-                      <select
-                        value={selectedDisembarkingStopId || ''}
-                        onChange={(e) => setSelectedDisembarkingStopId(Number(e.target.value))}
-                        className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        disabled={!selectedBoardingStopId || isConfirmingMode}
-                      >
-                        <option value="" disabled>Seleccione desembarque...</option>
-                        {tripDetails?.stops
-                          ?.filter(stop => {
-                            if (!selectedBoardingStopId) return false;
-                            const boardingStop = tripDetails.stops.find(s => s.id === selectedBoardingStopId);
-                            const boardingStopOrder = boardingStop?.stop_order ?? -1;
-                            return stop.stop_order > boardingStopOrder;
-                          })
-                          .map(stop => (
-                            <option key={stop.id} value={stop.id}>
-                              {stop.port?.name}
-                            </option>
-                          ))}
-                      </select>
-                    </div>
+                    <SearchableSelect
+                      label="Origen (Embarque)"
+                      value={selectedBoardingStopId}
+                      onChange={(value) => setSelectedBoardingStopId(value ? Number(value) : null)}
+                      options={tripDetails?.stops?.map(stop => ({
+                        value: stop.id,
+                        label: stop.port?.name || 'Sin nombre'
+                      })) || []}
+                      placeholder="Seleccione embarque..."
+                      disabled={isConfirmingMode}
+                    />
+                    <SearchableSelect
+                      label="Destino (Desembarque)"
+                      value={selectedDisembarkingStopId}
+                      onChange={(value) => setSelectedDisembarkingStopId(value ? Number(value) : null)}
+                      options={tripDetails?.stops
+                        ?.filter(stop => {
+                          if (!selectedBoardingStopId) return false;
+                          const boardingStop = tripDetails.stops.find(s => s.id === selectedBoardingStopId);
+                          const boardingStopOrder = boardingStop?.stop_order ?? -1;
+                          return stop.stop_order > boardingStopOrder;
+                        })
+                        .map(stop => ({
+                          value: stop.id,
+                          label: stop.port?.name || 'Sin nombre'
+                        })) || []}
+                      placeholder="Seleccione desembarque..."
+                      disabled={!selectedBoardingStopId || isConfirmingMode}
+                    />
                   </div>
                   
                   <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">

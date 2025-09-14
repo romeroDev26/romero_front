@@ -183,63 +183,71 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         })
       : "N/A";
 
+    // Calcular posiciones para 3 columnas
+    const availableWidth = pageWidth - 2 * margin;
+    const colWidth = availableWidth / 3;
+    const col1X = margin;
+    const col2X = margin + colWidth;
+    const col3X = margin + 2 * colWidth;
+
+    // Columna 1: Fecha de salida
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(9);
-    pdf.text("FECHA SALIDA:", margin, currentY);
+    pdf.text("FECHA SALIDA:", col1X, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(String(fechaSalida), margin + 30, currentY);
+    pdf.text(String(fechaSalida), col1X + 28, currentY);
 
+    // Columna 2: Origen
     pdf.setFont("helvetica", "bold");
-    pdf.text("HORA DE SALIDA:", pageWidth / 2 + 10, currentY);
+    pdf.text("ORIGEN:", col2X, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(String(horaSalida), pageWidth / 2 + 40, currentY);
+    pdf.text(String((manifestData as any).trip_info?.origin_port_name || "N/A"), col2X + 15, currentY);
 
-    currentY += 6;
-
+    // Columna 3: Placa
     pdf.setFont("helvetica", "bold");
-    pdf.text("ORIGEN:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(String((manifestData as any).trip_info?.origin_port_name || "N/A"), margin + 20, currentY);
-
-    pdf.setFont("helvetica", "bold");
-    pdf.text("DESTINO:", pageWidth / 2 + 10, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(
-      String((manifestData as any).trip_info?.destination_port_name || "N/A"),
-      pageWidth / 2 + 30,
-      currentY
-    );
-
-    currentY += 6;
-
-    pdf.setFont("helvetica", "bold");
-    pdf.text("PLACA:", margin, currentY);
+    pdf.text("PLACA:", col3X, currentY);
     pdf.setFont("helvetica", "normal");
     pdf.text(
       String((manifestData as any).trip_info?.vehicle_license_plate || "N/A"),
-      margin + 15,
+      col3X + 12,
       currentY
     );
 
-    currentY += 10;
+    currentY += 6;
 
-    // Totals
+    // Columna 1: Hora de salida
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(9);
+    pdf.text("HORA DE SALIDA:", col1X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(String(horaSalida), col1X + 30, currentY);
+
+    // Columna 2: Destino
+    pdf.setFont("helvetica", "bold");
+    pdf.text("DESTINO:", col2X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(
+      String((manifestData as any).trip_info?.destination_port_name || "N/A"),
+      col2X + 18,
+      currentY
+    );
+
+    // Columna 3: Total
+    pdf.setFont("helvetica", "bold");
     if (manifestData.manifest_type === "CARGO") {
       const rawTotalCargo = (manifestData as any).total_cargo_weight_kg;
       const totalCargo =
         rawTotalCargo && !isNaN(Number(rawTotalCargo))
           ? Math.round(Number(rawTotalCargo))
           : ( (manifestData as any).data?.length || 0 );
-      pdf.text(`Total de carga: ${totalCargo}`, margin, currentY);
+      pdf.text(`Total de carga: ${totalCargo}`, col3X, currentY);
     } else {
       pdf.text(
         `Total de Pasajeros: ${(manifestData as any).data?.length || 0}`,
-        margin,
+        col3X,
         currentY
       );
     }
+
     currentY += 10;
 
     // Tables

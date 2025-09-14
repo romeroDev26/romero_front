@@ -295,7 +295,23 @@ export class NoSeatsTicketTemplate {
     const dateLines = dateItem ? this.splitText(doc, dateItem.value.toUpperCase(), colWidth, 11) : [''];
     const maxLines1 = Math.max(vesselLines.length, dateLines.length);
     for (let i = 0; i < maxLines1; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(vesselLines[i] ?? '', leftX, currentY); doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(dateLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3 a 4
-    currentY += 4; // aumentado de 4 a 4 (ya estaba)
+    currentY += 2; // aumentado de 4 a 2
+
+    // Embark / Departure
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARQUE:', leftX, currentY); doc.text('SALIDA:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
+    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
+    const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
+    const maxLines2 = Math.max(boardingLines.length, departureLines.length);
+    for (let i = 0; i < maxLines2; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(boardingLines[i] ?? '', leftX, currentY); doc.text(departureLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3 a 4
+    currentY += 2; // aumentado de 4 a 2
+
+    // Origin / Destination
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('ORIGEN:', leftX, currentY); doc.text('DESTINO:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
+    const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
+    const destLines = destItem ? this.splitText(doc, destItem.value.toUpperCase(), colWidth, 11) : [''];
+    const maxLines3 = Math.max(originLines.length, destLines.length);
+    for (let i = 0; i < maxLines3; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.text(originLines[i] ?? '', leftX, currentY); doc.text(destLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3.5 a 4
+    currentY += 2; // aumentado de 4 a 2
 
     // Port
     if (tripDetails.port_name || tripDetails.port_address) {
@@ -304,29 +320,13 @@ export class NoSeatsTicketTemplate {
       doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('PUERTO:', leftX, currentY); doc.text('DIRECCIÓN PUERTO:', rightX, currentY); currentY += 3;
       const maxPortLines = Math.max(portNameLines.length, portAddrLines.length);
       for (let i = 0; i < maxPortLines; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text(portNameLines[i] ?? '', leftX, currentY); doc.text(portAddrLines[i] ?? '', rightX, currentY); currentY += 3; }
-      currentY += 3;
+      currentY += 2; // reducido de 3 a 2
     }
-
-    // Embark / Departure
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('EMBARQUE:', leftX, currentY); doc.text('SALIDA:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
-    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
-    const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
-    const maxLines2 = Math.max(boardingLines.length, departureLines.length);
-    for (let i = 0; i < maxLines2; i++) { doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.text(boardingLines[i] ?? '', leftX, currentY); doc.text(departureLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3 a 4
-    currentY += 4; // aumentado de 3 a 4
-
-    // Origin / Destination
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.text('ORIGEN:', leftX, currentY); doc.text('DESTINO:', rightX, currentY); currentY += 4; // aumentado de 3 a 4
-    const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
-    const destLines = destItem ? this.splitText(doc, destItem.value.toUpperCase(), colWidth, 11) : [''];
-    const maxLines3 = Math.max(originLines.length, destLines.length);
-    for (let i = 0; i < maxLines3; i++) { doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.text(originLines[i] ?? '', leftX, currentY); doc.text(destLines[i] ?? '', rightX, currentY); currentY += 4; } // aumentado de 3.5 a 4
-    currentY += 4; // aumentado de 3 a 4
 
     // Seat
     if (seatItem) {
       doc.setFont('helvetica', 'bold'); doc.setFontSize(11); doc.text(`ASIENTO: ${seatItem.value.toUpperCase()}`, leftX, currentY);
-      currentY += 6;
+      currentY += 4; // reducido de 6 a 4
     }
 
     doc.setLineWidth(0.2); doc.setDrawColor(180, 180, 180); doc.line(0, currentY, this.TICKET_WIDTH, currentY); currentY += 4;

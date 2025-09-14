@@ -2,6 +2,7 @@
 
 import React, { useMemo, useEffect, useCallback } from 'react';
 import { Spinner } from '../../../../components/common/Spinner';
+import { SearchableSelect } from '../../../../components/common/SearchableSelect';
 import { useTripDetails } from '../../hooks/useTripDetails';
 import { useSeatTypesData } from '../../hooks/useSeatTypesData';
 import { useVessel } from '../../hooks/useVesselsData';
@@ -242,38 +243,28 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       <h2 className="text-lg font-semibold text-gray-800">Tramo y Asiento</h2>
       
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Origen (Embarque)</label>
-          <select
-            value={selectedBoardingStopId || ''}
-            onChange={(e) => onBoardingStopChange(Number(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-            disabled={isConfirmingMode}
-          >
-            <option value="" disabled>Seleccione embarque...</option>
-            {tripDetails?.stops?.slice(0, -1).map(stop => (
-              <option key={stop.id} value={stop.id}>
-                {stop.port?.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Destino (Desembarque)</label>
-          <select
-            value={selectedDisembarkingStopId || ''}
-            onChange={(e) => onDisembarkingStopChange(Number(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-            disabled={!selectedBoardingStopId || availableStops.length === 0 || isConfirmingMode}
-          >
-            <option value="" disabled>Seleccione desembarque...</option>
-            {availableStops.map(stop => (
-              <option key={stop.id} value={stop.id}>
-                {stop.port?.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SearchableSelect
+          label="Origen (Embarque)"
+          value={selectedBoardingStopId}
+          onChange={(value) => onBoardingStopChange(value ? Number(value) : null)}
+          options={tripDetails?.stops?.slice(0, -1).map(stop => ({
+            value: stop.id,
+            label: stop.port?.name || 'Sin nombre'
+          })) || []}
+          placeholder="Seleccione embarque..."
+          disabled={isConfirmingMode}
+        />
+        <SearchableSelect
+          label="Destino (Desembarque)"
+          value={selectedDisembarkingStopId}
+          onChange={(value) => onDisembarkingStopChange(value ? Number(value) : null)}
+          options={availableStops.map(stop => ({
+            value: stop.id,
+            label: stop.port?.name || 'Sin nombre'
+          }))}
+          placeholder="Seleccione desembarque..."
+          disabled={!selectedBoardingStopId || availableStops.length === 0 || isConfirmingMode}
+        />
       </div>
 
       {selectedSeat && (

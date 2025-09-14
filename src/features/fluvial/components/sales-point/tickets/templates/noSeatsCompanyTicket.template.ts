@@ -321,7 +321,45 @@ export class NoSeatsCompanyTicketTemplate {
       doc.text(dateLines[i] ?? '', rightX, currentY);
       currentY += 4; // línea con más espacio (aumentado de 3 a 4)
     }
-    currentY += 4; // espacio aumentado entre bloques
+    currentY += 2; // reducido de 4 a 2
+
+    // FILA 2: etiquetas (EMBARQUE / SALIDA)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('EMBARQUE:', leftX, currentY);
+    doc.text('SALIDA:', rightX, currentY);
+    currentY += 4; // aumentado de 3 a 4
+
+     // FILA 2b: valores debajo (tamaño 11)
+    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
+    const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
+    const maxLines2 = Math.max(boardingLines.length, departureLines.length);
+    for (let i = 0; i < maxLines2; i++) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(11);
+      doc.text(boardingLines[i] ?? '', leftX, currentY);
+      doc.text(departureLines[i] ?? '', rightX, currentY);
+      currentY += 4; // aumentado de 3 a 4
+    }
+    currentY += 2; // reducido de 4 a 2    // FILA 3: etiquetas (ORIGEN / DESTINO)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('ORIGEN:', leftX, currentY);
+    doc.text('DESTINO:', rightX, currentY);
+    currentY += 4; // aumentado de 3 a 4
+
+    // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, tamaño 11)
+    const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
+    const destLines = destItem ? this.splitText(doc, destItem.value.toUpperCase(), colWidth, 11) : [''];
+    const maxLines3 = Math.max(originLines.length, destLines.length);
+    for (let i = 0; i < maxLines3; i++) {
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(originLines[i] ?? '', leftX, currentY);
+      doc.text(destLines[i] ?? '', rightX, currentY);
+      currentY += 3.5; // un poco más de espacio por el tamaño mayor
+    }
+    currentY += 2; // reducido de 3 a 2
 
     // --- PUERTO y DIRECCIÓN DEL PUERTO
     if (trip.port_name || trip.port_address) {
@@ -344,53 +382,15 @@ export class NoSeatsCompanyTicketTemplate {
         currentY += 4; // aumentado de 3 a 4
       }
 
-      currentY += 4; // espacio después del bloque de puerto (aumentado de 3 a 4)
+      currentY += 2; // reducido de 4 a 2
     }
-
-    // FILA 2: etiquetas (EMBARQUE / SALIDA)
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.text('EMBARQUE:', leftX, currentY);
-    doc.text('SALIDA:', rightX, currentY);
-    currentY += 4; // aumentado de 3 a 4
-
-     // FILA 2b: valores debajo (tamaño 11)
-    const boardingLines = boardingItem ? this.splitText(doc, boardingItem.value.toUpperCase(), colWidth, 11) : [''];
-    const departureLines = departureItem ? this.splitText(doc, departureItem.value.toUpperCase(), colWidth, 11) : [''];
-    const maxLines2 = Math.max(boardingLines.length, departureLines.length);
-    for (let i = 0; i < maxLines2; i++) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      doc.text(boardingLines[i] ?? '', leftX, currentY);
-      doc.text(departureLines[i] ?? '', rightX, currentY);
-      currentY += 4; // aumentado de 3 a 4
-    }
-    currentY += 4; // aumentado de 3 a 4    // FILA 3: etiquetas (ORIGEN / DESTINO)
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.text('ORIGEN:', leftX, currentY);
-    doc.text('DESTINO:', rightX, currentY);
-    currentY += 4; // aumentado de 3 a 4
-
-    // FILA 3b: valores debajo (ORIGEN y DESTINO en negrita, tamaño 11)
-    const originLines = originItem ? this.splitText(doc, originItem.value.toUpperCase(), colWidth, 11) : [''];
-    const destLines = destItem ? this.splitText(doc, destItem.value.toUpperCase(), colWidth, 11) : [''];
-    const maxLines3 = Math.max(originLines.length, destLines.length);
-    for (let i = 0; i < maxLines3; i++) {
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text(originLines[i] ?? '', leftX, currentY);
-      doc.text(destLines[i] ?? '', rightX, currentY);
-      currentY += 3.5; // un poco más de espacio por el tamaño mayor
-    }
-    currentY += 3;
 
     // ASIENTO en su propia línea (aunque en no-seats normalmente no se muestra)
     if (seatItem) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(11); // tamaño 11 para valores
       doc.text(`ASIENTO: ${seatItem.value.toUpperCase()}`, leftX, currentY);
-      currentY += 6;
+      currentY += 4; // reducido de 6 a 4
     }
 
     // Línea separadora

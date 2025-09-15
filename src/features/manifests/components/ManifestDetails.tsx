@@ -94,7 +94,13 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
           </div>
           
           <div className="text-right text-sm text-gray-600">
-            <p>Generado: {new Date(manifest.created_at).toLocaleString('es-ES')}</p>
+            <p>Generado: {(() => {
+              const dateToUse = manifest.generated_by_user?.created_at || manifest.created_at;
+              const parsedDate = manifestService.parseDate(dateToUse);
+              return parsedDate 
+                ? parsedDate.toLocaleString('es-ES')
+                : 'Fecha no disponible';
+            })()}</p>
             {manifest.updated_at !== manifest.created_at && (
               <p>Actualizado: {new Date(manifest.updated_at).toLocaleString('es-ES')}</p>
             )}

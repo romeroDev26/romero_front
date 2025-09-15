@@ -1,4 +1,5 @@
 // Types for Manifests
+import { User } from '../../../types';
 export interface Company {
   id: number;
   name: string;
@@ -69,6 +70,7 @@ export interface Manifest {
   origin_port_name?: string;
   destination_port_name?: string;
   generated_by_name?: string;
+  generated_by_user?: User;
   company?: Company;
   items: ManifestItem[];
 }

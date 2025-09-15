@@ -5,8 +5,78 @@ import {
   ManifestResponse,
   Trip
 } from '../types/manifest.types';
+import { usersService } from '../../../services/users.service';
 
 export const manifestService = {
+  // Función helper para parsear fechas de diferentes formatos
+  parseDate(dateString: string | null | undefined): Date | null {
+    if (!dateString) return null;
+    
+    try {
+      // Intentar parsear directamente
+      const date = new Date(dateString);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+      
+      // Si falla, intentar con diferentes formatos
+      // Formato ISO sin Z
+      if (dateString.includes('T') && !dateString.includes('Z')) {
+        return new Date(dateString + 'Z');
+      }
+      
+      return null;
+    } catch (error) {
+      return null;
+    }
+  },
+  // Función helper para enriquecer manifiestos con información del usuario
+  async enrichManifestsWithUserData(manifests: Manifest[]): Promise<Manifest[]> {
+    const enrichedManifests = await Promise.all(
+      manifests.map(async (manifest) => {
+        // Si ya tiene generated_by_user, no hacer nada
+        if (manifest.generated_by_user) {
+          return manifest;
+        }
+
+        // Si no tiene generated_by, tampoco podemos hacer nada
+        if (!manifest.generated_by) {
+          return manifest;
+        }
+
+        try {
+          // Intentar obtener información del usuario por ID
+          const user = await usersService.getById(manifest.generated_by);
+          return {
+            ...manifest,
+            generated_by_user: user,
+            generated_by_name: user.full_name
+          };
+        } catch (error) {
+          // Si falla, intentar usar generated_by_name si existe
+          if (manifest.generated_by_name) {
+            return {
+              ...manifest,
+              generated_by_user: {
+                id: manifest.generated_by,
+                full_name: manifest.generated_by_name,
+                email: '',
+                role_id: 0,
+                is_active: true,
+                created_at: manifest.created_at,
+                updated_at: manifest.updated_at,
+                first_name: '',
+                company_id: 0
+              } as any
+            };
+          }
+          // Mantener el manifiesto original si falla
+          return manifest;
+        }
+      })
+    );
+    return enrichedManifests;
+  },
   // Obtener manifiestos por sucursal
   getManifestsByBranchOffice: async (
     branchOfficeId: number,
@@ -28,7 +98,9 @@ export const manifestService = {
       };
       
       const response = await api.get(`/dispatch/manifests/by-branch-office/${branchOfficeId}`, { params });
-      return response.data || [];
+      const manifests = response.data || [];
+      // Enriquecer con información del usuario
+      return await manifestService.enrichManifestsWithUserData(manifests);
     } catch (error: any) {
       console.error('Error fetching manifests by branch office:', error);
       throw new Error(
@@ -43,7 +115,9 @@ export const manifestService = {
   getManifestsByTripId: async (tripId: number): Promise<Manifest[]> => {
     try {
       const response = await api.get(`/dispatch/manifests/by-trip/${tripId}`);
-      return response.data || [];
+      const manifests = response.data || [];
+      // Enriquecer con información del usuario
+      return await manifestService.enrichManifestsWithUserData(manifests);
     } catch (error: any) {
       // Si es error 404, CORS o error de red, significa que el endpoint no está disponible
       if (error.response?.status === 404 || 
@@ -67,7 +141,9 @@ export const manifestService = {
   getManifests: async (): Promise<Manifest[]> => {
     try {
       const response = await api.get('/dispatch/manifests/');
-      return response.data.results || response.data;
+      const manifests = response.data.results || response.data;
+      // Enriquecer con información del usuario
+      return await manifestService.enrichManifestsWithUserData(manifests);
     } catch (error: any) {
       console.error('Error fetching manifests:', error);
       throw new Error(
@@ -85,18 +161,23 @@ export const manifestService = {
       // reintentar sin slash final. Usamos la cabecera X-Skip-Auth-Redirect para que
       // el interceptor no fuerce el logout en caso de 401 durante el diagnóstico.
       // Intentar SIN barra final primero para evitar redirecciones que rompen el preflight CORS
+      let manifest: Manifest;
       try {
         const response = await api.get(`/dispatch/manifests/${id}`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
-        return response.data;
+        manifest = response.data;
       } catch (err: any) {
         // Si falla, reintentar con slash final como fallback
         try {
           const response2 = await api.get(`/dispatch/manifests/${id}/`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
-          return response2.data;
+          manifest = response2.data;
         } catch (err2: any) {
           throw err2;
         }
       }
+      
+      // Enriquecer con información del usuario
+      const enrichedManifests = await manifestService.enrichManifestsWithUserData([manifest]);
+      return enrichedManifests[0];
     } catch (error: any) {
       console.error('Error fetching manifest:', error);
       throw new Error(
@@ -117,6 +198,10 @@ export const manifestService = {
       let manifestData = response.data;
       if (!manifestData.items || manifestData.items.length === 0) {
         manifestData = await manifestService.getManifestById(response.data.id);
+      } else {
+        // Enriquecer con información del usuario
+        const enrichedManifests = await manifestService.enrichManifestsWithUserData([manifestData]);
+        manifestData = enrichedManifests[0];
       }
       return {
         success: true,
@@ -152,6 +237,10 @@ export const manifestService = {
       let manifestData = response.data;
       if (!manifestData.items || manifestData.items.length === 0) {
         manifestData = await manifestService.getManifestById(response.data.id);
+      } else {
+        // Enriquecer con información del usuario
+        const enrichedManifests = await manifestService.enrichManifestsWithUserData([manifestData]);
+        manifestData = enrichedManifests[0];
       }
       return {
         success: true,

@@ -135,12 +135,23 @@ export const TripManifestsPage: React.FC = () => {
           <div>
             <p className="text-sm font-medium text-gray-700">Fecha de Generación</p>
             <p className="text-sm text-gray-600">
-              {new Date(manifest.generation_date).toLocaleDateString('es-ES')}
+              {(() => {
+                const dateToUse = manifest.generated_by_user?.created_at || manifest.created_at;
+                const parsedDate = manifestService.parseDate(dateToUse);
+                return parsedDate 
+                  ? parsedDate.toLocaleDateString('es-ES')
+                  : 'Fecha no disponible';
+              })()}
             </p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700">Generado por</p>
-            <p className="text-sm text-gray-600">{manifest.generated_by}</p>
+            <p className="text-sm text-gray-600">
+              {manifest.generated_by_user?.full_name || 
+               manifest.generated_by_name || 
+               manifest.generated_by || 
+               'Usuario desconocido'}
+            </p>
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700">

@@ -370,6 +370,7 @@ export const generatePassengerManifestPDF = (
         const rawSeller =
           item.seller_name ??
           item?.seller?.name ??
+          manifestData.generated_by_user?.full_name ??
           manifestData.generated_by_name ??
           manifestData.generated_by;
         const sellerDisplay = rawSeller
@@ -538,7 +539,9 @@ export const generatePassengerManifestPDF = (
     margin,
     footerY + 3
   );
-  if (manifestData.generated_by_name)
+  if (manifestData.generated_by_user?.full_name)
+    pdf.text(`Por: ${manifestData.generated_by_user.full_name}`, margin, footerY + 8);
+  else if (manifestData.generated_by_name)
     pdf.text(`Por: ${manifestData.generated_by_name}`, margin, footerY + 8);
   pdf.text(
     "Sistema de Gestión - Transportes Romero",

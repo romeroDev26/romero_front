@@ -30,6 +30,10 @@ const ReceivablesPage: React.FC = () => {
     const user = authService.getCurrentUser();
     if (user) {
       setCompanyId(user.company_id);
+      // Si no hay sucursal seleccionada, usar la sucursal por defecto del usuario
+      if (!filters.branch_office_id && user.default_branch_office_id) {
+        updateFilters({ branch_office_id: user.default_branch_office_id });
+      }
     }
   }, []);
 
@@ -43,6 +47,7 @@ const ReceivablesPage: React.FC = () => {
     pagination,
     total,
     totalPages,
+    summary,
     updateFilters,
     clearFilters,
     goToPage,
@@ -62,7 +67,7 @@ const ReceivablesPage: React.FC = () => {
   const handleConfirmPayment = async () => {
     if (!selectedItem) return;
     
-    const success = await markAsPaid(selectedItem.invoice_item_id || selectedItem.id);
+    const success = await markAsPaid(selectedItem.invoice_item_id);
     if (success) {
       setShowConfirmModal(false);
       setSelectedItem(null);
@@ -136,7 +141,7 @@ const ReceivablesPage: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium text-red-600">Pendientes</p>
                   <p className="text-2xl font-bold text-red-800">
-                    {items.filter(item => item.payment_status === 'NO PAGADO').length}
+                    {summary.unpaid_parcels}
                   </p>
                 </div>
               </div>
@@ -147,7 +152,7 @@ const ReceivablesPage: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium text-green-600">Pagadas</p>
                   <p className="text-2xl font-bold text-green-800">
-                    {items.filter(item => item.payment_status === 'PAGADO').length}
+                    {summary.paid_parcels}
                   </p>
                 </div>
               </div>
@@ -158,7 +163,7 @@ const ReceivablesPage: React.FC = () => {
                 <div>
                   <p className="text-sm font-medium text-yellow-600">Monto Total</p>
                   <p className="text-2xl font-bold text-yellow-800">
-                    S/ {items.reduce((acc, item) => acc + item.amount, 0).toFixed(2)}
+                    S/ {parseFloat(summary.total_amount.toString()).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -301,11 +306,11 @@ const ReceivablesPage: React.FC = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {items.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
+                      <tr key={item.invoice_item_id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div>
-                            <div className="font-semibold text-gray-900">#{item.id}</div>
-                            <div className="text-sm text-gray-600">{item.description}</div>
+                            <div className="font-semibold text-gray-900">#{item.invoice_item_id}</div>
+                            <div className="text-sm text-gray-600">{item.cargo_description}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -313,7 +318,7 @@ const ReceivablesPage: React.FC = () => {
                             <UserIcon className="w-4 h-4 text-gray-400 mr-2" />
                             <div>
                               <div className="font-medium text-gray-900">{item.sender_name}</div>
-                              <div className="text-sm text-gray-600">{item.sender_doc_number}</div>
+                              <div className="text-sm text-gray-600">{item.sender_document}</div>
                             </div>
                           </div>
                         </td>
@@ -322,7 +327,7 @@ const ReceivablesPage: React.FC = () => {
                             <UserIcon className="w-4 h-4 text-gray-400 mr-2" />
                             <div>
                               <div className="font-medium text-gray-900">{item.recipient_name}</div>
-                              <div className="text-sm text-gray-600">{item.recipient_doc_number}</div>
+                              <div className="text-sm text-gray-600">{item.recipient_document}</div>
                             </div>
                           </div>
                         </td>
@@ -330,14 +335,14 @@ const ReceivablesPage: React.FC = () => {
                           <div className="flex items-center">
                             <TruckIcon className="w-4 h-4 text-gray-400 mr-2" />
                             <div>
-                              <div className="font-medium text-gray-900">{item.trip_name}</div>
-                              <div className="text-sm text-gray-600">Sucursal: {item.branch_office_name}</div>
+                              <div className="font-medium text-gray-900">Viaje #{item.trip_id}</div>
+                              <div className="text-sm text-gray-600">{item.origin_port} → {item.destination_port}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="font-semibold text-gray-900">
-                            S/ {item.amount.toFixed(2)}
+                            S/ {parseFloat(item.amount).toFixed(2)}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -350,7 +355,7 @@ const ReceivablesPage: React.FC = () => {
                           <div className="flex items-center">
                             <CalendarIcon className="w-4 h-4 text-gray-400 mr-2" />
                             <div className="text-sm text-gray-900">
-                              {format(new Date(item.created_at), 'dd/MM/yyyy', { locale: es })}
+                              {format(new Date(item.issue_date), 'dd/MM/yyyy', { locale: es })}
                             </div>
                           </div>
                         </td>
@@ -378,15 +383,15 @@ const ReceivablesPage: React.FC = () => {
                 <div className="flex-1 flex justify-between sm:hidden">
                   <Button
                     variant="outline"
-                    onClick={() => goToPage(Math.max(1, pagination.page - 1))}
-                    disabled={pagination.page === 1}
+                    onClick={() => goToPage(Math.max(1, pagination.current_page - 1))}
+                    disabled={pagination.current_page === 1}
                   >
                     Anterior
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => goToPage(Math.min(totalPages, pagination.page + 1))}
-                    disabled={pagination.page === totalPages}
+                    onClick={() => goToPage(Math.min(totalPages, pagination.current_page + 1))}
+                    disabled={pagination.current_page === totalPages}
                   >
                     Siguiente
                   </Button>
@@ -396,11 +401,11 @@ const ReceivablesPage: React.FC = () => {
                     <p className="text-sm text-gray-700">
                       Mostrando{' '}
                       <span className="font-medium">
-                        {(pagination.page - 1) * pagination.page_size + 1}
+                        {(pagination.current_page - 1) * pagination.page_size + 1}
                       </span>{' '}
                       a{' '}
                       <span className="font-medium">
-                        {Math.min(pagination.page * pagination.page_size, total)}
+                        {Math.min(pagination.current_page * pagination.page_size, total)}
                       </span>{' '}
                       de{' '}
                       <span className="font-medium">{total}</span>{' '}
@@ -424,19 +429,19 @@ const ReceivablesPage: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => goToPage(pagination.page - 1)}
-                        disabled={pagination.page === 1}
+                        onClick={() => goToPage(pagination.current_page - 1)}
+                        disabled={pagination.current_page === 1}
                       >
                         Anterior
                       </Button>
                       <span className="text-sm text-gray-700">
-                        Página {pagination.page} de {totalPages}
+                        Página {pagination.current_page} de {totalPages}
                       </span>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => goToPage(pagination.page + 1)}
-                        disabled={pagination.page === totalPages}
+                        onClick={() => goToPage(pagination.current_page + 1)}
+                        disabled={pagination.current_page === totalPages}
                       >
                         Siguiente
                       </Button>
@@ -461,7 +466,7 @@ const ReceivablesPage: React.FC = () => {
             {/* Detalles de la encomienda */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Detalles de la Encomienda #{selectedItem.id}
+                Detalles de la Encomienda #{selectedItem.invoice_item_id}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -469,7 +474,7 @@ const ReceivablesPage: React.FC = () => {
                   <h4 className="font-medium text-gray-700 mb-2">Remitente</h4>
                   <div className="text-sm text-gray-600">
                     <p className="font-medium">{selectedItem.sender_name}</p>
-                    <p>DNI/RUC: {selectedItem.sender_doc_number}</p>
+                    <p>DNI/RUC: {selectedItem.sender_document}</p>
                   </div>
                 </div>
                 
@@ -477,32 +482,30 @@ const ReceivablesPage: React.FC = () => {
                   <h4 className="font-medium text-gray-700 mb-2">Destinatario</h4>
                   <div className="text-sm text-gray-600">
                     <p className="font-medium">{selectedItem.recipient_name}</p>
-                    <p>DNI/RUC: {selectedItem.recipient_doc_number}</p>
+                    <p>DNI/RUC: {selectedItem.recipient_document}</p>
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="font-medium text-gray-700 mb-2">Viaje</h4>
                   <div className="text-sm text-gray-600">
-                    <p>{selectedItem.trip_name}</p>
-                    <p>Sucursal: {selectedItem.branch_office_name}</p>
+                    <p>Viaje #{selectedItem.trip_id}</p>
+                    <p>{selectedItem.origin_port} → {selectedItem.destination_port}</p>
                   </div>
                 </div>
                 
                 <div>
                   <h4 className="font-medium text-gray-700 mb-2">Monto</h4>
                   <div className="text-lg font-bold text-green-600">
-                    S/ {selectedItem.amount.toFixed(2)}
+                    S/ {parseFloat(selectedItem.amount).toFixed(2)}
                   </div>
                 </div>
               </div>
               
-              {selectedItem.description && (
-                <div className="mt-4">
-                  <h4 className="font-medium text-gray-700 mb-2">Descripción</h4>
-                  <p className="text-sm text-gray-600">{selectedItem.description}</p>
-                </div>
-              )}
+              <div className="mt-4">
+                <h4 className="font-medium text-gray-700 mb-2">Descripción</h4>
+                <p className="text-sm text-gray-600">{selectedItem.cargo_description}</p>
+              </div>
             </div>
 
             {/* Mensaje de confirmación */}
@@ -517,7 +520,7 @@ const ReceivablesPage: React.FC = () => {
                   </h4>
                   <p className="mt-1 text-sm text-yellow-700">
                     ¿Está seguro de que desea marcar esta encomienda como pagada? 
-                    Esta acción confirmará que el cliente ha pagado el monto de S/ {selectedItem.amount.toFixed(2)} 
+                    Esta acción confirmará que el cliente ha pagado el monto de S/ {parseFloat(selectedItem.amount).toFixed(2)} 
                     y que la encomienda ha sido entregada correctamente.
                   </p>
                 </div>

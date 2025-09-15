@@ -8,29 +8,46 @@ export interface ReceivablesFilters {
 }
 
 export interface ReceivablesPagination {
-  page: number;
+  current_page: number;
   page_size: number;
+  total_count: number;
+  total_pages: number;
+  has_next: boolean;
+  has_prev: boolean;
 }
 
 export interface ReceivablesQueryParams extends ReceivablesFilters, ReceivablesPagination {}
 
 export interface ReceivablesItem {
-  id: number;
-  invoice_item_id?: number; // ID del item de factura para confirmación de pago
-  trip_id: number;
-  branch_office_id: number;
+  invoice_item_id: number;
+  cargo_description: string;
+  cargo_weight_kg: string;
+  unit_code: string;
+  amount: string;
   payment_status: 'NO PAGADO' | 'PAGADO';
-  amount: number;
-  created_at: string;
-  updated_at: string;
-  // Información adicional que podría venir del backend
-  trip_name?: string;
-  branch_office_name?: string;
-  sender_name?: string;
-  sender_doc_number?: string;
-  recipient_name?: string;
-  recipient_doc_number?: string;
-  description?: string;
+  invoice_id: number;
+  invoice_series: string;
+  invoice_number: number;
+  issue_date: string;
+  is_credit_sale: boolean;
+  sender_name: string;
+  sender_document: string;
+  recipient_name: string;
+  recipient_document: string;
+  trip_id: number;
+  departure_date: string;
+  departure_time: string;
+  origin_port: string;
+  destination_port: string;
+  branch_office_name: string;
+  branch_office_id: number;
+}
+
+export interface ReceivablesSummary {
+  total_parcels: number;
+  total_amount: number;
+  paid_parcels: number;
+  unpaid_parcels: number;
 }
 
 export interface PaymentConfirmationResponse {
@@ -42,11 +59,10 @@ export interface PaymentConfirmationResponse {
 }
 
 export interface ReceivablesResponse {
-  items: ReceivablesItem[];
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
+  parcels: ReceivablesItem[];
+  pagination: ReceivablesPagination;
+  summary: ReceivablesSummary;
+  filters_applied: ReceivablesFilters;
 }
 
 export interface ReceivablesState {
@@ -57,4 +73,5 @@ export interface ReceivablesState {
   pagination: ReceivablesPagination;
   total: number;
   totalPages: number;
+  summary: ReceivablesSummary;
 }

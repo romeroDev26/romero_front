@@ -18,8 +18,12 @@ const initialFilters: ReceivablesFilters = {
 };
 
 const initialPagination: ReceivablesPagination = {
-  page: 1,
+  current_page: 1,
   page_size: 50,
+  total_count: 0,
+  total_pages: 0,
+  has_next: false,
+  has_prev: false
 };
 
 export const useReceivables = () => {
@@ -38,13 +42,6 @@ export const useReceivables = () => {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
 
-  // Query para estadísticas
-  const { data: statsData } = useQuery({
-    queryKey: ['receivables-stats'],
-    queryFn: () => receivablesService.getReceivablesStats(),
-    staleTime: 10 * 60 * 1000, // 10 minutos
-  });
-
   // Mutation para marcar como pagada
   const queryClient = useQueryClient();
   const markAsPaidMutation = useMutation({
@@ -55,7 +52,6 @@ export const useReceivables = () => {
       
       // Invalidar queries para refrescar los datos
       queryClient.invalidateQueries({ queryKey: ['receivables'] });
-      queryClient.invalidateQueries({ queryKey: ['receivables-stats'] });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Error al confirmar el pago');
@@ -64,33 +60,39 @@ export const useReceivables = () => {
 
   // Estado computado
   const state: ReceivablesState = {
-    items: receivablesData?.items || [],
+    items: receivablesData?.parcels || [],
     loading: isLoading,
     error: error ? (error as Error).message : null,
     filters,
-    pagination,
-    total: receivablesData?.total || 0,
-    totalPages: receivablesData?.total_pages || 0,
+    pagination: receivablesData?.pagination || initialPagination,
+    total: receivablesData?.pagination?.total_count || 0,
+    totalPages: receivablesData?.pagination?.total_pages || 0,
+    summary: receivablesData?.summary || {
+      total_parcels: 0,
+      total_amount: 0,
+      paid_parcels: 0,
+      unpaid_parcels: 0
+    },
   };
 
   // Funciones para actualizar filtros
   const updateFilters = useCallback((newFilters: Partial<ReceivablesFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    setPagination(prev => ({ ...prev, page: 1 })); // Resetear a página 1 cuando cambian filtros
+    setPagination(prev => ({ ...prev, current_page: 1 })); // Resetear a página 1 cuando cambian filtros
   }, []);
 
   const clearFilters = useCallback(() => {
     setFilters(initialFilters);
-    setPagination(prev => ({ ...prev, page: 1 }));
+    setPagination(prev => ({ ...prev, current_page: 1 }));
   }, []);
 
   // Funciones para paginación
   const goToPage = useCallback((page: number) => {
-    setPagination(prev => ({ ...prev, page }));
+    setPagination(prev => ({ ...prev, current_page: page }));
   }, []);
 
   const changePageSize = useCallback((page_size: number) => {
-    setPagination(prev => ({ ...prev, page_size, page: 1 }));
+    setPagination(prev => ({ ...prev, page_size, current_page: 1 }));
   }, []);
 
   // Función para marcar como pagada
@@ -112,7 +114,6 @@ export const useReceivables = () => {
   return {
     // Estado
     ...state,
-    stats: statsData,
 
     // Acciones
     updateFilters,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { 
   ArrowLeftIcon,
@@ -21,6 +21,7 @@ import { Manifest } from '../types/manifest.types';
 export const TripManifestsPage: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'passenger' | 'cargo'>('passenger');
 
   // Query para obtener manifiestos del trip específico
@@ -32,40 +33,32 @@ export const TripManifestsPage: React.FC = () => {
     queryKey: ['trip-manifests', tripId],
     queryFn: async () => {
       if (!tripId) return [];
-      
+
+      // Obtener sucursal seleccionada desde localStorage
       try {
-        // Intentar usar el endpoint específico para trip
-        const realManifests = await manifestService.getManifestsByTripId(parseInt(tripId));
-        return realManifests;
-      } catch (error: any) {
-        // Solo log de debug si es el endpoint no disponible
-        if (error.message === 'ENDPOINT_NOT_AVAILABLE') {
-          console.debug('Usando fallback: endpoint by-trip no disponible');
-        } else {
-          console.warn('Error en endpoint by-trip:', error.message);
+        const selectedBranch = localStorage.getItem('selectedSalesBranch');
+        if (!selectedBranch) {
+          throw new Error('No hay sucursal seleccionada');
         }
-        
-        // Fallback: usar sucursal seleccionada
-        try {
-          const selectedBranch = localStorage.getItem('selectedSalesBranch');
-          if (!selectedBranch) {
-            throw new Error('No hay sucursal seleccionada');
-          }
-          
-          const branchData = JSON.parse(selectedBranch);
-          const branchManifests = await manifestService.getManifestsByBranchOffice(branchData.id);
-          
-          // Filtrar por trip_id
-          return branchManifests.filter(m => m.trip_id === parseInt(tripId));
-        } catch (fallbackError) {
-          console.error('Error en método alternativo:', fallbackError);
-          return [];
+        const branchData = JSON.parse(selectedBranch);
+
+        // Primero intentar obtener la lista desde la cache de react-query para evitar nuevas peticiones
+        const cached = queryClient.getQueryData<any[]>(['manifests', branchData.id]);
+        if (cached && Array.isArray(cached)) {
+          return cached.filter(m => m.trip_id === parseInt(tripId));
         }
+
+        // Si no hay cache disponible, hacer una única llamada por sucursal y filtrar localmente
+        const branchManifests = await manifestService.getManifestsByBranchOffice(branchData.id);
+        return branchManifests.filter(m => m.trip_id === parseInt(tripId));
+      } catch (error) {
+        console.error('Error al obtener manifiestos por viaje usando lista de sucursal:', error);
+        return [];
       }
     },
     enabled: !!tripId,
     staleTime: 1000 * 60 * 5, // 5 minutos
-    retry: false, // No reintentar automáticamente para evitar logs innecesarios
+    retry: false
   });
 
   const passengerManifest = manifests.find(m => m.manifest_type === 'PASSENGER');

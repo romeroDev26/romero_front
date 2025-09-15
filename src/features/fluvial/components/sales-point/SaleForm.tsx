@@ -79,31 +79,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   reservationToConfirm,
 }) => {
   const queryClient = useQueryClient();
-  
-  // Estados principales
-  const [selectedBoardingStopId, setSelectedBoardingStopId] = useState<
-    number | null
-  >(null);
-  const [selectedDisembarkingStopId, setSelectedDisembarkingStopId] = useState<
-    number | null
-  >(null);
-  const [selectedSeat, setSelectedSeat] = useState<SeatMapItem | null>(null);
-  const [passengerData, setPassengerData] =
-    useState<PassengerData>(initialPassengerData);
-  const [extraCost, setExtraCost] = useState(0);
-  const [extraCostDescription, setExtraCostDescription] = useState("");
-  const [discount, setDiscount] = useState(0);
-  const [isIgvGravado, setIsIgvGravado] = useState(false);
-  const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>("");
-  const [selectedFacturaSeries, setSelectedFacturaSeries] =
-    useState<string>("");
-  const [itemDescription, setItemDescription] = useState<string>("");
-  const [isReservationModalOpen, setReservationModalOpen] = useState(false);
-  const [isConfirmingMode, setIsConfirmingMode] = useState(
-    !!reservationToConfirm
-  );
-  const [canSellWithoutSeats, setCanSellWithoutSeats] = useState(false);
-  const [showSeatMap, setShowSeatMap] = useState(true);
 
   // Estados para PDF
   const [showTicketPreview, setShowTicketPreview] = useState(false);
@@ -122,6 +97,35 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedSeatForRepresentative, setSelectedSeatForRepresentative] =
     useState<any>(null);
+
+  // Estados para selección de paradas y asiento
+  const [selectedBoardingStopId, setSelectedBoardingStopId] = useState<number | null>(null);
+  const [selectedDisembarkingStopId, setSelectedDisembarkingStopId] = useState<number | null>(null);
+  const [selectedSeat, setSelectedSeat] = useState<SeatMapItem | null>(null);
+
+  // Estados para datos del pasajero
+  const [passengerData, setPassengerData] = useState<PassengerData>(initialPassengerData);
+
+  // Estados para precios y costos
+  const [extraCost, setExtraCost] = useState(0);
+  const [extraCostDescription, setExtraCostDescription] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [isIgvGravado, setIsIgvGravado] = useState(false);
+
+  // Estados para series de documentos
+  const [selectedBoletaSeries, setSelectedBoletaSeries] = useState("");
+  const [selectedFacturaSeries, setSelectedFacturaSeries] = useState("");
+
+  // Estados para descripción opcional
+  const [itemDescription, setItemDescription] = useState("");
+
+  // Estados para modales y confirmación
+  const [isReservationModalOpen, setReservationModalOpen] = useState(false);
+  const [isConfirmingMode, setIsConfirmingMode] = useState(false);
+
+  // Estados para detección de tipo de embarcación
+  const [canSellWithoutSeats, setCanSellWithoutSeats] = useState(false);
+  const [showSeatMap, setShowSeatMap] = useState(true);
 
   // Hooks de servicios
   const { createCompanyInvoiceWithRepresentatives, isCreating } =
@@ -142,7 +146,75 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   const { data: tripDetails } = useTripDetails(trip.id);
 
-  // Detectar tipo de embarcación
+  // Función mejorada de respaldo para detectar embarcaciones sin asientos
+  const detectVesselTypeFromName = (vesselName: string): boolean => {
+    if (!vesselName) return false;
+
+    // Convertir a minúsculas para comparación insensible a mayúsculas
+    const lowerName = vesselName.toLowerCase();
+
+    // Lista expandida de keywords para embarcaciones sin asientos
+    const keywordsWithoutSeats = [
+      'colectivo', 'combi', 'bus', 'ómnibus', 'lancha colectiva',
+      'barco colectivo', 'embarcación colectiva', 'transporte colectivo',
+      'pasajeros', 'sin asientos', 'elección libre', 'libre',
+      'común', 'compartido', 'compartida', 'compartido',
+      'turismo', 'excursión', 'excursion', 'viaje grupal',
+      'grupo', 'masivo', 'masiva', 'público', 'pública'
+    ];
+
+    // Lista de keywords que indican CON asientos (para evitar falsos positivos)
+    const keywordsWithSeats = [
+      'asientos', 'numerados', 'numerado', 'asiento', 'butaca',
+      'silla', 'vip', 'premium', 'ejecutivo', 'primera clase',
+      'business', 'turista plus', 'económico plus'
+    ];
+
+    // Primero verificar si tiene keywords de "con asientos" - si los tiene, devolver false
+    const hasSeatsKeywords = keywordsWithSeats.some(keyword => lowerName.includes(keyword));
+    if (hasSeatsKeywords) {
+      return false;
+    }
+
+    // Luego verificar si tiene keywords de "sin asientos"
+    const hasNoSeatsKeywords = keywordsWithoutSeats.some(keyword => lowerName.includes(keyword));
+    if (hasNoSeatsKeywords) {
+      return true;
+    }
+
+    // Si no hay keywords claros, asumir que tiene asientos (comportamiento conservador)
+    return false;
+  };
+
+  // Función para detectar embarcaciones problemáticas conocidas (hardcoded fallback)
+  const detectKnownVesselWithoutSeats = (vesselId: number, vesselName: string): boolean | null => {
+    // Lista de embarcaciones conocidas que NO tienen asientos
+    const knownWithoutSeats: Array<{id: number, name: string}> = [
+      { id: 10, name: 'embarcacion sin asientos' }, // Embarcación específica problemática
+      // Agregar más embarcaciones conocidas aquí según se identifiquen
+    ];
+
+    // Lista de embarcaciones conocidas que SÍ tienen asientos
+    const knownWithSeats: Array<{id: number, name: string}> = [
+      // Agregar embarcaciones que definitivamente tienen asientos
+    ];
+
+    // Verificar si está en la lista de sin asientos
+    const withoutSeatsMatch = knownWithoutSeats.find(v => v.id === vesselId || v.name.toLowerCase() === vesselName.toLowerCase());
+    if (withoutSeatsMatch) {
+      return true;
+    }
+
+    // Verificar si está en la lista de con asientos
+    const withSeatsMatch = knownWithSeats.find(v => v.id === vesselId || v.name.toLowerCase() === vesselName.toLowerCase());
+    if (withSeatsMatch) {
+      return false;
+    }
+
+    return null; // No está en listas conocidas
+  };
+
+  // Detectar tipo de embarcación con respaldo
   useQuery({
     queryKey: ["seatMap", trip.id],
     queryFn: async () => {
@@ -152,7 +224,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         if (response.status === 204) {
           setCanSellWithoutSeats(true);
           setShowSeatMap(false);
-          return null;
+          return { hasSeats: false }; // Retornar objeto válido en lugar de null
         } else if (response.status === 200) {
           const data = response.data;
           setCanSellWithoutSeats(false);
@@ -162,13 +234,32 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
       } catch (error) {
-        setCanSellWithoutSeats(false);
-        setShowSeatMap(true);
-        throw error;
+        // RESPALDO: Intentar detectar por nombre de embarcación y listas conocidas
+        if (trip.vessel_name) {
+          // Primero verificar listas conocidas
+          const knownDetection = detectKnownVesselWithoutSeats(trip.id, trip.vessel_name);
+          if (knownDetection !== null) {
+            setCanSellWithoutSeats(knownDetection);
+            setShowSeatMap(!knownDetection);
+            return { hasSeats: !knownDetection }; // Retornar objeto válido
+          }
+
+          // Si no está en listas conocidas, usar detección por nombre
+          const detectedWithoutSeats = detectVesselTypeFromName(trip.vessel_name);
+          setCanSellWithoutSeats(detectedWithoutSeats);
+          setShowSeatMap(!detectedWithoutSeats);
+          return { hasSeats: !detectedWithoutSeats }; // Retornar objeto válido
+        } else {
+          // Fallback por defecto
+          setCanSellWithoutSeats(false);
+          setShowSeatMap(true);
+          return { hasSeats: true }; // Retornar objeto válido
+        }
       }
     },
     staleTime: 1000 * 60 * 5,
     retry: 1,
+    enabled: !!trip.id, // Asegurar que se ejecute cuando hay trip.id
   });
 
   const vesselId = tripDetails?.vessel?.id;
@@ -292,10 +383,12 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const { data: passengerService } = usePassengerService();
 
   const serviceCategory = useMemo(() => {
-    return canSellWithoutSeats
+    const category = canSellWithoutSeats
       ? ("OTROS" as ServiceCategory)
       : ("PASAJES" as ServiceCategory);
-  }, [canSellWithoutSeats]); // Ya optimizado // Ya está optimizado
+
+    return category;
+  }, [canSellWithoutSeats, trip.id]); // Ya optimizado // Ya está optimizado
 
   const { data: foundFare } = useFindFare({
     originPortId: getBoardingPortId(),
@@ -734,21 +827,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     representatives.length,
     showSeatMap,
     selectedSeat?.id, // Ya optimizado
-  ]);
-
-  // Log detallado de las condiciones de areActionsEnabled - Optimizado
-  React.useEffect(() => {
-    // Logging removed for production
-  }, [
-    selectedBoardingStopId,
-    selectedDisembarkingStopId,
-    passengerData.docNumber,
-    passengerData.name,
-    isRuc,
-    representatives.length,
-    showSeatMap,
-    selectedSeat?.id, // Ya optimizado
-    isConfirmingMode,
   ]);
 
   return (

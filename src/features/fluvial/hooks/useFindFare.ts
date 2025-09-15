@@ -21,14 +21,17 @@ export const useFindFare = ({ originPortId, destinationPortId, serviceCategory }
       if (!originPortId || !destinationPortId) {
         return Promise.resolve(null);
       }
-      // Llamamos al método findFare del servicio que ya tienes
-      return fareService.findFare({
+
+      const params = {
         company_id: companyId,
         origin_port_id: originPortId,
         destination_port_id: destinationPortId,
         service_category: serviceCategory,
-        on_date: format(new Date(), 'yyyy-MM-dd') // Usamos la fecha actual para la vigencia
-      });
+        on_date: format(new Date(), 'yyyy-MM-dd')
+      };
+
+      // Llamamos al método findFare del servicio que ya tienes
+      return fareService.findFare(params);
     },
     enabled: !!originPortId && !!destinationPortId, // Habilitar solo cuando tenemos ambos puertos
     staleTime: 1000 * 60 * 15, // Las tarifas no cambian tan a menudo, 15 min de cache está bien

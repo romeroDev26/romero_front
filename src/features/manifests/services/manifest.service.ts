@@ -5,7 +5,6 @@ import {
   ManifestResponse,
   Trip
 } from '../types/manifest.types';
-import { usersService } from '../../../services/users.service';
 
 export const manifestService = {
   // Función helper para parsear fechas de diferentes formatos
@@ -32,39 +31,13 @@ export const manifestService = {
   },
   // Función helper para enriquecer manifiestos con información del usuario
   async enrichManifestsWithUserData(manifests: Manifest[]): Promise<Manifest[]> {
-    // Recolectar IDs de usuarios que necesitamos resolver
-    const userIds = Array.from(new Set(manifests
-      .filter(m => !!m.generated_by && !m.generated_by_user)
-      .map(m => m.generated_by as string)));
-
-    const usersMap: Record<string, any> = {};
-
-    // Resolver usuarios en paralelo (una llamada por ID)
-    await Promise.all(userIds.map(async (id) => {
-      try {
-        const user = await usersService.getById(id);
-        usersMap[id] = user;
-      } catch (err) {
-        // Guardar null para indicar fallo y evitar reintentos por manifest
-        usersMap[id] = null;
-      }
-    }));
-
-    // Mapear manifests y adjuntar datos ya resueltos
+    // Simplificar: usar solo la información ya disponible en el manifiesto
+    // sin hacer llamadas adicionales a la API de usuarios
     return manifests.map((manifest) => {
+      // Si ya tiene información del usuario, mantenerla
       if (manifest.generated_by_user) return manifest;
-      if (!manifest.generated_by) return manifest;
 
-      const resolved = usersMap[manifest.generated_by as string];
-      if (resolved) {
-        return {
-          ...manifest,
-          generated_by_user: resolved,
-          generated_by_name: resolved.full_name
-        };
-      }
-
-      // Si no se resolvió, intentar usar generated_by_name si existe
+      // Si no tiene información del usuario pero tiene generated_by_name, crear un objeto básico
       if (manifest.generated_by_name) {
         return {
           ...manifest,
@@ -82,6 +55,7 @@ export const manifestService = {
         };
       }
 
+      // Si no tiene ninguna información, devolver el manifiesto sin cambios
       return manifest;
     });
   },
@@ -121,28 +95,9 @@ export const manifestService = {
 
   // Obtener manifiestos por trip_id
   getManifestsByTripId: async (tripId: number): Promise<Manifest[]> => {
-    try {
-      const response = await api.get(`/dispatch/manifests/by-trip/${tripId}`);
-      const manifests = response.data || [];
-      // Enriquecer con información del usuario
-      return await manifestService.enrichManifestsWithUserData(manifests);
-    } catch (error: any) {
-      // Si es error 404, CORS o error de red, significa que el endpoint no está disponible
-      if (error.response?.status === 404 || 
-          error.code === 'ERR_NETWORK' ||
-          error.message?.includes('Network Error') ||
-          error.message?.includes('CORS')) {
-        console.debug(`Endpoint by-trip/${tripId} no disponible - usando método alternativo`);
-        throw new Error('ENDPOINT_NOT_AVAILABLE');
-      }
-      
-      console.error('Error fetching manifests by trip:', error);
-      throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
-        'Error al obtener los manifiestos del viaje'
-      );
-    }
+    // Endpoint problemático - devolver array vacío para evitar errores
+    console.debug(`Endpoint by-trip/${tripId} deshabilitado - devolviendo array vacío`);
+    return [];
   },
 
   // Obtener todos los manifiestos

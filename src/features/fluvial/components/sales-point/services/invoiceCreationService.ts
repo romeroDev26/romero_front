@@ -127,7 +127,8 @@ export const invoiceCreationService = {
     series: string,
     branchName: string,
     items: InvoiceItemData[],
-    selectedPaymentMethod?: string // ← NUEVO: Método de pago seleccionado
+    selectedPaymentMethod?: string,
+    paymentOperationCode?: string
   ): InvoiceCreationData => {
     const isRuc = passengerData.docType === "6"; // RUC
     
@@ -144,7 +145,7 @@ export const invoiceCreationService = {
       // ← NUEVO: Agregar método de pago si está disponible
       ...(selectedPaymentMethod && {
         payment_method_code: selectedPaymentMethod,
-        payment_operation_code: selectedPaymentMethod,
+        payment_operation_code: paymentOperationCode || selectedPaymentMethod,
       }),
     };
   },

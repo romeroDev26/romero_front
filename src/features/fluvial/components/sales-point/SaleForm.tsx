@@ -121,6 +121,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   // Estados para método de pago
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("EFE");
+  const [paymentOperationCode, setPaymentOperationCode] = useState("");
 
   // Opciones para método de pago
   const paymentMethodOptions = [
@@ -128,8 +129,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     { value: 'TRF', label: 'Transferencia Bancaria' },
     { value: 'YAP', label: 'Yape' },
     { value: 'PLI', label: 'Plin' },
-    { value: 'TDB', label: 'Tarjeta de Débito' },
-    { value: 'TCR', label: 'Tarjeta de Crédito' },
     { value: 'DEP', label: 'Depósito en Cuenta' },
     { value: 'OTR', label: 'Otros' },
   ];
@@ -331,6 +330,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
     // Limpiar método de pago
     setSelectedPaymentMethod("EFE");
+    setPaymentOperationCode("");
   };
   const clearStateForVesselChange = () => {
     // Limpiar datos del pasajero (mantener solo datos básicos)
@@ -371,6 +371,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
     // Limpiar método de pago
     setSelectedPaymentMethod("EFE");
+    setPaymentOperationCode("");
 
     // NOTA: No resetear canSellWithoutSeats ni showSeatMap aquí
     // Estos valores deben ser determinados por la consulta de la API del seat-map
@@ -445,6 +446,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     );
     setShowRepresentatives(isRuc && hasBasicInfo);
   }, [passengerData.docType, passengerData.docNumber, passengerData.name]); // Ya optimizado
+
+  // Efecto para limpiar código de operación cuando se cambia a efectivo
+  useEffect(() => {
+    if (selectedPaymentMethod === "EFE") {
+      setPaymentOperationCode("");
+    }
+  }, [selectedPaymentMethod]);
 
   // Efectos para series de documentos
   useEffect(() => {
@@ -770,7 +778,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           selectedFacturaSeries, // ← NUEVO: pasar la serie seleccionada para facturas
           itemDescription, // ← NUEVO: pasar la descripción opcional
           selectedSeat, // ← NUEVO: pasar asiento seleccionado
-          selectedPaymentMethod // ← NUEVO: pasar método de pago
+          selectedPaymentMethod, // ← NUEVO: pasar método de pago
+          paymentOperationCode // ← NUEVO: pasar código de operación
         );
         return;
       }
@@ -800,7 +809,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         },
         itemDescription, // ← NUEVO: pasar la descripción opcional
         confirmPurchase, // ← NUEVO: pasar confirmPurchase para actualizar WebSocket
-        selectedPaymentMethod // ← NUEVO: pasar método de pago
+        selectedPaymentMethod, // ← NUEVO: pasar método de pago
+        paymentOperationCode // ← NUEVO: pasar código de operación
       );
     } catch (error) {
       // Los errores ya son manejados por toast en los hooks internos
@@ -1112,6 +1122,30 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                     ))}
                   </select>
                 </div>
+
+                {/* Campo de código de operación (solo para métodos diferentes a efectivo) */}
+                {selectedPaymentMethod !== "EFE" && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Código de Operación (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      value={paymentOperationCode}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 20) {
+                          setPaymentOperationCode(e.target.value);
+                        }
+                      }}
+                      placeholder="Ingrese el código de operación..."
+                      className="w-full p-2 border border-gray-300 rounded-md"
+                      maxLength={20}
+                    />
+                    <div className="text-xs text-gray-500 mt-1">
+                      {paymentOperationCode.length}/20 caracteres
+                    </div>
+                  </div>
+                )}
               </div>
 
               <PriceSummary

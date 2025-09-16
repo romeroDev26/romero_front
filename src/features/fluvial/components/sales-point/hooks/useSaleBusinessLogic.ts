@@ -72,6 +72,7 @@ export const useSaleBusinessLogic = ({
     itemDescription?: string, // ← NUEVO: Descripción opcional
     selectedSeat?: any, // ← NUEVO: Asiento seleccionado para obtener trip_seat_id y seat_number
     selectedPaymentMethod?: string, // ← NUEVO: Método de pago seleccionado
+    paymentOperationCode?: string, // ← NUEVO: Código de operación de pago
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -184,7 +185,7 @@ export const useSaleBusinessLogic = ({
       // ← NUEVO: Método de pago
       if (selectedPaymentMethod) {
         invoiceConfig.payment_method_code = selectedPaymentMethod;
-        invoiceConfig.payment_operation_code = selectedPaymentMethod;
+        invoiceConfig.payment_operation_code = paymentOperationCode || selectedPaymentMethod;
       }
       
       // ← CORREGIDO: JSON según especificación exacta del backend
@@ -285,6 +286,7 @@ export const useSaleBusinessLogic = ({
     itemDescription?: string, // ← NUEVO: Descripción opcional
     confirmPurchaseCallback?: (seatIds: number[]) => boolean, // ← NUEVO: Para confirmar compra
     selectedPaymentMethod?: string, // ← NUEVO: Método de pago seleccionado
+    paymentOperationCode?: string, // ← NUEVO: Código de operación de pago
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -357,7 +359,8 @@ export const useSaleBusinessLogic = ({
         series,
         branchName,
         invoiceItems,
-        selectedPaymentMethod // ← NUEVO: Pasar método de pago
+        selectedPaymentMethod, // ← NUEVO: Pasar método de pago
+        paymentOperationCode // ← NUEVO: Pasar código de operación
       );
 
       const createdInvoice = await createInvoice({

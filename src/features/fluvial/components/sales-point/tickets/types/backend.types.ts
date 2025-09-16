@@ -140,6 +140,7 @@ export interface BackendInvoiceItem {
   vehicle_name: string;
   boarding_port_name: string; // ¡NUEVO!
   disembarking_port_name: string; // ¡NUEVO!
+  parcel_number?: number; // Número de parcela para encomiendas
   
   // Datos del destinatario (si aplica)
   recipient_name: string | null;

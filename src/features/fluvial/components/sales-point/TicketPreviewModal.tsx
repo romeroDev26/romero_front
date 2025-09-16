@@ -148,6 +148,17 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       maxWidth="2xl"
     >
       <div className="p-6">
+        {/* Mostrar número de Encomienda si existe y es una encomienda */}
+        {backendData.items && backendData.items.length > 0 && 
+         backendData.items[0].parcel_number && 
+         (backendData.items[0].product_name?.toLowerCase().includes('encomienda') || 
+          backendData.items[0].item_description?.toLowerCase().includes('encomienda')) && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm font-medium text-blue-800">
+              Número de Encomienda: <span className="font-bold">{backendData.items[0].parcel_number}</span>
+            </p>
+          </div>
+        )}
         {/* Indicador de estado de upload */}
         {uploadSuccess && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">

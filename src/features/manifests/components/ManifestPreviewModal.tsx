@@ -295,7 +295,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             if (!contactos) contactos = "N/A";
 
             return [
-              globalItemNumber++, // Numeración continua
+              item.parcel_number || globalItemNumber++, // Usar parcel_number si existe, sino numeración continua
               item.cargo_description || "N/A",
               item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
               item.remitente_nombre || "N/A",
@@ -398,7 +398,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
                 : item.payment_status || "N/A";
 
             return [
-              (idx + 1).toString(),
+              item.parcel_number || (idx + 1).toString(), // Usar parcel_number si existe, sino numeración por índice
               item.cargo_description || "N/A",
               item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
               item.remitente_nombre || "N/A",

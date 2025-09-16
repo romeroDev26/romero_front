@@ -44,6 +44,7 @@ export interface ManifestItem {
   source_document?: string;
   amount?: number;
   payment_status?: string;
+  parcel_number?: number;
 }
 
 export interface Manifest {

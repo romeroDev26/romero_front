@@ -292,11 +292,10 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {manifest.items
-                  .sort((a, b) => a.item_order - b.item_order)
                   .map((item, index) => (
-                  <tr key={item.seat_assignment_id}>
+                  <tr key={item.parcel_number || index}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      {index + 1}
+                      {item.parcel_number}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {item.passenger_name}

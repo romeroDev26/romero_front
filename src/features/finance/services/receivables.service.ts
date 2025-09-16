@@ -43,19 +43,9 @@ export const receivablesService = {
    */
   async markAsPaid(invoiceItemId: number): Promise<PaymentConfirmationResponse> {
     try {
-      const response = await api.post<PaymentConfirmationResponse>(`/manifests/confirm-payment/${invoiceItemId}`);
+      const response = await api.post<PaymentConfirmationResponse>(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
       return response.data;
     } catch (error: any) {
-      // Si el endpoint no existe, intentar con alternativas comunes
-      if (error.response?.status === 404) {
-        try {
-          const altResponse = await api.post<PaymentConfirmationResponse>(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
-          return altResponse.data;
-        } catch (altError: any) {
-          // Continuar con el error original
-        }
-      }
-
       throw new Error(error.response?.data?.detail || 'Error al marcar como pagada');
     }
   }

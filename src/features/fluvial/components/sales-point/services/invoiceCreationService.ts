@@ -31,6 +31,8 @@ export interface InvoiceCreationData {
   currency_code: string;
   notes: string;
   items: InvoiceItemData[];
+  payment_method_code?: string; // ← NUEVO: Código del método de pago
+  payment_operation_code?: string; // ← NUEVO: Código de la operación de pago
 }
 
 export const invoiceCreationService = {
@@ -124,7 +126,8 @@ export const invoiceCreationService = {
     passengerData: PassengerData,
     series: string,
     branchName: string,
-    items: InvoiceItemData[]
+    items: InvoiceItemData[],
+    selectedPaymentMethod?: string // ← NUEVO: Método de pago seleccionado
   ): InvoiceCreationData => {
     const isRuc = passengerData.docType === "6"; // RUC
     
@@ -138,6 +141,11 @@ export const invoiceCreationService = {
       currency_code: "PEN",
       notes: `Punto de Venta: ${branchName}`,
       items: items,
+      // ← NUEVO: Agregar método de pago si está disponible
+      ...(selectedPaymentMethod && {
+        payment_method_code: selectedPaymentMethod,
+        payment_operation_code: selectedPaymentMethod,
+      }),
     };
   },
 

@@ -119,6 +119,21 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   // Estados para descripción opcional
   const [itemDescription, setItemDescription] = useState("");
 
+  // Estados para método de pago
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("EFE");
+
+  // Opciones para método de pago
+  const paymentMethodOptions = [
+    { value: 'EFE', label: 'Efectivo' },
+    { value: 'TRF', label: 'Transferencia Bancaria' },
+    { value: 'YAP', label: 'Yape' },
+    { value: 'PLI', label: 'Plin' },
+    { value: 'TDB', label: 'Tarjeta de Débito' },
+    { value: 'TCR', label: 'Tarjeta de Crédito' },
+    { value: 'DEP', label: 'Depósito en Cuenta' },
+    { value: 'OTR', label: 'Otros' },
+  ];
+
   // Estados para modales y confirmación
   const [isReservationModalOpen, setReservationModalOpen] = useState(false);
   const [isConfirmingMode, setIsConfirmingMode] = useState(false);
@@ -313,9 +328,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
     // Limpiar descripción opcional
     setItemDescription("");
-  };
 
-  // Función para limpiar completamente el estado al cambiar de embarcación
+    // Limpiar método de pago
+    setSelectedPaymentMethod("EFE");
+  };
   const clearStateForVesselChange = () => {
     // Limpiar datos del pasajero (mantener solo datos básicos)
     setPassengerData(initialPassengerData);
@@ -352,6 +368,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // Limpiar series de documentos (forzar re-selección)
     setSelectedBoletaSeries("");
     setSelectedFacturaSeries("");
+
+    // Limpiar método de pago
+    setSelectedPaymentMethod("EFE");
 
     // NOTA: No resetear canSellWithoutSeats ni showSeatMap aquí
     // Estos valores deben ser determinados por la consulta de la API del seat-map
@@ -749,7 +768,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           discount,
           isIgvGravado,
           selectedFacturaSeries, // ← NUEVO: pasar la serie seleccionada para facturas
-          itemDescription // ← NUEVO: pasar la descripción opcional
+          itemDescription, // ← NUEVO: pasar la descripción opcional
+          selectedSeat, // ← NUEVO: pasar asiento seleccionado
+          selectedPaymentMethod // ← NUEVO: pasar método de pago
         );
         return;
       }
@@ -778,7 +799,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           setShowTicketPreview(true);
         },
         itemDescription, // ← NUEVO: pasar la descripción opcional
-        confirmPurchase // ← NUEVO: pasar confirmPurchase para actualizar WebSocket
+        confirmPurchase, // ← NUEVO: pasar confirmPurchase para actualizar WebSocket
+        selectedPaymentMethod // ← NUEVO: pasar método de pago
       );
     } catch (error) {
       // Los errores ya son manejados por toast en los hooks internos
@@ -1071,6 +1093,24 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   <div className="text-xs text-gray-500 mt-1">
                     {itemDescription.length}/85 caracteres
                   </div>
+                </div>
+
+                {/* Campo de método de pago */}
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Método de Pago
+                  </label>
+                  <select
+                    value={selectedPaymentMethod}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                  >
+                    {paymentMethodOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

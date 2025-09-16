@@ -41,6 +41,9 @@ export interface InvoiceCreateData {
   currency_code: string;
   notes?: string;
   items: InvoiceItemCreateData[];
+  // ← NUEVOS CAMPOS DE PAGO
+  payment_method_code?: string; // Código interno: EFE, TRF, YAP, PLN, TDB, TCR, DEP, OTR
+  payment_operation_code?: string; // Código de operación (hasta 50 caracteres)
 }
 
 // Esta interfaz define la forma de un ítem de factura que viene del backend

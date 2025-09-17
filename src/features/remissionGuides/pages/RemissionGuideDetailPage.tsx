@@ -140,14 +140,14 @@ export const RemissionGuideDetailPage: React.FC = () => {
                         <dt className="text-sm font-medium text-gray-500">Fecha de Inicio de Traslado</dt>
                         <dd className="text-sm text-gray-900 flex items-center mt-1">
                           <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
-                          {format(parseISO(guide.shipment_start_date), 'dd/MM/yyyy HH:mm', { locale: es })}
+                          {format(parseISO(guide.transfer_start_date), 'dd/MM/yyyy HH:mm', { locale: es })}
                         </dd>
                       </div>
                       <div>
                         <dt className="text-sm font-medium text-gray-500">Peso Total</dt>
                         <dd className="text-sm text-gray-900 flex items-center mt-1">
                           <CubeIcon className="h-4 w-4 mr-2 text-gray-400" />
-                          {guide.total_gross_weight} {guide.weight_unit_code}
+                          {guide.gross_total_weight} KGM
                         </dd>
                       </div>
                       {guide.number_of_packages && (
@@ -197,8 +197,8 @@ export const RemissionGuideDetailPage: React.FC = () => {
                         <MapPinIcon className="h-4 w-4 mr-2 text-green-600" />
                         Dirección de Origen
                       </h3>
-                      <p className="text-sm text-gray-900">{guide.origin_address}</p>
-                      <p className="text-xs text-gray-500 mt-1">Ubigeo: {guide.origin_ubigeo}</p>
+                      <p className="text-sm text-gray-900">{guide.origin_address.address}</p>
+                      <p className="text-xs text-gray-500 mt-1">Ubigeo: {guide.origin_address.ubigeo_code}</p>
                     </div>
                     
                     <div>
@@ -206,8 +206,8 @@ export const RemissionGuideDetailPage: React.FC = () => {
                         <MapPinIcon className="h-4 w-4 mr-2 text-red-600" />
                         Dirección de Destino
                       </h3>
-                      <p className="text-sm text-gray-900">{guide.destination_address}</p>
-                      <p className="text-xs text-gray-500 mt-1">Ubigeo: {guide.destination_ubigeo}</p>
+                      <p className="text-sm text-gray-900">{guide.destination_address.address}</p>
+                      <p className="text-xs text-gray-500 mt-1">Ubigeo: {guide.destination_address.ubigeo_code}</p>
                     </div>
                   </div>
                 </div>
@@ -299,11 +299,11 @@ export const RemissionGuideDetailPage: React.FC = () => {
               <div className="p-6 space-y-3">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Razón Social</dt>
-                  <dd className="text-sm text-gray-900">{guide.sender_name}</dd>
+                  <dd className="text-sm text-gray-900">{guide.sender.business_name}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Documento</dt>
-                  <dd className="text-sm text-gray-900">{guide.sender_doc_type} - {guide.sender_doc_number}</dd>
+                  <dd className="text-sm text-gray-900">{guide.sender.document_type_code} - {guide.sender.document_number}</dd>
                 </div>
               </div>
             </div>
@@ -319,11 +319,11 @@ export const RemissionGuideDetailPage: React.FC = () => {
               <div className="p-6 space-y-3">
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Razón Social</dt>
-                  <dd className="text-sm text-gray-900">{guide.recipient_name}</dd>
+                  <dd className="text-sm text-gray-900">{guide.receiver.business_name}</dd>
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Documento</dt>
-                  <dd className="text-sm text-gray-900">{guide.recipient_doc_type} - {guide.recipient_doc_number}</dd>
+                  <dd className="text-sm text-gray-900">{guide.receiver.document_type_code} - {guide.receiver.document_number}</dd>
                 </div>
               </div>
             </div>

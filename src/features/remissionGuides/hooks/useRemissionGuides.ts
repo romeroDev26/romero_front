@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { 
   remissionGuidesService, 
   ListGuidesParams,
-  RemissionGuideCreateData,
+  RemissionGuideTransportistaCreateData,
   ProcessSunatData,
   CheckTicketStatusData,
   ProcessCdrData
@@ -59,7 +59,7 @@ export const useCreateRemissionGuide = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: RemissionGuideCreateData) => remissionGuidesService.create(data),
+    mutationFn: (data: RemissionGuideTransportistaCreateData) => remissionGuidesService.create(data),
     onSuccess: () => {
       toast.success('Guía de remisión creada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['remissionGuides'] });
@@ -76,7 +76,7 @@ export const useUpdateRemissionGuide = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ guideId, data }: { guideId: number; data: Partial<RemissionGuideCreateData> }) => 
+    mutationFn: ({ guideId, data }: { guideId: number; data: Partial<RemissionGuideTransportistaCreateData> }) => 
       remissionGuidesService.update(guideId, data),
     onSuccess: (data) => {
       toast.success('Guía de remisión actualizada exitosamente');

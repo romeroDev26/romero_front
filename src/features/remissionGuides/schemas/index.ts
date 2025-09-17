@@ -1,6 +1,6 @@
 // Esquemas de validación para guías de remisión
-export { 
-  remissionGuideSchema, 
-  remissionGuideItemSchema, 
-  type RemissionGuideFormData 
+export {
+  remissionGuideTransportistaSchema,
+  remissionGuideItemSchema,
+  type RemissionGuideTransportistaFormData
 } from './remissionGuideSchema';

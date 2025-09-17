@@ -17,7 +17,6 @@ interface TripForRemissionGuide extends AvailableTripByPort {
 interface RemissionGuideTripSelectorProps {
   branch: BranchOffice;
   onTripSelect: (trip: TripForRemissionGuide) => void;
-  onBack: () => void;
 }
 
 const TripCard: React.FC<{ 
@@ -75,8 +74,7 @@ const TripCard: React.FC<{
 
 export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProps> = ({
   branch,
-  onTripSelect,
-  onBack
+  onTripSelect
 }) => {
   // Obtener la fecha actual correctamente (fecha local sin problemas de timezone)
   const todayDate = new Date();
@@ -155,18 +153,13 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="secondary" onClick={onBack} size="sm">
-            ← Cambiar Sucursal
-          </Button>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Seleccionar Viaje - {branch.name}
-            </h2>
-            <p className="text-sm text-gray-600">
-              {branch.port?.city?.name || 'Ciudad'}, {branch.port?.name || 'Puerto'}
-            </p>
-          </div>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Seleccionar Viaje - {branch.name}
+          </h2>
+          <p className="text-sm text-gray-600">
+            {branch.port?.city?.name || 'Ciudad'}, {branch.port?.name || 'Puerto'}
+          </p>
         </div>
       </div>
 

@@ -10,6 +10,8 @@ import { StepIndicator } from '../components/StepIndicator';
 import { BranchStepContent } from '../components/BranchStepContent';
 import { TripStepContent } from '../components/TripStepContent';
 import { FormStepContent } from '../components/FormStepContent';
+import { FormStepContentSender } from '../components/FormStepContentSender';
+import { TypeSelectionModal } from '../components/TypeSelectionModal';
 
 // Types
 import { BranchOffice } from '../../../types';
@@ -19,7 +21,8 @@ export const RemissionGuideFormPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<AvailableTripByPort | null>(null);
-  const [currentStep, setCurrentStep] = useState<'branch' | 'trip' | 'form'>('branch');
+  const [selectedType, setSelectedType] = useState<'transportista' | 'remitente' | null>(null);
+  const [currentStep, setCurrentStep] = useState<'type' | 'branch' | 'trip' | 'form'>('type');
 
   // Intentar recuperar sucursal guardada al cargar
   useEffect(() => {
@@ -28,7 +31,7 @@ export const RemissionGuideFormPage: React.FC = () => {
       try {
         const branch = JSON.parse(savedBranch);
         setSelectedBranch(branch);
-        setCurrentStep('trip');
+        setCurrentStep('type'); // Cambiar a 'type' en lugar de 'trip'
       } catch (error) {
         console.error('Error parsing saved branch:', error);
         localStorage.removeItem('selectedSalesBranch');
@@ -41,15 +44,31 @@ export const RemissionGuideFormPage: React.FC = () => {
     setCurrentStep('trip');
   };
 
+  const handleTypeSelect = (type: 'transportista' | 'remitente') => {
+    setSelectedType(type);
+    if (type === 'remitente') {
+      // Para remitente, ir directamente al formulario sin seleccionar viaje
+      setCurrentStep('form');
+    } else {
+      // Para transportista, ir a seleccionar sucursal primero
+      if (selectedBranch) {
+        setCurrentStep('trip');
+      } else {
+        setCurrentStep('branch');
+      }
+    }
+  };
+
   const handleTripSelect = (trip: AvailableTripByPort) => {
     setSelectedTrip(trip);
     setCurrentStep('form');
   };
 
-  const handleBackToBranch = () => {
-    setSelectedBranch(null);
+
+  const handleBackToType = () => {
+    setSelectedType(null);
     setSelectedTrip(null);
-    setCurrentStep('branch');
+    setCurrentStep('type');
   };
 
   const handleBackToTrip = () => {
@@ -81,11 +100,11 @@ export const RemissionGuideFormPage: React.FC = () => {
                 </Button>
               </div>
               <h1 className="text-3xl font-bold text-gray-900">Nueva Guía de Remisión</h1>
-              <p className="text-gray-600 mt-1">Cree una nueva guía de remisión transportista</p>
+              <p className="text-gray-600 mt-1">Cree una nueva guía de remisión</p>
             </div>
             
             <div className="flex items-center space-x-3">
-              {currentStep === 'form' && (
+              {currentStep === 'form' && selectedType === 'transportista' && (
                 <Button 
                   variant="outline" 
                   onClick={handleResetForm}
@@ -102,26 +121,40 @@ export const RemissionGuideFormPage: React.FC = () => {
         <StepIndicator currentStep={currentStep} />
 
         {/* Renderizado condicional por pasos */}
-        {currentStep === 'branch' && (
+        {currentStep === 'branch' && selectedType && (
           <BranchStepContent 
             selectedBranch={selectedBranch}
             onBranchSelect={handleBranchSelect}
           />
         )}
 
-        {currentStep === 'trip' && selectedBranch && (
-          <TripStepContent
-            selectedBranch={selectedBranch}
-            onTripSelect={handleTripSelect}
-            onBack={handleBackToBranch}
+        {currentStep === 'type' && (
+          <TypeSelectionModal
+            isOpen={currentStep === 'type'}
+            onClose={() => navigate('/remission-guides')}
+            onSelectType={handleTypeSelect}
           />
         )}
 
-        {currentStep === 'form' && selectedTrip && (
-          <FormStepContent
-            selectedTrip={selectedTrip}
-            onBack={handleBackToTrip}
+        {currentStep === 'trip' && selectedBranch && selectedType && (
+          <TripStepContent
+            selectedBranch={selectedBranch}
+            onTripSelect={handleTripSelect}
           />
+        )}
+
+        {currentStep === 'form' && (
+          selectedType === 'remitente' ? (
+            <FormStepContentSender
+              selectedTrip={null}
+              onBack={handleBackToType}
+            />
+          ) : selectedTrip ? (
+            <FormStepContent
+              selectedTrip={selectedTrip}
+              onBack={handleBackToTrip}
+            />
+          ) : null
         )}
       </div>
     </div>

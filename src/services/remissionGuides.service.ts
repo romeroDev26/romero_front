@@ -1,7 +1,7 @@
 // src/services/remissionGuides.service.ts
 
 import api from '../config/api';
-import { RemissionGuideTransportista } from '../types';
+import { RemissionGuideTransportista, RemissionGuideItem, RemissionGuideAddress, RemissionGuideParty, AutoGenerateRemissionGuidesRequest, AutoGenerateRemissionGuidesResponse } from '../types';
 
 // Tipos para el servicio
 export interface ListGuidesParams {
@@ -13,7 +13,8 @@ export interface ListGuidesParams {
   size?: number;
 }
 
-export interface RemissionGuideCreateData {
+// Datos para crear guía del transportista (tipo 31)
+export interface RemissionGuideTransportistaCreateData {
   company_id: number;
   branch_office_id: number;
   document_series_id: number;
@@ -24,30 +25,40 @@ export interface RemissionGuideCreateData {
   gross_total_weight: number;
   number_of_packages: number;
   transport_mode_code: string;
-  sender: {
-    document_type_code: string;
-    document_number: string;
-    business_name: string;
-  };
-  receiver: {
-    document_type_code: string;
-    document_number: string;
-    business_name: string;
-  };
-  origin_address: {
-    ubigeo_code: string;
-    address: string;
-  };
-  destination_address: {
-    ubigeo_code: string;
-    address: string;
-  };
-  items: {
-    description: string;
-    quantity: number;
-    unit_code: string;
-    unit_weight: number;
-  }[];
+  sender: RemissionGuideParty;
+  receiver: RemissionGuideParty;
+  origin_address: RemissionGuideAddress;
+  destination_address: RemissionGuideAddress;
+  driver_doc_type: string;
+  driver_doc_number: string;
+  driver_name?: string;
+  driver_license?: string;
+  items: Omit<RemissionGuideItem, 'id' | 'remission_guide_id' | 'item_order'>[];
+  observation?: string;
+}
+
+// Datos para crear guía del remitente (tipo 09)
+export interface RemissionGuideRemitenteCreateData {
+  company_id: number;
+  branch_office_id: number;
+  document_series_id: number;
+  issue_date: string;
+  transfer_reason_code: string;
+  transfer_reason_description: string;
+  transfer_start_date: string;
+  gross_total_weight: number;
+  number_of_packages: number;
+  transport_mode_code: string;
+  sender: RemissionGuideParty;
+  receiver: RemissionGuideParty;
+  origin_address: RemissionGuideAddress;
+  destination_address: RemissionGuideAddress;
+  driver_doc_type: string;
+  driver_doc_number: string;
+  driver_name?: string;
+  driver_license?: string;
+  items: Omit<RemissionGuideItem, 'id' | 'remission_guide_id' | 'item_order'>[];
+  observation?: string;
 }
 
 export interface ProcessSunatData {
@@ -120,14 +131,14 @@ class RemissionGuidesService {
     return response.data;
   }
 
-  // Crea una nueva guía
-  async create(data: RemissionGuideCreateData): Promise<RemissionGuideTransportista> {
+  // Crea una nueva guía del transportista
+  async create(data: RemissionGuideTransportistaCreateData): Promise<RemissionGuideTransportista> {
     const response = await api.post<RemissionGuideTransportista>(this.basePath, data);
     return response.data;
   }
 
-  // Actualiza una guía existente
-  async update(guideId: number, data: Partial<RemissionGuideCreateData>): Promise<RemissionGuideTransportista> {
+  // Actualiza una guía del transportista existente
+  async update(guideId: number, data: Partial<RemissionGuideTransportistaCreateData>): Promise<RemissionGuideTransportista> {
     const response = await api.put<RemissionGuideTransportista>(`${this.basePath}${guideId}`, data);
     return response.data;
   }
@@ -155,6 +166,12 @@ class RemissionGuidesService {
     const response = await api.get<SunatStatusResponse>(`${this.basePath}${guideId}/sunat-status`, {
       params: { company_id: companyId }
     });
+    return response.data;
+  }
+
+  // Genera automáticamente guías de remisión para viajes multi-parada
+  async autoGenerate(data: AutoGenerateRemissionGuidesRequest): Promise<AutoGenerateRemissionGuidesResponse> {
+    const response = await api.post<AutoGenerateRemissionGuidesResponse>(`${this.basePath}auto-generate`, data);
     return response.data;
   }
 }

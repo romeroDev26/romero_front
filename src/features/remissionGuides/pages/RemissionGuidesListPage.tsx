@@ -48,7 +48,7 @@ export const RemissionGuidesListPage: React.FC = () => {
     // Filtro por búsqueda
     if (debouncedSearchTerm) {
       filtered = filtered.filter(guide =>
-        guide.recipient_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        guide.receiver.business_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         `${guide.series}-${guide.number}`.includes(debouncedSearchTerm) ||
         (guide.trip?.vessel?.name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
@@ -122,7 +122,7 @@ export const RemissionGuidesListPage: React.FC = () => {
       accessor: (item) => (
         <div className="flex items-center space-x-2">
           <UserIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-sm text-gray-900">{item.recipient_name}</span>
+          <span className="text-sm text-gray-900">{item.receiver.business_name}</span>
         </div>
       ),
     },
@@ -132,7 +132,7 @@ export const RemissionGuidesListPage: React.FC = () => {
       accessor: (item) => (
         <div className="flex items-center space-x-2">
           <MapPinIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-sm text-gray-900">{item.destination_address}</span>
+          <span className="text-sm text-gray-900">{item.destination_address.address}</span>
         </div>
       ),
     },

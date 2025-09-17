@@ -27,7 +27,7 @@ export const useRemissionGuidesByTrip = ({ tripId, onDate }: UseRemissionGuidesB
       // Si se proporciona fecha, filtrar por fecha de envío
       if (onDate) {
         return guides.filter(guide => 
-          guide.shipment_start_date === onDate || 
+          guide.transfer_start_date === onDate || 
           guide.issue_date === onDate
         );
       }
@@ -51,7 +51,7 @@ export const useRemissionGuidesForDate = (onDate: string) => {
       
       // Filtrar guías para la fecha específica
       return guides.filter(guide => 
-        guide.shipment_start_date === onDate || 
+        guide.transfer_start_date === onDate || 
         guide.issue_date === onDate
       );
     },

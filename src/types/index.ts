@@ -793,6 +793,35 @@ export interface DebitNoteItem {
 // GUÍAS DE REMISIÓN
 // ========================================
 
+// Tipos comunes para ambas guías
+export interface RemissionGuideAddress {
+  ubigeo_code: string;
+  address: string;
+}
+
+export interface RemissionGuideParty {
+  document_type_code: string;
+  document_number: string;
+  business_name: string;
+}
+
+export interface RemissionGuideItem {
+  id?: number;
+  remission_guide_id?: number;
+  item_order?: number;
+  product_code?: string;
+  description: string;
+  quantity: number;
+  unit_measure: string;
+  unit_code: string;
+  weight: number;
+  unit_weight?: number;
+  internal_code?: string;
+  invoice_item_id?: number;
+  invoice_item?: InvoiceItem;
+}
+
+// Guía del Transportista (Tipo 31)
 export interface RemissionGuideTransportista {
   id: number;
   company_id: number;
@@ -804,26 +833,20 @@ export interface RemissionGuideTransportista {
   issue_date: string;
   trip_id?: number;
   trip?: Trip;
-  shipment_start_date: string;
-  observation?: string;
-  total_gross_weight: number;
-  weight_unit_code: string;
-  number_of_packages?: number;
-  sender_doc_type: string;
-  sender_doc_number: string;
-  sender_name: string;
-  recipient_doc_type: string;
-  recipient_doc_number: string;
-  recipient_name: string;
-  origin_ubigeo: string;
-  origin_address: string;
-  destination_ubigeo: string;
-  destination_address: string;
+  transfer_reason_code: string;
+  transfer_reason_description: string;
+  transfer_start_date: string;
+  gross_total_weight: number;
+  number_of_packages: number;
+  transport_mode_code: string;
+  sender: RemissionGuideParty;
+  receiver: RemissionGuideParty;
+  origin_address: RemissionGuideAddress;
+  destination_address: RemissionGuideAddress;
   boarding_trip_stop_id?: number;
   boarding_trip_stop?: TripStop;
   disembarking_trip_stop_id?: number;
   disembarking_trip_stop?: TripStop;
-  transport_mode_code: string;
   vessel_id?: number;
   vessel?: Vessel;
   driver_doc_type: string;
@@ -845,19 +868,98 @@ export interface RemissionGuideTransportista {
   created_by?: string;
   created_at: string;
   updated_at: string;
-  items?: RemissionGuideTransportistaItem[];
+  items?: RemissionGuideItem[];
+  observation?: string;
 }
 
-export interface RemissionGuideTransportistaItem {
+// Guía del Remitente (Tipo 09)
+export interface RemissionGuideRemitente {
   id: number;
-  remission_guide_id: number;
-  item_order: number;
-  quantity: number;
-  unit_code: string;
+  company_id: number;
+  company?: Company;
+  ubl_version?: string;
+  document_type_code: string;
+  series: string;
+  number: number;
+  issue_date: string;
+  transfer_reason_code: string;
+  transfer_reason_description: string;
+  transfer_start_date: string;
+  gross_total_weight: number;
+  number_of_packages: number;
+  transport_mode_code: string;
+  sender: RemissionGuideParty;
+  receiver: RemissionGuideParty;
+  origin_address: RemissionGuideAddress;
+  destination_address: RemissionGuideAddress;
+  vessel_id?: number;
+  vessel?: Vessel;
+  driver_doc_type: string;
+  driver_doc_number: string;
+  driver_name?: string;
+  driver_license?: string;
+  sunat_status: SunatDocumentStatus;
+  sunat_ticket?: string;
+  sunat_response_code?: string;
+  sunat_response_description?: string;
+  sunat_observations?: string;
+  xml_file_path?: string;
+  signed_xml_file_path?: string;
+  zip_file_path?: string;
+  cdr_file_path?: string;
+  pdf_file_path?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+  items?: RemissionGuideItem[];
+  observation?: string;
+}
+
+// Tipo union para ambas guías
+export type RemissionGuide = RemissionGuideTransportista | RemissionGuideRemitente;
+
+// ========================================
+// AUTO-GENERATE REMISSION GUIDES
+// ========================================
+
+export interface AutoGenerateRemissionGuidesRequest {
+  trip_id: number;
+  document_series_id: number;
+  transport_mode_code: string;
+  captain_name: string;
+  captain_doc_type: string;
+  captain_doc_number: string;
+  captain_license: string;
+}
+
+export interface AutoGenerateRemissionGuideItem {
+  package_id: number;
+  invoice_number: string;
+  client_name: string;
   description: string;
-  internal_code?: string;
-  invoice_item_id?: number;
-  invoice_item?: InvoiceItem;
+  weight: number;
+}
+
+export interface AutoGenerateRemissionGuide {
+  guide_id: number;
+  series: string;
+  number: number;
+  document_number: string;
+  destination_port_name: string;
+  origin_address: string;
+  destination_address: string;
+  sunat_status: string;
+  package_items: AutoGenerateRemissionGuideItem[];
+}
+
+export interface AutoGenerateRemissionGuidesResponse {
+  auto_guide_id: number;
+  trip_id: number;
+  trip_name: string;
+  destinations_processed: number;
+  guides_generated: number;
+  total_packages: number;
+  generated_guides: AutoGenerateRemissionGuide[];
 }
 
 // ========================================

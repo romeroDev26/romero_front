@@ -48,9 +48,9 @@ export const RemissionGuidesListPage: React.FC = () => {
     // Filtro por búsqueda
     if (debouncedSearchTerm) {
       filtered = filtered.filter(guide =>
-        guide.receiver.business_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        ((guide as any).recipient_name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         `${guide.series}-${guide.number}`.includes(debouncedSearchTerm) ||
-        (guide.trip?.vessel?.name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+        ((guide as any).vessel_name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
     }
 
@@ -81,8 +81,8 @@ export const RemissionGuidesListPage: React.FC = () => {
               <DocumentTextIcon className="h-5 w-5 text-blue-600" />
             </div>
           </div>
-          <div>
-            <div className="text-sm font-semibold text-gray-900">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-gray-900 truncate">
               {item.series}-{String(item.number).padStart(8, '0')}
             </div>
           </div>
@@ -105,13 +105,21 @@ export const RemissionGuidesListPage: React.FC = () => {
       key: 'trip',
       header: 'Viaje / Embarcación',
       accessor: (item) => (
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 min-w-0">
           <div className="flex-shrink-0">
             <TruckIcon className="h-5 w-5 text-gray-400" />
           </div>
-          <div>
-            <div className="text-sm font-medium text-gray-900">{item.trip?.trip_name || 'N/A'}</div>
-            <div className="text-xs text-gray-500">{item.trip?.vessel?.name || 'N/A'}</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-medium text-gray-900 truncate">
+              {((item as any).trip_name || 'N/A').length > 16 
+                ? ((item as any).trip_name || 'N/A').substring(0, 16) + '...'
+                : (item as any).trip_name || 'N/A'}
+            </div>
+            <div className="text-xs text-gray-500 truncate">
+              {((item as any).vessel_name || 'N/A').length > 16 
+                ? ((item as any).vessel_name || 'N/A').substring(0, 16) + '...'
+                : (item as any).vessel_name || 'N/A'}
+            </div>
           </div>
         </div>
       ),
@@ -120,9 +128,13 @@ export const RemissionGuidesListPage: React.FC = () => {
       key: 'recipient',
       header: 'Destinatario',
       accessor: (item) => (
-        <div className="flex items-center space-x-2">
-          <UserIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-sm text-gray-900">{item.receiver.business_name}</span>
+        <div className="flex items-center space-x-2 min-w-0">
+          <UserIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <span className="text-sm text-gray-900 truncate">
+            {((item as any).recipient_name || '').length > 16 
+              ? ((item as any).recipient_name || '').substring(0, 16) + '...'
+              : (item as any).recipient_name || ''}
+          </span>
         </div>
       ),
     },
@@ -130,9 +142,13 @@ export const RemissionGuidesListPage: React.FC = () => {
       key: 'destination',
       header: 'Destino',
       accessor: (item) => (
-        <div className="flex items-center space-x-2">
-          <MapPinIcon className="h-4 w-4 text-gray-400" />
-          <span className="text-sm text-gray-900">{item.destination_address.address}</span>
+        <div className="flex items-center space-x-2 min-w-0">
+          <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <span className="text-sm text-gray-900 truncate">
+            {((item as any).destination_address || '').length > 16 
+              ? ((item as any).destination_address || '').substring(0, 16) + '...'
+              : (item as any).destination_address || ''}
+          </span>
         </div>
       ),
     },
@@ -140,9 +156,13 @@ export const RemissionGuidesListPage: React.FC = () => {
       key: 'driver',
       header: 'Conductor',
       accessor: (item) => (
-        <div>
-          <div className="text-sm font-medium text-gray-900">{item.driver_name || 'N/A'}</div>
-          <div className="text-xs text-gray-500">Lic: {item.driver_license || 'N/A'}</div>
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-gray-900 truncate">
+            {(item.driver_name || 'N/A').length > 16 
+              ? (item.driver_name || 'N/A').substring(0, 16) + '...'
+              : item.driver_name || 'N/A'}
+          </div>
+          <div className="text-xs text-gray-500 truncate">Lic: {item.driver_license || 'N/A'}</div>
         </div>
       ),
     },
@@ -179,7 +199,7 @@ export const RemissionGuidesListPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-full xl:max-w-8xl 2xl:max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="md:flex md:items-center md:justify-between">
@@ -352,7 +372,7 @@ export const RemissionGuidesListPage: React.FC = () => {
         </div>
 
         {/* Table Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium text-gray-900">
@@ -371,7 +391,6 @@ export const RemissionGuidesListPage: React.FC = () => {
             data={filteredGuides}
             isLoading={isLoadingGuides}
             keyExtractor={(item) => item.id}
-            onEdit={(item) => navigate(`/remission-guides/${item.id}`)}
           />
         </div>
       </div>

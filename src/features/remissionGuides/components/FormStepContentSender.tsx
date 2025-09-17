@@ -34,6 +34,19 @@ import { AvailableTripByPort } from '../../../services/trips.service';
 import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';
 import { remissionGuideRemitenteSchema, RemissionGuideRemitenteFormData } from '../schemas/remissionGuideSchema';
 
+// Opciones de unidades de medida SUNAT
+const UNIT_MEASURE_OPTIONS = [
+  { code: 'NIU', name: 'Unidad (para bienes)' },
+  { code: 'KGM', name: 'Kilogramo' },
+  { code: 'PAQ', name: 'Paquete' },
+  { code: 'BX', name: 'Caja' },
+  { code: 'TNE', name: 'Tonelada' },
+  { code: 'MTR', name: 'Metro' },
+  { code: 'MTQ', name: 'Metro Cúbico' },
+  { code: 'LTR', name: 'Litro' },
+  { code: 'ZZ', name: 'Unidad (para servicios)' },
+];
+
 interface FormStepContentSenderProps {
   selectedTrip?: AvailableTripByPort | null;
   onBack: () => void;
@@ -144,8 +157,8 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
     append({
       description: '',
       quantity: 1,
-      unit_measure: 'UNIDAD',
-      unit_code: 'NIU',
+      unit_measure: 'PAQ',
+      unit_code: 'PAQ',
       weight: 0,
       unit_weight: 0,
       product_code: '',
@@ -154,7 +167,6 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
   };
 
   const onSubmit: SubmitHandler<RemissionGuideRemitenteFormData> = async (data) => {
-    console.log('onSubmit called with data:', data);
     // Validar que haya al menos un paquete/item
     if (!data.items || data.items.length === 0) {
       toast.error("Debe agregar al menos un producto/paquete para crear la guía de remisión.");
@@ -171,37 +183,42 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
         company_id: companyId,
         document_type_code: data.document_type_code,
         series: data.series,
-        sender_document_type: data.sender.document_type_code,
-        sender_document_number: data.sender.document_number,
+        issue_date: format(data.issue_date, 'yyyy-MM-dd'),
+        shipment_start_date: format(data.transfer_start_date, 'yyyy-MM-dd'),
+        observation: data.observation || '',
+        total_gross_weight: data.gross_total_weight,
+        weight_unit_code: 'KGM', // Asumiendo KGM como unidad por defecto
+        number_of_packages: data.number_of_packages,
+        sender_doc_type: data.sender.document_type_code,
+        sender_doc_number: data.sender.document_number,
         sender_name: data.sender.business_name,
-        sender_address: data.origin_address.address,
-        recipient_document_type: data.receiver.document_type_code,
-        recipient_document_number: data.receiver.document_number,
+        recipient_doc_type: data.receiver.document_type_code,
+        recipient_doc_number: data.receiver.document_number,
         recipient_name: data.receiver.business_name,
-        recipient_address: data.destination_address.address,
-        origin_address: data.origin_address.address,
         origin_ubigeo: data.origin_address.ubigeo_code,
-        destination_address: data.destination_address.address,
+        origin_address: data.origin_address.address,
         destination_ubigeo: data.destination_address.ubigeo_code,
-        transport_mode: data.transport_mode_code,
-        transport_start_date: format(data.transfer_start_date, 'yyyy-MM-dd'),
+        destination_address: data.destination_address.address,
+        transfer_reason_code: data.transfer_reason_code,
+        transporter_doc_type: data.driver_doc_type, // Usando driver como transporter
+        transporter_doc_number: data.driver_doc_number,
+        transporter_name: data.driver_name,
+        transport_mode_code: data.transport_mode_code,
         vehicle_plate: data.vehicle_plate,
-        driver_license: data.driver_license,
+        driver_doc_type: data.driver_doc_type,
+        driver_doc_number: data.driver_doc_number,
         driver_name: data.driver_name,
-        driver_document_type: data.driver_doc_type,
-        driver_document_number: data.driver_doc_number,
+        driver_license: data.driver_license,
         related_doc_type: data.related_doc_type || undefined,
         related_doc_number: data.related_doc_number || undefined,
         related_doc_ruc: data.related_doc_ruc || undefined,
         related_doc_description: data.related_doc_description || undefined,
         items: data.items.map(item => ({
-          product_code: item.product_code || '',
-          description: item.description,
           quantity: item.quantity,
-          unit_measure: item.unit_measure,
-          weight: item.weight,
+          unit_code: item.unit_measure, // Usando unit_measure como unit_code
+          description: item.description,
+          internal_code: item.internal_code || '',
         })),
-        observations: data.observation || '',
       };
       
       console.log("Enviando a API:", payload);
@@ -333,17 +350,28 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                     error={errors.items?.[index]?.quantity?.message} 
                   />
                   
-                  <Input 
-                    label="Unidad de Medida*" 
-                    {...control.register(`items.${index}.unit_measure`)} 
-                    error={errors.items?.[index]?.unit_measure?.message} 
-                  />
-                  
-                  <Input 
-                    label="Código de Unidad*" 
-                    {...control.register(`items.${index}.unit_code`)} 
-                    error={errors.items?.[index]?.unit_code?.message} 
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Unidad de Medida*</label>
+                    <Controller
+                      name={`items.${index}.unit_measure`}
+                      control={control}
+                      render={({ field }) => (
+                        <select 
+                          {...field}
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        >
+                          {UNIT_MEASURE_OPTIONS.map(option => (
+                            <option key={option.code} value={option.code}>
+                              {option.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    {errors.items?.[index]?.unit_measure && (
+                      <p className="text-red-500 text-xs mt-1">{errors.items?.[index]?.unit_measure?.message}</p>
+                    )}
+                  </div>
                   
                   <Input 
                     label="Peso (KGM)*" 
@@ -351,14 +379,6 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                     step="0.01"
                     {...control.register(`items.${index}.weight`, { valueAsNumber: true })} 
                     error={errors.items?.[index]?.weight?.message} 
-                  />
-                  
-                  <Input 
-                    label="Peso Unitario (KGM)" 
-                    type="number"
-                    step="0.01"
-                    {...control.register(`items.${index}.unit_weight`, { valueAsNumber: true })} 
-                    error={errors.items?.[index]?.unit_weight?.message} 
                   />
                   
                   <Input 
@@ -467,6 +487,56 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
 
             {/* Origen y Destinatario */}
             <div className="space-y-8">
+              {/* Remitente */}
+              <div className="border border-gray-200 rounded-xl p-6">
+                <div className="flex items-center space-x-3 mb-6">
+                  <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                    <UserIcon className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Remitente</h3>
+                </div>
+
+                <div className="space-y-4">
+                  <Input 
+                    label="Razón Social / Nombre*" 
+                    {...control.register('sender.business_name')} 
+                    error={errors.sender?.business_name?.message} 
+                  />
+                  
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Tipo Doc*</label>
+                      <Controller
+                        name="sender.document_type_code"
+                        control={control}
+                        render={({ field }) => (
+                          <select 
+                            {...field}
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          >
+                            {DOCUMENT_TYPES.map(docType => (
+                              <option key={docType.code} value={docType.code}>
+                                {docType.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      />
+                      {errors.sender?.document_type_code && (
+                        <p className="text-red-500 text-xs mt-1">{errors.sender.document_type_code.message}</p>
+                      )}
+                    </div>
+                    <div className="col-span-2">
+                      <Input 
+                        label="N° Documento*" 
+                        {...control.register('sender.document_number')} 
+                        error={errors.sender?.document_number?.message} 
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Origen */}
               <div className="border border-gray-200 rounded-xl p-6">
                 <div className="flex items-center space-x-3 mb-6">

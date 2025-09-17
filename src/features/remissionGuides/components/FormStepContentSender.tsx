@@ -31,7 +31,7 @@ import { Input } from '../../../components/common/Input';
 import { useTripDetails } from '../../fluvial/hooks/useTripDetails';
 import { DOCUMENT_TYPES } from '../../fluvial/types/sunat.types';
 import { AvailableTripByPort } from '../../../services/trips.service';
-import { remissionGuidesService } from '../../../services/remissionGuides.service';
+import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';
 import { remissionGuideRemitenteSchema, RemissionGuideRemitenteFormData } from '../schemas/remissionGuideSchema';
 
 interface FormStepContentSenderProps {
@@ -82,8 +82,12 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
       driver_doc_number: '',
       driver_name: '',
       driver_license: '',
+      vehicle_plate: '',
       observation: '',
-      related_voucher: '',
+      related_doc_type: '',
+      related_doc_number: '',
+      related_doc_ruc: '',
+      related_doc_description: '',
       items: [],
     }
   });
@@ -157,18 +161,46 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
     
     try {
       const payload = {
-        ...data,
-        issue_date: format(data.issue_date, 'yyyy-MM-dd'),
-        transfer_start_date: format(data.transfer_start_date, 'yyyy-MM-dd'),
         company_id: companyId,
-        branch_office_id: 1, // TODO: Obtener de la sucursal seleccionada
-        document_series_id: 1, // TODO: Obtener de la serie seleccionada
+        document_type_code: data.document_type_code,
+        series: data.series,
+        sender_document_type: data.sender.document_type_code,
+        sender_document_number: data.sender.document_number,
+        sender_name: data.sender.business_name,
+        sender_address: data.origin_address.address,
+        recipient_document_type: data.receiver.document_type_code,
+        recipient_document_number: data.receiver.document_number,
+        recipient_name: data.receiver.business_name,
+        recipient_address: data.destination_address.address,
+        origin_address: data.origin_address.address,
+        origin_ubigeo: data.origin_address.ubigeo_code,
+        destination_address: data.destination_address.address,
+        destination_ubigeo: data.destination_address.ubigeo_code,
+        transport_mode: data.transport_mode_code,
+        transport_start_date: format(data.transfer_start_date, 'yyyy-MM-dd'),
+        vehicle_plate: data.vehicle_plate,
+        driver_license: data.driver_license,
+        driver_name: data.driver_name,
+        driver_document_type: data.driver_doc_type,
+        driver_document_number: data.driver_doc_number,
+        related_doc_type: data.related_doc_type || undefined,
+        related_doc_number: data.related_doc_number || undefined,
+        related_doc_ruc: data.related_doc_ruc || undefined,
+        related_doc_description: data.related_doc_description || undefined,
+        items: data.items.map(item => ({
+          product_code: item.product_code || '',
+          description: item.description,
+          quantity: item.quantity,
+          unit_measure: item.unit_measure,
+          weight: item.weight,
+        })),
+        observations: data.observation || '',
       };
       
       console.log("Enviando a API:", payload);
       
       // Llamar al servicio real
-      await remissionGuidesService.create(payload);
+      await remissionGuidesSenderService.create(payload);
       
       toast.success("Guía de Remisión del Remitente creada exitosamente.");
       navigate('/remission-guides');
@@ -577,6 +609,14 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                     error={errors.driver_doc_number?.message} 
                   />
                 </div>
+                
+                <div className="md:col-span-6">
+                  <Input 
+                    label="Placa del Vehículo*" 
+                    {...control.register('vehicle_plate')} 
+                    error={errors.vehicle_plate?.message} 
+                  />
+                </div>
               </div>
             </div>
 
@@ -614,12 +654,35 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                 <span className="text-sm text-gray-500">(Opcional)</span>
               </div>
               
-              <Input 
-                label="Número de Comprobante" 
-                {...control.register('related_voucher')} 
-                error={errors.related_voucher?.message}
-                placeholder="Ej: F001-000001"
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input 
+                  label="Tipo de Documento" 
+                  {...control.register('related_doc_type')} 
+                  error={errors.related_doc_type?.message}
+                  placeholder="Ej: 01 (Factura)"
+                />
+                
+                <Input 
+                  label="Número de Documento" 
+                  {...control.register('related_doc_number')} 
+                  error={errors.related_doc_number?.message}
+                  placeholder="Ej: F001-000001"
+                />
+                
+                <Input 
+                  label="RUC del Emisor" 
+                  {...control.register('related_doc_ruc')} 
+                  error={errors.related_doc_ruc?.message}
+                  placeholder="RUC de 11 dígitos"
+                />
+                
+                <Input 
+                  label="Descripción" 
+                  {...control.register('related_doc_description')} 
+                  error={errors.related_doc_description?.message}
+                  placeholder="Descripción del comprobante"
+                />
+              </div>
             </div>
           </div>
 

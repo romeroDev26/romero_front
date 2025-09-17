@@ -68,8 +68,12 @@ export const remissionGuideRemitenteSchema = z.object({
   driver_doc_number: z.string().min(1, 'Número de documento del conductor requerido'),
   driver_name: z.string().min(1, 'Nombre del conductor requerido'),
   driver_license: z.string().min(1, 'Licencia del conductor requerida'),
+  vehicle_plate: z.string().min(1, 'Placa del vehículo requerida'),
   observation: z.string().optional(),
-  related_voucher: z.string().optional(),
+  related_doc_type: z.string().optional(),
+  related_doc_number: z.string().optional(),
+  related_doc_ruc: z.string().optional(),
+  related_doc_description: z.string().optional(),
   items: z.array(remissionGuideItemSchema).min(1, 'Debe incluir al menos un ítem'),
   // Campos opcionales para el formulario
   trip_id: z.number().optional(),

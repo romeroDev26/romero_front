@@ -154,8 +154,15 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
   };
 
   const onSubmit: SubmitHandler<RemissionGuideRemitenteFormData> = async (data) => {
-    // Para guía del remitente, no requerimos compañía del viaje
-    const companyId = tripDetails?.company?.id || 1; // Usar valor por defecto si no hay viaje
+    console.log('onSubmit called with data:', data);
+    // Validar que haya al menos un paquete/item
+    if (!data.items || data.items.length === 0) {
+      toast.error("Debe agregar al menos un producto/paquete para crear la guía de remisión.");
+      return;
+    }
+
+    // Para guía del remitente, siempre usar compañía ID 1
+    const companyId = 1;
 
     setIsSubmitting(true);
     

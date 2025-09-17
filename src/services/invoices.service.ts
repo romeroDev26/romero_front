@@ -1,7 +1,7 @@
 // src/services/invoices.service.ts
 
 import api from '../config/api';
-import { Invoice, InvoiceItem } from '../types';
+import { Invoice } from '../types';
 
 // Esta interfaz define los datos para CREAR un ítem de factura.
 // La hacemos precisa para que coincida con lo que el backend espera.
@@ -48,11 +48,16 @@ export interface InvoiceCreateData {
 
 // Esta interfaz define la forma de un ítem de factura que viene del backend
 // cuando lo pedimos para una guía de remisión.
-export interface ItemForGuide extends InvoiceItem {
-  // Hereda todos los campos de InvoiceItem (id, quantity, product, recipient_name, etc.)
-  // y añade los específicos de este endpoint.
-  invoice_series: string;
-  invoice_number: number;
+export interface ItemForGuide {
+  invoice_item_id: number;
+  item_description: string;
+  quantity: string;
+  unit_code: string;
+  service_category: string;
+  source_invoice_number: string;
+  source_invoice_id: number;
+  client_name: string;
+  client_doc_number: string;
 }
 
 // Interfaz para los parámetros de filtrado del nuevo endpoint

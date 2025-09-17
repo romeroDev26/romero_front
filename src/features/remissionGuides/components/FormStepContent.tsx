@@ -64,6 +64,8 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
       gross_total_weight: 0,
       number_of_packages: 1,
       transport_mode_code: '01', // Transporte público
+      trip_id: 0,
+      vessel_id: 0,
       sender: {
         document_type_code: '6', // RUC
         document_number: '',
@@ -142,23 +144,23 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
   const handleSelectItems = (selectedApiItems: ItemForGuide[]) => {
     const itemsForForm = selectedApiItems.map(item => ({
       description: item.item_description || 'Sin descripción',
-      quantity: item.quantity,
+      quantity: parseFloat(item.quantity) || 0,
       unit_measure: item.unit_code, // Usar unit_code como unit_measure por defecto
       unit_code: item.unit_code,
-      weight: item.quantity * 1, // Peso estimado, debería calcularse mejor
+      weight: (parseFloat(item.quantity) || 0) * 1, // Peso estimado, debería calcularse mejor
       unit_weight: 1, // Peso unitario estimado
-      product_code: item.product?.internal_code || '',
-      internal_code: item.product?.internal_code || '',
-      invoice_item_id: item.id,
+      product_code: '',
+      internal_code: '',
+      invoice_item_id: item.invoice_item_id,
     }));
     
     replace(itemsForForm);
 
     if (selectedApiItems.length === 1) {
       const recipient = selectedApiItems[0];
-      setValue('receiver.document_type_code', recipient.recipient_doc_type ?? '1', { shouldValidate: true });
-      setValue('receiver.document_number', recipient.recipient_doc_number ?? '', { shouldValidate: true });
-      setValue('receiver.business_name', recipient.recipient_name ?? '', { shouldValidate: true });
+      setValue('receiver.document_type_code', '1', { shouldValidate: true }); // Asumir DNI por defecto
+      setValue('receiver.document_number', recipient.client_doc_number || '', { shouldValidate: true });
+      setValue('receiver.business_name', recipient.client_name || '', { shouldValidate: true });
       
       if (tripDetails?.route?.destination_port) {
         setValue('destination_address', {
@@ -174,8 +176,11 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
   };
   
   const onSubmit: SubmitHandler<RemissionGuideTransportistaFormData> = async (data) => {
-    if (!tripDetails?.company?.id) {
-      toast.error("No se pudo obtener el ID de la compañía desde el viaje seleccionado. Intente de nuevo.");
+    console.log("onSubmit called with fields.length:", fields.length);
+    
+    // Validar que haya al menos un paquete/item
+    if (fields.length === 0) {
+      toast.error("Debe agregar al menos un producto/paquete para crear la guía de remisión. Use el botón 'Cargar Ítems de Encomiendas' para seleccionar los items.");
       return;
     }
 
@@ -186,7 +191,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
         ...data,
         issue_date: format(data.issue_date, 'yyyy-MM-dd'),
         transfer_start_date: format(data.transfer_start_date, 'yyyy-MM-dd'),
-        company_id: tripDetails.company.id,
+        company_id: 1, // Siempre usar compañía ID 1
         branch_office_id: 1, // TODO: Obtener de la sucursal seleccionada
         document_series_id: 1, // TODO: Obtener de la serie seleccionada
       };
@@ -200,15 +205,18 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
       navigate('/remission-guides');
     } catch (error) {
       console.error('Error al crear la guía:', error);
-      toast.error("Error al crear la guía de remisión. Intente nuevamente.");
+      // Mostrar mensaje específico del backend si está disponible
+      const errorMessage = (error as any)?.detail || (error as any)?.response?.data?.detail || "Error al crear la guía de remisión. Intente nuevamente.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleAutoGenerate = async () => {
-    if (!tripDetails?.company?.id) {
-      toast.error("No se pudo obtener el ID de la compañía desde el viaje seleccionado. Intente de nuevo.");
+    // Validar que el viaje tenga múltiples destinos/paradas
+    if (!tripDetails?.stops || tripDetails.stops.length < 2) {
+      toast.error("El viaje seleccionado no tiene suficientes destinos para generar guías automáticamente. Debe tener al menos un destino además del origen.");
       return;
     }
 
@@ -223,6 +231,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
     try {
       const payload = {
         trip_id: selectedTrip.id,
+        company_id: 1, // Siempre usar compañía ID 1
         document_series_id: 1, // TODO: Obtener de la serie seleccionada
         transport_mode_code: '02', // Marítimo según el ejemplo
         captain_name: driverData.driver_name,
@@ -231,15 +240,15 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
         captain_license: driverData.driver_license,
       };
 
-      console.log("Enviando auto-generate a API:", payload);
-
       const response = await remissionGuidesService.autoGenerate(payload);
 
       toast.success(`Se generaron ${response.guides_generated} guías de remisión automáticamente para ${response.destinations_processed} destinos.`);
       navigate('/remission-guides');
     } catch (error) {
       console.error('Error al generar guías automáticamente:', error);
-      toast.error("Error al generar las guías de remisión. Intente nuevamente.");
+      // Mostrar mensaje específico del backend si está disponible
+      const errorMessage = (error as any)?.detail || (error as any)?.response?.data?.detail || "Error al generar las guías de remisión. Intente nuevamente.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -418,7 +427,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
                 <Button 
                   type="button"
                   onClick={handleAutoGenerate}
-                  disabled={isLoadingTrip || isSubmitting}
+                  disabled={isLoadingTrip || isSubmitting || !tripDetails?.stops || tripDetails.stops.length < 2}
                   className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg flex items-center transition-colors"
                 >
                   {isSubmitting ? (
@@ -750,7 +759,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
                   </Button>
                   <Button 
                     type="submit"
-                    disabled={fields.length === 0 || isLoadingTrip || isSubmitting}
+                    disabled={fields.length === 0 || isSubmitting}
                     className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg flex items-center transition-colors"
                   >
                     {isSubmitting ? (

@@ -48,7 +48,7 @@ export const ItemsForGuideModal: React.FC<ItemsForGuideModalProps> = ({
   };
 
   const handleConfirmSelection = () => {
-    const selectedApiItems = items.filter(item => selectedItems.has(item.id));
+    const selectedApiItems = items.filter(item => selectedItems.has(item.invoice_item_id));
     onSelectItems(selectedApiItems);
     onClose();
   };
@@ -75,23 +75,30 @@ export const ItemsForGuideModal: React.FC<ItemsForGuideModalProps> = ({
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {items.length === 0 ? (
-                  <tr><td colSpan={4} className="text-center py-4 text-gray-500">No hay encomiendas pendientes para este viaje.</td></tr>
+                  <tr key="no-items"><td colSpan={4} className="text-center py-4 text-gray-500">No hay encomiendas pendientes para este viaje.</td></tr>
                 ) : (
-                  items.map(item => (
-                    <tr key={item.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.has(item.id)}
-                          onChange={() => handleToggleItem(item.id)}
-                          className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-                        />
-                      </td>
-                      <td className="px-4 py-4 text-sm font-mono text-gray-700">{`${item.invoice_series}-${String(item.invoice_number).padStart(8, '0')}`}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{item.item_description}</td>
-                      <td className="px-4 py-4 text-sm text-gray-900">{item.recipient_name || 'N/A'}</td>
-                    </tr>
-                  ))
+                  items.map(item => {
+                    // Parsear el source_invoice_number: "03: B001-135" -> series: "B001", number: 135
+                    const [, invoiceInfo] = item.source_invoice_number?.split(': ') || ['', ''];
+                    const [series, numberStr] = invoiceInfo.split('-') || ['', ''];
+                    const number = parseInt(numberStr) || 0;
+                    
+                    return (
+                      <tr key={item.invoice_item_id} className="hover:bg-gray-50">
+                        <td className="px-4 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.has(item.invoice_item_id)}
+                            onChange={() => handleToggleItem(item.invoice_item_id)}
+                            className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                          />
+                        </td>
+                        <td className="px-4 py-4 text-sm font-mono text-gray-700">{`${series}-${String(number).padStart(8, '0')}`}</td>
+                        <td className="px-4 py-4 text-sm text-gray-900">{item.item_description}</td>
+                        <td className="px-4 py-4 text-sm text-gray-900">{item.client_name || 'N/A'}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

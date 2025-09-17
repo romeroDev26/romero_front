@@ -171,7 +171,7 @@ class RemissionGuidesService {
 
   // Genera automáticamente guías de remisión para viajes multi-parada
   async autoGenerate(data: AutoGenerateRemissionGuidesRequest): Promise<AutoGenerateRemissionGuidesResponse> {
-    const response = await api.post<AutoGenerateRemissionGuidesResponse>(`${this.basePath}auto-generate`, data);
+    const response = await api.post<AutoGenerateRemissionGuidesResponse>('/sunat/remission-guides-auto/auto-generate', data);
     return response.data;
   }
 }

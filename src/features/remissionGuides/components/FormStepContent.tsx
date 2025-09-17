@@ -23,6 +23,25 @@ import { DOCUMENT_TYPES } from '../../fluvial/types/sunat.types';
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { remissionGuidesService } from '../../../services/remissionGuides.service';
 import { remissionGuideTransportistaSchema, RemissionGuideTransportistaFormData } from '../schemas/remissionGuideSchema';
+import { useDocumentSeries } from '../../../hooks/useDocumentSeries';
+
+// Hook personalizado para series de guías de remisión del transportista
+const useRemissionGuideSeries = (branchId: number | null) => {
+  const companyId = 1; // Asumiendo que siempre es la compañía 1 por ahora
+  const { data: allSeries = [], isLoading, error } = useDocumentSeries(companyId);
+
+  const remissionGuideSeries = allSeries.filter(
+    s => s.branch_office_id === branchId && 
+         s.document_type_code === '31' && 
+         s.is_active
+  );
+
+  return {
+    availableSeries: remissionGuideSeries,
+    isLoading,
+    error,
+  };
+};
 
 interface FormStepContentProps {
   selectedTrip: AvailableTripByPort;
@@ -35,8 +54,22 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedSeries, setSelectedSeries] = useState('');
 
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(selectedTrip.id);
+  
+  // Obtener branch_id de localStorage como en SaleForm
+  const savedBranch = localStorage.getItem('selectedSalesBranch');
+  const branchId = savedBranch ? JSON.parse(savedBranch).id : null;
+  
+  const { availableSeries, isLoading: isLoadingSeries } = useRemissionGuideSeries(branchId);
+
+  // Efecto para seleccionar automáticamente la primera serie disponible
+  useEffect(() => {
+    if (availableSeries.length > 0 && !selectedSeries) {
+      setSelectedSeries(availableSeries[0].series_code);
+    }
+  }, [availableSeries, selectedSeries]);
 
   const { control, setValue, getValues, formState: { errors } } = useForm<RemissionGuideTransportistaFormData>({
     resolver: zodResolver(remissionGuideTransportistaSchema),
@@ -131,13 +164,26 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
       return;
     }
 
+    if (!selectedSeries) {
+      toast.error("Seleccione una serie de guía de remisión.");
+      return;
+    }
+
+    // Encontrar el ID de la serie seleccionada
+    const selectedSeriesData = availableSeries.find(s => s.series_code === selectedSeries);
+    if (!selectedSeriesData) {
+      toast.error("La serie seleccionada no es válida.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const payload = {
         trip_id: selectedTrip.id,
         company_id: 1, // Siempre usar compañía ID 1
-        document_series_id: 1, // TODO: Obtener de la serie seleccionada
+        document_series_id: selectedSeriesData.id,
+        series: selectedSeries,
         transport_mode_code: '02', // Marítimo según el ejemplo
         captain_name: driverData.driver_name,
         captain_doc_type: driverData.driver_doc_type,
@@ -238,6 +284,41 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
                 <h3 className="text-lg font-semibold text-gray-900">Datos del Conductor</h3>
               </div>
               
+              {/* Selector de Serie */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <DocumentTextIcon className="h-4 w-4 inline mr-1" />
+                  Serie de Guía de Remisión*
+                </label>
+                {isLoadingSeries ? (
+                  <div className="flex items-center space-x-2">
+                    <Spinner size="sm" />
+                    <span className="text-sm text-gray-500">Cargando series...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={selectedSeries}
+                    onChange={(e) => setSelectedSeries(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    disabled={availableSeries.length === 0}
+                  >
+                    <option value="">
+                      {availableSeries.length === 0 ? 'No hay series disponibles' : 'Seleccionar serie...'}
+                    </option>
+                    {availableSeries.map((series) => (
+                      <option key={series.id} value={series.series_code}>
+                        {series.series_code}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {availableSeries.length === 0 && !isLoadingSeries && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    No se encontraron series activas para guías de remisión en esta sucursal.
+                  </p>
+                )}
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input 
                   label="Nombre Completo*" 
@@ -298,7 +379,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
               <Button 
                 type="button"
                 onClick={handleAutoGenerate}
-                disabled={isLoadingTrip || isSubmitting || !tripDetails?.stops || tripDetails.stops.length < 2}
+                disabled={isLoadingTrip || isSubmitting || !tripDetails?.stops || tripDetails.stops.length < 2 || !selectedSeries || availableSeries.length === 0}
                 className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg flex items-center transition-colors"
               >
                 {isSubmitting ? (

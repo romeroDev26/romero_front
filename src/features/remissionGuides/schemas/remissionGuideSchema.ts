@@ -5,7 +5,7 @@ export const remissionGuideItemSchema = z.object({
   quantity: z.number().positive('La cantidad debe ser mayor a 0'),
   unit_measure: z.string().min(1, 'La unidad de medida es requerida'),
   unit_code: z.string().optional(),
-  weight: z.number().min(0, 'El peso debe ser mayor o igual a 0'),
+  weight: z.number().min(0, 'El peso debe ser mayor o igual a 0').optional(),
   unit_weight: z.number().min(0, 'El peso unitario debe ser mayor o igual a 0').optional(),
   product_code: z.string().optional(),
   internal_code: z.string().optional(),

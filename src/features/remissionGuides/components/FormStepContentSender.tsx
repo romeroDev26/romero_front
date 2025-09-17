@@ -33,6 +33,25 @@ import { DOCUMENT_TYPES } from '../../fluvial/types/sunat.types';
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';
 import { remissionGuideRemitenteSchema, RemissionGuideRemitenteFormData } from '../schemas/remissionGuideSchema';
+import { useDocumentSeries } from '../../../hooks/useDocumentSeries';
+
+// Hook personalizado para series de guías de remisión del remitente
+const useRemissionGuideSenderSeries = (branchId: number | null) => {
+  const companyId = 1; // Asumiendo que siempre es la compañía 1 por ahora
+  const { data: allSeries = [], isLoading, error } = useDocumentSeries(companyId);
+
+  const remissionGuideSeries = allSeries.filter(
+    s => s.branch_office_id === branchId && 
+         s.document_type_code === '09' && 
+         s.is_active
+  );
+
+  return {
+    availableSeries: remissionGuideSeries,
+    isLoading,
+    error,
+  };
+};
 
 // Opciones de unidades de medida SUNAT
 const UNIT_MEASURE_OPTIONS = [
@@ -58,8 +77,22 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedSeries, setSelectedSeries] = useState('');
 
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(selectedTrip?.id || 0);
+  
+  // Obtener branch_id de localStorage como en SaleForm
+  const savedBranch = localStorage.getItem('selectedSalesBranch');
+  const branchId = savedBranch ? JSON.parse(savedBranch).id : null;
+  
+  const { availableSeries, isLoading: isLoadingSeries } = useRemissionGuideSenderSeries(branchId);
+
+  // Efecto para seleccionar automáticamente la primera serie disponible
+  useEffect(() => {
+    if (availableSeries.length > 0 && !selectedSeries) {
+      setSelectedSeries(availableSeries[0].series_code);
+    }
+  }, [availableSeries, selectedSeries]);
 
   const { control, handleSubmit, setValue, getValues, watch, formState: { errors } } = useForm<RemissionGuideRemitenteFormData>({
     resolver: zodResolver(remissionGuideRemitenteSchema),
@@ -108,11 +141,18 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
   // Calcular peso total automáticamente
-  const watchedItems = watch('items');
   useEffect(() => {
-    const totalWeight = watchedItems?.reduce((sum, item) => sum + (item.weight || 0), 0) || 0;
-    setValue('gross_total_weight', totalWeight);
-  }, [watchedItems, setValue]);
+    const subscription = watch((value, { name }) => {
+      if (name?.startsWith('items')) {
+        const totalWeight = value.items?.reduce((sum, item) => {
+          const weight = item?.weight || 0;
+          return sum + weight;
+        }, 0) || 0;
+        setValue('gross_total_weight', totalWeight, { shouldDirty: false, shouldValidate: false });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, setValue]);
 
   useEffect(() => {
     if (tripDetails && tripDetails.vessel && tripDetails.route && selectedTrip) {
@@ -159,7 +199,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
       quantity: 1,
       unit_measure: 'PAQ',
       unit_code: 'PAQ',
-      weight: 0,
+      weight: undefined,
       unit_weight: 0,
       product_code: '',
       internal_code: '',
@@ -173,6 +213,11 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
       return;
     }
 
+    if (!selectedSeries) {
+      toast.error("Seleccione una serie de guía de remisión.");
+      return;
+    }
+
     // Para guía del remitente, siempre usar compañía ID 1
     const companyId = 1;
 
@@ -182,7 +227,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
       const payload = {
         company_id: companyId,
         document_type_code: data.document_type_code,
-        series: data.series,
+        series: selectedSeries,
         issue_date: format(data.issue_date, 'yyyy-MM-dd'),
         shipment_start_date: format(data.transfer_start_date, 'yyyy-MM-dd'),
         observation: data.observation || '',
@@ -373,12 +418,15 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                     )}
                   </div>
                   
-                  <Input 
-                    label="Peso (KGM)*" 
+                  <Input
+                    label="Peso (KGM)*"
                     type="number"
                     step="0.01"
-                    {...control.register(`items.${index}.weight`, { valueAsNumber: true })} 
-                    error={errors.items?.[index]?.weight?.message} 
+                    {...control.register(`items.${index}.weight`, {
+                      valueAsNumber: true,
+                      setValueAs: (value) => value === '' ? undefined : parseFloat(value) || 0
+                    })}
+                    error={errors.items?.[index]?.weight?.message}
                   />
                   
                   <Input 
@@ -417,11 +465,40 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Input 
-                  label="Serie*" 
-                  {...control.register('series')} 
-                  error={errors.series?.message} 
-                />
+                {/* Selector de Serie */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <DocumentTextIcon className="h-4 w-4 inline mr-1" />
+                    Serie*
+                  </label>
+                  {isLoadingSeries ? (
+                    <div className="flex items-center space-x-2">
+                      <Spinner size="sm" />
+                      <span className="text-sm text-gray-500">Cargando series...</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedSeries}
+                      onChange={(e) => setSelectedSeries(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      disabled={availableSeries.length === 0}
+                    >
+                      <option value="">
+                        {availableSeries.length === 0 ? 'No hay series disponibles' : 'Seleccionar serie...'}
+                      </option>
+                      {availableSeries.map((series) => (
+                        <option key={series.id} value={series.series_code}>
+                          {series.series_code}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {availableSeries.length === 0 && !isLoadingSeries && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      No se encontraron series activas para guías del remitente en esta sucursal.
+                    </p>
+                  )}
+                </div>
                 
                 <Controller 
                   name="issue_date" 
@@ -435,9 +512,10 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                       <DatePicker 
                         selected={field.value} 
                         onChange={field.onChange} 
-                        className="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition" 
+                        className="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition bg-gray-50" 
                         locale={es} 
-                        dateFormat="dd/MM/yyyy" 
+                        dateFormat="dd/MM/yyyy"
+                        readOnly
                       />
                       {errors.issue_date && (
                         <p className="text-red-500 text-xs mt-1">{errors.issue_date.message}</p>
@@ -460,7 +538,8 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                         onChange={field.onChange} 
                         className="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition" 
                         locale={es} 
-                        dateFormat="dd/MM/yyyy" 
+                        dateFormat="dd/MM/yyyy"
+                        minDate={new Date()}
                       />
                       {errors.transfer_start_date && (
                         <p className="text-red-500 text-xs mt-1">{errors.transfer_start_date.message}</p>
@@ -474,12 +553,18 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                     <ScaleIcon className="h-4 w-4 inline mr-1" />
                     Peso Bruto (KGM)*
                   </label>
-                  <Input 
-                    type="number" 
-                    step="0.01"
-                    value={watch('gross_total_weight') || 0}
-                    readOnly
-                    className="bg-gray-50"
+                  <Controller
+                    name="gross_total_weight"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        type="number"
+                        step="0.01"
+                        readOnly
+                        className="bg-gray-50"
+                      />
+                    )}
                   />
                 </div>
               </div>
@@ -777,7 +862,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
               </Button>
               <Button 
                 type="submit"
-                disabled={fields.length === 0 || isLoadingTrip || isSubmitting}
+                disabled={fields.length === 0 || isLoadingTrip || isSubmitting || !selectedSeries || availableSeries.length === 0}
                 className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg flex items-center transition-colors"
               >
                 {isSubmitting ? (

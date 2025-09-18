@@ -35,7 +35,6 @@ const RemissionGuideDetailPage = React.lazy(() => import('./features/remissionGu
 
 // Páginas del módulo fluvial (lazy)
 const SalesPointPage = React.lazy(() => import('./features/fluvial/pages/SalesPointPage').then(module => ({ default: module.SalesPointPage })));
-const FluvialDashboardPage = React.lazy(() => import('./features/fluvial/pages/FluvialDashboardPage').then(module => ({ default: module.FluvialDashboardPage })));
 const CitiesPortsPage = React.lazy(() => import('./features/fluvial/pages/CitiesPortsPage').then(module => ({ default: module.CitiesPortsPage })));
 const VesselsPage = React.lazy(() => import('./features/fluvial/pages/VesselsPage').then(module => ({ default: module.VesselsPage })));
 const FaresPage = React.lazy(() => import('./features/fluvial/pages/FaresPage').then(module => ({ default: module.FaresPage })));
@@ -50,7 +49,6 @@ const ManifestsPage = React.lazy(() => import('./features/manifests/pages/Manife
 const TripManifestsPage = React.lazy(() => import('./features/manifests/pages/TripManifestsPage').then(module => ({ default: module.TripManifestsPage })));
 
 // Páginas de contabilidad (lazy)
-const AccountingDashboardPage = React.lazy(() => import('./features/accounting/pages/AccountingDashboardPage').then(module => ({ default: module.AccountingDashboardPage })));
 const InvoicesListPage = React.lazy(() => import('./features/accounting/pages/InvoicesListPage').then(module => ({ default: module.InvoicesListPage })));
 const InvoiceDetailPage = React.lazy(() => import('./features/accounting/pages/InvoiceDetailPage').then(module => ({ default: module.InvoiceDetailPage })));
 const CreditNotesListPage = React.lazy(() => import('./features/accounting/credit-notes/pages/CreditNotesListPage').then(module => ({ default: module.CreditNotesListPage })));
@@ -68,9 +66,6 @@ const DailySummaryDetailPage = React.lazy(() => import('./features/accounting/da
 const VoidDocumentsListPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentsListPage').then(module => ({ default: module.VoidDocumentsListPage })));
 const VoidDocumentFormPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentFormPage').then(module => ({ default: module.VoidDocumentFormPage })));
 const VoidDocumentDetailPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentDetailPage').then(module => ({ default: module.VoidDocumentDetailPage })));
-
-// Reportes Fluviales (pendientes de implementar)
-const FluvialReportsPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Reportes Fluviales</h1><p>Reportes específicos del transporte fluvial</p></div>;
 
 // Páginas de finanzas (lazy)
 const ReceivablesPage = React.lazy(() => import('./features/finance/pages/ReceivablesPage'));
@@ -121,12 +116,6 @@ function App() {
             
             {/* Sistema de Transporte Fluvial */}
             <Route path="fluvial">
-              <Route path="dashboard" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <FluvialDashboardPage />
-                </Suspense>
-              } />
-              
               {/* Configuración Fluvial */}
               <Route path="config">
                 <Route path="cities-ports" element={
@@ -204,9 +193,6 @@ function App() {
                   </Suspense>
                 } />
               </Route>
-              
-              {/* Reportes Fluviales */}
-              <Route path="reports" element={<FluvialReportsPage />} />
             </Route>
             
             {/* Operaciones Comerciales */}
@@ -219,11 +205,6 @@ function App() {
             
             {/* Contabilidad */}
             <Route path="accounting">
-              <Route path="dashboard" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <AccountingDashboardPage />
-                </Suspense>
-              } />
               <Route path="invoices" element={
                 <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
                   <InvoicesListPage />

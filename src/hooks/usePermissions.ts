@@ -83,10 +83,8 @@ export const usePermissions = () => {
     const routePermissions: { [key: string]: string[] } = {
       '/': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'],
       '/clients': ['admin', 'sales', 'dispatcher', 'accountant'],
-      '/fluvial/dashboard': ['admin', 'sales', 'dispatcher', 'driver'],
       '/fluvial/config': ['admin', 'sales', 'dispatcher'],
       '/fluvial/operations': ['admin', 'sales', 'dispatcher', 'driver'],
-      '/fluvial/reports': ['admin', 'sales', 'dispatcher'],
       '/sales/quotations': ['admin', 'sales'],
       '/remission-guides': ['admin', 'sales', 'dispatcher'],
       '/accounting': ['admin', 'sales', 'accountant'], // SALES tiene acceso completo

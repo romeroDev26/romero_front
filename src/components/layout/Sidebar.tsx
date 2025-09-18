@@ -39,7 +39,6 @@ const navGroups = [
     icon: ChartPieIcon,
     iconColor: 'text-blue-500',
     items: [
-      { name: 'Dashboard Fluvial', path: '/fluvial/dashboard', icon: ChartBarIcon, iconColor: 'text-blue-500' },
       {
         name: 'Configuración',
         path: '#',
@@ -71,8 +70,7 @@ const navGroups = [
           { name: 'Encomiendas y Carga', path: '/fluvial/operations/cargo-sale', icon: CubeIcon, iconColor: 'text-blue-500' },
           { name: 'Manifiestos', path: '/fluvial/operations/manifests', icon: DocumentTextIcon, iconColor: 'text-blue-500' }
         ]
-      },
-      { name: 'Reportes Fluviales', path: '/fluvial/reports', icon: ChartBarIcon, iconColor: 'text-blue-500' }
+      }
     ]
   },
   {
@@ -93,7 +91,6 @@ const navGroups = [
     icon: DocumentTextIcon,
     iconColor: 'text-indigo-500',
     items: [
-      { name: 'Dashboard Contable', path: '/accounting/dashboard', icon: ChartBarIcon, iconColor: 'text-indigo-500' },
       { name: 'Facturas/Boletas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
@@ -153,14 +150,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
     }).map(group => {
       if (group.expandable && group.items) {
         const filteredItems = group.items.filter(item => {
-          if (item.name === 'Dashboard Fluvial') return hasPermission('fluvial', 'dashboard', userRole);
           if (item.name === 'Configuración') return hasPermission('fluvial', 'config', userRole);
           if (item.name === 'Operaciones') return hasPermission('fluvial', 'operations', userRole);
-          if (item.name === 'Reportes Fluviales') return hasPermission('fluvial', 'reports', userRole);
           if (item.name === 'Cotizaciones') return hasPermission('commerce', 'quotations', userRole);
           if (item.name === 'Guías de Remisión') return hasPermission('commerce', 'remission-guides', userRole);
           // Filtrar items de contabilidad por rol - SALES tiene acceso completo
-          if (item.name === 'Dashboard Contable') return hasPermission('accounting', 'dashboard', userRole);
           if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
           if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
           if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);

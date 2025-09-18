@@ -5,7 +5,7 @@ import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
 import {
   HomeIcon, UserGroupIcon, DocumentTextIcon, CreditCardIcon, TruckIcon,
-  ChartBarIcon, CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
+  CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
   UsersIcon, KeyIcon, MapIcon, BuildingOffice2Icon, CalendarDaysIcon, TicketIcon,
   ClipboardDocumentListIcon, CurrencyDollarIcon, AdjustmentsHorizontalIcon,
   ChartPieIcon, CubeIcon
@@ -162,8 +162,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           if (item.name === 'Anulaciones') return hasPermission('accounting', 'voids', userRole);
           return true; // Para otros items
         }).map(item => {
-          if (item.isSubmenu && item.subitems) {
-            const filteredSubitems = item.subitems.filter(subitem => {
+          if ((item as any).isSubmenu && (item as any).subitems) {
+            const filteredSubitems = (item as any).subitems.filter((subitem: any) => {
               if (userRole === 'driver') {
                 // DRIVER solo acceso limitado a manifiestos
                 return subitem.name === 'Manifiestos';
@@ -205,17 +205,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       if (group.expandable) {
         const isGroupActive = group.items.some(item =>
           currentPath.startsWith(item.path !== '#' ? item.path : '---') ||
-          (item.subitems && item.subitems.some(sub => currentPath.startsWith(sub.path)))
+          ((item as any).subitems && (item as any).subitems.some((sub: any) => currentPath.startsWith(sub.path)))
         );
 
         if (isGroupActive) {
           newExpanded[group.expandKey] = true;
 
           group.items.forEach(subGroup => {
-            if (subGroup.isSubmenu) {
-              const isSubGroupActive = subGroup.subitems.some(sub => currentPath.startsWith(sub.path));
+            if ((subGroup as any).isSubmenu) {
+              const isSubGroupActive = (subGroup as any).subitems.some((sub: any) => currentPath.startsWith(sub.path));
               if (isSubGroupActive) {
-                newExpanded[subGroup.expandKey] = true;
+                newExpanded[(subGroup as any).expandKey] = true;
               }
             }
           });

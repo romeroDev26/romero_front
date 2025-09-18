@@ -1,44 +1,43 @@
 // src/features/dashboard/pages/DashboardPage.tsx
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { format, parseISO } from 'date-fns';
 import { 
   DocumentTextIcon, 
   UsersIcon, 
-  TruckIcon, 
-  CubeIcon,
-  ExclamationCircleIcon,
-  ClockIcon
+  CurrencyDollarIcon,
+  ChartBarIcon,
+  UserGroupIcon,
+  MapIcon
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import { Spinner } from '../../../components/common/Spinner';
-
-// Supongamos que tienes estos servicios
+import { SunatStatusBadge } from '../../../features/accounting/components/SunatStatusBadge';
+import {
+  useSalesMetrics,
+  useTopSellers,
+  usePopularRoutes,
+  usePaymentMethods,
+  useVesselOccupancy,
+  useRecentInvoices
+} from '../../../hooks/useDashboardMetrics';// Supongamos que tienes estos servicios
 // import { dashboardService } from '../../../services/dashboard.service';
 // import { invoicesService } from '../../../services/invoices.service';
 
 export const DashboardPage: React.FC = () => {
+  // Obtener métricas del backend usando los nuevos hooks
+  const { data: salesMetrics, isLoading: salesLoading } = useSalesMetrics(1); // TODO: Obtener companyId del contexto/auth
+  const { data: topSellers, isLoading: sellersLoading } = useTopSellers(1);
+  const { data: popularRoutes, isLoading: routesLoading } = usePopularRoutes(1);
+  const { data: paymentMethods, isLoading: paymentsLoading } = usePaymentMethods(1);
+  const { data: vesselOccupancy, isLoading: occupancyLoading } = useVesselOccupancy(1);
+  const { data: recentInvoices = [], isLoading: invoicesLoading } = useRecentInvoices(1);
+
   // En un caso real, usarías estos queries para obtener datos del backend
   // const { data: stats, isLoading } = useQuery(['dashboardStats'], dashboardService.getStats);
   // const { data: recentInvoices } = useQuery(['recentInvoices'], invoicesService.getRecent);
-  
-  // Datos simulados para el ejemplo
-  const stats = {
-    pendingInvoices: 5,
-    totalClients: 120,
-    activeRemissionGuides: 8,
-    totalProducts: 245,
-    pendingSunatDocuments: 3,
-    recentActivity: 15
-  };
-  
-  const recentInvoices = [
-    { id: 1, series: 'F001', number: '00123', client: 'Empresa ABC S.A.C.', amount: 1250.50, status: 'ACCEPTED', date: '2025-04-18' },
-    { id: 2, series: 'F001', number: '00124', client: 'Distribuidora XYZ E.I.R.L.', amount: 3456.20, status: 'PENDING', date: '2025-04-19' },
-    { id: 3, series: 'B001', number: '00089', client: 'Juan Pérez', amount: 120.00, status: 'ACCEPTED', date: '2025-04-19' },
-  ];
-  
-  const isLoading = false;
-  
+
+  const isLoading = salesLoading || sellersLoading || routesLoading || paymentsLoading || occupancyLoading || invoicesLoading;
+
   if (isLoading) return <Spinner />;
   
   return (
@@ -47,112 +46,255 @@ export const DashboardPage: React.FC = () => {
       
       {/* Tarjetas de estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Facturas pendientes */}
+        {/* Ventas del Mes */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-primary/10 text-primary">
-              <DocumentTextIcon className="h-8 w-8" />
+              <CurrencyDollarIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Facturas Pendientes</h2>
-              <p className="text-2xl font-semibold">{stats.pendingInvoices}</p>
+              <h2 className="text-gray-500 text-sm">Ventas del Mes</h2>
+              <p className="text-2xl font-semibold">
+                S/ {salesMetrics?.summary?.total_gross_amount?.toLocaleString('es-PE', { minimumFractionDigits: 2 }) || '0.00'}
+              </p>
             </div>
           </div>
           <div className="mt-4">
-            <Link to="/invoices" className="text-primary hover:text-primary/80 text-sm">
+            <Link to="/reports" className="text-primary hover:text-primary/80 text-sm">
+              Ver Reportes →
+            </Link>
+          </div>
+        </div>
+
+        {/* Total de Facturas */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-secondary/10 text-secondary">
+              <DocumentTextIcon className="h-8 w-8" />
+            </div>
+            <div className="ml-4">
+              <h2 className="text-gray-500 text-sm">Facturas del Mes</h2>
+              <p className="text-2xl font-semibold">{salesMetrics?.summary?.total_invoices || 0}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Link to="/invoices" className="text-secondary hover:text-secondary/80 text-sm">
               Ver Facturas →
             </Link>
           </div>
         </div>
-        
-        {/* Total de clientes */}
+
+        {/* Ocupación Promedio */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-secondary/10 text-secondary">
-              <UsersIcon className="h-8 w-8" />
+            <div className="p-3 rounded-full bg-accent/10 text-accent">
+              <ChartBarIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Total de Clientes</h2>
-              <p className="text-2xl font-semibold">{stats.totalClients}</p>
+              <h2 className="text-gray-500 text-sm">Ocupación Promedio</h2>
+              <p className="text-2xl font-semibold">{vesselOccupancy?.summary?.average_occupancy?.toFixed(1) || 0}%</p>
             </div>
           </div>
           <div className="mt-4">
-            <Link to="/clients" className="text-secondary hover:text-secondary/80 text-sm">
+            <Link to="/reports" className="text-accent hover:text-accent/80 text-sm">
+              Ver Ocupación →
+            </Link>
+          </div>
+        </div>
+
+        {/* Clientes Atendidos */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center">
+            <div className="p-3 rounded-full bg-info/10 text-info">
+              <UsersIcon className="h-8 w-8" />
+            </div>
+            <div className="ml-4">
+              <h2 className="text-gray-500 text-sm">Clientes Únicos</h2>
+              <p className="text-2xl font-semibold">{salesMetrics?.summary?.unique_clients || 0}</p>
+            </div>
+          </div>
+          <div className="mt-4">
+            <Link to="/clients" className="text-info hover:text-info/80 text-sm">
               Ver Clientes →
             </Link>
           </div>
         </div>
-        
-        {/* Guías de remisión activas */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-accent/10 text-accent">
-              <TruckIcon className="h-8 w-8" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Guías de Remisión Activas</h2>
-              <p className="text-2xl font-semibold">{stats.activeRemissionGuides}</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Link to="/remission-guides" className="text-accent hover:text-accent/80 text-sm">
-              Ver Guías →
-            </Link>
-          </div>
-        </div>
-        
-        {/* Total de productos */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-info/10 text-info">
-              <CubeIcon className="h-8 w-8" />
-            </div>
-            <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Total de Productos</h2>
-              <p className="text-2xl font-semibold">{stats.totalProducts}</p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Link to="/products" className="text-info hover:text-info/80 text-sm">
-              Ver Productos →
-            </Link>
-          </div>
-        </div>
-        
-        {/* Documentos SUNAT pendientes */}
+
+        {/* Vendedores Activos */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-warning/10 text-warning">
-              <ExclamationCircleIcon className="h-8 w-8" />
+              <UserGroupIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Documentos SUNAT Pendientes</h2>
-              <p className="text-2xl font-semibold">{stats.pendingSunatDocuments}</p>
+              <h2 className="text-gray-500 text-sm">Vendedores Activos</h2>
+              <p className="text-2xl font-semibold">{salesMetrics?.summary?.unique_users || 0}</p>
             </div>
           </div>
           <div className="mt-4">
-            <Link to="/sunat-reports" className="text-warning hover:text-warning/80 text-sm">
-              Ver Documentos →
+            <Link to="/reports" className="text-warning hover:text-warning/80 text-sm">
+              Ver Rendimiento →
             </Link>
           </div>
         </div>
-        
-        {/* Actividad reciente */}
+
+        {/* Rutas Activas */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-success/10 text-success">
-              <ClockIcon className="h-8 w-8" />
+              <MapIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Actividad Reciente</h2>
-              <p className="text-2xl font-semibold">{stats.recentActivity}</p>
+              <h2 className="text-gray-500 text-sm">Rutas Activas</h2>
+              <p className="text-2xl font-semibold">{popularRoutes?.summary?.total_routes_analyzed || 0}</p>
             </div>
           </div>
           <div className="mt-4">
-            <Link to="/" className="text-success hover:text-success/80 text-sm">
-              Ver Actividad →
+            <Link to="/routes" className="text-success hover:text-success/80 text-sm">
+              Ver Rutas →
             </Link>
           </div>
+        </div>
+      </div>
+      
+      {/* Sección de Rendimiento de Vendedores */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium">Top Vendedores del Mes</h2>
+          </div>
+          <div className="p-6">
+            {topSellers?.items && topSellers.items.length > 0 ? (
+              <div className="space-y-4">
+                {topSellers.items.slice(0, 3).map((seller, index) => (
+                  <div key={seller.user_id} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                        index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                        index === 1 ? 'bg-gray-100 text-gray-800' :
+                        'bg-orange-100 text-orange-800'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900">{seller.user_name}</p>
+                        <p className="text-xs text-gray-500">{seller.branch_office_name}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-gray-900">
+                        S/ {seller.total_sales?.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                      </p>
+                      <p className="text-xs text-gray-500">{seller.invoice_count} facturas</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No hay datos de vendedores disponibles</p>
+            )}
+          </div>
+          <div className="px-6 py-4 border-t border-gray-200">
+            <Link to="/reports" className="text-primary hover:text-primary/80 text-sm">
+              Ver todos los vendedores →
+            </Link>
+          </div>
+        </div>
+
+        {/* Sección de Rutas Populares */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium">Rutas Más Populares</h2>
+          </div>
+          <div className="p-6">
+            {popularRoutes?.items && popularRoutes.items.length > 0 ? (
+              <div className="space-y-4">
+                {popularRoutes.items.slice(0, 3).map((route, index) => (
+                  <div key={route.route_id} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                        index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                        index === 1 ? 'bg-gray-100 text-gray-800' :
+                        'bg-orange-100 text-orange-800'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-medium text-gray-900">{route.route_name}</p>
+                        <p className="text-xs text-gray-500">{route.origin_port} → {route.destination_port}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-gray-900">
+                        S/ {route.total_revenue?.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                      </p>
+                      <p className="text-xs text-gray-500">{route.passenger_count} pasajeros</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No hay datos de rutas disponibles</p>
+            )}
+          </div>
+          <div className="px-6 py-4 border-t border-gray-200">
+            <Link to="/reports" className="text-primary hover:text-primary/80 text-sm">
+              Ver todas las rutas →
+            </Link>
+          </div>
+        </div>
+      </div>
+      
+      {/* Sección de Métodos de Pago */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-medium">Distribución de Métodos de Pago</h2>
+        </div>
+        <div className="p-6">
+          {paymentMethods?.items && paymentMethods.items.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {paymentMethods.items.map((method) => (
+                <div key={method.payment_method} className="text-center">
+                  <div className="relative pt-1">
+                    <div className="flex mb-2 items-center justify-between">
+                      <div>
+                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-gray-600 bg-gray-200">
+                          {method.payment_method === 'efectivo' ? 'Efectivo' :
+                           method.payment_method === 'tarjeta' ? 'Tarjeta' :
+                           method.payment_method === 'transferencia' ? 'Transferencia' :
+                           method.payment_method}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-xs font-semibold inline-block text-gray-600">
+                          {method.percentage_of_transactions?.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="overflow-hidden h-2 mb-4 text-xs flex rounded-full bg-gray-200">
+                      <div
+                        style={{ width: `${method.percentage_of_transactions}%` }}
+                        className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary"
+                      ></div>
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {method.transaction_count} transacciones
+                    </div>
+                    <div className="text-sm font-semibold text-gray-900">
+                      S/ {method.total_amount?.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-4">No hay datos de métodos de pago disponibles</p>
+          )}
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200">
+          <Link to="/reports" className="text-primary hover:text-primary/80 text-sm">
+            Ver análisis completo →
+          </Link>
         </div>
       </div>
       
@@ -183,33 +325,35 @@ export const DashboardPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {recentInvoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Link to={`/invoices/${invoice.id}`} className="text-primary hover:text-primary/80">
-                      {invoice.series}-{invoice.number}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {invoice.client}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {invoice.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    S/ {invoice.amount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${invoice.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' : 
-                        invoice.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-red-100 text-red-800'}`}>
-                      {invoice.status === 'ACCEPTED' ? 'Aceptada' : 
-                       invoice.status === 'PENDING' ? 'Pendiente' : 'Error'}
-                    </span>
+              {recentInvoices.length > 0 ? (
+                recentInvoices.map((invoice) => (
+                  <tr key={invoice.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Link to={`/accounting/invoices/${invoice.id}`} className="text-primary hover:text-primary/80">
+                        {invoice.series}-{String(invoice.number).padStart(8, '0')}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {invoice.client?.name || 'Cliente no disponible'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {format(parseISO(invoice.issue_date), 'dd/MM/yyyy')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      S/ {typeof invoice.total_payable === 'number' ? invoice.total_payable.toFixed(2) : '0.00'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <SunatStatusBadge status={invoice.sunat_status} />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No hay facturas recientes disponibles
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

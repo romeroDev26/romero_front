@@ -181,8 +181,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           if (item.name === 'Anulaciones') return hasPermission('accounting', 'voids', userRole);
           return true; // Para otros items
         }).map(item => {
+<<<<<<< HEAD
           if (item.isSubmenu && item.subitems) {
             const filteredSubitems = item.subitems.filter((subitem: NavItem) => {
+=======
+          if ((item as any).isSubmenu && (item as any).subitems) {
+            const filteredSubitems = (item as any).subitems.filter((subitem: any) => {
+>>>>>>> 50a34cbf2a9176684bad5414dbf2330668046542
               if (userRole === 'driver') {
                 // DRIVER solo acceso limitado a manifiestos
                 return subitem.name === 'Manifiestos';
@@ -224,17 +229,26 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       if (group.expandable && group.expandKey) {
         const isGroupActive = group.items.some(item =>
           currentPath.startsWith(item.path !== '#' ? item.path : '---') ||
+<<<<<<< HEAD
           (item.subitems && item.subitems.some((sub: NavItem) => currentPath.startsWith(sub.path)))
+=======
+          ((item as any).subitems && (item as any).subitems.some((sub: any) => currentPath.startsWith(sub.path)))
+>>>>>>> 50a34cbf2a9176684bad5414dbf2330668046542
         );
 
         if (isGroupActive) {
           newExpanded[group.expandKey] = true;
 
           group.items.forEach(subGroup => {
+<<<<<<< HEAD
             if (subGroup.isSubmenu && subGroup.expandKey && subGroup.subitems) {
               const isSubGroupActive = subGroup.subitems.some((sub: NavItem) => currentPath.startsWith(sub.path));
+=======
+            if ((subGroup as any).isSubmenu) {
+              const isSubGroupActive = (subGroup as any).subitems.some((sub: any) => currentPath.startsWith(sub.path));
+>>>>>>> 50a34cbf2a9176684bad5414dbf2330668046542
               if (isSubGroupActive) {
-                newExpanded[subGroup.expandKey] = true;
+                newExpanded[(subGroup as any).expandKey] = true;
               }
             }
           });

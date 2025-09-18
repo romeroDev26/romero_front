@@ -5,7 +5,7 @@ import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
 import {
   HomeIcon, UserGroupIcon, DocumentTextIcon, CreditCardIcon, TruckIcon,
-  ChartBarIcon, CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
+  CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
   UsersIcon, KeyIcon, MapIcon, BuildingOffice2Icon, CalendarDaysIcon, TicketIcon,
   ClipboardDocumentListIcon, CurrencyDollarIcon, AdjustmentsHorizontalIcon,
   ChartPieIcon, CubeIcon
@@ -13,13 +13,32 @@ import {
 
 const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
 
+interface NavItem {
+  name: string;
+  path: string;
+  icon: any;
+  iconColor: string;
+  isSubmenu?: boolean;
+  expandKey?: string;
+  subitems?: NavItem[];
+}
+
+interface NavGroup {
+  title: string;
+  expandable?: boolean;
+  expandKey?: string;
+  icon?: any;
+  iconColor?: string;
+  items: NavItem[];
+}
+
 interface SidebarProps {
   currentUser?: User;
   onLogout: () => void;
   onCloseMobile: () => void;
 }
 
-const navGroups = [
+const navGroups: NavGroup[] = [
   {
     title: 'Dashboard',
     items: [
@@ -163,7 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           return true; // Para otros items
         }).map(item => {
           if (item.isSubmenu && item.subitems) {
-            const filteredSubitems = item.subitems.filter(subitem => {
+            const filteredSubitems = item.subitems.filter((subitem: NavItem) => {
               if (userRole === 'driver') {
                 // DRIVER solo acceso limitado a manifiestos
                 return subitem.name === 'Manifiestos';
@@ -202,18 +221,18 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
 
     // Expandir automáticamente grupos basados en la ruta actual
     navGroups.forEach(group => {
-      if (group.expandable) {
+      if (group.expandable && group.expandKey) {
         const isGroupActive = group.items.some(item =>
           currentPath.startsWith(item.path !== '#' ? item.path : '---') ||
-          (item.subitems && item.subitems.some(sub => currentPath.startsWith(sub.path)))
+          (item.subitems && item.subitems.some((sub: NavItem) => currentPath.startsWith(sub.path)))
         );
 
         if (isGroupActive) {
           newExpanded[group.expandKey] = true;
 
           group.items.forEach(subGroup => {
-            if (subGroup.isSubmenu) {
-              const isSubGroupActive = subGroup.subitems.some(sub => currentPath.startsWith(sub.path));
+            if (subGroup.isSubmenu && subGroup.expandKey && subGroup.subitems) {
+              const isSubGroupActive = subGroup.subitems.some((sub: NavItem) => currentPath.startsWith(sub.path));
               if (isSubGroupActive) {
                 newExpanded[subGroup.expandKey] = true;
               }
@@ -248,7 +267,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
     return user.role?.description || user.role?.name || user.role_name || 'Sin rol';
   };
 
-  const renderMenuItem = useCallback((item: any, isSubitem = false, level = 0) => {
+  const renderMenuItem = useCallback((item: NavItem, isSubitem = false, level = 0) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
     const baseClasses = `flex items-center w-full text-left text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-lg`;
     
@@ -261,11 +280,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       paddingClasses = 'pl-10 pr-4 py-2.5';
     }
 
-    if (item.isSubmenu) {
+    if (item.isSubmenu && item.expandKey) {
       return (
         <div key={item.name} className="mb-1">
           <button
-            onClick={() => toggleSubmenu(item.expandKey)}
+            onClick={() => toggleSubmenu(item.expandKey!)}
             className={`${baseClasses} ${paddingClasses} ${
               expandedMenus[item.expandKey]
                 ? 'bg-blue-50 text-blue-700'
@@ -283,7 +302,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           {isExpanded && item.subitems && (
             <div className="mt-1 bg-gray-50/50 rounded-lg mx-2">
               <div className="py-2 space-y-1">
-                {item.subitems.map((subitem: any) => renderMenuItem(subitem, true, level + 1))}
+                {item.subitems.map((subitem: NavItem) => renderMenuItem(subitem, true, level + 1))}
               </div>
             </div>
           )}
@@ -312,20 +331,20 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
     );
   }, [expandedMenus]);
 
-  const renderExpandableGroup = useCallback((group: any) => {
-    const isExpanded = expandedMenus[group.expandKey];
+  const renderExpandableGroup = useCallback((group: NavGroup) => {
+    const isExpanded = group.expandKey ? expandedMenus[group.expandKey] : false;
 
     return (
       <div key={group.title} className="mb-6">
         <button
-          onClick={() => toggleSubmenu(group.expandKey)}
+          onClick={() => group.expandKey && toggleSubmenu(group.expandKey)}
           className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
             isExpanded
               ? 'bg-blue-50 text-blue-700'
               : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
           }`}
         >
-          <group.icon className={`w-5 h-5 mr-3 ${group.iconColor || 'text-gray-500'}`} />
+          {group.icon && <group.icon className={`w-5 h-5 mr-3 ${group.iconColor || 'text-gray-500'}`} />}
           <span className="flex-1">{group.title}</span>
           <ChevronDownIcon
             className={`w-4 h-4 transition-transform duration-200 ${
@@ -336,7 +355,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
         {isExpanded && (
           <div className="mt-1 bg-gray-50 rounded-lg mx-2 overflow-hidden">
             <div className="py-2 space-y-1">
-              {group.items.map((item: any) => (
+              {group.items.map((item: NavItem) => (
                 <div key={item.name || item.path}>
                   {renderMenuItem(item, false, 0)}
                 </div>
@@ -348,13 +367,13 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
     );
   }, [expandedMenus, renderMenuItem]);
 
-  const renderSimpleGroup = useCallback((group: any, idx: number) => (
+  const renderSimpleGroup = useCallback((group: NavGroup, idx: number) => (
     <div key={idx} className="mb-6">
       <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
         {group.title}
       </div>
       <div className="space-y-1">
-        {group.items.map((item: any) => renderMenuItem(item, false, 0))}
+        {group.items.map((item: NavItem) => renderMenuItem(item, false, 0))}
       </div>
     </div>
   ), [renderMenuItem]);

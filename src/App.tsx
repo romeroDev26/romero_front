@@ -12,6 +12,7 @@ import { Spinner } from './components/common/Spinner';
 
 // Páginas del dashboard (carga inmediata)
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
+import { ReportsPage } from './features/dashboard/pages/ReportsPage';
 
 // Lazy loading para componentes pesados
 const ClientsListPage = React.lazy(() => import('./features/clients/pages/ClientsListPage').then(module => ({ default: module.ClientsListPage })));
@@ -96,6 +97,7 @@ function App() {
           }>
             {/* Dashboard Principal */}
             <Route index element={<DashboardPage />} />
+            <Route path="reports" element={<ReportsPage />} />
             
             {/* Gestión de Clientes */}
             <Route path="clients" element={

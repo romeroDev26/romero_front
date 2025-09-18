@@ -22,7 +22,9 @@ import { usePorts } from '../../../hooks/useCitiesPortsData';
 const DOCUMENT_TYPE_OPTIONS = [
   { code: '01', name: 'Factura Electrónica' }, { code: '03', name: 'Boleta de Venta Electrónica' },
   { code: '07', name: 'Nota de Crédito' }, { code: '08', name: 'Nota de Débito' },
-  { code: '31', name: 'Guía de Remisión' },
+  { code: 'COT', name: 'Cotizaciones' },
+  { code: '09', name: 'Guía de Remisión del Remitente' },
+  { code: '31', name: 'Guía de Remisión de Transportista' },
 ];
 
 // =============== COMPONENTES DE MODAL ===============

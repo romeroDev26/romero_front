@@ -5,6 +5,8 @@ import { UserMetrics } from '../components/UserMetrics';
 import { RevenueMetrics } from '../components/RevenueMetrics';
 import { MonthlySalesChart } from '../components/MonthlySalesChart';
 import { BranchSalesChart } from '../components/BranchSalesChart';
+import { BranchSalesLineChart } from '../components/BranchSalesLineChart';
+import { TopSellersByBranch } from '../components/TopSellersByBranch';
 import { BarChart3 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -22,6 +24,16 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <MonthlySalesChart />
         <BranchSalesChart />
+      </div>
+
+      {/* Nuevo gráfico de barras de ventas por sucursal */}
+      <div className="grid grid-cols-1 gap-6">
+        <BranchSalesLineChart />
+      </div>
+
+      {/* Top vendedores por sucursal */}
+      <div className="grid grid-cols-1 gap-6">
+        <TopSellersByBranch />
       </div>
 
       {/* Enlace a reportes detallados */}

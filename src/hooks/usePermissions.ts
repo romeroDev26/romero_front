@@ -11,7 +11,7 @@ export const usePermissions = () => {
 
     switch (groupKey) {
       case 'dashboard':
-        return true; // Todos pueden ver dashboard
+        return role === 'admin'; // Solo administradores pueden acceder al dashboard analítico
 
       case 'clients':
         return ['sales', 'dispatcher', 'accountant'].includes(role); // SALES CRUD, otros lectura
@@ -81,7 +81,8 @@ export const usePermissions = () => {
 
     // Mapear rutas a permisos
     const routePermissions: { [key: string]: string[] } = {
-      '/': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'],
+      '/': ['admin'], // Solo administradores pueden acceder al dashboard principal
+      '/welcome': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Página de bienvenida para todos
       '/clients': ['admin', 'sales', 'dispatcher', 'accountant'],
       '/fluvial/config': ['admin', 'sales', 'dispatcher'],
       '/fluvial/operations': ['admin', 'sales', 'dispatcher', 'driver'],

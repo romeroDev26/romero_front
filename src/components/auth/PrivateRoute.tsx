@@ -51,7 +51,12 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   }
 
   if (!hasAccess) {
-    // Redirigir al dashboard si no tiene permisos
+    // Si el usuario está intentando acceder a la raíz del dashboard y no tiene permisos,
+    // redirigir a la página de bienvenida
+    if (location.pathname === '/') {
+      return <Navigate to="/welcome" replace />;
+    }
+    // Para otras rutas, redirigir al dashboard si no tiene permisos
     return <Navigate to="/" replace />;
   }
 

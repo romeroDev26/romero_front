@@ -46,7 +46,7 @@ export interface SalesByBranchFilters {
 }
 
 export interface SellerData {
-  seller_id: number;
+  seller_id: string;
   seller_name: string;
   seller_email: string;
   total_invoices: number;
@@ -93,7 +93,7 @@ export interface SalesByBranchResponse {
   filters: {
     start_date: string;
     end_date: string;
-    branch_office_ids: number[];
+    branch_office_ids: number[] | null;
     include_vessel_data: boolean;
     period_grouping: string;
     include_seller_details: boolean;

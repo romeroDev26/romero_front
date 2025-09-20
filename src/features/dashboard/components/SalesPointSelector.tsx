@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { useQueryClient } from '@tanstack/react-query';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
 import { toast } from 'react-toastify';
@@ -7,6 +9,7 @@ import UserSalesChart from './UserSalesChart';
 
 export const SalesPointSelector: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedBranch, setSelectedBranch] = useState<string>('');
 
   // Hook para obtener sucursales
@@ -17,8 +20,14 @@ export const SalesPointSelector: React.FC = () => {
     today, 
     currentMonth, 
     isLoading: statisticsLoading, 
-    hasError: statisticsError 
+    hasError: statisticsError
   } = useAllUserStatistics();
+
+  const handleRefreshStatistics = async () => {
+    // Invalidar todas las queries de estadísticas para forzar refetch
+    await queryClient.invalidateQueries({ queryKey: ['userStatistics'] });
+    toast.success('Estadísticas actualizadas');
+  };
 
   // Cargar sucursal seleccionada desde localStorage
   useEffect(() => {
@@ -143,9 +152,19 @@ export const SalesPointSelector: React.FC = () => {
 
       {/* Sales Statistics */}
       <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-          Mis Estadísticas de Ventas
-        </h3>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Mis Estadísticas de Ventas
+          </h3>
+          <button
+            onClick={handleRefreshStatistics}
+            disabled={statisticsLoading}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+          >
+            <ArrowPathIcon className={`w-4 h-4 ${statisticsLoading ? 'animate-spin' : ''}`} />
+            {statisticsLoading ? 'Actualizando...' : 'Actualizar'}
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
             <div className="text-2xl font-bold text-blue-600 mb-1">

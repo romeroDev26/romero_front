@@ -1,3 +1,4 @@
+//src/features/dashboard/components/WelcomeContent.tsx
 import React from 'react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { TruckIcon, UserGroupIcon, CubeIcon, DocumentTextIcon } from '@heroicons/react/24/outline';

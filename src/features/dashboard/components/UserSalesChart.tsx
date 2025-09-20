@@ -33,13 +33,13 @@ const UserSalesChart: React.FC = () => {
   const { 
     data: last7DaysData, 
     isLoading: isLoading7Days, 
-    error: error7Days 
+    error: error7Days
   } = useLast7DaysStatistics({ enabled: period === '7days' });
 
   const { 
     data: last12MonthsData, 
     isLoading: isLoading12Months, 
-    error: error12Months 
+    error: error12Months
   } = useLast12MonthsStatistics({ enabled: period === '12months' });
 
   // Función para formatear datos para el gráfico

@@ -23,8 +23,9 @@ export const useTodayStatistics = (options: UseUserStatisticsOptions = {}) => {
       return userStatisticsService.getTodayStatistics(currentUser.id);
     },
     enabled: !!currentUser?.id && (options.enabled ?? true),
-    refetchInterval: options.refetchInterval ?? 30000, // Refetch cada 30 segundos
-    staleTime: 30000, // Los datos se consideran frescos por 30 segundos
+    refetchInterval: false, // Desactivado el refetch automático
+    staleTime: 5 * 60 * 1000, // Los datos se consideran frescos por 5 minutos
+    gcTime: 10 * 60 * 1000, // Cache por 10 minutos
   });
 };
 
@@ -43,8 +44,9 @@ export const useCurrentMonthStatistics = (options: UseUserStatisticsOptions = {}
       return userStatisticsService.getCurrentMonthStatistics(currentUser.id);
     },
     enabled: !!currentUser?.id && (options.enabled ?? true),
-    refetchInterval: options.refetchInterval ?? 60000, // Refetch cada minuto
-    staleTime: 60000, // Los datos se consideran frescos por 1 minuto
+    refetchInterval: false, // Desactivado el refetch automático
+    staleTime: 10 * 60 * 1000, // Los datos se consideran frescos por 10 minutos
+    gcTime: 15 * 60 * 1000, // Cache por 15 minutos
   });
 };
 
@@ -63,8 +65,9 @@ export const useCurrentYearStatistics = (options: UseUserStatisticsOptions = {})
       return userStatisticsService.getCurrentYearStatistics(currentUser.id);
     },
     enabled: !!currentUser?.id && (options.enabled ?? true),
-    refetchInterval: options.refetchInterval ?? 300000, // Refetch cada 5 minutos
-    staleTime: 300000, // Los datos se consideran frescos por 5 minutos
+    refetchInterval: false, // Desactivado el refetch automático
+    staleTime: 60 * 60 * 1000, // Los datos se consideran frescos por 1 hora
+    gcTime: 2 * 60 * 60 * 1000, // Cache por 2 horas
   });
 };
 
@@ -83,8 +86,9 @@ export const useLast7DaysStatistics = (options: UseUserStatisticsOptions = {}) =
       return userStatisticsService.getLast7DaysStatistics(currentUser.id);
     },
     enabled: !!currentUser?.id && (options.enabled ?? true),
-    refetchInterval: options.refetchInterval ?? 300000, // Refetch cada 5 minutos
-    staleTime: 300000, // Los datos se consideran frescos por 5 minutos
+    refetchInterval: false, // Desactivado el refetch automático
+    staleTime: 15 * 60 * 1000, // Los datos se consideran frescos por 15 minutos
+    gcTime: 30 * 60 * 1000, // Cache por 30 minutos
   });
 };
 
@@ -103,8 +107,9 @@ export const useLast12MonthsStatistics = (options: UseUserStatisticsOptions = {}
       return userStatisticsService.getLast12MonthsStatistics(currentUser.id);
     },
     enabled: !!currentUser?.id && (options.enabled ?? true),
-    refetchInterval: options.refetchInterval ?? 600000, // Refetch cada 10 minutos
-    staleTime: 600000, // Los datos se consideran frescos por 10 minutos
+    refetchInterval: false, // Desactivado el refetch automático
+    staleTime: 30 * 60 * 1000, // Los datos se consideran frescos por 30 minutos
+    gcTime: 60 * 60 * 1000, // Cache por 1 hora
   });
 };
 
@@ -131,8 +136,9 @@ export const useCustomPeriodStatistics = (
       });
     },
     enabled: !!currentUser?.id && !!date && (options.enabled ?? true),
-    refetchInterval: options.refetchInterval,
-    staleTime: options.refetchInterval || 60000,
+    refetchInterval: false, // Desactivado el refetch automático
+    staleTime: 10 * 60 * 1000, // Los datos se consideran frescos por 10 minutos
+    gcTime: 20 * 60 * 1000, // Cache por 20 minutos
   });
 };
 
@@ -157,6 +163,13 @@ export const useAllUserStatistics = (options: UseUserStatisticsOptions = {}) => 
       month: monthStats.error,
       year: yearStats.error,
       trends: last7DaysStats.error,
+    },
+    // Método para actualizar todas las estadísticas
+    refetchAll: () => {
+      todayStats.refetch();
+      monthStats.refetch();
+      yearStats.refetch();
+      last7DaysStats.refetch();
     }
   };
 };

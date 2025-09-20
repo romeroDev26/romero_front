@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
+import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
 import { toast } from 'react-toastify';
+import UserSalesChart from './UserSalesChart';
 
 export const SalesPointSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -9,6 +11,14 @@ export const SalesPointSelector: React.FC = () => {
 
   // Hook para obtener sucursales
   const { data: branches, isLoading: branchesLoading } = useBranchOfficesData();
+
+  // Hook para obtener estadísticas del usuario
+  const { 
+    today, 
+    currentMonth, 
+    isLoading: statisticsLoading, 
+    hasError: statisticsError 
+  } = useAllUserStatistics();
 
   // Cargar sucursal seleccionada desde localStorage
   useEffect(() => {
@@ -57,9 +67,9 @@ export const SalesPointSelector: React.FC = () => {
   };
 
   // Estadísticas simuladas por ahora (se pueden conectar a APIs reales más tarde)
-  const todaySales = 0;
-  const todayRevenue = 0;
-  const monthSales = 0;
+  const todaySales = today.data?.total_sales || 0;
+  const todayRevenue = today.data?.total_revenue || 0;
+  const monthSales = currentMonth.data?.total_sales || 0;
 
   return (
     <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8">
@@ -136,21 +146,51 @@ export const SalesPointSelector: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
           Mis Estadísticas de Ventas
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600 mb-1">{todaySales}</div>
+            <div className="text-2xl font-bold text-blue-600 mb-1">
+              {statisticsLoading ? (
+                <div className="animate-pulse h-8 bg-blue-200 rounded"></div>
+              ) : (
+                todaySales
+              )}
+            </div>
             <div className="text-sm text-gray-600">Ventas Hoy</div>
           </div>
           <div className="text-center p-4 bg-green-50 rounded-lg">
             <div className="text-2xl font-bold text-green-600 mb-1">
-              S/ {todayRevenue.toLocaleString('es-PE')}
+              {statisticsLoading ? (
+                <div className="animate-pulse h-8 bg-green-200 rounded"></div>
+              ) : (
+                `S/ ${todayRevenue.toLocaleString('es-PE')}`
+              )}
             </div>
             <div className="text-sm text-gray-600">Ingresos Hoy</div>
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
-            <div className="text-2xl font-bold text-purple-600 mb-1">{monthSales}</div>
+            <div className="text-2xl font-bold text-purple-600 mb-1">
+              {statisticsLoading ? (
+                <div className="animate-pulse h-8 bg-purple-200 rounded"></div>
+              ) : (
+                monthSales
+              )}
+            </div>
             <div className="text-sm text-gray-600">Ventas Este Mes</div>
           </div>
+        </div>
+
+        {/* Error message */}
+        {statisticsError && !statisticsLoading && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="text-yellow-800 text-sm text-center">
+              No se pudieron cargar todas las estadísticas. Las métricas mostradas pueden estar incompletas.
+            </div>
+          </div>
+        )}
+
+        {/* Sales Performance Chart */}
+        <div className="mt-6">
+          <UserSalesChart />
         </div>
       </div>
     </div>

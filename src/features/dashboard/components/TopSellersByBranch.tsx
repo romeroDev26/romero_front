@@ -9,12 +9,35 @@ const getBranchSalesData = async (
   includeSellerDetails: boolean
 ): Promise<SalesByBranchResponse> => {
   const now = new Date();
-  const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
-  const endDate = now.toISOString().split('T')[0];
+  let startDate: Date;
+
+  // Definir rango de fechas según el período seleccionado
+  switch (periodGrouping) {
+    case 'daily':
+      // Para diario, solo el día de hoy
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    case 'weekly':
+      // Para semanal, últimas 8 semanas
+      startDate = new Date(now.getTime() - 8 * 7 * 24 * 60 * 60 * 1000);
+      break;
+    case 'monthly':
+      // Para mensual, últimos 6 meses
+      startDate = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+      break;
+    case 'yearly':
+      // Para anual, últimos 3 años
+      startDate = new Date(now.getFullYear() - 3, 0, 1);
+      break;
+    default:
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+  const endDate = now;
 
   const report: SalesByBranchResponse = await adminReportsService.getSalesByBranch({
-    start_date: startDate,
-    end_date: endDate,
+    start_date: startDate.toISOString().split('T')[0],
+    end_date: endDate.toISOString().split('T')[0],
     period_grouping: periodGrouping as 'daily' | 'weekly' | 'monthly' | 'yearly',
     include_seller_details: includeSellerDetails,
   });
@@ -38,6 +61,22 @@ export const TopSellersByBranch: React.FC = () => {
 
   const handleSellerDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIncludeSellerDetails(e.target.checked);
+  };
+
+  // Título dinámico según el período
+  const getComponentTitle = () => {
+    switch (periodGrouping) {
+      case 'daily':
+        return 'Top Vendedores del Día por Sucursal';
+      case 'weekly':
+        return 'Top Vendedores Semanales por Sucursal';
+      case 'monthly':
+        return 'Top Vendedores Mensuales por Sucursal';
+      case 'yearly':
+        return 'Top Vendedores Anuales por Sucursal';
+      default:
+        return 'Top Vendedores por Sucursal';
+    }
   };
 
   if (isLoading) {
@@ -70,7 +109,7 @@ export const TopSellersByBranch: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2">
           <TrophyIcon className="w-6 h-6 text-yellow-500" />
-          <h3 className="text-lg font-semibold text-gray-900">Top Vendedores por Sucursal</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{getComponentTitle()}</h3>
         </div>
 
         {/* Controles */}

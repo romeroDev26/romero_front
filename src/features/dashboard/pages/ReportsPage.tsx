@@ -1,9 +1,15 @@
 // src/features/dashboard/pages/ReportsPage.tsx
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { reportsService, DailySalesReport } from '../../../services/reports.service';
 import { SalesSummary } from '../components/SalesSummary';
 import { DailySalesTable } from '../components/DailySalesTable';
+import { PaymentMethodsChart } from '../components/PaymentMethodsChart';
+import { TopSellersChart } from '../components/TopSellersChart';
+import { PopularRoutesChart } from '../components/PopularRoutesChart';
+import { SunatStatusChart } from '../components/SunatStatusChart';
 
 export const ReportsPage: React.FC = () => {
   const [dateRange, setDateRange] = useState({
@@ -64,8 +70,17 @@ export const ReportsPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Reportes de Ventas</h1>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link
+            to="/"
+            className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
+            <ArrowLeftIcon className="w-4 h-4 mr-2" />
+            Volver al Dashboard
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Reportes de Ventas</h1>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -122,6 +137,34 @@ export const ReportsPage: React.FC = () => {
 
       {/* Resumen */}
       {report && <SalesSummary summary={report.summary} isLoading={isLoading} />}
+
+      {/* Gráficos de análisis */}
+      {report && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <PaymentMethodsChart 
+            paymentMethodsSummary={report.summary.payment_methods_summary} 
+            isLoading={isLoading} 
+          />
+          <TopSellersChart 
+            sellersSummary={report.summary.sellers_summary} 
+            isLoading={isLoading} 
+          />
+        </div>
+      )}
+
+      {/* Rutas populares y estado SUNAT */}
+      {report && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <PopularRoutesChart 
+            items={report.items} 
+            isLoading={isLoading} 
+          />
+          <SunatStatusChart 
+            items={report.items} 
+            isLoading={isLoading} 
+          />
+        </div>
+      )}
 
       {/* Tabla de ventas */}
       {report && <DailySalesTable items={report.items} isLoading={isLoading} />}

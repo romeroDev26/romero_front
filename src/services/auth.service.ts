@@ -1,6 +1,7 @@
 // src/services/auth.service.ts
 import api from '../config/api';
 import { User } from '../types';
+import { cacheService } from './cache.service';
 
 interface LoginCredentials {
   email: string;
@@ -49,8 +50,11 @@ export const authService = {
   },
   
   logout: async (): Promise<void> => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+    // Limpieza completa de caché usando el servicio centralizado
+    cacheService.clearAll({
+      // Opciones adicionales si necesitas preservar algo específico
+      preserveKeys: [] // Por defecto, limpia todo
+    });
   },
   
   getCurrentUser: (): User | null => {

@@ -8,8 +8,49 @@ import { BranchSalesChart } from '../components/BranchSalesChart';
 import { BranchSalesLineChart } from '../components/BranchSalesLineChart';
 import { TopSellersByBranch } from '../components/TopSellersByBranch';
 import { BarChart3 } from 'lucide-react';
+import { useAuth } from '../../auth/hooks/useAuth';
 
 export const DashboardPage: React.FC = () => {
+  const { user, isLoading } = useAuth();
+
+  // Mostrar loading mientras se carga la información del usuario
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Solo administradores pueden acceder al dashboard analítico
+  const isAdmin = user?.role?.name?.toLowerCase() === 'admin' || 
+                  user?.role_name?.toLowerCase() === 'admin';
+  
+  if (!isAdmin) {
+    return (
+      <div className="p-6">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <div className="flex justify-center items-center mb-4">
+            <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-yellow-600" />
+            </div>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Acceso Restringido</h2>
+          <p className="text-gray-600 mb-4">
+            El Dashboard General está disponible únicamente para administradores del sistema.
+          </p>
+          <Link
+            to="/"
+            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Volver al Inicio
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Para administradores, mostrar el dashboard analítico completo
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Dashboard de Rendimiento</h1>

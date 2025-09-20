@@ -74,7 +74,7 @@ const ReceivablesPage = React.lazy(() => import('./features/finance/pages/Receiv
 const ExpensesPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Gastos</h1><p>Gestión de gastos operativos</p></div>;
 
 // Crear cliente para React Query
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
@@ -101,8 +101,10 @@ function App() {
               <Dashboard />
             </PrivateRoute>
           }>
-            {/* Dashboard Principal */}
-            <Route index element={<DashboardPage />} />
+            {/* Página de inicio para todos los usuarios */}
+            <Route index element={<WelcomePage />} />
+            {/* Dashboard analítico solo para administradores */}
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="reports" element={<ReportsPage />} />
             
             {/* Gestión de Clientes */}

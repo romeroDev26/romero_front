@@ -81,7 +81,7 @@ export const usePermissions = () => {
 
     // Mapear rutas a permisos
     const routePermissions: { [key: string]: string[] } = {
-      '/': ['admin'], // Solo administradores pueden acceder al dashboard principal
+      '/': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Dashboard principal para todos los usuarios
       '/welcome': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Página de bienvenida para todos
       '/clients': ['admin', 'sales', 'dispatcher', 'accountant'],
       '/fluvial/config': ['admin', 'sales', 'dispatcher'],

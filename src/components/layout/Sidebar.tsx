@@ -21,6 +21,7 @@ interface NavItem {
   isSubmenu?: boolean;
   expandKey?: string;
   subitems?: NavItem[];
+  adminOnly?: boolean; // Nueva propiedad para items solo para admin
 }
 
 interface NavGroup {
@@ -40,9 +41,10 @@ interface SidebarProps {
 
 const navGroups: NavGroup[] = [
   {
-    title: 'Dashboard',
+    title: 'Navegación Principal',
     items: [
-      { name: 'Dashboard General', path: '/', icon: HomeIcon, iconColor: 'text-purple-500' }
+      { name: 'Inicio', path: '/', icon: HomeIcon, iconColor: 'text-green-500' },
+      { name: 'Dashboard General', path: '/dashboard', icon: ChartPieIcon, iconColor: 'text-purple-500', adminOnly: true }
     ]
   },
   {
@@ -153,11 +155,15 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
   const filteredNavGroups = useCallback(() => {
     // Obtener el rol del usuario de manera más robusta
     let userRole = '';
+    let isAdmin = false;
     if (currentUser) {
       userRole = currentUser.role?.name?.toLowerCase() ||
                  currentUser.role_name?.toLowerCase() || '';
+      isAdmin = userRole === 'admin';
     }
+    
     return navGroups.filter(group => {
+      if (group.title === 'Navegación Principal') return true; // Siempre visible para todos los usuarios
       if (group.title === 'Dashboard') return hasPermission('dashboard', undefined, userRole);
       if (group.title === 'Gestión de Clientes') return hasPermission('clients', undefined, userRole);
       if (group.title === 'Sistema de Transporte Fluvial') return hasPermission('fluvial', undefined, userRole);
@@ -167,52 +173,55 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       if (group.title === 'Administración del Sistema') return hasPermission('administration', undefined, userRole);
       return false;
     }).map(group => {
-      if (group.expandable && group.items) {
-        const filteredItems = group.items.filter(item => {
-          if (item.name === 'Configuración') return hasPermission('fluvial', 'config', userRole);
-          if (item.name === 'Operaciones') return hasPermission('fluvial', 'operations', userRole);
-          if (item.name === 'Cotizaciones') return hasPermission('commerce', 'quotations', userRole);
-          if (item.name === 'Guías de Remisión') return hasPermission('commerce', 'remission-guides', userRole);
-          // Filtrar items de contabilidad por rol - SALES tiene acceso completo
-          if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
-          if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
-          if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);
-          if (item.name === 'Resúmenes') return hasPermission('accounting', 'summaries', userRole);
-          if (item.name === 'Anulaciones') return hasPermission('accounting', 'voids', userRole);
-          return true; // Para otros items
-        }).map(item => {
-          if (item.isSubmenu && item.subitems) {
-            const filteredSubitems = item.subitems.filter((subitem: NavItem) => {
-
-              if (userRole === 'driver') {
-                // DRIVER solo acceso limitado a manifiestos
-                return subitem.name === 'Manifiestos';
-              }
-              if (userRole === 'sales' && item.name === 'Configuración') {
-                // SALES solo lectura en config, mostrar todos pero quizás marcar como solo lectura
-                return true;
-              }
-              if (userRole === 'dispatcher' && item.name === 'Configuración') {
-                // DISPATCHER CRUD en config
-                return true;
-              }
-              if (userRole === 'sales' && item.name === 'Operaciones') {
-                // SALES solo lectura en operaciones
-                return true;
-              }
-              if (userRole === 'dispatcher' && item.name === 'Operaciones') {
-                // DISPATCHER CRUD en operaciones
-                return true;
-              }
-              return true; // Por defecto mostrar
-            });
-            return { ...item, subitems: filteredSubitems };
-          }
-          return item;
-        });
-        return { ...group, items: filteredItems };
-      }
-      return group;
+      // Filtrar items dentro del grupo
+      const filteredItems = group.items.filter(item => {
+        // Si el item es solo para admin, verificar que el usuario sea admin
+        if (item.adminOnly && !isAdmin) {
+          return false;
+        }
+        
+        if (item.name === 'Configuración') return hasPermission('fluvial', 'config', userRole);
+        if (item.name === 'Operaciones') return hasPermission('fluvial', 'operations', userRole);
+        if (item.name === 'Cotizaciones') return hasPermission('commerce', 'quotations', userRole);
+        if (item.name === 'Guías de Remisión') return hasPermission('commerce', 'remission-guides', userRole);
+        // Filtrar items de contabilidad por rol - SALES tiene acceso completo
+        if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
+        if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
+        if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);
+        if (item.name === 'Resúmenes') return hasPermission('accounting', 'summaries', userRole);
+        if (item.name === 'Anulaciones') return hasPermission('accounting', 'voids', userRole);
+        return true; // Para otros items
+      }).map(item => {
+        if (item.isSubmenu && item.subitems) {
+          const filteredSubitems = item.subitems.filter((subitem: NavItem) => {
+            if (userRole === 'driver') {
+              // DRIVER solo acceso limitado a manifiestos
+              return subitem.name === 'Manifiestos';
+            }
+            if (userRole === 'sales' && item.name === 'Configuración') {
+              // SALES solo lectura en config, mostrar todos pero quizás marcar como solo lectura
+              return true;
+            }
+            if (userRole === 'dispatcher' && item.name === 'Configuración') {
+              // DISPATCHER CRUD en config
+              return true;
+            }
+            if (userRole === 'sales' && item.name === 'Operaciones') {
+              // SALES solo lectura en operaciones
+              return true;
+            }
+            if (userRole === 'dispatcher' && item.name === 'Operaciones') {
+              // DISPATCHER CRUD en operaciones
+              return true;
+            }
+            return true; // Por defecto mostrar
+          });
+          return { ...item, subitems: filteredSubitems };
+        }
+        return item;
+      });
+      
+      return { ...group, items: filteredItems };
     });
   }, [currentUser, hasPermission]);
 
@@ -244,9 +253,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       }
     });
 
-    // Forzar expansión del grupo de contabilidad para SALES si no está expandido
-    if (currentUser && (currentUser.role?.name?.toLowerCase() === 'sales' || currentUser.role_name?.toLowerCase() === 'sales')) {
-      if (!newExpanded['accounting']) {
+    // Forzar expansión del grupo de contabilidad para SALES únicamente si está en una ruta de contabilidad
+    if (currentUser) {
+      const userRole = currentUser.role?.name?.toLowerCase() || currentUser.role_name?.toLowerCase() || '';
+      
+      // Solo expandir contabilidad para SALES si está navegando en rutas de contabilidad
+      if (userRole === 'sales' && currentPath.startsWith('/accounting') && !newExpanded['accounting']) {
         newExpanded['accounting'] = true;
       }
     }

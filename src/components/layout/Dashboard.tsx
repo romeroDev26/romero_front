@@ -17,7 +17,6 @@ import Sidebar from './Sidebar'; // Importa el nuevo componente
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
-const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
 
 // Accesos rápidos para las funciones más comerciales
 const quickAccessItems = [
@@ -111,10 +110,7 @@ export const Dashboard: React.FC = () => {
   // Usamos useCallback para que estas funciones no se re-creen en cada render,
   // lo que es importante para la optimización con React.memo en el Sidebar.
   const handleLogout = useCallback(() => {
-    // Limpiamos todo el localStorage relevante
-    localStorage.removeItem(STORAGE_KEY_EXPANDED_MENUS);
-    localStorage.removeItem(STORAGE_KEY_SIDEBAR_HIDDEN);
-    localStorage.removeItem('dashboard_sidebar_scroll'); // Limpiamos el scroll
+    // Usar el servicio de autenticación que ya incluye la limpieza completa
     authService.logout();
     navigate('/login');
   }, [navigate]);

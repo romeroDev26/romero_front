@@ -174,6 +174,30 @@ class RemissionGuidesService {
     const response = await api.post<AutoGenerateRemissionGuidesResponse>('/sunat/remission-guides-auto/auto-generate', data);
     return response.data;
   }
+
+  // Sube PDF de guía de remisión automática al backend
+  async uploadRemissionGuidePDF(
+    guideId: number, 
+    pdfFile: File
+  ): Promise<void> {
+    try {
+      const formData = new FormData();
+      formData.append('file', pdfFile);
+      
+      await api.post(`/sunat/remission-guides-auto/${guideId}/upload-pdf`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+    } catch (error: any) {
+      console.error('Error uploading remission guide PDF:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.response?.data?.detail || 
+        'Error al subir el PDF de la guía de remisión'
+      );
+    }
+  }
 }
 
 export const remissionGuidesService = new RemissionGuidesService();

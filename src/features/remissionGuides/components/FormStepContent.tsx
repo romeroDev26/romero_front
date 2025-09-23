@@ -24,6 +24,8 @@ import { AvailableTripByPort } from '../../../services/trips.service';
 import { remissionGuidesService } from '../../../services/remissionGuides.service';
 import { remissionGuideTransportistaSchema, RemissionGuideTransportistaFormData } from '../schemas/remissionGuideSchema';
 import { useDocumentSeries } from '../../../hooks/useDocumentSeries';
+import { AutoGenerateRemissionGuidesResponse } from '../../../types';
+import { RemissionGuidePreviewModal } from './RemissionGuidePreviewModal';
 
 // Hook personalizado para series de guías de remisión del transportista
 const useRemissionGuideSeries = (branchId: number | null) => {
@@ -55,6 +57,8 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSeries, setSelectedSeries] = useState('');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [generationResult, setGenerationResult] = useState<AutoGenerateRemissionGuidesResponse | null>(null);
 
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(selectedTrip.id);
   
@@ -193,8 +197,11 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
 
       const response = await remissionGuidesService.autoGenerate(payload);
 
-      toast.success(`Se generaron ${response.guides_generated} guías de remisión automáticamente para ${response.destinations_processed} destinos.`);
-      navigate('/remission-guides');
+      toast.success(`Se generaron ${response.guides_generated.length} guías de remisión automáticamente para ${response.destinations_processed} destinos.`);
+      
+      // Guardar resultado y mostrar modal de previsualización
+      setGenerationResult(response);
+      setShowPreviewModal(true);
     } catch (error) {
       console.error('Error al generar guías automáticamente:', error);
       // Mostrar mensaje específico del backend si está disponible
@@ -398,6 +405,19 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Modal de previsualización de PDFs */}
+      {showPreviewModal && generationResult && (
+        <RemissionGuidePreviewModal
+          isOpen={showPreviewModal}
+          onClose={() => {
+            setShowPreviewModal(false);
+            setGenerationResult(null);
+            navigate('/remission-guides');
+          }}
+          generationResult={generationResult}
+        />
+      )}
 
     </div>
   );

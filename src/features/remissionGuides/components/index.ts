@@ -14,3 +14,20 @@ export { FormStepContent } from './FormStepContent';
 export { ItemsForGuideModal } from './ItemsForGuideModal';
 export { RemissionGuideTripSelector } from './RemissionGuideTripSelector';
 export { BranchSelectorForRemission } from './BranchSelectorForRemission';
+
+// Componente de resultado de generación
+export { RemissionGuideGenerationResult } from './RemissionGuideGenerationResult';
+
+// Modal de previsualización
+export { RemissionGuidePreviewModal } from './RemissionGuidePreviewModal';
+
+// Componentes PDF específicos
+export { RemissionGuidePDFButton } from './RemissionGuidePDFButton';
+
+// Componentes de generación PDF
+export { 
+  RemissionGuidePDFGenerator,
+  MultipleRemissionGuidePDFGenerator,
+  generateRemissionGuidePDF,
+  generateMultipleRemissionGuidePDFs
+} from './pdf/RemissionGuidePDFGenerator';

@@ -18,6 +18,7 @@ import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
 import { SunatStatusBadge } from '../../accounting/components/SunatStatusBadge';
 import { RemissionGuideActions } from '../components/RemissionGuideActions';
+import { RemissionGuidePDFButton } from '../components/RemissionGuidePDFButton';
 import { useRemissionGuide } from '../hooks/useRemissionGuides';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 
@@ -107,6 +108,15 @@ export const RemissionGuideDetailPage: React.FC = () => {
 
             <div className="flex items-center space-x-3">
               <SunatStatusBadge status={guide.sunat_status} />
+              
+              {/* Botón PDF */}
+              <RemissionGuidePDFButton 
+                guide={guide} 
+                variant="both" 
+                size="sm" 
+                showLabels={false}
+              />
+              
               {companyId && (
                 <RemissionGuideActions
                   guide={guide}

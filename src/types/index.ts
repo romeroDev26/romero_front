@@ -933,33 +933,95 @@ export interface AutoGenerateRemissionGuidesRequest {
 }
 
 export interface AutoGenerateRemissionGuideItem {
-  package_id: number;
-  invoice_number: string;
-  client_name: string;
+  id: number;
+  item_order: number;
+  quantity: number;
+  unit_code: string;
   description: string;
-  weight: number;
+  internal_code: string;
 }
 
 export interface AutoGenerateRemissionGuide {
   guide_id: number;
+  ubl_version: string;
+  document_type_code: string;
   series: string;
   number: number;
+  company_logo_url?: string;
   document_number: string;
-  destination_port_name: string;
+  issue_date: string;
+  issue_time: string;
+  sender_doc_type: string;
+  sender_doc_number: string;
+  sender_name: string;
+  recipient_doc_type: string;
+  recipient_doc_number: string;
+  recipient_name: string;
+  origin_ubigeo: string;
   origin_address: string;
+  destination_ubigeo: string;
   destination_address: string;
+  destination_port_name: string;
+  transport_mode_code: string;
+  total_gross_weight: number;
+  weight_unit_code: string;
+  number_of_packages: number;
+  total_packages: number;
+  total_weight: number;
+  shipment_start_date: string;
+  driver_doc_type: string;
+  driver_doc_number: string;
+  driver_name: string;
+  driver_license: string;
+  captain_name: string;
+  captain_doc_type: string;
+  captain_doc_number: string;
+  captain_license: string;
+  vessel_name: string;
+  vessel_plate: string;
+  related_doc_type: string | null;
+  related_doc_number: string | null;
   sunat_status: string;
+  sunat_ticket: string | null;
+  sunat_response_code: string | null;
+  sunat_response_description: string | null;
+  sunat_observations: string | null;
+  sunat_reception_date: string | null;
+  xml_file_path: string | null;
+  signed_xml_file_path: string | null;
+  zip_file_path: string | null;
+  zip_hash: string | null;
+  cdr_file_path: string | null;
+  pdf_file_path: string | null;
+  pdf_a4_file_path: string | null;
+  pdf_ticket_file_path: string | null;
+  qr_code_data: string;
+  company_ruc: string;
+  company_business_name: string;
+  company_trade_name: string | null;
+  company_address: string;
+  company_phone: string | null;
+  company_email: string | null;
   package_items: AutoGenerateRemissionGuideItem[];
+  observation: string | null;
+  trip_name: string;
+  departure_date: string;
+  created_by_name: string;
+  created_by_email: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AutoGenerateRemissionGuidesResponse {
-  auto_guide_id: number;
   trip_id: number;
   trip_name: string;
+  captain_updated: boolean;
   destinations_processed: number;
-  guides_generated: number;
+  guides_generated: AutoGenerateRemissionGuide[];
   total_packages: number;
-  generated_guides: AutoGenerateRemissionGuide[];
+  total_weight: number;
+  generated_at: string;
+  generated_by: string;
 }
 
 // ========================================

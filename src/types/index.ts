@@ -918,6 +918,9 @@ export interface RemissionGuideRemitente {
 // Tipo union para ambas guías
 export type RemissionGuide = RemissionGuideTransportista | RemissionGuideRemitente;
 
+// Respuesta combinada para endpoint by-branch-office (array único con guide_type)
+export type RemissionGuidesByBranchOfficeResponse = RemissionGuide[];
+
 // ========================================
 // AUTO-GENERATE REMISSION GUIDES
 // ========================================

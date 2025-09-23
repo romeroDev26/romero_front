@@ -328,7 +328,7 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
               </div>
               <div>
                 <p className="font-medium text-gray-900">
-                  Peso Total: {manifest.total_cargo_weight_kg} kg
+                  Total de carga: {manifest.total_cargo_weight_kg}
                 </p>
               </div>
               <div>

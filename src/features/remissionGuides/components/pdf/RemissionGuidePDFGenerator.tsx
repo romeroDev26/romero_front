@@ -5,13 +5,27 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AutoGenerateRemissionGuide } from '../../../../types';
 
+// Tipo para especificar el tipo de guía de remisión
+export type RemissionGuideType = 'transportista' | 'remitente';
+
 /**
- * Genera un PDF A4 para una guía de remisión de transportista
- * Siguiendo el modelo específico definido en el log.md
+ * Genera un PDF A4 para una guía de remisión
+ * Soporta tanto guías de transportista como de remitente
+ * @param guideData Datos de la guía
+ * @param guideType Tipo de guía (transportista o remitente)
  */
 export const generateRemissionGuidePDF = async (
-  guideData: AutoGenerateRemissionGuide
+  guideData: AutoGenerateRemissionGuide,
+  guideType: RemissionGuideType = 'transportista'
 ): Promise<{ pdf: jsPDF; blob: Blob }> => {
+  // Log detallado para diagnosticar el problema con la URL del logo
+  console.debug('[DEBUG] Datos relacionados con el logo:', {
+    company_logo_url: guideData.company_logo_url,
+    tipoCompanyLogoUrl: typeof guideData.company_logo_url,
+    tieneValor: Boolean(guideData.company_logo_url),
+    esStringValido: typeof guideData.company_logo_url === 'string' && guideData.company_logo_url.trim() !== '',
+    urlExplicita: "https://romero-cdn.b-cdn.net/companies/20602423248/2025/08/logos/logo.png"
+  });
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.width; // 210mm
   const pageHeight = pdf.internal.pageSize.height; // 297mm
@@ -24,77 +38,62 @@ export const generateRemissionGuidePDF = async (
   const logoY = currentY;
   const logoW = 50;
   const logoH = 25;
+  
+  // Ya no usamos loadImageElement, ahora usamos la estrategia directa de ManifestPreviewModal.tsx
 
-  // No dibujamos marco: mostramos el logo limpio (sin recuadro)
-
-  // Intentar cargar el logo remoto y dibujarlo dentro del recuadro
-  const loadImageAsDataURL = async (url?: string | null): Promise<string | null> => {
-    if (!url) return null;
-    try {
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      const blob = await res.blob();
-      return await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      return null;
-    }
-  };
-
+  // Implementando la estrategia que funciona en ManifestPreviewModal.tsx
   try {
-    const logoDataUrl = await loadImageAsDataURL(guideData.company_logo_url as string | undefined);
-    if (logoDataUrl) {
-      // Crear HTMLImageElement para mantener proporciones
-      const imgEl = await new Promise<HTMLImageElement | null>(resolve => {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = logoDataUrl;
-      });
-
-      if (imgEl && imgEl.width && imgEl.height) {
-        const ratio = imgEl.width / imgEl.height;
-        let drawW = logoW - 4;
-        let drawH = drawW / ratio;
-        if (drawH > logoH - 4) {
-          drawH = logoH - 4;
-          drawW = drawH * ratio;
-        }
-        const dx = logoX + (logoW - drawW) / 2;
-        const dy = logoY + (logoH - drawH) / 2;
-        // jsPDF puede aceptar HTMLImageElement directamente
-        pdf.addImage(imgEl, dx, dy, drawW, drawH);
-      } else {
-        // fallback texto si la imagen no se pudo procesar
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(11);
-        pdf.setTextColor(0, 0, 0);
-        pdf.text('GLOBAL ROMERO', logoX + logoW / 2, logoY + logoH / 2 - 2, { align: 'center' });
-        pdf.setFontSize(7);
-        pdf.text('S.A.C. - TRANSPORTISTA', logoX + logoW / 2, logoY + logoH / 2 + 4, { align: 'center' });
-      }
+    // SOLUCIÓN: Para garantizar que siempre tengamos una URL válida, usaremos
+    // la URL de log.md como respaldo si la URL dinámica falla
+    let logoUrl = guideData.company_logo_url;
+    
+    // Verificamos si la URL es válida, si no, usamos la URL de respaldo
+    if (!logoUrl || typeof logoUrl !== 'string' || logoUrl.trim() === '') {
+      logoUrl = "https://romero-cdn.b-cdn.net/companies/20602423248/2025/08/logos/logo.png";
+      console.debug('URL dinámica inválida, usando URL de respaldo:', logoUrl);
     } else {
-      // fallback texto si no hay imagen
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(11);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text('GLOBAL ROMERO', logoX + logoW / 2, logoY + logoH / 2 - 2, { align: 'center' });
-      pdf.setFontSize(7);
-      pdf.text('S.A.C. - TRANSPORTISTA', logoX + logoW / 2, logoY + logoH / 2 + 4, { align: 'center' });
+      console.debug('Usando URL dinámica correcta:', logoUrl);
     }
+    
+    // Ya tenemos garantizado que logoUrl es válida
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    await new Promise((resolve, reject) => {
+      img.onload = () => {
+        console.debug('Logo cargado exitosamente:', img.width, 'x', img.height);
+        resolve(img);
+      };
+      img.onerror = (e) => {
+        console.error('Error cargando imagen:', e);
+        reject(e);
+      };
+      img.src = logoUrl;
+    });
+      
+    // Calcular proporciones para mantener aspecto
+    const ratio = img.width / img.height;
+    let drawW = logoW - 10; // Reducir para que quepa bien
+    let drawH = drawW / ratio;
+    if (drawH > logoH - 10) {
+      drawH = logoH - 10;
+      drawW = drawH * ratio;
+    }
+    const dx = logoX + (logoW - drawW) / 2;
+    const dy = logoY + (logoH - drawH) / 2;
+    
+    // Añadir la imagen especificando formato PNG explícitamente
+    pdf.addImage(img, 'PNG', dx, dy, drawW, drawH);
+    console.debug('Imagen añadida al PDF correctamente');
   } catch (err) {
-    // en caso de cualquier error, dibujar el texto de fallback
+    // En caso de cualquier error, registrar y mostrar texto de fallback
+    console.error('Error cargando o procesando logo:', err);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(11);
     pdf.setTextColor(0, 0, 0);
     pdf.text('GLOBAL ROMERO', logoX + logoW / 2, logoY + logoH / 2 - 2, { align: 'center' });
     pdf.setFontSize(7);
-    pdf.text('S.A.C. - TRANSPORTISTA', logoX + logoW / 2, logoY + logoH / 2 + 4, { align: 'center' });
+    const companyType = guideType === 'transportista' ? 'TRANSPORTISTA' : 'REMITENTE';
+    pdf.text(`S.A.C. - ${companyType}`, logoX + logoW / 2, logoY + logoH / 2 + 4, { align: 'center' });
   }
 
   // Colocamos la información de la compañía al mismo nivel que el logo (a la derecha)
@@ -133,10 +132,18 @@ export const generateRemissionGuidePDF = async (
   const bottomOfCompanyInfo = companyInfoY;
   currentY = Math.max(bottomOfLogo, bottomOfCompanyInfo) + 6;
 
+  // La observación se moverá para colocarla antes de la sección BIENES TRANSPORTADOS
+
   // ============ TÍTULO CENTRADO ============
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(13);
-  pdf.text('GUÍA DE REMISIÓN TRANSPORTISTA', pageWidth / 2, currentY, { align: 'center' });
+  
+  // Título diferente según el tipo de guía
+  const guideTitle = guideType === 'transportista' 
+    ? 'GUÍA DE REMISIÓN TRANSPORTISTA'
+    : 'GUÍA DE REMISIÓN REMITENTE';
+  
+  pdf.text(guideTitle, pageWidth / 2, currentY, { align: 'center' });
   currentY += 5;
   pdf.text('ELECTRÓNICA', pageWidth / 2, currentY, { align: 'center' });
   currentY += 8;
@@ -249,6 +256,53 @@ export const generateRemissionGuidePDF = async (
       `DNI: ${guideData.captain_doc_number}`
     ]
   );
+  
+  // DATOS DEL COMPROBANTE RELACIONADO (si existen)
+  if (guideData.related_doc_type && guideData.related_doc_number) {
+    const tiposDoc = {
+      '01': 'FACTURA',
+      '03': 'BOLETA',
+      '07': 'NOTA DE CRÉDITO',
+      '08': 'NOTA DE DÉBITO',
+      '09': 'GUÍA DE REMISIÓN REMITENTE',
+      '31': 'GUÍA DE REMISIÓN TRANSPORTISTA'
+    };
+    
+    const tipoDoc = tiposDoc[guideData.related_doc_type as keyof typeof tiposDoc] || guideData.related_doc_type;
+    
+    // Convertimos a any para acceder a las propiedades no definidas en el tipo pero que existen en el JSON
+    const guideDataExtended = guideData as any;
+    
+    addTwoColumnSection(
+      'DATOS DEL COMPROBANTE RELACIONADO',
+      [
+        'COMPROBANTE:',
+        `Tipo: ${tipoDoc}`,
+        `Número: ${guideData.related_doc_number}`,
+        guideDataExtended.related_doc_ruc ? `RUC: ${guideDataExtended.related_doc_ruc}` : '',
+      ],
+      [
+        'DESCRIPCIÓN:',
+        guideDataExtended.related_doc_description || 'No especificada'
+      ]
+    );
+  }
+
+  // Imprimir observación si existe (campo que en log.md está como "observation")
+  if (guideData.observation) {
+    // Asegurar que hay suficiente espacio para la observación
+    currentY = checkPageSpace(15); // Espacio estimado para observación
+    
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9);
+    // Dejar un pequeño espacio y luego escribir la observación en una línea amplia
+    const obsLines = pdf.splitTextToSize(`Observación: ${guideData.observation}`, pageWidth - 2 * margin);
+    obsLines.forEach((line: string) => {
+      pdf.text(line, margin, currentY);
+      currentY += 4;
+    });
+    currentY += 2;
+  }
 
   // ============ BIENES TRANSPORTADOS (CON CONTROL DE PAGINACIÓN) ============
   currentY = checkPageSpace(35); // Reducido de 40 a 35

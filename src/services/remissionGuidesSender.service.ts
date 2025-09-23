@@ -1,7 +1,7 @@
 // src/services/remissionGuidesSender.service.ts
 
 import api from '../config/api';
-import { RemissionGuideRemitente } from '../types';
+import { RemissionGuideRemitente, RemissionGuidesByBranchOfficeResponse } from '../types';
 
 // Tipos para el servicio
 export interface ListSenderGuidesParams {
@@ -70,6 +70,12 @@ export interface ProcessCdrResponse {
 class RemissionGuidesSenderService {
   private readonly basePath = '/sunat/remission-guides-sender/';
 
+  // Obtiene todas las guías (transportista y remitente) por sucursal
+  async getAllByBranchOffice(branchOfficeId: number): Promise<RemissionGuidesByBranchOfficeResponse> {
+    const response = await api.get<RemissionGuidesByBranchOfficeResponse>(`${this.basePath}by-branch-office/${branchOfficeId}`);
+    return response.data;
+  }
+
   // Obtiene una lista paginada de guías del remitente
   async list(params: ListSenderGuidesParams): Promise<RemissionGuideRemitente[]> {
     const response = await api.get<RemissionGuideRemitente[]>(this.basePath, { params });
@@ -119,6 +125,32 @@ class RemissionGuidesSenderService {
       params: { company_id: companyId }
     });
     return response.data;
+  }
+
+  // Sube PDF de guía de remisión del remitente al backend
+  async uploadRemissionGuidePDF(
+    guideId: number, 
+    pdfFile: File,
+    pdfType: 'standard' | 'a4' | 'ticket' = 'standard'
+  ): Promise<void> {
+    try {
+      const formData = new FormData();
+      formData.append('file', pdfFile);
+      formData.append('pdf_type', pdfType);
+      
+      await api.post(`${this.basePath}${guideId}/upload-pdf`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+    } catch (error: any) {
+      console.error('Error uploading remission guide sender PDF:', error);
+      throw new Error(
+        error.response?.data?.message || 
+        error.response?.data?.detail || 
+        'Error al subir el PDF de la guía de remisión del remitente'
+      );
+    }
   }
 }
 

@@ -188,7 +188,7 @@ export const ManifestsPage: React.FC = () => {
           {trip.cargo_manifest ? (
             <div className="flex items-center space-x-1 bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs">
               <CubeIcon className="w-3 h-3" />
-              <span>Carga ({trip.cargo_manifest.total_cargo_weight_kg} Kg)</span>
+              <span>Carga ({trip.cargo_manifest.total_cargo_weight_kg})</span>
             </div>
           ) : (
             <div className="flex items-center space-x-1 bg-gray-100 text-gray-500 px-2 py-1 rounded-md text-xs">

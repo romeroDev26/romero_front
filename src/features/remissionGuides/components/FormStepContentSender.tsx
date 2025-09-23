@@ -34,6 +34,10 @@ import { AvailableTripByPort } from '../../../services/trips.service';
 import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';
 import { remissionGuideRemitenteSchema, RemissionGuideRemitenteFormData } from '../schemas/remissionGuideSchema';
 import { useDocumentSeries } from '../../../hooks/useDocumentSeries';
+import { RemissionGuideRemitente } from '../../../types';
+import { convertSenderGuideToAutoGenerate } from '../utils/guideConversion';
+import { generateRemissionGuidePDF } from './pdf/RemissionGuidePDFGenerator';
+import { RemissionGuideSenderPreviewModal } from './RemissionGuideSenderPreviewModal';
 
 // Hook personalizado para series de guías de remisión del remitente
 const useRemissionGuideSenderSeries = (branchId: number | null) => {
@@ -78,6 +82,9 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSeries, setSelectedSeries] = useState('');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [createdGuide, setCreatedGuide] = useState<RemissionGuideRemitente | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(selectedTrip?.id || 0);
   
@@ -269,16 +276,72 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
       console.log("Enviando a API:", payload);
       
       // Llamar al servicio real
-      await remissionGuidesSenderService.create(payload);
+      const createdGuideResponse = await remissionGuidesSenderService.create(payload);
       
       toast.success("Guía de Remisión del Remitente creada exitosamente.");
-      navigate('/remission-guides');
+      
+      // Guardar la guía creada y generar PDF automáticamente
+      setCreatedGuide(createdGuideResponse);
+      await handleGeneratePDFAfterCreation(createdGuideResponse);
+      
     } catch (error) {
       console.error('Error al crear la guía:', error);
       toast.error("Error al crear la guía de remisión. Intente nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Función para generar PDF después de crear la guía
+  const handleGeneratePDFAfterCreation = async (guide: RemissionGuideRemitente) => {
+    setIsGeneratingPDF(true);
+    let shouldShowModal = false;
+    
+    try {
+      // Convertir la guía del remitente al formato del PDF Generator
+      const convertedGuide = convertSenderGuideToAutoGenerate(guide);
+      if (!convertedGuide) {
+        toast.error('Error al procesar los datos de la guía para el PDF');
+        return;
+      }
+
+      // Generar el PDF
+      const { blob } = await generateRemissionGuidePDF(convertedGuide, 'remitente');
+      shouldShowModal = true; // Marcar para mostrar modal al final
+      
+      // Subir el PDF al backend automáticamente
+      try {
+        const fileName = `${guide.series}-${guide.number.toString().padStart(8, '0')}`;
+        const pdfFile = new File([blob], `guia-remision-remitente-${fileName}.pdf`, {
+          type: 'application/pdf'
+        });
+        
+        await remissionGuidesSenderService.uploadRemissionGuidePDF(guide.id, pdfFile, 'a4');
+        toast.success('PDF generado y subido al sistema exitosamente');
+      } catch (uploadError) {
+        console.warn('Error al subir PDF automáticamente:', uploadError);
+        toast.warning('Guía creada correctamente, pero el PDF no se pudo subir automáticamente');
+      }
+      
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      toast.error('La guía se creó correctamente, pero hubo un error al generar el PDF');
+      // Aún así mostrar el modal para que puedan intentar generar el PDF manualmente
+      shouldShowModal = true;
+    } finally {
+      setIsGeneratingPDF(false);
+      // Mostrar modal independientemente del resultado del upload
+      if (shouldShowModal) {
+        setShowPreviewModal(true);
+      }
+    }
+  };
+
+  // Función para manejar el cierre del modal y navegar a la lista
+  const handleClosePreviewModal = () => {
+    setShowPreviewModal(false);
+    setCreatedGuide(null);
+    navigate('/remission-guides');
   };
 
   return (
@@ -862,13 +925,15 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
               </Button>
               <Button 
                 type="submit"
-                disabled={fields.length === 0 || isLoadingTrip || isSubmitting || !selectedSeries || availableSeries.length === 0}
+                disabled={fields.length === 0 || isLoadingTrip || isSubmitting || isGeneratingPDF || !selectedSeries || availableSeries.length === 0}
                 className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg flex items-center transition-colors"
               >
-                {isSubmitting ? (
+                {isSubmitting || isGeneratingPDF ? (
                   <>
                     <Spinner size="sm" />
-                    <span className="ml-2">Generando...</span>
+                    <span className="ml-2">
+                      {isSubmitting ? 'Generando...' : 'Creando PDF...'}
+                    </span>
                   </>
                 ) : (
                   <>
@@ -881,6 +946,15 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
           </div>
         </div>
       </form>
+
+      {/* Modal de previsualización de PDF */}
+      {showPreviewModal && createdGuide && (
+        <RemissionGuideSenderPreviewModal
+          isOpen={showPreviewModal}
+          onClose={handleClosePreviewModal}
+          guide={createdGuide}
+        />
+      )}
     </div>
   );
 };

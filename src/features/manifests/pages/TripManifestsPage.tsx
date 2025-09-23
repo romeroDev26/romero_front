@@ -148,10 +148,10 @@ export const TripManifestsPage: React.FC = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700">
-              {isPassenger ? 'Total Pasajeros' : 'Peso Total'}
+              {isPassenger ? 'Total Pasajeros' : 'Total de carga'}
             </p>
             <p className="text-sm text-gray-600">
-              {isPassenger ? manifest.total_passengers : `${manifest.total_cargo_weight_kg} Kg`}
+              {isPassenger ? manifest.total_passengers : `${manifest.total_cargo_weight_kg}`}
             </p>
           </div>
           <div>
@@ -354,7 +354,7 @@ export const TripManifestsPage: React.FC = () => {
                 <span>Manifiesto de Carga</span>
                 {cargoManifest && (
                   <span className="bg-green-100 text-green-800 py-1 px-2 rounded-full text-xs">
-                    {cargoManifest.total_cargo_weight_kg} Kg
+                    {cargoManifest.total_cargo_weight_kg}
                   </span>
                 )}
               </div>

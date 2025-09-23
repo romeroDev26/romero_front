@@ -15,23 +15,26 @@ import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { SunatStatusBadge } from '../../accounting/components/SunatStatusBadge';
 import { RemissionGuideActions } from '../components/RemissionGuideActions';
+import { RemissionGuideSenderActions } from '../components/RemissionGuideSenderActions';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
-import { useRemissionGuides } from '../hooks/useRemissionGuides';
-import { RemissionGuideTransportista } from '../../../types';
+import { useRemissionGuidesByBranchOffice } from '../hooks/useRemissionGuides';
+import { RemissionGuideTransportista, RemissionGuideRemitente } from '../../../types';
 
 export const RemissionGuidesListPage: React.FC = () => {
   const navigate = useNavigate();
   const [activeBranch, setActiveBranch] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const { data: branches, isLoading: isLoadingBranches } = useBranchOfficesData();
 
-  const companyId = activeBranch?.company_id || null;
-  const { data: guides = [], isLoading: isLoadingGuides } = useRemissionGuides({ company_id: companyId });
+  const branchOfficeId = activeBranch?.id || null;
+  const { data: guidesData, isLoading: isLoadingGuides } = useRemissionGuidesByBranchOffice(branchOfficeId);
+
+  const transportistaGuides = guidesData?.transportista || [];
+  const remitenteGuides = guidesData?.remitente || [];
 
   useEffect(() => {
     const savedBranch = localStorage.getItem('selectedSalesBranch');
@@ -42,7 +45,7 @@ export const RemissionGuidesListPage: React.FC = () => {
     }
   }, [branches]);
 
-  const filteredGuides = useMemo(() => {
+  const filterGuides = (guides: any[]) => {
     let filtered = guides;
 
     // Filtro por búsqueda
@@ -59,18 +62,13 @@ export const RemissionGuidesListPage: React.FC = () => {
       filtered = filtered.filter(guide => guide.sunat_status === statusFilter);
     }
 
-    // Filtro por fecha (implementación básica)
-    if (dateFilter) {
-      const now = new Date();
-      const days = parseInt(dateFilter);
-      const filterDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(guide => new Date(guide.issue_date) >= filterDate);
-    }
-
     return filtered;
-  }, [guides, debouncedSearchTerm, statusFilter, dateFilter]);
+  };
 
-  const columns: Column<RemissionGuideTransportista>[] = [
+  const filteredTransportistaGuides = filterGuides(transportistaGuides);
+  const filteredRemitenteGuides = filterGuides(remitenteGuides);
+
+    const columnsTransportista: Column<RemissionGuideTransportista>[] = [
     {
       key: 'number',
       header: 'Número',
@@ -102,37 +100,14 @@ export const RemissionGuidesListPage: React.FC = () => {
       ),
     },
     {
-      key: 'trip',
-      header: 'Viaje / Embarcación',
-      accessor: (item) => (
-        <div className="flex items-center space-x-3 min-w-0">
-          <div className="flex-shrink-0">
-            <TruckIcon className="h-5 w-5 text-gray-400" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {((item as any).trip_name || 'N/A').length > 16 
-                ? ((item as any).trip_name || 'N/A').substring(0, 16) + '...'
-                : (item as any).trip_name || 'N/A'}
-            </div>
-            <div className="text-xs text-gray-500 truncate">
-              {((item as any).vessel_name || 'N/A').length > 16 
-                ? ((item as any).vessel_name || 'N/A').substring(0, 16) + '...'
-                : (item as any).vessel_name || 'N/A'}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
       key: 'recipient',
       header: 'Destinatario',
       accessor: (item) => (
         <div className="flex items-center space-x-2 min-w-0">
           <UserIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <span className="text-sm text-gray-900 truncate">
-            {((item as any).recipient_name || '').length > 16 
-              ? ((item as any).recipient_name || '').substring(0, 16) + '...'
+          <span className="text-sm text-gray-900 truncate max-w-[200px]">
+            {((item as any).recipient_name || '').length > 25 
+              ? ((item as any).recipient_name || '').substring(0, 25) + '...' 
               : (item as any).recipient_name || ''}
           </span>
         </div>
@@ -144,9 +119,9 @@ export const RemissionGuidesListPage: React.FC = () => {
       accessor: (item) => (
         <div className="flex items-center space-x-2 min-w-0">
           <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <span className="text-sm text-gray-900 truncate">
-            {((item as any).destination_address || '').length > 16 
-              ? ((item as any).destination_address || '').substring(0, 16) + '...'
+          <span className="text-sm text-gray-900 truncate max-w-[200px]">
+            {((item as any).destination_address || '').length > 25 
+              ? ((item as any).destination_address || '').substring(0, 25) + '...' 
               : (item as any).destination_address || ''}
           </span>
         </div>
@@ -158,9 +133,7 @@ export const RemissionGuidesListPage: React.FC = () => {
       accessor: (item) => (
         <div className="min-w-0">
           <div className="text-sm font-medium text-gray-900 truncate">
-            {(item.driver_name || 'N/A').length > 16 
-              ? (item.driver_name || 'N/A').substring(0, 16) + '...'
-              : item.driver_name || 'N/A'}
+            {item.driver_name || 'N/A'}
           </div>
           <div className="text-xs text-gray-500 truncate">Lic: {item.driver_license || 'N/A'}</div>
         </div>
@@ -179,23 +152,105 @@ export const RemissionGuidesListPage: React.FC = () => {
       accessor: (item) => (
         <RemissionGuideActions
           guide={item}
-          companyId={companyId || 0}
-          onView={(guide) => navigate(`/remission-guides/${guide.id}`)}
-          onEdit={(guide) => navigate(`/remission-guides/${guide.id}/edit`)}
+          companyId={activeBranch?.company_id || 0}
         />
       ),
     },
   ];
 
-  // Estadísticas rápidas
-  const stats = useMemo(() => {
-    const total = guides.length;
-    const accepted = guides.filter(g => g.sunat_status === 'ACCEPTED').length;
-    const pending = guides.filter(g => g.sunat_status === 'PENDING').length;
-    const rejected = guides.filter(g => g.sunat_status === 'REJECTED').length;
+  const columnsRemitente: Column<RemissionGuideRemitente>[] = [
+    {
+      key: 'number',
+      header: 'Número',
+      accessor: (item) => (
+        <div className="flex items-center space-x-3">
+          <div className="flex-shrink-0">
+            <div className="h-10 w-10 rounded-lg bg-green-50 flex items-center justify-center">
+              <DocumentTextIcon className="h-5 w-5 text-green-600" />
+            </div>
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-gray-900 truncate">
+              {item.series}-{String(item.number).padStart(8, '0')}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'issue_date',
+      header: 'Fecha Emisión',
+      accessor: (item) => (
+        <div className="flex items-center space-x-2">
+          <CalendarIcon className="h-4 w-4 text-gray-400" />
+          <span className="text-sm text-gray-900">
+            {format(parseISO(item.issue_date), 'dd/MM/yyyy')}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'recipient',
+      header: 'Destinatario',
+      accessor: (item) => (
+        <div className="flex items-center space-x-2 min-w-0">
+          <UserIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <span className="text-sm text-gray-900 truncate">
+            {(item as any).recipient_name || ''}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'destination',
+      header: 'Destino',
+      accessor: (item) => (
+        <div className="flex items-center space-x-2 min-w-0">
+          <MapPinIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <span className="text-sm text-gray-900 truncate">
+            {(item as any).destination_address || ''}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Estado SUNAT',
+      accessor: (item) => (
+        <SunatStatusBadge status={item.sunat_status} />
+      ),
+    },
+    {
+      key: 'actions',
+      header: 'Acciones',
+      accessor: (item) => (
+        <RemissionGuideSenderActions
+          guide={item}
+          companyId={activeBranch?.company_id || 0}
+        />
+      ),
+    },
+  ];
+
+  // Estadísticas rápidas para transportista
+  const statsTransportista = useMemo(() => {
+    const total = transportistaGuides.length;
+    const accepted = transportistaGuides.filter(g => g.sunat_status === 'ACCEPTED').length;
+    const pending = transportistaGuides.filter(g => g.sunat_status === 'PENDING').length;
+    const rejected = transportistaGuides.filter(g => g.sunat_status === 'REJECTED').length;
     
     return { total, accepted, pending, rejected };
-  }, [guides]);
+  }, [transportistaGuides]);
+
+  // Estadísticas rápidas para remitente
+  const statsRemitente = useMemo(() => {
+    const total = remitenteGuides.length;
+    const accepted = remitenteGuides.filter(g => g.sunat_status === 'ACCEPTED').length;
+    const pending = remitenteGuides.filter(g => g.sunat_status === 'PENDING').length;
+    const rejected = remitenteGuides.filter(g => g.sunat_status === 'REJECTED').length;
+    
+    return { total, accepted, pending, rejected };
+  }, [remitenteGuides]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -211,19 +266,19 @@ export const RemissionGuidesListPage: React.FC = () => {
                 Gestiona y administra todas tus guías de remisión electrónicas
               </p>
             </div>
-            <div className="mt-4 flex md:ml-4 md:mt-0">
+            <div className="mt-4 flex md:ml-4 md:mt-0 space-x-3">
               <Button
-                onClick={() => navigate('/remission-guides/new')}
+                onClick={() => navigate('/remission-guides/new?type=transportista')}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
-                Nueva Guía de Remisión
+                Nueva Guía
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards Globales */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
@@ -231,8 +286,8 @@ export const RemissionGuidesListPage: React.FC = () => {
                 <DocumentTextIcon className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-sm font-medium text-gray-600">Transportista</p>
+                <p className="text-2xl font-bold text-gray-900">{statsTransportista.total}</p>
               </div>
             </div>
           </div>
@@ -245,8 +300,8 @@ export const RemissionGuidesListPage: React.FC = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Aceptadas</p>
-                <p className="text-2xl font-bold text-green-600">{stats.accepted}</p>
+                <p className="text-sm font-medium text-gray-600">Remitente</p>
+                <p className="text-2xl font-bold text-gray-900">{statsRemitente.total}</p>
               </div>
             </div>
           </div>
@@ -259,8 +314,8 @@ export const RemissionGuidesListPage: React.FC = () => {
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pendientes</p>
-                <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
+                <p className="text-sm font-medium text-gray-600">Total Pendientes</p>
+                <p className="text-2xl font-bold text-yellow-600">{statsTransportista.pending + statsRemitente.pending}</p>
               </div>
             </div>
           </div>
@@ -268,13 +323,13 @@ export const RemissionGuidesListPage: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-                  <div className="h-4 w-4 bg-red-600 rounded-full"></div>
+                <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                  <div className="h-4 w-4 bg-green-600 rounded-full"></div>
                 </div>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Rechazadas</p>
-                <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+                <p className="text-sm font-medium text-gray-600">Total Aceptadas</p>
+                <p className="text-2xl font-bold text-green-600">{statsTransportista.accepted + statsRemitente.accepted}</p>
               </div>
             </div>
           </div>
@@ -288,7 +343,7 @@ export const RemissionGuidesListPage: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-900">Filtros</h3>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Sucursal */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -350,34 +405,25 @@ export const RemissionGuidesListPage: React.FC = () => {
                   <option value="SIGNED">Firmado</option>
                 </select>
               </div>
-
-              {/* Período */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Período
-                </label>
-                <select
-                  value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
-                >
-                  <option value="">Todo el tiempo</option>
-                  <option value="7">Última semana</option>
-                  <option value="30">Último mes</option>
-                  <option value="90">Últimos 3 meses</option>
-                </select>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Table Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
+        {/* Tabla Transportista */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">
-                Guías de Remisión ({filteredGuides.length})
-              </h3>
+              <div className="flex items-center space-x-3">
+                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                  <TruckIcon className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Guías de Remisión - Transportista ({filteredTransportistaGuides.length})
+                  </h3>
+                  <p className="text-sm text-gray-500">Document Type Code: 31</p>
+                </div>
+              </div>
               {searchTerm && (
                 <div className="text-sm text-gray-500">
                   Filtrando por: "{searchTerm}"
@@ -387,8 +433,39 @@ export const RemissionGuidesListPage: React.FC = () => {
           </div>
           
           <DataTable
-            columns={columns}
-            data={filteredGuides}
+            columns={columnsTransportista}
+            data={filteredTransportistaGuides}
+            isLoading={isLoadingGuides}
+            keyExtractor={(item) => item.id}
+          />
+        </div>
+
+        {/* Tabla Remitente */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="h-8 w-8 rounded-lg bg-green-50 flex items-center justify-center">
+                  <DocumentTextIcon className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Guías de Remisión - Remitente ({filteredRemitenteGuides.length})
+                  </h3>
+                  <p className="text-sm text-gray-500">Document Type Code: 09</p>
+                </div>
+              </div>
+              {searchTerm && (
+                <div className="text-sm text-gray-500">
+                  Filtrando por: "{searchTerm}"
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DataTable
+            columns={columnsRemitente}
+            data={filteredRemitenteGuides}
             isLoading={isLoadingGuides}
             keyExtractor={(item) => item.id}
           />

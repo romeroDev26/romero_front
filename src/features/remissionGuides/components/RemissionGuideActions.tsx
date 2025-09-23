@@ -6,7 +6,6 @@ import {
   CheckCircleIcon,
   DocumentArrowDownIcon,
   EyeIcon,
-  PencilIcon,
   PaperAirplaneIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
@@ -18,11 +17,12 @@ import {
   useProcessCdr
 } from '../hooks/useRemissionGuides';
 import RemissionGuideSunatStatusModal from './RemissionGuideSunatStatusModal.tsx';
+import { RemissionGuidePDFModal } from './RemissionGuidePDFModal';
 
 interface RemissionGuideActionsProps {
   guide: RemissionGuideTransportista;
-  onView: (guide: RemissionGuideTransportista) => void;
-  onEdit: (guide: RemissionGuideTransportista) => void;
+  onView?: (guide: RemissionGuideTransportista) => void;
+  onEdit?: (guide: RemissionGuideTransportista) => void;
   companyId: number;
   showLabels?: boolean;
   size?: 'sm' | 'md';
@@ -30,13 +30,12 @@ interface RemissionGuideActionsProps {
 
 export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
   guide,
-  onView,
-  onEdit,
   companyId,
   showLabels = false,
   size = 'sm'
 }) => {
   const [showSunatModal, setShowSunatModal] = useState(false);
+  const [showPDFModal, setShowPDFModal] = useState(false);
 
   const processSunatMutation = useProcessSunatGuide();
   const checkTicketMutation = useCheckTicketStatus();
@@ -80,31 +79,14 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
         key="view"
         variant="outline"
         size={size}
-        onClick={() => onView(guide)}
+        onClick={() => setShowPDFModal(true)}
         className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-        title="Ver detalles"
+        title="Ver PDF de la guía"
       >
         <EyeIcon className="h-4 w-4" />
-        {showLabels && <span className="ml-1">Ver</span>}
+        {showLabels && <span className="ml-1">Ver PDF</span>}
       </Button>
     );
-
-    // Editar (disponible para estados que lo permiten)
-    if (['PENDING', 'GENERATED'].includes(guide.sunat_status)) {
-      buttons.push(
-        <Button
-          key="edit"
-          variant="outline"
-          size={size}
-          onClick={() => onEdit(guide)}
-          className="text-green-600 hover:text-green-700 hover:bg-green-50"
-          title="Editar guía"
-        >
-          <PencilIcon className="h-4 w-4" />
-          {showLabels && <span className="ml-1">Editar</span>}
-        </Button>
-      );
-    }
 
     // Acciones específicas según estado
     switch (guide.sunat_status) {
@@ -211,6 +193,15 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
         onClose={() => setShowSunatModal(false)}
         guide={guide}
         companyId={companyId}
+      />
+
+      {/* Modal de visualización de PDF */}
+      <RemissionGuidePDFModal
+        isOpen={showPDFModal}
+        onClose={() => setShowPDFModal(false)}
+        pdfUrl={guide.pdf_file_path || null}
+        guideNumber={`${guide.series}-${String(guide.number).padStart(8, '0')}`}
+        guideType="transportista"
       />
     </>
   );

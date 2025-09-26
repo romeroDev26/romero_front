@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { reservationsService, ReservationCreateData, ReservationUpdateData, ReservationSearchParams } from '../../../services/reservations.service';
 import { SeatReservation } from '../../../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Hook para buscar reservas
 export const useSearchReservations = (filters: Omit<ReservationSearchParams, 'company_id'>) => {
@@ -45,7 +46,8 @@ export const useCreateReservation = () => {
       queryClient.invalidateQueries({ queryKey: ['reservations', newReservation.trip_id] });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || "Error al crear la reserva.");
+      const message = getErrorMessage(error, "Error al crear la reserva.");
+      toast.error(message);
     },
   });
 };
@@ -64,7 +66,8 @@ export const useUpdateReservation = () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] }); // Invalidar la lista general también
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || "Error al actualizar la reserva.");
+      const message = getErrorMessage(error, "Error al actualizar la reserva.");
+      toast.error(message);
     },
   });
 };

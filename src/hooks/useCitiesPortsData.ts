@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { citiesConfigService, portsConfigService } from '../services/ports.cities.service';
 import { CityCreateData, CityUpdateData, PortCreateData, PortUpdateData } from '../services/ports.cities.service';
 import { PortType } from '../types';
+import { getErrorMessage } from '../utils/errorHandler';
 
 // ========================================
 // HOOKS PARA CIUDADES
@@ -25,7 +26,7 @@ export const useCreateCity = () => {
       toast.success(`Ciudad "${newCity.name}" creada exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al crear la ciudad. Verifique que el nombre y código no existan.';
+      const message = getErrorMessage(error, 'Error al crear la ciudad. Verifique que el nombre y código no existan.');
       toast.error(message);
     },
   });
@@ -42,7 +43,7 @@ export const useUpdateCity = () => {
       toast.success(`Ciudad "${updatedCity.name}" actualizada exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al actualizar la ciudad.';
+      const message = getErrorMessage(error, 'Error al actualizar la ciudad.');
       toast.error(message);
     },
   });
@@ -57,7 +58,7 @@ export const useDeactivateCity = () => {
       toast.success(`Ciudad "${deactivatedCity.name}" desactivada exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al desactivar la ciudad.';
+      const message = getErrorMessage(error, 'Error al desactivar la ciudad.');
       toast.error(message);
     },
   });
@@ -92,7 +93,7 @@ export const useCreatePort = () => {
       toast.success(`Puerto "${newPort.name}" creado exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al crear el puerto. Verifique que el nombre no exista.';
+      const message = getErrorMessage(error, 'Error al crear el puerto. Verifique que el nombre no exista.');
       toast.error(message);
     },
   });
@@ -109,7 +110,7 @@ export const useUpdatePort = () => {
       toast.success(`Puerto "${updatedPort.name}" actualizado exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al actualizar el puerto.';
+      const message = getErrorMessage(error, 'Error al actualizar el puerto.');
       toast.error(message);
     },
   });
@@ -124,7 +125,7 @@ export const useDeactivatePort = () => {
       toast.success(`Puerto "${deactivatedPort.name}" desactivado exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al desactivar el puerto.';
+      const message = getErrorMessage(error, 'Error al desactivar el puerto.');
       toast.error(message);
     },
   });

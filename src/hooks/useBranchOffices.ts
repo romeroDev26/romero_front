@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { branchOfficesService, BranchOfficeCreateData, BranchOfficeUpdateData } from '../services/branchOffices.service';
+import { getErrorMessage } from '../utils/errorHandler';
 
 const QUERY_KEY = 'branchOffices';
 
@@ -22,7 +23,7 @@ export const useCreateBranchOffice = () => {
       toast.success(`Sucursal "${newOffice.name}" creada exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al crear la sucursal.';
+      const message = getErrorMessage(error, 'Error al crear la sucursal.');
       toast.error(message);
     },
   });
@@ -37,7 +38,7 @@ export const useUpdateBranchOffice = () => {
       toast.success(`Sucursal "${updatedOffice.name}" actualizada.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al actualizar la sucursal.';
+      const message = getErrorMessage(error, 'Error al actualizar la sucursal.');
       toast.error(message);
     },
   });
@@ -52,7 +53,7 @@ export const useDeactivateBranchOffice = () => {
       toast.warning(`Sucursal "${deactivatedOffice.name}" ha sido desactivada.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail[0]?.msg || 'Error al desactivar. Verifique que no sea la principal o no tenga usuarios asignados.';
+      const message = getErrorMessage(error, 'Error al desactivar. Verifique que no sea la principal o no tenga usuarios asignados.');
       toast.error(message);
     },
   });

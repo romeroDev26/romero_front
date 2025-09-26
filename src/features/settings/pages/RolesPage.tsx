@@ -11,6 +11,7 @@ import { Input } from '../../../components/common/Input';
 import { rolesService, CreateRoleData, UpdateRoleData } from '../../../services/roles.service';
 import { Role } from '../../../types';
 import { usePermissions } from '../../../hooks/usePermissions';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 export const RolesPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -48,7 +49,8 @@ export const RolesPage: React.FC = () => {
       if (error.response?.status === 409) {
         setRoleNameError('Ya existe un rol con este nombre');
       } else {
-        toast.error(error.response?.data?.detail || 'Error al crear rol');
+        const message = getErrorMessage(error, 'Error al crear rol');
+        toast.error(message);
       }
     }
   });
@@ -67,7 +69,8 @@ export const RolesPage: React.FC = () => {
       if (error.response?.status === 409) {
         setRoleNameError('Ya existe un rol con este nombre');
       } else {
-        toast.error(error.response?.data?.detail || 'Error al actualizar rol');
+        const message = getErrorMessage(error, 'Error al actualizar rol');
+        toast.error(message);
       }
     }
   });
@@ -84,7 +87,8 @@ export const RolesPage: React.FC = () => {
       if (error.response?.status === 409) {
         toast.error('No se puede desactivar el rol porque está asignado a usuarios activos');
       } else {
-        toast.error(error.response?.data?.detail || 'Error al desactivar rol');
+        const message = getErrorMessage(error, 'Error al desactivar rol');
+        toast.error(message);
       }
     }
   });

@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { documentSeriesService, DocumentSeriesCreateData, DocumentSeriesUpdateData } from '../services/documentSeries.service';
+import { getErrorMessage } from '../utils/errorHandler';
 
 const QUERY_KEY = 'documentSeries';
 
@@ -23,7 +24,7 @@ export const useCreateDocumentSeries = () => {
       toast.success(`Serie "${newSeries.series_code}" creada exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al crear la serie. Verifique que la combinación no exista.';
+      const message = getErrorMessage(error, 'Error al crear la serie. Verifique que la combinación no exista.');
       toast.error(message);
     },
   });
@@ -38,7 +39,7 @@ export const useUpdateDocumentSeries = () => {
       toast.success(`Serie "${updatedSeries.series_code}" actualizada exitosamente.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al actualizar la serie.';
+      const message = getErrorMessage(error, 'Error al actualizar la serie.');
       toast.error(message);
     },
   });
@@ -53,7 +54,7 @@ export const useDeactivateDocumentSeries = () => {
       toast.warning(`Serie "${deactivatedSeries.series_code}" ha sido desactivada.`);
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail?.[0]?.msg || 'Error al desactivar la serie.';
+      const message = getErrorMessage(error, 'Error al desactivar la serie.');
       toast.error(message);
     },
   });

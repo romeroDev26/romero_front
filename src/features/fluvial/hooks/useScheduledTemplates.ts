@@ -7,6 +7,7 @@ import {
   UpdateScheduledTemplateData
 } from '../../../services/scheduled-templates.service';
 import { ScheduledRouteTemplate } from '../../../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 export const useScheduledTemplates = (companyId?: number) => {
   const queryClient = useQueryClient();
@@ -32,7 +33,7 @@ export const useScheduledTemplates = (companyId?: number) => {
       toast.success('Plantilla creada exitosamente');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al crear la plantilla';
+      const message = getErrorMessage(error, 'Error al crear la plantilla');
       toast.error(message);
     }
   });
@@ -46,7 +47,7 @@ export const useScheduledTemplates = (companyId?: number) => {
       toast.success('Plantilla actualizada exitosamente');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar la plantilla';
+      const message = getErrorMessage(error, 'Error al actualizar la plantilla');
       toast.error(message);
     }
   });
@@ -59,7 +60,7 @@ export const useScheduledTemplates = (companyId?: number) => {
       toast.success('Plantilla desactivada exitosamente');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al desactivar la plantilla';
+      const message = getErrorMessage(error, 'Error al desactivar la plantilla');
       toast.error(message);
     }
   });

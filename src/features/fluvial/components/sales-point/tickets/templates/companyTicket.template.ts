@@ -200,9 +200,12 @@ export class CompanyTicketTemplate {
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4;
     
-    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.HORIZONTAL_MARGIN;
-    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
+  // Reducir el ancho de columnas y dejar un espacio (colGap) para evitar solapamientos
+  const colGap = 4;
+  const adjustedContent = this.CONTENT_WIDTH - colGap;
+  const colWidth = Math.floor(adjustedContent / 2);
+  const leftX = this.HORIZONTAL_MARGIN;
+  const rightX = this.HORIZONTAL_MARGIN + colWidth + colGap;
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
@@ -211,13 +214,17 @@ export class CompanyTicketTemplate {
     currentY += 4;
 
     doc.setFontSize(11);
-    const clientLines = this.splitText(doc, companyInfo.full_name, colWidth, 11);
+    // Forzar saltos de línea tempranos en el nombre del cliente
+    const nameColWidth = Math.max(20, colWidth - 6);
+    const clientLines = this.splitText(doc, companyInfo.full_name, nameColWidth, 11);
     const rucLines = this.splitText(doc, companyInfo.doc_number, colWidth, 11);
     const maxLines = Math.max(clientLines.length, rucLines.length);
     for (let i = 0; i < maxLines; i++) {
       doc.setFont('helvetica', 'normal');
       doc.text((clientLines[i] ?? '').toUpperCase(), leftX, currentY);
-      doc.text((rucLines[i] ?? '').toUpperCase(), rightX, currentY);
+      const rucText = (rucLines[i] ?? '').toUpperCase();
+      const trimmedRuc = this.splitText(doc, rucText, colWidth, 11)[0] ?? '';
+      doc.text(trimmedRuc, rightX, currentY);
       currentY += 4;
     }
     currentY += 2;
@@ -255,9 +262,12 @@ export class CompanyTicketTemplate {
     doc.text(tripDetails.title, this.TICKET_WIDTH / 2, currentY, { align: 'center' });
     currentY += 6;
 
-    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.HORIZONTAL_MARGIN;
-    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
+  // Ajuste para evitar solapamiento similar al bloque de company info
+  const colGap = 4;
+  const adjustedContent = this.CONTENT_WIDTH - colGap;
+  const colWidth = Math.floor(adjustedContent / 2);
+  const leftX = this.HORIZONTAL_MARGIN;
+  const rightX = this.HORIZONTAL_MARGIN + colWidth + colGap;
 
     const findByLabel = (pattern: RegExp) => tripDetails.details.find(d => pattern.test((d.label || '').toString().toUpperCase()));
     const vesselItem = findByLabel(/EMBARC|EMBARCACIÓN|EMBARCACION/);
@@ -375,8 +385,9 @@ export class CompanyTicketTemplate {
       .filter(seat => seat != null && seat.trim() !== '')
       .join(', ');
       
-    const seatLines = seatNumbers ? this.splitText(doc, seatNumbers, colWidth, 11) : ['NO APLICA'];
-    const totalLines = this.splitText(doc, String(representatives.length), colWidth, 11);
+  const seatColWidth = Math.max(18, colWidth - 6);
+  const seatLines = seatNumbers ? this.splitText(doc, seatNumbers, seatColWidth, 11) : ['NO APLICA'];
+  const totalLines = this.splitText(doc, String(representatives.length), colWidth, 11);
     const maxLines = Math.max(seatLines.length, totalLines.length);
     for (let i = 0; i < maxLines; i++) {
       doc.setFont('helvetica', 'normal');

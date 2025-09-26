@@ -41,15 +41,15 @@ export function isVesselWithoutSeats(items: any[]): boolean {
  */
 export function getDocumentLabel(docType: string): string {
   const docTypeMap: Record<string, string> = {
-    '1': 'DNI PASAJERO',
-    '4': 'CARNET EXT. PASAJERO', 
+    '1': 'DNI',
+    '4': 'CARNET EXT.', 
     '6': 'RUC',
-    '7': 'PASAPORTE PASAJERO',
-    '11': 'CÉDULA DIPLOMÁTICA PASAJERO',
-    '0': 'OTROS PASAJERO'
+    '7': 'PASAPORTE',
+    '11': 'CÉDULA DIPLOMÁTICA',
+    '0': 'OTROS'
   };
   
-  return docTypeMap[docType] || 'DOCUMENTO PASAJERO';
+  return docTypeMap[docType] || 'DOCUMENTO';
 }
 
 /**

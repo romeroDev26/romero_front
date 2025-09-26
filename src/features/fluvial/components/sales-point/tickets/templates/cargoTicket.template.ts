@@ -374,23 +374,42 @@ export class CargoTicketTemplate {
     ticketData.financial_breakdown.items.forEach(item => {
       // Cantidad
       doc.text(String(item.quantity), this.MARGIN, currentY);
-      
-      // Descripción multilínea con más espacio disponible
-      let desc = item.description;
+
+      // Descripción multilínea: calcular dinámicamente el ancho disponible
+      let desc = (item.description || '').toString();
       if (item.discount && item.discount > 0) {
         desc += ` (descuento: ${item.discount.toFixed(2)})`;
       }
-      // Aumentar el espacio disponible para descripción de 30 a 42 caracteres
-      const descLines = this.splitText(doc, desc.toUpperCase(), 42, 7);
+      desc = desc.toUpperCase();
+
+      const descX = this.MARGIN + 10;
+      // Column positions for price and total (as used elsewhere)
+      const priceX = this.TICKET_WIDTH - this.MARGIN - 20;
+      const totalX = this.TICKET_WIDTH - this.MARGIN;
+      // Right padding to avoid touching price/total columns
+  const DESC_RIGHT_PADDING = 4; // mm
+  // Reducir ligeramente el ancho disponible para forzar que la descripción
+  // haga salto de línea antes y no invada la columna de P/U.
+  const extraReduction = 8; // mm adicionales a recortar del ancho disponible
+  // Mantener un tope aproximado igual al valor anterior (42mm) para compatibilidad
+  const descMaxWidth = Math.max(10, Math.min(42, priceX - descX - DESC_RIGHT_PADDING - extraReduction));
+
+      // Limitar líneas para que no crezca demasiado (por ejemplo máximo 6 líneas)
+      const LINE_HEIGHT = 3.5;
+      const maxDescLines = 6;
+      const descLines = this.splitText(doc, desc, descMaxWidth, 7).slice(0, maxDescLines);
+
+      // Dibujar las líneas de descripción y calcular la Y donde se dibujarán precio/total
       descLines.forEach((line, idx) => {
-        doc.text(line, this.MARGIN + 10, currentY);
-        if (idx < descLines.length - 1) currentY += 4; // Más espacio entre líneas
+        doc.text(line, descX, currentY + (idx * LINE_HEIGHT));
       });
-      
-      // P/U y TOTAL solo en la primera línea
-      doc.text(item.unit_price.toFixed(2), this.TICKET_WIDTH - this.MARGIN - 20, currentY, { align: 'right' });
-      doc.text(item.total_line.toFixed(2), this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
-      currentY += 5; // Más espacio entre items
+
+      // Imprimir precio unitario y total en la primera línea visible
+      doc.text(item.unit_price.toFixed(2), priceX, currentY, { align: 'right' });
+      doc.text(item.total_line.toFixed(2), totalX, currentY, { align: 'right' });
+
+      // Avanzar currentY basado en el número de líneas usadas
+      currentY += Math.max( (descLines.length || 1) * LINE_HEIGHT, 5 );
     });
 
     // Línea separadora (gris)

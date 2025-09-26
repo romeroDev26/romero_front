@@ -227,12 +227,14 @@ export class NoSeatsCompanyTicketTemplate {
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4;
     
-    // Preparar columnas
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.HORIZONTAL_MARGIN;
-    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
+  // Preparar columnas: reducir ancho efectivo y añadir separación para evitar solapamientos
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  const colGap = 4; // mm
+  const adjustedContent = this.CONTENT_WIDTH - colGap;
+  const colWidth = Math.floor(adjustedContent / 2);
+  const leftX = this.HORIZONTAL_MARGIN;
+  const rightX = this.HORIZONTAL_MARGIN + colWidth + colGap;
 
     // FILA 1: etiquetas (CLIENTE / RUC)
     doc.setFont('helvetica', 'normal');
@@ -243,19 +245,21 @@ export class NoSeatsCompanyTicketTemplate {
 
     // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
     doc.setFontSize(11);
-    const clientLines = this.splitText(doc, passenger.full_name, colWidth, 11);
+    // Reducir ancho visible para el nombre del cliente para forzar saltos de línea
+    const clientNameColWidth = Math.max(20, colWidth - 6);
+    const clientLines = this.splitText(doc, passenger.full_name, clientNameColWidth, 11);
     const rucLines = this.splitText(doc, passenger.doc_number, colWidth, 11);
     const maxLines = Math.max(clientLines.length, rucLines.length);
     for (let i = 0; i < maxLines; i++) {
-      // Cliente: normal
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.text((clientLines[i] ?? '').toUpperCase(), leftX, currentY);
-      // RUC: normal
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      doc.text((rucLines[i] ?? '').toUpperCase(), rightX, currentY);
-      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
+
+      const rucText = (rucLines[i] ?? '').toUpperCase();
+      const trimmedRuc = this.splitText(doc, rucText, colWidth, 11)[0] || '';
+      doc.text(trimmedRuc, rightX, currentY);
+
+      currentY += 4;
     }
     currentY += 4; // espacio aumentado entre bloques
     return currentY;

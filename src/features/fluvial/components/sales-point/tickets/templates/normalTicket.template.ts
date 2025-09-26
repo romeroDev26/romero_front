@@ -195,9 +195,13 @@ export class NormalTicketTemplate {
     doc.line(0, currentY, this.TICKET_WIDTH, currentY);
     currentY += 4;
     
-    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.HORIZONTAL_MARGIN;
-    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
+  // Reducir levemente el ancho de cada columna para forzar saltos de línea
+  // más tempranos y aumentar la separación entre columnas evitando solapamientos.
+  const colGap = 4; // espacio entre columnas
+  const adjustedContent = this.CONTENT_WIDTH - colGap;
+  const colWidth = Math.floor(adjustedContent / 2);
+  const leftX = this.HORIZONTAL_MARGIN;
+  const rightX = this.HORIZONTAL_MARGIN + colWidth + colGap;
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
@@ -206,13 +210,19 @@ export class NormalTicketTemplate {
     currentY += 4;
 
     doc.setFontSize(11);
-    const nameLines = this.splitText(doc, passengerInfo.full_name, colWidth, 11);
+    // Usar un ancho ligeramente menor para el nombre para forzar el salto
+    const nameColWidth = Math.max(20, colWidth - 6);
+    const nameLines = this.splitText(doc, passengerInfo.full_name, nameColWidth, 11);
+    // Documento puede usar un ancho completo de columna
     const docLines = this.splitText(doc, `${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, colWidth, 11);
     const maxLines = Math.max(nameLines.length, docLines.length);
     for (let i = 0; i < maxLines; i++) {
       doc.setFont('helvetica', 'normal');
       doc.text((nameLines[i] ?? '').toUpperCase(), leftX, currentY);
-      doc.text((docLines[i] ?? '').toUpperCase(), rightX, currentY);
+      // Si la línea del documento es muy larga, asegurarse de que no pase el borde
+      const docText = (docLines[i] ?? '').toUpperCase();
+      const trimmedDocLines = this.splitText(doc, docText, colWidth, 11);
+      doc.text((trimmedDocLines[0] ?? ''), rightX, currentY);
       currentY += 4;
     }
     currentY += 2;

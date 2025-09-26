@@ -237,12 +237,14 @@ export class NoSeatsTicketTemplate {
     let currentY = startY;
     doc.setFontSize(8); doc.setLineWidth(0.2); doc.setDrawColor(180, 180, 180); doc.line(0, currentY, this.TICKET_WIDTH, currentY); currentY += 4;
     
-    // Preparar columnas
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    const colWidth = (this.CONTENT_WIDTH - 2) / 2;
-    const leftX = this.HORIZONTAL_MARGIN;
-    const rightX = this.HORIZONTAL_MARGIN + colWidth + 2;
+  // Preparar columnas: reducir ancho efectivo y añadir separación para evitar solapamientos
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  const colGap = 4; // separación entre columnas en mm
+  const adjustedContent = this.CONTENT_WIDTH - colGap;
+  const colWidth = Math.floor(adjustedContent / 2);
+  const leftX = this.HORIZONTAL_MARGIN;
+  const rightX = this.HORIZONTAL_MARGIN + colWidth + colGap;
 
     // FILA 1: etiquetas (NOMBRE / DOCUMENTO)
     doc.setFont('helvetica', 'normal');
@@ -253,19 +255,22 @@ export class NoSeatsTicketTemplate {
 
     // FILA 1b: valores debajo de las etiquetas (usar tamaño 11)
     doc.setFontSize(11);
-    const nameLines = this.splitText(doc, passengerInfo.full_name, colWidth, 11);
+    // Forzar salto de línea más temprano en el nombre para que no invada la columna del documento
+    const nameColWidth = Math.max(20, colWidth - 6);
+    const nameLines = this.splitText(doc, passengerInfo.full_name, nameColWidth, 11);
     const docLines = this.splitText(doc, `${passengerInfo.doc_label}: ${passengerInfo.doc_number}`, colWidth, 11);
     const maxLines = Math.max(nameLines.length, docLines.length);
     for (let i = 0; i < maxLines; i++) {
-      // Nombre: normal
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(11);
       doc.text((nameLines[i] ?? '').toUpperCase(), leftX, currentY);
-      // Documento: normal
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(11);
-      doc.text((docLines[i] ?? '').toUpperCase(), rightX, currentY);
-      currentY += 4; // línea con más espacio (aumentado de 3 a 4)
+
+      // Asegurarse de que la columna del documento no exceda su ancho
+      const docText = (docLines[i] ?? '').toUpperCase();
+      const trimmedDocLines = this.splitText(doc, docText, colWidth, 11);
+      doc.text((trimmedDocLines[0] ?? ''), rightX, currentY);
+
+      currentY += 4; // conservar espaciado vertical consistente
     }
     currentY += 4; // espacio aumentado entre bloques
     return currentY;

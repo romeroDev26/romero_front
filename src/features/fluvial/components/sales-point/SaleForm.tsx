@@ -26,6 +26,11 @@ import { ReservationModal } from "./ReservationModal";
 import { RepresentativesManager } from "./representatives";
 // ACTUALIZADO: Usar nuevo modal de preview de tickets
 import { TicketPreviewModal } from "./TicketPreviewModal";
+// NUEVO: Importar sistema de confirmación de reservas
+import { 
+  ReservationConfirmationHandler, 
+  useReservationConfirmation 
+} from "./reservation-confirmation";
 import {
   BackendInvoiceData,
   BackendCompanyInvoiceData,
@@ -291,25 +296,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     }
   }, [branch.port_id, tripDetails?.id]); // Ya optimizado
 
-  useEffect(() => {
-    if (reservationToConfirm && tripDetails) {
-      setIsConfirmingMode(true);
-      setPassengerData({
-        docType: reservationToConfirm.customer_doc_type,
-        docNumber: reservationToConfirm.customer_doc_number,
-        name: reservationToConfirm.customer_name,
-        phone: reservationToConfirm.customer_phone || "",
-        email: reservationToConfirm.customer_email || "",
-        address: "",
-        countryCode: "PE",
-        countryName: "Peru",
-      });
-
-      setSelectedBoardingStopId(reservationToConfirm.boarding_stop_id);
-      setSelectedDisembarkingStopId(reservationToConfirm.disembarking_stop_id);
-    }
-  }, [reservationToConfirm?.id, tripDetails?.id]); // Ya optimizado
-
   // Función para limpiar el formulario después de una venta exitosa
   const clearFormAfterSale = () => {
     // Limpiar datos del pasajero
@@ -512,6 +498,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // confirmPurchase se pasará después cuando esté disponible
   });
 
+  // NUEVO: Hook para manejo de confirmación de reservas
+  const { processReservationForConfirmation } = useReservationConfirmation();
+
   // ← NUEVO: Cálculos de precios usando el módulo
   const { basePrice, seatMultiplier } = useMemo(() => {
     const price = foundFare?.price ?? null;
@@ -700,6 +689,36 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const activeSeatSelections = webSocketFunctions?.activeSeatSelections || new Map();
   const seatMap = webSocketFunctions?.seatMap || [];
   const isWebSocketConnected = webSocketFunctions?.isWebSocketConnected || false;
+
+  // NUEVO: useEffect para manejo de confirmación de reservas (ahora después de definir seatMap)
+  useEffect(() => {
+    if (reservationToConfirm && tripDetails && seatMap.length > 0) {
+      // NUEVO: Usar el hook especializado para procesar la confirmación de reserva
+      const result = processReservationForConfirmation(reservationToConfirm, seatMap);
+      
+      if (result) {
+        // Establecer datos del pasajero
+        setPassengerData(result.passengerData);
+        
+        // Configurar paradas
+        setSelectedBoardingStopId(result.boardingStopId);
+        setSelectedDisembarkingStopId(result.disembarkingStopId);
+        
+        // Configurar asiento si se encontró
+        if (result.reservedSeat) {
+          setSelectedSeat(result.reservedSeat);
+        }
+        
+        // Activar modo de confirmación
+        setIsConfirmingMode(true);
+        
+        // Mostrar información sobre pago pendiente si corresponde
+        if (result.remainingAmount > 0) {
+          toast.info(`Pago pendiente: S/ ${result.remainingAmount.toFixed(2)}`);
+        }
+      }
+    }
+  }, [reservationToConfirm?.id, tripDetails?.id, seatMap.length, processReservationForConfirmation]);
 
   // Configurar asiento automáticamente cuando se carga una reservación - Optimizado
   React.useEffect(() => {
@@ -896,6 +915,20 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             )}
           </span>
         </div>
+
+        {/* NUEVO: Mostrar información de confirmación de reserva */}
+        {reservationToConfirm && isConfirmingMode && (
+          <ReservationConfirmationHandler
+            reservation={reservationToConfirm}
+            tripDetails={tripDetails}
+            seatMap={seatMap}
+            onPassengerDataChange={setPassengerData}
+            onBoardingStopChange={setSelectedBoardingStopId}
+            onDisembarkingStopChange={setSelectedDisembarkingStopId}
+            onSelectedSeatChange={setSelectedSeat}
+            onConfirmingModeChange={setIsConfirmingMode}
+          />
+        )}
 
         <div className="grid lg:grid-cols-5 gap-8">
           <div className="lg:col-span-3 space-y-6">

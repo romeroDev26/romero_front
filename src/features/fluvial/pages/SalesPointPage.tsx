@@ -96,17 +96,27 @@ export const SalesPointPage: React.FC = () => {
   };
 
   const handleSaleSuccess = () => {
-    toast.success("Venta completada exitosamente. Recargando página...");
-    
-    // Guardar el ID del viaje actual en localStorage para mantenerlo después de la recarga
-    if (selectedTrip) {
-      localStorage.setItem('lastSoldTripId', selectedTrip.id.toString());
+    // Verificar si estamos confirmando una reserva
+    if (reservationToConfirm) {
+      toast.success("Reserva confirmada exitosamente. Regresando a reservas...");
+      
+      // Para confirmación de reservas: navegar a /reservas sin reload
+      setTimeout(() => {
+        navigate('/reservas', { replace: true });
+      }, 1000);
+    } else {
+      toast.success("Venta completada exitosamente. Recargando página...");
+      
+      // Guardar el ID del viaje actual en localStorage para mantenerlo después de la recarga
+      if (selectedTrip) {
+        localStorage.setItem('lastSoldTripId', selectedTrip.id.toString());
+      }
+      
+      // Recargar la página completamente para asegurar sincronización del WebSocket
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000); // Dar tiempo para que se muestre el toast
     }
-    
-    // Recargar la página completamente para asegurar sincronización del WebSocket
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000); // Dar tiempo para que se muestre el toast
   };
 
   const renderCurrentView = () => {

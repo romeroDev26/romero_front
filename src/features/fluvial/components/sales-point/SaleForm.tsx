@@ -37,6 +37,8 @@ import {
 } from "./tickets/types/backend.types";
 import { CompanySaleTransformer } from "./tickets/transformers/companySale.transformer";
 import { CompanyTicketTemplate } from "./tickets/templates/companyTicket.template";
+// NUEVO: Importar sistema centralizado de detección de embarcaciones
+import { useVesselDetection } from "./vessel-detection";
 // NUEVO: Importar sistema especializado para compañías sin asientos
 import { NoSeatsCompanyTicketGenerator } from "./tickets/generators/noSeatsCompanyTicket.generator";
 import { isVesselWithoutSeats } from "./tickets/utils/ticketHelpers";
@@ -142,9 +144,28 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const [isReservationModalOpen, setReservationModalOpen] = useState(false);
   const [isConfirmingMode, setIsConfirmingMode] = useState(false);
 
-  // Estados para detección de tipo de embarcación
+  // NUEVO: Usar sistema centralizado de detección de embarcaciones
+  const {
+    canSellWithoutSeats: detectedCanSellWithoutSeats,
+    showSeatMap: detectedShowSeatMap,
+    isLoading: isDetectingVessel
+  } = useVesselDetection({
+    tripId: trip.id,
+    vesselName: trip.vessel_name,
+    enabled: !!trip.id
+  });
+
+  // Estados para detección de tipo de embarcación (actualizados por el hook centralizado)
   const [canSellWithoutSeats, setCanSellWithoutSeats] = useState(false);
   const [showSeatMap, setShowSeatMap] = useState(true);
+
+  // Actualizar estados locales cuando cambie la detección
+  useEffect(() => {
+    if (!isDetectingVessel) {
+      setCanSellWithoutSeats(detectedCanSellWithoutSeats);
+      setShowSeatMap(detectedShowSeatMap);
+    }
+  }, [detectedCanSellWithoutSeats, detectedShowSeatMap, isDetectingVessel]);
 
   // Hooks de servicios
   const { createCompanyInvoiceWithRepresentatives, isCreating } =
@@ -165,7 +186,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   const { data: tripDetails } = useTripDetails(trip.id);
 
-  // Función mejorada de respaldo para detectar embarcaciones sin asientos
+  // NOTA: Las funciones de detección manual fueron movidas a vessel-detection/
   const detectVesselTypeFromName = (vesselName: string): boolean => {
     if (!vesselName) return false;
 

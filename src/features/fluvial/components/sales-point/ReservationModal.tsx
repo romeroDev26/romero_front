@@ -32,7 +32,7 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
   reservationData,
   onSuccess,
 }) => {
-  const [advanceAmount, setAdvanceAmount] = useState(0);
+  const [advanceAmount, setAdvanceAmount] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
@@ -41,7 +41,7 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setAdvanceAmount(0);
+      setAdvanceAmount('');
       setExpiresAt('');
       setCustomerPhone(reservationData.passengerData.phone || '');
       setCustomerEmail(reservationData.passengerData.email || '');
@@ -52,7 +52,9 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (advanceAmount <= 0) {
+    const advanceAmountNumber = parseFloat(advanceAmount);
+
+    if (!advanceAmount || advanceAmountNumber <= 0) {
       toast.error("El monto de adelanto debe ser mayor a cero.");
       return;
     }
@@ -82,7 +84,7 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
         customer_doc_number: passengerData.docNumber,
         customer_phone: customerPhone,
         total_price: totalPrice,
-        advance_amount: advanceAmount,
+        advance_amount: advanceAmountNumber,
         currency_code: 'PEN',
         seat_number: selectedSeat.seat_number,
       };
@@ -115,7 +117,7 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
           <p><strong>Precio Total:</strong> S/ {reservationData.totalPrice.toFixed(2)}</p>
         </div>
         <hr/>
-        <Input label="Monto de Adelanto (S/)" type="number" value={advanceAmount} onChange={(e) => setAdvanceAmount(Number(e.target.value))} required />
+        <Input label="Monto de Adelanto (S/)" type="number" step="0.01" value={advanceAmount} onChange={(e) => setAdvanceAmount(e.target.value)} required placeholder="0.00" />
         <Input label="Teléfono de Contacto" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} required />
         <Input label="Email (Opcional)" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
         <Input label="Fecha de Expiración (Opcional)" type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />

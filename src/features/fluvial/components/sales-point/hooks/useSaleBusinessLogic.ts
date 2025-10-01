@@ -154,9 +154,7 @@ export const useSaleBusinessLogic = ({
           tax_category_code: isIgvGravado ? "10" : "20",
           item_description: composedExtraDescription,
           unit_code: "KGM", // KGM = Kilogramo (para equipaje)
-          // Agregar información del asiento si está disponible
-          trip_seat_id: selectedSeat?.id || null,
-          seat_number: selectedSeat?.seat_number || null,
+          // NO se envía trip_seat_id ni seat_number para costos adicionales (bultos)
         };
         itemsConfig.push(extraItem);
       }

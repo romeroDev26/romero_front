@@ -133,7 +133,7 @@ export class NoSeatsSaleTransformer {
         { label: 'EMBARCACIÓN', value: extractVehicleName(data.items) },
         { label: 'ORIGEN', value: extractOriginPort(data.items) },
         { label: 'DESTINO', value: extractDestinationPort(data.items) },
-        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time), col: 2 },
+        { label: 'FECHA VIAJE', value: formatTripDate(data.trip_departure_time, (data as any).trip_departure_date), col: 2 },
         { label: 'HORA VIAJE', value: formatTripTime(data.trip_departure_time), col: 2 },
         { label: 'EMBARQUE', value: formatBoardingTime(data.boarding_time), col: 2 },
         { label: 'ASIENTO', value: seatInfo }  // Esta es la personalización principal para sin asientos

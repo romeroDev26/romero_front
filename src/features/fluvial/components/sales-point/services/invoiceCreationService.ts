@@ -112,9 +112,7 @@ export const invoiceCreationService = {
         trip_id: tripId,
         boarding_trip_stop_id: selectedBoardingStopId,
         disembarking_trip_stop_id: selectedDisembarkingStopId,
-        // Agregar información del asiento si está disponible
-        trip_seat_id: selectedSeat?.id || null,
-        seat_number: selectedSeat?.seat_number || null,
+        // NO se envía trip_seat_id ni seat_number para costos adicionales (bultos)
       });
     }
 

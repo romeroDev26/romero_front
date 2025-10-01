@@ -180,28 +180,36 @@ export function extractMainSeatNumber(items: any[]): string {
  * Formatea la fecha de viaje desde trip_departure_time
  * CORREGIDO: Si trip_departure_time es solo hora, usar issue_date como fecha base
  * MEJORADO: Priorizar fecha específica si se proporciona
+ * FIXED: Evitar problemas de zona horaria al parsear fechas YYYY-MM-DD
  */
 export function formatTripDate(tripDepartureTime: string, dateToUse?: string): string {
   try {
     // Validación: verificar que tripDepartureTime exista
     if (!tripDepartureTime || typeof tripDepartureTime !== 'string') {
       console.warn('formatTripDate: trip_departure_time inválido:', tripDepartureTime);
-      return dateToUse && !dateToUse.includes('T') && !dateToUse.includes(':') 
-        ? format(new Date(dateToUse), 'dd/MM/yyyy', { locale: es })
-        : format(new Date(), 'dd/MM/yyyy', { locale: es });
+      if (dateToUse && !dateToUse.includes('T') && !dateToUse.includes(':')) {
+        // FIXED: Agregar T12:00:00 para evitar problemas de zona horaria
+        const dateWithTime = `${dateToUse}T12:00:00`;
+        return format(parseISO(dateWithTime), 'dd/MM/yyyy', { locale: es });
+      }
+      return format(new Date(), 'dd/MM/yyyy', { locale: es });
     }
     
     // Si tenemos una fecha específica (como trip_departure_date), usarla directamente
     if (dateToUse && !dateToUse.includes('T') && !dateToUse.includes(':')) {
       // Es una fecha en formato YYYY-MM-DD
-      return format(new Date(dateToUse), 'dd/MM/yyyy', { locale: es });
+      // FIXED: Agregar T12:00:00 para evitar problemas de zona horaria
+      const dateWithTime = `${dateToUse}T12:00:00`;
+      return format(parseISO(dateWithTime), 'dd/MM/yyyy', { locale: es });
     }
     
     // Si trip_departure_time es solo hora "HH:MM:SS", usar dateToUse o fecha actual
     if (!tripDepartureTime.includes('T') && !tripDepartureTime.includes(' ') && tripDepartureTime.includes(':')) {
       // Es solo hora, usar fecha de emisión o fecha actual
       const fallbackDate = dateToUse || new Date().toISOString().split('T')[0];
-      return format(new Date(fallbackDate), 'dd/MM/yyyy', { locale: es });
+      // FIXED: Agregar T12:00:00 para evitar problemas de zona horaria
+      const dateWithTime = `${fallbackDate}T12:00:00`;
+      return format(parseISO(dateWithTime), 'dd/MM/yyyy', { locale: es });
     } else {
       // Es datetime completo
       const date = parseISO(tripDepartureTime);

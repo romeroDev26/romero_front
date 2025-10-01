@@ -143,6 +143,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   // Estados para modales y confirmación
   const [isReservationModalOpen, setReservationModalOpen] = useState(false);
   const [isConfirmingMode, setIsConfirmingMode] = useState(false);
+  
+  // NUEVO: Estado para bloquear la interfaz durante el proceso de venta
+  const [isProcessingSale, setIsProcessingSale] = useState(false);
 
   // NUEVO: Usar sistema centralizado de detección de embarcaciones
   const {
@@ -793,6 +796,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         );
         return;
       }
+      
+      // NUEVO: Activar estado de procesamiento de venta
+      setIsProcessingSale(true);
+      
       if (isRuc) {
         await handleCompanyInvoiceWithRepresentatives(
           trip.id,
@@ -806,6 +813,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             setTicketBackendData(invoiceData);
             setIsCompanyTicket(true); // ← NUEVO: Marcar como ticket empresarial
             setShowTicketPreview(true);
+            // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
+            setIsProcessingSale(false);
           },
           seatMap,
           confirmPurchase,
@@ -846,6 +855,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           setTicketBackendData(invoiceData);
           setIsCompanyTicket(false); // ← NUEVO: Marcar como ticket regular
           setShowTicketPreview(true);
+          // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
+          setIsProcessingSale(false);
         },
         itemDescription, // ← NUEVO: pasar la descripción opcional
         confirmPurchase, // ← NUEVO: pasar confirmPurchase para actualizar WebSocket
@@ -853,6 +864,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         paymentOperationCode // ← NUEVO: pasar código de operación
       );
     } catch (error) {
+      // NUEVO: Desactivar estado de procesamiento en caso de error
+      setIsProcessingSale(false);
       // Los errores ya son manejados por toast en los hooks internos
     }
   }, [
@@ -903,6 +916,26 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   return (
     <>
+      {/* NUEVO: Overlay de carga global durante el procesamiento de venta */}
+      {isProcessingSale && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4">
+            <Spinner />
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                Procesando Venta...
+              </h3>
+              <p className="text-gray-600">
+                Por favor espere mientras se genera el comprobante
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                No cierre esta ventana ni realice otras acciones
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex items-start justify-between mb-6 pb-4 border-b">
           <div>
@@ -917,7 +950,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             // Limpiar completamente el estado antes de volver
             clearStateForVesselChange();
             onBack();
-          }}>
+          }} disabled={isProcessingSale}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
@@ -957,7 +990,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
               <PassengerDataForm
                 passengerData={passengerData}
                 setPassengerData={setPassengerData}
-                disabled={isConfirmingMode}
+                disabled={isConfirmingMode || isProcessingSale}
               />
             </div>
 
@@ -1231,7 +1264,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 <Button
                   onClick={handleConfirmSale}
                   className={`w-full text-lg py-3 ${
-                    areActionsEnabled
+                    areActionsEnabled && !isProcessingSale
                       ? "bg-green-600 hover:bg-green-700"
                       : "bg-gray-400 cursor-not-allowed"
                   }`}
@@ -1240,9 +1273,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                     isCreatingInvoice ||
                     isAssigningSeat ||
                     isUpdatingReservation ||
-                    isCreating
+                    isCreating ||
+                    isProcessingSale
                   }
-                  disabled={!areActionsEnabled}
+                  disabled={!areActionsEnabled || isProcessingSale}
                 >
                   <CreditCard className="h-5 w-5 mr-2" />
                   {isConfirmingMode
@@ -1261,7 +1295,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                     onClick={() => setReservationModalOpen(true)}
                     variant="outline"
                     className="w-full text-lg py-3"
-                    disabled={!areActionsEnabled}
+                    disabled={!areActionsEnabled || isProcessingSale}
                   >
                     <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
                     Reservar Asiento

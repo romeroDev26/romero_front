@@ -52,10 +52,10 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const advanceAmountNumber = parseFloat(advanceAmount);
+    const advanceAmountNumber = advanceAmount.trim() === '' ? 0 : parseFloat(advanceAmount);
 
-    if (!advanceAmount || advanceAmountNumber <= 0) {
-      toast.error("El monto de adelanto debe ser mayor a cero.");
+    if (advanceAmountNumber < 0) {
+      toast.error("El monto de adelanto no puede ser negativo.");
       return;
     }
 
@@ -117,7 +117,7 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
           <p><strong>Precio Total:</strong> S/ {reservationData.totalPrice.toFixed(2)}</p>
         </div>
         <hr/>
-        <Input label="Monto de Adelanto (S/)" type="number" step="0.01" value={advanceAmount} onChange={(e) => setAdvanceAmount(e.target.value)} required placeholder="0.00" />
+        <Input label="Monto de Adelanto (S/)" type="number" step="0.01" value={advanceAmount} onChange={(e) => setAdvanceAmount(e.target.value)} placeholder="Dejar vacío para S/ 0.00" />
         <Input label="Teléfono de Contacto" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} required />
         <Input label="Email (Opcional)" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
         <Input label="Fecha de Expiración (Opcional)" type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />

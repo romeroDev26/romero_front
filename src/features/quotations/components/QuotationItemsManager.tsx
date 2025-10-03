@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Button } from '../../../components/common/Button';
+import { ProductService } from '../../../types';
 
 // Unidades de medida
 const UNITS = [
@@ -28,13 +29,7 @@ export interface SimpleItem {
 interface QuotationItemsManagerProps {
   items: SimpleItem[];
   onItemsChange: (items: SimpleItem[]) => void;
-  selectedService?: {
-    id: number;
-    name: string;
-    description: string;
-    unit_code: string;
-    sale_price: string;
-  } | null;
+  selectedService?: ProductService | null;
 }
 
 export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
@@ -57,9 +52,9 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
       if (selectedService) {
         setNewItem(prev => ({
           ...prev,
-          descripcion: selectedService.description,
+          descripcion: selectedService.name, // Solo el nombre, no la descripción larga
           unidad: selectedService.unit_code,
-          precio_unitario: parseFloat(selectedService.sale_price)
+          precio_unitario: 0 // Siempre en 0 para que el usuario lo ingrese manualmente
         }));
       }
     }, [selectedService]);
@@ -92,12 +87,12 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
     }
     // Agregar el id del servicio al ítem
     onItemsChange([...items, { ...newItem, service_id: selectedService?.id }]);
-    // Reset form
+    // Reset form - mantener el servicio seleccionado pero resetear precio a 0
     setNewItem({
       cantidad: 1,
       unidad: selectedService?.unit_code || 'NIU',
-      descripcion: selectedService?.description || '',
-      precio_unitario: parseFloat(selectedService?.sale_price || '0'),
+      descripcion: selectedService?.name || '', // Solo el nombre del servicio
+      precio_unitario: 0, // Siempre en 0 para que el usuario lo ingrese
       descuento: 0,
       importe_total: 0
     });
@@ -126,6 +121,12 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
               step="1"
               value={newItem.cantidad}
               onChange={(e) => setNewItem(prev => ({ ...prev, cantidad: parseFloat(e.target.value) || 1 }))}
+              onFocus={(e) => {
+                // Si el valor es exactamente 1, limpiarlo para que el usuario pueda escribir directamente
+                if (e.target.value === '1') {
+                  e.target.value = '';
+                }
+              }}
               className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
@@ -153,6 +154,12 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
               step="0.01"
               value={newItem.precio_unitario}
               onChange={(e) => setNewItem(prev => ({ ...prev, precio_unitario: parseFloat(e.target.value) || 0 }))}
+              onFocus={(e) => {
+                // Si el valor es exactamente 0, limpiarlo para que el usuario pueda escribir directamente
+                if (e.target.value === '0') {
+                  e.target.value = '';
+                }
+              }}
               className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="0.00"
             />
@@ -166,6 +173,12 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
               step="0.01"
               value={newItem.descuento}
               onChange={(e) => setNewItem(prev => ({ ...prev, descuento: parseFloat(e.target.value) || 0 }))}
+              onFocus={(e) => {
+                // Si el valor es exactamente 0, limpiarlo para que el usuario pueda escribir directamente
+                if (e.target.value === '0') {
+                  e.target.value = '';
+                }
+              }}
               className="w-full border border-gray-300 rounded-md px-2 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="0.00"
             />

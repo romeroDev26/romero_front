@@ -4,7 +4,9 @@ import { toast } from 'react-toastify';
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
 import { useQuotations } from '../hooks/useQuotations';
+import { useProductServices } from '../hooks/useProductServices';
 import { QuotationCreate, QuotationItemCreate } from '../types';
+import { ProductService } from '../../../types';
 import { useQuotationSeriesByBranch } from '../hooks/useQuotationSeriesByBranch';
 import { 
   QuotationSeriesSelector,
@@ -16,7 +18,6 @@ import {
   LocalClient,
   SimpleItem
 } from '../components';
-import type { ServiceOption } from '../components/ServiceSelector';
 
 // Constants
 const QUOTATION_DOCUMENT_TYPE_CODE = 'COT';
@@ -27,10 +28,13 @@ export const QuotationNewPage: React.FC = () => {
   // Hook para cotizaciones (incluye createQuotation)
   const { createQuotation } = useQuotations();
   
+  // Hook para cargar servicios reales desde la API
+  const { services, loading: servicesLoading, error: servicesError } = useProductServices();
+  
   // Estados de la nueva estructura dinámica
   const [selectedClient, setSelectedClient] = useState<LocalClient | null>(null);
   // Guardar el objeto completo del servicio seleccionado
-  const [selectedService, setSelectedService] = useState<ServiceOption | null>(null);
+  const [selectedService, setSelectedService] = useState<ProductService | null>(null);
   const [items, setItems] = useState<SimpleItem[]>([]);
   const [observations, setObservations] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,82 +51,6 @@ export const QuotationNewPage: React.FC = () => {
   // Estados para el modal de previsualización
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [createdQuotation, setCreatedQuotation] = useState<any>(null);
-
-  // Lista estática de servicios reales
-  const serviceOptions: ServiceOption[] = [
-    {
-      id: 1,
-      internal_code: "SRV-PAS-001",
-      name: "Servicio de Transporte de Pasajeros",
-      description: "Servicio de Transporte de Pasajeros.",
-      item_type: "SERVICE",
-      service_category: "PASAJES",
-      unit_code: "NIU",
-      purchase_price: "0.0000",
-      sale_price: "132.6000",
-      currency_code: "PEN",
-      tax_category_code: "20",
-      unspcs_code: "78111804",
-      specific_route_id: null,
-      is_active: true,
-      created_at: "2025-06-13 08:27:57.356503-05",
-      updated_at: "2025-07-31 22:52:02.895876-05"
-    },
-    {
-      id: 7,
-      internal_code: "SRV-EXT-001",
-      name: "Exceso de Equipaje",
-      description: "Cobro por bulto o maleta adicional que excede la franquicia permitida por pasajero",
-      item_type: "SERVICE",
-      service_category: "OTROS",
-      unit_code: "NIU",
-      purchase_price: "0.0000",
-      sale_price: "40.2200",
-      currency_code: "PEN",
-      tax_category_code: "20",
-      unspcs_code: null,
-      specific_route_id: null,
-      is_active: true,
-      created_at: "2025-07-18 12:14:48.089203-05",
-      updated_at: "2025-07-31 22:52:03.146683-05"
-    },
-    {
-      id: 3,
-      internal_code: "SRV-CAR-001",
-      name: "Servicio de Transporte de Carga General",
-      description: "Servicio de Transporte de Carga General.",
-      item_type: "SERVICE",
-      service_category: "CARGA_GENERAL_KGM",
-      unit_code: "KGM",
-      purchase_price: "0.0000",
-      sale_price: "31.5700",
-      currency_code: "PEN",
-      tax_category_code: "20",
-      unspcs_code: "78121603",
-      specific_route_id: null,
-      is_active: true,
-      created_at: "2025-06-13 08:28:55.489316-05",
-      updated_at: "2025-07-31 22:52:03.395911-05"
-    },
-    {
-      id: 2,
-      internal_code: "SRV-ENC-001",
-      name: "Servicio de Envío de Encomienda",
-      description: "Servicio de Envío de Encomienda.",
-      item_type: "SERVICE",
-      service_category: "ENCOMIENDA",
-      unit_code: "NIU",
-      purchase_price: "0.0000",
-      sale_price: "13.1300",
-      currency_code: "PEN",
-      tax_category_code: "20",
-      unspcs_code: "78121600",
-      specific_route_id: null,
-      is_active: true,
-      created_at: "2025-06-13 08:28:15.689698-05",
-      updated_at: "2025-07-31 22:52:03.64463-05"
-    }
-  ];
 
   // Hook para series (incluye currentUser)
   const {
@@ -251,6 +179,25 @@ export const QuotationNewPage: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Alerta de error al cargar servicios */}
+        {servicesError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Error al cargar servicios
+                </h3>
+                <p className="mt-1 text-sm text-red-700">{servicesError}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Información Básica */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-100">
@@ -272,10 +219,11 @@ export const QuotationNewPage: React.FC = () => {
             {/* Servicio - Columna mediana */}
             <div className="col-span-12 md:col-span-3">
               <ServiceSelector
-                  selectedService={selectedService}
-                  serviceOptions={serviceOptions}
-                  onServiceSelect={setSelectedService}
-                />
+                selectedService={selectedService}
+                serviceOptions={services}
+                onServiceSelect={setSelectedService}
+                loading={servicesLoading}
+              />
             </div>
 
             {/* Cliente - Columna más grande, más hacia la izquierda */}

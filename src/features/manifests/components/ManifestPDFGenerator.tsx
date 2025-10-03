@@ -114,8 +114,17 @@ export const generatePassengerManifestPDF = (
       })
     : "N/A";
 
+  // Nombre del vehículo PRIMERO en el centro
+  const vehicleName = manifestData.trip_info?.vehicle_model || "N/A";
   pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(10);
+  pdf.text(vehicleName, pageWidth / 2, currentY, { align: "center" });
+  
+  currentY += 8;
+
+  // Resto de la información en formato de columnas
   pdf.setFontSize(9);
+  pdf.setFont("helvetica", "bold");
   pdf.text("FECHA SALIDA:", margin, currentY);
   pdf.setFont("helvetica", "normal");
   pdf.text(fechaSalida, margin + 30, currentY);

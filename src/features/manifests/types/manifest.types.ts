@@ -47,6 +47,19 @@ export interface ManifestItem {
   parcel_number?: number;
 }
 
+export interface TripInfo {
+  id: number;
+  departure_datetime: string;
+  arrival_datetime: string;
+  status: string;
+  origin_port_name: string;
+  destination_port_name: string;
+  vehicle_license_plate: string;
+  vehicle_model: string;
+  vehicle_capacity: number;
+  branch_office_name: string;
+}
+
 export interface Manifest {
   id: number;
   trip_id: number;
@@ -74,6 +87,7 @@ export interface Manifest {
   generated_by_user?: User;
   company?: Company;
   items: ManifestItem[];
+  trip_info?: TripInfo; // Información detallada del viaje
 }
 
 export interface ManifestPassenger {

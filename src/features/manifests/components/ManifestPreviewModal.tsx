@@ -183,6 +183,14 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         })
       : "N/A";
 
+    // Nombre del vehículo PRIMERO en el centro
+    const vehicleName = String((manifestData as any).trip_info?.vehicle_model || "N/A");
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(10);
+    pdf.text(vehicleName, pageWidth / 2, currentY, { align: "center" });
+
+    currentY += 8;
+
     // Calcular posiciones para 3 columnas
     const availableWidth = pageWidth - 2 * margin;
     const colWidth = availableWidth / 3;
@@ -190,9 +198,11 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
     const col2X = margin + colWidth;
     const col3X = margin + 2 * colWidth;
 
+    // Resto de la información en formato de columnas
+    pdf.setFontSize(9);
+
     // Columna 1: Fecha de salida
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(9);
     pdf.text("FECHA SALIDA:", col1X, currentY);
     pdf.setFont("helvetica", "normal");
     pdf.text(String(fechaSalida), col1X + 28, currentY);
@@ -231,6 +241,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
       currentY
     );
 
+    currentY += 6;
+
     // Columna 3: Total
     pdf.setFont("helvetica", "bold");
     if (manifestData.manifest_type === "CARGO") {
@@ -248,7 +260,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
       );
     }
 
-    currentY += 10;
+    currentY += 4;
 
     // Tables
     if (manifestData.manifest_type === "CARGO") {

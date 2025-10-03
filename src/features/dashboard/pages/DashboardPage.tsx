@@ -7,7 +7,7 @@ import { MonthlySalesChart } from '../components/MonthlySalesChart';
 import { BranchSalesChart } from '../components/BranchSalesChart';
 import { BranchSalesLineChart } from '../components/BranchSalesLineChart';
 import { TopSellersByBranch } from '../components/TopSellersByBranch';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, UserCog } from 'lucide-react';
 import { useAuth } from '../../auth/hooks/useAuth';
 
 export const DashboardPage: React.FC = () => {
@@ -77,13 +77,20 @@ export const DashboardPage: React.FC = () => {
         <TopSellersByBranch />
       </div>
 
-      {/* Enlace a reportes detallados */}
-      <div className="flex justify-center">
+      {/* Enlaces a reportes y estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link
+          to="/dashboard/seller-statistics"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors shadow-md"
+        >
+          <UserCog className="w-5 h-5" />
+          Estadísticas Detalladas por Vendedor
+        </Link>
         <Link
           to="/reports"
-          className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+          className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md"
         >
-          <BarChart3 className="w-5 h-5 mr-2" />
+          <BarChart3 className="w-5 h-5" />
           Ver Reportes Detallados
         </Link>
       </div>

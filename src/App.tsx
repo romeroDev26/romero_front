@@ -14,6 +14,8 @@ import { Spinner } from './components/common/Spinner';
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
 import { ReportsPage } from './features/dashboard/pages/ReportsPage';
 import { WelcomePage } from './features/dashboard/pages/WelcomePage';
+import { SellerStatisticsListPage } from './features/dashboard/pages/SellerStatisticsListPage';
+import { SellerStatisticsDetailPage } from './features/dashboard/pages/SellerStatisticsDetailPage';
 
 // Lazy loading para componentes pesados
 const ClientsListPage = React.lazy(() => import('./features/clients/pages/ClientsListPage').then(module => ({ default: module.ClientsListPage })));
@@ -105,6 +107,8 @@ function App() {
             <Route index element={<WelcomePage />} />
             {/* Dashboard analítico solo para administradores */}
             <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="dashboard/seller-statistics" element={<SellerStatisticsListPage />} />
+            <Route path="dashboard/seller-statistics/:userId" element={<SellerStatisticsDetailPage />} />
             <Route path="reports" element={<ReportsPage />} />
             
             {/* Gestión de Clientes */}

@@ -1,96 +1,102 @@
-/api/v1/users/{user_id}/sales-stats
-Obtener estadísticas de ventas de un usuario
+/api/v1/admin/reports/daily-sales-detailed
+Reporte de ventas diarias detallado
 
 
-Obtiene estadísticas de ventas para un usuario específico en un período determinado.
+Devuelve ventas por usuario con detalle de factura, ítems y representantes (para RUC). Permite filtrar por sucursal, viaje, embarcación, ruta, servicio, método de pago, tipo de documento, estado SUNAT, serie, origen y destino.
 
-Vendedores: Pueden ver sus propias estadísticas
-Administradores: Pueden ver estadísticas de cualquier usuario
-Dispatchers: Pueden ver estadísticas de usuarios de su sucursal
-Parámetros:
-
-user_id: UUID del usuario del cual obtener estadísticas
-period: Período de consulta
-day: Estadísticas del día específico indicado en date
-month: Estadísticas de todo el mes de la fecha indicada en date
-year: Estadísticas de todo el año de la fecha indicada en date
-date: Fecha de referencia para el período (YYYY-MM-DD)
-Para day: Se consultan las ventas de esa fecha exacta
-Para month: Se consultan las ventas de todo el mes de esa fecha
-Para year: Se consultan las ventas de todo el año de esa fecha
-Ejemplos:
-
-period=day&date=2025-09-20: Ventas del 20 de septiembre de 2025
-period=month&date=2025-09-15: Ventas de todo septiembre de 2025
-period=year&date=2025-06-10: Ventas de todo el año 2025
-Respuesta incluye:
-
-Total de ventas y ingresos del período
-Información de la sucursal del usuario
-Desglose por categorías (pasajes vs carga)
 Parameters
-Cancel
+Try it out
 Name	Description
-user_id *
-string($uuid)
-(path)
-65cd8419-1e0b-48b2-89a8-4e551885d28c
-period
-string
-(query)
-Período: day (día específico), month (mes completo), year (año completo)
-
-
-day
-date *
+start_date *
 string($date)
 (query)
-Fecha de referencia (YYYY-MM-DD). Para month/year se usa como referencia del período
+Fecha de inicio
 
-2025-09-15
-Execute
-Clear
-Responses
-Curl
+start_date
+end_date *
+string($date)
+(query)
+Fecha de fin
 
-curl -X 'GET' \
-  'https://romeroapi-production.up.railway.app/api/v1/users/65cd8419-1e0b-48b2-89a8-4e551885d28c/sales-stats?period=day&date=2025-09-15' \
-  -H 'accept: application/json' \
-  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTg5OTQxNTAsInN1YiI6IjM1M2VkNjBkLTQzMzctNDJjMC1hNTFhLWZiNDkyYzhhNGRlYSIsInJvbGUiOiJhZG1pbiJ9.Nzm92tZhxZaBxmRw-_vsl_-5Qs3vAJL-ZRll8NqiSOg'
-Request URL
-https://romeroapi-production.up.railway.app/api/v1/users/65cd8419-1e0b-48b2-89a8-4e551885d28c/sales-stats?period=day&date=2025-09-15
-Server response
-Code	Details
-200	
-Response body
-Download
+end_date
+user_id *
+string($uuid)
+(query)
+ID del vendedor (UUID, obligatorio)
+
+user_id
+
+ejemplo de respuesta que obtendremos:
 {
-  "user_id": "65cd8419-1e0b-48b2-89a8-4e551885d28c",
-  "period": "day",
-  "date": "2025-09-15",
-  "total_sales": 1,
-  "total_revenue": 123,
-  "currency": "PEN",
-  "branch_office": {
-    "id": 1,
-    "name": "Sucursal NAUTA"
+  "report_type": "daily_sales_detailed_by_user",
+  "generated_at": "2025-10-03T01:56:31.381Z",
+  "generated_by": "string",
+  "filters": {
+    "additionalProp1": {}
   },
-  "breakdown": {
-    "tickets": {
-      "count": 0,
-      "revenue": "0"
-    },
-    "cargo": {
-      "count": 1,
-      "revenue": "123.00"
+  "items": [
+    {
+      "invoice_id": 0,
+      "document_type": "string",
+      "series": "string",
+      "correlative": "string",
+      "issue_date": "2025-10-03T01:56:31.381Z",
+      "sunat_status": "string",
+      "seller_id": "string",
+      "seller_name": "string",
+      "seller_email": "string",
+      "branch_office_name": "string",
+      "client_name": "string",
+      "client_doc_type": "string",
+      "client_document_number": "string",
+      "client_nationality": "string",
+      "client_phone": "string",
+      "client_email": "string",
+      "currency": "string",
+      "payment_method": "string",
+      "payment_operation_code": "string",
+      "total_subtotal": "string",
+      "total_tax": "string",
+      "total_amount": "string",
+      "items": [
+        {
+          "item_id": 0,
+          "product_id": 0,
+          "product_name": "string",
+          "service_category": "string",
+          "quantity": "string",
+          "unit_price": "string",
+          "discount_amount": "0",
+          "subtotal": "string",
+          "tax_amount": "string",
+          "total_amount": "string",
+          "seat_number": "string",
+          "trip_id": 0,
+          "trip_date": "2025-10-03",
+          "vessel_name": "string",
+          "route_name": "string",
+          "origin_port": "string",
+          "destination_port": "string",
+          "boarding_port_name": "string",
+          "disembarking_port_name": "string"
+        }
+      ],
+      "representatives": [
+        {
+          "id": 0,
+          "name": "string",
+          "doc_type": "string",
+          "doc_number": "string",
+          "phone": "string",
+          "email": "string",
+          "seat_number": "string",
+          "vessel_name": "string",
+          "trip_date": "2025-10-03",
+          "boarding_stop_name": "string",
+          "disembarking_stop_name": "string"
+        }
+      ]
     }
-  }
+  ]
 }
-Response headers
- content-length: 278 
- content-type: application/json 
- date: Sat,20 Sep 2025 17:30:41 GMT 
- server: railway-edge 
- x-process-time: 0.08815407752990723 
- x-railway-edge: railway/us-east4-eqdc4a 
- x-railway-request-id: 3nq9C2MxS8yvN-iLwoOzXw 
+

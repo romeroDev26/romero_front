@@ -114,17 +114,9 @@ export const generatePassengerManifestPDF = (
       })
     : "N/A";
 
-  // Nombre del vehículo PRIMERO en el centro
-  const vehicleName = manifestData.trip_info?.vehicle_model || "N/A";
+  // Primera fila
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(10);
-  pdf.text(vehicleName, pageWidth / 2, currentY, { align: "center" });
-  
-  currentY += 8;
-
-  // Resto de la información en formato de columnas
   pdf.setFontSize(9);
-  pdf.setFont("helvetica", "bold");
   pdf.text("FECHA SALIDA:", margin, currentY);
   pdf.setFont("helvetica", "normal");
   pdf.text(fechaSalida, margin + 30, currentY);
@@ -136,6 +128,7 @@ export const generatePassengerManifestPDF = (
 
   currentY += 6;
 
+  // Segunda fila
   pdf.setFont("helvetica", "bold");
   pdf.text("ORIGEN:", margin, currentY);
   pdf.setFont("helvetica", "normal");
@@ -150,8 +143,17 @@ export const generatePassengerManifestPDF = (
     currentY
   );
 
+  // Embarcación al final de la segunda fila (lado derecho)
+  const vehicleName = manifestData.trip_info?.vehicle_model || "N/A";
+  const embarcacionX = pageWidth - margin - 50; // Ajustar según necesidad
+  pdf.setFont("helvetica", "bold");
+  pdf.text("Embarcación:", embarcacionX, currentY);
+  pdf.setFont("helvetica", "normal");
+  pdf.text(vehicleName, embarcacionX + 25, currentY);
+
   currentY += 6;
 
+  // Tercera fila
   pdf.setFont("helvetica", "bold");
   pdf.text("PLACA:", margin, currentY);
   pdf.setFont("helvetica", "normal");

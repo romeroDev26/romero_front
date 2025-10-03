@@ -183,14 +183,6 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         })
       : "N/A";
 
-    // Nombre del vehículo PRIMERO en el centro
-    const vehicleName = String((manifestData as any).trip_info?.vehicle_model || "N/A");
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(10);
-    pdf.text(vehicleName, pageWidth / 2, currentY, { align: "center" });
-
-    currentY += 8;
-
     // Calcular posiciones para 3 columnas
     const availableWidth = pageWidth - 2 * margin;
     const colWidth = availableWidth / 3;
@@ -198,9 +190,9 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
     const col2X = margin + colWidth;
     const col3X = margin + 2 * colWidth;
 
-    // Resto de la información en formato de columnas
     pdf.setFontSize(9);
 
+    // Primera fila
     // Columna 1: Fecha de salida
     pdf.setFont("helvetica", "bold");
     pdf.text("FECHA SALIDA:", col1X, currentY);
@@ -225,6 +217,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
 
     currentY += 6;
 
+    // Segunda fila
     // Columna 1: Hora de salida
     pdf.setFont("helvetica", "bold");
     pdf.text("HORA DE SALIDA:", col1X, currentY);
@@ -240,6 +233,13 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
       col2X + 18,
       currentY
     );
+
+    // Columna 3: Embarcación
+    const vehicleName = String((manifestData as any).trip_info?.vehicle_model || "N/A");
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Embarcación:", col3X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(vehicleName, col3X + 25, currentY);
 
     currentY += 6;
 

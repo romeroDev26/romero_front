@@ -23,6 +23,7 @@ import { SunatStatusBadge } from '../../accounting/components/SunatStatusBadge';
 import { WhatsAppSendModal } from '../../fluvial/components/sales-point/WhatsAppSendModal';
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 import { usePermissions } from '../../../hooks/usePermissions';
+import { getCurrencySymbol } from '../../fluvial/components/sales-point/tickets/utils/ticketHelpers';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -146,7 +147,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   </span>
                   <span className="text-sm text-gray-500">•</span>
                   <span className="text-sm text-gray-900 font-medium">
-                    S/ {Number(invoice.total_payable).toFixed(2)}
+                    {getCurrencySymbol(invoice.currency_code)} {Number(invoice.total_payable).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -295,7 +296,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     <h4 className="font-semibold text-gray-700 mb-2">Totales</h4>
                     <p className="text-gray-600">Subtotal: S/ {Number(invoice.total_taxable).toFixed(2)}</p>
                     <p className="text-gray-600">IGV: S/ {Number(invoice.total_igv).toFixed(2)}</p>
-                    <p className="text-lg font-bold text-gray-900">Total: S/ {Number(invoice.total_payable).toFixed(2)}</p>
+                    <p className="text-lg font-bold text-gray-900">Total: {getCurrencySymbol(invoice.currency_code)} {Number(invoice.total_payable).toFixed(2)}</p>
                   </div>
                 </div>
               </div>

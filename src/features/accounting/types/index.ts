@@ -246,6 +246,7 @@ export interface VoidableInvoice {
   client_name: string;
   total_payable: string;
   issue_date: string;
+  currency_code: string;
 }
 
 // Estados de SUNAT

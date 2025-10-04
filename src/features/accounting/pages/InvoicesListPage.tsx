@@ -19,6 +19,7 @@ import { useDebounce } from '../../../hooks/useDebounce';
 import { SunatStatusBadge } from '../components/SunatStatusBadge';
 import { invoicesService, InvoiceFilters } from '../../../services/invoices.service';
 import { Invoice } from '../../../types';
+import { getCurrencySymbol } from '../../fluvial/components/sales-point/tickets/utils/ticketHelpers';
 
 export const InvoicesListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -219,7 +220,7 @@ export const InvoicesListPage: React.FC = () => {
       accessor: (invoice: Invoice) => (
         <div className="text-right">
           <div className="font-medium text-gray-900">
-            S/ {invoice.total_payable}
+            {getCurrencySymbol(invoice.currency_code)} {invoice.total_payable}
           </div>
         </div>
       ),

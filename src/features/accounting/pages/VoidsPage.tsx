@@ -9,6 +9,7 @@ import { useSunatVoids, useCreateSunatVoid, useCheckVoidStatus, useVoidableInvoi
 import { InvoiceSelectorModal } from '../components/InvoiceSelectorModal';
 import { SunatStatusBadge } from '../components/SunatStatusBadge';
 import { VoidDocument, VoidDocumentItem, VoidableInvoice } from '../types';
+import { getCurrencySymbol } from '../../fluvial/components/sales-point/tickets/utils/ticketHelpers';
 
 export const VoidsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,7 +113,7 @@ export const VoidsPage: React.FC = () => {
     {
       key: 'total_payable',
       header: 'Total',
-      accessor: (item) => `S/ ${item.total_payable}`
+      accessor: (item) => `${getCurrencySymbol(item.currency_code)} ${item.total_payable}`
     },
   ];
 

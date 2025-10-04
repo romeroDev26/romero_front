@@ -139,7 +139,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     { value: 'EFE', label: 'Efectivo' },
     { value: 'TRF', label: 'Transferencia Bancaria' },
     { value: 'YAP', label: 'Yape' },
-    { value: 'PLI', label: 'Plin' },
+    { value: 'PLN', label: 'Plin' },
     { value: 'DEP', label: 'Depósito en Cuenta' },
     { value: 'OTR', label: 'Otros' },
   ];
@@ -546,16 +546,28 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     return { basePrice: price, seatMultiplier: multiplier };
   }, [foundFare?.price, selectedSeat?.id, enrichSeatWithType]); // Ya optimizado
   
-  // NUEVO: Detectar modo de precio manual
+  // NUEVO: Detectar modo de precio manual - MEJORADO
   useEffect(() => {
-    const shouldUseManualPrice = !basePrice || basePrice === 0;
-    setIsManualPriceMode(shouldUseManualPrice);
+    // Solo activar modo manual si:
+    // 1. Se ha seleccionado origen Y destino
+    // 2. No hay precio disponible (null, 0, o undefined)
+    const hasBothStopsSelected = !!selectedBoardingStopId && !!selectedDisembarkingStopId;
+    const shouldUseManualPrice = hasBothStopsSelected && (!basePrice || basePrice === 0);
     
-    // Limpiar precio manual si ahora hay tarifa automática
-    if (!shouldUseManualPrice && manualPrice !== null) {
-      setManualPrice(null);
-    }
-  }, [basePrice, selectedDisembarkingStopId]);
+    // Solo actualizar el modo si cambió
+    setIsManualPriceMode(prev => {
+      // Si antes NO era manual y ahora SÍ debe serlo, activar modo manual
+      if (!prev && shouldUseManualPrice) {
+        return true;
+      }
+      // Si antes era manual y ahora NO debe serlo, desactivar y limpiar precio
+      if (prev && !shouldUseManualPrice) {
+        setManualPrice(null);
+        return false;
+      }
+      return prev;
+    });
+  }, [basePrice, selectedBoardingStopId, selectedDisembarkingStopId]); // Incluir ambas paradas
   
   // NUEVO: Obtener el precio efectivo (manual o automático)
   const effectiveBasePrice = useMemo(() => {
@@ -703,28 +715,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
-  // Hook de WebSocket para notificar selecciones de representantes - Memoizado
-  // CORRECCIÓN: Solo usar passengerData.name cuando sea RUC y esté definido
-  // const companyNameForWS = useMemo(() => {
-  //   return isRuc && passengerData.name?.trim() ? passengerData.name.trim() : undefined;
-  // }, [isRuc, passengerData.name]);
-  
-  // Estabilizar configuración WebSocket para evitar reconexiones innecesarias
-  // const stableWebSocketConfig = useMemo(() => {
-  //   const config = {
-  //     tripId: trip.id,
-  //     userId: currentUser?.id || "unknown",
-  //     userName: currentUser?.full_name || currentUser?.first_name || "Usuario",
-  //     enabled: true,
-  //     companyName: companyNameForWS,
-  //     isCompanyMode: isRuc,
-  //     enableDebugLogs: false,
-  //   };
-  //   
-  //   // Solo recrear si los valores críticos realmente cambiaron
-  //   return config;
-  // }, [trip.id, currentUser?.id, currentUser?.full_name, currentUser?.first_name, isRuc, companyNameForWS]);
-
   // Estado para las funciones del WebSocket obtenidas del SeatAndFareSelector
   const [webSocketFunctions, setWebSocketFunctions] = useState<{
     selectSeatForRepresentative: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
@@ -838,6 +828,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         return;
       }
       
+      // NUEVO: Validación crítica para precio manual
+      if (isManualPriceMode && (!manualPrice || manualPrice <= 0)) {
+        toast.error(
+          "Debe ingresar un precio manual válido antes de confirmar la venta."
+        );
+        return;
+      }
+      
       // NUEVO: Activar estado de procesamiento de venta
       setIsProcessingSale(true);
       
@@ -922,7 +920,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     representatives.length, // Ya optimizado
     branch.name,
     confirmPurchase,
-    basePrice,
+    effectiveBasePrice, // CAMBIADO: Usar effectiveBasePrice en lugar de basePrice
     seatMultiplier,
     handleRegularSale,
     selectedSeat?.id, // Ya optimizado
@@ -935,6 +933,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     discount,
     isConfirmingMode,
     reservationToConfirm?.id, // Ya optimizado
+    isManualPriceMode, // NUEVO: Agregar para que el callback se actualice cuando cambie el modo
+    manualPrice, // NUEVO: Agregar para que el callback tenga el valor actualizado
+    selectedPaymentMethod, // NUEVO: Faltaba esta dependencia
+    paymentOperationCode, // NUEVO: Faltaba esta dependencia
   ]);
 
   // Optimización: Memoizar areActionsEnabled para evitar recálculos

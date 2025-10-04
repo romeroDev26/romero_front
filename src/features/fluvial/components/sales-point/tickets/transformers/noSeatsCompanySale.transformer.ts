@@ -69,7 +69,10 @@ export class NoSeatsCompanySaleTransformer {
         representatives: this.transformRepresentatives(data),
         
         // BLOQUE 10: RESUMEN EMPRESARIAL
-        summary: this.transformCompanySummary(data.invoice)
+        summary: this.transformCompanySummary(data.invoice),
+        
+        // NUEVO: Código de moneda
+        currency_code: data.invoice.currency_code || 'PEN'
       };
       
     } catch (error) {

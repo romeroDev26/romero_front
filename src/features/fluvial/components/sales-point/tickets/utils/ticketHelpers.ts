@@ -297,10 +297,34 @@ export function calculateTotalDiscounts(items: any[]): number {
 }
 
 /**
- * Formatea moneda peruana
+ * Formatea moneda según el código
+ * @param amount - Monto a formatear
+ * @param currencyCode - Código de moneda (PEN o USD)
+ * @returns String formateado con símbolo de moneda
  */
-export function formatCurrency(amount: number): string {
-  return `S/ ${amount.toFixed(2)}`;
+export function formatCurrency(amount: number, currencyCode: string = 'PEN'): string {
+  const symbol = getCurrencySymbol(currencyCode);
+  return `${symbol} ${amount.toFixed(2)}`;
+}
+
+/**
+ * Obtiene el símbolo de moneda según el código
+ * @param currencyCode - Código de moneda (PEN, USD, etc.)
+ * @returns Símbolo de la moneda
+ */
+export function getCurrencySymbol(currencyCode: string): string {
+  const code = (currencyCode || 'PEN').toUpperCase();
+  
+  switch (code) {
+    case 'USD':
+      return '$';
+    case 'PEN':
+      return 'S/';
+    case 'EUR':
+      return '€';
+    default:
+      return 'S/'; // Por defecto, soles
+  }
 }
 
 /**

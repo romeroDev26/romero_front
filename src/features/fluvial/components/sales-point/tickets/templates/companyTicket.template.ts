@@ -2,6 +2,7 @@
 
 import jsPDF from 'jspdf';
 import { TicketData, TicketRepresentative, TicketCompanySummary } from '../types/ticket.types';
+import { getCurrencySymbol } from '../utils/ticketHelpers';
 
 /**
  * Template para generar PDFs de tickets de venta a empresas.
@@ -479,7 +480,7 @@ export class CompanyTicketTemplate {
     
     totales.forEach(t => {
       doc.text(t.label + ':', this.HORIZONTAL_MARGIN, currentY);
-      doc.text('S/', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 18, currentY, { align: 'right' });
+      doc.text(getCurrencySymbol(ticketData.currency_code || 'PEN'), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 18, currentY, { align: 'right' });
       doc.text((Number(t.value ?? 0).toFixed(2)), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY, { align: 'right' });
       currentY += 4;
     });

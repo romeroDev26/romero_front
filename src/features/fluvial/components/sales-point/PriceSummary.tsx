@@ -24,6 +24,8 @@ interface PriceSummaryProps {
   isManualPriceMode?: boolean;
   manualPrice?: number | null;
   onManualPriceChange?: (price: number) => void;
+  // NUEVO: Props para moneda
+  currencySymbol?: string;
 }
 
 export const PriceSummary: React.FC<PriceSummaryProps> = ({
@@ -47,6 +49,8 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   isManualPriceMode = false,
   manualPrice = null,
   onManualPriceChange,
+  // NUEVO: Props para moneda
+  currencySymbol = 'S/',
 }) => {
   // Calcular el precio del ticket y límites
   const quantity = isRuc ? Math.max(1, representativesCount) : 1;
@@ -91,7 +95,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
                 const value = parseFloat(e.target.value) || 0;
                 onManualPriceChange?.(value);
               }}
-              placeholder="Ingrese el precio (S/)"
+              placeholder={`Ingrese el precio (${currencySymbol})`}
               step="0.10"
               min="0"
               max="10000"
@@ -100,7 +104,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
             />
             {manualPrice !== null && manualPrice > 0 && (
               <p className="text-xs text-green-700 mt-1 font-medium">
-                ✓ Precio configurado: S/ {manualPrice.toFixed(2)}
+                ✓ Precio configurado: {currencySymbol} {manualPrice.toFixed(2)}
               </p>
             )}
           </div>
@@ -112,7 +116,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         <>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Tarifa por Pasajero:</span>
-            <span className="font-medium">{ticketPricePerUnit > 0 ? `S/ ${ticketPricePerUnit.toFixed(2)}` : 'N/A'}</span>
+            <span className="font-medium">{ticketPricePerUnit > 0 ? `${currencySymbol} ${ticketPricePerUnit.toFixed(2)}` : 'N/A'}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Cantidad de Representantes:</span>
@@ -120,13 +124,13 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           </div>
           <div className="flex justify-between text-sm border-t pt-2">
             <span className="text-gray-600 font-medium">Total Pasajes:</span>
-            <span className="font-medium">{baseSubtotal > 0 ? `S/ ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
+            <span className="font-medium">{baseSubtotal > 0 ? `${currencySymbol} ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
           </div>
         </>
       ) : (
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Tarifa Pasaje:</span>
-          <span className="font-medium">{baseSubtotal > 0 ? `S/ ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
+          <span className="font-medium">{baseSubtotal > 0 ? `${currencySymbol} ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
         </div>
       )}
 
@@ -137,7 +141,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           type="number"
           value={extraCost === 0 ? '' : extraCost.toString()}
           onChange={(e) => onExtraCostChange(parseFloat(e.target.value) || 0)}
-          placeholder="S/ 0.00"
+          placeholder={`${currencySymbol} 0.00`}
           step="0.10"
           min="0"
         />
@@ -202,11 +206,11 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
       <div className="border-t pt-3 mt-3 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">Subtotal:</span>
-          <span>S/ {subtotal.toFixed(2)}</span>
+          <span>{currencySymbol} {subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-600">IGV (18%):</span>
-          <span>S/ {igvAmount.toFixed(2)}</span>
+          <span>{currencySymbol} {igvAmount.toFixed(2)}</span>
         </div>
         
         {/* --- CAMPO PARA DESCUENTO MANUAL --- */}
@@ -216,7 +220,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
             type="number"
             value={discount === 0 ? '' : discount.toString()}
             onChange={(e) => onDiscountChange(parseFloat(e.target.value) || 0)}
-            placeholder="S/ 0.00"
+            placeholder={`${currencySymbol} 0.00`}
             step="0.10"
             min="0"
             max={maxDiscountAllowed}
@@ -227,13 +231,13 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         {discount > 0 && (
           <div className="flex justify-between text-sm text-red-600">
             <span>Descuento:</span>
-            <span>- S/ {discount.toFixed(2)}</span>
+            <span>- {currencySymbol} {discount.toFixed(2)}</span>
           </div>
         )}
         
         <div className="flex justify-between text-xl font-bold text-gray-900">
           <span>TOTAL:</span>
-          <span>S/ {finalTotal.toFixed(2)}</span>
+          <span>{currencySymbol} {finalTotal.toFixed(2)}</span>
         </div>
       </div>
     </div>

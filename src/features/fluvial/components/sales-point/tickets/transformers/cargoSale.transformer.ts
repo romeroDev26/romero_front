@@ -23,7 +23,8 @@ export class CargoSaleTransformer {
       payment_info: this.transformPaymentInfo(backendData),
       footer: this.transformFooter(backendData),
       sunat_totals: this.transformSunatTotals(backendData),
-      metadata: this.transformMetadata(backendData)
+      metadata: this.transformMetadata(backendData),
+      currency_code: backendData.currency_code || 'PEN'
     };
   }
 

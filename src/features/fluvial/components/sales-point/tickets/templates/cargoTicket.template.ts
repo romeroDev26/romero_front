@@ -2,6 +2,7 @@
 
 import jsPDF from 'jspdf';
 import { TicketData } from '../types/ticket.types';
+import { getCurrencySymbol } from '../utils/ticketHelpers';
 
 /**
  * Template para generar PDFs de tickets de ENCOMIENDAS/CARGO
@@ -459,7 +460,7 @@ export class CargoTicketTemplate {
         }
         
         doc.text(total.label + ':', this.MARGIN, currentY);
-        doc.text(`S/ ${total.value}`, this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
+        doc.text(`${getCurrencySymbol(ticketData.currency_code || 'PEN')} ${total.value}`, this.TICKET_WIDTH - this.MARGIN, currentY, { align: 'right' });
         currentY += 3;
       }
     });

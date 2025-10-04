@@ -126,7 +126,8 @@ export const invoiceCreationService = {
     branchName: string,
     items: InvoiceItemData[],
     selectedPaymentMethod?: string,
-    paymentOperationCode?: string
+    paymentOperationCode?: string,
+    currencyCode: 'PEN' | 'USD' = 'PEN' // ← NUEVO: Parámetro para código de moneda
   ): InvoiceCreationData => {
     const isRuc = passengerData.docType === "6"; // RUC
     
@@ -137,7 +138,7 @@ export const invoiceCreationService = {
       issue_date: format(new Date(), "yyyy-MM-dd"),
       issue_time: format(new Date(), "HH:mm:ss"),
       operation_type_code: "0101",
-      currency_code: "PEN",
+      currency_code: currencyCode, // ← ACTUALIZADO: Usar parámetro dinámico
       notes: `Punto de Venta: ${branchName}`,
       items: items,
       // ← NUEVO: Agregar método de pago si está disponible

@@ -42,6 +42,9 @@ import { useVesselDetection } from "./vessel-detection";
 // NUEVO: Importar sistema especializado para compañías sin asientos
 import { NoSeatsCompanyTicketGenerator } from "./tickets/generators/noSeatsCompanyTicket.generator";
 import { isVesselWithoutSeats } from "./tickets/utils/ticketHelpers";
+// NUEVO: Importar sistema de monedas
+import { useCurrencyManager } from './hooks/useCurrencyManager';
+import { CurrencySelector } from './components/CurrencySelector';
 
 // ← NUEVO: Importar módulos refactorizados
 import {
@@ -150,6 +153,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   
   // NUEVO: Estado para bloquear la interfaz durante el proceso de venta
   const [isProcessingSale, setIsProcessingSale] = useState(false);
+
+  // NUEVO: Hook para manejo de moneda
+  const {
+    selectedCurrency,
+    isUSD,
+    setCurrency,
+    getCurrencySymbol,
+  } = useCurrencyManager();
 
   // NUEVO: Usar sistema centralizado de detección de embarcaciones
   const {
@@ -548,7 +559,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   
   // NUEVO: Detectar modo de precio manual - MEJORADO
   useEffect(() => {
-    // Solo activar modo manual si:
+    // Para USD: SIEMPRE modo manual
+    if (isUSD) {
+      setIsManualPriceMode(true);
+      return;
+    }
+    
+    // Para PEN: Solo activar modo manual si:
     // 1. Se ha seleccionado origen Y destino
     // 2. No hay precio disponible (null, 0, o undefined)
     const hasBothStopsSelected = !!selectedBoardingStopId && !!selectedDisembarkingStopId;
@@ -567,7 +584,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
       }
       return prev;
     });
-  }, [basePrice, selectedBoardingStopId, selectedDisembarkingStopId]); // Incluir ambas paradas
+  }, [basePrice, selectedBoardingStopId, selectedDisembarkingStopId, isUSD]); // Incluir isUSD en las dependencias
   
   // NUEVO: Obtener el precio efectivo (manual o automático)
   const effectiveBasePrice = useMemo(() => {
@@ -867,7 +884,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           itemDescription, // ← NUEVO: pasar la descripción opcional
           selectedSeat, // ← NUEVO: pasar asiento seleccionado
           selectedPaymentMethod, // ← NUEVO: pasar método de pago
-          paymentOperationCode // ← NUEVO: pasar código de operación
+          paymentOperationCode, // ← NUEVO: pasar código de operación
+          selectedCurrency // ← NUEVO: pasar código de moneda
         );
         return;
       }
@@ -900,7 +918,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         itemDescription, // ← NUEVO: pasar la descripción opcional
         confirmPurchase, // ← NUEVO: pasar confirmPurchase para actualizar WebSocket
         selectedPaymentMethod, // ← NUEVO: pasar método de pago
-        paymentOperationCode // ← NUEVO: pasar código de operación
+        paymentOperationCode, // ← NUEVO: pasar código de operación
+        selectedCurrency // ← NUEVO: pasar código de moneda
       );
     } catch (error) {
       // NUEVO: Desactivar estado de procesamiento en caso de error
@@ -937,6 +956,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     manualPrice, // NUEVO: Agregar para que el callback tenga el valor actualizado
     selectedPaymentMethod, // NUEVO: Faltaba esta dependencia
     paymentOperationCode, // NUEVO: Faltaba esta dependencia
+    selectedCurrency, // NUEVO: Incluir moneda seleccionada
   ]);
 
   // Optimización: Memoizar areActionsEnabled para evitar recálculos
@@ -1283,6 +1303,15 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                     </div>
                   </div>
                 )}
+
+                {/* NUEVO: Selector de moneda */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <CurrencySelector
+                    selectedCurrency={selectedCurrency}
+                    onCurrencyChange={setCurrency}
+                    disabled={isProcessingSale}
+                  />
+                </div>
               </div>
 
               <PriceSummary
@@ -1308,6 +1337,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 isManualPriceMode={isManualPriceMode}
                 manualPrice={manualPrice}
                 onManualPriceChange={handleManualPriceChange}
+                // NUEVO: Props para moneda
+                currencySymbol={getCurrencySymbol()}
               />
 
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">

@@ -73,6 +73,7 @@ export const useSaleBusinessLogic = ({
     selectedSeat?: any, // ← NUEVO: Asiento seleccionado para obtener trip_seat_id y seat_number
     selectedPaymentMethod?: string, // ← NUEVO: Método de pago seleccionado
     paymentOperationCode?: string, // ← NUEVO: Código de operación de pago
+    currencyCode?: 'PEN' | 'USD', // ← NUEVO: Código de moneda
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -169,7 +170,7 @@ export const useSaleBusinessLogic = ({
       invoiceConfig.operation_type_code = "0101";
       
       // Moneda
-      invoiceConfig.currency_code = "PEN";
+      invoiceConfig.currency_code = currencyCode || "PEN"; // ← NUEVO: Usar código de moneda dinámico
       invoiceConfig.exchange_rate = null;
       
       // Términos de pago
@@ -285,6 +286,7 @@ export const useSaleBusinessLogic = ({
     confirmPurchaseCallback?: (seatIds: number[]) => boolean, // ← NUEVO: Para confirmar compra
     selectedPaymentMethod?: string, // ← NUEVO: Método de pago seleccionado
     paymentOperationCode?: string, // ← NUEVO: Código de operación de pago
+    currencyCode?: 'PEN' | 'USD', // ← NUEVO: Código de moneda
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -358,7 +360,8 @@ export const useSaleBusinessLogic = ({
         branchName,
         invoiceItems,
         selectedPaymentMethod, // ← NUEVO: Pasar método de pago
-        paymentOperationCode // ← NUEVO: Pasar código de operación
+        paymentOperationCode, // ← NUEVO: Pasar código de operación
+        currencyCode // ← NUEVO: Pasar código de moneda
       );
 
       const createdInvoice = await createInvoice({

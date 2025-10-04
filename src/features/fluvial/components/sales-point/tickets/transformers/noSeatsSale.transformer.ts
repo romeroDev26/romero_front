@@ -62,7 +62,10 @@ export class NoSeatsSaleTransformer {
         sunat_totals: this.transformSunatTotals(backendData),
         
         // BLOQUE 8: METADATOS
-        metadata: this.transformMetadata(backendData)
+        metadata: this.transformMetadata(backendData),
+        
+        // NUEVO: Código de moneda
+        currency_code: backendData.currency_code || 'PEN'
       };
       
     } catch (error) {

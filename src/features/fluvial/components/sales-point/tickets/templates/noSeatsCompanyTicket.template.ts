@@ -2,6 +2,8 @@
 
 import jsPDF from 'jspdf';
 import { TicketData, TicketRepresentative, TicketCompanySummary } from '../types/ticket.types';
+import { getCurrencySymbol } from '../utils/ticketHelpers';
+
 export class NoSeatsCompanyTicketTemplate {
   
   // --- CONSTANTES DE DISEÑO (alineadas con CompanyTicketTemplate) ---
@@ -526,7 +528,7 @@ export class NoSeatsCompanyTicketTemplate {
     
     totales.forEach(t => {
       doc.text(t.label + ':', this.HORIZONTAL_MARGIN, currentY);
-      doc.text('S/', this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 18, currentY, { align: 'right' });
+      doc.text(getCurrencySymbol(ticketData.currency_code || 'PEN'), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN - 18, currentY, { align: 'right' });
       doc.text((t.value ?? '0.00'), this.TICKET_WIDTH - this.HORIZONTAL_MARGIN, currentY, { align: 'right' });
       currentY += 4;
     });

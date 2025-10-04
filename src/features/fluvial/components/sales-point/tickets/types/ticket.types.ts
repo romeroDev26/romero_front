@@ -14,6 +14,7 @@ export interface TicketData {
   footer: TicketFooter;
   sunat_totals: TicketSunatTotals;
   metadata: TicketMetadata;
+  currency_code?: string; // NUEVO: Código de moneda (PEN, USD, etc.)
 }
 
 // BLOQUE 1: CABECERA - Información general del documento y la empresa

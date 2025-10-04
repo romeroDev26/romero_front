@@ -20,6 +20,10 @@ interface PriceSummaryProps {
   // Nuevas props para representantes
   isRuc?: boolean;
   representativesCount?: number;
+  // NUEVO: Props para precio manual
+  isManualPriceMode?: boolean;
+  manualPrice?: number | null;
+  onManualPriceChange?: (price: number) => void;
 }
 
 export const PriceSummary: React.FC<PriceSummaryProps> = ({
@@ -38,7 +42,11 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   onDiscountChange,
   finalTotal,
   isRuc = false,
-  representativesCount = 1
+  representativesCount = 1,
+  // NUEVO: Props para precio manual
+  isManualPriceMode = false,
+  manualPrice = null,
+  onManualPriceChange,
 }) => {
   // Calcular el precio del ticket y límites
   const quantity = isRuc ? Math.max(1, representativesCount) : 1;
@@ -54,6 +62,50 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   return (
     <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
       <h3 className="font-semibold text-lg text-gray-800">Resumen de Venta</h3>
+      
+      {/* NUEVO: Campo de precio manual cuando no hay tarifa automática */}
+      {isManualPriceMode && (
+        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 space-y-3">
+          <div className="flex items-start gap-2">
+            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-yellow-400 flex items-center justify-center mt-0.5">
+              <span className="text-white text-xs font-bold">!</span>
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-yellow-800">
+                No hay tarifa configurada para este tramo
+              </p>
+              <p className="text-xs text-yellow-700 mt-1">
+                Ingrese el precio manualmente para continuar con la venta
+              </p>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-bold text-yellow-900 mb-2">
+              Precio Manual por Pasajero *
+            </label>
+            <Input
+              type="number"
+              value={manualPrice === null || manualPrice === 0 ? '' : manualPrice.toString()}
+              onChange={(e) => {
+                const value = parseFloat(e.target.value) || 0;
+                onManualPriceChange?.(value);
+              }}
+              placeholder="Ingrese el precio (S/)"
+              step="0.10"
+              min="0"
+              max="10000"
+              className="text-lg font-semibold border-yellow-400 focus:border-yellow-500 focus:ring-yellow-500"
+              required
+            />
+            {manualPrice !== null && manualPrice > 0 && (
+              <p className="text-xs text-green-700 mt-1 font-medium">
+                ✓ Precio configurado: S/ {manualPrice.toFixed(2)}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* Mostrar información según el tipo de venta */}
       {isRuc && quantity > 1 ? (

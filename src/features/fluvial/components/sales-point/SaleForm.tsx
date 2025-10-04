@@ -118,6 +118,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const [extraCostDescription, setExtraCostDescription] = useState("");
   const [discount, setDiscount] = useState(0);
   const [isIgvGravado, setIsIgvGravado] = useState(false);
+  
+  // NUEVO: Estados para precio manual cuando no existe tarifa
+  const [manualPrice, setManualPrice] = useState<number | null>(null);
+  const [isManualPriceMode, setIsManualPriceMode] = useState(false);
 
   // Estados para series de documentos
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState("");
@@ -341,6 +345,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // Limpiar método de pago
     setSelectedPaymentMethod("EFE");
     setPaymentOperationCode("");
+    
+    // NUEVO: Limpiar precio manual
+    setManualPrice(null);
+    setIsManualPriceMode(false);
   };
   const clearStateForVesselChange = () => {
     // Limpiar datos del pasajero (mantener solo datos básicos)
@@ -382,6 +390,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // Limpiar método de pago
     setSelectedPaymentMethod("EFE");
     setPaymentOperationCode("");
+    
+    // NUEVO: Limpiar precio manual
+    setManualPrice(null);
+    setIsManualPriceMode(false);
 
     // NOTA: No resetear canSellWithoutSeats ni showSeatMap aquí
     // Estos valores deben ser determinados por la consulta de la API del seat-map
@@ -533,10 +545,26 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
     return { basePrice: price, seatMultiplier: multiplier };
   }, [foundFare?.price, selectedSeat?.id, enrichSeatWithType]); // Ya optimizado
+  
+  // NUEVO: Detectar modo de precio manual
+  useEffect(() => {
+    const shouldUseManualPrice = !basePrice || basePrice === 0;
+    setIsManualPriceMode(shouldUseManualPrice);
+    
+    // Limpiar precio manual si ahora hay tarifa automática
+    if (!shouldUseManualPrice && manualPrice !== null) {
+      setManualPrice(null);
+    }
+  }, [basePrice, selectedDisembarkingStopId]);
+  
+  // NUEVO: Obtener el precio efectivo (manual o automático)
+  const effectiveBasePrice = useMemo(() => {
+    return isManualPriceMode ? (manualPrice || 0) : (basePrice || 0);
+  }, [isManualPriceMode, manualPrice, basePrice]);
 
   const priceCalculation = useMemo(() => {
     return calculatePriceDetails(
-      basePrice,
+      effectiveBasePrice, // CAMBIADO: Usar precio efectivo en lugar de basePrice
       seatMultiplier,
       extraCost,
       passengerData,
@@ -545,7 +573,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
       discount
     );
   }, [
-    basePrice,
+    effectiveBasePrice, // CAMBIADO
     seatMultiplier,
     extraCost,
     passengerData.name, // Ya optimizado
@@ -561,7 +589,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const handleDiscountChange = (newDiscount: number) => {
     const validation = validateDiscount(
       newDiscount,
-      basePrice || 0,
+      effectiveBasePrice, // CAMBIADO: Usar precio efectivo
       seatMultiplier,
       extraCost,
       representatives
@@ -571,6 +599,19 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
       return;
     }
     setDiscount(newDiscount);
+  };
+  
+  // NUEVO: Handler para precio manual
+  const handleManualPriceChange = (newPrice: number) => {
+    if (newPrice < 0) {
+      toast.error("El precio no puede ser negativo");
+      return;
+    }
+    if (newPrice > 10000) {
+      toast.error("El precio no puede exceder S/ 10,000");
+      return;
+    }
+    setManualPrice(newPrice);
   };
 
   // Funciones para gestionar representantes
@@ -818,7 +859,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           },
           seatMap,
           confirmPurchase,
-          basePrice || 0,
+          effectiveBasePrice, // CAMBIADO: Usar precio efectivo
           seatMultiplier,
           extraCost,
           extraCostDescription,
@@ -843,7 +884,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         showSeatMap,
         isRuc ? selectedFacturaSeries : selectedBoletaSeries,
         branch.name,
-        basePrice || 0,
+        effectiveBasePrice, // CAMBIADO: Usar precio efectivo
         seatMultiplier,
         extraCost,
         extraCostDescription,
@@ -898,10 +939,15 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   // Optimización: Memoizar areActionsEnabled para evitar recálculos
   const areActionsEnabled = useMemo(() => {
+    const hasValidPrice = isManualPriceMode 
+      ? (manualPrice !== null && manualPrice > 0) 
+      : true; // Si no es modo manual, siempre es válido (puede ser que no haya destino seleccionado)
+    
     return !!selectedBoardingStopId &&
       !!selectedDisembarkingStopId &&
       !!passengerData.docNumber.trim() &&
       !!passengerData.name.trim() &&
+      hasValidPrice && // NUEVO: Validar que haya precio manual si se requiere
       (isRuc ? representatives.length > 0 : !showSeatMap || !!selectedSeat);
   }, [
     selectedBoardingStopId,
@@ -912,6 +958,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     representatives.length,
     showSeatMap,
     selectedSeat?.id, // Ya optimizado
+    isManualPriceMode, // NUEVO
+    manualPrice, // NUEVO
   ]);
 
   return (
@@ -1254,6 +1302,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 finalTotal={finalTicketPrice}
                 isRuc={isRuc}
                 representativesCount={representatives.length}
+                // NUEVO: Props para precio manual
+                isManualPriceMode={isManualPriceMode}
+                manualPrice={manualPrice}
+                onManualPriceChange={handleManualPriceChange}
               />
 
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
@@ -1315,10 +1367,17 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 )}
               </div>
 
-              {!basePrice && (
+              {!basePrice && !isManualPriceMode && (
                 <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-3 rounded-md">
                   <AlertTriangle className="h-4 w-4" />
                   <span>Seleccione un destino para ver el precio.</span>
+                </div>
+              )}
+              
+              {isManualPriceMode && (!manualPrice || manualPrice === 0) && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="font-medium">Ingrese un precio manual para continuar con la venta.</span>
                 </div>
               )}
             </div>

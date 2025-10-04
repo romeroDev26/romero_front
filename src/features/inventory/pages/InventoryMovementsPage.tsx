@@ -1,6 +1,5 @@
 // src/features/inventory/pages/InventoryMovementsPage.tsx
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, CalendarIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Spinner } from '../../../components/common/Spinner';

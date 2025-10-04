@@ -201,6 +201,51 @@ class FareService {
 
     return { created, updated };
   }
+
+  /**
+   * Obtiene las tarifas agrupadas por ruta
+   */
+  async getFaresByRouteGrouped(params: {
+    company_id: number;
+    service_category?: ServiceCategory;
+    route_id?: number;
+    only_active_routes?: boolean;
+    skip?: number;
+    limit?: number;
+  }): Promise<RouteGroupedFare[]> {
+    const response = await api.get('/config/fares/by-route', { params });
+    return response.data;
+  }
+}
+
+export interface RouteSegmentFare {
+  stop_order: number;
+  to_port_id: number;
+  to_port_name: string;
+  price: number | null;
+  currency_code: string | null;
+  label: string;
+  fare_id: number | null;
+  fare_type: FareType | null;
+  tax_category_code: string | null;
+  effective_date: string | null;
+  expiration_date: string | null;
+  is_route_specific: boolean;
+  company_id: number;
+  origin_port_id: number;
+  destination_port_id: number;
+  service_category: ServiceCategory;
+  route_id: number;
+}
+
+export interface RouteGroupedFare {
+  route_id: number;
+  route_name: string;
+  origin_port_id: number;
+  origin_port_name: string;
+  destination_port_id: number;
+  destination_port_name: string;
+  segments: RouteSegmentFare[];
 }
 
 export default new FareService();

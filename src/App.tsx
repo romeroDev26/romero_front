@@ -41,7 +41,7 @@ const RemissionGuideDetailPage = React.lazy(() => import('./features/remissionGu
 const SalesPointPage = React.lazy(() => import('./features/fluvial/pages/SalesPointPage').then(module => ({ default: module.SalesPointPage })));
 const CitiesPortsPage = React.lazy(() => import('./features/fluvial/pages/CitiesPortsPage').then(module => ({ default: module.CitiesPortsPage })));
 const VesselsPage = React.lazy(() => import('./features/fluvial/pages/VesselsPage').then(module => ({ default: module.VesselsPage })));
-const FaresPage = React.lazy(() => import('./features/fluvial/pages/FaresPage').then(module => ({ default: module.FaresPage })));
+const FaresByRoutePage = React.lazy(() => import('./features/fluvial/pages/FaresByRoutePage').then(module => ({ default: module.FaresByRoutePage })));
 const RoutesPage = React.lazy(() => import('./features/fluvial/pages/RoutesPage').then(module => ({ default: module.RoutesPage })));
 const SeatTypesPage = React.lazy(() => import('./features/fluvial/pages/SeatTypesPage').then(module => ({ default: module.SeatTypesPage })));
 const ProductsServicesPage = React.lazy(() => import('./features/fluvial/pages/ProductsServicesPage.tsx').then(module => ({ default: module.ProductsServicesPage })));
@@ -147,9 +147,9 @@ function App() {
                     <RoutesPage />
                   </Suspense>
                 } />
-                <Route path="fares" element={
+                <Route path="fares-by-route" element={
                   <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                    <FaresPage />
+                    <FaresByRoutePage />
                   </Suspense>
                 } />
                 <Route path="seat-types" element={

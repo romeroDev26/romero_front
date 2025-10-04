@@ -71,7 +71,7 @@ const navGroups: NavGroup[] = [
           { name: 'Ciudades y Puertos', path: '/fluvial/config/cities-ports', icon: MapIcon, iconColor: 'text-blue-500' },
           { name: 'Embarcaciones', path: '/fluvial/config/vessels', icon: BuildingOffice2Icon, iconColor: 'text-blue-500' },
           { name: 'Rutas', path: '/fluvial/config/routes', icon: TruckIcon, iconColor: 'text-blue-500' },
-          { name: 'Tarifas', path: '/fluvial/config/fares', icon: CurrencyDollarIcon, iconColor: 'text-blue-500' },
+          { name: 'Tarifas', path: '/fluvial/config/fares-by-route', icon: CurrencyDollarIcon, iconColor: 'text-blue-500' },
           { name: 'Tipos de Asiento', path: '/fluvial/config/seat-types', icon: AdjustmentsHorizontalIcon, iconColor: 'text-blue-500' },
           { name: 'Productos y Servicios', path: '/fluvial/config/products-services', icon: CubeIcon, iconColor: 'text-blue-500' },
           { name: 'Configuración de Series', path: '/fluvial/config/document-series', icon: ClipboardDocumentListIcon, iconColor: 'text-blue-500' },

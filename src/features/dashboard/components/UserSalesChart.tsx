@@ -13,6 +13,7 @@ import {
   Bar,
 } from 'recharts';
 import { useLast7DaysStatistics, useLast12MonthsStatistics } from '../../../hooks/useUserStatistics';
+import { parseLocalDate } from '../../../utils/dateUtils';
 
 type ChartPeriod = '7days' | '12months';
 type ChartType = 'line' | 'bar';
@@ -47,7 +48,8 @@ const UserSalesChart: React.FC = () => {
     if (!data || data.length === 0) return [];
 
     return data.map(item => {
-      const dateObj = new Date(item.date);
+      // Usar parseLocalDate para evitar problemas de zona horaria
+      const dateObj = parseLocalDate(item.date);
       const formattedDate = period === '7days' 
         ? dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
         : dateObj.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });

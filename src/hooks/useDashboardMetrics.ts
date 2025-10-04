@@ -2,16 +2,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { adminReportsService, ReportFilters } from '../services/adminReports.service';
 import { invoicesService } from '../services/invoices.service';
+import { getStartOfMonth, getEndOfMonth } from '../utils/dateUtils';
 
 // Hook para obtener métricas generales de ventas del mes actual
 export const useSalesMetrics = (companyId?: number) => {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
 
   const filters: ReportFilters = {
-    start_date: startOfMonth.toISOString().split('T')[0],
-    end_date: endOfMonth.toISOString().split('T')[0],
+    start_date: startOfMonth,
+    end_date: endOfMonth,
   };
 
   return useQuery({
@@ -23,13 +23,12 @@ export const useSalesMetrics = (companyId?: number) => {
 
 // Hook para obtener rendimiento de vendedores (top 3)
 export const useTopSellers = (companyId?: number) => {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
 
   const filters: ReportFilters = {
-    start_date: startOfMonth.toISOString().split('T')[0],
-    end_date: endOfMonth.toISOString().split('T')[0],
+    start_date: startOfMonth,
+    end_date: endOfMonth,
     limit: 3,
   };
 
@@ -42,13 +41,12 @@ export const useTopSellers = (companyId?: number) => {
 
 // Hook para obtener rutas más populares
 export const usePopularRoutes = (companyId?: number) => {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
 
   const filters: ReportFilters = {
-    start_date: startOfMonth.toISOString().split('T')[0],
-    end_date: endOfMonth.toISOString().split('T')[0],
+    start_date: startOfMonth,
+    end_date: endOfMonth,
     limit: 5,
   };
 
@@ -61,13 +59,12 @@ export const usePopularRoutes = (companyId?: number) => {
 
 // Hook para obtener distribución de métodos de pago
 export const usePaymentMethods = (companyId?: number) => {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
 
   const filters: ReportFilters = {
-    start_date: startOfMonth.toISOString().split('T')[0],
-    end_date: endOfMonth.toISOString().split('T')[0],
+    start_date: startOfMonth,
+    end_date: endOfMonth,
   };
 
   return useQuery({
@@ -79,13 +76,12 @@ export const usePaymentMethods = (companyId?: number) => {
 
 // Hook para obtener ocupación de embarcaciones
 export const useVesselOccupancy = (companyId?: number) => {
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const startOfMonth = getStartOfMonth();
+  const endOfMonth = getEndOfMonth();
 
   const filters: ReportFilters = {
-    start_date: startOfMonth.toISOString().split('T')[0],
-    end_date: endOfMonth.toISOString().split('T')[0],
+    start_date: startOfMonth,
+    end_date: endOfMonth,
   };
 
   return useQuery({

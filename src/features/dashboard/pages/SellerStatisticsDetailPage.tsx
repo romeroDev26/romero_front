@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { usersService } from '../../../services/users.service';
 import { useSellerDetailedStats } from '../../../hooks/useSellerDetailedStats';
+import { getLocalDateString, getStartOfMonth } from '../../../utils/dateUtils';
 import { 
   ArrowLeft, 
   Download, 
@@ -40,11 +41,9 @@ export const SellerStatisticsDetailPage: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   
-  // Estados para fechas
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const [startDate, setStartDate] = useState(firstDayOfMonth.toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(today.toISOString().split('T')[0]);
+  // Estados para fechas usando funciones de zona horaria local
+  const [startDate, setStartDate] = useState(getStartOfMonth());
+  const [endDate, setEndDate] = useState(getLocalDateString());
   
   // Estado para expandir tablas
   const [expandedInvoice, setExpandedInvoice] = useState<number | null>(null);

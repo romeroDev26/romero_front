@@ -10,6 +10,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+import { getLocalDateString } from '../../../utils/dateUtils';
 
 // Colores fijos para cada sucursal para mantener consistencia
 const BRANCH_COLORS = {
@@ -53,15 +54,16 @@ const getBranchSalesData = async (
   if (periodGrouping === 'daily') {
     const { adminReportsService } = await import('../../../services/adminReports.service');
     
+    const todayStr = getLocalDateString(now);
     const report = await adminReportsService.getSalesByBranch({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
+      start_date: todayStr,
+      end_date: todayStr,
       period_grouping: 'daily',
       include_seller_details: false
     });
 
     // Para el período diario, crear un solo punto con todas las sucursales
-    const todayFormatted = formatDateForDisplay(now.toISOString().split('T')[0], 'daily');
+    const todayFormatted = formatDateForDisplay(todayStr, 'daily');
     const chartData: { date: string; [key: string]: number | string }[] = [{ date: todayFormatted }];
 
     // Agregar datos de cada sucursal

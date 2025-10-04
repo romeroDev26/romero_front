@@ -1,5 +1,6 @@
 // src/services/userStatistics.service.ts
 import api from '../config/api';
+import { getLocalDateString, addDays, addMonths, getDaysAgo, getMonthsAgo } from '../utils/dateUtils';
 
 export interface UserStatisticsFilters {
   user_id: string;
@@ -58,7 +59,7 @@ export const userStatisticsService = {
    * Obtiene estadísticas del día actual para un usuario
    */
   getTodayStatistics: async (userId: string): Promise<UserStatisticsResponse> => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     return userStatisticsService.getUserStatistics({
       user_id: userId,
       period: 'day',
@@ -70,7 +71,7 @@ export const userStatisticsService = {
    * Obtiene estadísticas del mes actual para un usuario
    */
   getCurrentMonthStatistics: async (userId: string): Promise<UserStatisticsResponse> => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     return userStatisticsService.getUserStatistics({
       user_id: userId,
       period: 'month',
@@ -82,7 +83,7 @@ export const userStatisticsService = {
    * Obtiene estadísticas del año actual para un usuario
    */
   getCurrentYearStatistics: async (userId: string): Promise<UserStatisticsResponse> => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     return userStatisticsService.getUserStatistics({
       user_id: userId,
       period: 'year',
@@ -101,19 +102,15 @@ export const userStatisticsService = {
   ): Promise<UserStatisticsResponse[]> => {
     try {
       const results: UserStatisticsResponse[] = [];
-      const start = new Date(startDate);
-      const end = new Date(endDate);
+      let currentDate = startDate;
       
-      // Iterar por cada día/mes según el período
-      const current = new Date(start);
-      while (current <= end) {
-        const dateStr = current.toISOString().split('T')[0];
-        
+      // Iterar por cada día/mes según el período usando strings de fecha
+      while (currentDate <= endDate) {
         try {
           const stats = await userStatisticsService.getUserStatistics({
             user_id: userId,
             period,
-            date: dateStr
+            date: currentDate
           });
           results.push(stats);
         } catch (error) {
@@ -123,9 +120,9 @@ export const userStatisticsService = {
 
         // Incrementar según el período
         if (period === 'day') {
-          current.setDate(current.getDate() + 1);
+          currentDate = addDays(currentDate, 1);
         } else {
-          current.setMonth(current.getMonth() + 1);
+          currentDate = addMonths(currentDate, 1);
         }
       }
 
@@ -139,12 +136,8 @@ export const userStatisticsService = {
    * Obtiene estadísticas de los últimos 7 días para el usuario
    */
   getLast7DaysStatistics: async (userId: string): Promise<UserStatisticsResponse[]> => {
-    const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 6); // 6 días atrás más hoy = 7 días
-
-    const startDate = sevenDaysAgo.toISOString().split('T')[0];
-    const endDate = today.toISOString().split('T')[0];
+    const startDate = getDaysAgo(6); // 6 días atrás más hoy = 7 días
+    const endDate = getLocalDateString();
 
     return userStatisticsService.getStatisticsTrends(userId, 'day', startDate, endDate);
   },
@@ -153,12 +146,8 @@ export const userStatisticsService = {
    * Obtiene estadísticas de los últimos 12 meses para el usuario
    */
   getLast12MonthsStatistics: async (userId: string): Promise<UserStatisticsResponse[]> => {
-    const today = new Date();
-    const twelveMonthsAgo = new Date(today);
-    twelveMonthsAgo.setMonth(today.getMonth() - 11); // 11 meses atrás más este mes = 12 meses
-
-    const startDate = twelveMonthsAgo.toISOString().split('T')[0];
-    const endDate = today.toISOString().split('T')[0];
+    const startDate = getMonthsAgo(11); // 11 meses atrás más este mes = 12 meses
+    const endDate = getLocalDateString();
 
     return userStatisticsService.getStatisticsTrends(userId, 'month', startDate, endDate);
   }

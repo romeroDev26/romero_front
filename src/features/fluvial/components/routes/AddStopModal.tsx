@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
+import { SearchableSelect } from '../../../../components/common/SearchableSelect';
 import { Port, RouteStop } from '../../../../types';
 import { routeHelpers } from '../../hooks/useVesselsRoutesData';
 
@@ -68,6 +69,12 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
   const availablePorts = ports.filter(port => 
     !existingStops.some(stop => stop.port_id === port.id)
   );
+
+  // Convertir puertos disponibles a formato de opciones para SearchableSelect
+  const portOptions = availablePorts.map(port => ({
+    value: port.id,
+    label: port.name
+  }));
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -177,20 +184,12 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
           <label className="block text-sm font-medium text-gray-700">
             Puerto de la parada *
           </label>
-          <select
-            value={formData.port_id}
-            onChange={(e) => handleInputChange('port_id', parseInt(e.target.value))}
-            className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              errors.port_id ? 'border-red-300' : 'border-gray-300'
-            }`}
-          >
-            <option value={0}>Seleccionar puerto...</option>
-            {availablePorts.map(port => (
-              <option key={port.id} value={port.id}>
-                {port.name} - {port.city?.name || 'Ciudad no especificada'}
-              </option>
-            ))}
-          </select>
+          <SearchableSelect
+            value={formData.port_id || null}
+            onChange={(value) => handleInputChange('port_id', value as number)}
+            options={portOptions}
+            placeholder="Buscar puerto..."
+          />
           {errors.port_id && (
             <p className="text-sm text-red-600 flex items-center space-x-1">
               <ExclamationTriangleIcon className="h-4 w-4" />

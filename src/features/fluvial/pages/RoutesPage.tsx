@@ -10,7 +10,8 @@ import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
 import { DataTable, Column, useConfirmDelete } from '../../../components/common/DataTable';
-import { Route, Port } from '../../../types';
+import { SearchableSelect } from '../../../components/common/SearchableSelect';
+import { Route } from '../../../types';
 import { usePortsData } from '../../../hooks/usePorts'; // **RUTA CORRECTA Y VERIFICADA**
 import { 
   useRoutes, 
@@ -30,7 +31,6 @@ import { RouteMapModal } from '../components/routes/RouteMapModal';
 
 // ========================================
 // COMPONENTE: MODAL PARA FORMULARIO DE RUTA BÁSICO
-// Este componente se mantiene sin cambios, ya que funciona correctamente.
 // ========================================
 interface RouteFormProps {
   isOpen: boolean;
@@ -50,6 +50,14 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route }) =>
 
   const [formData, setFormData] = useState<RouteUpdateData>(getInitialFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Convertir puertos a formato de opciones para SearchableSelect
+  const portOptions = React.useMemo(() => 
+    ports.map(port => ({
+      value: port.id,
+      label: port.name
+    })), [ports]
+  );
 
   React.useEffect(() => {
     if (isOpen) {
@@ -120,19 +128,23 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route }) =>
         <Input label="Nombre de la Ruta" name="name" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} error={errors.name} required />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Puerto de Origen</label>
-            <select name="origin_port_id" value={formData.origin_port_id} onChange={(e) => setFormData({ ...formData, origin_port_id: parseInt(e.target.value) })} className={`w-full p-2 border rounded-md ${errors.origin_port_id ? 'border-red-500' : 'border-gray-300'}`}>
-              <option value={0}>Seleccione un puerto</option>
-              {ports.map(port => <option key={port.id} value={port.id}>{port.name}</option>)}
-            </select>
+            <SearchableSelect
+              label="Puerto de Origen"
+              value={formData.origin_port_id || null}
+              onChange={(value) => setFormData({ ...formData, origin_port_id: value as number })}
+              options={portOptions}
+              placeholder="Buscar puerto de origen..."
+            />
             {errors.origin_port_id && <p className="text-sm text-red-500 mt-1">{errors.origin_port_id}</p>}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Puerto de Destino</label>
-            <select name="destination_port_id" value={formData.destination_port_id} onChange={(e) => setFormData({ ...formData, destination_port_id: parseInt(e.target.value) })} className={`w-full p-2 border rounded-md ${errors.destination_port_id ? 'border-red-500' : 'border-gray-300'}`}>
-              <option value={0}>Seleccione un puerto</option>
-              {ports.map(port => <option key={port.id} value={port.id}>{port.name}</option>)}
-            </select>
+            <SearchableSelect
+              label="Puerto de Destino"
+              value={formData.destination_port_id || null}
+              onChange={(value) => setFormData({ ...formData, destination_port_id: value as number })}
+              options={portOptions}
+              placeholder="Buscar puerto de destino..."
+            />
             {errors.destination_port_id && <p className="text-sm text-red-500 mt-1">{errors.destination_port_id}</p>}
           </div>
         </div>

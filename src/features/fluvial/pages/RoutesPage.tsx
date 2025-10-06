@@ -13,6 +13,7 @@ import { DataTable, Column, useConfirmDelete } from '../../../components/common/
 import { SearchableSelect } from '../../../components/common/SearchableSelect';
 import { Route } from '../../../types';
 import { usePortsData } from '../../../hooks/usePorts'; // **RUTA CORRECTA Y VERIFICADA**
+import { usePorts } from '../../../hooks/useCitiesPortsData';
 import { 
   useRoutes, 
   useRoute, 
@@ -43,7 +44,7 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
   // ... (No se necesitan cambios aquí, lo dejo por completitud)
   const createRoute = useCreateRoute();
   const updateRoute = useUpdateRoute();
-  const { data: ports = [] } = usePortsData();
+  const { data: ports = [] } = usePorts({ portType: 'PRIMARY_HUB' });
 
   const portsMap = React.useMemo(() => new Map(ports.map(port => [port.id, port])), [ports]);
 

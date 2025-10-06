@@ -36,19 +36,20 @@ interface RouteFormProps {
   isOpen: boolean;
   onClose: () => void;
   route?: Route;
+  routes: Route[];
 }
 
-const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route }) => {
+const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, routes }) => {
   // ... (No se necesitan cambios aquí, lo dejo por completitud)
   const createRoute = useCreateRoute();
   const updateRoute = useUpdateRoute();
   const { data: ports = [] } = usePortsData();
 
-  const getInitialFormData = (): RouteUpdateData => ({
-    name: '', origin_port_id: 0, destination_port_id: 0, estimated_duration_hours: 0, is_active: true
+  const getInitialFormData = (): RouteUpdateData & { type?: 'CARGO' | 'EXPRESS' } => ({
+    name: '', origin_port_id: 0, destination_port_id: 0, estimated_duration_hours: 0, is_active: true, type: 'CARGO'
   });
 
-  const [formData, setFormData] = useState<RouteUpdateData>(getInitialFormData());
+  const [formData, setFormData] = useState<RouteUpdateData & { type?: 'CARGO' | 'EXPRESS' }>(getInitialFormData());
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Convertir puertos a formato de opciones para SearchableSelect
@@ -87,6 +88,20 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route }) =>
     if ((formData.estimated_duration_hours || 0) <= 0) {
         newErrors.estimated_duration_hours = 'La duración debe ser mayor a 0';
     }
+    if (!route && !formData.type) {
+      newErrors.type = 'Debe seleccionar un tipo de ruta';
+    }
+    // Verificar duplicados
+    let fullName = formData.name?.trim().toUpperCase();
+    if (!route && formData.type) {
+      fullName = `${fullName} ${formData.type}`;
+    }
+    if (fullName) {
+      const existingRoute = routes.find(r => r.name.toUpperCase() === fullName && (!route || r.id !== route.id));
+      if (existingRoute) {
+        newErrors.name = 'Ya existe una ruta con este nombre';
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -103,8 +118,10 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route }) =>
         };
         await updateRoute.mutateAsync({ id: route.id, data: updateData });
       } else {
+        const fullName = `${formData.name?.toUpperCase()} ${formData.type}`;
         const createData: RouteCreateData = {
           ...formData as Required<RouteUpdateData>,
+          name: fullName,
           company_id: routeHelpers.getCurrentCompanyId(),
           estimated_duration: routeHelpers.hoursToISOString(formData.estimated_duration_hours || 0),
           stops: routeHelpers.generateBasicStops(
@@ -126,6 +143,43 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route }) =>
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         {/* ... (contenido del formulario sin cambios) ... */}
         <Input label="Nombre de la Ruta" name="name" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} error={errors.name} required />
+        {!route && (
+          <>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Tipo de Ruta</label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="CARGO"
+                    checked={formData.type === 'CARGO'}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-900">CARGO</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="EXPRESS"
+                    checked={formData.type === 'EXPRESS'}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  />
+                  <span className="ml-2 text-sm text-gray-900">EXPRESS</span>
+                </label>
+              </div>
+              {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type}</p>}
+            </div>
+            <div className="p-3 bg-gray-50 rounded-md">
+              <p className="text-sm text-gray-600 mb-1">Previsualización del nombre completo:</p>
+              <p className="text-sm font-medium text-gray-900">{formData.name?.toUpperCase()} {formData.type}</p>
+            </div>
+            <p className="text-xs text-gray-500">Escriba solo el nombre de la ruta (ej: Origen - Destino). El tipo se agregará automáticamente.</p>
+          </>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <SearchableSelect
@@ -276,7 +330,7 @@ export const RoutesPage: React.FC = () => {
         )}
       />
       
-      <RouteFormModal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} route={selectedRoute} />
+      <RouteFormModal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} route={selectedRoute} routes={routes} />
       
       <RouteMapModal isOpen={isMapModalOpen && !!routeForMap} onClose={() => { setIsMapModalOpen(false); setConfiguringRouteId(null); }} route={routeForMap as RouteWithStops | undefined} />
     </div>

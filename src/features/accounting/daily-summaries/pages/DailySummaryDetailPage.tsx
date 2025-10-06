@@ -282,8 +282,8 @@ export const DailySummaryDetailPage: React.FC = () => {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="text-sm">
-                            <div className="text-gray-900">{item.client_doc_number}</div>
-                            <div className="text-gray-500">Tipo: {item.client_doc_type}</div>
+                            <div className="text-gray-900">{item.client_doc_number} - {item.client_name}</div>
+                            <div className="text-gray-500">Tipo: {item.client_doc_type_text || item.client_doc_type}</div>
                           </div>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600">

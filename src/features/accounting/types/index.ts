@@ -151,18 +151,20 @@ export interface DailySummary {
   id: number;
   company_id: number;
   identifier: string;
-  summary_date: string;
+  issue_date?: string; // Nuevo campo según respuesta API
+  summary_date?: string; // Mantener por compatibilidad
   sunat_status: 'PENDING' | 'SENT' | 'ACCEPTED' | 'REJECTED' | 'ERROR';
   sunat_ticket?: string;
   sunat_response_code?: string;
   sunat_response_description?: string;
-  total_sales_amount: number;
-  total_documents: number;
+  total_sales_amount?: number; // Hacer opcional
+  total_documents?: number; // Hacer opcional
+  items?: any[]; // Agregar items para calcular totales
   xml_file_path?: string;
   cdr_file_path?: string;
   pdf_file_path?: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 // Respuesta al crear resumen diario

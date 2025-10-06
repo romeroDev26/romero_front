@@ -67,22 +67,63 @@ export const DailySummaryDetailPage: React.FC = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  const formatDate = (summary: any) => {
+    const dateString = summary.issue_date || summary.summary_date;
+    if (!dateString) return 'Fecha inválida';
+    
+    try {
+      return new Date(dateString).toLocaleDateString('es-PE', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('es-PE', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    if (!dateString) return 'Fecha inválida';
+    
+    try {
+      return new Date(dateString).toLocaleString('es-PE', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
+  };
+
+  const getTotalSalesAmount = (summary: any) => {
+    if (summary.total_sales_amount !== undefined && summary.total_sales_amount !== null) {
+      return summary.total_sales_amount;
+    }
+    
+    // Calcular desde items si existen
+    if (summary.items && Array.isArray(summary.items)) {
+      return summary.items.reduce((total: number, item: any) => {
+        return total + (parseFloat(item.total_amount || item.amount || '0') || 0);
+      }, 0);
+    }
+    
+    return 0;
+  };
+
+  const getTotalDocuments = (summary: any) => {
+    if (summary.total_documents !== undefined && summary.total_documents !== null) {
+      return summary.total_documents;
+    }
+    
+    // Calcular desde items si existen
+    if (summary.items && Array.isArray(summary.items)) {
+      return summary.items.length;
+    }
+    
+    return 0;
   };
 
   if (isLoading) {
@@ -124,7 +165,7 @@ export const DailySummaryDetailPage: React.FC = () => {
               Resumen Diario {summary.identifier}
             </h1>
             <p className="text-gray-600">
-              Fecha de resumen: {formatDate(summary.summary_date)}
+              Fecha de resumen: {formatDate(summary)}
             </p>
           </div>
         </div>
@@ -160,7 +201,7 @@ export const DailySummaryDetailPage: React.FC = () => {
                   <p className="text-sm font-medium text-gray-500">Fecha de Resumen</p>
                   <div className="flex items-center">
                     <CalendarDaysIcon className="h-5 w-5 text-blue-600 mr-2" />
-                    <p className="text-gray-900">{formatDate(summary.summary_date)}</p>
+                    <p className="text-gray-900">{formatDate(summary)}</p>
                   </div>
                 </div>
                 <div>
@@ -173,7 +214,7 @@ export const DailySummaryDetailPage: React.FC = () => {
                   <p className="text-sm font-medium text-gray-500">Total de Documentos</p>
                   <div className="flex items-center">
                     <DocumentDuplicateIcon className="h-5 w-5 text-blue-600 mr-2" />
-                    <p className="text-lg font-bold text-blue-600">{summary.total_documents} boletas</p>
+                    <p className="text-lg font-bold text-blue-600">{getTotalDocuments(summary)} boletas</p>
                   </div>
                 </div>
                 <div>
@@ -181,13 +222,13 @@ export const DailySummaryDetailPage: React.FC = () => {
                   <div className="flex items-center">
                     <CurrencyDollarIcon className="h-5 w-5 text-green-600 mr-2" />
                     <p className="text-lg font-bold text-green-600">
-                      {formatCurrency(summary.total_sales_amount)}
+                      {formatCurrency(getTotalSalesAmount(summary))}
                     </p>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-500">Última Actualización</p>
-                  <p className="text-gray-900">{formatDateTime(summary.updated_at)}</p>
+                  <p className="text-gray-900">{summary.updated_at ? formatDateTime(summary.updated_at) : 'No disponible'}</p>
                 </div>
               </div>
             </div>
@@ -262,14 +303,14 @@ export const DailySummaryDetailPage: React.FC = () => {
                   <DocumentTextIcon className="h-5 w-5 text-blue-600 mr-2" />
                   <span className="text-sm font-medium text-blue-800">Boletas Procesadas</span>
                 </div>
-                <span className="font-bold text-blue-900">{summary.total_documents}</span>
+                <span className="font-bold text-blue-900">{getTotalDocuments(summary)}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                 <div className="flex items-center">
                   <CurrencyDollarIcon className="h-5 w-5 text-green-600 mr-2" />
                   <span className="text-sm font-medium text-green-800">Ventas Totales</span>
                 </div>
-                <span className="font-bold text-green-900">{formatCurrency(summary.total_sales_amount)}</span>
+                <span className="font-bold text-green-900">{formatCurrency(getTotalSalesAmount(summary))}</span>
               </div>
             </div>
           </div>

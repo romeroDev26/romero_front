@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -250,7 +250,7 @@ export const BranchSalesLineChart: React.FC = () => {
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={branchData || []}>
+        <BarChart data={branchData || []}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="date" 
@@ -266,22 +266,18 @@ export const BranchSalesLineChart: React.FC = () => {
             labelFormatter={(label) => `Fecha: ${label}`}
           />
           <Legend />
-          {/* Generar líneas dinámicamente para cada sucursal con colores consistentes */}
+          {/* Generar barras dinámicamente para cada sucursal con colores consistentes */}
           {branchData && branchData.length > 0 && Object.keys(branchData[0])
             .filter(key => key !== 'date')
             .map((branch) => (
-              <Line
+              <Bar
                 key={branch}
-                type="monotone"
                 dataKey={branch}
-                stroke={getBranchColor(branch)}
+                fill={getBranchColor(branch)}
                 name={branch}
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                connectNulls={false}
               />
             ))}
-        </LineChart>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

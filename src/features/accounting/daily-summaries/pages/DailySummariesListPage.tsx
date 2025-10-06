@@ -74,12 +74,47 @@ export const DailySummariesListPage: React.FC = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-PE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
+  const formatDate = (summary: any) => {
+    const dateString = summary.issue_date || summary.summary_date;
+    if (!dateString) return 'Fecha inválida';
+    
+    try {
+      return new Date(dateString).toLocaleDateString('es-PE', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+    } catch (error) {
+      return 'Fecha inválida';
+    }
+  };
+
+  const getTotalSalesAmount = (summary: any) => {
+    if (summary.total_sales_amount !== undefined && summary.total_sales_amount !== null) {
+      return summary.total_sales_amount;
+    }
+    
+    // Calcular desde items si existen
+    if (summary.items && Array.isArray(summary.items)) {
+      return summary.items.reduce((total: number, item: any) => {
+        return total + (parseFloat(item.total_amount || item.amount || '0') || 0);
+      }, 0);
+    }
+    
+    return 0;
+  };
+
+  const getTotalDocuments = (summary: any) => {
+    if (summary.total_documents !== undefined && summary.total_documents !== null) {
+      return summary.total_documents;
+    }
+    
+    // Calcular desde items si existen
+    if (summary.items && Array.isArray(summary.items)) {
+      return summary.items.length;
+    }
+    
+    return 0;
   };
 
   const handleRefreshPending = () => {
@@ -265,7 +300,7 @@ export const DailySummariesListPage: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <CalendarDaysIcon className="h-4 w-4 text-gray-500 mr-2" />
-                        <span className="font-medium">{formatDate(summary.summary_date)}</span>
+                        <span className="font-medium">{formatDate(summary)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -281,19 +316,19 @@ export const DailySummariesListPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="font-medium text-green-600">
-                        {formatCurrency(summary.total_sales_amount)}
+                        {formatCurrency(getTotalSalesAmount(summary))}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {summary.total_documents} boletas
+                        {getTotalDocuments(summary)} boletas
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getSunatStatusBadge(summary.sunat_status)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(summary.created_at)}
+                      {summary.created_at ? formatDate({ issue_date: summary.created_at, summary_date: summary.created_at }) : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center space-x-2">

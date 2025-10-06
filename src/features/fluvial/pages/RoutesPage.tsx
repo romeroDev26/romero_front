@@ -45,12 +45,7 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
   const updateRoute = useUpdateRoute();
   const { data: ports = [] } = usePortsData();
 
-  const getInitialFormData = (): RouteUpdateData & { type?: 'CARGO' | 'EXPRESS' } => ({
-    name: '', origin_port_id: 0, destination_port_id: 0, estimated_duration_hours: 0, is_active: true, type: 'CARGO'
-  });
-
-  const [formData, setFormData] = useState<RouteUpdateData & { type?: 'CARGO' | 'EXPRESS' }>(getInitialFormData());
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const portsMap = React.useMemo(() => new Map(ports.map(port => [port.id, port])), [ports]);
 
   // Convertir puertos a formato de opciones para SearchableSelect
   const portOptions = React.useMemo(() => 
@@ -60,26 +55,73 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
     })), [ports]
   );
 
+  const getFullRouteName = () => {
+    if (!formData.origin_port_id || !formData.destination_port_id || !formData.type) return '';
+    const originPort = portsMap.get(formData.origin_port_id);
+    const destinationPort = portsMap.get(formData.destination_port_id);
+    if (!originPort || !destinationPort) return '';
+    return `${originPort.name.toUpperCase()} - ${destinationPort.name.toUpperCase()} ${formData.type}`;
+  };
+
+  const parseRouteName = (name: string) => {
+    const parts = name.split(' - ');
+    if (parts.length !== 2) return null;
+    const [originName, rest] = parts;
+    const typeParts = rest.split(' ');
+    if (typeParts.length < 2) return null;
+    const destinationName = typeParts.slice(0, -1).join(' ');
+    const type = typeParts[typeParts.length - 1] as 'CARGO' | 'EXPRESS';
+    if (type !== 'CARGO' && type !== 'EXPRESS') return null;
+    return { originName, destinationName, type };
+  };
+
+  const getInitialFormData = (): RouteUpdateData & { type?: 'CARGO' | 'EXPRESS' } => ({
+    name: '', origin_port_id: 0, destination_port_id: 0, estimated_duration_hours: 0, is_active: true, type: 'CARGO'
+  });
+
+  const [formData, setFormData] = useState<RouteUpdateData & { type?: 'CARGO' | 'EXPRESS' }>(getInitialFormData());
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Opciones para destino, excluyendo el origen seleccionado
+  const destinationPortOptions = React.useMemo(() => 
+    portOptions.filter(option => option.value !== formData.origin_port_id), [portOptions, formData.origin_port_id]
+  );
+
   React.useEffect(() => {
     if (isOpen) {
       if (route) {
-        setFormData({
-          name: route.name,
-          origin_port_id: route.origin_port_id,
-          destination_port_id: route.destination_port_id,
-          estimated_duration_hours: routeHelpers.isoStringToHours(route.estimated_duration),
-          is_active: route.is_active
-        });
+        const parsed = parseRouteName(route.name);
+        if (parsed) {
+          const originPort = ports.find(p => p.name.toUpperCase() === parsed.originName.toUpperCase());
+          const destinationPort = ports.find(p => p.name.toUpperCase() === parsed.destinationName.toUpperCase());
+          setFormData({
+            name: route.name,
+            origin_port_id: originPort?.id || 0,
+            destination_port_id: destinationPort?.id || 0,
+            estimated_duration_hours: routeHelpers.isoStringToHours(route.estimated_duration),
+            is_active: route.is_active,
+            type: parsed.type
+          });
+        } else {
+          // Si no se puede parsear, usar valores por defecto o algo
+          setFormData({
+            name: route.name,
+            origin_port_id: route.origin_port_id,
+            destination_port_id: route.destination_port_id,
+            estimated_duration_hours: routeHelpers.isoStringToHours(route.estimated_duration),
+            is_active: route.is_active,
+            type: 'CARGO'
+          });
+        }
       } else {
         setFormData(getInitialFormData());
       }
       setErrors({});
     }
-  }, [route, isOpen]);
+  }, [route, isOpen, ports]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    if (!formData.name?.trim()) newErrors.name = 'El nombre de la ruta es requerido';
     if (!formData.origin_port_id) newErrors.origin_port_id = 'Debe seleccionar un puerto de origen';
     if (!formData.destination_port_id) newErrors.destination_port_id = 'Debe seleccionar un puerto de destino';
     if (formData.origin_port_id === formData.destination_port_id) {
@@ -88,18 +130,15 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
     if ((formData.estimated_duration_hours || 0) <= 0) {
         newErrors.estimated_duration_hours = 'La duración debe ser mayor a 0';
     }
-    if (!route && !formData.type) {
+    if (!formData.type) {
       newErrors.type = 'Debe seleccionar un tipo de ruta';
     }
     // Verificar duplicados
-    let fullName = formData.name?.trim().toUpperCase();
-    if (!route && formData.type) {
-      fullName = `${fullName} ${formData.type}`;
-    }
+    const fullName = getFullRouteName();
     if (fullName) {
-      const existingRoute = routes.find(r => r.name.toUpperCase() === fullName && (!route || r.id !== route.id));
+      const existingRoute = routes.find(r => r.name.toUpperCase() === fullName.toUpperCase() && (!route || r.id !== route.id));
       if (existingRoute) {
-        newErrors.name = 'Ya existe una ruta con este nombre';
+        newErrors.origin_port_id = 'Ya existe una ruta con esta combinación de puertos y tipo';
       }
     }
     setErrors(newErrors);
@@ -110,15 +149,16 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
     e.preventDefault();
     if (!validateForm()) return;
     
+    const fullName = getFullRouteName();
     try {
       if (route) {
         const updateData: RouteUpdateData = {
           ...formData,
+          name: fullName,
           estimated_duration: routeHelpers.hoursToISOString(formData.estimated_duration_hours || 0)
         };
         await updateRoute.mutateAsync({ id: route.id, data: updateData });
       } else {
-        const fullName = `${formData.name?.toUpperCase()} ${formData.type}`;
         const createData: RouteCreateData = {
           ...formData as Required<RouteUpdateData>,
           name: fullName,
@@ -142,50 +182,19 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
     <Modal isOpen={isOpen} onClose={onClose} title={route ? 'Editar Ruta' : 'Nueva Ruta'} maxWidth="xl">
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         {/* ... (contenido del formulario sin cambios) ... */}
-        <Input label="Nombre de la Ruta" name="name" value={formData.name || ''} onChange={(e) => setFormData({ ...formData, name: e.target.value })} error={errors.name} required />
-        {!route && (
-          <>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Tipo de Ruta</label>
-              <div className="flex items-center space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="type"
-                    value="CARGO"
-                    checked={formData.type === 'CARGO'}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-gray-900">CARGO</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="type"
-                    value="EXPRESS"
-                    checked={formData.type === 'EXPRESS'}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-gray-900">EXPRESS</span>
-                </label>
-              </div>
-              {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type}</p>}
-            </div>
-            <div className="p-3 bg-gray-50 rounded-md">
-              <p className="text-sm text-gray-600 mb-1">Previsualización del nombre completo:</p>
-              <p className="text-sm font-medium text-gray-900">{formData.name?.toUpperCase()} {formData.type}</p>
-            </div>
-            <p className="text-xs text-gray-500">Escriba solo el nombre de la ruta (ej: Origen - Destino). El tipo se agregará automáticamente.</p>
-          </>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <SearchableSelect
               label="Puerto de Origen"
               value={formData.origin_port_id || null}
-              onChange={(value) => setFormData({ ...formData, origin_port_id: value as number })}
+              onChange={(value) => {
+                const newOrigin = value as number;
+                setFormData(prev => ({
+                  ...prev,
+                  origin_port_id: newOrigin,
+                  destination_port_id: prev.destination_port_id === newOrigin ? 0 : prev.destination_port_id
+                }));
+              }}
               options={portOptions}
               placeholder="Buscar puerto de origen..."
             />
@@ -196,11 +205,43 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
               label="Puerto de Destino"
               value={formData.destination_port_id || null}
               onChange={(value) => setFormData({ ...formData, destination_port_id: value as number })}
-              options={portOptions}
+              options={destinationPortOptions}
               placeholder="Buscar puerto de destino..."
             />
             {errors.destination_port_id && <p className="text-sm text-red-500 mt-1">{errors.destination_port_id}</p>}
           </div>
+        </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">Tipo de Ruta</label>
+          <div className="flex items-center space-x-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="type"
+                value="CARGO"
+                checked={formData.type === 'CARGO'}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              />
+              <span className="ml-2 text-sm text-gray-900">CARGO</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="type"
+                value="EXPRESS"
+                checked={formData.type === 'EXPRESS'}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+              />
+              <span className="ml-2 text-sm text-gray-900">EXPRESS</span>
+            </label>
+          </div>
+          {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type}</p>}
+        </div>
+        <div className="p-3 bg-gray-50 rounded-md">
+          <p className="text-sm text-gray-600 mb-1">Previsualización del nombre completo:</p>
+          <p className="text-sm font-medium text-gray-900">{getFullRouteName() || 'Seleccione origen, destino y tipo'}</p>
         </div>
         <Input label="Duración Estimada (horas)" type="number" name="estimated_duration_hours" step="0.5" value={formData.estimated_duration_hours || ''} onChange={(e) => setFormData({ ...formData, estimated_duration_hours: parseFloat(e.target.value) || 0 })} error={errors.estimated_duration_hours} min="0.5"/>
         <div className="flex items-center">

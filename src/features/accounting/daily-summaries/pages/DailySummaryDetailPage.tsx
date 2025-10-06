@@ -99,14 +99,17 @@ export const DailySummaryDetailPage: React.FC = () => {
   };
 
   const getTotalSalesAmount = (summary: any) => {
+    // Priorizar el campo directo si existe
     if (summary.total_sales_amount !== undefined && summary.total_sales_amount !== null) {
       return summary.total_sales_amount;
     }
     
-    // Calcular desde items si existen
-    if (summary.items && Array.isArray(summary.items)) {
+    // Fallback: calcular desde items si existen (para detalle)
+    if (summary.items && Array.isArray(summary.items) && summary.items.length > 0) {
       return summary.items.reduce((total: number, item: any) => {
-        return total + (parseFloat(item.total_amount || item.amount || '0') || 0);
+        // Usar total_payable según la estructura real del backend
+        const amount = item.total_payable || item.total_amount || item.amount || 0;
+        return total + (parseFloat(amount) || 0);
       }, 0);
     }
     
@@ -114,11 +117,12 @@ export const DailySummaryDetailPage: React.FC = () => {
   };
 
   const getTotalDocuments = (summary: any) => {
+    // Priorizar el campo directo si existe
     if (summary.total_documents !== undefined && summary.total_documents !== null) {
       return summary.total_documents;
     }
     
-    // Calcular desde items si existen
+    // Fallback: calcular desde items si existen (para detalle)
     if (summary.items && Array.isArray(summary.items)) {
       return summary.items.length;
     }
@@ -234,26 +238,73 @@ export const DailySummaryDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Información del Procesamiento */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Procesamiento SUNAT</h2>
-            
-            {sunatStatus?.sunat_ticket && (
-              <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                <p className="text-sm font-medium text-blue-800 mb-1">Ticket SUNAT</p>
-                <p className="text-blue-900 font-mono">{sunatStatus.sunat_ticket}</p>
+          {/* Lista de Documentos Incluidos */}
+          {summary.items && summary.items.length > 0 && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Documentos Incluidos ({summary.items.length})
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tipo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Serie-Número
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Cliente
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Monto
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estado
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {summary.items.map((item: any, index: number) => (
+                      <tr key={item.id || index} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            item.document_type_code === '01' 
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {item.document_type_code === '01' ? 'Factura' : 'Boleta'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {item.series_number}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="text-sm">
+                            <div className="text-gray-900">{item.client_doc_number}</div>
+                            <div className="text-gray-500">Tipo: {item.client_doc_type}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-green-600">
+                          {formatCurrency(parseFloat(item.total_payable || '0'))}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            item.status === '1' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {item.status === '1' ? 'Activo' : 'Inactivo'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
-
-            {(sunatStatus?.sunat_response_description || summary.sunat_response_description) && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">Respuesta de SUNAT</p>
-                <p className="text-gray-900 text-sm">
-                  {sunatStatus?.sunat_response_description || summary.sunat_response_description}
-                </p>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Panel Lateral */}
@@ -301,9 +352,17 @@ export const DailySummaryDetailPage: React.FC = () => {
               <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                 <div className="flex items-center">
                   <DocumentTextIcon className="h-5 w-5 text-blue-600 mr-2" />
-                  <span className="text-sm font-medium text-blue-800">Boletas Procesadas</span>
+                  <span className="text-sm font-medium text-blue-800">Documentos Procesados</span>
                 </div>
-                <span className="font-bold text-blue-900">{getTotalDocuments(summary)}</span>
+                <div className="text-right">
+                  <span className="font-bold text-blue-900 block">{getTotalDocuments(summary)} total</span>
+                  {summary.total_invoices !== undefined && summary.total_invoices > 0 && (
+                    <span className="text-xs text-blue-700">📄 {summary.total_invoices} factura{summary.total_invoices !== 1 ? 's' : ''}</span>
+                  )}
+                  {summary.total_receipts !== undefined && summary.total_receipts > 0 && (
+                    <span className="text-xs text-blue-700 ml-2">🧾 {summary.total_receipts} boleta{summary.total_receipts !== 1 ? 's' : ''}</span>
+                  )}
+                </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
                 <div className="flex items-center">

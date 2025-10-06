@@ -90,14 +90,17 @@ export const DailySummariesListPage: React.FC = () => {
   };
 
   const getTotalSalesAmount = (summary: any) => {
+    // Priorizar el campo directo si existe
     if (summary.total_sales_amount !== undefined && summary.total_sales_amount !== null) {
       return summary.total_sales_amount;
     }
     
-    // Calcular desde items si existen
-    if (summary.items && Array.isArray(summary.items)) {
+    // Fallback: calcular desde items si existen (para compatibilidad)
+    if (summary.items && Array.isArray(summary.items) && summary.items.length > 0) {
       return summary.items.reduce((total: number, item: any) => {
-        return total + (parseFloat(item.total_amount || item.amount || '0') || 0);
+        // Usar total_payable según la estructura real del backend
+        const amount = item.total_payable || item.total_amount || item.amount || 0;
+        return total + (parseFloat(amount) || 0);
       }, 0);
     }
     
@@ -105,11 +108,12 @@ export const DailySummariesListPage: React.FC = () => {
   };
 
   const getTotalDocuments = (summary: any) => {
+    // Priorizar el campo directo si existe
     if (summary.total_documents !== undefined && summary.total_documents !== null) {
       return summary.total_documents;
     }
     
-    // Calcular desde items si existen
+    // Fallback: calcular desde items si existen (para compatibilidad)
     if (summary.items && Array.isArray(summary.items)) {
       return summary.items.length;
     }
@@ -320,9 +324,21 @@ export const DailySummariesListPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {getTotalDocuments(summary)} boletas
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {getTotalDocuments(summary)} documentos
+                        </span>
+                        {summary.total_invoices !== undefined && summary.total_invoices > 0 && (
+                          <span className="text-xs text-gray-600">
+                            📄 {summary.total_invoices} factura{summary.total_invoices !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {summary.total_receipts !== undefined && summary.total_receipts > 0 && (
+                          <span className="text-xs text-gray-600">
+                            🧾 {summary.total_receipts} boleta{summary.total_receipts !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {getSunatStatusBadge(summary.sunat_status)}

@@ -140,11 +140,26 @@ export interface SunatStatusResponse {
   pdf_file_path?: string;
 }
 
-// Tipos para Resúmenes Diarios - Actualizados según backend
-export interface DailySummaryCreateData {
-  company_id: number;
-  summary_date: string;
-  currency_code?: string;
+// Ítems incluidos en un resumen diario
+export interface DailySummaryItem {
+  id: number;
+  summary_id: number;
+  item_line: number;
+  document_type_code: string; // '01' (Factura) o '03' (Boleta)
+  series_number: string; // Ej: "B001-313"
+  client_doc_type: string;
+  client_doc_number: string;
+  currency_code: string;
+  total_payable: string; // Monto total a pagar (usar este campo)
+  total_taxable: string;
+  total_exonerated: string;
+  total_unaffected: string;
+  total_igv: string;
+  total_isc: string;
+  total_other_taxes: string;
+  status: string;
+  affected_document_type_code?: string | null;
+  affected_document_series_number?: string | null;
 }
 
 export interface DailySummary {
@@ -157,9 +172,11 @@ export interface DailySummary {
   sunat_ticket?: string;
   sunat_response_code?: string;
   sunat_response_description?: string;
-  total_sales_amount?: number; // Hacer opcional
-  total_documents?: number; // Hacer opcional
-  items?: any[]; // Agregar items para calcular totales
+  total_sales_amount: number; // Obligatorio en lista, opcional en detalle
+  total_documents: number; // Total general de documentos
+  total_invoices?: number; // Cantidad de facturas (01)
+  total_receipts?: number; // Cantidad de boletas (03)
+  items?: DailySummaryItem[]; // Solo en consulta de detalle por ID
   xml_file_path?: string;
   cdr_file_path?: string;
   pdf_file_path?: string;

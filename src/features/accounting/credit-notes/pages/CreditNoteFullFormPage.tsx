@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useForm, SubmitHandler, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
 
@@ -58,6 +58,7 @@ export const CreditNoteFullFormPage: React.FC = () => {
 	const location = useLocation();
 	const { affectedInvoice, selectedType } = (location.state as any) || {};
 	const { mutate: createCreditNote, isPending } = useCreateCreditNote();
+	const queryClient = useQueryClient();
   
 	// Estados locales
 	const [selectedInvoiceDetail, setSelectedInvoiceDetail] = useState<any>(null);
@@ -270,7 +271,8 @@ export const CreditNoteFullFormPage: React.FC = () => {
 		};
 
 		createCreditNote(payload, {
-			onSuccess: () => {
+			onSuccess: async () => {
+				await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
 				navigate('/accounting/credit-notes');
 			}
 		});

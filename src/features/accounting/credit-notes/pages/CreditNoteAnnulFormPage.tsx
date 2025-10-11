@@ -6,7 +6,7 @@ import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'react-toastify';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '../../../../components/common/Button';
 import { useCreateCreditNoteByAnnulment } from '../hooks/useCreditNotes';
@@ -43,6 +43,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
   const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>("");
 
   const { mutate: createCreditNote, isPending } = useCreateCreditNoteByAnnulment();
+  const queryClient = useQueryClient();
 
   // Hook de usuario actual
   const { data: currentUser } = useQuery<User>({
@@ -113,7 +114,8 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
     };
 
     createCreditNote(payload, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
         navigate('/accounting/credit-notes');
       }
     });
@@ -132,8 +134,8 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
     };
     
     createCreditNote(payload, {
-      onSuccess: () => {
-        // Redirigir a una página de listado de notas de crédito
+      onSuccess: async () => {
+        await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
         navigate('/accounting/credit-notes'); 
       }
     });

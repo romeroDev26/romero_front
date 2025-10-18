@@ -472,7 +472,7 @@ export class CargoTicketTemplate {
     doc.setFontSize(7);
     doc.text('SON: ' + ticketData.payment_info.amount_in_words, this.MARGIN, currentY);
     currentY += 4;
-    doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.MARGIN, currentY);
+    doc.text(ticketData.payment_info.payment_method_label + ': ' + ticketData.payment_info.payment_method, this.MARGIN, currentY);
     currentY += 4;
 
     // Agregar mensaje de detalle de pago si existe (para contraentrega)

@@ -185,7 +185,7 @@ export class CargoSaleTransformer {
     return {
       amount_in_words_prefix: 'SON:',
       amount_in_words: data.total_in_words || 'MONTO EN PALABRAS NO DISPONIBLE',
-      payment_method_label: 'FORMA DE PAGO:',
+      payment_method_label: 'FORMA DE PAGO',
       payment_method: data.payment_terms_description || 'CONTADO',
       payment_detail_message: data.payment_detail_message || undefined
     };

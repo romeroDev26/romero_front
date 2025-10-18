@@ -202,7 +202,7 @@ export class NoSeatsSaleTransformer {
     return {
       amount_in_words_prefix: 'SON:',
       amount_in_words: data.total_in_words,
-      payment_method_label: 'FORMA DE PAGO:',
+      payment_method_label: 'FORMA DE PAGO',
       payment_method: 'Contado' // Por defecto, el backend podría enviar esto
     };
   }

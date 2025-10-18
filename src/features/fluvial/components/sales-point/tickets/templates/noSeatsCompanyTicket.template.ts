@@ -548,7 +548,7 @@ export class NoSeatsCompanyTicketTemplate {
       currentY += 3;
     });
     currentY += 1;
-    doc.text(ticketData.payment_info.payment_method_label + ' ' + ticketData.payment_info.payment_method, this.HORIZONTAL_MARGIN, currentY);
+    doc.text(ticketData.payment_info.payment_method_label + ': ' + ticketData.payment_info.payment_method, this.HORIZONTAL_MARGIN, currentY);
     currentY += 4;
     
     return currentY;

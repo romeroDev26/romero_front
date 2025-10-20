@@ -51,4 +51,23 @@
     background-color: #dbeafe;
     border-radius: 4px;
   }
+  
+  /* Ocultar spinners de inputs numéricos (flechitas) */
+  /* Chrome, Safari, Edge, Opera */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  
+  /* Prevenir cambio de valor al hacer scroll sobre inputs numéricos */
+  input[type="number"]:focus {
+    -moz-appearance: textfield;
+  }
 }

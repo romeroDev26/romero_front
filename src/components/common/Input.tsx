@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,7 +7,31 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, fullWidth = true, className = '', ...props }, ref) => {
+  ({ label, error, fullWidth = true, className = '', type, ...props }, ref) => {
+    const internalRef = useRef<HTMLInputElement>(null);
+    
+    // Prevenir cambio de valor al hacer scroll sobre inputs numéricos
+    useEffect(() => {
+      if (type === 'number') {
+        const inputElement = (ref as React.RefObject<HTMLInputElement>)?.current || internalRef.current;
+        
+        if (!inputElement) return;
+        
+        const handleWheel = (e: WheelEvent) => {
+          // Prevenir el cambio de valor solo si el input está enfocado
+          if (document.activeElement === inputElement) {
+            e.preventDefault();
+          }
+        };
+        
+        inputElement.addEventListener('wheel', handleWheel, { passive: false });
+        
+        return () => {
+          inputElement.removeEventListener('wheel', handleWheel);
+        };
+      }
+    }, [type, ref]);
+    
     return (
       <div className={`${fullWidth ? 'w-full' : ''} mb-4`}>
         {label && (
@@ -16,7 +40,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         <input
-          ref={ref}
+          ref={ref || internalRef}
+          type={type}
           className={`block ${
             fullWidth ? 'w-full' : ''
           } rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition ${

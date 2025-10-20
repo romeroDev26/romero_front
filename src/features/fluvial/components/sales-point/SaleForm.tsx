@@ -125,6 +125,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   // NUEVO: Estados para precio manual cuando no existe tarifa
   const [manualPrice, setManualPrice] = useState<number | null>(null);
   const [isManualPriceMode, setIsManualPriceMode] = useState(false);
+  
+  // NUEVO: Estado para precio base editable (siempre disponible)
+  const [editableBasePrice, setEditableBasePrice] = useState<number | null>(null);
 
   // Estados para series de documentos
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState("");
@@ -357,9 +360,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     setSelectedPaymentMethod("EFE");
     setPaymentOperationCode("");
     
-    // NUEVO: Limpiar precio manual
+    // NUEVO: Limpiar precio manual y editable
     setManualPrice(null);
     setIsManualPriceMode(false);
+    setEditableBasePrice(null);
   };
   const clearStateForVesselChange = () => {
     // Limpiar datos del pasajero (mantener solo datos básicos)
@@ -402,9 +406,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     setSelectedPaymentMethod("EFE");
     setPaymentOperationCode("");
     
-    // NUEVO: Limpiar precio manual
+    // NUEVO: Limpiar precio manual y editable
     setManualPrice(null);
     setIsManualPriceMode(false);
+    setEditableBasePrice(null);
 
     // NOTA: No resetear canSellWithoutSeats ni showSeatMap aquí
     // Estos valores deben ser determinados por la consulta de la API del seat-map
@@ -586,10 +591,30 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     });
   }, [basePrice, selectedBoardingStopId, selectedDisembarkingStopId, isUSD]); // Incluir isUSD en las dependencias
   
-  // NUEVO: Obtener el precio efectivo (manual o automático)
+  // NUEVO: Sincronizar precio editable con precio de tarifa
+  useEffect(() => {
+    // Si hay un precio base de la tarifa, sincronizarlo con el precio editable
+    if (basePrice !== null && basePrice > 0) {
+      setEditableBasePrice(basePrice);
+    } else {
+      // Si no hay precio base, limpiar el precio editable
+      setEditableBasePrice(null);
+    }
+  }, [basePrice]);
+  
+  // NUEVO: Obtener el precio efectivo (editable, manual o automático)
   const effectiveBasePrice = useMemo(() => {
-    return isManualPriceMode ? (manualPrice || 0) : (basePrice || 0);
-  }, [isManualPriceMode, manualPrice, basePrice]);
+    // Prioridad 1: Si hay precio editable modificado por el usuario
+    if (editableBasePrice !== null && editableBasePrice !== basePrice) {
+      return editableBasePrice;
+    }
+    // Prioridad 2: Si está en modo manual (USD o sin tarifa)
+    if (isManualPriceMode) {
+      return manualPrice || 0;
+    }
+    // Prioridad 3: Precio base de la tarifa o precio editable sincronizado
+    return editableBasePrice ?? basePrice ?? 0;
+  }, [editableBasePrice, basePrice, isManualPriceMode, manualPrice]);
 
   const priceCalculation = useMemo(() => {
     return calculatePriceDetails(
@@ -641,6 +666,19 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
       return;
     }
     setManualPrice(newPrice);
+  };
+  
+  // NUEVO: Handler para precio base editable
+  const handleEditableBasePriceChange = (newPrice: number) => {
+    if (newPrice < 0) {
+      toast.error("El precio no puede ser negativo");
+      return;
+    }
+    if (newPrice > 10000) {
+      toast.error("El precio no puede exceder S/ 10,000");
+      return;
+    }
+    setEditableBasePrice(newPrice);
   };
 
   // Funciones para gestionar representantes
@@ -1337,6 +1375,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 isManualPriceMode={isManualPriceMode}
                 manualPrice={manualPrice}
                 onManualPriceChange={handleManualPriceChange}
+                // NUEVO: Props para precio base editable
+                editableBasePrice={editableBasePrice}
+                onEditableBasePriceChange={handleEditableBasePriceChange}
                 // NUEVO: Props para moneda
                 currencySymbol={getCurrencySymbol()}
               />

@@ -11,6 +11,8 @@ import {
   ChevronRightIcon,
   PlusIcon,
   MinusIcon,
+  CodeBracketIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
@@ -361,6 +363,28 @@ export const InvoicesListPage: React.FC = () => {
               >
                 <EyeIcon className="h-4 w-4" />
               </Button>
+              
+              {invoice.signed_xml_file_path && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => window.open(invoice.signed_xml_file_path!, '_blank')}
+                  title="Ver XML"
+                >
+                  <CodeBracketIcon className="h-4 w-4" />
+                </Button>
+              )}
+              
+              {invoice.cdr_file_path && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => window.open(invoice.cdr_file_path!, '_blank')}
+                  title="Descargar CDR"
+                >
+                  <ArrowDownTrayIcon className="h-4 w-4" />
+                </Button>
+              )}
               
               {/* Solo mostrar acciones de notas si el documento está aceptado por SUNAT */}
               {invoice.sunat_status === 'ACCEPTED' && (

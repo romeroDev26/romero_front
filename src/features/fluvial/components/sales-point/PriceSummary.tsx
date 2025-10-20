@@ -24,6 +24,9 @@ interface PriceSummaryProps {
   isManualPriceMode?: boolean;
   manualPrice?: number | null;
   onManualPriceChange?: (price: number) => void;
+  // NUEVO: Props para precio base editable
+  editableBasePrice?: number | null;
+  onEditableBasePriceChange?: (price: number) => void;
   // NUEVO: Props para moneda
   currencySymbol?: string;
 }
@@ -49,6 +52,9 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   isManualPriceMode = false,
   manualPrice = null,
   onManualPriceChange,
+  // NUEVO: Props para precio base editable
+  editableBasePrice = null,
+  onEditableBasePriceChange,
   // NUEVO: Props para moneda
   currencySymbol = 'S/',
 }) => {
@@ -66,6 +72,15 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   return (
     <div className="bg-gray-50 p-4 rounded-lg border space-y-3">
       <h3 className="font-semibold text-lg text-gray-800">Resumen de Venta</h3>
+      
+      {/* NUEVO: Nota informativa sobre precio editable */}
+      {!isManualPriceMode && (
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-2">
+          <p className="text-xs text-blue-700">
+            💡 <strong>Consejo:</strong> Puede editar el precio de la tarifa directamente si es necesario
+          </p>
+        </div>
+      )}
       
       {/* NUEVO: Campo de precio manual cuando no hay tarifa automática */}
       {isManualPriceMode && (
@@ -114,9 +129,24 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
       {/* Mostrar información según el tipo de venta */}
       {isRuc && quantity > 1 ? (
         <>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Tarifa por Pasajero:</span>
-            <span className="font-medium">{ticketPricePerUnit > 0 ? `${currencySymbol} ${ticketPricePerUnit.toFixed(2)}` : 'N/A'}</span>
+          {/* NUEVO: Campo editable para tarifa por pasajero */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Tarifa por Pasajero (Editable):
+            </label>
+            <Input
+              type="number"
+              value={editableBasePrice === null || editableBasePrice === 0 ? '' : editableBasePrice.toString()}
+              onChange={(e) => {
+                const value = parseFloat(e.target.value) || 0;
+                onEditableBasePriceChange?.(value);
+              }}
+              placeholder={`${currencySymbol} 0.00`}
+              step="0.10"
+              min="0"
+              max="10000"
+              className="text-sm font-medium"
+            />
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Cantidad de Representantes:</span>
@@ -128,9 +158,30 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           </div>
         </>
       ) : (
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Tarifa Pasaje:</span>
-          <span className="font-medium">{baseSubtotal > 0 ? `${currencySymbol} ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
+        /* NUEVO: Campo editable para tarifa pasaje individual */
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Tarifa Pasaje (Editable):
+          </label>
+          <Input
+            type="number"
+            value={editableBasePrice === null || editableBasePrice === 0 ? '' : editableBasePrice.toString()}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value) || 0;
+              onEditableBasePriceChange?.(value);
+            }}
+            placeholder={`${currencySymbol} 0.00`}
+            step="0.10"
+            min="0"
+            max="10000"
+            className="text-sm font-medium"
+          />
+          {/* Mostrar multiplicador de asiento si es diferente de 1 */}
+          {seatMultiplier !== 1 && (
+            <p className="text-xs text-blue-600">
+              Multiplicador de asiento: x{seatMultiplier.toFixed(2)}
+            </p>
+          )}
         </div>
       )}
 

@@ -1,9 +1,8 @@
 // src/features/fluvial/components/sales-point/representatives/RepresentativesManager.tsx
 import React from 'react';
-import { Users, Plus, Trash2, UserCheck, Settings, FileText } from 'lucide-react';
+import { Users, Plus, Trash2, UserCheck, FileText } from 'lucide-react';
 import { Button } from '../../../../../components/common/Button';
 import { AddRepresentativeForm } from './AddRepresentativeForm';
-import { PassengerQuantitySelector } from './PassengerQuantitySelector';
 
 interface Representative {
   document_type: string;
@@ -17,8 +16,6 @@ interface Representative {
 
 interface RepresentativesManagerProps {
   representatives: Representative[];
-  maxPassengers: number;
-  onMaxPassengersChange: (quantity: number) => void;
   onAddRepresentative: (representative: Representative) => void;
   onRemoveRepresentative: (index: number) => void;
   showAddForm: boolean;
@@ -36,8 +33,6 @@ interface RepresentativesManagerProps {
 
 export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
   representatives,
-  maxPassengers,
-  onMaxPassengersChange,
   onAddRepresentative,
   onRemoveRepresentative,
   showAddForm,
@@ -81,7 +76,7 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
           </div>
           <div className="flex items-center space-x-2 text-sm">
             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
-              {representatives.length} de {maxPassengers}
+              {representatives.length} representantes registrados
             </span>
           </div>
         </div>
@@ -102,41 +97,20 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-blue-800">
                 <div className="flex items-start space-x-2">
                   <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                  <span>Configure la cantidad de pasajes a facturar</span>
+                  <span>Agregue los datos de cada representante manualmente</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                  <span>Agregue los datos de cada representante</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
                   <span>Asigne asientos si es necesario</span>
                 </div>
                 <div className="flex items-start space-x-2">
-                  <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                  <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
                   <span>Proceda con la facturación empresarial</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Quantity Selector */}
-        {representatives.length < maxPassengers && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <div className="flex items-center space-x-3 mb-3">
-              <Settings className="h-5 w-5 text-gray-600" />
-              <h4 className="text-sm font-medium text-gray-900">
-                Configuración de Pasajes
-              </h4>
-            </div>
-            <PassengerQuantitySelector
-              quantity={maxPassengers}
-              onQuantityChange={onMaxPassengersChange}
-              disabled={false}
-            />
-          </div>
-        )}
 
         {/* Representatives List */}
         <div className="space-y-4">
@@ -150,17 +124,15 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                 ({representatives.length} registrados)
               </span>
             </div>
-            {representatives.length < maxPassengers && (
-              <Button
-                onClick={() => onShowAddFormChange(true)}
-                size="sm"
-                className="bg-green-600 hover:bg-green-700 text-white"
-                disabled={isReserving || showAddForm}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                {isReserving ? 'Reservando...' : showAddForm ? 'Agregando...' : 'Agregar Representante'}
-              </Button>
-            )}
+            <Button
+              onClick={() => onShowAddFormChange(true)}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={isReserving || showAddForm}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              {isReserving ? 'Reservando...' : showAddForm ? 'Agregando...' : 'Agregar Representante'}
+            </Button>
           </div>
 
           {/* Representatives Cards */}

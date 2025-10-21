@@ -50,7 +50,9 @@ export const useSeatSelections = ({
       newMap.set(selection.seatId, selection);
       return newMap;
     });
-    if (selection.userId === userId) {
+    //  CORRECCIÓN: Comparar userId base para reconocer representantes propios
+    const selectionBaseUserId = selection.userId.split('-company-')[0];
+    if (selectionBaseUserId === userId) {
       setMyActiveSelections(prev => new Set([...prev, selection.seatId]));
     }
   }, [userId]);
@@ -60,18 +62,22 @@ export const useSeatSelections = ({
       const newMap = new Map(prev);
       const removedSelection = newMap.get(seatId);
       newMap.delete(seatId);
-      if (removedSelection?.userId === userId) {
-        setMyActiveSelections(prevMine => {
-          const newSet = new Set(prevMine);
-          newSet.delete(seatId);
-          return newSet;
-        });
+      //  CORRECCIÓN: Comparar userId base para reconocer representantes propios
+      if (removedSelection) {
+        const removedBaseUserId = removedSelection.userId.split('-company-')[0];
+        if (removedBaseUserId === userId) {
+          setMyActiveSelections(prevMine => {
+            const newSet = new Set(prevMine);
+            newSet.delete(seatId);
+            return newSet;
+          });
+        }
       }
       return newMap;
     });
   }, [userId]);
 
-  // ✅ NUEVO: Función para agregar mi propia selección
+  //  NUEVO: Función para agregar mi propia selección
   const addMySelection = useCallback((seatId: number) => {
     setMyActiveSelections(prev => new Set([...prev, seatId]));
   }, []);

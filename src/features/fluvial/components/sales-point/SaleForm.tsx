@@ -103,7 +103,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   // Estados para representantes
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [showRepresentatives, setShowRepresentatives] = useState(false);
-  const [maxPassengers, setMaxPassengers] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedSeatForRepresentative, setSelectedSeatForRepresentative] =
     useState<any>(null);
@@ -385,7 +384,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // CRÍTICO: Limpiar completamente el sistema de representantes
     setRepresentatives([]);
     setShowRepresentatives(false);
-    setMaxPassengers(1);
     setShowAddForm(false);
     setSelectedSeatForRepresentative(null);
 
@@ -1107,8 +1105,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
               <>
                 <RepresentativesManager
                   representatives={representatives}
-                  maxPassengers={maxPassengers}
-                  onMaxPassengersChange={setMaxPassengers}
                   onAddRepresentative={handleAddRepresentative}
                   onRemoveRepresentative={handleRemoveRepresentative}
                   showAddForm={showAddForm}

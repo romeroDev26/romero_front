@@ -74,7 +74,11 @@ export class WebSocketMessageHandler {
     // Procesar selecciones temporales usando el nuevo formato selecctionSeats
     if (message.selecctionSeats && message.selecctionSeats.length > 0) {
       const initialSelections: SeatSelection[] = message.selecctionSeats
-        .filter((selection: SelectionSeat) => selection.userId !== this.userId)
+        .filter((selection: SelectionSeat) => {
+          //  CORRECCIÓN: Filtrar por userId base
+          const selectionBaseUserId = selection.userId.split('-company-')[0];
+          return selectionBaseUserId !== this.userId;
+        })
         .map((selection: SelectionSeat) => ({
           seatId: selection.seatId,
           userId: selection.userId,
@@ -103,7 +107,11 @@ export class WebSocketMessageHandler {
     // Mantener compatibilidad con el formato anterior (seats) por si acaso
     if (message.seats && (!message.selecctionSeats || message.selecctionSeats.length === 0)) {
       const initialSelections: SeatSelection[] = message.seats
-        .filter(selection => selection.userId !== this.userId)
+        .filter(selection => {
+          // CORRECCIÓN: Filtrar por userId base
+          const selectionBaseUserId = selection.userId?.split('-company-')[0] || '';
+          return selectionBaseUserId !== this.userId;
+        })
         .map(selection => ({
           seatId: selection.seatId,
           userId: selection.userId!,
@@ -130,7 +138,11 @@ export class WebSocketMessageHandler {
   private handleSeatSelection(message: SeatUpdateMessage): void {
 
 
-    if (message.userId !== this.userId && message.seatId !== undefined) {
+    //  CORRECCIÓN: Comparar userId base
+    const messageBaseUserId = message.userId?.split('-company-')[0] || '';
+    const isFromDifferentUser = messageBaseUserId !== this.userId;
+    
+    if (isFromDifferentUser && message.seatId !== undefined) {
       const selection: SeatSelection = {
         seatId: message.seatId,
         userId: message.userId!,
@@ -146,12 +158,14 @@ export class WebSocketMessageHandler {
   private handleSeatReleased(message: SeatUpdateMessage): void {
 
 
-    if (message.userId !== this.userId && message.seatId !== undefined) {
+    if (message.seatId !== undefined) {
       // No liberar asientos que han sido vendidos definitivamente
       if (this.confirmedSeats.has(message.seatId)) {
         return;
       }
       
+      //  CORRECCIÓN: SIEMPRE procesar liberaciones (propias y de otros)
+      // Necesario para limpiar correctamente los representantes al eliminarlos
       this.onSelectionRemove(message.seatId);
     }
   }
@@ -173,7 +187,14 @@ export class WebSocketMessageHandler {
                                        message.reservationType === 'representative' ||
                                        (message as any).reservationCategory === 'representative';
 
-    const shouldAddSelection = isRepresentativeReservation || (message.userId !== this.userId);
+    //  CORRECCIÓN: Extraer userId base para comparar correctamente
+    // Los representantes tienen userId como "user123-company-session-rep-0", 
+    // necesitamos comparar solo el userId base "user123"
+    const messageBaseUserId = message.userId?.split('-company-')[0] || '';
+    const isFromDifferentUser = messageBaseUserId !== this.userId;
+    
+    // Solo agregar si es de un usuario diferente
+    const shouldAddSelection = isFromDifferentUser;
 
     if (shouldAddSelection && message.seatId !== undefined) {
       const expiresAt = new Date(Date.now() + (message.ttl || 1800) * 1000).toISOString();
@@ -198,7 +219,9 @@ export class WebSocketMessageHandler {
   private handleTempReleased(message: SeatUpdateMessage): void {
 
 
-    if (message.userId !== this.userId && message.seatId !== undefined) {
+    //  CORRECCIÓN: SIEMPRE procesar liberaciones (propias y de otros)
+    // Necesario para limpiar correctamente los representantes al eliminarlos
+    if (message.seatId !== undefined) {
       this.onSelectionRemove(message.seatId);
     }
   }

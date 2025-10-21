@@ -7,20 +7,16 @@ interface Props {
   onQuantityChange: (quantity: number) => void;
   disabled?: boolean;
   min?: number;
-  max?: number;
 }
 
 export function PassengerQuantitySelector({ 
   quantity, 
   onQuantityChange, 
   disabled = false,
-  min = 1,
-  max = 50
+  min = 1
 }: Props) {
   const handleIncrease = () => {
-    if (quantity < max) {
-      onQuantityChange(quantity + 1);
-    }
+    onQuantityChange(quantity + 1);
   };
 
   const handleDecrease = () => {
@@ -31,7 +27,7 @@ export function PassengerQuantitySelector({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    if (!isNaN(value) && value >= min && value <= max) {
+    if (!isNaN(value) && value >= min) {
       onQuantityChange(value);
     }
   };
@@ -70,7 +66,6 @@ export function PassengerQuantitySelector({
             value={quantity}
             onChange={handleInputChange}
             min={min}
-            max={max}
             disabled={disabled}
             className="w-16 h-8 text-center border border-gray-300 rounded text-sm font-semibold bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
@@ -80,7 +75,7 @@ export function PassengerQuantitySelector({
             variant="outline"
             size="sm"
             onClick={handleIncrease}
-            disabled={disabled || quantity >= max}
+            disabled={disabled}
             className="h-8 w-8 p-0 border-gray-300 hover:bg-gray-100"
           >
             <Plus className="h-4 w-4" />

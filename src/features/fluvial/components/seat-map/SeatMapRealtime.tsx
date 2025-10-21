@@ -245,7 +245,15 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
     return <div className="text-center text-gray-500 p-8">No se pudo cargar la configuración de asientos.</div>;
   }
 
-  const totalActiveSelections = activeSeatSelections.size;
+  //  CORRECCIÓN: Contar vendedores únicos en lugar de asientos
+  // Agrupar por userId base (quitando sufijos de representantes)
+  const uniqueSellers = new Set<string>();
+  activeSeatSelections.forEach((selection) => {
+    // Extraer userId base removiendo sufijos como -company-session-rep-X
+    const baseUserId = selection.userId.split('-company-')[0];
+    uniqueSellers.add(baseUserId);
+  });
+  const totalActiveSelections = uniqueSellers.size;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">

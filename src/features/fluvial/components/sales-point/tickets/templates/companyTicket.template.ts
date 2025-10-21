@@ -401,6 +401,31 @@ export class CompanyTicketTemplate {
     return currentY;
   }
 
+  /**
+   * Agrupa items idénticos sumando cantidades
+   * Items se consideran idénticos si tienen la misma descripción, precio unitario y descuento
+   */
+  private static groupItems(items: any[]): any[] {
+    const grouped = new Map<string, any>();
+    
+    items.forEach(item => {
+      // Crear clave única basada en descripción, precio unitario y descuento
+      const key = `${item.description}|${item.unit_price}|${item.discount || 0}`;
+      
+      if (grouped.has(key)) {
+        // Sumar cantidad y total
+        const existing = grouped.get(key)!;
+        existing.quantity += item.quantity;
+        existing.total_line += item.total_line;
+      } else {
+        // Clonar el item para no modificar el original
+        grouped.set(key, { ...item });
+      }
+    });
+    
+    return Array.from(grouped.values());
+  }
+
   /** BLOQUE 5: DETALLE DE LA VENTA (adaptado para empresa) */
   private static addVentaDetailBlock(doc: jsPDF, ticketData: TicketData, startY: number): number {
     let currentY = startY;
@@ -426,7 +451,10 @@ export class CompanyTicketTemplate {
     doc.setFont('helvetica', 'normal');
     const LINE_HEIGHT = 3.5;
     
-    ticketData.financial_breakdown.items.forEach(item => {
+    // 🔧 AGRUPACIÓN: Agrupar items idénticos sumando cantidades
+    const groupedItems = this.groupItems(ticketData.financial_breakdown.items);
+    
+    groupedItems.forEach(item => {
         const itemStartY = currentY;
 
         // 1. Dibujar las columnas estáticas

@@ -30,6 +30,7 @@ export const InvoiceDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const [showPdfError, setShowPdfError] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4'>('ticket80mm');
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   const { hasPermission } = usePermissions();
 
@@ -72,7 +73,8 @@ export const InvoiceDetailPage: React.FC = () => {
         console.warn('Error al imprimir desde iframe:', error);
         // Fallback: abrir en nueva ventana
         try {
-          const printWindow = window.open(invoice?.pdf_ticket_file_path, '_blank', 'width=800,height=600');
+          const pdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+          const printWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');
           if (printWindow) {
             printWindow.onload = () => {
               try {
@@ -94,16 +96,21 @@ export const InvoiceDetailPage: React.FC = () => {
   };
 
   const handleDownload = () => {
-    if (invoice?.pdf_ticket_file_path) {
+    const pdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+    const fileName = activeTab === 'ticket80mm' 
+      ? `ticket-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`
+      : `ticket-a4-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`;
+    
+    if (pdfUrl) {
       // Crear enlace de descarga
       const link = document.createElement('a');
-      link.href = invoice.pdf_ticket_file_path;
-      link.download = `ticket-${invoice.series}-${String(invoice.number).padStart(8, '0')}.pdf`;
+      link.href = pdfUrl;
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } else {
-      toast.error('No hay ticket PDF disponible para descargar');
+      toast.error(`No hay ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} disponible para descargar`);
     }
   };
 
@@ -116,9 +123,13 @@ export const InvoiceDetailPage: React.FC = () => {
   if (!invoice) return <div className="p-6 text-center text-gray-500">No se encontró la factura.</div>;
 
   const hasTicketPdf = invoice.pdf_ticket_file_path && invoice.pdf_ticket_file_path.trim() !== '';
-  const hasAnyPdf = hasTicketPdf || 
-                    (invoice.pdf_a4_file_path && invoice.pdf_a4_file_path.trim() !== '') ||
+  const hasA4Pdf = invoice.pdf_a4_file_path && invoice.pdf_a4_file_path.trim() !== '';
+  const hasAnyPdf = hasTicketPdf || hasA4Pdf ||
                     (invoice.pdf_file_path && invoice.pdf_file_path.trim() !== '');
+  
+  // Determinar el PDF actual según el tab activo
+  const currentPdfUrl = activeTab === 'ticket80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+  const hasCurrentPdf = activeTab === 'ticket80mm' ? hasTicketPdf : hasA4Pdf;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -153,7 +164,7 @@ export const InvoiceDetailPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              {hasTicketPdf && (
+              {(hasTicketPdf || hasA4Pdf) && (
                 <>
                   <Button
                     variant="outline"
@@ -212,7 +223,7 @@ export const InvoiceDetailPage: React.FC = () => {
 
       {/* Contenido principal */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {hasTicketPdf ? (
+        {(hasTicketPdf || hasA4Pdf) ? (
           <div className="bg-white rounded-lg shadow-sm border">
             {/* Header del visor PDF */}
             <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
@@ -227,16 +238,51 @@ export const InvoiceDetailPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Tabs para seleccionar formato */}
+            {hasTicketPdf && hasA4Pdf && (
+              <div className="px-6 pt-4">
+                <div className="flex border-b border-gray-200">
+                  <button
+                    onClick={() => {
+                      setActiveTab('ticket80mm');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'ticket80mm'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Ticket 80mm (Térmico)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('a4');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'a4'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Ticket A4 (Corporativo)
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Visor PDF */}
             <div className="p-6">
               <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
-                {!showPdfError ? (
+                {!showPdfError && hasCurrentPdf ? (
                   <iframe
                     ref={pdfIframeRef}
-                    src={`${invoice.pdf_ticket_file_path}#toolbar=1&navpanes=1&scrollbar=1`}
+                    key={activeTab}
+                    src={`${currentPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
                     className="w-full h-full border-0"
                     style={{ minHeight: '600px' }}
-                    title={`Ticket ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
+                    title={`Ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
                     onError={() => setShowPdfError(true)}
                     onLoad={(e) => {
                       // Verificar si el iframe se cargó correctamente
@@ -253,20 +299,24 @@ export const InvoiceDetailPage: React.FC = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-96 text-gray-500">
                     <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-gray-400" />
-                    <h3 className="text-lg font-medium mb-2">No se pudo cargar el ticket</h3>
+                    <h3 className="text-lg font-medium mb-2">
+                      No se pudo cargar el ticket {activeTab === 'ticket80mm' ? '80mm' : 'A4'}
+                    </h3>
                     <p className="text-sm text-center mb-4">
                       El PDF no se puede mostrar en el navegador. 
                       Puedes descargarlo usando el botón de arriba.
                     </p>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => window.open(invoice.pdf_ticket_file_path, '_blank')}
-                      className="flex items-center"
-                    >
-                      <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-                      Abrir en nueva ventana
-                    </Button>
+                    {hasCurrentPdf && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => window.open(currentPdfUrl, '_blank')}
+                        className="flex items-center"
+                      >
+                        <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                        Abrir en nueva ventana
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

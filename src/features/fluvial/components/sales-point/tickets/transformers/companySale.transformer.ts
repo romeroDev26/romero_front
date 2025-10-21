@@ -27,44 +27,49 @@ export class CompanySaleTransformer {
   /**
    * Transforma datos del backend al formato del ticket resumen empresarial
    */
-  static transformSummary(data: BackendCompanyInvoiceData): TicketData & { representatives: TicketRepresentative[]; summary: TicketCompanySummary } {
+  static transformSummary(data: BackendCompanyInvoiceData | BackendInvoiceData): TicketData & { representatives: TicketRepresentative[]; summary: TicketCompanySummary } {
     try {
+      // Normalizar los datos: si recibimos BackendCompanyInvoiceData, extraer invoice
+      // Si recibimos BackendInvoiceData directamente, usarlo como está
+      const invoice = 'invoice' in data ? data.invoice : data;
+      const representatives = 'representatives' in data ? data.representatives || [] : [];
+      
       // Validar datos básicos
-      this.validateRequiredData(data.invoice);
+      this.validateRequiredData(invoice);
       
       return {
         // BLOQUE 1: CABECERA
-        header: this.transformHeader(data.invoice),
+        header: this.transformHeader(invoice),
         
         // BLOQUE 2: INFORMACIÓN DE LA EMPRESA (no pasajero individual)
-        passenger_info: this.transformCompanyInfo(data.invoice),
+        passenger_info: this.transformCompanyInfo(invoice),
         
         // BLOQUE 3: DETALLES DEL VIAJE
-        trip_details: this.transformTripDetails(data.invoice),
+        trip_details: this.transformTripDetails(invoice),
         
         // BLOQUE 4: DESGLOSE FINANCIERO (con asientos múltiples)
-        financial_breakdown: this.transformFinancialBreakdown(data.invoice),
+        financial_breakdown: this.transformFinancialBreakdown(invoice),
         
         // BLOQUE 5: INFORMACIÓN DE PAGO
-        payment_info: this.transformPaymentInfo(data.invoice),
+        payment_info: this.transformPaymentInfo(invoice),
         
         // BLOQUE 6: PIE DE PÁGINA
-        footer: this.transformFooter(data.invoice),
+        footer: this.transformFooter(invoice),
         
         // BLOQUE 7: TOTALES SUNAT
-        sunat_totals: this.transformSunatTotals(data.invoice),
+        sunat_totals: this.transformSunatTotals(invoice),
         
         // BLOQUE 8: METADATOS
-        metadata: this.transformMetadata(data.invoice),
+        metadata: this.transformMetadata(invoice),
         
-        // BLOQUE 9: REPRESENTANTES (usar data.representatives)
-        representatives: this.transformRepresentatives(data),
+        // BLOQUE 9: REPRESENTANTES (usar representatives normalizados)
+        representatives: this.transformRepresentativesArray(representatives),
         
         // BLOQUE 10: RESUMEN EMPRESARIAL
-        summary: this.transformCompanySummary(data.invoice),
+        summary: this.transformCompanySummaryFromInvoice(invoice, representatives),
         
         // NUEVO: Código de moneda
-        currency_code: data.invoice.currency_code || 'PEN'
+        currency_code: invoice.currency_code || 'PEN'
       };
       
     } catch (error) {
@@ -224,10 +229,10 @@ export class CompanySaleTransformer {
   }
 
   /**
-   * BLOQUE 9: Transforma representantes
+   * BLOQUE 9: Transforma representantes desde array
    */
-  private static transformRepresentatives(data: BackendCompanyInvoiceData): TicketRepresentative[] {
-    return (data.representatives || []).map(rep => this.transformRepresentative(rep));
+  private static transformRepresentativesArray(representatives: any[]): TicketRepresentative[] {
+    return (representatives || []).map(rep => this.transformRepresentative(rep));
   }
 
   /**
@@ -247,17 +252,19 @@ export class CompanySaleTransformer {
   }
 
   /**
-   * BLOQUE 10: Transforma resumen empresarial
+   * BLOQUE 10: Transforma resumen empresarial desde invoice y representatives
    */
-  private static transformCompanySummary(data: BackendInvoiceData): TicketCompanySummary {
-    return data.summary || {
-      invoice_id: data.id,
-      max_allowed: data.representatives?.length || 0,
-      current_count: data.representatives?.length || 0,
+  private static transformCompanySummaryFromInvoice(invoice: BackendInvoiceData, representatives: any[]): TicketCompanySummary {
+    const repCount = representatives?.length || 0;
+    
+    return {
+      invoice_id: invoice.id,
+      max_allowed: repCount,
+      current_count: repCount,
       remaining: 0,
       can_add_more: false,
-      total_capacity: data.representatives?.length || 0,
-      used_capacity: data.representatives?.length || 0,
+      total_capacity: repCount,
+      used_capacity: repCount,
       remaining_capacity: 0,
       is_complete: true
     };

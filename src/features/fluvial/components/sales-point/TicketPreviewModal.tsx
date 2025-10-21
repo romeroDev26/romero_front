@@ -5,14 +5,11 @@ import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { Download, Eye, Cloud, MessageCircle } from 'lucide-react';
-import { 
-  downloadTicket, 
-  generateTicketBlob 
-} from './tickets';
 import jsPDF from 'jspdf';
 import { BackendInvoiceData } from './tickets/types/backend.types';
 import { useTicketUpload } from '../../../../hooks/useTicketUpload';
 import { WhatsAppSendModal } from './WhatsAppSendModal';
+import { TicketGenerator } from './tickets/TicketGenerator';
 
 interface TicketPreviewModalProps {
   isOpen: boolean;
@@ -27,6 +24,8 @@ interface TicketPreviewModalProps {
   onClearForm?: () => void;
 }
 
+type TicketFormat = 'ticket80mm' | 'a4';
+
 export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   isOpen,
   onClose,
@@ -38,71 +37,110 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [activeFormat, setActiveFormat] = useState<TicketFormat>('ticket80mm');
+  const [previewUrl80mm, setPreviewUrl80mm] = useState<string>('');
+  const [previewUrlA4, setPreviewUrlA4] = useState<string>('');
+  const [ticket80mmDoc, setTicket80mmDoc] = useState<any>(null);
+  const [ticketA4Doc, setTicketA4Doc] = useState<any>(null);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   
   // Hook para manejar el upload de tickets
-  const { isUploading, error: uploadError, uploadTicketPdf, uploadTicketBlob } = useTicketUpload();
-  const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
+  const { isUploading, error: uploadError, uploadBothTickets } = useTicketUpload();
+  const [uploadSuccess, setUploadSuccess] = useState<{ url80mm: string | null; urlA4: string | null } | null>(null);
 
 
   // Generar el PDF inmediatamente cuando se abre el modal
   useEffect(() => {
-    if (isOpen && !previewUrl) {
-      generatePreview();
+    if (isOpen && !previewUrl80mm && !previewUrlA4) {
+      generateBothPreviews();
     }
   }, [isOpen]);
 
-  // Limpiar URL cuando se cierra el modal
+  // Limpiar URLs cuando se cierra el modal
   useEffect(() => {
-    if (!isOpen && previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl('');
-      // Limpiar también los estados de upload
+    if (!isOpen) {
+      if (previewUrl80mm) {
+        URL.revokeObjectURL(previewUrl80mm);
+        setPreviewUrl80mm('');
+      }
+      if (previewUrlA4) {
+        URL.revokeObjectURL(previewUrlA4);
+        setPreviewUrlA4('');
+      }
       setUploadSuccess(null);
+      setTicket80mmDoc(null);
+      setTicketA4Doc(null);
     }
-  }, [isOpen, previewUrl]);
+  }, [isOpen, previewUrl80mm, previewUrlA4]);
 
-  const generatePreview = async () => {
+  const generateBothPreviews = async () => {
     try {
       setIsGenerating(true);
-      let pdfBlob;
-      let pdfDoc: jsPDF | null = null;
       
+      // Si hay customGeneratePDF (ventas empresariales), usar esa lógica para 80mm
+      // y generar el A4 por separado
       if (customGeneratePDF) {
-        // Usar lógica custom para empresa
-        pdfDoc = await customGeneratePDF();
-        pdfBlob = pdfDoc.output('blob');
-      } else {
-        // Usar detección automática para tickets normales y sin asientos
-        pdfBlob = await generateTicketBlob(backendData);
-      }
-      
-      const url = URL.createObjectURL(pdfBlob);
-      setPreviewUrl(url);
-      
-      // UPLOAD AUTOMÁTICO AL BACKEND
-      try {
-        let uploadResult: string | null = null;
+        // Generar ticket 80mm usando la lógica personalizada
+        const doc80mm = await customGeneratePDF();
+        const blob80mm = doc80mm.output('blob');
         
-        if (pdfDoc) {
-          // Si tenemos el documento jsPDF (custom), usar ese método
-          uploadResult = await uploadTicketPdf(pdfDoc, backendData.id, 'pdf_ticket');
-        } else {
-          // Si solo tenemos el blob, usar ese método
-          uploadResult = await uploadTicketBlob(pdfBlob, backendData.id, 'pdf_ticket');
-        }
+        // Generar ticket A4 usando el generador estándar
+        const generator = new TicketGenerator();
+        const resultA4 = await generator.generateBothTickets(backendData);
         
-        if (uploadResult) {
+        // Generar URLs de vista previa
+        const url80mm = URL.createObjectURL(blob80mm);
+        const urlA4 = URL.createObjectURL(resultA4.ticketA4);
+        
+        setPreviewUrl80mm(url80mm);
+        setPreviewUrlA4(urlA4);
+        setTicket80mmDoc(doc80mm);
+        setTicketA4Doc(resultA4.ticketA4Doc);
+        
+        // UPLOAD AUTOMÁTICO DE AMBOS TICKETS EN PARALELO
+        try {
+          const uploadResult = await uploadBothTickets(
+            blob80mm,
+            resultA4.ticketA4,
+            backendData.id
+          );
+          
           setUploadSuccess(uploadResult);
+        } catch (uploadErr) {
+          // No se pudieron subir los tickets, pero la generación fue exitosa
+          console.error('Error subiendo tickets:', uploadErr);
         }
-      } catch (uploadErr) {
-        // No se pudo subir el ticket automáticamente, pero la generación fue exitosa
+      } else {
+        // Lógica normal: generar ambos con el generador estándar
+        const generator = new TicketGenerator();
+        const result = await generator.generateBothTickets(backendData);
+        
+        // Generar URLs de vista previa
+        const url80mm = URL.createObjectURL(result.ticket80mm);
+        const urlA4 = URL.createObjectURL(result.ticketA4);
+        
+        setPreviewUrl80mm(url80mm);
+        setPreviewUrlA4(urlA4);
+        setTicket80mmDoc(result.ticket80mmDoc);
+        setTicketA4Doc(result.ticketA4Doc);
+        
+        // UPLOAD AUTOMÁTICO DE AMBOS TICKETS EN PARALELO
+        try {
+          const uploadResult = await uploadBothTickets(
+            result.ticket80mm,
+            result.ticketA4,
+            backendData.id
+          );
+          
+          setUploadSuccess(uploadResult);
+        } catch (uploadErr) {
+          // No se pudieron subir los tickets, pero la generación fue exitosa
+          console.error('Error subiendo tickets:', uploadErr);
+        }
       }
       
-      // Eliminado console.log de depuración
     } catch (error) {
-      // Eliminado console.error de depuración
+      console.error('Error generando ambos tickets:', error);
     } finally {
       setIsGenerating(false);
     }
@@ -111,17 +149,16 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const handleDownloadTicket = async () => {
     try {
       setIsDownloading(true);
-      if (customGeneratePDF) {
-        // Descargar ticket resumen de empresa
-        const doc = await customGeneratePDF();
-        doc.save('ticket_empresa_resumen.pdf');
-      } else {
-        // Descargar ticket con detección automática
-        await downloadTicket(backendData);
+      
+      // Descargar según el formato activo
+      if (activeFormat === 'ticket80mm' && ticket80mmDoc) {
+        ticket80mmDoc.save('ticket_80mm.pdf');
+      } else if (activeFormat === 'a4' && ticketA4Doc) {
+        ticketA4Doc.save('ticket_a4.pdf');
       }
-      // Eliminado console.log de depuración
+      
     } catch (error) {
-      // Eliminado console.error de depuración
+      console.error('Error descargando ticket:', error);
     } finally {
       setIsDownloading(false);
     }
@@ -164,9 +201,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-center text-green-800">
               <Cloud className="h-4 w-4 mr-2" />
-              <p className="text-sm">
-                Ticket almacenado en el servidor correctamente
-                <span className="ml-1 font-mono text-xs block mt-1">{uploadSuccess}</span>
+              <p className="text-sm font-medium">
+                Documentos almacenados correctamente
               </p>
             </div>
           </div>
@@ -183,6 +219,32 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           </div>
         )}
         
+        {/* Tabs para seleccionar formato */}
+        <div className="mb-4">
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveFormat('ticket80mm')}
+              className={`px-6 py-3 text-sm font-medium transition-colors ${
+                activeFormat === 'ticket80mm'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Ticket 80mm (Térmico)
+            </button>
+            <button
+              onClick={() => setActiveFormat('a4')}
+              className={`px-6 py-3 text-sm font-medium transition-colors ${
+                activeFormat === 'a4'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Ticket A4 (Corporativo)
+            </button>
+          </div>
+        </div>
+        
         {/* Vista previa del PDF real */}
         <div className="mb-6">
           <div className="border rounded-lg overflow-hidden bg-gray-100" style={{ height: '600px' }}>
@@ -191,9 +253,9 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                 <div className="text-center">
                   <Spinner size="lg" className="mb-4" />
                   <p className="text-gray-600">
-                    {isUploading ? 'Generando y subiendo ticket...' : 'Generando vista previa del ticket...'}
+                    {isUploading ? 'Generando y subiendo ambos tickets...' : 'Generando tickets 80mm y A4...'}
                   </p>
-                  <p className="text-sm text-gray-500">Sistema de 8 bloques con QR</p>
+                  <p className="text-sm text-gray-500">Generación en paralelo</p>
                   
                   {/* Barra de progreso para upload */}
                   {isUploading && (
@@ -233,11 +295,17 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                   )}
                 </div>
               </div>
-            ) : previewUrl ? (
+            ) : (activeFormat === 'ticket80mm' && previewUrl80mm) ? (
               <iframe
-                src={previewUrl}
+                src={previewUrl80mm}
                 className="w-full h-full"
-                title="Vista previa del ticket"
+                title="Vista previa del ticket 80mm"
+              />
+            ) : (activeFormat === 'a4' && previewUrlA4) ? (
+              <iframe
+                src={previewUrlA4}
+                className="w-full h-full"
+                title="Vista previa del ticket A4"
               />
             ) : (
               <div className="flex items-center justify-center h-full">

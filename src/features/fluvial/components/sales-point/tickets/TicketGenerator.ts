@@ -5,11 +5,19 @@ import { NormalTicketTemplate } from './templates/normalTicket.template';
 import { NoSeatsTicketTemplate } from './templates/noSeatsTicket.template';
 import { CompanyTicketTemplate } from './templates/companyTicket.template';
 import { CargoTicketTemplate } from './templates/cargoTicket.template';
+import { A4Template } from './templates/a4.template';
 import { NormalSaleTransformer } from './transformers/normalSale.transformer';
 import { NoSeatsSaleTransformer } from './transformers/noSeatsSale.transformer';
 import { CompanySaleTransformer } from './transformers/companySale.transformer';
 import { CargoSaleTransformer } from './transformers/cargoSale.transformer';
 import { isVesselWithoutSeats, isCargoInvoice } from './utils/ticketHelpers';
+
+export interface BothTicketsResult {
+  ticket80mm: Blob;
+  ticketA4: Blob;
+  ticket80mmDoc: any;
+  ticketA4Doc: any;
+}
 
 /**
  * Genera un ticket PDF basado en los datos de la factura del backend
@@ -56,6 +64,86 @@ export class TicketGenerator {
     } catch (error) {
       console.error('Error generating ticket:', error);
       throw new Error('Error al generar el ticket');
+    }
+  }
+
+  /**
+   * Genera AMBOS formatos de tickets (80mm térmico + A4) en paralelo
+   * Retorna los PDFs en formato Blob y también los documentos jsPDF
+   */
+  public async generateBothTickets(backendData: BackendInvoiceData): Promise<BothTicketsResult> {
+    try {
+      // DETECCIÓN AUTOMÁTICA DEL TIPO DE VENTA:
+      
+      // 1. Verificar si es encomienda/cargo
+      if (isCargoInvoice(backendData)) {
+        const ticketData = CargoSaleTransformer.transform(backendData);
+        
+        const [doc80mm, docA4] = await Promise.all([
+          CargoTicketTemplate.generatePDF(ticketData),
+          A4Template.generatePDF(ticketData)
+        ]);
+        
+        return {
+          ticket80mm: doc80mm.output('blob'),
+          ticketA4: docA4.output('blob'),
+          ticket80mmDoc: doc80mm,
+          ticketA4Doc: docA4
+        };
+      }
+      
+      // 2. Verificar si es empresa (RUC)
+      if (backendData.client?.doc_type === '6') {
+        const ticketData = CompanySaleTransformer.transformSummary(backendData as any);
+        
+        const [doc80mm, docA4] = await Promise.all([
+          CompanyTicketTemplate.generatePDF(ticketData),
+          A4Template.generatePDF(ticketData)
+        ]);
+        
+        return {
+          ticket80mm: doc80mm.output('blob'),
+          ticketA4: docA4.output('blob'),
+          ticket80mmDoc: doc80mm,
+          ticketA4Doc: docA4
+        };
+      }
+      
+      // 3. Verificar si es embarcación sin asientos numerados
+      if (backendData.items && isVesselWithoutSeats(backendData.items)) {
+        const ticketData = NoSeatsSaleTransformer.transform(backendData);
+        
+        const [doc80mm, docA4] = await Promise.all([
+          NoSeatsTicketTemplate.generatePDF(ticketData),
+          A4Template.generatePDF(ticketData)
+        ]);
+        
+        return {
+          ticket80mm: doc80mm.output('blob'),
+          ticketA4: docA4.output('blob'),
+          ticket80mmDoc: doc80mm,
+          ticketA4Doc: docA4
+        };
+      }
+      
+      // 4. Default: ticket normal con asientos
+      const ticketData = NormalSaleTransformer.transform(backendData);
+      
+      const [doc80mm, docA4] = await Promise.all([
+        NormalTicketTemplate.generatePDF(ticketData),
+        A4Template.generatePDF(ticketData)
+      ]);
+      
+      return {
+        ticket80mm: doc80mm.output('blob'),
+        ticketA4: docA4.output('blob'),
+        ticket80mmDoc: doc80mm,
+        ticketA4Doc: docA4
+      };
+      
+    } catch (error) {
+      console.error('Error generating both tickets:', error);
+      throw new Error('Error al generar ambos formatos de ticket');
     }
   }
 }

@@ -12,7 +12,7 @@ import { toast } from 'react-toastify';
 
 type SalesPointView = 'branchSelection' | 'tripSelection' | 'saleForm' | 'loading';
 
-export const SalesPointPage: React.FC = () => {
+const SalesPointPage: React.FC = () => {
   const [currentView, setCurrentView] = useState<SalesPointView>('branchSelection');
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<AvailableTripByPort | null>(null);
@@ -156,3 +156,5 @@ export const SalesPointPage: React.FC = () => {
     </div>
   );
 };
+
+export default SalesPointPage;

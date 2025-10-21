@@ -38,7 +38,7 @@ const RemissionGuideFormPage = React.lazy(() => import('./features/remissionGuid
 const RemissionGuideDetailPage = React.lazy(() => import('./features/remissionGuides/pages/RemissionGuideDetailPage').then(module => ({ default: module.RemissionGuideDetailPage })));
 
 // Páginas del módulo fluvial (lazy)
-const SalesPointPage = React.lazy(() => import('./features/fluvial/pages/SalesPointPage').then(module => ({ default: module.SalesPointPage })));
+const SalesPointPage = React.lazy(() => import('./features/fluvial/pages/SalesPointPage'));
 const CitiesPortsPage = React.lazy(() => import('./features/fluvial/pages/CitiesPortsPage').then(module => ({ default: module.CitiesPortsPage })));
 const VesselsPage = React.lazy(() => import('./features/fluvial/pages/VesselsPage').then(module => ({ default: module.VesselsPage })));
 const FaresByRoutePage = React.lazy(() => import('./features/fluvial/pages/FaresByRoutePage').then(module => ({ default: module.FaresByRoutePage })));

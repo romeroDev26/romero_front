@@ -19,7 +19,7 @@ export interface Representative {
   document_type: string;
   document_number: string;
   name: string;
-  phone: string;
+  phone: string | null; // ← Permitir null cuando no se proporciona
   email?: string; // ← NUEVO: Campo email para representante
   seat_number?: string;
   special_notes?: string; // ← NUEVO: Campo notas especiales

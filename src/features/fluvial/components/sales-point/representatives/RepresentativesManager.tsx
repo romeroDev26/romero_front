@@ -9,7 +9,7 @@ interface Representative {
   document_type: string;
   document_number: string;
   name: string;
-  phone: string;
+  phone: string | null; // ← Permitir null
   email?: string; // ← NUEVO: Campo email
   seat_number?: string;
   special_notes?: string; // ← NUEVO: Campo notas especiales
@@ -187,7 +187,9 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       </div>
                       
                       <div className="flex items-center space-x-4 text-xs text-gray-600">
-                        <span>Teléfono: {rep.phone}</span>
+                        {rep.phone && (
+                          <span>Teléfono: {rep.phone}</span>
+                        )}
                         {rep.email && (
                           <span>Email: {rep.email}</span>
                         )}

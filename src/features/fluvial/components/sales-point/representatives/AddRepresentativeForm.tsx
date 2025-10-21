@@ -11,7 +11,7 @@ interface Representative {
   document_type: string;
   document_number: string;
   name: string;
-  phone: string;
+  phone: string | null; // ← Permitir null
   email?: string; // ← NUEVO: Campo email
   seat_number?: string;
   special_notes?: string; // ← NUEVO: Campo notas especiales
@@ -170,11 +170,6 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       return;
     }
 
-    if (!formData.phone.trim()) {
-      toast.error('El teléfono es requerido');
-      return;
-    }
-
     // Verificar duplicados
     if (existingDocuments.includes(formData.document_number.trim())) {
       toast.error('Este documento ya está registrado');
@@ -209,10 +204,10 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       document_type: formData.document_type,
       document_number: formData.document_number.trim(),
       name: formData.name.trim(),
-      phone: formData.phone.trim(),
-      email: formData.email.trim(), // ← NUEVO: Campo email
+      phone: formData.phone.trim() || null, // ← Enviar null si está vacío
+      email: formData.email.trim() || undefined, // ← NUEVO: Campo email
       seat_number: seatNumber,
-      special_notes: formData.special_notes.trim(), // ← NUEVO: Campo notas especiales
+      special_notes: formData.special_notes.trim() || undefined, // ← NUEVO: Campo notas especiales
     });
 
     // Limpiar formulario y asiento seleccionado
@@ -297,7 +292,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Teléfono
+            Teléfono <span className="text-gray-400">(opcional)</span>
           </label>
           <Input
             type="tel"

@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { Spinner } from '../../../components/common/Spinner';
+import { SearchableSelect } from '../../../components/common/SearchableSelect';
 import { useTripDetails } from '../../fluvial/hooks/useTripDetails';
 import { TripStop } from '../../../types';
 
@@ -49,33 +50,27 @@ export const CargoTripSelector: React.FC<CargoTripSelectorProps> = ({
       </p>
       
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Punto de Origen</label>
-          <select
-            value={selectedOriginId || ''}
-            onChange={(e) => onOriginChange(Number(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded-md bg-white"
-          >
-            <option value="" disabled>Seleccione origen...</option>
-            {tripDetails?.stops?.slice(0, -1).map(stop => (
-              <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Punto de Destino</label>
-          <select
-            value={selectedDestinationId || ''}
-            onChange={(e) => onDestinationChange(Number(e.target.value))}
-            className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-            disabled={!selectedOriginId || availableStops.length === 0}
-          >
-            <option value="" disabled>Seleccione destino...</option>
-            {availableStops.map(stop => (
-              <option key={stop.id} value={stop.port_id}>{stop.port?.name}</option>
-            ))}
-          </select>
-        </div>
+        <SearchableSelect
+          label="Punto de Origen"
+          value={selectedOriginId}
+          onChange={(value) => onOriginChange(value ? Number(value) : null)}
+          options={tripDetails?.stops?.slice(0, -1).map(stop => ({
+            value: stop.port_id,
+            label: stop.port?.name || 'Sin nombre'
+          })) || []}
+          placeholder="Seleccione origen..."
+        />
+        <SearchableSelect
+          label="Punto de Destino"
+          value={selectedDestinationId}
+          onChange={(value) => onDestinationChange(value ? Number(value) : null)}
+          options={availableStops.map(stop => ({
+            value: stop.port_id,
+            label: stop.port?.name || 'Sin nombre'
+          }))}
+          placeholder="Seleccione destino..."
+          disabled={!selectedOriginId || availableStops.length === 0}
+        />
       </div>
 
       {selectedOriginId && selectedDestinationId && (

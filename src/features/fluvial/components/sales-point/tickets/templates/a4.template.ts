@@ -35,12 +35,6 @@ export class A4Template {
     currentY = this.addClientInfo(doc, ticketData, currentY);
     currentY += 5;
     
-    // Para encomiendas, mostrar info del destinatario
-    if (this.isCargoSale(ticketData)) {
-      currentY = this.addRecipientInfo(doc, ticketData, currentY);
-      currentY += 5;
-    }
-    
     currentY = this.addItemsTable(doc, ticketData, currentY);
     currentY += 5;
     
@@ -50,15 +44,6 @@ export class A4Template {
     currentY = await this.addFooter(doc, ticketData, currentY);
     
     return doc;
-  }
-
-  /**
-   * Detecta si es una venta de encomienda
-   */
-  private static isCargoSale(ticketData: TicketData): boolean {
-    return ticketData.trip_details.details.some(d => 
-      d.label.toLowerCase().includes('destinatario')
-    );
   }
 
   /**
@@ -216,47 +201,6 @@ export class A4Template {
   }
 
   /**
-   * BLOQUE 3: Información del destinatario (solo para encomiendas)
-   */
-  private static addRecipientInfo(doc: jsPDF, ticketData: TicketData, startY: number): number {
-    let currentY = startY;
-    
-    // Buscar info del destinatario en trip_details
-    const destinatario = ticketData.trip_details.details.find(d => d.label === 'Destinatario');
-    const docDestinatario = ticketData.trip_details.details.find(d => d.label === 'Doc. Destinatario');
-    const telDestinatario = ticketData.trip_details.details.find(d => d.label === 'Tel. Destinatario');
-    
-    if (!destinatario) return currentY;
-    
-    // Recuadro para destinatario
-    doc.setFillColor(255, 245, 230);
-    doc.rect(this.MARGIN, currentY, this.CONTENT_WIDTH, 18, 'F');
-    
-    const infoX = this.MARGIN + 3;
-    let infoY = currentY + 5;
-    
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DESTINATARIO:', infoX, infoY);
-    infoY += 5;
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(destinatario.value.toUpperCase(), infoX, infoY);
-    infoY += 5;
-    
-    doc.setFontSize(8);
-    const destDetails = [];
-    if (docDestinatario) destDetails.push(docDestinatario.value);
-    if (telDestinatario) destDetails.push(`Tel: ${telDestinatario.value}`);
-    
-    doc.text(destDetails.join('  |  '), infoX, infoY);
-    
-    currentY += 20;
-    return currentY;
-  }
-
-  /**
    * Agrupa items idénticos sumando cantidades
    * Items se consideran idénticos si tienen la misma descripción, precio unitario y descuento
    */
@@ -327,30 +271,32 @@ export class A4Template {
       // Descripción (puede ser multilínea)
       let description = item.description;
       
-      // Para pasajes, agregar info del viaje en la descripción
-      if (!this.isCargoSale(ticketData)) {
-        const tripInfo = this.getTripInfo(ticketData);
-        if (tripInfo) {
-          description += `\n${tripInfo}`;
-        }
+      // Agregar info del viaje en la descripción
+      const tripInfo = this.getTripInfo(ticketData);
+      if (tripInfo) {
+        description += `\n${tripInfo}`;
       }
       
+      // Dividir descripción en líneas y calcular espacio necesario
       const descLines = this.splitText(doc, description, 105, 9);
+      
+      // Dibujar cada línea de la descripción
       descLines.forEach((line, i) => {
-        doc.text(line, descX, currentY + (i * 4.5));
+        doc.text(line, descX, itemStartY + 4 + (i * 4.5));
       });
       
-      const lineHeight = Math.max(descLines.length * 4.5, 8);
+      // Calcular altura total del item basado en número de líneas
+      const itemHeight = Math.max(descLines.length * 4.5, 6);
       
-      // Cantidad
+      // Cantidad (alineado con primera línea)
       const cantX = this.PAGE_WIDTH - this.MARGIN - 92;
       doc.text(item.quantity.toString(), cantX, itemStartY + 4, { align: 'center' });
       
-      // Unidad
+      // Unidad (alineado con primera línea)
       const unidadX = this.PAGE_WIDTH - this.MARGIN - 72;
       doc.text('NIU', unidadX, itemStartY + 4, { align: 'center' });
       
-      // Precio unitario
+      // Precio unitario (alineado con primera línea)
       const precioX = this.PAGE_WIDTH - this.MARGIN - 42;
       doc.text(
         `${getCurrencySymbol(ticketData.currency_code || 'PEN')} ${item.unit_price.toFixed(2)}`,
@@ -359,7 +305,7 @@ export class A4Template {
         { align: 'right' }
       );
       
-      // Total
+      // Total (alineado con primera línea)
       const totalX = this.PAGE_WIDTH - this.MARGIN - 2;
       doc.setFont('helvetica', 'bold');
       doc.text(
@@ -370,10 +316,11 @@ export class A4Template {
       );
       doc.setFont('helvetica', 'normal');
       
-      currentY += lineHeight;
+      // Avanzar currentY según la altura del item + espacio adicional
+      currentY = itemStartY + itemHeight + 4;
       
       // Línea separadora entre items
-      if (index < ticketData.financial_breakdown.items.length - 1) {
+      if (index < groupedItems.length - 1) {
         doc.setDrawColor(220, 220, 220);
         doc.setLineWidth(0.2);
         doc.line(this.MARGIN, currentY, this.PAGE_WIDTH - this.MARGIN, currentY);

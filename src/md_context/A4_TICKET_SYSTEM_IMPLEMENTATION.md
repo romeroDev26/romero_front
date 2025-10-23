@@ -443,7 +443,3 @@ useEffect(() => {
 Este documento sirve como guía para reimplementar el sistema completo en caso de pérdida por cambios de git u otros incidentes.
 
 ---
-
-**Implementado por:** GitHub Copilot  
-**Documentado:** Diciembre 2024  
-**Versión:** 1.0.0

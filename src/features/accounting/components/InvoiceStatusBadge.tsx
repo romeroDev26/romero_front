@@ -5,7 +5,7 @@ import { SunatDocumentStatus } from '../../../types';
 
 interface InvoiceStatusBadgeProps {
   sunatStatus: SunatDocumentStatus;
-  businessStatus?: 'ACTIVE' | 'CANCELLED';
+  businessStatus?: 'ACTIVE' | 'CANCELLED' | 'INCREASED';
 }
 
 export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({
@@ -65,8 +65,13 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({
     }
   };
 
-  // Si el documento está cancelado, mostramos ambos estados en línea
-  if (businessStatus === 'CANCELLED') {
+  // Si el documento está cancelado o aumentado, mostramos ambos estados en línea
+  if (businessStatus === 'CANCELLED' || businessStatus === 'INCREASED') {
+    const businessStatusColor = businessStatus === 'CANCELLED' 
+      ? 'bg-red-50 text-red-700 border-red-200'
+      : 'bg-yellow-50 text-yellow-700 border-yellow-200';
+    const businessStatusText = businessStatus === 'CANCELLED' ? 'Cancelado' : 'Aumentado';
+    
     return (
       <div className="flex items-center gap-2">
         {/* Estado SUNAT */}
@@ -78,8 +83,8 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({
           {getSunatStatusText(sunatStatus)}
         </span>
         {/* Estado del Negocio */}
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-50 text-red-700 border-red-200">
-          Cancelado
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${businessStatusColor}`}>
+          {businessStatusText}
         </span>
       </div>
     );

@@ -15,16 +15,9 @@ import { Invoice, User } from '../../../../types';
 import { useAccountingDocumentSeriesForBranch } from '../../../../hooks/useAccountingDocumentSeries';
 import { authService } from '../../../../services/auth.service'; 
 
-// Catálogo 09 de SUNAT para motivos de Nota de Crédito (Actualizado según backend)
+// Catálogo 09 de SUNAT para motivos de Nota de Crédito (Solo anulación para esta página)
 const CREDIT_NOTE_REASONS = [
   { code: '01', description: 'Anulación de la operación' },
-  { code: '02', description: 'Anulación por error en el RUC' },
-  { code: '03', description: 'Corrección por error en la descripción' },
-  { code: '04', description: 'Descuento global' },
-  { code: '05', description: 'Descuento por ítem' },
-  { code: '06', description: 'Devolución total' },
-  { code: '07', description: 'Devolución por ítem' },
-  { code: '09', description: 'Disminución en el valor' },
 ];
 
 const creditNoteSchema = z.object({
@@ -145,9 +138,38 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
   if (simplifiedAnnul) {
     return (
       <div className="p-6 bg-gray-50">
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Anular Comprobante</h1>
-          <div className="mb-4">
+        <div className="max-w-2xl mx-auto space-y-4">
+          {/* Alerta informativa sobre series */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-amber-800">
+                  Requisito importante de SUNAT
+                </h3>
+                <div className="mt-2 text-sm text-amber-700">
+                  <p>
+                    Según normativa SUNAT, <strong>la serie de la nota de crédito debe ser la misma que la serie del comprobante que afecta</strong>.
+                  </p>
+                  <p className="mt-1">
+                    Ejemplo: Si el comprobante es <code className="bg-amber-100 px-1 py-0.5 rounded">B004-00000123</code>, 
+                    la serie de la nota de crédito debe ser <code className="bg-amber-100 px-1 py-0.5 rounded">B004</code>.
+                  </p>
+                  <p className="mt-2 font-medium">
+                    📝 Por favor, verifique que la serie seleccionada coincida con la del comprobante a afectar.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-8 rounded-lg shadow-md">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Anular Comprobante</h1>
+            <div className="mb-4">
             <div className="font-medium">{affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}</div>
             <div className="text-sm text-gray-600">Cliente: {affectedInvoice.client.name}</div>
             <div className="text-sm text-gray-600">Documento: {affectedInvoice.client.doc_type} - {affectedInvoice.client.doc_number}</div>
@@ -203,17 +225,47 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
             </Button>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="p-6 bg-gray-50">
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          Anular Comprobante: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
-        </h1>
-        <div className="text-gray-600 mb-6">
+      <div className="max-w-2xl mx-auto space-y-4">
+        {/* Alerta informativa sobre series */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-amber-800">
+                Requisito importante de SUNAT
+              </h3>
+              <div className="mt-2 text-sm text-amber-700">
+                <p>
+                  Según normativa SUNAT, <strong>la serie de la nota de crédito debe ser la misma que la serie del comprobante que afecta</strong>.
+                </p>
+                <p className="mt-1">
+                  Ejemplo: Si el comprobante es <code className="bg-amber-100 px-1 py-0.5 rounded">B004-00000123</code>, 
+                  la serie de la nota de crédito debe ser <code className="bg-amber-100 px-1 py-0.5 rounded">B004</code>.
+                </p>
+                <p className="mt-2 font-medium">
+                  📝 Por favor, verifique que la serie seleccionada coincida con la del comprobante a afectar.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-8 rounded-lg shadow-md">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">
+            Anular Comprobante: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
+          </h1>
+          <div className="text-gray-600 mb-6">
           <div>Cliente: <span className="font-medium">{affectedInvoice.client.name}</span></div>
           <div>Documento: <span className="font-medium">{affectedInvoice.client.doc_type} - {affectedInvoice.client.doc_number}</span></div>
           {(affectedInvoice.client.address_line || affectedInvoice.client.address) && (
@@ -311,6 +363,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
             </Button>
           </div>
         </form>
+      </div>
       </div>
     </div>
   );

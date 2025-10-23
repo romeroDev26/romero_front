@@ -402,15 +402,18 @@ export const InvoicesListPage: React.FC = () => {
                     <MinusIcon className="h-4 w-4" />
                   </Button>
                   
-                  <Button
-                    size="sm"
-                    variant="outline" 
-                    className="text-green-600 border-green-300 hover:bg-green-50"
-                    onClick={() => navigate(`/accounting/debit-notes/new?invoice_id=${invoice.id}`)}
-                    title="Crear Nota de Débito"
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                  </Button>
+                  {/* No mostrar opción de nota de débito si el documento tiene estado INCREASED */}
+                  {invoice.business_status !== 'INCREASED' && (
+                    <Button
+                      size="sm"
+                      variant="outline" 
+                      className="text-green-600 border-green-300 hover:bg-green-50"
+                      onClick={() => navigate(`/accounting/debit-notes/new?invoice_id=${invoice.id}`)}
+                      title="Crear Nota de Débito"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                    </Button>
+                  )}
                 </>
               )}
             </div>

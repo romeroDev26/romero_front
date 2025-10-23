@@ -163,6 +163,7 @@ export const CreditNoteNewPage: React.FC = () => {
 					<div className="divide-y divide-gray-200">
 						{filteredInvoices.map((invoice) => {
 							const isCancelled = invoice.business_status === 'CANCELLED';
+							const isIncreased = invoice.business_status === 'INCREASED';
 							
 							return (
 								<div
@@ -186,6 +187,11 @@ export const CreditNoteNewPage: React.FC = () => {
 														{isCancelled && (
 															<span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
 																CANCELADO
+															</span>
+														)}
+														{isIncreased && (
+															<span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+																AUMENTADO
 															</span>
 														)}
 													</div>
@@ -234,6 +240,7 @@ export const CreditNoteNewPage: React.FC = () => {
 							<ul className="list-disc pl-5 space-y-1">
 								<li>Solo puedes anular facturas que no hayan sido anuladas previamente</li>
 								<li>Las facturas marcadas como "CANCELADO" no pueden ser anuladas nuevamente</li>
+								<li>Las facturas marcadas como "AUMENTADO" pueden ser anuladas si es necesario</li>
 								<li>La nota de crédito se generará automáticamente con todos los items</li>
 								<li>El documento será enviado automáticamente a SUNAT para su procesamiento</li>
 								<li>Podrás descargar el PDF una vez que SUNAT lo procese</li>

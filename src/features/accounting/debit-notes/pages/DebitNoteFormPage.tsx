@@ -41,7 +41,7 @@ const DEBIT_NOTE_REASONS = [
 const DEFAULT_ITEM = {
   product_id: 0,
   quantity: 1,
-  unit_code: "NIU",
+  unit_code: "ZZ",
   unit_price: 0,
   price_with_tax: 0,
   price_type_code: "01",
@@ -942,7 +942,7 @@ export const DebitNoteFormPage: React.FC = () => {
                                 <input
                                   {...field}
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
-                                  placeholder="NIU"
+                                  placeholder="ZZ"
                                 />
                               )}
                             />

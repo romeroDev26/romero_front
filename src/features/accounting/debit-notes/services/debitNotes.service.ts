@@ -10,7 +10,7 @@ import {
 } from '../../types';
 
 class DebitNotesService {
-  private readonly basePath = '/sunat/debit-notes';
+  private readonly basePath = '/sunat/debit-notes/';
 
   // Crear nota de débito
   async create(data: DebitNoteCreateData): Promise<DebitNoteResponse> {
@@ -20,7 +20,7 @@ class DebitNotesService {
 
   // Listar notas de débito
   async getAll(params: DebitNotesListParams): Promise<DebitNote[]> {
-    const response = await api.get('/sunat/debit-notes/', { 
+    const response = await api.get(this.basePath, { 
       params: {
         ...params
       }

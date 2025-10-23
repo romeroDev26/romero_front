@@ -113,7 +113,9 @@ class CreditNotesService {
         client_id: clientId,
         client_name: clientName,
         total_payable: invoice.total_payable?.toString() || '0.00',
-        issue_date: invoice.issue_date
+        issue_date: invoice.issue_date,
+        currency_code: invoice.currency_code || 'PEN',
+        business_status: invoice.business_status || 'ACTIVE' // Campo añadido
       };
     });
 

@@ -127,7 +127,7 @@ export const DebitNoteNewPage: React.FC = () => {
             Facturas Disponibles para Agregar Cargos
           </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Selecciona una factura para agregar cargos adicionales
+            Solo se muestran facturas que pueden recibir cargos adicionales
           </p>
         </div>
 
@@ -162,47 +162,64 @@ export const DebitNoteNewPage: React.FC = () => {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {filteredInvoices.map((invoice) => (
-              <div
-                key={invoice.id}
-                className="p-6 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => handleSelectInvoice(invoice)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {invoice.series}-{String(invoice.number).padStart(8, '0')}
+            {filteredInvoices.map((invoice) => {
+              const isCancelled = invoice.business_status === 'CANCELLED';
+              
+              return (
+                <div
+                  key={invoice.id}
+                  className={`p-6 transition-colors ${
+                    isCancelled 
+                      ? 'bg-gray-100 cursor-not-allowed opacity-60' 
+                      : 'hover:bg-gray-50 cursor-pointer'
+                  }`}
+                  onClick={() => !isCancelled && handleSelectInvoice(invoice)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-4">
+                        <div>
+                          <div className={`text-sm font-medium ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
+                            {invoice.series}-{String(invoice.number).padStart(8, '0')}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {invoice.document_type_code === '01' ? 'Factura' : 'Boleta'}
+                            {isCancelled && (
+                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                CANCELADO
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {invoice.document_type_code === '01' ? 'Factura' : 'Boleta'}
+                        <div className="flex-1">
+                          <div className={`text-sm font-medium ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
+                            {invoice.client_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Emitida el {formatDate(invoice.issue_date)}
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-900">
-                          {invoice.client_name}
+                        <div className="text-right">
+                          <div className={`text-sm font-medium ${isCancelled ? 'text-gray-500' : 'text-gray-900'}`}>
+                            {formatCurrency(invoice.total_payable)}
+                          </div>
+                          <div className="text-sm text-gray-500">Total</div>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Emitida el {formatDate(invoice.issue_date)}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(invoice.total_payable)}
-                        </div>
-                        <div className="text-sm text-gray-500">Total</div>
                       </div>
                     </div>
-                  </div>
-                  <div className="ml-6">
-                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                      Agregar Cargos
-                    </Button>
+                    <div className="ml-6">
+                      <Button 
+                        size="sm" 
+                        className={`bg-orange-600 hover:bg-orange-700 ${isCancelled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={isCancelled}
+                      >
+                        {isCancelled ? 'No disponible' : 'Agregar Cargos'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -217,6 +234,7 @@ export const DebitNoteNewPage: React.FC = () => {
             <div className="mt-2 text-sm text-orange-700">
               <ul className="list-disc pl-5 space-y-1">
                 <li>Las notas de débito se utilizan para aplicar cargos adicionales a una factura existente</li>
+                <li>Las facturas marcadas como "CANCELADO" no pueden recibir cargos adicionales</li>
                 <li>Puedes incluir intereses por mora, penalidades, recargos u otros conceptos no incluidos inicialmente</li>
                 <li>El documento será enviado automáticamente a SUNAT para su procesamiento</li>
                 <li>Podrás descargar el PDF una vez que SUNAT lo procese</li>

@@ -389,8 +389,8 @@ export const InvoicesListPage: React.FC = () => {
                 </Button>
               )}
               
-              {/* Solo mostrar acciones de notas si el documento está aceptado por SUNAT */}
-              {invoice.sunat_status === 'ACCEPTED' && (
+              {/* Solo mostrar acciones de notas si el documento está aceptado por SUNAT y no cancelado por el negocio */}
+              {invoice.sunat_status === 'ACCEPTED' && invoice.business_status !== 'CANCELLED' && (
                 <>
                   <Button
                     size="sm"

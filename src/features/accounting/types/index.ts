@@ -266,6 +266,7 @@ export interface VoidableInvoice {
   total_payable: string;
   issue_date: string;
   currency_code: string;
+  business_status?: 'ACTIVE' | 'CANCELLED'; // Campo añadido para estado del negocio
 }
 
 // Estados de SUNAT

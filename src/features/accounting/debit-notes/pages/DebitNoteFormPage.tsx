@@ -843,7 +843,7 @@ export const DebitNoteFormPage: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                           <div className="md:col-span-2 lg:col-span-2">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Servicio
+                              Servicio <span className="text-red-500">*</span>
                             </label>
                             <Controller
                               name={`items.${idx}.product_id`}
@@ -903,11 +903,16 @@ export const DebitNoteFormPage: React.FC = () => {
                                 />
                               )}
                             />
+                            {(!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0) && (
+                              <p className="mt-1 text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                                Selecciona un servicio para habilitar los campos de cantidad y precios
+                              </p>
+                            )}
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Cantidad
+                              Cantidad <span className="text-red-500">*</span>
                             </label>
                             <Controller
                               name={`items.${idx}.quantity`}
@@ -917,7 +922,16 @@ export const DebitNoteFormPage: React.FC = () => {
                                   {...field}
                                   type="number"
                                   step="0.01"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
+                                  disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
+                                  className={`w-full px-3 py-2 border rounded-md shadow-sm transition-colors ${
+                                    errors.items?.[idx]?.quantity
+                                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                                      : 'border-gray-300 focus:ring-primary focus:border-primary'
+                                  } ${
+                                    (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
+                                      ? 'bg-gray-100 cursor-not-allowed'
+                                      : 'bg-white'
+                                  }`}
                                   placeholder="1.00"
                                   onChange={(e) => {
                                     field.onChange(parseFloat(e.target.value) || 0);
@@ -925,11 +939,16 @@ export const DebitNoteFormPage: React.FC = () => {
                                 />
                               )}
                             />
+                            {errors.items?.[idx]?.quantity && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {errors.items[idx].quantity.message}
+                              </p>
+                            )}
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Código Unidad
+                              Código Unidad <span className="text-red-500">*</span>
                             </label>
                             <Controller
                               name={`items.${idx}.unit_code`}
@@ -937,16 +956,30 @@ export const DebitNoteFormPage: React.FC = () => {
                               render={({ field }) => (
                                 <input
                                   {...field}
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
+                                  disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
+                                  className={`w-full px-3 py-2 border rounded-md shadow-sm transition-colors ${
+                                    errors.items?.[idx]?.unit_code
+                                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                                      : 'border-gray-300 focus:ring-primary focus:border-primary'
+                                  } ${
+                                    (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
+                                      ? 'bg-gray-100 cursor-not-allowed'
+                                      : 'bg-white'
+                                  }`}
                                   placeholder="ZZ"
                                 />
                               )}
                             />
+                            {errors.items?.[idx]?.unit_code && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {errors.items[idx].unit_code.message}
+                              </p>
+                            )}
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Precio Unitario
+                              Precio Unitario <span className="text-red-500">*</span>
                             </label>
                             <Controller
                               name={`items.${idx}.unit_price`}
@@ -960,7 +993,16 @@ export const DebitNoteFormPage: React.FC = () => {
                                     {...field}
                                     type="number"
                                     step="0.01"
-                                    className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
+                                    disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
+                                    className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm transition-colors ${
+                                      errors.items?.[idx]?.unit_price
+                                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                                        : 'border-gray-300 focus:ring-primary focus:border-primary'
+                                    } ${
+                                      (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
+                                        ? 'bg-gray-100 cursor-not-allowed'
+                                        : 'bg-white'
+                                    }`}
                                     placeholder="0.00"
                                     onChange={(e) => {
                                       const unitPrice =
@@ -977,11 +1019,16 @@ export const DebitNoteFormPage: React.FC = () => {
                                 </div>
                               )}
                             />
+                            {errors.items?.[idx]?.unit_price && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {errors.items[idx].unit_price.message}
+                              </p>
+                            )}
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Precio Final
+                              Precio Final <span className="text-red-500">*</span>
                             </label>
                             <Controller
                               name={`items.${idx}.price_with_tax`}
@@ -995,7 +1042,12 @@ export const DebitNoteFormPage: React.FC = () => {
                                     {...field}
                                     type="number"
                                     step="0.01"
-                                    className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
+                                    readOnly
+                                    className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm transition-colors bg-gray-100 cursor-not-allowed ${
+                                      errors.items?.[idx]?.price_with_tax
+                                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
+                                        : 'border-gray-300 focus:ring-primary focus:border-primary'
+                                    }`}
                                     placeholder="0.00"
                                     onChange={(e) => {
                                       field.onChange(parseFloat(e.target.value) || 0);
@@ -1004,6 +1056,11 @@ export const DebitNoteFormPage: React.FC = () => {
                                 </div>
                               )}
                             />
+                            {errors.items?.[idx]?.price_with_tax && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {errors.items[idx].price_with_tax.message}
+                              </p>
+                            )}
                           </div>
 
                           {/* Campos ocultos - se manejan automáticamente */}

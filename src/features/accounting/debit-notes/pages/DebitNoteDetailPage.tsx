@@ -275,12 +275,8 @@ export const DebitNoteDetailPage: React.FC = () => {
                 <span className="text-sm text-gray-600">Subtotal:</span>
                 <span className="text-sm font-medium">{formatCurrency(debitNote.total_taxable)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">IGV:</span>
-                <span className="text-sm font-medium">{formatCurrency(debitNote.total_igv)}</span>
-              </div>
               <div className="flex justify-between pt-3 border-t border-gray-200">
-                <span className="font-medium">Total:</span>
+                <span className="font-medium">Total (exonerado):</span>
                 <span className="font-bold text-lg text-orange-600">{formatCurrency(debitNote.total_payable)}</span>
               </div>
             </div>

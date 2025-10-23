@@ -1,6 +1,6 @@
 // src/features/accounting/debit-notes/pages/DebitNoteFormPage.tsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   useForm,
@@ -11,6 +11,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeftIcon,
   PlusIcon,
@@ -23,6 +24,9 @@ import { Modal } from "../../../../components/common/Modal";
 import { useCreateDebitNote } from "../hooks/useDebitNotes";
 import { DebitNoteCreateData } from "../../types";
 import { useServicesData } from "../../../fluvial/hooks/useProductsServicesData";
+import { useAccountingDocumentSeriesForBranch } from "../../../../hooks/useAccountingDocumentSeries";
+import { authService } from "../../../../services/auth.service";
+import { User } from "../../../../types";
 
 // Catálogo de motivos de nota de débito (SUNAT catálogo 10)
 const DEBIT_NOTE_REASONS = [
@@ -153,13 +157,30 @@ export const DebitNoteFormPage: React.FC = () => {
     clearInvalidSessionData();
   }, []);
 
-  const [companyId] = useState(1);
+  // Obtener usuario actual
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["currentUser"],
+    queryFn: async (): Promise<User> => {
+      const data = await authService.getProfile();
+      return data;
+    },
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
+  });
+
+  const companyId = currentUser?.company_id || 1;
   const { mutate: createDebitNote, isPending } = useCreateDebitNote();
+
+  // Series de documentos contables para notas de débito
+  const { availableDebitNoteSeries, isLoading: isLoadingSeries } =
+    useAccountingDocumentSeriesForBranch(
+      currentUser?.default_branch_office_id || null,
+      companyId
+    );
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [preparedPayload, setPreparedPayload] =
     useState<DebitNoteCreateData | null>(null);
-  const [igvEnabled, setIgvEnabled] = useState(false); // Estado para controlar IGV - desactivado por defecto
 
   const {
     control,
@@ -171,7 +192,7 @@ export const DebitNoteFormPage: React.FC = () => {
     resolver: zodResolver(debitNoteSchema),
     defaultValues: {
       client_id: getValidClientId(finalAffectedInvoice),
-      series: "FD01",
+      series: "",
       affected_document_type_code:
         finalAffectedInvoice?.document_type_code || "01",
       affected_document_series_number: finalAffectedInvoice
@@ -185,82 +206,87 @@ export const DebitNoteFormPage: React.FC = () => {
             finalAffectedInvoice.number
           ).padStart(8, "0")}`
         : "",
-      items: [{ ...DEFAULT_ITEM, tax_category_code: "20" }], // Iniciar con IGV desactivado
+      items: [], // Iniciar sin items por defecto
     },
   });
+
+  // Cargar serie predeterminada de notas de débito
+  useEffect(() => {
+    if (availableDebitNoteSeries.length > 0) {
+      const savedSeries = localStorage.getItem("lastUsedDebitNoteSeries");
+      const seriesExists = availableDebitNoteSeries.find(
+        (s) => s.series_code === savedSeries
+      );
+      if (seriesExists && savedSeries) {
+        setValue("series", savedSeries, { shouldValidate: false });
+      } else {
+        setValue("series", availableDebitNoteSeries[0].series_code, {
+          shouldValidate: false,
+        });
+      }
+    }
+  }, [availableDebitNoteSeries, setValue]);
 
   // Debug: verificar el state recibido y actualizar client_id si es necesario
   useEffect(() => {
     if (finalAffectedInvoice) {
       // Actualizar client_id en el formulario si tenemos una factura válida
       const validClientId = getValidClientId(finalAffectedInvoice);
-      setValue("client_id", validClientId);
+      setValue("client_id", validClientId, { shouldValidate: false });
 
       // También actualizar otros campos si es necesario
       if (finalAffectedInvoice.document_type_code) {
         setValue(
           "affected_document_type_code",
-          finalAffectedInvoice.document_type_code
+          finalAffectedInvoice.document_type_code,
+          { shouldValidate: false }
         );
       }
       if (finalAffectedInvoice.series && finalAffectedInvoice.number) {
         const seriesNumber = `${finalAffectedInvoice.series}-${String(
           finalAffectedInvoice.number
         ).padStart(8, "0")}`;
-        setValue("affected_document_series_number", seriesNumber);
-        setValue("reason", `Cargo adicional sobre ${seriesNumber}`);
+        setValue("affected_document_series_number", seriesNumber, {
+          shouldValidate: false,
+        });
+        setValue("reason", `Cargo adicional sobre ${seriesNumber}`, {
+          shouldValidate: false,
+        });
       }
     }
-  }, [location.state, initialAffectedInvoice, finalAffectedInvoice, setValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Solo ejecutar una vez al montar el componente
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const watchedItems = (useWatch({ control, name: "items" }) as any[]) || [];
 
-  // Actualizar precios y categorías automáticamente cuando cambie el estado del IGV
-  useEffect(() => {
-    if (watchedItems && watchedItems.length > 0) {
-      watchedItems.forEach((item, idx) => {
-        // Actualizar categoría de impuesto para todos los items
-        setValue(`items.${idx}.tax_category_code`, igvEnabled ? "10" : "20");
-        setValue(`items.${idx}.price_type_code`, "01");
-
-        // Actualizar precio solo si hay un precio unitario
-        const unitPrice = parseFloat(String(item?.unit_price || 0)) || 0;
-        if (unitPrice > 0) {
-          const newPriceWithTax = igvEnabled
-            ? unitPrice + unitPrice * 0.18
-            : unitPrice;
-          setValue(`items.${idx}.price_with_tax`, newPriceWithTax);
-        }
-      });
-    }
-  }, [igvEnabled, setValue]); // Removí watchedItems de las dependencias para evitar loops infinitos
   const { data: availableServices = [], isLoading: isLoadingServices } =
     useServicesData({ is_active: true });
 
-  // Crear opciones para el select de servicios
-  const serviceOptions = availableServices.map((service) => ({
-    value: service.id,
-    label: `${service.name} - S/ ${Number(service.sale_price).toFixed(2)}`,
-    service: service,
-  }));
+  // Crear opciones para el select de servicios con useMemo para evitar recalcular en cada render
+  const serviceOptions = useMemo(() => {
+    return availableServices.map((service) => ({
+      value: service.id,
+      label: `${service.name} - S/ ${Number(service.sale_price).toFixed(2)}`,
+      service: service,
+    }));
+  }, [availableServices]);
 
   const originalAmount = finalAffectedInvoice
     ? parseFloat(String(finalAffectedInvoice.total_payable || 0))
     : 0;
 
-  // Calcular monto base de los cargos adicionales
-  const baseAmount = watchedItems.reduce((acc, it) => {
-    const unitPrice = parseFloat(String(it?.unit_price || 0)) || 0;
-    const quantity = parseFloat(String(it?.quantity || 1)) || 1;
-    return acc + unitPrice * quantity;
-  }, 0);
+  // Calcular monto base de los cargos adicionales con useMemo para evitar re-renders innecesarios
+  const baseAmount = useMemo(() => {
+    return watchedItems.reduce((acc, it) => {
+      const unitPrice = parseFloat(String(it?.unit_price || 0)) || 0;
+      const quantity = parseFloat(String(it?.quantity || 1)) || 1;
+      return acc + unitPrice * quantity;
+    }, 0);
+  }, [watchedItems]);
 
-  // Calcular IGV aplicado en los cargos adicionales (adicional al precio base)
-  const igvAmount = igvEnabled ? baseAmount * 0.18 : 0;
-
-  // Total de cargos adicionales (base + IGV)
-  const additionalTotal = baseAmount + igvAmount;
+  // Total de cargos adicionales (sin IGV - exonerado)
+  const additionalTotal = baseAmount;
   const newTotal = originalAmount + additionalTotal;
 
   const onSubmit: SubmitHandler<DebitNoteFormData> = async (data) => {
@@ -324,6 +350,10 @@ export const DebitNoteFormPage: React.FC = () => {
     // Validar que todos los items tengan datos válidos
     for (let i = 0; i < data.items.length; i++) {
       const item = data.items[i];
+      if (!item.product_id || item.product_id <= 0) {
+        alert(`Error: El ítem ${i + 1} debe tener un servicio seleccionado.`);
+        return;
+      }
       if (!item.quantity || item.quantity <= 0) {
         alert(`Error: El ítem ${i + 1} debe tener una cantidad mayor a 0.`);
         return;
@@ -364,9 +394,12 @@ export const DebitNoteFormPage: React.FC = () => {
         unit_price: i.unit_price,
         price_with_tax: i.price_with_tax,
         price_type_code: i.price_type_code,
-        tax_category_code: igvEnabled ? "10" : "20", // 10=Gravado, 20=Exonerado
+        tax_category_code: "20", // Siempre exonerado
       })),
     };
+
+    // Guardar la serie usada para la próxima vez
+    localStorage.setItem("lastUsedDebitNoteSeries", data.series);
 
     setPreparedPayload(payload);
     setShowConfirmModal(true);
@@ -535,12 +568,60 @@ export const DebitNoteFormPage: React.FC = () => {
                     </h3>
                     <div className="mt-2 text-sm text-red-700">
                       <ul className="list-disc list-inside space-y-1">
-                        {Object.entries(errors).map(([field, error]) => (
-                          <li key={field}>
-                            <strong>{field}:</strong>{" "}
-                            {error?.message || "Error de validación"}
-                          </li>
-                        ))}
+                        {Object.entries(errors).map(([field, error]) => {
+                          if (field === 'items' && error?.message) {
+                            // Error general de items (ej: array vacío)
+                            return (
+                              <li key={field}>
+                                <strong>Items:</strong> {error.message}
+                              </li>
+                            );
+                          } else if (field !== 'items') {
+                            // Errores de campos normales
+                            return (
+                              <li key={field}>
+                                <strong>
+                                  {field === 'client_id' && 'Cliente'}
+                                  {field === 'series' && 'Serie'}
+                                  {field === 'affected_document_type_code' && 'Tipo de documento afectado'}
+                                  {field === 'affected_document_series_number' && 'Número de serie del documento afectado'}
+                                  {field === 'debit_note_type_code' && 'Tipo de nota de débito'}
+                                  {field === 'reason' && 'Razón'}
+                                  {field}:
+                                </strong>{" "}
+                                {error?.message || "Error de validación"}
+                              </li>
+                            );
+                          }
+                          return null;
+                        }).filter(Boolean)}
+
+                        {/* Mostrar errores específicos de cada item */}
+                        {errors.items && Array.isArray(errors.items) && errors.items.map((itemError, index) => {
+                          if (itemError) {
+                            const itemFieldErrors = [];
+                            if (itemError.quantity?.message) itemFieldErrors.push('Cantidad debe ser mayor a 0');
+                            if (itemError.unit_code?.message) itemFieldErrors.push('Código de unidad requerido');
+                            if (itemError.unit_price?.message) itemFieldErrors.push('Precio unitario debe ser mayor o igual a 0');
+                            if (itemError.price_with_tax?.message) itemFieldErrors.push('Precio final debe ser mayor o igual a 0');
+                            if (itemError.price_type_code?.message) itemFieldErrors.push('Código de tipo de precio requerido');
+                            if (itemError.tax_category_code?.message) itemFieldErrors.push('Código de categoría de impuesto requerido');
+
+                            if (itemFieldErrors.length > 0) {
+                              return (
+                                <li key={`item-${index}`}>
+                                  <strong>Cargo #{index + 1}:</strong>
+                                  <ul className="list-disc list-inside ml-4 mt-1">
+                                    {itemFieldErrors.map((errorMsg, errorIndex) => (
+                                      <li key={errorIndex}>{errorMsg}</li>
+                                    ))}
+                                  </ul>
+                                </li>
+                              );
+                            }
+                          }
+                          return null;
+                        }).filter(Boolean)}
                       </ul>
                     </div>
                   </div>
@@ -626,13 +707,39 @@ export const DebitNoteFormPage: React.FC = () => {
                         name="series"
                         control={control}
                         render={({ field }) => (
-                          <input
+                          <select
                             {...field}
                             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
-                            placeholder="Ej: FD01"
-                          />
+                            disabled={
+                              isLoadingSeries ||
+                              availableDebitNoteSeries.length === 0
+                            }
+                          >
+                            {availableDebitNoteSeries.length === 0 ? (
+                              <option value="">
+                                No hay series disponibles
+                              </option>
+                            ) : (
+                              availableDebitNoteSeries.map((series) => (
+                                <option
+                                  key={series.id}
+                                  value={series.series_code}
+                                >
+                                  {series.series_code}
+                                  {series.branch_office?.name
+                                    ? ` - ${series.branch_office.name}`
+                                    : ""}
+                                </option>
+                              ))
+                            )}
+                          </select>
                         )}
                       />
+                      {errors.series && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.series.message}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -677,26 +784,8 @@ export const DebitNoteFormPage: React.FC = () => {
 
                     <div className="md:col-span-2">
                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <div className="flex items-center">
-                          <input
-                            type="checkbox"
-                            id="igvEnabled"
-                            checked={igvEnabled}
-                            onChange={(e) => setIgvEnabled(e.target.checked)}
-                            className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
-                          />
-                          <label
-                            htmlFor="igvEnabled"
-                            className="ml-3 block text-sm font-medium text-gray-900"
-                          >
-                            Aplicar IGV (18%) -{" "}
-                            {igvEnabled ? "Activado" : "Desactivado"}
-                          </label>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-2 ml-7">
-                          {igvEnabled
-                            ? "Se adicionará IGV 18% al precio base (precio base + 18%)"
-                            : "Precio sin IGV (región amazónica exonerada)"}
+                        <p className="text-sm text-gray-600">
+                          Precio sin IGV (región amazónica exonerada)
                         </p>
                       </div>
                     </div>
@@ -712,12 +801,14 @@ export const DebitNoteFormPage: React.FC = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         append({
                           ...DEFAULT_ITEM,
-                          tax_category_code: igvEnabled ? "10" : "20",
-                        })
-                      }
+                          tax_category_code: "20",
+                        });
+                      }}
                       className="flex items-center space-x-2"
                     >
                       <PlusIcon className="h-4 w-4" />
@@ -783,28 +874,32 @@ export const DebitNoteFormPage: React.FC = () => {
                                       const unitPrice = Number(
                                         service.sale_price
                                       );
+                                      // Usar setValue con shouldValidate: false para evitar re-renders innecesarios
                                       setValue(
                                         `items.${idx}.unit_code`,
-                                        service.unit_code
+                                        service.unit_code,
+                                        { shouldValidate: false }
                                       );
                                       setValue(
                                         `items.${idx}.unit_price`,
-                                        unitPrice
+                                        unitPrice,
+                                        { shouldValidate: false }
                                       );
                                       setValue(
                                         `items.${idx}.price_with_tax`,
-                                        igvEnabled
-                                          ? unitPrice + unitPrice * 0.18
-                                          : unitPrice
+                                        unitPrice,
+                                        { shouldValidate: false }
                                       );
                                       setValue(
                                         `items.${idx}.price_type_code`,
-                                        "01"
+                                        "01",
+                                        { shouldValidate: false }
                                       );
                                       setValue(
                                         `items.${idx}.tax_category_code`,
-                                        igvEnabled ? "10" : "20"
-                                      ); // 10=Gravado, 20=Exonerado
+                                        "20",
+                                        { shouldValidate: false }
+                                      ); // Siempre exonerado
                                     }
                                   }}
                                   className="react-select-container"
@@ -829,7 +924,7 @@ export const DebitNoteFormPage: React.FC = () => {
                                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
                                   placeholder="1.00"
                                   onChange={(e) => {
-                                    field.onChange(e.target.value);
+                                    field.onChange(parseFloat(e.target.value) || 0);
                                   }}
                                 />
                               )}
@@ -874,14 +969,12 @@ export const DebitNoteFormPage: React.FC = () => {
                                     onChange={(e) => {
                                       const unitPrice =
                                         parseFloat(e.target.value) || 0;
-                                      field.onChange(e.target.value);
-                                      // Actualizar automáticamente el precio con IGV
-                                      const newPriceWithTax = igvEnabled
-                                        ? unitPrice + unitPrice * 0.18
-                                        : unitPrice;
+                                      field.onChange(unitPrice);
+                                      // Actualizar automáticamente el precio final (sin IGV)
                                       setValue(
                                         `items.${idx}.price_with_tax`,
-                                        newPriceWithTax
+                                        unitPrice,
+                                        { shouldValidate: false }
                                       );
                                     }}
                                   />
@@ -892,7 +985,7 @@ export const DebitNoteFormPage: React.FC = () => {
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              {igvEnabled ? "Precio con IGV" : "Precio Final"}
+                              Precio Final
                             </label>
                             <Controller
                               name={`items.${idx}.price_with_tax`}
@@ -908,6 +1001,9 @@ export const DebitNoteFormPage: React.FC = () => {
                                     step="0.01"
                                     className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
                                     placeholder="0.00"
+                                    onChange={(e) => {
+                                      field.onChange(parseFloat(e.target.value) || 0);
+                                    }}
                                   />
                                 </div>
                               )}
@@ -971,20 +1067,6 @@ export const DebitNoteFormPage: React.FC = () => {
                         </span>
                       </div>
 
-                      {igvEnabled && (
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">
-                            IGV (18%)
-                          </span>
-                          <span className="text-lg font-medium text-gray-900">
-                            {new Intl.NumberFormat("es-PE", {
-                              style: "currency",
-                              currency: "PEN",
-                            }).format(igvAmount)}
-                          </span>
-                        </div>
-                      )}
-
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">
                           Total Cargos Adicionales
@@ -1010,9 +1092,7 @@ export const DebitNoteFormPage: React.FC = () => {
                           </span>
                         </div>
                         <p className="text-xs text-gray-500 mt-1 text-right">
-                          {igvEnabled
-                            ? "Precio base + IGV 18%"
-                            : "Sin IGV (exonerado)"}
+                          Sin IGV (exonerado)
                         </p>
                       </div>
                     </div>
@@ -1045,7 +1125,7 @@ export const DebitNoteFormPage: React.FC = () => {
                     <div className="text-xs text-blue-800 space-y-1">
                       <p>• Las notas de débito aumentan el valor de la deuda</p>
                       <p>• Se enviarán a SUNAT automáticamente</p>
-                      <p>• El IGV se adiciona al precio base (no se incluye)</p>
+                      <p>• Los precios son sin IGV (exonerados)</p>
                     </div>
                   </div>
                 </div>
@@ -1072,23 +1152,7 @@ export const DebitNoteFormPage: React.FC = () => {
             </p>
             <div className="bg-gray-50 p-3 rounded text-sm">
               <p>
-                <strong>Estado IGV:</strong>{" "}
-                {igvEnabled
-                  ? "Activado - Se adiciona 18%"
-                  : "Desactivado (exonerado)"}
-              </p>
-              {igvEnabled && (
-                <p>
-                  <strong>IGV aplicado:</strong>{" "}
-                  {new Intl.NumberFormat("es-PE", {
-                    style: "currency",
-                    currency: "PEN",
-                  }).format(igvAmount)}
-                </p>
-              )}
-              <p>
-                <strong>Categoría de impuesto:</strong>{" "}
-                {igvEnabled ? "Gravado (10)" : "Exonerado (20)"}
+                <strong>Categoría de impuesto:</strong> Exonerado (20)
               </p>
             </div>
             <div className="flex justify-end space-x-3">

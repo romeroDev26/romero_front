@@ -267,7 +267,7 @@ export const DebitNoteFormPage: React.FC = () => {
   const serviceOptions = useMemo(() => {
     return availableServices.map((service) => ({
       value: service.id,
-      label: `${service.name} - S/ ${Number(service.sale_price).toFixed(2)}`,
+      label: service.name,
       service: service,
     }));
   }, [availableServices]);

@@ -587,6 +587,7 @@ export interface Invoice {
   total_payable: number;
   total_in_words?: string;
   sunat_status: SunatDocumentStatus;
+  business_status?: 'ACTIVE' | 'CANCELLED';
   sunat_ticket?: string;
   sunat_response_code?: string;
   sunat_response_description?: string;

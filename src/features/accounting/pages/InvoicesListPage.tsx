@@ -18,7 +18,7 @@ import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { Input } from '../../../components/common/Input';
 import { useDebounce } from '../../../hooks/useDebounce';
-import { SunatStatusBadge } from '../components/SunatStatusBadge';
+import { InvoiceStatusBadge } from '../components/InvoiceStatusBadge';
 import { invoicesService, InvoiceFilters } from '../../../services/invoices.service';
 import { Invoice } from '../../../types';
 import { getCurrencySymbol } from '../../fluvial/components/sales-point/tickets/utils/ticketHelpers';
@@ -211,9 +211,12 @@ export const InvoicesListPage: React.FC = () => {
     },
     {
       key: 'sunat_status',
-      header: 'Estado SUNAT',
+      header: 'Estado SUNAT / Negocio',
       accessor: (invoice: Invoice) => (
-        <SunatStatusBadge status={invoice.sunat_status} />
+        <InvoiceStatusBadge 
+          sunatStatus={invoice.sunat_status} 
+          businessStatus={invoice.business_status}
+        />
       ),
     },
     {

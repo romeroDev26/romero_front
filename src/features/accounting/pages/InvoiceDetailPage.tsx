@@ -19,7 +19,7 @@ import { invoicesService } from '../../../services/invoices.service';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
-import { SunatStatusBadge } from '../../accounting/components/SunatStatusBadge';
+import { InvoiceStatusBadge } from '../../accounting/components/InvoiceStatusBadge';
 import { WhatsAppSendModal } from '../../fluvial/components/sales-point/WhatsAppSendModal';
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 import { usePermissions } from '../../../hooks/usePermissions';
@@ -152,7 +152,10 @@ export const InvoiceDetailPage: React.FC = () => {
                   {invoice.document_type_code === '01' ? 'Factura' : 'Boleta'} {invoice.series}-{String(invoice.number).padStart(8, '0')}
                 </h1>
                 <div className="flex items-center space-x-4 mt-1">
-                  <SunatStatusBadge status={invoice.sunat_status} />
+                  <InvoiceStatusBadge 
+                    sunatStatus={invoice.sunat_status} 
+                    businessStatus={invoice.business_status}
+                  />
                   <span className="text-sm text-gray-500">
                     {format(new Date(invoice.issue_date), 'dd/MM/yyyy')}
                   </span>

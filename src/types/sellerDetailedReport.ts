@@ -49,6 +49,7 @@ export interface SellerDetailedInvoice {
   correlative: string;
   issue_date: string;
   sunat_status: string;
+  business_status?: string;
   seller_id: string;
   seller_name: string;
   seller_email: string;

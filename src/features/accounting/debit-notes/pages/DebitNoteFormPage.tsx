@@ -30,11 +30,7 @@ import { User } from "../../../../types";
 
 // Catálogo de motivos de nota de débito (SUNAT catálogo 10)
 const DEBIT_NOTE_REASONS = [
-  { code: "01", description: "Intereses por mora" },
   { code: "02", description: "Aumento en el valor" },
-  { code: "03", description: "Penalidades/otros conceptos" },
-  { code: "11", description: "Ajustes de operaciones de exportación" },
-  { code: "12", description: "Ajustes afectos al IVAP" },
 ];
 
 // Valores por defecto para nuevos items

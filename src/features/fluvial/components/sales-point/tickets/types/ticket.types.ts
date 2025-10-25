@@ -15,6 +15,7 @@ export interface TicketData {
   sunat_totals: TicketSunatTotals;
   metadata: TicketMetadata;
   currency_code?: string; // NUEVO: Código de moneda (PEN, USD, etc.)
+  showRepresentatives?: boolean; // NUEVO: Flag para mostrar/ocultar tabla de representantes en A4
 }
 
 // BLOQUE 1: CABECERA - Información general del documento y la empresa

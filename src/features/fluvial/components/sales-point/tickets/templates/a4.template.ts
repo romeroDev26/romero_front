@@ -1,13 +1,14 @@
 // src/features/fluvial/components/sales-point/tickets/templates/a4.template.ts
 
 import jsPDF from 'jspdf';
-import { TicketData } from '../types/ticket.types';
+import { TicketData, TicketRepresentative, TicketCompanySummary } from '../types/ticket.types';
 import { getCurrencySymbol } from '../utils/ticketHelpers';
 
 /**
  * Template para generar PDFs en formato A4 (210mm x 297mm)
  * Multi-modal: funciona para todos los tipos de ventas
  * (pasajes normales, con representante, sin asiento, encomiendas)
+ * Actualizado: Ahora incluye lista de representantes para ventas empresariales
  */
 export class A4Template {
   
@@ -17,8 +18,14 @@ export class A4Template {
   
   /**
    * Genera el PDF A4 usando los datos transformados
+   * Actualizado: Acepta representantes opcionales para ventas empresariales
    */
-  static async generatePDF(ticketData: TicketData): Promise<jsPDF> {
+  static async generatePDF(
+    ticketData: TicketData & { 
+      representatives?: TicketRepresentative[]; 
+      summary?: TicketCompanySummary 
+    }
+  ): Promise<jsPDF> {
     const doc = new jsPDF({
       orientation: 'portrait',
       unit: 'mm',
@@ -34,6 +41,15 @@ export class A4Template {
     
     currentY = this.addClientInfo(doc, ticketData, currentY);
     currentY += 5;
+    
+    // Agregar tabla de representantes si existen (ventas empresariales)
+    // Y si el flag showRepresentatives no está explícitamente en false
+    if (ticketData.representatives && 
+        ticketData.representatives.length > 0 && 
+        ticketData.showRepresentatives !== false) {
+      currentY = this.addRepresentativesTable(doc, ticketData.representatives, currentY);
+      currentY += 5;
+    }
     
     currentY = this.addItemsTable(doc, ticketData, currentY);
     currentY += 5;
@@ -198,6 +214,106 @@ export class A4Template {
     
     currentY += 2;
     return currentY;
+  }
+
+  /**
+   * 🆕 BLOQUE 3: Tabla de Representantes (solo para ventas empresariales)
+   * Muestra la lista de pasajeros que viajan con sus datos y asientos
+   */
+  private static addRepresentativesTable(
+    doc: jsPDF, 
+    representatives: TicketRepresentative[], 
+    startY: number
+  ): number {
+    let currentY = startY;
+    
+    // Título de la sección
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(
+      `PASAJEROS QUE VIAJAN (${representatives.length})`, 
+      this.MARGIN, 
+      currentY
+    );
+    currentY += 6;
+    
+    // Encabezado de la tabla
+    doc.setFillColor(240, 240, 240);
+    doc.rect(this.MARGIN, currentY, this.CONTENT_WIDTH, 8, 'F');
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    
+    const numX = this.MARGIN + 2;
+    const nameX = this.MARGIN + 10;
+    const docX = this.MARGIN + 90;
+    const seatX = this.MARGIN + 150;
+    
+    doc.text('#', numX, currentY + 5);
+    doc.text('NOMBRE', nameX, currentY + 5);
+    doc.text('DOCUMENTO', docX, currentY + 5);
+    doc.text('ASIENTO', seatX, currentY + 5);
+    
+    currentY += 8;
+    
+    // Línea separadora
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(this.MARGIN, currentY, this.PAGE_WIDTH - this.MARGIN, currentY);
+    currentY += 2;
+    
+    // Filas de representantes
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    
+    representatives.forEach((rep, index) => {
+      // Número
+      doc.text(`${index + 1}`, numX, currentY + 4, { align: 'left' });
+      
+      // Nombre (máx 70mm, truncar si es muy largo)
+      const name = this.splitText(doc, rep.passenger_name, 70, 8)[0];
+      doc.text(name, nameX, currentY + 4);
+      
+      // Documento
+      const docLabel = this.getDocTypeLabel(rep.passenger_doc_type);
+      doc.text(`${docLabel}: ${rep.passenger_doc_number}`, docX, currentY + 4);
+      
+      // Asiento
+      doc.text(rep.seat_number || '-', seatX, currentY + 4);
+      
+      currentY += 6;
+      
+      // Línea separadora entre filas
+      if (index < representatives.length - 1) {
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.1);
+        doc.line(this.MARGIN, currentY, this.PAGE_WIDTH - this.MARGIN, currentY);
+        currentY += 1;
+      }
+    });
+    
+    // Línea final de la tabla
+    currentY += 2;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(this.MARGIN, currentY, this.PAGE_WIDTH - this.MARGIN, currentY);
+    currentY += 5;
+    
+    return currentY;
+  }
+
+  /**
+   * Obtiene la etiqueta del tipo de documento
+   */
+  private static getDocTypeLabel(docType: string): string {
+    const types: Record<string, string> = {
+      '1': 'DNI',
+      '4': 'Carnet Ext.',
+      '6': 'RUC',
+      '7': 'Pasaporte',
+      '0': 'Otros'
+    };
+    return types[docType] || 'Doc';
   }
 
   /**

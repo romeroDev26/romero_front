@@ -96,6 +96,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     BackendInvoiceData | BackendCompanyInvoiceData | null
   >(null);
   const [isCompanyTicket, setIsCompanyTicket] = useState(false); // Guarda el tipo de ticket
+  const [showRepresentativesInA4, setShowRepresentativesInA4] = useState(true); // Flag para mostrar representantes en A4
 
   // Función para mostrar modal de preview de ticket
   // Eliminar función de mock, ahora el preview se activa solo con datos reales
@@ -1103,6 +1104,41 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             {/* Sección de Representantes para RUC */}
             {showRepresentatives && (
               <>
+                {/* Switch para mostrar/ocultar representantes en A4 */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label htmlFor="showRepresentativesSwitch" className="text-sm font-medium text-gray-700">
+                        Incluir lista de pasajeros en PDF A4
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Muestra la tabla detallada de representantes en el documento A4 corporativo
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      id="showRepresentativesSwitch"
+                      role="switch"
+                      aria-checked={showRepresentativesInA4}
+                      onClick={() => setShowRepresentativesInA4(!showRepresentativesInA4)}
+                      className={`
+                        relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                        transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                        ${showRepresentativesInA4 ? 'bg-blue-600' : 'bg-gray-200'}
+                      `}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`
+                          pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
+                          transition duration-200 ease-in-out
+                          ${showRepresentativesInA4 ? 'translate-x-5' : 'translate-x-0'}
+                        `}
+                      />
+                    </button>
+                  </div>
+                </div>
+                
                 <RepresentativesManager
                   representatives={representatives}
                   onAddRepresentative={handleAddRepresentative}
@@ -1483,17 +1519,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
               setTicketBackendData(null);
               setIsCompanyTicket(false); // ← NUEVO: Limpiar tipo de ticket
             }}
-            backendData={
-              isCompanyInvoiceData(ticketBackendData)
-                ? ticketBackendData.invoice
-                : ticketBackendData
-            }
+            backendData={ticketBackendData}
             onSuccess={() => {
               setShowTicketPreview(false);
               setTicketBackendData(null);
               setIsCompanyTicket(false); // Limpiar tipo de ticket
               onSaleSuccess();
             }}
+            showRepresentativesInA4={showRepresentativesInA4}
             // NUEVO: Props para empresa
             customGeneratePDF={async () => {
               // Verificar que los datos sean de tipo empresarial
@@ -1542,17 +1575,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
               setTicketBackendData(null);
               setIsCompanyTicket(false); // Limpiar tipo de ticket
             }}
-            backendData={
-              isCompanyInvoiceData(ticketBackendData)
-                ? ticketBackendData.invoice
-                : ticketBackendData
-            }
+            backendData={ticketBackendData}
             onSuccess={() => {
               setShowTicketPreview(false);
               setTicketBackendData(null);
               setIsCompanyTicket(false); // Limpiar tipo de ticket
               onSaleSuccess();
             }}
+            showRepresentativesInA4={showRepresentativesInA4}
             initialPhoneNumber={passengerData.phone}
             onClearForm={clearFormAfterSale}
           />

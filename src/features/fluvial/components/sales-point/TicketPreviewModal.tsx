@@ -6,7 +6,7 @@ import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { Download, Eye, Cloud, MessageCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
-import { BackendInvoiceData } from './tickets/types/backend.types';
+import { BackendInvoiceData, BackendCompanyInvoiceData } from './tickets/types/backend.types';
 import { useTicketUpload } from '../../../../hooks/useTicketUpload';
 import { WhatsAppSendModal } from './WhatsAppSendModal';
 import { TicketGenerator } from './tickets/TicketGenerator';
@@ -14,7 +14,7 @@ import { TicketGenerator } from './tickets/TicketGenerator';
 interface TicketPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  backendData: BackendInvoiceData;
+  backendData: BackendInvoiceData | BackendCompanyInvoiceData;
   onSuccess: () => void;
   // Props para tickets de empresa (RUC)
   customGeneratePDF?: () => Promise<jsPDF>;
@@ -22,6 +22,8 @@ interface TicketPreviewModalProps {
   initialPhoneNumber?: string;
   // Función para limpiar el formulario cuando se cierre el modal
   onClearForm?: () => void;
+  // Flag para mostrar representantes en A4 (ventas empresariales)
+  showRepresentativesInA4?: boolean;
 }
 
 type TicketFormat = 'ticket80mm' | 'a4';
@@ -33,7 +35,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   onSuccess,
   customGeneratePDF,
   initialPhoneNumber = '',
-  onClearForm
+  onClearForm,
+  showRepresentativesInA4 = true
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -84,25 +87,31 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         const doc80mm = await customGeneratePDF();
         const blob80mm = doc80mm.output('blob');
         
-        // Generar ticket A4 usando el generador estándar
+        // Generar SOLO el A4 usando el generador, pasando los datos completos
         const generator = new TicketGenerator();
-        const resultA4 = await generator.generateBothTickets(backendData);
+        
+        // Importante: generateBothTickets genera ambos, pero aquí solo necesitamos el A4
+        // Los datos completos (con representatives) ya están en backendData
+        const resultBoth = await generator.generateBothTickets(backendData, showRepresentativesInA4);
         
         // Generar URLs de vista previa
         const url80mm = URL.createObjectURL(blob80mm);
-        const urlA4 = URL.createObjectURL(resultA4.ticketA4);
+        const urlA4 = URL.createObjectURL(resultBoth.ticketA4);
         
         setPreviewUrl80mm(url80mm);
         setPreviewUrlA4(urlA4);
         setTicket80mmDoc(doc80mm);
-        setTicketA4Doc(resultA4.ticketA4Doc);
+        setTicketA4Doc(resultBoth.ticketA4Doc);
         
         // UPLOAD AUTOMÁTICO DE AMBOS TICKETS EN PARALELO
         try {
+          // Extraer ID del invoice si es BackendCompanyInvoiceData
+          const invoiceId = 'invoice' in backendData ? backendData.invoice.id : backendData.id;
+          
           const uploadResult = await uploadBothTickets(
             blob80mm,
-            resultA4.ticketA4,
-            backendData.id
+            resultBoth.ticketA4,
+            invoiceId
           );
           
           setUploadSuccess(uploadResult);
@@ -113,7 +122,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       } else {
         // Lógica normal: generar ambos con el generador estándar
         const generator = new TicketGenerator();
-        const result = await generator.generateBothTickets(backendData);
+        const result = await generator.generateBothTickets(backendData, showRepresentativesInA4);
         
         // Generar URLs de vista previa
         const url80mm = URL.createObjectURL(result.ticket80mm);
@@ -126,10 +135,13 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         
         // UPLOAD AUTOMÁTICO DE AMBOS TICKETS EN PARALELO
         try {
+          // Extraer ID del invoice si es BackendCompanyInvoiceData
+          const invoiceId = 'invoice' in backendData ? backendData.invoice.id : backendData.id;
+          
           const uploadResult = await uploadBothTickets(
             result.ticket80mm,
             result.ticketA4,
-            backendData.id
+            invoiceId
           );
           
           setUploadSuccess(uploadResult);
@@ -186,13 +198,18 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
     >
       <div className="p-6">
         {/* Mostrar número de Encomienda si existe y es una encomienda */}
-        {backendData.items && backendData.items.length > 0 && 
-         backendData.items[0].parcel_number && 
-         (backendData.items[0].product_name?.toLowerCase().includes('encomienda') || 
-          backendData.items[0].item_description?.toLowerCase().includes('encomienda')) && (
+        {(() => {
+          const invoiceData = 'invoice' in backendData ? backendData.invoice : backendData;
+          return invoiceData.items && invoiceData.items.length > 0 && 
+           invoiceData.items[0].parcel_number && 
+           (invoiceData.items[0].product_name?.toLowerCase().includes('encomienda') || 
+            invoiceData.items[0].item_description?.toLowerCase().includes('encomienda'));
+        })() && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm font-medium text-blue-800">
-              Número de Encomienda: <span className="font-bold">{backendData.items[0].parcel_number}</span>
+            <p className="text-sm text-blue-800">
+              Número de Encomienda: <span className="font-bold">{
+                ('invoice' in backendData ? backendData.invoice.items[0] : backendData.items[0]).parcel_number
+              }</span>
             </p>
           </div>
         )}
@@ -380,9 +397,9 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         <WhatsAppSendModal
           isOpen={showWhatsAppModal}
           onClose={() => setShowWhatsAppModal(false)}
-          backendData={backendData}
+          backendData={'invoice' in backendData ? backendData.invoice : backendData}
           customGeneratePDF={customGeneratePDF}
-          initialPhoneNumber={initialPhoneNumber || backendData.client?.phone || ''}
+          initialPhoneNumber={initialPhoneNumber || ('invoice' in backendData ? backendData.invoice.client?.phone : backendData.client?.phone) || ''}
           onClearForm={onClearForm}
         />
       </div>

@@ -26,8 +26,13 @@ export class CompanySaleTransformer {
   
   /**
    * Transforma datos del backend al formato del ticket resumen empresarial
+   * @param data - Datos del backend (BackendCompanyInvoiceData o BackendInvoiceData)
+   * @param showRepresentatives - Flag para mostrar/ocultar representantes en A4 (default: true)
    */
-  static transformSummary(data: BackendCompanyInvoiceData | BackendInvoiceData): TicketData & { representatives: TicketRepresentative[]; summary: TicketCompanySummary } {
+  static transformSummary(
+    data: BackendCompanyInvoiceData | BackendInvoiceData,
+    showRepresentatives: boolean = true
+  ): TicketData & { representatives: TicketRepresentative[]; summary: TicketCompanySummary } {
     try {
       // Normalizar los datos: si recibimos BackendCompanyInvoiceData, extraer invoice
       // Si recibimos BackendInvoiceData directamente, usarlo como está
@@ -69,7 +74,10 @@ export class CompanySaleTransformer {
         summary: this.transformCompanySummaryFromInvoice(invoice, representatives),
         
         // NUEVO: Código de moneda
-        currency_code: invoice.currency_code || 'PEN'
+        currency_code: invoice.currency_code || 'PEN',
+        
+        // NUEVO: Flag para mostrar/ocultar representantes en A4
+        showRepresentatives
       };
       
     } catch (error) {

@@ -568,28 +568,40 @@ export class CargoTicketTemplate {
     doc.setFontSize(fontSize);
     if (!text || text.toString().trim() === '') return [''];
 
-    const words = text.toString().split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
+    // Primero dividir por saltos de línea explícitos
+    const paragraphs = text.toString().split('\n');
+    const allLines: string[] = [];
 
-    const pushLine = (line: string) => { if (line === '') return; lines.push(line); };
+    const pushLine = (line: string) => { if (line === '') return; allLines.push(line); };
 
-    words.forEach(word => {
-      if (doc.getTextWidth(word) > maxWidth) {
-        if (currentLine) { pushLine(currentLine); currentLine = ''; }
-        let sub = '';
-        for (let ch of word) {
-          const test = sub + ch;
-          if (doc.getTextWidth(test) > maxWidth) { pushLine(sub); sub = ch; } else { sub = test; }
-        }
-        if (sub) pushLine(sub);
-      } else {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
-        if (doc.getTextWidth(testLine) > maxWidth && currentLine) { pushLine(currentLine); currentLine = word; } else { currentLine = testLine; }
+    // Procesar cada párrafo por separado
+    paragraphs.forEach(paragraph => {
+      if (!paragraph || paragraph.trim() === '') {
+        allLines.push('');
+        return;
       }
-    });
 
-    if (currentLine) pushLine(currentLine);
-    return lines;
+      const words = paragraph.split(' ');
+      let currentLine = '';
+
+      words.forEach(word => {
+        if (doc.getTextWidth(word) > maxWidth) {
+          if (currentLine) { pushLine(currentLine); currentLine = ''; }
+          let sub = '';
+          for (let ch of word) {
+            const test = sub + ch;
+            if (doc.getTextWidth(test) > maxWidth) { pushLine(sub); sub = ch; } else { sub = test; }
+          }
+          if (sub) pushLine(sub);
+        } else {
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
+          if (doc.getTextWidth(testLine) > maxWidth && currentLine) { pushLine(currentLine); currentLine = word; } else { currentLine = testLine; }
+        }
+      });
+
+      if (currentLine) pushLine(currentLine);
+    });
+    
+    return allLines;
   }
 }

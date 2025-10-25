@@ -387,14 +387,27 @@ export class A4Template {
       // Descripción (puede ser multilínea)
       let description = item.description;
       
-      // Agregar info del viaje en la descripción
-      const tripInfo = this.getTripInfo(ticketData);
-      if (tripInfo) {
-        description += `\n${tripInfo}`;
+      // Agregar info del viaje en la descripción SOLO si NO es encomienda
+      // Las encomiendas tienen descripciones más largas y detalladas que no requieren info del viaje
+      const isCargoItem = description.toLowerCase().includes('encomienda') || 
+                          description.toLowerCase().includes('envío') ||
+                          description.toLowerCase().includes('paquete');
+      
+      if (!isCargoItem) {
+        const tripInfo = this.getTripInfo(ticketData);
+        if (tripInfo) {
+          description += `\n${tripInfo}`;
+        }
       }
       
-      // Dividir descripción en líneas y calcular espacio necesario
-      const descLines = this.splitText(doc, description, 105, 9);
+      // Calcular ancho máximo para la descripción (desde descX hasta antes de cantX)
+      // Dejar un margen de seguridad de 3mm antes de la columna CANTIDAD
+      // cantX está en: this.PAGE_WIDTH - this.MARGIN - 92
+      const cantidadColumnX = this.PAGE_WIDTH - this.MARGIN - 92;
+      const maxDescWidth = cantidadColumnX - descX - 3;
+      
+      // Dividir descripción en líneas respetando el ancho máximo
+      const descLines = this.splitText(doc, description, maxDescWidth, 9);
       
       // Dibujar cada línea de la descripción
       descLines.forEach((line, i) => {
@@ -599,26 +612,37 @@ export class A4Template {
     doc.setFontSize(fontSize);
     if (!text || text.trim() === '') return [''];
 
-    const words = text.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
+    // Primero dividir por saltos de línea explícitos
+    const paragraphs = text.split('\n');
+    const allLines: string[] = [];
 
-    words.forEach(word => {
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      const testWidth = doc.getTextWidth(testLine);
-      
-      if (testWidth > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
+    // Procesar cada párrafo por separado
+    paragraphs.forEach(paragraph => {
+      if (!paragraph || paragraph.trim() === '') {
+        allLines.push('');
+        return;
+      }
+
+      const words = paragraph.split(' ');
+      let currentLine = '';
+
+      words.forEach(word => {
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testWidth = doc.getTextWidth(testLine);
+        
+        if (testWidth > maxWidth && currentLine) {
+          allLines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      });
+
+      if (currentLine) {
+        allLines.push(currentLine);
       }
     });
 
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-
-    return lines.length > 0 ? lines : [''];
+    return allLines.length > 0 ? allLines : [''];
   }
 }

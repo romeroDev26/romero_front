@@ -371,44 +371,57 @@ export class NoSeatsTicketTemplate {
   private static splitText(doc: jsPDF, text: string, maxWidth: number, fontSize: number): string[] {
     doc.setFontSize(fontSize);
     const raw = (text || '').toString();
-    const words = raw.split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
+    
+    // Primero dividir por saltos de línea explícitos
+    const paragraphs = raw.split('\n');
+    const allLines: string[] = [];
 
-    const pushLine = (line: string) => { if (line !== undefined && line !== null && line !== '') lines.push(line); };
+    const pushLine = (line: string) => { if (line !== undefined && line !== null && line !== '') allLines.push(line); };
 
-    for (const word of words) {
-      const prefix = currentLine ? currentLine + ' ' : '';
-      const testLine = prefix + word;
-      if (doc.getTextWidth(testLine) <= maxWidth) {
-        currentLine = testLine;
-        continue;
+    // Procesar cada párrafo por separado
+    paragraphs.forEach(paragraph => {
+      if (!paragraph || paragraph.trim() === '') {
+        allLines.push('');
+        return;
       }
 
-      // Si la palabra por sí sola cabe en una nueva línea, empujar la línea actual y empezar nueva
-      if (doc.getTextWidth(word) <= maxWidth) {
-        if (currentLine) { pushLine(currentLine); }
-        currentLine = word;
-        continue;
-      }
+      const words = paragraph.split(' ');
+      let currentLine = '';
 
-      // La palabra es demasiado larga (sin espacios). Romperla en fragmentos que quepan.
-      if (currentLine) { pushLine(currentLine); currentLine = ''; }
-      let fragment = '';
-      for (const ch of word) {
-        const testFrag = fragment + ch;
-        if (doc.getTextWidth(testFrag) <= maxWidth) {
-          fragment = testFrag;
-        } else {
-          // empujar fragmento y empezar uno nuevo
-          pushLine(fragment);
-          fragment = ch;
+      for (const word of words) {
+        const prefix = currentLine ? currentLine + ' ' : '';
+        const testLine = prefix + word;
+        if (doc.getTextWidth(testLine) <= maxWidth) {
+          currentLine = testLine;
+          continue;
         }
-      }
-      if (fragment) pushLine(fragment);
-    }
 
-    if (currentLine) pushLine(currentLine);
-    return lines;
+        // Si la palabra por sí sola cabe en una nueva línea, empujar la línea actual y empezar nueva
+        if (doc.getTextWidth(word) <= maxWidth) {
+          if (currentLine) { pushLine(currentLine); }
+          currentLine = word;
+          continue;
+        }
+
+        // La palabra es demasiado larga (sin espacios). Romperla en fragmentos que quepan.
+        if (currentLine) { pushLine(currentLine); currentLine = ''; }
+        let fragment = '';
+        for (const ch of word) {
+          const testFrag = fragment + ch;
+          if (doc.getTextWidth(testFrag) <= maxWidth) {
+            fragment = testFrag;
+          } else {
+            // empujar fragmento y empezar uno nuevo
+            pushLine(fragment);
+            fragment = ch;
+          }
+        }
+        if (fragment) pushLine(fragment);
+      }
+
+      if (currentLine) pushLine(currentLine);
+    });
+    
+    return allLines;
   }
 }

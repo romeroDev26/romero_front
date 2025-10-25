@@ -511,45 +511,56 @@ export class NormalTicketTemplate {
     doc.setFontSize(fontSize);
     if (!text) return [''];
 
-    const words = text.toString().split(' ');
-    const lines: string[] = [];
-    let currentLine = '';
+    // Primero dividir por saltos de línea explícitos
+    const paragraphs = text.toString().split('\n');
+    const allLines: string[] = [];
 
-    for (const word of words) {
-      // Manejar palabras muy largas (como URLs o texto sin espacios)
-      if (doc.getTextWidth(word) > maxWidth) {
-        if (currentLine) {
-          lines.push(currentLine);
-          currentLine = '';
-        }
-        let subWord = '';
-        for (const char of word) {
-          if (doc.getTextWidth(subWord + char) > maxWidth) {
-            if (subWord) lines.push(subWord);
-            subWord = char;
-          } else {
-            subWord += char;
+    // Procesar cada párrafo por separado
+    paragraphs.forEach(paragraph => {
+      if (!paragraph || paragraph.trim() === '') {
+        allLines.push('');
+        return;
+      }
+
+      const words = paragraph.split(' ');
+      let currentLine = '';
+
+      for (const word of words) {
+        // Manejar palabras muy largas (como URLs o texto sin espacios)
+        if (doc.getTextWidth(word) > maxWidth) {
+          if (currentLine) {
+            allLines.push(currentLine);
+            currentLine = '';
           }
-        }
-        if (subWord) {
+          let subWord = '';
+          for (const char of word) {
+            if (doc.getTextWidth(subWord + char) > maxWidth) {
+              if (subWord) allLines.push(subWord);
+              subWord = char;
+            } else {
+              subWord += char;
+            }
+          }
+          if (subWord) {
             currentLine = subWord;
+          }
+          continue;
         }
-        continue;
+
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        if (doc.getTextWidth(testLine) > maxWidth) {
+          if (currentLine) allLines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
       }
 
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
-      if (doc.getTextWidth(testLine) > maxWidth) {
-        if (currentLine) lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
+      if (currentLine) {
+        allLines.push(currentLine);
       }
-    }
-
-    if (currentLine) {
-      lines.push(currentLine);
-    }
+    });
     
-    return lines.length > 0 ? lines : [''];
+    return allLines.length > 0 ? allLines : [''];
   }
 }

@@ -136,7 +136,7 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Resumen */}
-      {report && <SalesSummary summary={report.summary} isLoading={isLoading} />}
+      {report && <SalesSummary summary={report.summary} items={report.items} isLoading={isLoading} />}
 
       {/* Gráficos de análisis */}
       {report && (

@@ -94,9 +94,12 @@ export class TicketGenerator {
         const companyData = 'invoice' in backendData ? backendData : { invoice: backendData, representatives: [], summary: {} };
         const ticketData = CompanySaleTransformer.transformSummary(companyData as BackendCompanyInvoiceData, showRepresentativesInA4);
         
+        // Agregar rawBackendItems para que A4 tenga acceso a unit_code
+        const ticketDataWithRaw = { ...ticketData, rawBackendItems: invoiceData.items };
+        
         const [doc80mm, docA4] = await Promise.all([
           CompanyTicketTemplate.generatePDF(ticketData),
-          A4Template.generatePDF(ticketData)
+          A4Template.generatePDF(ticketDataWithRaw)
         ]);
         
         return {
@@ -113,9 +116,12 @@ export class TicketGenerator {
       if (isCargo) {
         const ticketData = CargoSaleTransformer.transform(invoiceData);
         
+        // Agregar rawBackendItems para que A4 tenga acceso a unit_code
+        const ticketDataWithRaw = { ...ticketData, rawBackendItems: invoiceData.items };
+        
         const [doc80mm, docA4] = await Promise.all([
           CargoTicketTemplate.generatePDF(ticketData),
-          A4Template.generatePDF(ticketData)
+          A4Template.generatePDF(ticketDataWithRaw)
         ]);
         
         return {
@@ -132,9 +138,12 @@ export class TicketGenerator {
       if (isNoSeats) {
         const ticketData = NoSeatsSaleTransformer.transform(invoiceData);
         
+        // Agregar rawBackendItems para que A4 tenga acceso a unit_code
+        const ticketDataWithRaw = { ...ticketData, rawBackendItems: invoiceData.items };
+        
         const [doc80mm, docA4] = await Promise.all([
           NoSeatsTicketTemplate.generatePDF(ticketData),
-          A4Template.generatePDF(ticketData)
+          A4Template.generatePDF(ticketDataWithRaw)
         ]);
         
         return {
@@ -148,9 +157,12 @@ export class TicketGenerator {
       // 4. Default: ticket normal con asientos
       const ticketData = NormalSaleTransformer.transform(invoiceData);
       
+      // Agregar rawBackendItems para que A4 tenga acceso a unit_code
+      const ticketDataWithRaw = { ...ticketData, rawBackendItems: invoiceData.items };
+      
       const [doc80mm, docA4] = await Promise.all([
         NormalTicketTemplate.generatePDF(ticketData),
-        A4Template.generatePDF(ticketData)
+        A4Template.generatePDF(ticketDataWithRaw)
       ]);
       
       return {

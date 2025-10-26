@@ -19,11 +19,13 @@ export class A4Template {
   /**
    * Genera el PDF A4 usando los datos transformados
    * Actualizado: Acepta representantes opcionales para ventas empresariales
+   * rawBackendItems: Items raw del backend con unit_code para A4
    */
   static async generatePDF(
     ticketData: TicketData & { 
       representatives?: TicketRepresentative[]; 
-      summary?: TicketCompanySummary 
+      summary?: TicketCompanySummary;
+      rawBackendItems?: any[]; // Items raw del backend para acceder a unit_code
     }
   ): Promise<jsPDF> {
     const doc = new jsPDF({
@@ -51,8 +53,8 @@ export class A4Template {
       currentY += 5;
     }
     
-    currentY = this.addItemsTable(doc, ticketData, currentY);
-    currentY += 5;
+    currentY = this.addItemsTable(doc, ticketData, currentY, ticketData.rawBackendItems);
+    currentY += 3;
     
     currentY = this.addTotalsSection(doc, ticketData, currentY);
     currentY += 10;
@@ -344,7 +346,7 @@ export class A4Template {
   /**
    * BLOQUE 4: Tabla de items
    */
-  private static addItemsTable(doc: jsPDF, ticketData: TicketData, startY: number): number {
+  private static addItemsTable(doc: jsPDF, ticketData: TicketData, startY: number, rawBackendItems?: any[]): number {
     let currentY = startY;
     
     // Encabezado de la tabla
@@ -387,6 +389,11 @@ export class A4Template {
       // Descripción (puede ser multilínea)
       let description = item.description;
       
+      // Agregar descuento a la descripción si existe
+      if (item.discount && item.discount > 0) {
+        description += ` (descuento: ${item.discount.toFixed(2)})`;
+      }
+      
       // Agregar info del viaje en la descripción SOLO si NO es encomienda
       // Las encomiendas tienen descripciones más largas y detalladas que no requieren info del viaje
       const isCargoItem = description.toLowerCase().includes('encomienda') || 
@@ -421,9 +428,12 @@ export class A4Template {
       const cantX = this.PAGE_WIDTH - this.MARGIN - 92;
       doc.text(item.quantity.toString(), cantX, itemStartY + 4, { align: 'center' });
       
-      // Unidad (alineado con primera línea)
+      // Unidad (alineado con primera línea) - usar unit_code del backend si está disponible
       const unidadX = this.PAGE_WIDTH - this.MARGIN - 72;
-      doc.text('NIU', unidadX, itemStartY + 4, { align: 'center' });
+      const unitCode = item.unit_code || 
+                      (rawBackendItems && rawBackendItems[index]?.unit_code) || 
+                      'NIU';
+      doc.text(unitCode, unidadX, itemStartY + 4, { align: 'center' });
       
       // Precio unitario (alineado con primera línea)
       const precioX = this.PAGE_WIDTH - this.MARGIN - 42;
@@ -519,8 +529,8 @@ export class A4Template {
     
     const totales = [
       { label: 'SUBTOTAL', value: sunat.total_taxable, show: parseFloat(sunat.total_taxable) > 0 },
+      { label: 'IGV 18%', value: sunat.total_igv, show: true }, // Siempre mostrar IGV
       { label: 'EXONERADA', value: sunat.total_exonerated, show: parseFloat(sunat.total_exonerated) > 0 },
-      { label: 'IGV 18%', value: sunat.total_igv, show: parseFloat(sunat.total_igv) > 0 },
     ];
     
     totales.forEach(t => {

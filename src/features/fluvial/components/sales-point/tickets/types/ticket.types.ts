@@ -67,6 +67,7 @@ export interface TicketFinancialBreakdown {
 export interface TicketFinancialItem {
   description: string;
   quantity: number;
+  unit_code?: string; // Código de unidad (ZZ, NIU, KGM, etc.)
   unit_price: number;
   discount: number;
   total_line: number;

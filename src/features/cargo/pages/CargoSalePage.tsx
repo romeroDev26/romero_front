@@ -70,6 +70,20 @@ export const CargoSalePage: React.FC = () => {
   const [showTicketPreview, setShowTicketPreview] = useState(false);
   const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
 
+  // Estados para método de pago
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("EFE");
+  const [paymentOperationCode, setPaymentOperationCode] = useState("");
+
+  // Opciones para método de pago
+  const paymentMethodOptions = [
+    { value: 'EFE', label: 'Efectivo' },
+    { value: 'TRF', label: 'Transferencia Bancaria' },
+    { value: 'YAP', label: 'Yape' },
+    { value: 'PLN', label: 'Plin' },
+    { value: 'DEP', label: 'Depósito en Cuenta' },
+    { value: 'OTR', label: 'Otros' },
+  ];
+
   // --- INICIO: Lógica de Series Replicada ---
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>("");
   const [selectedFacturaSeries, setSelectedFacturaSeries] = useState<string>("");
@@ -88,6 +102,13 @@ export const CargoSalePage: React.FC = () => {
   }, [navigate]);
   
   const { availableBoletaSeries, availableFacturaSeries, isLoading: isLoadingSeries } = useDocumentSeriesForBranch(selectedBranch?.id || null);
+
+  // Efecto para limpiar código de operación cuando se cambia a efectivo
+  useEffect(() => {
+    if (selectedPaymentMethod === "EFE") {
+      setPaymentOperationCode("");
+    }
+  }, [selectedPaymentMethod]);
 
   useEffect(() => {
     const cachedBoleta = localStorage.getItem("lastUsedBoletaSeries");
@@ -193,6 +214,8 @@ export const CargoSalePage: React.FC = () => {
         operation_type_code: '0101',
         currency_code: 'PEN',
         is_credit_sale: isContraentrega,
+        payment_method_code: selectedPaymentMethod,
+        payment_operation_code: paymentOperationCode || undefined,
         notes: `Venta de Encomiendas. Sucursal: ${selectedBranch.name}`,
         items: cargoItems.map(item => ({
           product_id: item.product.id,
@@ -241,6 +264,8 @@ export const CargoSalePage: React.FC = () => {
     setSelectedDestinationId(null);
     setCargoItems([]);
     setIsContraentrega(false); // Asegurar que el switch esté desactivado
+    setSelectedPaymentMethod("EFE"); // Resetear método de pago
+    setPaymentOperationCode(""); // Limpiar código de operación
     setCurrentView('clientSelection');
     
     // Limpiar datos del ticket
@@ -266,6 +291,8 @@ export const CargoSalePage: React.FC = () => {
     setSelectedDestinationId(null);
     setCargoItems([]);
     setIsContraentrega(false); // Asegurar que el switch esté desactivado
+    setSelectedPaymentMethod("EFE"); // Resetear método de pago
+    setPaymentOperationCode(""); // Limpiar código de operación
     
     // Volver al paso inicial
     setCurrentView('clientSelection');
@@ -532,13 +559,67 @@ export const CargoSalePage: React.FC = () => {
               </table>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="flex justify-end">
-                <div className="text-right">
-                  <p className="text-lg text-gray-600 mb-2">Total a Pagar:</p>
-                  <p className="text-3xl font-bold text-gray-800 mb-4">S/ {totalSaleAmount.toFixed(2)}</p>
-                  <div className="flex items-center justify-end gap-4">
-                    {/* Switch de Contraentrega (UI only por ahora) */}
-                    <div className="flex items-center space-x-3">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Columna Izquierda: Total y Método de Pago */}
+                <div className="space-y-4">
+                  {/* Total a Pagar */}
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Total a Pagar</p>
+                    <p className="text-4xl font-bold text-gray-900">S/ {totalSaleAmount.toFixed(2)}</p>
+                  </div>
+
+                  {/* Selector de Método de Pago */}
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Método de Pago
+                    </label>
+                    <select
+                      value={selectedPaymentMethod}
+                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                      className="w-full p-2.5 border border-gray-300 rounded-md bg-white"
+                    >
+                      {paymentMethodOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Campo de código de operación (solo para métodos diferentes a efectivo) */}
+                    {selectedPaymentMethod !== "EFE" && (
+                      <div className="mt-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Código de Operación
+                        </label>
+                        <input
+                          type="text"
+                          value={paymentOperationCode}
+                          onChange={(e) => {
+                            if (e.target.value.length <= 20) {
+                              setPaymentOperationCode(e.target.value);
+                            }
+                          }}
+                          placeholder="Ingrese el código de operación..."
+                          className="w-full p-2.5 border border-gray-300 rounded-md"
+                          maxLength={20}
+                        />
+                        <div className="text-xs text-gray-500 mt-1">
+                          {paymentOperationCode.length}/20 caracteres
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Columna Derecha: Opciones y Botón de Acción */}
+                <div className="flex flex-col justify-end space-y-4">
+                  {/* Switch de Contraentrega */}
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-700 mb-1">Contraentrega</p>
+                        <p className="text-xs text-gray-500">El pago se realizará al recibir la encomienda</p>
+                      </div>
                       <button
                         type="button"
                         role="switch"
@@ -548,19 +629,19 @@ export const CargoSalePage: React.FC = () => {
                       >
                         <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
                       </button>
-                      <span className="text-sm font-medium text-gray-700 select-none">Contraentrega</span>
                     </div>
-
-                    <Button 
-                      onClick={handleFinalizeSale} 
-                      size="lg"
-                      isLoading={isProcessingClient || isCreatingInvoice} 
-                      disabled={cargoItems.length === 0}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <CreditCard className="w-5 mr-2" /> Generar Venta y Comprobante
-                    </Button>
                   </div>
+
+                  {/* Botón de Generar Venta */}
+                  <Button 
+                    onClick={handleFinalizeSale} 
+                    size="lg"
+                    isLoading={isProcessingClient || isCreatingInvoice} 
+                    disabled={cargoItems.length === 0}
+                    className="bg-blue-600 hover:bg-blue-700 w-full text-lg py-4"
+                  >
+                    <CreditCard className="w-5 h-5 mr-2" /> Generar Venta y Comprobante
+                  </Button>
                 </div>
               </div>
             </div>

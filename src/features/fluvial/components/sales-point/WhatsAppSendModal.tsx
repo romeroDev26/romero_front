@@ -20,6 +20,8 @@ interface WhatsAppSendModalProps {
   onClearForm?: () => void;
   // Nueva prop para identificar el contexto
   isFromInvoiceList?: boolean;
+  // Tipo de PDF preferido para enviar (a4 o ticket)
+  preferredPdfType?: 'a4' | 'ticket' | 'legacy';
 }
 
 export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
@@ -29,7 +31,8 @@ export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
   customGeneratePDF,
   initialPhoneNumber = '',
   onClearForm,
-  isFromInvoiceList = false
+  isFromInvoiceList = false,
+  preferredPdfType = 'ticket'
 }) => {
   const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber);
   const [customMessage, setCustomMessage] = useState('');
@@ -70,16 +73,24 @@ El equipo de GLOBAL ROMERO S.A.C.`;
       } else if (isFromInvoiceList) {
         // Para facturas de la lista de contabilidad - usar endpoint directo del backend
         // Detectar qué tipo de PDF está disponible basándose en los campos del backendData
-        let pdfType: 'a4' | 'ticket' | 'legacy' = 'ticket'; // Por defecto ticket
+        let pdfType: 'a4' | 'ticket' | 'legacy' = preferredPdfType; // Usar el tipo preferido
         
-        // Si backendData tiene información de archivos PDF, usar esa lógica
+        // Si backendData tiene información de archivos PDF, validar disponibilidad
         const invoiceData = backendData as any;
-        if (invoiceData.pdf_ticket_file_path) {
-          pdfType = 'ticket';
-        } else if (invoiceData.pdf_a4_file_path) {
-          pdfType = 'a4';
-        } else if (invoiceData.pdf_file_path) {
-          pdfType = 'legacy';
+        
+        // Si el tipo preferido no está disponible, hacer fallback
+        if (pdfType === 'ticket' && !invoiceData.pdf_ticket_file_path) {
+          if (invoiceData.pdf_a4_file_path) {
+            pdfType = 'a4';
+          } else if (invoiceData.pdf_file_path) {
+            pdfType = 'legacy';
+          }
+        } else if (pdfType === 'a4' && !invoiceData.pdf_a4_file_path) {
+          if (invoiceData.pdf_ticket_file_path) {
+            pdfType = 'ticket';
+          } else if (invoiceData.pdf_file_path) {
+            pdfType = 'legacy';
+          }
         }
 
         const result = await whatsappService.sendInvoicePdf({
@@ -178,6 +189,11 @@ El equipo de GLOBAL ROMERO S.A.C.`;
             <p className="text-sm text-gray-600">
               Documento: {backendData.document_type_code} {backendData.series}-{backendData.number}
             </p>
+            {isFromInvoiceList && (
+              <p className="text-xs text-blue-600 mt-1">
+                Formato: {preferredPdfType === 'a4' ? 'A4 (Corporativo)' : preferredPdfType === 'ticket' ? 'Ticket 80mm (Térmico)' : 'PDF Estándar'}
+              </p>
+            )}
           </div>
         </div>
 

@@ -366,6 +366,7 @@ export const InvoiceDetailPage: React.FC = () => {
           backendData={invoice as unknown as BackendInvoiceData}
           initialPhoneNumber={invoice.client?.phone || ''}
           isFromInvoiceList={true}
+          preferredPdfType={activeTab === 'a4' ? 'a4' : 'ticket'}
         />
       )}
     </div>

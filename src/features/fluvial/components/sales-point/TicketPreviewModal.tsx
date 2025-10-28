@@ -401,6 +401,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           customGeneratePDF={customGeneratePDF}
           initialPhoneNumber={initialPhoneNumber || ('invoice' in backendData ? backendData.invoice.client?.phone : backendData.client?.phone) || ''}
           onClearForm={onClearForm}
+          isFromInvoiceList={true}
+          preferredPdfType={activeFormat === 'a4' ? 'a4' : 'ticket'}
         />
       </div>
     </Modal>

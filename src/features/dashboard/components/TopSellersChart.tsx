@@ -1,4 +1,5 @@
 import React from 'react';
+import { DailySalesItem } from '../../../services/reports.service';
 
 interface SellerData {
   name: string;
@@ -7,12 +8,13 @@ interface SellerData {
 }
 
 interface TopSellersChartProps {
-  sellersSummary: Record<string, SellerData>;
+  sellersSummary?: Record<string, SellerData>; // Opcional, ya no lo usamos
+  items?: DailySalesItem[];
   isLoading?: boolean;
 }
 
 export const TopSellersChart: React.FC<TopSellersChartProps> = ({ 
-  sellersSummary, 
+  items = [],
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -30,12 +32,37 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
     );
   }
 
-  // Convertir el objeto a array y ordenar por monto de ventas
-  const chartData = Object.entries(sellersSummary)
+  // Recalcular totales por vendedor incluyendo TODAS las transacciones
+  // (Facturas, Boletas, Notas de Crédito y Notas de Débito)
+  const sellersTotals = items.reduce((acc, item) => {
+    const sellerId = item.seller_id;
+    const amount = parseFloat(item.total_amount || '0');
+    
+    if (!acc[sellerId]) {
+      acc[sellerId] = {
+        name: item.seller_name,
+        amount: 0,
+        invoices: 0,
+      };
+    }
+    
+    // Sumar todos los montos (las notas de crédito ya vienen con signo negativo)
+    acc[sellerId].amount += amount;
+    
+    // Solo contar facturas/boletas positivas (no notas de crédito/débito)
+    if (item.document_type === 'Factura' || item.document_type === 'Boleta') {
+      acc[sellerId].invoices++;
+    }
+    
+    return acc;
+  }, {} as Record<string, { name: string; amount: number; invoices: number }>);
+
+  // Convertir a array y ordenar por monto neto de ventas
+  const chartData = Object.entries(sellersTotals)
     .map(([sellerId, seller]) => ({
       name: seller.name,
-      amount: parseFloat(seller.total_amount),
-      invoices: seller.total_invoices,
+      amount: seller.amount,
+      invoices: seller.invoices,
       sellerId: sellerId
     }))
     .sort((a, b) => b.amount - a.amount)

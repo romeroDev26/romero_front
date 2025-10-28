@@ -142,11 +142,11 @@ export const ReportsPage: React.FC = () => {
       {report && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           <PaymentMethodsChart 
-            paymentMethodsSummary={report.summary.payment_methods_summary} 
+            items={report.items}
             isLoading={isLoading} 
           />
           <TopSellersChart 
-            sellersSummary={report.summary.sellers_summary} 
+            items={report.items}
             isLoading={isLoading} 
           />
         </div>

@@ -73,7 +73,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Top vendedores por sucursal */}
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-6 mt-6">
         <TopSellersByBranch />
       </div>
 

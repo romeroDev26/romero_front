@@ -6,9 +6,11 @@ import {
   ResponsiveContainer,
   Tooltip
 } from 'recharts';
+import { DailySalesItem } from '../../../services/reports.service';
 
 interface PaymentMethodsChartProps {
-  paymentMethodsSummary: Record<string, string>;
+  paymentMethodsSummary?: Record<string, string>; // Opcional, ya no lo usamos
+  items?: DailySalesItem[];
   isLoading?: boolean;
 }
 
@@ -36,7 +38,7 @@ const getPaymentMethodName = (method: string): string => {
 };
 
 export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({ 
-  paymentMethodsSummary, 
+  items = [],
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -50,10 +52,29 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
     );
   }
 
+  // Recalcular métodos de pago excluyendo Notas de Crédito y Débito
+  const paymentMethodsTotals = items
+    .filter(item => 
+      item.document_type !== 'Nota de Crédito' && 
+      item.document_type !== 'Nota de Débito'
+    )
+    .reduce((acc, item) => {
+      const method = item.payment_method || 'SIN_ESPECIFICAR';
+      const amount = parseFloat(item.total_amount || '0');
+      
+      if (!acc[method]) {
+        acc[method] = 0;
+      }
+      
+      acc[method] += amount;
+      
+      return acc;
+    }, {} as Record<string, number>);
+
   // Convertir el objeto a formato de datos para el gráfico
-  const chartData = Object.entries(paymentMethodsSummary).map(([method, amount]) => ({
+  const chartData = Object.entries(paymentMethodsTotals).map(([method, amount]) => ({
     name: getPaymentMethodName(method),
-    value: parseFloat(amount),
+    value: amount,
     originalKey: method,
     color: PAYMENT_COLORS[method as keyof typeof PAYMENT_COLORS] || '#64748b'
   }));

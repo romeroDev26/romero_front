@@ -25,8 +25,15 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
     );
   }
 
+  // Filtrar notas de crédito y elementos sin ruta válida
+  const validItems = items.filter(item => 
+    item.document_type !== 'Nota de Crédito' && 
+    item.origin_port && 
+    item.destination_port
+  );
+
   // Agrupar por rutas y contar pasajeros y ventas
-  const routeStats = items.reduce((acc, item) => {
+  const routeStats = validItems.reduce((acc, item) => {
     const routeKey = `${item.origin_port} - ${item.destination_port}`;
     const amount = parseFloat(item.total_amount) || 0;
     

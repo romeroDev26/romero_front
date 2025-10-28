@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { adminReportsService, SalesByBranchResponse } from '../../../services/adminReports.service';
+import { reportsService } from '../../../services/reports.service';
 import { TrophyIcon, UserIcon } from '@heroicons/react/24/outline';
 
 // Función para obtener datos de ventas por sucursal
@@ -55,6 +56,38 @@ export const TopSellersByBranch: React.FC = () => {
     staleTime: 1000 * 60 * 30, // 30 minutos
   });
 
+  // Consulta adicional para obtener los items individuales y recalcular totales netos
+  const { data: dailySalesData } = useQuery({
+    queryKey: ['daily-sales-for-branch-totals', periodGrouping],
+    queryFn: async () => {
+      const now = new Date();
+      let startDate: Date;
+
+      switch (periodGrouping) {
+        case 'daily':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'weekly':
+          startDate = new Date(now.getTime() - 8 * 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'monthly':
+          startDate = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+          break;
+        case 'yearly':
+          startDate = new Date(now.getFullYear() - 3, 0, 1);
+          break;
+        default:
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      }
+
+      return reportsService.getDailySales({
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: now.toISOString().split('T')[0],
+      });
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
   const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setPeriodGrouping(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly');
   };
@@ -103,6 +136,17 @@ export const TopSellersByBranch: React.FC = () => {
   }
 
   const branchData = reportData?.items || [];
+
+  // Calcular el total neto real considerando notas de crédito y débito
+  const netTotal = dailySalesData?.items.reduce((sum, item) => {
+    const amount = parseFloat(item.total_amount || '0');
+    return sum + amount;
+  }, 0) || 0;
+
+  // Calcular total de facturas/boletas (sin contar notas)
+  const totalInvoices = dailySalesData?.items.filter(
+    item => item.document_type === 'Factura' || item.document_type === 'Boleta'
+  ).length || reportData?.summary.total_invoices || 0;
 
   // Si no hay datos, mostrar mensaje
   if (!isLoading && (!branchData || branchData.length === 0)) {
@@ -300,7 +344,7 @@ export const TopSellersByBranch: React.FC = () => {
 
       {/* Resumen general */}
       {reportData?.summary && (
-        <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200">
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200 mt-6">
           <h4 className="font-bold text-gray-900 mb-4 text-lg">Resumen General</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
@@ -308,17 +352,22 @@ export const TopSellersByBranch: React.FC = () => {
               <div className="text-sm text-gray-600">Sucursales</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{reportData.summary.total_invoices}</div>
+              <div className="text-2xl font-bold text-green-600">{totalInvoices}</div>
               <div className="text-sm text-gray-600">Total Facturas</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-emerald-600">
-                S/ {parseFloat(reportData.summary.total_amount).toLocaleString('es-PE', {
+                S/ {netTotal.toLocaleString('es-PE', {
                   minimumFractionDigits: 0,
                   maximumFractionDigits: 0
                 })}
               </div>
               <div className="text-sm text-gray-600">Ventas Totales</div>
+              {dailySalesData && netTotal !== parseFloat(reportData.summary.total_amount) && (
+                <div className="text-xs text-gray-500 mt-1">
+                  (Neto después de ajustes)
+                </div>
+              )}
             </div>
             <div className="text-center">
               <div className="text-lg font-bold text-purple-600">{reportData.summary.top_branch_name}</div>

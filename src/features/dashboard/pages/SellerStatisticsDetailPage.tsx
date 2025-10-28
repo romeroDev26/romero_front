@@ -34,6 +34,7 @@ import {
 } from 'recharts';
 import { SellerDetailedInvoice } from '../../../types/sellerDetailedReport';
 import { exportSellerStatsToExcel } from '../../../utils/exportToExcel';
+import { getPaymentMethodName } from '../../../utils/paymentMethods';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
@@ -224,13 +225,13 @@ export const SellerStatisticsDetailPage: React.FC = () => {
               <PieChart>
                 <Pie
                   data={Object.entries(metrics.payment_methods_breakdown).map(([name, value]) => ({
-                    name,
+                    name: getPaymentMethodName(name),
                     value,
                   }))}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(entry) => `${entry.name}: S/ ${entry.value.toFixed(0)}`}
+                  label={(entry: any) => `${entry.name}: S/ ${entry.value.toFixed(0)}`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -365,7 +366,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                           {invoice.currency} {parseFloat(invoice.total_amount).toFixed(2)}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {invoice.payment_method}
+                          {getPaymentMethodName(invoice.payment_method)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

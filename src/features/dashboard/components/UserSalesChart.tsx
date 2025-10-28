@@ -20,7 +20,11 @@ type ChartType = 'line' | 'bar';
 
 interface ChartData {
   date: string;
-  total_revenue: number;
+  total_revenue: number; // Para compatibilidad, usará net si existe
+  total_revenue_net?: number;
+  total_revenue_gross?: number;
+  total_credit_notes?: number;
+  total_debit_notes?: number;
   total_sales: number;
   tickets_revenue: number;
   cargo_revenue: number;
@@ -54,9 +58,16 @@ const UserSalesChart: React.FC = () => {
         ? dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
         : dateObj.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
 
+      // Usar total_revenue_net si existe, sino usar total_revenue (compatibilidad)
+      const netRevenue = item.total_revenue_net ?? item.total_revenue ?? 0;
+
       return {
         date: formattedDate,
-        total_revenue: item.total_revenue || 0,
+        total_revenue: netRevenue, // Usar el neto como principal
+        total_revenue_net: item.total_revenue_net,
+        total_revenue_gross: item.total_revenue_gross,
+        total_credit_notes: item.total_credit_notes,
+        total_debit_notes: item.total_debit_notes,
         total_sales: item.total_sales || 0,
         tickets_revenue: parseFloat(item.breakdown?.tickets?.revenue || '0'),
         cargo_revenue: parseFloat(item.breakdown?.cargo?.revenue || '0'),

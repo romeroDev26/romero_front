@@ -30,7 +30,11 @@ export interface UserStatisticsResponse {
   date: string;
   branch_office: UserStatisticsBranchOffice;
   total_sales: number;
-  total_revenue: number;
+  total_revenue: number; // Mantener por compatibilidad (será igual a gross)
+  total_revenue_gross?: number; // NUEVO: Ventas brutas (solo facturas/boletas)
+  total_revenue_net?: number; // NUEVO: Ventas netas (resta notas crédito, suma notas débito)
+  total_credit_notes?: number; // NUEVO: Total de notas de crédito
+  total_debit_notes?: number; // NUEVO: Total de notas de débito
   currency: string;
   breakdown: UserStatisticsBreakdown;
 }

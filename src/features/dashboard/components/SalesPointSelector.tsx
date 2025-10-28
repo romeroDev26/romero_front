@@ -75,9 +75,10 @@ export const SalesPointSelector: React.FC = () => {
     }
   };
 
-  // Estadísticas simuladas por ahora (se pueden conectar a APIs reales más tarde)
+  // Usar total_revenue_net si existe, sino usar total_revenue (compatibilidad)
   const todaySales = today.data?.total_sales || 0;
-  const todayRevenue = today.data?.total_revenue || 0;
+  const todayRevenue = today.data?.total_revenue_net ?? today.data?.total_revenue ?? 0;
+  const todayHasAdjustments = (today.data?.total_credit_notes || 0) !== 0 || (today.data?.total_debit_notes || 0) !== 0;
   const monthSales = currentMonth.data?.total_sales || 0;
 
   return (
@@ -184,7 +185,24 @@ export const SalesPointSelector: React.FC = () => {
                 `S/ ${todayRevenue.toLocaleString('es-PE')}`
               )}
             </div>
-            <div className="text-sm text-gray-600">Ingresos Hoy</div>
+            <div className="text-sm text-gray-600">
+              Ingresos Hoy {todayHasAdjustments && '(Neto)'}
+            </div>
+            {todayHasAdjustments && today.data && (
+              <div className="text-xs text-gray-500 mt-1">
+                {today.data.total_credit_notes !== 0 && (
+                  <span className="text-red-600">
+                    NC: S/ {Math.abs(today.data.total_credit_notes || 0).toFixed(2)}
+                  </span>
+                )}
+                {today.data.total_credit_notes !== 0 && today.data.total_debit_notes !== 0 && ' | '}
+                {today.data.total_debit_notes !== 0 && (
+                  <span className="text-green-600">
+                    ND: +S/ {(today.data.total_debit_notes || 0).toFixed(2)}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="text-center p-4 bg-purple-50 rounded-lg">
             <div className="text-2xl font-bold text-purple-600 mb-1">

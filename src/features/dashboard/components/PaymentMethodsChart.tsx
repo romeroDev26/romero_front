@@ -7,35 +7,13 @@ import {
   Tooltip
 } from 'recharts';
 import { DailySalesItem } from '../../../services/reports.service';
+import { getPaymentMethodName, getPaymentMethodColor } from '../../../utils/paymentMethods';
 
 interface PaymentMethodsChartProps {
   paymentMethodsSummary?: Record<string, string>; // Opcional, ya no lo usamos
   items?: DailySalesItem[];
   isLoading?: boolean;
 }
-
-// Colores para cada método de pago
-const PAYMENT_COLORS = {
-  'EFE': '#22c55e', // Verde para efectivo
-  'TRF': '#3b82f6', // Azul para transferencia
-  'YAP': '#8b5cf6', // Morado para Yape
-  'PLN': '#f59e0b', // Amarillo para Plin
-  'CARD': '#ef4444', // Rojo para tarjeta
-  'SIN_ESPECIFICAR': '#6b7280' // Gris para sin especificar
-};
-
-// Función para obtener nombre legible del método de pago
-const getPaymentMethodName = (method: string): string => {
-  const names: Record<string, string> = {
-    'EFE': 'Efectivo',
-    'TRF': 'Transferencia',
-    'YAP': 'Yape',
-    'PLN': 'Plin',
-    'CARD': 'Tarjeta',
-    'SIN_ESPECIFICAR': 'Sin Especificar'
-  };
-  return names[method] || method;
-};
 
 export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({ 
   items = [],
@@ -52,12 +30,10 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
     );
   }
 
-  // Recalcular métodos de pago excluyendo Notas de Crédito y Débito
+  // Recalcular métodos de pago incluyendo TODAS las transacciones
+  // (Facturas, Boletas, Notas de Crédito y Notas de Débito)
+  // Las notas de crédito vienen con valores negativos, por lo que se restan automáticamente
   const paymentMethodsTotals = items
-    .filter(item => 
-      item.document_type !== 'Nota de Crédito' && 
-      item.document_type !== 'Nota de Débito'
-    )
     .reduce((acc, item) => {
       const method = item.payment_method || 'SIN_ESPECIFICAR';
       const amount = parseFloat(item.total_amount || '0');
@@ -66,6 +42,7 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
         acc[method] = 0;
       }
       
+      // Sumar todos los montos (las notas de crédito ya vienen con signo negativo)
       acc[method] += amount;
       
       return acc;
@@ -76,7 +53,7 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
     name: getPaymentMethodName(method),
     value: amount,
     originalKey: method,
-    color: PAYMENT_COLORS[method as keyof typeof PAYMENT_COLORS] || '#64748b'
+    color: getPaymentMethodColor(method)
   }));
 
   // Ordenar por valor descendente

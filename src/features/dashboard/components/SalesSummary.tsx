@@ -1,5 +1,6 @@
 import React from 'react';
 import { DailySalesSummary, DailySalesItem } from '../../../services/reports.service';
+import { getPaymentMethodName } from '../../../utils/paymentMethods';
 
 interface SalesSummaryProps {
   summary: DailySalesSummary;
@@ -146,7 +147,7 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, items = [],
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {Object.entries(summary.payment_methods_summary).map(([method, amount]) => (
             <div key={method} className="text-sm">
-              <span className="font-medium">{method}:</span> S/ {String(amount)}
+              <span className="font-medium">{getPaymentMethodName(method)}:</span> S/ {String(amount)}
             </div>
           ))}
         </div>

@@ -154,7 +154,7 @@ export const useSaleBusinessLogic = ({
           discount: 0,
           tax_category_code: isIgvGravado ? "10" : "20",
           item_description: composedExtraDescription,
-          unit_code: "KGM", // KGM = Kilogramo (para equipaje)
+          unit_code: "ZZ", // ZZ = Servicio (código SUNAT para servicios)
           // NO se envía trip_seat_id ni seat_number para costos adicionales (bultos)
         };
         itemsConfig.push(extraItem);

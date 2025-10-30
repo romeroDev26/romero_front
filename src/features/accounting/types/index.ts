@@ -33,6 +33,13 @@ export interface CreditNoteAnnulData {
   reason: string;
 }
 
+// Tipo para anular nota de débito (genera una nota de crédito)
+export interface DebitNoteAnnulData {
+  debit_note_id: number;
+  credit_note_series: string;
+  reason: string;
+}
+
 // Tipos para Notas de Débito - Actualizados según API backend
 export interface DebitNoteItemCreateData {
   product_id: number; // Según API backend

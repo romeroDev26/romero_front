@@ -1,13 +1,13 @@
 // src/features/accounting/debit-notes/pages/DebitNotesListPage.tsx
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   MagnifyingGlassIcon,
   ArrowPathIcon,
   DocumentArrowDownIcon,
-  EyeIcon,
   PlusIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { SunatStatusBadge } from '../../components/SunatStatusBadge';
@@ -16,6 +16,7 @@ import { DebitNotesListParams } from '../../types';
 import { DebitNote } from '../../../../types';
 
 export const DebitNotesListPage: React.FC = () => {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<DebitNotesListParams>({
     company_id: 1, // TODO: Obtener de contexto de usuario
     skip: 0,
@@ -215,18 +216,41 @@ export const DebitNotesListPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <Link
-                          to={`/accounting/debit-notes/${debitNote.id}`}
-                          className="text-blue-600 hover:text-blue-900"
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            console.log('Botón anular clicked - debitNote:', debitNote);
+                            if (debitNote.sunat_status !== 'ACCEPTED') {
+                              console.warn('Nota de débito no está ACCEPTED, status:', debitNote.sunat_status);
+                              return;
+                            }
+                            navigate(`/accounting/debit-notes/annul`, { 
+                              state: { 
+                                debitNote: debitNote
+                              } 
+                            });
+                          }}
+                          className={`${
+                            debitNote.sunat_status !== 'ACCEPTED'
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-red-600 hover:text-red-900'
+                          }`}
+                          title={
+                            debitNote.sunat_status !== 'ACCEPTED'
+                              ? 'Solo se pueden anular notas de débito ACEPTADAS'
+                              : 'Anular nota de débito (genera nota de crédito)'
+                          }
+                          disabled={debitNote.sunat_status !== 'ACCEPTED'}
                         >
-                          <EyeIcon className="h-4 w-4" />
-                        </Link>
+                          <XCircleIcon className="h-4 w-4" />
+                        </button>
                         {debitNote.pdf_file_path && (
                           <a
                             href={debitNote.pdf_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-green-600 hover:text-green-900"
+                            title="Descargar PDF"
                           >
                             <DocumentArrowDownIcon className="h-4 w-4" />
                           </a>

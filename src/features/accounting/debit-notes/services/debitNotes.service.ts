@@ -7,6 +7,8 @@ import {
   DebitNotesListParams, 
   DebitNoteResponse,
   SunatStatusResponse,
+  DebitNoteAnnulData,
+  CreditNoteResponse,
 } from '../../types';
 
 class DebitNotesService {
@@ -57,6 +59,12 @@ class DebitNotesService {
   // Refrescar estados pendientes (útil para polling)
   async refreshPendingStatuses(limit: number = 10): Promise<void> {
     await api.post(`/sunat/documents/debit_note/refresh-pending?limit=${limit}`);
+  }
+
+  // Anular nota de débito (genera una nota de crédito)
+  async annul(data: DebitNoteAnnulData): Promise<CreditNoteResponse> {
+    const response = await api.post<CreditNoteResponse>(`${this.basePath}annul`, data);
+    return response.data;
   }
 }
 

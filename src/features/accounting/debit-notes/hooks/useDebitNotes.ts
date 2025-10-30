@@ -5,6 +5,7 @@ import { debitNotesService } from '../services/debitNotes.service.js';
 import { 
   DebitNotesListParams, 
   DebitNoteCreateData,
+  DebitNoteAnnulData,
 } from '../../types';
 import { toast } from 'react-toastify';
 
@@ -73,6 +74,27 @@ export const useRefreshDebitNotePendingStatuses = () => {
     },
     onError: () => {
       toast.error('Error al actualizar estados SUNAT');
+    },
+  });
+};
+
+// Hook para anular nota de débito
+export const useAnnulDebitNote = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (data: DebitNoteAnnulData) => debitNotesService.annul(data),
+    onSuccess: (data: any) => {
+      toast.success(`Nota de Crédito ${data.series}-${String(data.number).padStart(8, '0')} generada para anular la nota de débito.`);
+      queryClient.invalidateQueries({ queryKey: ['debitNotes'] });
+      queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.detail?.[0]?.msg || 
+                          error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          'Error al anular la nota de débito';
+      toast.error(errorMessage);
     },
   });
 };

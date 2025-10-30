@@ -63,6 +63,7 @@ const CreditNoteDetailPage = React.lazy(() => import('./features/accounting/cred
 const DebitNotesListPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNotesListPage').then(module => ({ default: module.DebitNotesListPage })));
 const DebitNoteNewPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteNewPage').then(module => ({ default: module.DebitNoteNewPage })));
 const DebitNoteFormPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteFormPage').then(module => ({ default: module.DebitNoteFormPage })));
+const DebitNoteAnnulPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteAnnulPage').then(module => ({ default: module.DebitNoteAnnulPage })));
 const DebitNoteDetailPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteDetailPage').then(module => ({ default: module.DebitNoteDetailPage })));
 const DailySummariesListPage = React.lazy(() => import('./features/accounting/daily-summaries/pages/DailySummariesListPage').then(module => ({ default: module.DailySummariesListPage })));
 const DailySummaryFormPage = React.lazy(() => import('./features/accounting/daily-summaries/pages/DailySummaryFormPage').then(module => ({ default: module.DailySummaryFormPage })));
@@ -267,6 +268,11 @@ function App() {
               <Route path="debit-notes/create" element={
                 <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
                   <DebitNoteFormPage />
+                </Suspense>
+              } />
+              <Route path="debit-notes/annul" element={
+                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                  <DebitNoteAnnulPage />
                 </Suspense>
               } />
               <Route path="debit-notes/:id" element={

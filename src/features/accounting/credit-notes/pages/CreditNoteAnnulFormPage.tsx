@@ -31,7 +31,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Tipamos explícitamente el estado que esperamos recibir
-  const { affectedInvoice, simplifiedAnnul } = (location.state as { affectedInvoice: Invoice; simplifiedAnnul?: boolean }) || {};
+  const { affectedInvoice, simplifiedAnnul, isDebitNote } = (location.state as { affectedInvoice: Invoice; simplifiedAnnul?: boolean; isDebitNote?: boolean }) || {};
 
   const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>("");
 
@@ -87,7 +87,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
 
   if (!affectedInvoice || !affectedInvoice.client) {
     React.useEffect(() => {
-      toast.error("No se ha especificado una factura válida para anular.");
+      toast.error(`No se ha especificado ${isDebitNote ? 'una nota de débito' : 'una factura'} válida para anular.`);
       navigate('/accounting/credit-notes/new'); // Redirigir a selección de factura
     }, [navigate]);
     return null;
@@ -168,7 +168,9 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
           </div>
 
           <div className="bg-white p-8 rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Anular Comprobante</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">
+              Anular {isDebitNote ? 'Nota de Débito' : 'Comprobante'}
+            </h1>
             <div className="mb-4">
             <div className="font-medium">{affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}</div>
             <div className="text-sm text-gray-600">Cliente: {affectedInvoice.client.name}</div>
@@ -263,7 +265,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
 
         <div className="bg-white p-8 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Anular Comprobante: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
+            Anular {isDebitNote ? 'Nota de Débito' : 'Comprobante'}: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
           </h1>
           <div className="text-gray-600 mb-6">
           <div>Cliente: <span className="font-medium">{affectedInvoice.client.name}</span></div>

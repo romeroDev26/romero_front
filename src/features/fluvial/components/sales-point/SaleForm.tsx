@@ -96,7 +96,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     BackendInvoiceData | BackendCompanyInvoiceData | null
   >(null);
   const [isCompanyTicket, setIsCompanyTicket] = useState(false); // Guarda el tipo de ticket
-  const [showRepresentativesInA4, setShowRepresentativesInA4] = useState(true); // Flag para mostrar representantes en A4
+  const [showRepresentativesInA4, setShowRepresentativesInA4] = useState(false); // Flag para mostrar representantes en A4
 
   // Función para mostrar modal de preview de ticket
   // Eliminar función de mock, ahora el preview se activa solo con datos reales

@@ -126,28 +126,9 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         </div>
       )}
       
-      {/* Mostrar información según el tipo de venta */}
-      {isRuc && quantity > 1 ? (
+      {/* Mostrar cantidad de representantes cuando está en modo manual con RUC */}
+      {isManualPriceMode && isRuc && quantity > 1 && (
         <>
-          {/* NUEVO: Campo editable para tarifa por pasajero */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-700">
-              Tarifa por Pasajero (Editable):
-            </label>
-            <Input
-              type="number"
-              value={editableBasePrice === null || editableBasePrice === 0 ? '' : editableBasePrice.toString()}
-              onChange={(e) => {
-                const value = parseFloat(e.target.value) || 0;
-                onEditableBasePriceChange?.(value);
-              }}
-              placeholder={`${currencySymbol} 0.00`}
-              step="0.10"
-              min="0"
-              max="10000"
-              className="text-sm font-medium"
-            />
-          </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Cantidad de Representantes:</span>
             <span className="font-medium">{quantity}</span>
@@ -157,32 +138,69 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
             <span className="font-medium">{baseSubtotal > 0 ? `${currencySymbol} ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
           </div>
         </>
-      ) : (
-        /* NUEVO: Campo editable para tarifa pasaje individual */
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Tarifa Pasaje (Editable):
-          </label>
-          <Input
-            type="number"
-            value={editableBasePrice === null || editableBasePrice === 0 ? '' : editableBasePrice.toString()}
-            onChange={(e) => {
-              const value = parseFloat(e.target.value) || 0;
-              onEditableBasePriceChange?.(value);
-            }}
-            placeholder={`${currencySymbol} 0.00`}
-            step="0.10"
-            min="0"
-            max="10000"
-            className="text-sm font-medium"
-          />
-          {/* Mostrar multiplicador de asiento si es diferente de 1 */}
-          {seatMultiplier !== 1 && (
-            <p className="text-xs text-blue-600">
-              Multiplicador de asiento: x{seatMultiplier.toFixed(2)}
-            </p>
+      )}
+      
+      {/* Mostrar información según el tipo de venta - SOLO si NO está en modo manual */}
+      {!isManualPriceMode && (
+        <>
+          {isRuc && quantity > 1 ? (
+            <>
+              {/* NUEVO: Campo editable para tarifa por pasajero */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Tarifa por Pasajero (Editable):
+                </label>
+                <Input
+                  type="number"
+                  value={editableBasePrice === null || editableBasePrice === 0 ? '' : editableBasePrice.toString()}
+                  onChange={(e) => {
+                    const value = parseFloat(e.target.value) || 0;
+                    onEditableBasePriceChange?.(value);
+                  }}
+                  placeholder={`${currencySymbol} 0.00`}
+                  step="0.10"
+                  min="0"
+                  max="10000"
+                  className="text-sm font-medium"
+                />
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Cantidad de Representantes:</span>
+                <span className="font-medium">{quantity}</span>
+              </div>
+              <div className="flex justify-between text-sm border-t pt-2">
+                <span className="text-gray-600 font-medium">Total Pasajes:</span>
+                <span className="font-medium">{baseSubtotal > 0 ? `${currencySymbol} ${baseSubtotal.toFixed(2)}` : 'N/A'}</span>
+              </div>
+            </>
+          ) : (
+            /* NUEVO: Campo editable para tarifa pasaje individual */
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Tarifa Pasaje (Editable):
+              </label>
+              <Input
+                type="number"
+                value={editableBasePrice === null || editableBasePrice === 0 ? '' : editableBasePrice.toString()}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  onEditableBasePriceChange?.(value);
+                }}
+                placeholder={`${currencySymbol} 0.00`}
+                step="0.10"
+                min="0"
+                max="10000"
+                className="text-sm font-medium"
+              />
+              {/* Mostrar multiplicador de asiento si es diferente de 1 */}
+              {seatMultiplier !== 1 && (
+                <p className="text-xs text-blue-600">
+                  Multiplicador de asiento: x{seatMultiplier.toFixed(2)}
+                </p>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
 
       {/* --- CAMPO PARA COSTO ADICIONAL --- */}

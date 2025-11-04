@@ -25,7 +25,6 @@ export const ReportsPage: React.FC = () => {
   const {
     requestExport,
     requestCashGeneral,
-    requestCashDetailed,
   } = useExportReport({
     onSuccess: () => {
       // Opcional: mostrar notificación de éxito
@@ -110,17 +109,18 @@ export const ReportsPage: React.FC = () => {
   const handleExportCashDetailed = async () => {
     setSyncExporting(true);
     try {
-      await requestCashDetailed({
+      await requestExport({
+        category: 'seller_detailed',
         format: 'excel',
         start_date: dateRange.start_date,
         end_date: dateRange.end_date,
         filters: {
-          user_id: 'current-user-id', // TODO: Obtener del contexto de usuario
+          user_id: 'c1b8b7da-3ec2-4b48-90d0-9f4c9d74da54', // TODO: Obtener del contexto de usuario
           branch_id: 3,
           include_cancelled: false
         },
         metadata: {
-          report_title: `Caja Detallada ${dateRange.start_date}.xlsx`
+          report_title: `Caja Detallada - ${dateRange.start_date}.xlsx`
         },
         sync: true
       });

@@ -22,7 +22,6 @@ interface ExportProgressModalProps {
 
 export const ExportProgressModal: React.FC<ExportProgressModalProps> = ({
   isOpen,
-  isExporting,
   status,
   progress,
   error,

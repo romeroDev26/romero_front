@@ -34,27 +34,46 @@ export interface ReportSummary {
 // 3. Metrics - Métricas Agregadas (Categorías)
 // ========================================
 export interface PaymentMethodMetric {
-  [key: string]: number; // { "EFECTIVO": 1500.00, "TARJETA": 2300.00 }
+  [key: string]: {
+    cantidad: number;
+    monto: number;
+  };
 }
 
 export interface SellerMetric {
-  [key: string]: number; // { "Juan Pérez": 5000.00, "María García": 3000.00 }
+  [key: string]: {
+    nombre: string;
+    cantidad: number;
+    monto: number;
+  };
 }
 
 export interface RouteMetric {
-  [key: string]: number; // { "IQUITOS - NAUTA": 4500.00 }
+  [key: string]: {
+    cantidad: number;
+    monto: number;
+  };
 }
 
 export interface SunatStatusMetric {
-  [key: string]: number; // { "ACCEPTED": 50, "PENDING": 5 }
+  [key: string]: {
+    cantidad: number;
+    monto: number;
+  };
 }
 
 export interface DocumentTypeMetric {
-  [key: string]: number; // { "Factura": 30, "Boleta": 20 }
+  [key: string]: {
+    cantidad: number;
+    monto: number;
+  };
 }
 
 export interface DailyBreakdown {
-  [key: string]: number; // { "2025-11-01": 2500.00, "2025-11-02": 3000.00 }
+  [key: string]: {
+    cantidad: number;
+    monto: number;
+  };
 }
 
 export interface AdjustmentsMetric {

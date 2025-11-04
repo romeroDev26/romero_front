@@ -27,11 +27,11 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
   }
 
   // Convertir el diccionario a objeto estructurado
-  // Backend envía: { "ACCEPTED": 50, "PENDING": 5 }
-  const statusStats = Object.entries(sunatStatus || {}).reduce((acc, [status, count]) => {
+  // Backend envía: { "ACCEPTED": { cantidad: 5, monto: 35.0 } }
+  const statusStats = Object.entries(sunatStatus || {}).reduce((acc, [status, data]) => {
     acc[status] = {
-      count: count,
-      amount: 0
+      count: data.cantidad,
+      amount: data.monto
     };
     return acc;
   }, {} as Record<string, { count: number; amount: number }>);
@@ -69,7 +69,7 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
     }
   };
 
-  const totalDocuments = Object.values(sunatStatus || {}).reduce((sum, count) => sum + count, 0);
+  const totalDocuments = Object.values(sunatStatus || {}).reduce((sum, data) => sum + data.cantidad, 0);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -126,7 +126,7 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
         
         <div className="text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {sunatStatus.length}
+            {Object.keys(sunatStatus).length}
           </div>
           <div className="text-sm text-gray-600">Estados Diferentes</div>
         </div>

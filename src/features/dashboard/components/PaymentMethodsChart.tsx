@@ -30,10 +30,11 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
   }
 
   // Convertir el diccionario del backend a array para el gráfico
-  // Backend envía: { "EFECTIVO": 1500.00, "TARJETA": 2300.00 }
-  const chartData = Object.entries(paymentMethods || {}).map(([key, value]) => ({
+  // Backend envía: { "EFECTIVO": { cantidad: 5, monto: 1500.00 } }
+  const chartData = Object.entries(paymentMethods || {}).map(([key, data]) => ({
     name: getPaymentMethodName(key),
-    value: value,
+    value: data.monto,
+    count: data.cantidad,
     originalKey: key,
     color: getPaymentMethodColor(key),
   }));

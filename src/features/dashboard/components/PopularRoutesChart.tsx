@@ -26,10 +26,11 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
   }
 
   // Convertir el diccionario a array y tomar el top 8 ordenados por monto
-  // Backend envía: { "IQUITOS - NAUTA": 4500.00 }
-  const routesArray = Object.entries(routes || {}).map(([name, amount]) => ({
+  // Backend envía: { "IQUITOS - NAUTA": { cantidad: 2, monto: 15.0 } }
+  const routesArray = Object.entries(routes || {}).map(([name, data]) => ({
     route_name: name,
-    total_amount: amount,
+    total_amount: data.monto,
+    count: data.cantidad,
   }));
   
   const popularRoutes = routesArray

@@ -252,7 +252,7 @@ export const useWebSocketConnection = (
   }, [sendMessage]);
 
   const testConnection = useCallback((testUrl?: string) => {
-    const url = testUrl || `${import.meta.env.VITE_WS_URL || 'wss://romeroapi-production.up.railway.app'}/api/v1/ws/seats/${tripId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
+    const url = testUrl || `${import.meta.env.VITE_WS_URL || 'wss://romero-api.onrender.com'}/api/v1/ws/seats/${tripId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
     
     const testWs = new WebSocket(url);
     const timeout = setTimeout(() => testWs.close(), 10000);

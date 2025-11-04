@@ -6,17 +6,16 @@ import {
   ResponsiveContainer,
   Tooltip
 } from 'recharts';
-import { DailySalesItem } from '../../../services/reports.service';
+import { PaymentMethodMetric } from '../../../types/reports';
 import { getPaymentMethodName, getPaymentMethodColor } from '../../../utils/paymentMethods';
 
 interface PaymentMethodsChartProps {
-  paymentMethodsSummary?: Record<string, string>; // Opcional, ya no lo usamos
-  items?: DailySalesItem[];
+  paymentMethods: PaymentMethodMetric; // Ahora es un diccionario, no array
   isLoading?: boolean;
 }
 
 export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({ 
-  items = [],
+  paymentMethods,
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -30,34 +29,14 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
     );
   }
 
-  // Recalcular métodos de pago incluyendo TODAS las transacciones
-  // (Facturas, Boletas, Notas de Crédito y Notas de Débito)
-  // Las notas de crédito vienen con valores negativos, por lo que se restan automáticamente
-  const paymentMethodsTotals = items
-    .reduce((acc, item) => {
-      const method = item.payment_method || 'SIN_ESPECIFICAR';
-      const amount = parseFloat(item.total_amount || '0');
-      
-      if (!acc[method]) {
-        acc[method] = 0;
-      }
-      
-      // Sumar todos los montos (las notas de crédito ya vienen con signo negativo)
-      acc[method] += amount;
-      
-      return acc;
-    }, {} as Record<string, number>);
-
-  // Convertir el objeto a formato de datos para el gráfico
-  const chartData = Object.entries(paymentMethodsTotals).map(([method, amount]) => ({
-    name: getPaymentMethodName(method),
-    value: amount,
-    originalKey: method,
-    color: getPaymentMethodColor(method)
+  // Convertir el diccionario del backend a array para el gráfico
+  // Backend envía: { "EFECTIVO": 1500.00, "TARJETA": 2300.00 }
+  const chartData = Object.entries(paymentMethods || {}).map(([key, value]) => ({
+    name: getPaymentMethodName(key),
+    value: value,
+    originalKey: key,
+    color: getPaymentMethodColor(key),
   }));
-
-  // Ordenar por valor descendente
-  chartData.sort((a, b) => b.value - a.value);
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 

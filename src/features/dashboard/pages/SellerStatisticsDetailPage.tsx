@@ -32,9 +32,6 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { SellerDetailedInvoice } from '../../../types/sellerDetailedReport';
-import { exportSellerStatsToExcel } from '../../../utils/exportToExcel';
-import { getPaymentMethodName } from '../../../utils/paymentMethods';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
 
@@ -56,8 +53,8 @@ export const SellerStatisticsDetailPage: React.FC = () => {
     enabled: !!userId,
   });
 
-  // Obtener estadísticas
-  const { data, metrics, isLoading, error } = useSellerDetailedStats({
+  // Obtener estadísticas (ahora vienen optimizadas del backend)
+  const { data, metrics, chartsData, invoices, isLoading, error } = useSellerDetailedStats({
     userId: userId!,
     startDate,
     endDate,
@@ -70,12 +67,8 @@ export const SellerStatisticsDetailPage: React.FC = () => {
       return;
     }
     
-    exportSellerStatsToExcel(
-      data,
-      user.full_name || 'Vendedor',
-      startDate,
-      endDate
-    );
+    // TODO: Implementar exportación cuando esté lista la funcionalidad del backend
+    console.log('Exportación de Excel pendiente de implementación');
   };
 
   if (isLoading) {
@@ -95,8 +88,6 @@ export const SellerStatisticsDetailPage: React.FC = () => {
       </div>
     );
   }
-
-  const invoices = data?.items || [];
 
   return (
     <div className="p-6 space-y-6">
@@ -150,14 +141,14 @@ export const SellerStatisticsDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Métricas Principales */}
+      {/* Métricas Principales - OPTIMIZADO: usa metrics del backend */}
       {metrics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Facturas</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.total_invoices}</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.totals.total_invoices}</p>
               </div>
               <FileText className="w-10 h-10 text-blue-500" />
             </div>
@@ -166,9 +157,9 @@ export const SellerStatisticsDetailPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Ingresos Totales</p>
+                <p className="text-sm text-gray-600">Ingresos Netos</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  S/ {metrics.total_revenue.toFixed(2)}
+                  S/ {metrics.totals.net_revenue.toFixed(2)}
                 </p>
               </div>
               <DollarSign className="w-10 h-10 text-green-500" />
@@ -179,7 +170,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Pasajeros</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.total_passengers}</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.passengers_cargo.total_passengers}</p>
               </div>
               <Users className="w-10 h-10 text-purple-500" />
             </div>
@@ -190,7 +181,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-600">Ticket Promedio</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  S/ {metrics.average_ticket.toFixed(2)}
+                  S/ {metrics.totals.average_ticket.toFixed(2)}
                 </p>
               </div>
               <TrendingUp className="w-10 h-10 text-orange-500" />
@@ -199,21 +190,21 @@ export const SellerStatisticsDetailPage: React.FC = () => {
         </div>
       )}
 
-      {/* Gráficos */}
-      {metrics && (
+      {/* Gráficos - OPTIMIZADO: usa chartsData del backend */}
+      {chartsData && metrics && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Ventas Diarias */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Ventas Diarias</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={metrics.daily_sales}>
+              <LineChart data={chartsData.daily_sales}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="amount" stroke="#3B82F6" name="Monto" />
-                <Line type="monotone" dataKey="invoices" stroke="#10B981" name="Facturas" />
+                <Line type="monotone" dataKey="net_amount" stroke="#3B82F6" name="Monto" />
+                <Line type="monotone" dataKey="invoice_count" stroke="#10B981" name="Facturas" />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -224,9 +215,9 @@ export const SellerStatisticsDetailPage: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={Object.entries(metrics.payment_methods_breakdown).map(([name, value]) => ({
-                    name: getPaymentMethodName(name),
-                    value,
+                  data={metrics.payment_methods.map(pm => ({
+                    name: pm.display_name,
+                    value: pm.total_amount,
                   }))}
                   cx="50%"
                   cy="50%"
@@ -236,7 +227,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {Object.keys(metrics.payment_methods_breakdown).map((_, index) => (
+                  {metrics.payment_methods.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -246,18 +237,18 @@ export const SellerStatisticsDetailPage: React.FC = () => {
           </div>
 
           {/* Top Rutas */}
-          {metrics.top_routes.length > 0 && (
+          {chartsData.top_routes.length > 0 && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Rutas</h3>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={metrics.top_routes}>
+                <BarChart data={chartsData.top_routes}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="route" />
+                  <XAxis dataKey="route_name" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="revenue" fill="#3B82F6" name="Ingresos" />
-                  <Bar dataKey="passengers" fill="#10B981" name="Pasajeros" />
+                  <Bar dataKey="total_revenue" fill="#3B82F6" name="Ingresos" />
+                  <Bar dataKey="total_passengers" fill="#10B981" name="Pasajeros" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -269,9 +260,9 @@ export const SellerStatisticsDetailPage: React.FC = () => {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={Object.entries(metrics.document_types_breakdown).map(([name, value]) => ({
-                    name,
-                    value,
+                  data={metrics.document_types.map(dt => ({
+                    name: dt.document_type,
+                    value: dt.count,
                   }))}
                   cx="50%"
                   cy="50%"
@@ -281,7 +272,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {Object.keys(metrics.document_types_breakdown).map((_, index) => (
+                  {metrics.document_types.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -336,7 +327,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                invoices.map((invoice: SellerDetailedInvoice) => (
+                invoices.map((invoice) => (
                   <React.Fragment key={invoice.invoice_id}>
                     <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -344,7 +335,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                           {invoice.document_type}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {invoice.series}-{invoice.correlative}
+                          {invoice.full_number}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -363,10 +354,10 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-bold text-gray-900">
-                          {invoice.currency} {parseFloat(invoice.total_amount).toFixed(2)}
+                          {invoice.currency} {invoice.total.toFixed(2)}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {getPaymentMethodName(invoice.payment_method)}
+                          {invoice.payment_method_display}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -386,7 +377,7 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                           {/* Estado del Negocio */}
                           {invoice.business_status === 'CANCELLED' && (
                             <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-50 text-red-700 border border-red-200">
-                              Cancelado
+                              ❌ Cancelado
                             </span>
                           )}
                         </div>
@@ -439,14 +430,18 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                                       <tr key={idx} className="border-t">
                                         <td className="px-3 py-2">{item.product_name}</td>
                                         <td className="px-3 py-2">{item.quantity}</td>
-                                        <td className="px-3 py-2">S/ {parseFloat(item.unit_price).toFixed(2)}</td>
+                                        <td className="px-3 py-2">S/ {item.unit_price.toFixed(2)}</td>
                                         <td className="px-3 py-2 font-semibold">
-                                          S/ {parseFloat(item.total_amount).toFixed(2)}
+                                          S/ {item.total_amount.toFixed(2)}
                                         </td>
                                         <td className="px-3 py-2">
-                                          {item.seat_number && <div>Asiento: {item.seat_number}</div>}
-                                          {item.route_name && <div>Ruta: {item.route_name}</div>}
-                                          {item.vessel_name && <div>Embarcación: {item.vessel_name}</div>}
+                                          {item.trip_info && (
+                                            <>
+                                              {item.trip_info.seat_number && <div>Asiento: {item.trip_info.seat_number}</div>}
+                                              {item.trip_info.route_name && <div>Ruta: {item.trip_info.route_name}</div>}
+                                              {item.trip_info.vessel_name && <div>Embarcación: {item.trip_info.vessel_name}</div>}
+                                            </>
+                                          )}
                                         </td>
                                       </tr>
                                     ))}
@@ -466,12 +461,24 @@ export const SellerStatisticsDetailPage: React.FC = () => {
                                       <p className="text-sm text-gray-600">
                                         {rep.doc_type}: {rep.doc_number}
                                       </p>
-                                      {rep.seat_number && (
-                                        <p className="text-sm text-gray-600">Asiento: {rep.seat_number}</p>
+                                      {rep.trip_info?.seat_number && (
+                                        <p className="text-sm text-gray-600">Asiento: {rep.trip_info.seat_number}</p>
                                       )}
                                     </div>
                                   ))}
                                 </div>
+                              </div>
+                            )}
+
+                            {/* Información de cancelación */}
+                            {invoice.cancellation_info && (
+                              <div className="bg-red-50 border border-red-200 rounded p-3">
+                                <h4 className="font-semibold text-red-900 mb-2">⚠️ Documento Cancelado:</h4>
+                                <p className="text-sm text-red-800"><strong>Motivo:</strong> {invoice.cancellation_info.cancellation_reason}</p>
+                                <p className="text-sm text-red-800"><strong>Cancelado por:</strong> {invoice.cancellation_info.cancelled_by}</p>
+                                <p className="text-sm text-red-800">
+                                  <strong>Fecha:</strong> {new Date(invoice.cancellation_info.cancelled_at).toLocaleString()}
+                                </p>
                               </div>
                             )}
                           </div>

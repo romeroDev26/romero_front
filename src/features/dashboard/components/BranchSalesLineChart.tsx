@@ -86,10 +86,10 @@ const getBranchSalesData = async (
   const dataMap: { [date: string]: { [branch: string]: number } } = {};
   const allBranchNames = new Set<string>();
 
-  report.items.forEach(item => {
+  report.transacciones.forEach((item: any) => {
     let date = item.issue_date.split('T')[0]; // YYYY-MM-DD
     const branch = item.branch_office_name || 'Sin Sucursal';
-    const amount = parseFloat(item.total_amount) || 0;
+    const amount = item.total || 0;
     
     // Agrupar por período si no es diario
     if (periodGrouping !== 'daily') {

@@ -11,7 +11,7 @@ export const RevenueMetrics: React.FC = () => {
     staleTime: 1000 * 60 * 10, // 10 minutos
   });
 
-  const totalRevenue = report?.summary.total_amount || "0";
+  const totalRevenue = report?.resumenEjecutivo?.totalVentas?.toFixed(2) || "0";
 
   return (
     <MetricCard

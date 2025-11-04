@@ -30,7 +30,7 @@ const getMonthlySalesData = async () => {
 
       months.push({
         name: date.toLocaleDateString('es-ES', { month: 'short' }),
-        value: parseFloat(report.summary.total_amount) || 0,
+        value: report.resumenEjecutivo?.totalVentas || 0,
       });
     } catch (error) {
       months.push({

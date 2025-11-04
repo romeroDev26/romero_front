@@ -138,15 +138,12 @@ export const TopSellersByBranch: React.FC = () => {
   const branchData = reportData?.items || [];
 
   // Calcular el total neto real considerando notas de crédito y débito
-  const netTotal = dailySalesData?.items.reduce((sum, item) => {
-    const amount = parseFloat(item.total_amount || '0');
-    return sum + amount;
-  }, 0) || 0;
+  // Usar summary del backend optimizado en lugar de recalcular
+  const netTotal = dailySalesData?.resumenEjecutivo?.totalVentas || 0;
 
   // Calcular total de facturas/boletas (sin contar notas)
-  const totalInvoices = dailySalesData?.items.filter(
-    item => item.document_type === 'Factura' || item.document_type === 'Boleta'
-  ).length || reportData?.summary.total_invoices || 0;
+  // Usar summary del backend optimizado
+  const totalInvoices = dailySalesData?.resumenEjecutivo?.totalDocumentos || reportData?.summary.total_invoices || 0;
 
   // Si no hay datos, mostrar mensaje
   if (!isLoading && (!branchData || branchData.length === 0)) {
@@ -363,7 +360,8 @@ export const TopSellersByBranch: React.FC = () => {
                 })}
               </div>
               <div className="text-sm text-gray-600">Ventas Totales</div>
-              {dailySalesData && netTotal !== parseFloat(reportData.summary.total_amount) && (
+              {dailySalesData && reportData?.summary?.total_amount && 
+               netTotal !== parseFloat(reportData.summary.total_amount) && (
                 <div className="text-xs text-gray-500 mt-1">
                   (Neto después de ajustes)
                 </div>

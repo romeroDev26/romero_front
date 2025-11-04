@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { DailySalesItem } from '../../../services/reports.service';
+import { SalesItem } from '../../../types/reports';
 
 interface DailySalesTableProps {
-  items: DailySalesItem[];
+  items: SalesItem[];
   isLoading?: boolean;
 }
 
@@ -28,8 +28,8 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({ items, isLoadi
   // Calcular estadísticas de notas
   const creditNotes = items.filter(item => item.document_type === 'Nota de Crédito');
   const debitNotes = items.filter(item => item.document_type === 'Nota de Débito');
-  const totalCreditAmount = creditNotes.reduce((sum, item) => sum + parseFloat(item.total_amount || '0'), 0);
-  const totalDebitAmount = debitNotes.reduce((sum, item) => sum + parseFloat(item.total_amount || '0'), 0);
+  const totalCreditAmount = creditNotes.reduce((sum, item) => sum + item.total, 0);
+  const totalDebitAmount = debitNotes.reduce((sum, item) => sum + item.total, 0);
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -92,7 +92,7 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({ items, isLoadi
               const isCreditNote = item.document_type === 'Nota de Crédito';
               const isDebitNote = item.document_type === 'Nota de Débito';
               const isAdjustment = item.payment_method === 'AJUSTE';
-              const amount = parseFloat(item.total_amount || '0');
+              const amount = item.total;
               
               return (
                 <tr 
@@ -120,8 +120,8 @@ export const DailySalesTable: React.FC<DailySalesTableProps> = ({ items, isLoadi
                     {item.client_name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.origin_port && item.destination_port 
-                      ? `${item.origin_port} → ${item.destination_port}` 
+                    {item.trip_info?.origin_port && item.trip_info?.destination_port 
+                      ? `${item.trip_info.origin_port} → ${item.trip_info.destination_port}` 
                       : item.service_description || '-'}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${

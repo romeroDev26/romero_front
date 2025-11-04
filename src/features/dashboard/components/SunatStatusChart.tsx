@@ -1,14 +1,14 @@
 import React from 'react';
-import { DailySalesItem } from '../../../services/reports.service';
+import { SunatStatusMetric } from '../../../types/reports';
 import { CheckCircleIcon, XCircleIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface SunatStatusChartProps {
-  items: DailySalesItem[];
+  sunatStatus: SunatStatusMetric; // Ahora es un diccionario, no array
   isLoading?: boolean;
 }
 
 export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({ 
-  items, 
+  sunatStatus, 
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -26,20 +26,13 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
     );
   }
 
-  // Agrupar documentos por estado SUNAT
-  const statusStats = items.reduce((acc, item) => {
-    const status = item.sunat_status || 'UNKNOWN';
-    
-    if (!acc[status]) {
-      acc[status] = {
-        count: 0,
-        amount: 0
-      };
-    }
-    
-    acc[status].count += 1;
-    acc[status].amount += parseFloat(item.total_amount) || 0;
-    
+  // Convertir el diccionario a objeto estructurado
+  // Backend envía: { "ACCEPTED": 50, "PENDING": 5 }
+  const statusStats = Object.entries(sunatStatus || {}).reduce((acc, [status, count]) => {
+    acc[status] = {
+      count: count,
+      amount: 0
+    };
     return acc;
   }, {} as Record<string, { count: number; amount: number }>);
 
@@ -76,8 +69,7 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
     }
   };
 
-  const totalDocuments = items.length;
-  const totalAmount = items.reduce((sum, item) => sum + (parseFloat(item.total_amount) || 0), 0);
+  const totalDocuments = Object.values(sunatStatus || {}).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -126,17 +118,17 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
         </div>
         
         <div className="text-center">
-          <div className="text-2xl font-bold text-blue-600">
-            S/ {totalAmount.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-          </div>
-          <div className="text-sm text-gray-600">Monto Total</div>
-        </div>
-        
-        <div className="text-center">
           <div className="text-2xl font-bold text-green-600">
             {totalDocuments > 0 ? ((statusStats['ACCEPTED']?.count || 0) / totalDocuments * 100).toFixed(1) : 0}%
           </div>
           <div className="text-sm text-gray-600">Tasa de Aceptación</div>
+        </div>
+        
+        <div className="text-center">
+          <div className="text-2xl font-bold text-gray-900">
+            {sunatStatus.length}
+          </div>
+          <div className="text-sm text-gray-600">Estados Diferentes</div>
         </div>
       </div>
 

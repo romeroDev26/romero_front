@@ -1,20 +1,13 @@
 import React from 'react';
-import { DailySalesItem } from '../../../services/reports.service';
-
-interface SellerData {
-  name: string;
-  total_invoices: number;
-  total_amount: string;
-}
+import { SellerMetric } from '../../../types/reports';
 
 interface TopSellersChartProps {
-  sellersSummary?: Record<string, SellerData>; // Opcional, ya no lo usamos
-  items?: DailySalesItem[];
+  sellers: SellerMetric; // Ahora es un diccionario, no array
   isLoading?: boolean;
 }
 
 export const TopSellersChart: React.FC<TopSellersChartProps> = ({ 
-  items = [],
+  sellers,
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -32,41 +25,16 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
     );
   }
 
-  // Recalcular totales por vendedor incluyendo TODAS las transacciones
-  // (Facturas, Boletas, Notas de Crédito y Notas de Débito)
-  const sellersTotals = items.reduce((acc, item) => {
-    const sellerId = item.seller_id;
-    const amount = parseFloat(item.total_amount || '0');
-    
-    if (!acc[sellerId]) {
-      acc[sellerId] = {
-        name: item.seller_name,
-        amount: 0,
-        invoices: 0,
-      };
-    }
-    
-    // Sumar todos los montos (las notas de crédito ya vienen con signo negativo)
-    acc[sellerId].amount += amount;
-    
-    // Solo contar facturas/boletas positivas (no notas de crédito/débito)
-    if (item.document_type === 'Factura' || item.document_type === 'Boleta') {
-      acc[sellerId].invoices++;
-    }
-    
-    return acc;
-  }, {} as Record<string, { name: string; amount: number; invoices: number }>);
-
-  // Convertir a array y ordenar por monto neto de ventas
-  const chartData = Object.entries(sellersTotals)
-    .map(([sellerId, seller]) => ({
-      name: seller.name,
-      amount: seller.amount,
-      invoices: seller.invoices,
-      sellerId: sellerId
-    }))
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 10); // Solo top 10
+  // Convertir el diccionario a array y tomar el top 10 ordenados por monto
+  // Backend envía: { "Juan Pérez": 5000.00, "María García": 3000.00 }
+  const sellersArray = Object.entries(sellers || {}).map(([name, amount]) => ({
+    seller_name: name,
+    net_sales: amount,
+  }));
+  
+  const top10Sellers = sellersArray
+    .sort((a, b) => b.net_sales - a.net_sales)
+    .slice(0, 10);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -77,8 +45,8 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
       <div className="space-y-3">
         <h4 className="font-medium text-gray-900 mb-3">Ranking Detallado</h4>
         <div className="space-y-3">
-          {chartData.map((seller, index) => (
-            <div key={seller.sellerId} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+          {top10Sellers.map((seller, index) => (
+            <div key={seller.seller_name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <div className="flex items-center space-x-4">
                 <div className="flex-shrink-0">
                   <span className={`
@@ -92,19 +60,13 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900">
-                    {seller.name}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {seller.invoices} facturas
+                    {seller.seller_name}
                   </div>
                 </div>
               </div>
               <div className="text-right">
                 <div className="font-bold text-lg text-gray-900">
-                  S/ {seller.amount.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-                </div>
-                <div className="text-sm text-gray-600">
-                  S/ {(seller.amount / seller.invoices).toFixed(0)} prom.
+                  S/ {seller.net_sales.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
                 </div>
               </div>
             </div>
@@ -116,13 +78,13 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
           <div className="grid grid-cols-2 gap-6 text-center">
             <div>
               <div className="text-3xl font-bold text-blue-600">
-                {chartData.length}
+                {top10Sellers.length}
               </div>
               <div className="text-sm text-gray-600 font-medium">Vendedores</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-green-600">
-                S/ {chartData.reduce((sum, seller) => sum + seller.amount, 0).toLocaleString('es-PE')}
+                S/ {top10Sellers.reduce((sum, seller) => sum + seller.net_sales, 0).toLocaleString('es-PE')}
               </div>
               <div className="text-sm text-gray-600 font-medium">Total Ventas</div>
             </div>

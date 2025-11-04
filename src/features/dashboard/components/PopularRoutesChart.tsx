@@ -1,13 +1,13 @@
 import React from 'react';
-import { DailySalesItem } from '../../../services/reports.service';
+import { RouteMetric } from '../../../types/reports';
 
 interface PopularRoutesChartProps {
-  items: DailySalesItem[];
+  routes: RouteMetric; // Ahora es un diccionario, no array
   isLoading?: boolean;
 }
 
 export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({ 
-  items, 
+  routes, 
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -25,44 +25,16 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
     );
   }
 
-  // Filtrar notas de crédito y elementos sin ruta válida
-  const validItems = items.filter(item => 
-    item.document_type !== 'Nota de Crédito' && 
-    item.origin_port && 
-    item.destination_port
-  );
-
-  // Agrupar por rutas y contar pasajeros y ventas
-  const routeStats = validItems.reduce((acc, item) => {
-    const routeKey = `${item.origin_port} - ${item.destination_port}`;
-    const amount = parseFloat(item.total_amount) || 0;
-    
-    if (!acc[routeKey]) {
-      acc[routeKey] = {
-        route: routeKey,
-        routeName: item.route_name,
-        passengers: 0,
-        totalAmount: 0,
-        vessel: item.vessel_name
-      };
-    }
-    
-    acc[routeKey].passengers += 1;
-    acc[routeKey].totalAmount += amount;
-    
-    return acc;
-  }, {} as Record<string, {
-    route: string;
-    routeName: string;
-    passengers: number;
-    totalAmount: number;
-    vessel: string;
-  }>);
-
-  // Convertir a array y ordenar por número de pasajeros
-  const popularRoutes = Object.values(routeStats)
-    .sort((a, b) => b.passengers - a.passengers)
-    .slice(0, 8); // Top 8 rutas
+  // Convertir el diccionario a array y tomar el top 8 ordenados por monto
+  // Backend envía: { "IQUITOS - NAUTA": 4500.00 }
+  const routesArray = Object.entries(routes || {}).map(([name, amount]) => ({
+    route_name: name,
+    total_amount: amount,
+  }));
+  
+  const popularRoutes = routesArray
+    .sort((a, b) => b.total_amount - a.total_amount)
+    .slice(0, 8);
 
   if (popularRoutes.length === 0) {
     return (
@@ -77,7 +49,7 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
     );
   }
 
-  const totalPassengers = popularRoutes.reduce((sum, route) => sum + route.passengers, 0);
+  const totalRevenue = popularRoutes.reduce((sum, route) => sum + route.total_amount, 0);
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -89,10 +61,10 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
         {/* Lista de rutas */}
         <div className="space-y-3">
           {popularRoutes.map((route, index) => {
-            const percentage = (route.passengers / totalPassengers) * 100;
+            const percentage = (route.total_amount / totalRevenue) * 100;
             
             return (
-              <div key={route.route} className="relative">
+              <div key={route.route_name} className="relative">
                 {/* Barra de progreso de fondo */}
                 <div className="bg-gray-100 rounded-lg p-4 relative overflow-hidden">
                   <div 
@@ -113,16 +85,13 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
                       </span>
                       <div>
                         <div className="font-medium text-gray-900 text-sm">
-                          {route.route}
-                        </div>
-                        <div className="text-xs text-gray-600">
-                          {route.vessel}
+                          {route.route_name}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="font-semibold text-gray-900">
-                        {route.passengers} pasajeros
+                        S/ {route.total_amount.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
                       </div>
                       <div className="text-xs text-gray-600">
                         {percentage.toFixed(1)}%
@@ -149,9 +118,9 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
             </div>
             <div className="bg-green-50 p-4 rounded-lg text-center">
               <div className="text-2xl font-bold text-green-600">
-                {totalPassengers}
+                S/ {totalRevenue.toLocaleString('es-PE', { minimumFractionDigits: 0 })}
               </div>
-              <div className="text-sm text-green-700">Total Pasajeros</div>
+              <div className="text-sm text-green-700">Total Ingresos</div>
             </div>
           </div>
 
@@ -160,14 +129,10 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg">
               <h5 className="font-medium text-gray-900 mb-2">🏆 Ruta Más Popular</h5>
               <div className="text-lg font-semibold text-blue-600">
-                {popularRoutes[0].route}
+                {popularRoutes[0].route_name}
               </div>
               <div className="text-sm text-gray-600 mt-1">
-                {popularRoutes[0].passengers} pasajeros • 
-                S/ {popularRoutes[0].totalAmount.toLocaleString('es-PE', { minimumFractionDigits: 2 })} en ventas
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                Embarcación: {popularRoutes[0].vessel}
+                S/ {popularRoutes[0].total_amount.toLocaleString('es-PE', { minimumFractionDigits: 2 })} en ventas
               </div>
             </div>
           )}
@@ -177,13 +142,9 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
             <h5 className="font-medium text-gray-900 mb-2">📊 Promedios</h5>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Pasajeros por ruta:</span>
-                <span className="font-medium">{Math.round(totalPassengers / popularRoutes.length)}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-gray-600">Ingresos por ruta:</span>
                 <span className="font-medium">
-                  S/ {Math.round(popularRoutes.reduce((sum, route) => sum + route.totalAmount, 0) / popularRoutes.length).toLocaleString()}
+                  S/ {Math.round(totalRevenue / popularRoutes.length).toLocaleString()}
                 </span>
               </div>
             </div>

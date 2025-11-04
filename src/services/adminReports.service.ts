@@ -173,12 +173,12 @@ class AdminReportsService {
     return response.data;
   }
 
-  // Método para reporte detallado de ventas por vendedor
+  // Método para reporte detallado de ventas por vendedor (OPTIMIZADO)
   async getDailySalesDetailed(filters: {
     start_date: string;
     end_date: string;
     user_id: string;
-  }): Promise<any> {
+  }): Promise<import('../types/sellerDetailedReport').SellerDetailedReportResponse> {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
@@ -186,7 +186,10 @@ class AdminReportsService {
       }
     });
 
-    const response = await api.get(`${this.basePath}daily-sales-detailed`, { params });
+    const response = await api.get<import('../types/sellerDetailedReport').SellerDetailedReportResponse>(
+      `${this.basePath}daily-sales-detailed`, 
+      { params }
+    );
     return response.data;
   }
 

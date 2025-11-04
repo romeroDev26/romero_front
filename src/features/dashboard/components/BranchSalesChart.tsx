@@ -16,9 +16,9 @@ const getBranchSalesData = async () => {
   // Agrupar ventas por sucursal
   const branchData: { [key: string]: number } = {};
 
-  report.items.forEach(item => {
+  report.transacciones.forEach((item: any) => {
     const branch = item.branch_office_name || 'Sin Sucursal';
-    const amount = parseFloat(item.total_amount) || 0;
+    const amount = item.total || 0;
     branchData[branch] = (branchData[branch] || 0) + amount;
   });
 

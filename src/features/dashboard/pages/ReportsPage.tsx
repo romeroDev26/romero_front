@@ -6,7 +6,6 @@ import { ArrowLeftIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outlin
 import { reportsService } from '../../../services/reports.service';
 import { DailySalesReportResponse } from '../../../types/reports';
 import { SalesSummary } from '../components/SalesSummary';
-import { DailySalesTable } from '../components/DailySalesTable';
 import { PaymentMethodsChart } from '../components/PaymentMethodsChart';
 import { TopSellersChart } from '../components/TopSellersChart';
 import { PopularRoutesChart } from '../components/PopularRoutesChart';
@@ -312,9 +311,6 @@ export const ReportsPage: React.FC = () => {
           />
         </div>
       )}
-
-      {/* Tabla de ventas */}
-      {report && report.transacciones && <DailySalesTable items={report.transacciones} isLoading={isLoading} />}
     </div>
   );
 };

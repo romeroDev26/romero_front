@@ -4,6 +4,7 @@ import { exportsService } from '../services/exports.service';
 import type {
   ExportRequest,
   ExportStatusResponse,
+  ExportRequestResponse,
   CashGeneralRequest,
   CashDetailedRequest,
 } from '../types/exports';
@@ -95,7 +96,7 @@ export const useExportReport = (
   }, [pollingInterval, onSuccess, onError, stopPolling]);
 
   /**
-   * Solicitar exportación (unificada)
+   * Solicitar exportación (unificada) - Soporta modo síncrono
    */
   const requestExport = useCallback(async (data: ExportRequest) => {
     try {
@@ -104,7 +105,20 @@ export const useExportReport = (
       setProgress(0);
       setStatus(null);
 
-      const response = await exportsService.requestExport(data);
+      // Si es modo síncrono, descargar directamente
+      if (data.sync) {
+        const blob = await exportsService.requestExport(data) as Blob;
+        const fileName = data.metadata?.report_title || `reporte.${data.format}`;
+        await exportsService.downloadFileFromBlob(blob, fileName);
+        setIsExporting(false);
+        if (onSuccess) {
+          onSuccess({ status: 'completed' } as ExportStatusResponse);
+        }
+        return;
+      }
+
+      // Modo asíncrono normal
+      const response = await exportsService.requestExport(data) as ExportRequestResponse;
       exportIdRef.current = response.export_id;
 
       // Iniciar polling
@@ -117,10 +131,10 @@ export const useExportReport = (
         onError(error);
       }
     }
-  }, [checkStatus, onError]);
+  }, [checkStatus, onSuccess, onError]);
 
   /**
-   * Solicitar Caja General
+   * Solicitar Caja General - Soporta modo síncrono
    */
   const requestCashGeneral = useCallback(async (data: CashGeneralRequest) => {
     try {
@@ -129,7 +143,20 @@ export const useExportReport = (
       setProgress(0);
       setStatus(null);
 
-      const response = await exportsService.requestCashGeneral(data);
+      // Si es modo síncrono, descargar directamente
+      if (data.sync) {
+        const blob = await exportsService.requestCashGeneral(data) as Blob;
+        const fileName = data.metadata?.report_title || `caja-general.${data.format}`;
+        await exportsService.downloadFileFromBlob(blob, fileName);
+        setIsExporting(false);
+        if (onSuccess) {
+          onSuccess({ status: 'completed' } as ExportStatusResponse);
+        }
+        return;
+      }
+
+      // Modo asíncrono normal
+      const response = await exportsService.requestCashGeneral(data) as ExportRequestResponse;
       exportIdRef.current = response.export_id;
 
       await checkStatus(response.export_id);
@@ -141,10 +168,10 @@ export const useExportReport = (
         onError(error);
       }
     }
-  }, [checkStatus, onError]);
+  }, [checkStatus, onSuccess, onError]);
 
   /**
-   * Solicitar Caja Detallada
+   * Solicitar Caja Detallada - Soporta modo síncrono
    */
   const requestCashDetailed = useCallback(async (data: CashDetailedRequest) => {
     try {
@@ -153,7 +180,20 @@ export const useExportReport = (
       setProgress(0);
       setStatus(null);
 
-      const response = await exportsService.requestCashDetailed(data);
+      // Si es modo síncrono, descargar directamente
+      if (data.sync) {
+        const blob = await exportsService.requestCashDetailed(data) as Blob;
+        const fileName = data.metadata?.report_title || `caja-detallada.${data.format}`;
+        await exportsService.downloadFileFromBlob(blob, fileName);
+        setIsExporting(false);
+        if (onSuccess) {
+          onSuccess({ status: 'completed' } as ExportStatusResponse);
+        }
+        return;
+      }
+
+      // Modo asíncrono normal
+      const response = await exportsService.requestCashDetailed(data) as ExportRequestResponse;
       exportIdRef.current = response.export_id;
 
       await checkStatus(response.export_id);
@@ -165,7 +205,7 @@ export const useExportReport = (
         onError(error);
       }
     }
-  }, [checkStatus, onError]);
+  }, [checkStatus, onSuccess, onError]);
 
   /**
    * Cancelar exportación (detener polling)

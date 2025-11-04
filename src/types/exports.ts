@@ -4,7 +4,7 @@
 // ========================================
 // 1. Tipos de Exportación
 // ========================================
-export type ExportCategory = 'branch_global' | 'seller_detailed';
+export type ExportCategory = 'branch_global' | 'cash_general' | 'seller_detailed';
 export type ExportFormat = 'excel' | 'pdf';
 export type ExportStatus = 'queued' | 'processing' | 'completed' | 'failed';
 
@@ -17,6 +17,8 @@ export interface ExportFilters {
   payment_method?: string;
   document_type?: string;
   include_cancelled?: boolean;
+  include_vessel_data?: boolean;
+  include_payment_breakdown?: boolean;
 }
 
 export interface ExcelOptions {
@@ -38,6 +40,7 @@ export interface ExportRequest {
   filters?: ExportFilters;
   excel_options?: ExcelOptions;
   metadata?: ExportMetadata;
+  sync?: boolean; // Si true, descarga directa sin polling
 }
 
 // ========================================
@@ -111,6 +114,8 @@ export interface CashReportFilters {
   user_id?: string;
   include_cancelled?: boolean;
   payment_method?: string;
+  include_vessel_data?: boolean;
+  include_payment_breakdown?: boolean;
 }
 
 export interface CashGeneralRequest {
@@ -119,6 +124,7 @@ export interface CashGeneralRequest {
   end_date: string;   // YYYY-MM-DD
   filters?: CashReportFilters;
   metadata?: ExportMetadata;
+  sync?: boolean; // Si true, descarga directa sin polling
 }
 
 export interface CashDetailedRequest {
@@ -128,6 +134,8 @@ export interface CashDetailedRequest {
   filters?: {
     user_id: string;
     include_cancelled?: boolean;
+    branch_id?: number;
   };
   metadata?: ExportMetadata;
+  sync?: boolean; // Si true, descarga directa sin polling
 }

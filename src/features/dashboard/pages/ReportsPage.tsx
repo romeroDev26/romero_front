@@ -11,7 +11,6 @@ import { PaymentMethodsChart } from '../components/PaymentMethodsChart';
 import { TopSellersChart } from '../components/TopSellersChart';
 import { PopularRoutesChart } from '../components/PopularRoutesChart';
 import { SunatStatusChart } from '../components/SunatStatusChart';
-import { ExportProgressModal } from '../components/ExportProgressModal';
 import { useExportReport } from '../../../hooks/useExportReport';
 
 export const ReportsPage: React.FC = () => {
@@ -20,17 +19,13 @@ export const ReportsPage: React.FC = () => {
     end_date: new Date().toISOString().split('T')[0],
   });
 
-  const [showExportModal, setShowExportModal] = useState(false);
+  const [syncExporting, setSyncExporting] = useState(false);
 
   // Hook para exportaciones
   const {
-    isExporting,
-    status: exportStatus,
-    progress,
-    error: exportError,
     requestExport,
-    cancelExport,
-    download,
+    requestCashGeneral,
+    requestCashDetailed,
   } = useExportReport({
     onSuccess: () => {
       // Opcional: mostrar notificación de éxito
@@ -66,54 +61,73 @@ export const ReportsPage: React.FC = () => {
   };
 
   const handleExportExcel = async () => {
-    setShowExportModal(true);
-    await requestExport({
-      category: 'branch_global',
-      format: 'excel',
-      start_date: dateRange.start_date,
-      end_date: dateRange.end_date,
-      excel_options: {
-        include_charts: true,
-        include_summary: true,
-        include_formulas: true,
-        language: 'es',
-      },
-      metadata: {
-        report_title: `Reporte de Ventas ${dateRange.start_date} - ${dateRange.end_date}`,
-      },
-    });
-  };
-
-  const handleExportPDF = async () => {
-    setShowExportModal(true);
-    await requestExport({
-      category: 'branch_global',
-      format: 'pdf',
-      start_date: dateRange.start_date,
-      end_date: dateRange.end_date,
-      metadata: {
-        report_title: `Reporte de Ventas ${dateRange.start_date} - ${dateRange.end_date}`,
-      },
-    });
-  };
-
-  const handleDownload = async () => {
+    setSyncExporting(true);
     try {
-      await download();
-      setShowExportModal(false);
+      await requestExport({
+        category: 'branch_global',
+        format: 'excel',
+        start_date: dateRange.start_date,
+        end_date: dateRange.end_date,
+        filters: {
+          branch_id: 3, // TODO: Obtener del contexto de usuario
+          include_vessel_data: false
+        },
+        metadata: {
+          report_title: `Reporte Global por Sucursal ${dateRange.start_date} - ${dateRange.end_date}.xlsx`
+        },
+        sync: true
+      });
     } catch (error) {
-      console.error('Download failed:', error);
+      console.error('Export failed:', error);
+    } finally {
+      setSyncExporting(false);
     }
   };
 
-  const handleCancelExport = () => {
-    cancelExport();
-    setShowExportModal(false);
+  const handleExportPDF = async () => {
+    setSyncExporting(true);
+    try {
+      await requestCashGeneral({
+        format: 'pdf',
+        start_date: dateRange.start_date,
+        end_date: dateRange.end_date,
+        filters: {
+          branch_id: 3, // TODO: Obtener del contexto de usuario
+          include_payment_breakdown: true
+        },
+        metadata: {
+          report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.pdf`
+        },
+        sync: true
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setSyncExporting(false);
+    }
   };
 
-  const handleCloseModal = () => {
-    if (!isExporting) {
-      setShowExportModal(false);
+  const handleExportCashDetailed = async () => {
+    setSyncExporting(true);
+    try {
+      await requestCashDetailed({
+        format: 'excel',
+        start_date: dateRange.start_date,
+        end_date: dateRange.end_date,
+        filters: {
+          user_id: 'current-user-id', // TODO: Obtener del contexto de usuario
+          branch_id: 3,
+          include_cancelled: false
+        },
+        metadata: {
+          report_title: `Caja Detallada ${dateRange.start_date}.xlsx`
+        },
+        sync: true
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setSyncExporting(false);
     }
   };
 
@@ -212,28 +226,36 @@ export const ReportsPage: React.FC = () => {
 
         {/* Botones de Exportación */}
         <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-gray-600">
-              Exportar reporte completo con todos los datos y gráficos
+              Exportar reportes completos con descarga directa
             </p>
-            <div className="flex space-x-3">
-              <button
-                onClick={handleExportExcel}
-                disabled={isExporting || isLoading}
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-              >
-                <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-                Exportar Excel
-              </button>
-              <button
-                onClick={handleExportPDF}
-                disabled={isExporting || isLoading}
-                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-              >
-                <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-                Exportar PDF
-              </button>
-            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={handleExportExcel}
+              disabled={syncExporting || isLoading}
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+            >
+              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+              {syncExporting ? 'Exportando...' : 'Excel Global'}
+            </button>
+            <button
+              onClick={handleExportPDF}
+              disabled={syncExporting || isLoading}
+              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+            >
+              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+              {syncExporting ? 'Exportando...' : 'PDF Caja General'}
+            </button>
+            <button
+              onClick={handleExportCashDetailed}
+              disabled={syncExporting || isLoading}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+            >
+              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+              {syncExporting ? 'Exportando...' : 'Excel Caja Detallada'}
+            </button>
           </div>
         </div>
       </div>
@@ -293,18 +315,6 @@ export const ReportsPage: React.FC = () => {
 
       {/* Tabla de ventas */}
       {report && report.transacciones && <DailySalesTable items={report.transacciones} isLoading={isLoading} />}
-
-      {/* Modal de Progreso de Exportación */}
-      <ExportProgressModal
-        isOpen={showExportModal}
-        isExporting={isExporting}
-        status={exportStatus}
-        progress={progress}
-        error={exportError}
-        onClose={handleCloseModal}
-        onDownload={handleDownload}
-        onCancel={handleCancelExport}
-      />
     </div>
   );
 };

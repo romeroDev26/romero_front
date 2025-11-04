@@ -13,9 +13,18 @@ const BASE_PATH = '/admin/reports/exports';
 
 class ExportsService {
   /**
-   * Solicitar una nueva exportación (unificada)
+   * Solicitar una nueva exportación (unificada) - Soporta modo síncrono
    */
-  async requestExport(data: ExportRequest): Promise<ExportRequestResponse> {
+  async requestExport(data: ExportRequest): Promise<ExportRequestResponse | Blob> {
+    // Si es modo síncrono, devolver directamente el Blob
+    if (data.sync) {
+      const response = await api.post(`${BASE_PATH}/request`, data, {
+        responseType: 'blob',
+      });
+      return response.data; // Blob directo
+    }
+
+    // Modo asíncrono normal
     const response = await api.post<ExportRequestResponse>(
       `${BASE_PATH}/request`,
       data
@@ -58,9 +67,18 @@ class ExportsService {
   }
 
   /**
-   * Solicitar exportación de Caja General
+   * Solicitar exportación de Caja General - Soporta modo síncrono
    */
-  async requestCashGeneral(data: CashGeneralRequest): Promise<ExportRequestResponse> {
+  async requestCashGeneral(data: CashGeneralRequest): Promise<ExportRequestResponse | Blob> {
+    // Si es modo síncrono, devolver directamente el Blob
+    if (data.sync) {
+      const response = await api.post(`${BASE_PATH}/cash-general/request`, data, {
+        responseType: 'blob',
+      });
+      return response.data; // Blob directo
+    }
+
+    // Modo asíncrono normal
     const response = await api.post<ExportRequestResponse>(
       `${BASE_PATH}/cash-general/request`,
       data
@@ -69,9 +87,18 @@ class ExportsService {
   }
 
   /**
-   * Solicitar exportación de Caja Detallada Individual
+   * Solicitar exportación de Caja Detallada Individual - Soporta modo síncrono
    */
-  async requestCashDetailed(data: CashDetailedRequest): Promise<ExportRequestResponse> {
+  async requestCashDetailed(data: CashDetailedRequest): Promise<ExportRequestResponse | Blob> {
+    // Si es modo síncrono, devolver directamente el Blob
+    if (data.sync) {
+      const response = await api.post(`${BASE_PATH}/cash-detailed/request`, data, {
+        responseType: 'blob',
+      });
+      return response.data; // Blob directo
+    }
+
+    // Modo asíncrono normal
     const response = await api.post<ExportRequestResponse>(
       `${BASE_PATH}/cash-detailed/request`,
       data
@@ -80,11 +107,30 @@ class ExportsService {
   }
 
   /**
-   * Helper: Descargar archivo y guardarlo en el navegador
+   * Helper: Descargar archivo y guardarlo en el navegador (desde exportId)
    */
   async downloadFile(exportId: string, fileName: string): Promise<void> {
     const blob = await this.downloadExport(exportId);
     
+    // Crear URL temporal del blob
+    const url = window.URL.createObjectURL(blob);
+    
+    // Crear elemento <a> invisible para forzar descarga
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Limpiar
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
+
+  /**
+   * Helper: Descargar archivo desde Blob
+   */
+  async downloadFileFromBlob(blob: Blob, fileName: string): Promise<void> {
     // Crear URL temporal del blob
     const url = window.URL.createObjectURL(blob);
     

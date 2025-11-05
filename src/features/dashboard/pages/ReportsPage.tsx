@@ -67,7 +67,6 @@ export const ReportsPage: React.FC = () => {
         start_date: dateRange.start_date,
         end_date: dateRange.end_date,
         filters: {
-          branch_id: 3, // TODO: Obtener del contexto de usuario
           include_vessel_data: false
         },
         metadata: {

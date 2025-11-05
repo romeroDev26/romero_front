@@ -67,43 +67,40 @@ class ExportsService {
   }
 
   /**
-   * Solicitar exportación de Caja General - Soporta modo síncrono
+   * Solicitar exportación de Caja General - Usa endpoint unificado
    */
   async requestCashGeneral(data: CashGeneralRequest): Promise<ExportRequestResponse | Blob> {
-    // Si es modo síncrono, devolver directamente el Blob
-    if (data.sync) {
-      const response = await api.post(`${BASE_PATH}/cash-general/request`, data, {
-        responseType: 'blob',
-      });
-      return response.data; // Blob directo
-    }
+    const exportData: ExportRequest = {
+      category: 'cash_general',
+      format: data.format,
+      start_date: data.start_date,
+      end_date: data.end_date,
+      filters: data.filters,
+      metadata: data.metadata,
+      sync: data.sync
+    };
 
-    // Modo asíncrono normal
-    const response = await api.post<ExportRequestResponse>(
-      `${BASE_PATH}/cash-general/request`,
-      data
-    );
-    return response.data;
+    return this.requestExport(exportData);
   }
 
   /**
-   * Solicitar exportación de Caja Detallada Individual - Soporta modo síncrono
+   * Solicitar exportación de Caja Detallada Individual - Usa endpoint unificado
    */
   async requestCashDetailed(data: CashDetailedRequest): Promise<ExportRequestResponse | Blob> {
-    // Si es modo síncrono, devolver directamente el Blob
-    if (data.sync) {
-      const response = await api.post(`${BASE_PATH}/cash-detailed/request`, data, {
-        responseType: 'blob',
-      });
-      return response.data; // Blob directo
-    }
+    const exportData: ExportRequest = {
+      category: 'seller_detailed',
+      format: data.format,
+      start_date: data.start_date,
+      end_date: data.end_date,
+      filters: {
+        user_id: data.filters?.user_id,
+        branch_id: data.filters?.branch_id
+      },
+      metadata: data.metadata,
+      sync: data.sync
+    };
 
-    // Modo asíncrono normal
-    const response = await api.post<ExportRequestResponse>(
-      `${BASE_PATH}/cash-detailed/request`,
-      data
-    );
-    return response.data;
+    return this.requestExport(exportData);
   }
 
   /**

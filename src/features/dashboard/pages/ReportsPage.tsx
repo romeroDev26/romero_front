@@ -111,15 +111,14 @@ export const ReportsPage: React.FC = () => {
       await requestExport({
         category: 'seller_detailed',
         format: 'excel',
-        start_date: dateRange.start_date,
-        end_date: dateRange.end_date,
+        start_date: dateRange.end_date, // Un solo día para seller_detailed
+        end_date: dateRange.end_date,   // Un solo día para seller_detailed
         filters: {
           user_id: 'c1b8b7da-3ec2-4b48-90d0-9f4c9d74da54', // TODO: Obtener del contexto de usuario
-          branch_id: 3,
-          include_cancelled: false
+          branch_id: 3
         },
         metadata: {
-          report_title: `Caja Detallada - ${dateRange.start_date}.xlsx`
+          report_title: `Caja Detallada - ${dateRange.end_date}.xlsx`
         },
         sync: true
       });

@@ -85,7 +85,7 @@ export const ReportsPage: React.FC = () => {
     setSyncExporting(true);
     try {
       await requestCashGeneral({
-        format: 'pdf',
+        format: 'excel',
         start_date: dateRange.start_date,
         end_date: dateRange.end_date,
         filters: {
@@ -93,7 +93,7 @@ export const ReportsPage: React.FC = () => {
           include_payment_breakdown: true
         },
         metadata: {
-          report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.pdf`
+          report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.xlsx`
         },
         sync: true
       });
@@ -240,10 +240,10 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={handleExportPDF}
               disabled={syncExporting || isLoading}
-              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
             >
               <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-              {syncExporting ? 'Exportando...' : 'PDF Caja General'}
+              {syncExporting ? 'Exportando...' : 'Excel Caja General'}
             </button>
             <button
               onClick={handleExportCashDetailed}

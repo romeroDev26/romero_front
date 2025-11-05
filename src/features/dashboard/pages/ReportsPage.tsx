@@ -23,7 +23,7 @@ export const ReportsPage: React.FC = () => {
 
   // Hook para exportaciones
   const {
-    requestCashGeneral,
+    requestExport,
   } = useExportReport({
     onSuccess: () => {
       // Opcional: mostrar notificación de éxito
@@ -67,35 +67,19 @@ export const ReportsPage: React.FC = () => {
     setSyncExporting(true);
     
     try {
-      if (format === 'excel') {
-        await requestCashGeneral({
-          format: 'excel',
-          start_date: dateRange.start_date,
-          end_date: dateRange.end_date,
-          filters: {
-            branch_id: 3, // TODO: Obtener del contexto de usuario
-            include_payment_breakdown: true
-          },
-          metadata: {
-            report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.xlsx`
-          },
-          sync: true
-        });
-      } else {
-        await requestCashGeneral({
-          format: 'pdf',
-          start_date: dateRange.start_date,
-          end_date: dateRange.end_date,
-          filters: {
-            branch_id: 3, // TODO: Obtener del contexto de usuario
-            include_payment_breakdown: true
-          },
-          metadata: {
-            report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.pdf`
-          },
-          sync: true
-        });
-      }
+      await requestExport({
+        category: 'branch_global',
+        format: format,
+        start_date: dateRange.start_date,
+        end_date: dateRange.end_date,
+        filters: {
+          include_vessel_data: false
+        },
+        metadata: {
+          report_title: `Reporte Global por Sucursal.${format === 'excel' ? 'xlsx' : 'pdf'}`
+        },
+        sync: true
+      });
     } catch (error) {
       console.error('Export failed:', error);
     } finally {

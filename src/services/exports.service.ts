@@ -5,8 +5,6 @@ import type {
   ExportRequestResponse,
   ExportStatusResponse,
   ExportHistoryResponse,
-  CashGeneralRequest,
-  CashDetailedRequest,
 } from '../types/exports';
 
 const BASE_PATH = '/admin/reports/exports';
@@ -64,43 +62,6 @@ class ExportsService {
       }
     );
     return response.data;
-  }
-
-  /**
-   * Solicitar exportación de Caja General - Usa endpoint unificado
-   */
-  async requestCashGeneral(data: CashGeneralRequest): Promise<ExportRequestResponse | Blob> {
-    const exportData: ExportRequest = {
-      category: 'cash_general',
-      format: data.format,
-      start_date: data.start_date,
-      end_date: data.end_date,
-      filters: data.filters,
-      metadata: data.metadata,
-      sync: data.sync
-    };
-
-    return this.requestExport(exportData);
-  }
-
-  /**
-   * Solicitar exportación de Caja Detallada Individual - Usa endpoint unificado
-   */
-  async requestCashDetailed(data: CashDetailedRequest): Promise<ExportRequestResponse | Blob> {
-    const exportData: ExportRequest = {
-      category: 'seller_detailed',
-      format: data.format,
-      start_date: data.start_date,
-      end_date: data.end_date,
-      filters: {
-        user_id: data.filters?.user_id,
-        branch_id: data.filters?.branch_id
-      },
-      metadata: data.metadata,
-      sync: data.sync
-    };
-
-    return this.requestExport(exportData);
   }
 
   /**

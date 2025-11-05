@@ -10,6 +10,7 @@ import { PaymentMethodsChart } from '../components/PaymentMethodsChart';
 import { TopSellersChart } from '../components/TopSellersChart';
 import { PopularRoutesChart } from '../components/PopularRoutesChart';
 import { SunatStatusChart } from '../components/SunatStatusChart';
+import { Modal } from '../../../components/common/Modal';
 import { useExportReport } from '../../../hooks/useExportReport';
 
 export const ReportsPage: React.FC = () => {
@@ -201,43 +202,53 @@ export const ReportsPage: React.FC = () => {
       </div>
 
       {/* Modal de selección de formato */}
-      {showFormatModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Seleccionar formato de reporte
-              </h3>
-              <div className="flex flex-col space-y-3">
-                <button
-                  onClick={() => handleFormatSelection('excel')}
-                  disabled={syncExporting}
-                  className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                >
-                  <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-                  Excel (.xlsx)
-                </button>
-                <button
-                  onClick={() => handleFormatSelection('pdf')}
-                  disabled={syncExporting}
-                  className="inline-flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-                >
-                  <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-                  PDF (.pdf)
-                </button>
+      <Modal
+        isOpen={showFormatModal}
+        onClose={() => setShowFormatModal(false)}
+        title="Seleccionar formato de reporte"
+        maxWidth="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 mb-6">
+            Elige el formato en el que deseas descargar el reporte global por sucursal.
+          </p>
+
+          <div className="grid grid-cols-1 gap-3">
+            <button
+              onClick={() => handleFormatSelection('excel')}
+              disabled={syncExporting}
+              className="flex items-center justify-center px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+            >
+              <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+              <div className="text-left">
+                <div className="font-semibold">Excel (.xlsx)</div>
+                <div className="text-sm opacity-75">Compatible con Microsoft Excel</div>
               </div>
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => setShowFormatModal(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-sm font-medium"
-                >
-                  Cancelar
-                </button>
+            </button>
+
+            <button
+              onClick={() => handleFormatSelection('pdf')}
+              disabled={syncExporting}
+              className="flex items-center justify-center px-6 py-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 hover:border-red-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+            >
+              <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+              <div className="text-left">
+                <div className="font-semibold">PDF (.pdf)</div>
+                <div className="text-sm opacity-75">Formato de documento portable</div>
               </div>
-            </div>
+            </button>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-gray-200">
+            <button
+              onClick={() => setShowFormatModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* Mensaje de error si la estructura no es la esperada */}
       {report && !report.categorias && (

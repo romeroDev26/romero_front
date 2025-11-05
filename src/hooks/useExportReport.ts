@@ -5,8 +5,6 @@ import type {
   ExportRequest,
   ExportStatusResponse,
   ExportRequestResponse,
-  CashGeneralRequest,
-  CashDetailedRequest,
 } from '../types/exports';
 
 interface UseExportReportOptions {
@@ -21,8 +19,6 @@ interface UseExportReportReturn {
   progress: number;
   error: Error | null;
   requestExport: (data: ExportRequest) => Promise<void>;
-  requestCashGeneral: (data: CashGeneralRequest) => Promise<void>;
-  requestCashDetailed: (data: CashDetailedRequest) => Promise<void>;
   cancelExport: () => void;
   download: () => Promise<void>;
 }
@@ -134,80 +130,6 @@ export const useExportReport = (
   }, [checkStatus, onSuccess, onError]);
 
   /**
-   * Solicitar Caja General - Soporta modo síncrono
-   */
-  const requestCashGeneral = useCallback(async (data: CashGeneralRequest) => {
-    try {
-      setIsExporting(true);
-      setError(null);
-      setProgress(0);
-      setStatus(null);
-
-      // Si es modo síncrono, descargar directamente
-      if (data.sync) {
-        const blob = await exportsService.requestCashGeneral(data) as Blob;
-        const fileName = data.metadata?.report_title || `caja-general.${data.format}`;
-        await exportsService.downloadFileFromBlob(blob, fileName);
-        setIsExporting(false);
-        if (onSuccess) {
-          onSuccess({ status: 'completed' } as ExportStatusResponse);
-        }
-        return;
-      }
-
-      // Modo asíncrono normal
-      const response = await exportsService.requestCashGeneral(data) as ExportRequestResponse;
-      exportIdRef.current = response.export_id;
-
-      await checkStatus(response.export_id);
-    } catch (err) {
-      setIsExporting(false);
-      const error = err instanceof Error ? err : new Error('Failed to request cash general export');
-      setError(error);
-      if (onError) {
-        onError(error);
-      }
-    }
-  }, [checkStatus, onSuccess, onError]);
-
-  /**
-   * Solicitar Caja Detallada - Soporta modo síncrono
-   */
-  const requestCashDetailed = useCallback(async (data: CashDetailedRequest) => {
-    try {
-      setIsExporting(true);
-      setError(null);
-      setProgress(0);
-      setStatus(null);
-
-      // Si es modo síncrono, descargar directamente
-      if (data.sync) {
-        const blob = await exportsService.requestCashDetailed(data) as Blob;
-        const fileName = data.metadata?.report_title || `caja-detallada.${data.format}`;
-        await exportsService.downloadFileFromBlob(blob, fileName);
-        setIsExporting(false);
-        if (onSuccess) {
-          onSuccess({ status: 'completed' } as ExportStatusResponse);
-        }
-        return;
-      }
-
-      // Modo asíncrono normal
-      const response = await exportsService.requestCashDetailed(data) as ExportRequestResponse;
-      exportIdRef.current = response.export_id;
-
-      await checkStatus(response.export_id);
-    } catch (err) {
-      setIsExporting(false);
-      const error = err instanceof Error ? err : new Error('Failed to request cash detailed export');
-      setError(error);
-      if (onError) {
-        onError(error);
-      }
-    }
-  }, [checkStatus, onSuccess, onError]);
-
-  /**
    * Cancelar exportación (detener polling)
    */
   const cancelExport = useCallback(() => {
@@ -253,8 +175,6 @@ export const useExportReport = (
     progress,
     error,
     requestExport,
-    requestCashGeneral,
-    requestCashDetailed,
     cancelExport,
     download,
   };

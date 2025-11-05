@@ -4,7 +4,7 @@
 // ========================================
 // 1. Tipos de Exportación
 // ========================================
-export type ExportCategory = 'branch_global' | 'cash_general' | 'seller_detailed';
+export type ExportCategory = 'branch_global';
 export type ExportFormat = 'excel' | 'pdf';
 export type ExportStatus = 'queued' | 'processing' | 'completed' | 'failed';
 
@@ -109,33 +109,4 @@ export interface ExportHistoryResponse {
 // ========================================
 // 6. Requests Específicos de Caja
 // ========================================
-export interface CashReportFilters {
-  branch_id?: number;
-  user_id?: string;
-  include_cancelled?: boolean;
-  payment_method?: string;
-  include_vessel_data?: boolean;
-  include_payment_breakdown?: boolean;
-}
-
-export interface CashGeneralRequest {
-  format: ExportFormat;
-  start_date: string; // YYYY-MM-DD
-  end_date: string;   // YYYY-MM-DD
-  filters?: CashReportFilters;
-  metadata?: ExportMetadata;
-  sync?: boolean; // Si true, descarga directa sin polling
-}
-
-export interface CashDetailedRequest {
-  format: ExportFormat;
-  start_date: string; // YYYY-MM-DD
-  end_date: string;   // YYYY-MM-DD
-  filters?: {
-    user_id: string;
-    include_cancelled?: boolean;
-    branch_id?: number;
-  };
-  metadata?: ExportMetadata;
-  sync?: boolean; // Si true, descarga directa sin polling
-}
+// Eliminadas: CashGeneralRequest y CashDetailedRequest ya no se usan

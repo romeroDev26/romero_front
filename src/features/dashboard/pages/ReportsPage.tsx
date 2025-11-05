@@ -19,10 +19,10 @@ export const ReportsPage: React.FC = () => {
   });
 
   const [syncExporting, setSyncExporting] = useState(false);
+  const [showFormatModal, setShowFormatModal] = useState(false);
 
   // Hook para exportaciones
   const {
-    requestExport,
     requestCashGeneral,
   } = useExportReport({
     onSuccess: () => {
@@ -59,68 +59,43 @@ export const ReportsPage: React.FC = () => {
   };
 
   const handleExportExcel = async () => {
-    setSyncExporting(true);
-    try {
-      await requestExport({
-        category: 'branch_global',
-        format: 'excel',
-        start_date: dateRange.start_date,
-        end_date: dateRange.end_date,
-        filters: {
-          include_vessel_data: false
-        },
-        metadata: {
-          report_title: `Reporte Global por Sucursal ${dateRange.start_date} - ${dateRange.end_date}.xlsx`
-        },
-        sync: true
-      });
-    } catch (error) {
-      console.error('Export failed:', error);
-    } finally {
-      setSyncExporting(false);
-    }
+    setShowFormatModal(true);
   };
 
-  const handleExportPDF = async () => {
+  const handleFormatSelection = async (format: 'excel' | 'pdf') => {
+    setShowFormatModal(false);
     setSyncExporting(true);
+    
     try {
-      await requestCashGeneral({
-        format: 'excel',
-        start_date: dateRange.start_date,
-        end_date: dateRange.end_date,
-        filters: {
-          branch_id: 3, // TODO: Obtener del contexto de usuario
-          include_payment_breakdown: true
-        },
-        metadata: {
-          report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.xlsx`
-        },
-        sync: true
-      });
-    } catch (error) {
-      console.error('Export failed:', error);
-    } finally {
-      setSyncExporting(false);
-    }
-  };
-
-  const handleExportCashDetailed = async () => {
-    setSyncExporting(true);
-    try {
-      await requestExport({
-        category: 'seller_detailed',
-        format: 'excel',
-        start_date: dateRange.end_date, // Un solo día para seller_detailed
-        end_date: dateRange.end_date,   // Un solo día para seller_detailed
-        filters: {
-          user_id: 'c1b8b7da-3ec2-4b48-90d0-9f4c9d74da54', // TODO: Obtener del contexto de usuario
-          branch_id: 3
-        },
-        metadata: {
-          report_title: `Caja Detallada - ${dateRange.end_date}.xlsx`
-        },
-        sync: true
-      });
+      if (format === 'excel') {
+        await requestCashGeneral({
+          format: 'excel',
+          start_date: dateRange.start_date,
+          end_date: dateRange.end_date,
+          filters: {
+            branch_id: 3, // TODO: Obtener del contexto de usuario
+            include_payment_breakdown: true
+          },
+          metadata: {
+            report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.xlsx`
+          },
+          sync: true
+        });
+      } else {
+        await requestCashGeneral({
+          format: 'pdf',
+          start_date: dateRange.start_date,
+          end_date: dateRange.end_date,
+          filters: {
+            branch_id: 3, // TODO: Obtener del contexto de usuario
+            include_payment_breakdown: true
+          },
+          metadata: {
+            report_title: `Caja General ${dateRange.start_date} - ${dateRange.end_date}.pdf`
+          },
+          sync: true
+        });
+      }
     } catch (error) {
       console.error('Export failed:', error);
     } finally {
@@ -235,27 +210,50 @@ export const ReportsPage: React.FC = () => {
               className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
             >
               <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-              {syncExporting ? 'Exportando...' : 'Excel Global'}
-            </button>
-            <button
-              onClick={handleExportPDF}
-              disabled={syncExporting || isLoading}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-            >
-              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-              {syncExporting ? 'Exportando...' : 'Excel Caja General'}
-            </button>
-            <button
-              onClick={handleExportCashDetailed}
-              disabled={syncExporting || isLoading}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
-            >
-              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-              {syncExporting ? 'Exportando...' : 'Excel Caja Detallada'}
+              {syncExporting ? 'Exportando...' : 'Reportes Detallados'}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Modal de selección de formato */}
+      {showFormatModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Seleccionar formato de reporte
+              </h3>
+              <div className="flex flex-col space-y-3">
+                <button
+                  onClick={() => handleFormatSelection('excel')}
+                  disabled={syncExporting}
+                  className="inline-flex items-center justify-center px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                >
+                  <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+                  Excel (.xlsx)
+                </button>
+                <button
+                  onClick={() => handleFormatSelection('pdf')}
+                  disabled={syncExporting}
+                  className="inline-flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                >
+                  <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+                  PDF (.pdf)
+                </button>
+              </div>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowFormatModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 text-sm font-medium"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mensaje de error si la estructura no es la esperada */}
       {report && !report.categorias && (

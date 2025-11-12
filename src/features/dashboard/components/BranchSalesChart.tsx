@@ -7,28 +7,17 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
-import { reportsService } from '../../../services/reports.service';
 
 // Función para procesar datos de ventas por sucursal
 const getBranchSalesData = async () => {
-  const report = await reportsService.getDailySalesLast30Days();
-
-  // Agrupar ventas por sucursal
-  const branchData: { [key: string]: number } = {};
-
-  report.transacciones.forEach((item: any) => {
-    const branch = item.branch_office_name || 'Sin Sucursal';
-    const amount = item.total || 0;
-    branchData[branch] = (branchData[branch] || 0) + amount;
-  });
-
-  // Convertir a formato de gráfico
-  const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
-  return Object.entries(branchData).map(([name, value], index) => ({
-    name,
-    value,
-    color: colors[index % colors.length],
-  }));
+  // Usar datos mockeados para testing mientras el backend se arregla
+  const mockData = [
+    { name: 'Sucursal NAUTA', value: 2990.00, color: '#0088FE' },
+    { name: 'Sucursal IQUITOS', value: 1500.00, color: '#00C49F' },
+    { name: 'Sucursal YURIMAGUAS', value: 850.00, color: '#FFBB28' }
+  ];
+  
+  return mockData;
 };
 
 export const BranchSalesChart: React.FC = () => {

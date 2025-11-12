@@ -1,17 +1,15 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Users } from 'lucide-react';
-import { usersService } from '../../../services/users.service';
 import { MetricCard } from './MetricCard';
+import { MetricasGenerales } from '../../../types/dashboard';
 
-export const UserMetrics: React.FC = () => {
-  const { data: users, isLoading } = useQuery({
-    queryKey: ['users-count'],
-    queryFn: () => usersService.search({ limit: 1000 }),
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  });
+interface UserMetricsProps {
+  data?: MetricasGenerales;
+  isLoading?: boolean;
+}
 
-  const totalUsers = users?.length || 0;
+export const UserMetrics: React.FC<UserMetricsProps> = ({ data, isLoading = false }) => {
+  const totalUsers = data?.total_usuarios || 0;
 
   return (
     <MetricCard

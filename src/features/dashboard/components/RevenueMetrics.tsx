@@ -1,25 +1,29 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { DollarSign } from 'lucide-react';
-import { reportsService } from '../../../services/reports.service';
 import { MetricCard } from './MetricCard';
+import { MetricasGenerales } from '../../../types/dashboard';
 
-export const RevenueMetrics: React.FC = () => {
-  const { data: report, isLoading } = useQuery({
-    queryKey: ['revenue-summary'],
-    queryFn: () => reportsService.getDailySalesCurrentMonth(),
-    staleTime: 1000 * 60 * 10, // 10 minutos
-  });
+interface RevenueMetricsProps {
+  data?: MetricasGenerales;
+  isLoading?: boolean;
+}
 
-  const totalRevenue = report?.resumenEjecutivo?.totalVentas?.toFixed(2) || "0";
+export const RevenueMetrics: React.FC<RevenueMetricsProps> = ({ data, isLoading = false }) => {
+  // El backend ya formatea el valor con símbolo de moneda
+  const totalRevenue = data?.ingresos_totales_formateado || "S/ 0.00";
+  
+  // Preparar el texto de cambio con la comparación del mes anterior
+  const changePercent = data?.comparacion_mes_anterior?.porcentaje || 0;
+  const changeTrend = data?.comparacion_mes_anterior?.tendencia || 'neutral';
+  const changeText = `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(1)}% desde el mes pasado`;
 
   return (
     <MetricCard
       title="Ingresos Totales"
-      value={isLoading ? "..." : `S/ ${totalRevenue}`}
+      value={isLoading ? "..." : totalRevenue}
       icon={DollarSign}
-      change="+0% desde el mes pasado"
-      changeType="neutral"
+      change={changeText}
+      changeType={changeTrend}
     />
   );
 };

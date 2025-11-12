@@ -1,5 +1,4 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
   Bar,
@@ -9,47 +8,14 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { reportsService } from '../../../services/reports.service';
+import { VentasMensuales } from '../../../types/dashboard';
 
-// Función para obtener datos de ventas mensuales
-const getMonthlySalesData = async () => {
-  const months = [];
-  const now = new Date();
+interface MonthlySalesChartProps {
+  data?: VentasMensuales;
+  isLoading?: boolean;
+}
 
-  // Generar datos para los últimos 6 meses
-  for (let i = 5; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-    const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-
-    try {
-      const report = await reportsService.getDailySales({
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-      });
-
-      months.push({
-        name: date.toLocaleDateString('es-ES', { month: 'short' }),
-        value: report.resumenEjecutivo?.totalVentas || 0,
-      });
-    } catch (error) {
-      months.push({
-        name: date.toLocaleDateString('es-ES', { month: 'short' }),
-        value: 0,
-      });
-    }
-  }
-
-  return months;
-};
-
-export const MonthlySalesChart: React.FC = () => {
-  const { data: monthlyData, isLoading } = useQuery({
-    queryKey: ['monthly-sales-chart'],
-    queryFn: getMonthlySalesData,
-    staleTime: 1000 * 60 * 30, // 30 minutos
-  });
-
+export const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ data, isLoading = false }) => {
   if (isLoading) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -61,15 +27,28 @@ export const MonthlySalesChart: React.FC = () => {
     );
   }
 
+  // Transformar los datos del backend al formato del gráfico
+  const chartData = data?.ultimos_6_meses.map(item => ({
+    name: item.mes,
+    value: item.total_ventas,
+    facturas: item.cantidad_facturas,
+  })) || [];
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Ventas Mensuales</h3>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={monthlyData || []}>
+        <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
           <YAxis />
-          <Tooltip formatter={(value) => [`S/ ${value}`, 'Ventas']} />
+          <Tooltip 
+            formatter={(value, name) => {
+              if (name === 'value') return [`S/ ${value}`, 'Ventas'];
+              if (name === 'facturas') return [value, 'Facturas'];
+              return [value, name];
+            }}
+          />
           <Bar dataKey="value" fill="#8884d8" />
         </BarChart>
       </ResponsiveContainer>

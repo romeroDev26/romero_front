@@ -1,5 +1,4 @@
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import {
   PieChart,
   Pie,
@@ -7,26 +6,17 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
+import { VentasPorSucursal } from '../../../types/dashboard';
 
-// Función para procesar datos de ventas por sucursal
-const getBranchSalesData = async () => {
-  // Usar datos mockeados para testing mientras el backend se arregla
-  const mockData = [
-    { name: 'Sucursal NAUTA', value: 2990.00, color: '#0088FE' },
-    { name: 'Sucursal IQUITOS', value: 1500.00, color: '#00C49F' },
-    { name: 'Sucursal YURIMAGUAS', value: 850.00, color: '#FFBB28' }
-  ];
-  
-  return mockData;
-};
+// Colores predefinidos para el gráfico de pastel
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
-export const BranchSalesChart: React.FC = () => {
-  const { data: branchData, isLoading } = useQuery({
-    queryKey: ['branch-sales-chart'],
-    queryFn: getBranchSalesData,
-    staleTime: 1000 * 60 * 30, // 30 minutos
-  });
+interface BranchSalesChartProps {
+  data?: VentasPorSucursal;
+  isLoading?: boolean;
+}
 
+export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoading = false }) => {
   if (isLoading) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -38,7 +28,13 @@ export const BranchSalesChart: React.FC = () => {
     );
   }
 
-  const data = branchData || [];
+  // Transformar los datos del backend al formato del gráfico
+  const chartData = data?.resumen.map((item, index) => ({
+    name: item.sucursal_nombre,
+    value: item.total_ventas,
+    color: COLORS[index % COLORS.length],
+    porcentaje: item.porcentaje_total,
+  })) || [];
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
@@ -46,16 +42,16 @@ export const BranchSalesChart: React.FC = () => {
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+            label={({ name, porcentaje }) => `${name} ${porcentaje.toFixed(1)}%`}
             outerRadius={80}
             fill="#8884d8"
             dataKey="value"
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>

@@ -21,7 +21,7 @@ import { useDebounce } from '../../../hooks/useDebounce';
 import { InvoiceStatusBadge } from '../components/InvoiceStatusBadge';
 import { invoicesService, InvoiceFilters } from '../../../services/invoices.service';
 import { Invoice } from '../../../types';
-import { getCurrencySymbol } from '../../fluvial/components/sales-point/tickets/utils/ticketHelpers';
+import { getCurrencySymbol } from '../../../utils/currency';
 
 export const InvoicesListPage: React.FC = () => {
   const navigate = useNavigate();

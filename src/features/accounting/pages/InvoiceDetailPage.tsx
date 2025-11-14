@@ -23,7 +23,7 @@ import { InvoiceStatusBadge } from '../../accounting/components/InvoiceStatusBad
 import { WhatsAppSendModal } from '../../fluvial/components/sales-point/WhatsAppSendModal';
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { getCurrencySymbol } from '../../fluvial/components/sales-point/tickets/utils/ticketHelpers';
+import { getCurrencySymbol } from '../../../utils/currency';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

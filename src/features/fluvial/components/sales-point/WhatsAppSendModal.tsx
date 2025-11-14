@@ -1,4 +1,5 @@
 // src/features/fluvial/components/sales-point/WhatsAppSendModal.tsx
+// ACTUALIZADO: Ahora siempre usa PDFs generados por el backend
 
 import React, { useState } from 'react';
 import { Modal } from '../../../../components/common/Modal';
@@ -7,15 +8,12 @@ import { Input } from '../../../../components/common/Input';
 import { Spinner } from '../../../../components/common/Spinner';
 import { MessageCircle, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { whatsappService, WhatsAppSendResponse } from '../../../../services/whatsapp.service';
-import jsPDF from 'jspdf';
 import { BackendInvoiceData } from './tickets/types/backend.types';
-import { generateTicketBlob } from './tickets';
 
 interface WhatsAppSendModalProps {
   isOpen: boolean;
   onClose: () => void;
   backendData: BackendInvoiceData;
-  customGeneratePDF?: () => Promise<jsPDF>;
   initialPhoneNumber?: string;
   onClearForm?: () => void;
   // Nueva prop para identificar el contexto
@@ -28,7 +26,6 @@ export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
   isOpen,
   onClose,
   backendData,
-  customGeneratePDF,
   initialPhoneNumber = '',
   onClearForm,
   isFromInvoiceList = false,
@@ -61,74 +58,33 @@ El equipo de GLOBAL ROMERO S.A.C.`;
       setIsSending(true);
       setSendResult(null);
 
-      // Generar el PDF
-      let pdfBase64: string;
-      let fileName: string;
-
-      if (customGeneratePDF) {
-        // Usar lógica custom para empresa
-        const doc = await customGeneratePDF();
-        pdfBase64 = whatsappService.pdfDocToBase64(doc);
-        fileName = `ticket_empresa_${backendData.series}-${backendData.number}.pdf`;
-      } else if (isFromInvoiceList) {
-        // Para facturas de la lista de contabilidad - usar endpoint directo del backend
-        // Detectar qué tipo de PDF está disponible basándose en los campos del backendData
-        let pdfType: 'a4' | 'ticket' | 'legacy' = preferredPdfType; // Usar el tipo preferido
-        
-        // Si backendData tiene información de archivos PDF, validar disponibilidad
-        const invoiceData = backendData as any;
-        
-        // Si el tipo preferido no está disponible, hacer fallback
-        if (pdfType === 'ticket' && !invoiceData.pdf_ticket_file_path) {
-          if (invoiceData.pdf_a4_file_path) {
-            pdfType = 'a4';
-          } else if (invoiceData.pdf_file_path) {
-            pdfType = 'legacy';
-          }
-        } else if (pdfType === 'a4' && !invoiceData.pdf_a4_file_path) {
-          if (invoiceData.pdf_ticket_file_path) {
-            pdfType = 'ticket';
-          } else if (invoiceData.pdf_file_path) {
-            pdfType = 'legacy';
-          }
+      // NUEVO: Ahora SIEMPRE usar el endpoint del backend que maneja los PDFs
+      // Detectar qué tipo de PDF está disponible basándose en los campos del backendData
+      let pdfType: 'a4' | 'ticket' | 'legacy' = preferredPdfType;
+      
+      // Si backendData tiene información de archivos PDF, validar disponibilidad
+      const invoiceData = backendData as any;
+      
+      // Si el tipo preferido no está disponible, hacer fallback
+      if (pdfType === 'ticket' && !invoiceData.pdf_ticket_file_path) {
+        if (invoiceData.pdf_a4_file_path) {
+          pdfType = 'a4';
+        } else if (invoiceData.pdf_file_path) {
+          pdfType = 'legacy';
         }
-
-        const result = await whatsappService.sendInvoicePdf({
-          invoiceId: backendData.id as number,
-          phoneNumber,
-          customMessage: customMessage.trim() || undefined,
-          pdfType: pdfType
-        });
-
-        setSendResult(result);
-        
-        if (result.success) {
-          // Limpiar el formulario después del éxito
-          setTimeout(() => {
-            onClose();
-            setPhoneNumber('');
-            setCustomMessage('');
-            setSendResult(null);
-            // Limpiar el formulario principal de venta
-            if (onClearForm) {
-              onClearForm();
-            }
-          }, 2000);
+      } else if (pdfType === 'a4' && !invoiceData.pdf_a4_file_path) {
+        if (invoiceData.pdf_ticket_file_path) {
+          pdfType = 'ticket';
+        } else if (invoiceData.pdf_file_path) {
+          pdfType = 'legacy';
         }
-        return;
-      } else {
-        // Usar detección automática para tickets normales
-        const pdfBlob = await generateTicketBlob(backendData);
-        pdfBase64 = await whatsappService.blobToBase64(pdfBlob);
-        fileName = `ticket_${backendData.series}-${backendData.number}.pdf`;
       }
 
-      // Enviar por WhatsApp
-      const result = await whatsappService.sendDocument({
+      const result = await whatsappService.sendInvoicePdf({
+        invoiceId: backendData.id as number,
         phoneNumber,
-        pdfBase64,
-        fileName,
-        customMessage: customMessage.trim() || undefined
+        customMessage: customMessage.trim() || undefined,
+        pdfType: pdfType
       });
 
       setSendResult(result);

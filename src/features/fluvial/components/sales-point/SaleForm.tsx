@@ -24,7 +24,7 @@ import { Spinner } from "../../../../components/common/Spinner";
 import { SearchableSelect } from "../../../../components/common/SearchableSelect";
 import { ReservationModal } from "./ReservationModal";
 import { RepresentativesManager } from "./representatives";
-// ACTUALIZADO: Usar nuevo modal de preview de tickets
+// ACTUALIZADO: Usar nuevo modal de preview de tickets (ahora usa backend)
 import { TicketPreviewModal } from "./TicketPreviewModal";
 // NUEVO: Importar sistema de confirmación de reservas
 import { 
@@ -35,13 +35,8 @@ import {
   BackendInvoiceData,
   BackendCompanyInvoiceData,
 } from "./tickets/types/backend.types";
-import { CompanySaleTransformer } from "./tickets/transformers/companySale.transformer";
-import { CompanyTicketTemplate } from "./tickets/templates/companyTicket.template";
 // NUEVO: Importar sistema centralizado de detección de embarcaciones
 import { useVesselDetection } from "./vessel-detection";
-// NUEVO: Importar sistema especializado para compañías sin asientos
-import { NoSeatsCompanyTicketGenerator } from "./tickets/generators/noSeatsCompanyTicket.generator";
-import { isVesselWithoutSeats } from "./tickets/utils/ticketHelpers";
 // NUEVO: Importar sistema de monedas
 import { useCurrencyManager } from './hooks/useCurrencyManager';
 import { CurrencySelector } from './components/CurrencySelector';
@@ -95,8 +90,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const [ticketBackendData, setTicketBackendData] = useState<
     BackendInvoiceData | BackendCompanyInvoiceData | null
   >(null);
-  const [isCompanyTicket, setIsCompanyTicket] = useState(false); // Guarda el tipo de ticket
-  const [showRepresentativesInA4, setShowRepresentativesInA4] = useState(false); // Flag para mostrar representantes en A4
 
   // Función para mostrar modal de preview de ticket
   // Eliminar función de mock, ahora el preview se activa solo con datos reales
@@ -395,7 +388,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // Limpiar datos del ticket
     setShowTicketPreview(false);
     setTicketBackendData(null);
-    setIsCompanyTicket(false);
 
     // Limpiar series de documentos (forzar re-selección)
     setSelectedBoletaSeries("");
@@ -760,13 +752,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     ];
   };
 
-  // Helper function para verificar si los datos son de venta empresarial
-  const isCompanyInvoiceData = (
-    data: BackendInvoiceData | BackendCompanyInvoiceData
-  ): data is BackendCompanyInvoiceData => {
-    return "invoice" in data && "representatives" in data && "summary" in data;
-  };
-
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
   // Estado para las funciones del WebSocket obtenidas del SeatAndFareSelector
@@ -904,7 +889,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           (invoiceData) => {
             // Callback de éxito: mostrar modal de preview de ticket con datos reales
             setTicketBackendData(invoiceData);
-            setIsCompanyTicket(true); // ← NUEVO: Marcar como ticket empresarial
             setShowTicketPreview(true);
             // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
             setIsProcessingSale(false);
@@ -947,7 +931,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         reservationToConfirm,
         (invoiceData) => {
           setTicketBackendData(invoiceData);
-          setIsCompanyTicket(false); // ← NUEVO: Marcar como ticket regular
           setShowTicketPreview(true);
           // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
           setIsProcessingSale(false);
@@ -1104,41 +1087,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             {/* Sección de Representantes para RUC */}
             {showRepresentatives && (
               <>
-                {/* Switch para mostrar/ocultar representantes en A4 */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label htmlFor="showRepresentativesSwitch" className="text-sm font-medium text-gray-700">
-                        Incluir lista de pasajeros en PDF A4
-                      </label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Muestra la tabla detallada de representantes en el documento A4 corporativo
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      id="showRepresentativesSwitch"
-                      role="switch"
-                      aria-checked={showRepresentativesInA4}
-                      onClick={() => setShowRepresentativesInA4(!showRepresentativesInA4)}
-                      className={`
-                        relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
-                        transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                        ${showRepresentativesInA4 ? 'bg-blue-600' : 'bg-gray-200'}
-                      `}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`
-                          pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
-                          transition duration-200 ease-in-out
-                          ${showRepresentativesInA4 ? 'translate-x-5' : 'translate-x-0'}
-                        `}
-                      />
-                    </button>
-                  </div>
-                </div>
-                
                 <RepresentativesManager
                   representatives={representatives}
                   onAddRepresentative={handleAddRepresentative}
@@ -1508,85 +1456,24 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         />
       )}
 
-      {/* Modal de preview de ticket */}
-      {showTicketPreview &&
-        ticketBackendData &&
-        (isCompanyTicket ? (
-          <TicketPreviewModal
-            isOpen={showTicketPreview}
-            onClose={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // ← NUEVO: Limpiar tipo de ticket
-            }}
-            backendData={ticketBackendData}
-            onSuccess={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // Limpiar tipo de ticket
-              onSaleSuccess();
-            }}
-            showRepresentativesInA4={showRepresentativesInA4}
-            // NUEVO: Props para empresa
-            customGeneratePDF={async () => {
-              // Verificar que los datos sean de tipo empresarial
-              if (!isCompanyInvoiceData(ticketBackendData)) {
-                throw new Error(
-                  "Los datos no corresponden a una venta empresarial válida"
-                );
-              }
-
-              // Verificar que los datos sean válidos para venta empresarial
-              if (
-                !ticketBackendData.invoice ||
-                !ticketBackendData.representatives ||
-                ticketBackendData.representatives.length === 0
-              ) {
-                throw new Error(
-                  "Los datos no corresponden a una venta empresarial válida"
-                );
-              }
-
-              // NUEVA LÓGICA: Detectar si es embarcación sin asientos y usar el generador especializado
-              const hasVesselWithoutSeats = isVesselWithoutSeats(
-                ticketBackendData.invoice.items
-              );
-
-              if (hasVesselWithoutSeats) {
-                // Usar el nuevo generador especializado para compañías sin asientos
-                return await NoSeatsCompanyTicketGenerator.generate(
-                  ticketBackendData
-                );
-              } else {
-                // Usar el generador tradicional para compañías con asientos numerados
-                const summaryData =
-                  CompanySaleTransformer.transformSummary(ticketBackendData);
-                return await CompanyTicketTemplate.generatePDF(summaryData);
-              }
-            }}
-            initialPhoneNumber={passengerData.phone}
-            onClearForm={clearFormAfterSale}
-          />
-        ) : (
-          <TicketPreviewModal
-            isOpen={showTicketPreview}
-            onClose={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // Limpiar tipo de ticket
-            }}
-            backendData={ticketBackendData}
-            onSuccess={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // Limpiar tipo de ticket
-              onSaleSuccess();
-            }}
-            showRepresentativesInA4={showRepresentativesInA4}
-            initialPhoneNumber={passengerData.phone}
-            onClearForm={clearFormAfterSale}
-          />
-        ))}
+      {/* Modal de preview de ticket - Simplificado */}
+      {showTicketPreview && ticketBackendData && (
+        <TicketPreviewModal
+          isOpen={showTicketPreview}
+          onClose={() => {
+            setShowTicketPreview(false);
+            setTicketBackendData(null);
+          }}
+          backendData={ticketBackendData}
+          onSuccess={() => {
+            setShowTicketPreview(false);
+            setTicketBackendData(null);
+            onSaleSuccess();
+          }}
+          initialPhoneNumber={passengerData.phone}
+          onClearForm={clearFormAfterSale}
+        />
+      )}
     </>
   );
 });

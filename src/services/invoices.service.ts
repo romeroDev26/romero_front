@@ -136,6 +136,74 @@ class InvoicesService {
     // Extraer el array de facturas del formato de respuesta
     return response.data?.invoices || response.data || [];
   }
+
+  /**
+   * Genera y obtiene el PDF de una factura desde el backend
+   * @param invoiceId - ID de la factura
+   * @param size - Tamaño del PDF: '80mm', '58mm' o 'a4'
+   * @returns URL del PDF generado (almacenado en el backend)
+   */
+  async generatePdf(invoiceId: number, size: '80mm' | '58mm' | 'a4' = '80mm'): Promise<string> {
+    const response = await api.post<string>(
+      `${this.basePath}${invoiceId}/generate-pdf`,
+      null,
+      {
+        params: { size }
+      }
+    );
+    return response.data;
+  }
+
+  /**
+   * Obtiene el PDF ya generado desde la URL almacenada en la factura
+   * @param invoiceId - ID de la factura
+   * @param size - Tamaño del PDF para determinar qué URL usar
+   * @returns Blob del PDF para mostrar/descargar
+   */
+  async getPdfBlob(invoiceId: number, size: '80mm' | '58mm' | 'a4' = '80mm'): Promise<Blob> {
+    // Primero obtener la factura para extraer la URL del PDF
+    const invoice = await this.getById(invoiceId);
+    
+    let pdfUrl: string | null = null;
+    
+    switch (size) {
+      case '80mm':
+        pdfUrl = invoice.pdf_ticket_file_path;
+        break;
+      case '58mm':
+        pdfUrl = (invoice as any).pdf_ticket58_file_path;
+        break;
+      case 'a4':
+        pdfUrl = invoice.pdf_a4_file_path;
+        break;
+    }
+    
+    if (!pdfUrl) {
+      throw new Error(`PDF ${size} no generado aún. Debe generar primero el PDF.`);
+    }
+    
+    // Descargar el PDF desde la URL
+    const response = await fetch(pdfUrl);
+    if (!response.ok) {
+      throw new Error(`Error descargando PDF: ${response.statusText}`);
+    }
+    
+    return await response.blob();
+  }
+
+  /**
+   * Genera ambos PDFs (80mm y A4) y retorna sus URLs
+   * @param invoiceId - ID de la factura
+   * @returns URLs de ambos PDFs generados
+   */
+  async generateBothPdfs(invoiceId: number): Promise<{ url80mm: string; urlA4: string }> {
+    const [url80mm, urlA4] = await Promise.all([
+      this.generatePdf(invoiceId, '80mm'),
+      this.generatePdf(invoiceId, 'a4')
+    ]);
+    
+    return { url80mm, urlA4 };
+  }
 }
 
 export const invoicesService = new InvoicesService();

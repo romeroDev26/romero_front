@@ -136,38 +136,38 @@ POST /sunat/invoices/{invoice_id}/generate-pdf?size=80mm|58mm|a4
 3. `src/features/fluvial/components/sales-point/WhatsAppSendModal.tsx` - Simplificado
 4. `src/features/fluvial/components/sales-point/SaleForm.tsx` - Limpiado
 
-### 📦 Archivos que Ahora son OBSOLETOS:
+### 📦 Archivos ELIMINADOS (Obsoletos):
 
-Todo el sistema de generación de PDFs en frontend ya NO se usa:
+Todo el sistema de generación de PDFs en frontend fue eliminado (~2800 líneas):
 
 ```
 src/features/fluvial/components/sales-point/tickets/
-├── api/
-│   ├── noSeatsTicketApi.ts                    ❌ OBSOLETO
-│   └── ticketApi.ts                            ❌ OBSOLETO
-├── generators/
-│   ├── noSeatsCompanyTicket.generator.ts       ❌ OBSOLETO
-│   ├── noSeatsTicketGenerator.ts               ❌ OBSOLETO
-│   └── ticketGenerator.ts                      ❌ OBSOLETO
-├── templates/
-│   ├── a4.template.ts                          ❌ OBSOLETO
-│   ├── cargoTicket.template.ts                 ❌ OBSOLETO
-│   ├── companyTicket.template.ts               ❌ OBSOLETO
-│   ├── normalTicket.template.ts                ❌ OBSOLETO
-│   ├── noSeatsCompanyTicket.template.ts        ❌ OBSOLETO
-│   └── noSeatsTicket.template.ts               ❌ OBSOLETO
-├── transformers/
-│   ├── cargoSale.transformer.ts                ❌ OBSOLETO
-│   ├── companySale.transformer.ts              ❌ OBSOLETO
-│   ├── normalSale.transformer.ts               ❌ OBSOLETO
-│   ├── noSeatsCompanySale.transformer.ts       ❌ OBSOLETO
-│   ├── noSeatsSale.transformer.ts              ❌ OBSOLETO
-│   └── transformerFactory.ts                   ❌ OBSOLETO
-├── utils/
-│   └── ticketHelpers.ts                        ❌ OBSOLETO (parcial)
-├── TicketGenerator.ts                          ❌ OBSOLETO
-├── index.ts                                    ❌ OBSOLETO
-└── README.md                                   ❌ OBSOLETO
+├── api/                                        ✅ ELIMINADO
+│   ├── noSeatsTicketApi.ts                    
+│   └── ticketApi.ts                            
+├── generators/                                 ✅ ELIMINADO
+│   ├── noSeatsCompanyTicket.generator.ts       
+│   ├── noSeatsTicketGenerator.ts               
+│   └── ticketGenerator.ts                      
+├── templates/                                  ✅ ELIMINADO
+│   ├── a4.template.ts                          
+│   ├── cargoTicket.template.ts                 
+│   ├── companyTicket.template.ts               
+│   ├── normalTicket.template.ts                
+│   ├── noSeatsCompanyTicket.template.ts        
+│   └── noSeatsTicket.template.ts               
+├── transformers/                               ✅ ELIMINADO
+│   ├── cargoSale.transformer.ts                
+│   ├── companySale.transformer.ts              
+│   ├── normalSale.transformer.ts               
+│   ├── noSeatsCompanySale.transformer.ts       
+│   ├── noSeatsSale.transformer.ts              
+│   └── transformerFactory.ts                   
+├── utils/                                      ✅ ELIMINADO
+│   └── ticketHelpers.ts                        
+├── TicketGenerator.ts                          ✅ ELIMINADO
+├── index.ts                                    ✅ ELIMINADO
+└── README.md                                   ✅ ELIMINADO
 ```
 
 ### ✅ Archivos que SÍ se Mantienen:
@@ -264,16 +264,18 @@ graph TD
 
 ## 🔄 Rollback (Si es Necesario)
 
-Si algo falla, los archivos antiguos están respaldados:
+⚠️ **Nota**: Los archivos obsoletos ya fueron eliminados permanentemente.
 
-1. `TicketPreviewModal.OLD.tsx` - Versión anterior del modal
-2. Todo el sistema antiguo sigue en la carpeta `tickets/`
+Si necesitas revertir los cambios, deberás:
+1. Restaurar desde el historial de Git (commit anterior a la migración)
+2. Usar `git checkout` para recuperar los archivos eliminados
 
-Para revertir:
 ```bash
-cd src/features/fluvial/components/sales-point
-mv TicketPreviewModal.tsx TicketPreviewModal.NEW.tsx
-mv TicketPreviewModal.OLD.tsx TicketPreviewModal.tsx
+# Ver commits anteriores
+git log --oneline
+
+# Restaurar archivos desde commit específico
+git checkout <commit-hash> -- src/features/fluvial/components/sales-point/tickets/
 ```
 
 ---
@@ -306,9 +308,10 @@ Respuesta: "https://storage.url/ticket_80mm.pdf" (URL del PDF generado)
 - [x] SaleForm limpiado
 - [x] Imports obsoletos eliminados
 - [x] Sin errores de compilación
-- [ ] Testing en desarrollo
+- [x] **Archivos obsoletos eliminados (~2800 líneas)**
+- [x] Testing funcional completado ✅
 - [ ] Testing en producción
-- [ ] Eliminar archivos obsoletos (próximo paso)
+- [ ] Verificar rendimiento en producción
 
 ---
 

@@ -54,17 +54,12 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   // Limpiar URLs cuando se cierra el modal
   useEffect(() => {
     if (!isOpen) {
-      if (previewUrl80mm) {
-        URL.revokeObjectURL(previewUrl80mm);
-        setPreviewUrl80mm('');
-      }
-      if (previewUrlA4) {
-        URL.revokeObjectURL(previewUrlA4);
-        setPreviewUrlA4('');
-      }
+      // Solo limpiar los estados, no hay que revocar URLs porque son URLs remotas
+      setPreviewUrl80mm('');
+      setPreviewUrlA4('');
       setGenerationSuccess(false);
     }
-  }, [isOpen, previewUrl80mm, previewUrlA4]);
+  }, [isOpen]);
 
   /**
    * Genera ambos PDFs (80mm y A4) llamando al backend
@@ -77,16 +72,18 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       // Llamar al backend para generar ambos PDFs en paralelo
       await invoicesService.generateBothPdfs(invoiceId);
 
-      // Obtener los PDFs generados como Blobs
-      const [blob80mm, blobA4] = await Promise.all([
-        invoicesService.getPdfBlob(invoiceId, '80mm'),
-        invoicesService.getPdfBlob(invoiceId, 'a4')
-      ]);
+      // Obtener la invoice actualizada para extraer las URLs de los PDFs
+      const updatedInvoice = await invoicesService.getById(invoiceId);
 
-      // Crear URLs locales para la vista previa
-      const url80mm = URL.createObjectURL(blob80mm);
-      const urlA4 = URL.createObjectURL(blobA4);
+      // Extraer URLs directas del CDN para usar en iframes (evita problemas de CORS en iframes)
+      const url80mm = updatedInvoice.pdf_ticket_file_path;
+      const urlA4 = updatedInvoice.pdf_a4_file_path;
 
+      if (!url80mm || !urlA4) {
+        throw new Error('PDFs generados pero URLs no disponibles');
+      }
+
+      // Usar URLs directas en los iframes (los iframes no tienen restricción CORS para visualización)
       setPreviewUrl80mm(url80mm);
       setPreviewUrlA4(urlA4);
       setGenerationSuccess(true);
@@ -130,17 +127,23 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       setIsDownloading(true);
 
       const size = activeFormat === 'ticket80mm' ? '80mm' : 'a4';
-      const blob = await invoicesService.getPdfBlob(invoiceId, size);
+      
+      // Obtener la URL directa del PDF desde la invoice
+      const invoice = await invoicesService.getById(invoiceId);
+      const pdfUrl = size === '80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+      
+      if (!pdfUrl) {
+        throw new Error('PDF no disponible');
+      }
 
-      // Crear URL temporal y descargar
-      const url = URL.createObjectURL(blob);
+      // Descargar usando un enlace temporal
       const a = document.createElement('a');
-      a.href = url;
+      a.href = pdfUrl;
       a.download = `ticket_${size}_${invoiceData.series}-${invoiceData.number}.pdf`;
+      a.target = '_blank'; // Abrir en nueva pestaña si la descarga falla
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
 
       toast.success('Ticket descargado exitosamente');
     } catch (error) {

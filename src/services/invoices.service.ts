@@ -155,16 +155,19 @@ class InvoicesService {
   }
 
   /**
-   * Obtiene el PDF ya generado desde la URL almacenada en la factura
+   * Obtiene el PDF ya generado como Blob para vista previa
+   * Primero genera el PDF (si no existe) y luego obtiene la URL desde la invoice
+   * Finalmente hace fetch del PDF usando el backend como proxy para evitar CORS
    * @param invoiceId - ID de la factura
-   * @param size - Tamaño del PDF para determinar qué URL usar
+   * @param size - Tamaño del PDF para determinar qué PDF obtener
    * @returns Blob del PDF para mostrar/descargar
    */
   async getPdfBlob(invoiceId: number, size: '80mm' | '58mm' | 'a4' = '80mm'): Promise<Blob> {
-    // Primero obtener la factura para extraer la URL del PDF
+    // 1. Obtener la invoice actualizada (que debería tener la URL del PDF)
     const invoice = await this.getById(invoiceId);
     
-    let pdfUrl: string | null = null;
+    // 2. Extraer la URL según el tamaño solicitado
+    let pdfUrl: string | null | undefined = null;
     
     switch (size) {
       case '80mm':
@@ -179,16 +182,21 @@ class InvoicesService {
     }
     
     if (!pdfUrl) {
-      throw new Error(`PDF ${size} no generado aún. Debe generar primero el PDF.`);
+      throw new Error(`PDF ${size} no está disponible. La URL es null o vacía.`);
     }
     
-    // Descargar el PDF desde la URL
-    const response = await fetch(pdfUrl);
-    if (!response.ok) {
-      throw new Error(`Error descargando PDF: ${response.statusText}`);
-    }
+    // 3. Hacer fetch del PDF a través de un proxy simple usando axios con modo cors
+    // Importante: axios manejará mejor el CORS que fetch nativo
+    const response = await api.get(pdfUrl, {
+      responseType: 'blob',
+      // Configurar axios para hacer la petición directamente sin pasar por nuestro backend
+      baseURL: '', // Resetear baseURL para usar la URL completa
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
     
-    return await response.blob();
+    return response.data;
   }
 
   /**

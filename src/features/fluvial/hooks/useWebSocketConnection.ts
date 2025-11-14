@@ -54,7 +54,7 @@ export const useWebSocketConnection = (
     }
 
     try {
-      const baseUrl = import.meta.env.VITE_WS_URL || 'wss://romeroapi-production.up.railway.app';
+      const baseUrl = import.meta.env.VITE_WS_URL || 'wss://romeroapi-production-5dec.up.railway.app';
       const wsUrl = `${baseUrl}/api/v1/ws/seats/${tripId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
       
       const ws = new WebSocket(wsUrl);

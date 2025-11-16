@@ -245,8 +245,8 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
             disabled={isFormLocked}
           >
             {UNIT_OF_MEASURE_OPTIONS.map(opt => (
-              <option key={opt.code} value={opt.code}>
-                {opt.name}
+              <option key={opt.code} value={opt.code} disabled={opt.code !== 'ZZ'}>
+                {opt.name}{opt.code !== 'ZZ' ? ' - Desabilitado temporalmente' : ''}
               </option>
             ))}
           </select>

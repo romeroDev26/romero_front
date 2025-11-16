@@ -7,7 +7,6 @@ import {
   VesselUpdateData,
   SeatConfigurationCreateData,
 } from '../../../services/vessels.service';
-import { Vessel } from '../../../types';
 
 // Helper para obtener el company_id. Idealmente vendría de un contexto de autenticación.
 const getCurrentCompanyId = (): number => {

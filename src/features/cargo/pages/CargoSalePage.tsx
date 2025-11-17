@@ -145,6 +145,10 @@ export const CargoSalePage: React.FC = () => {
       toast.error('Por favor, complete y busque los datos del remitente.');
       return;
     }
+    if (currentView === 'clientSelection' && !recipient.isSameAsSender && (!recipient.docNumber || !recipient.name)) {
+      toast.error('Por favor, complete los datos obligatorios del destinatario: DNI y nombre completo.');
+      return;
+    }
     if (currentView === 'tripSelection' && !selectedTrip) {
       toast.error('Por favor, seleccione un viaje.');
       return;
@@ -329,6 +333,8 @@ export const CargoSalePage: React.FC = () => {
     }
   }, [currentView]);
 
+  const isNextDisabled = !remitter.docNumber || !remitter.name || (!recipient.isSameAsSender && (!recipient.docNumber || !recipient.name));
+
   const renderContent = () => {
     if (!selectedBranch) return <div className="p-6 text-center text-gray-500">Cargando...</div>;
     
@@ -348,7 +354,7 @@ export const CargoSalePage: React.FC = () => {
             
             {/* Botón de navegación */}
             <div className="flex justify-end">
-              <Button onClick={() => handleNextStep('tripSelection')}>Siguiente: Seleccionar Viaje</Button>
+              <Button disabled={isNextDisabled} onClick={() => handleNextStep('tripSelection')}>Siguiente: Seleccionar Viaje</Button>
             </div>
           </div>
         );

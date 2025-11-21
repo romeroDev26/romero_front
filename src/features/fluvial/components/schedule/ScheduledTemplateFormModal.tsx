@@ -149,7 +149,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
             className={`w-full rounded-md shadow-sm p-2 border ${
               errors.route_id ? 'border-red-500' : 'border-gray-300'
             } focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed`}
-            disabled={isLoadingRoutes || isEditing}
+            disabled={isLoadingRoutes}
           >
             <option value={0}>Seleccione una ruta</option>
             {routes.map((route) => (
@@ -160,9 +160,6 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
           </select>
           {errors.route_id && (
             <p className="mt-1 text-sm text-red-600">{errors.route_id}</p>
-          )}
-          {isEditing && (
-            <p className="mt-1 text-xs text-gray-500">La ruta no se puede cambiar después de crear la plantilla.</p>
           )}
         </div>
 
@@ -175,7 +172,6 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
               value={formData.day_of_week}
               onChange={(e) => handleChange('day_of_week', parseInt(e.target.value))}
               className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
-              disabled={isEditing}
             >
               {DAYS_OF_WEEK.map((day) => (
                 <option key={day.value} value={day.value}>
@@ -191,17 +187,8 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
             onChange={(e) => handleChange('departure_time', e.target.value)}
             error={errors.departure_time}
             required
-            disabled={isEditing}
           />
         </div>
-
-        {isEditing && (
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-            <p className="text-sm text-blue-800">
-              La ruta, el día y la hora de salida no se pueden modificar. Si necesita cambiarlos, por favor cree una nueva plantilla.
-            </p>
-          </div>
-        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

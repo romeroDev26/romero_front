@@ -95,19 +95,19 @@ const ReceivablesPage: React.FC = () => {
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex justify-between items-center mb-4">
+        <div className="bg-white rounded-lg shadow-sm border p-4 lg:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">Encomiendas por Cobrar</h1>
               <p className="text-gray-600 mt-1">
                 Gestión y seguimiento de encomiendas pendientes de cobro
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
                 variant="outline"
                 onClick={() => setShowFilters(!showFilters)}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center"
               >
                 <FilterIcon className="w-4 h-4" />
                 Filtros
@@ -116,7 +116,7 @@ const ReceivablesPage: React.FC = () => {
                 variant="outline"
                 onClick={refresh}
                 disabled={loading}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center"
               >
                 <RefreshCwIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Actualizar
@@ -173,7 +173,7 @@ const ReceivablesPage: React.FC = () => {
 
         {/* Filtros */}
         {showFilters && (
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="bg-white rounded-lg shadow-sm border p-4 lg:p-6">
             <h2 className="text-lg font-semibold mb-4">Filtros de Búsqueda</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>

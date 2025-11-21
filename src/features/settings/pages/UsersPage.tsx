@@ -120,18 +120,20 @@ export const UsersPage: React.FC = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Usuarios del Sistema</h1>
-        <div className="flex space-x-2">
-          {hasPermission('settings', 'users', 'admin') && (
-            <Button
-              onClick={handleCreateUser}
-              className="flex items-center"
-            >
-              <PlusIcon className="h-5 w-5 mr-2" />
-              Nuevo Usuario
-            </Button>
-          )}
+      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">Usuarios del Sistema</h1>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            {hasPermission('settings', 'users', 'admin') && (
+              <Button
+                onClick={handleCreateUser}
+                className="flex items-center justify-center w-full"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Nuevo Usuario
+              </Button>
+            )}
+          </div>
         </div>
       </div>
       
@@ -161,7 +163,7 @@ export const UsersPage: React.FC = () => {
         </div>
       ) : (
         /* Tabla de usuarios */
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

@@ -58,32 +58,34 @@ export const DebitNotesListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Notas de Débito</h1>
-          <p className="text-gray-600">Gestiona los cargos adicionales y notas de débito</p>
-        </div>
-        <div className="flex space-x-3">
-          <Button
-            variant="outline"
-            onClick={() => refreshStatuses(10)}
-            isLoading={isRefreshing}
-            className="flex items-center"
-          >
-            <ArrowPathIcon className="h-4 w-4 mr-2" />
-            Actualizar Estados
-          </Button>
-          <Link to="/accounting/debit-notes/new">
-            <Button className="flex items-center">
-              <PlusIcon className="h-4 w-4 mr-2" />
-              Nueva Nota de Débito
+      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Notas de Débito</h1>
+            <p className="text-gray-600">Gestiona los cargos adicionales y notas de débito</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button
+              variant="outline"
+              onClick={() => refreshStatuses(10)}
+              isLoading={isRefreshing}
+              className="flex items-center justify-center"
+            >
+              <ArrowPathIcon className="h-4 w-4 mr-2" />
+              Actualizar Estados
             </Button>
-          </Link>
+            <Link to="/accounting/debit-notes/new" className="w-full sm:w-auto">
+              <Button className="flex items-center justify-center w-full">
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Nueva Nota de Débito
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

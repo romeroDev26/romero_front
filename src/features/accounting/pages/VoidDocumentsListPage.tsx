@@ -99,29 +99,32 @@ export const VoidDocumentsListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Comunicaciones de Baja</h1>
-          <p className="text-gray-600">Gestión de anulaciones de documentos ante SUNAT</p>
-        </div>
-        <div className="flex space-x-3">
-          <Button
-            onClick={handleRefreshPending}
-            variant="outline"
-            disabled={refreshPending.isPending}
-          >
-            <ArrowPathIcon className={`h-4 w-4 mr-2 ${refreshPending.isPending ? 'animate-spin' : ''}`} />
-            Actualizar Estados
-          </Button>
-          <Button onClick={() => navigate('/accounting/voids/new')}>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            Nueva Anulación
-          </Button>
+      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Comunicaciones de Baja</h1>
+            <p className="text-gray-600">Gestión de anulaciones de documentos ante SUNAT</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Button
+              onClick={handleRefreshPending}
+              variant="outline"
+              disabled={refreshPending.isPending}
+              className="flex items-center justify-center"
+            >
+              <ArrowPathIcon className={`h-4 w-4 mr-2 ${refreshPending.isPending ? 'animate-spin' : ''}`} />
+              Actualizar Estados
+            </Button>
+            <Button onClick={() => navigate('/accounting/voids/new')} className="flex items-center justify-center w-full">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Nueva Anulación
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Información importante */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 lg:p-6">
         <div className="flex">
           <ExclamationTriangleIcon className="h-6 w-6 text-amber-600 mt-1" />
           <div className="ml-3">
@@ -142,7 +145,7 @@ export const VoidDocumentsListPage: React.FC = () => {
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white p-4 lg:p-6 rounded-lg shadow">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Filtros</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>

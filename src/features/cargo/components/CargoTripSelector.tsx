@@ -49,7 +49,7 @@ export const CargoTripSelector: React.FC<CargoTripSelectorProps> = ({
         Seleccione el punto de origen y destino para la encomienda
       </p>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SearchableSelect
           label="Punto de Origen"
           value={selectedOriginId}
@@ -97,4 +97,4 @@ export const CargoTripSelector: React.FC<CargoTripSelectorProps> = ({
       )}
     </div>
   );
-}; 
+};

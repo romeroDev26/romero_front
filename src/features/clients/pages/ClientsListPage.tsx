@@ -215,18 +215,19 @@ export const ClientsListPage: React.FC = () => {
   
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
         <h1 className="text-2xl font-bold text-gray-900">Clientes</h1>
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={handleRefresh}
+            className="flex-1 sm:flex-none justify-center"
           >
             Actualizar
           </Button>
           <Button
             onClick={() => navigate('/clients/new')}
-            className="flex items-center"
+            className="flex items-center flex-1 sm:flex-none justify-center"
           >
             <PlusIcon className="h-5 w-5 mr-2" />
             Nuevo Cliente
@@ -235,8 +236,8 @@ export const ClientsListPage: React.FC = () => {
       </div>
       
       {/* Filtros y búsqueda */}
-      <div className="relative flex flex-col md:flex-row gap-4 items-start">
-        <div className="relative flex-1 min-w-0">
+      <div className="relative flex flex-col lg:flex-row gap-4 items-start">
+        <div className="relative flex-1 min-w-0 w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
           </div>
@@ -249,10 +250,10 @@ export const ClientsListPage: React.FC = () => {
           />
         </div>
 
-        <div className="relative flex gap-3 flex-wrap items-center">
-          <div className="relative">
+        <div className="relative flex flex-col sm:flex-row gap-3 flex-wrap items-center w-full lg:w-auto">
+          <div className="relative w-full sm:w-auto">
             <select
-              className="rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[200px] text-sm"
+              className="w-full sm:w-auto rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[200px] text-sm"
               value={filterDocType}
               onChange={(e) => setFilterDocType(e.target.value as DocType | 'ALL')}
             >
@@ -265,9 +266,9 @@ export const ClientsListPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select
-              className="rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[160px] text-sm"
+              className="w-full sm:w-auto rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[160px] text-sm"
               value={filterActive}
               onChange={(e) => setFilterActive(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
             >
@@ -278,9 +279,9 @@ export const ClientsListPage: React.FC = () => {
           </div>
 
           {uniqueCountries.length > 0 && (
-            <div className="relative">
+            <div className="relative w-full sm:w-auto">
               <select
-                className="rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[160px] text-sm"
+                className="w-full sm:w-auto rounded-md border-gray-300 shadow-sm p-2 border bg-white relative z-20 min-w-[160px] text-sm"
                 value={filterCountry}
                 onChange={(e) => setFilterCountry(e.target.value)}
               >
@@ -326,8 +327,84 @@ export const ClientsListPage: React.FC = () => {
         </div>
       )}
       
-      {/* Tabla de clientes */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Vista de Tarjetas (Móvil) */}
+      <div className="block lg:hidden space-y-4">
+        {paginatedClients.map((client) => (
+          <div key={client.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">{client.name}</h3>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+                    {getDocTypeDisplay(client.doc_type)}
+                  </span>
+                  <span className="text-sm font-mono text-gray-600">
+                    {client.doc_number}
+                  </span>
+                </div>
+              </div>
+              <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                client.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {client.is_active ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+
+            <div className="space-y-2 text-sm text-gray-600 mb-4">
+              {client.address_line && (
+                <div className="flex items-start gap-2">
+                  <span className="font-medium min-w-[70px]">Dirección:</span>
+                  <span>{formatAddress(client)}</span>
+                </div>
+              )}
+              {(client.email || client.phone) && (
+                <div className="flex items-start gap-2">
+                  <span className="font-medium min-w-[70px]">Contacto:</span>
+                  <div className="flex flex-col">
+                    {client.email && <span>{client.email}</span>}
+                    {client.phone && <span>{client.phone}</span>}
+                  </div>
+                </div>
+              )}
+              {client.country_code && (
+                <div className="flex items-center gap-2">
+                  <span className="font-medium min-w-[70px]">País:</span>
+                  <span>{getCountryName(client.country_code)}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+              <button
+                onClick={() => navigate(`/clients/${client.id}`)}
+                className="flex items-center text-primary hover:text-primary/80 text-sm font-medium"
+              >
+                <PencilIcon className="h-4 w-4 mr-1" />
+                Editar
+              </button>
+              <button
+                onClick={() => handleDelete(client)}
+                className="flex items-center text-red-600 hover:text-red-900 text-sm font-medium"
+              >
+                <TrashIcon className="h-4 w-4 mr-1" />
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        {filteredClients.length === 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+            {clients && clients.length > 0 
+              ? 'No se encontraron clientes con los filtros aplicados'
+              : 'No hay clientes registrados'
+            }
+          </div>
+        )}
+      </div>
+
+      {/* Tabla de clientes (Desktop) */}
+      <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -440,8 +517,8 @@ export const ClientsListPage: React.FC = () => {
       </div>
 
       {/* Controles de paginación */}
-      <div className="flex items-center justify-between bg-white mt-4 p-4 rounded-lg">
-        <div className="text-sm text-gray-600">
+      <div className="flex flex-col sm:flex-row items-center justify-between bg-white mt-4 p-4 rounded-lg gap-4 sm:gap-0">
+        <div className="text-sm text-gray-600 text-center sm:text-left">
           Mostrando <span className="font-medium">{filteredClients.length === 0 ? 0 : (filteredClients.length === 0 ? 0 : ( (currentPage - 1) * itemsPerPage + 1 ))}</span>
           {' - '}
           <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredClients.length)}</span>
@@ -449,22 +526,22 @@ export const ClientsListPage: React.FC = () => {
           <span className="font-medium">{filteredClients.length}</span>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap justify-center items-center gap-2">
           <button
             onClick={() => setCurrentPage(1)}
             disabled={currentPage === 1}
             className={`px-3 py-1 rounded-md text-sm border ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            « Primero
+            «
           </button>
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
             className={`px-3 py-1 rounded-md text-sm border ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            ‹ Prev
+            ‹
           </button>
 
           {/* Números de página simples: mostrar algunas páginas alrededor de la actual */}
-          <div className="flex items-center space-x-1">
+          <div className="hidden sm:flex items-center space-x-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1).slice(Math.max(0, currentPage - 3), Math.min(totalPages, currentPage + 2)).map((p) => (
               <button
                 key={p}
@@ -474,18 +551,23 @@ export const ClientsListPage: React.FC = () => {
               </button>
             ))}
           </div>
+          
+          {/* Versión móvil de números de página (solo actual/total) */}
+          <div className="sm:hidden text-sm text-gray-600 px-2">
+            {currentPage} / {totalPages}
+          </div>
 
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
             className={`px-3 py-1 rounded-md text-sm border ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            Next ›
+            ›
           </button>
           <button
             onClick={() => setCurrentPage(totalPages)}
             disabled={currentPage === totalPages}
             className={`px-3 py-1 rounded-md text-sm border ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
-            Último »
+            »
           </button>
         </div>
       </div>

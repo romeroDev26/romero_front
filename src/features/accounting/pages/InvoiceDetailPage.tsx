@@ -136,8 +136,8 @@ export const InvoiceDetailPage: React.FC = () => {
       {/* Header con información básica */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -147,11 +147,11 @@ export const InvoiceDetailPage: React.FC = () => {
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Volver a Facturas
               </Button>
-              <div className="border-l pl-4">
+              <div className="border-l-0 md:border-l pl-0 md:pl-4 mt-4 md:mt-0">
                 <h1 className="text-xl font-bold text-gray-900">
                   {invoice.document_type_code === '01' ? 'Factura' : 'Boleta'} {invoice.series}-{String(invoice.number).padStart(8, '0')}
                 </h1>
-                <div className="flex items-center space-x-4 mt-1">
+                <div className="flex flex-wrap items-center gap-2 mt-1">
                   <InvoiceStatusBadge 
                     sunatStatus={invoice.sunat_status} 
                     businessStatus={invoice.business_status}
@@ -166,7 +166,7 @@ export const InvoiceDetailPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
               {(hasTicketPdf || hasA4Pdf) && (
                 <>
                   <Button
@@ -230,8 +230,8 @@ export const InvoiceDetailPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border">
             {/* Header del visor PDF */}
             <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
+                <div className="flex items-center space-x-2 mb-2 md:mb-0">
                   <DocumentTextIcon className="h-5 w-5 text-blue-600" />
                   <h2 className="font-semibold text-gray-900">Ticket de Venta</h2>
                 </div>
@@ -339,7 +339,7 @@ export const InvoiceDetailPage: React.FC = () => {
               
               {/* Mostrar información básica de la factura */}
               <div className="max-w-2xl mx-auto text-left">
-                <div className="grid grid-cols-2 gap-8 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                   <div>
                     <h4 className="font-semibold text-gray-700 mb-2">Cliente</h4>
                     <p className="text-gray-900">{invoice.client?.name}</p>

@@ -1026,13 +1026,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         </div>
       )}
       
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-start justify-between mb-6 pb-4 border-b">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+      <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-4 lg:mb-6 pb-4 border-b">
+          <div className="flex-1">
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-800">
               Registrar Venta de Pasaje
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm lg:text-base text-gray-600">
               Desde: <span className="font-semibold">{branch.name}</span>
             </p>
           </div>
@@ -1040,24 +1040,30 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             // Limpiar completamente el estado antes de volver
             clearStateForVesselChange();
             onBack();
-          }} disabled={isProcessingSale}>
+          }} disabled={isProcessingSale} className="w-full sm:w-auto justify-center">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-6 flex items-center gap-4 text-sm">
-          <Ship className="h-5 w-5 text-blue-700" />
-          <span className="font-semibold">
-            {trip.trip_name} ({trip.vessel_name})
-          </span>
-          <Clock className="h-5 w-5 text-blue-700 ml-auto" />
-          <span>
-            {format(
-              new Date(trip.estimated_departure_time),
-              "dd/MM/yyyy hh:mm a"
-            )}
-          </span>
+        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 lg:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm">
+            <div className="flex items-center gap-2 flex-1">
+              <Ship className="h-5 w-5 text-blue-700 shrink-0" />
+              <span className="font-semibold">
+                {trip.trip_name} ({trip.vessel_name})
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-700 shrink-0" />
+              <span>
+                {format(
+                  new Date(trip.estimated_departure_time),
+                  "dd/MM/yyyy hh:mm a"
+                )}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* NUEVO: Mostrar información de confirmación de reserva */}
@@ -1074,9 +1080,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           />
         )}
 
-        <div className="grid lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3 space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="grid lg:grid-cols-5 gap-4 lg:gap-8">
+          <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+            <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
               <PassengerDataForm
                 passengerData={passengerData}
                 setPassengerData={setPassengerData}
@@ -1108,10 +1114,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
               </>
             )}
 
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
               {showAddForm && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="text-sm font-medium text-blue-800">
+                <div className="mb-4 p-2.5 lg:p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="text-xs lg:text-sm font-medium text-blue-800">
                     Modo: Selección de asiento para representante
                   </div>
                   <div className="text-xs text-blue-600">
@@ -1148,13 +1154,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 />
               ) : (
                 // UI alternativa para embarcaciones sin asientos
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                  <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-                    <Ship className="h-6 w-6 mr-2 text-gray-500" />
+                <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+                  <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-3 lg:mb-4 flex items-center">
+                    <Ship className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
                     Tramo y Asiento
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 gap-3 lg:gap-4 mb-4">
                     <SearchableSelect
                       label="Origen (Embarque)"
                       value={selectedBoardingStopId}
@@ -1201,10 +1207,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           </div>
 
           <div className="lg:col-span-2">
-            <div className="sticky top-24 max-h-[calc(100vh-1rem)] overflow-y-auto pr-2 space-y-6 pb-56 scroll-pb-64">
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center">
-                  <ClipboardDocumentListIcon className="h-6 w-6 mr-2 text-gray-500" />
+            <div className="lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100vh-1rem)] overflow-y-auto lg:pr-2 space-y-4 lg:space-y-6 pb-4 lg:pb-56 lg:scroll-pb-64">
+              <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+                <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-2 flex items-center">
+                  <ClipboardDocumentListIcon className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
                   Comprobante
                 </h3>
                 {isLoadingSeries ? (
@@ -1362,14 +1368,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 currencySymbol={getCurrencySymbol()}
               />
 
-              <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
-                <h3 className="font-semibold text-center text-gray-700">
+              <div className="bg-white p-4 rounded-lg shadow-sm border space-y-2.5 lg:space-y-3">
+                <h3 className="font-semibold text-sm lg:text-base text-center text-gray-700">
                   Acciones
                 </h3>
 
                 <Button
                   onClick={handleConfirmSale}
-                  className={`w-full text-lg py-3 ${
+                  className={`w-full text-base lg:text-lg py-2.5 lg:py-3 ${
                     areActionsEnabled && !isProcessingSale
                       ? "bg-green-600 hover:bg-green-700"
                       : "bg-gray-400 cursor-not-allowed"
@@ -1384,12 +1390,21 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   }
                   disabled={!areActionsEnabled || isProcessingSale}
                 >
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  {isConfirmingMode
-                    ? "Confirmar y Cobrar"
-                    : isRuc
-                    ? "Crear Factura Empresarial con Representantes"
-                    : "Generar y Cobrar"}
+                  <CreditCard className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
+                  <span className="hidden sm:inline">
+                    {isConfirmingMode
+                      ? "Confirmar y Cobrar"
+                      : isRuc
+                      ? "Crear Factura Empresarial con Representantes"
+                      : "Generar y Cobrar"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isConfirmingMode
+                      ? "Confirmar"
+                      : isRuc
+                      ? "Factura Empresarial"
+                      : "Generar"}
+                  </span>
                   {!areActionsEnabled && (
                     <span className="ml-2 text-xs opacity-75">
                       (Desactivado)
@@ -1400,10 +1415,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   <Button
                     onClick={() => setReservationModalOpen(true)}
                     variant="outline"
-                    className="w-full text-lg py-3"
+                    className="w-full text-base lg:text-lg py-2.5 lg:py-3"
                     disabled={!areActionsEnabled || isProcessingSale}
                   >
-                    <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
+                    <ClipboardDocumentListIcon className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                     Reservar Asiento
                   </Button>
                 )}
@@ -1412,9 +1427,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   <Button
                     onClick={() => setShowRepresentatives(!showRepresentatives)}
                     variant="outline"
-                    className="w-full text-lg py-3 border-blue-600 text-blue-600 hover:bg-blue-50"
+                    className="w-full text-base lg:text-lg py-2.5 lg:py-3 border-blue-600 text-blue-600 hover:bg-blue-50"
                   >
-                    <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
+                    <ClipboardDocumentListIcon className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                     {showRepresentatives ? "Ocultar" : "Gestionar"}{" "}
                     Representantes
                   </Button>

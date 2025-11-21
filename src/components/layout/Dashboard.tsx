@@ -1,4 +1,3 @@
-// src/components/layout/Dashboard.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -13,7 +12,7 @@ import {
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import { User } from '../../types';
-import Sidebar from './Sidebar'; // Importa el nuevo componente
+import Sidebar from './Sidebar';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -153,9 +152,9 @@ export const Dashboard: React.FC = () => {
       {/* Contenido principal */}
       <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${!sidebarHidden && 'lg:ml-5'}`}>
         {/* Barra superior */}
-        <header className="bg-white shadow-sm rounded-xl mb-5">
-          <div className="flex items-center justify-between h-16 px-6">
-            <div className="flex items-center space-x-4">
+        <header className="bg-white shadow-sm rounded-xl mb-4 lg:mb-5">
+          <div className="flex items-center justify-between h-16 px-4 lg:px-6">
+            <div className="flex items-center space-x-3 lg:space-x-4">
               <button
                 onClick={toggleSidebar}
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -167,12 +166,12 @@ export const Dashboard: React.FC = () => {
               {/* Info de usuario en la barra superior */}
                <div>
                 {isLoading ? (
-                  <div className="animate-pulse h-4 bg-gray-200 rounded w-48"></div>
+                  <div className="animate-pulse h-4 bg-gray-200 rounded w-32 lg:w-48"></div>
                 ) : error ? (
-                  <span className="text-sm text-red-500">Error al cargar usuario</span>
+                  <span className="text-sm text-red-500">Error</span>
                 ) : currentUser ? (
                   <span className="text-sm text-gray-600">
-                    Bienvenido, <strong>{currentUser.first_name || currentUser.full_name}</strong>
+                    <span className="hidden sm:inline">Bienvenido, </span><strong>{currentUser.first_name || currentUser.full_name}</strong>
                   </span>
                 ) : null}
               </div>
@@ -198,7 +197,7 @@ export const Dashboard: React.FC = () => {
 
         {/* Área de contenido */}
         <main className="flex-1 overflow-y-auto bg-white rounded-xl shadow-sm">
-          <div className="p-6">
+          <div className="p-4 lg:p-6">
             <Breadcrumbs />
             <div className="mt-4">
               <Outlet />

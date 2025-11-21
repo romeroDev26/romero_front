@@ -74,8 +74,8 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
         <div className="flex items-center gap-2">
           <TrophyIcon className="w-6 h-6 text-yellow-500" />
           <h3 className="text-lg font-semibold text-gray-900">{getComponentTitle()}</h3>
@@ -83,7 +83,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
 
         {/* Controles - solo mostrar si se proporcionan los handlers */}
         {(onPeriodChange || onSellerDetailsChange) && (
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             {onPeriodChange && (
               <div className="flex items-center gap-2">
                 <label htmlFor="period-grouping-top" className="text-sm font-medium text-gray-700">

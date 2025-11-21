@@ -304,7 +304,7 @@ export const ManifestsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <DocumentTextIcon className="w-6 h-6 text-blue-600" />
@@ -364,7 +364,7 @@ export const ManifestsPage: React.FC = () => {
       {/* Lista de Manifiestos */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 Manifiestos - {selectedBranch?.name}

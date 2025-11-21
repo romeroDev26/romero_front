@@ -113,7 +113,7 @@ export const TripsTable: React.FC<TripsTableProps> = ({
         key: 'manifests',
         header: 'Manifiestos',
         accessor: (trip) => {
-          // Solo mostrar el botón si el viaje está programado o en embarque
+          // Solo mostrar el bot\u00f3n si el viaje est\u00e1 programado o en embarque
           const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
           
           return (
@@ -151,15 +151,108 @@ export const TripsTable: React.FC<TripsTableProps> = ({
         ),
       },
     ],
-    [onEdit, onCancel]
+    [onEdit, onCancel, onGenerateManifest]
   );
 
+  if (!trips.length) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No se encontraron viajes para los filtros seleccionados.
+      </div>
+    );
+  }
+
   return (
-    <DataTable
-      columns={columns}
-      data={trips}
-      keyExtractor={(trip) => trip.trip_id}
-      emptyMessage="No se encontraron viajes para los filtros seleccionados."
-    />
+    <>
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-4 mt-4">
+        {trips.map((trip) => {
+          const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
+          
+          return (
+            <div key={trip.trip_id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-gray-900">
+                    {trip.trip_name || `Viaje #${trip.trip_id}`}
+                  </h3>
+                  <p className="text-sm text-gray-500">{trip.vessel_name}</p>
+                </div>
+                <StatusBadge status={trip.status} />
+              </div>
+
+              <div className="space-y-2 text-sm mb-3">
+                <div>
+                  <span className="block text-xs text-gray-500">Ruta</span>
+                  <span className="font-medium text-gray-900">
+                    {trip.origin_port_name || 'N/A'} → {trip.destination_port_name || 'N/A'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <span className="block text-xs text-gray-500">Fecha Salida</span>
+                    <span className="font-medium text-gray-900">
+                      {format(new Date(trip.departure_datetime), 'dd MMM yyyy', { locale: es })}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-xs text-gray-500">Hora Salida</span>
+                    <span className="font-medium text-gray-900 font-mono">
+                      {format(new Date(trip.departure_datetime), 'HH:mm')}
+                    </span>
+                  </div>
+                </div>
+                {trip.available_seats !== null && trip.total_seats !== null && (
+                  <div>
+                    <span className="block text-xs text-gray-500">Disponibilidad</span>
+                    <span className="font-medium text-gray-900">
+                      {trip.available_seats} / {trip.total_seats} asientos
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
+                <Button
+                  variant={canGenerateManifest ? "outline" : "secondary"}
+                  onClick={canGenerateManifest ? () => onGenerateManifest?.(trip) : undefined}
+                  disabled={!canGenerateManifest}
+                  className="flex items-center justify-center text-sm w-full"
+                >
+                  <DocumentTextIcon className="h-4 w-4 mr-2" />
+                  {canGenerateManifest ? 'Generar Manifiesto' : 'No disponible'}
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => onEdit(trip)}
+                    className="flex items-center justify-center text-sm flex-1"
+                  >
+                    <PencilIcon className="h-4 w-4 mr-1" /> Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => onCancel(trip)}
+                    className="flex items-center justify-center text-sm text-red-600 hover:text-red-800 flex-1"
+                  >
+                    <TrashIcon className="h-4 w-4 mr-1" /> Cancelar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <DataTable
+          columns={columns}
+          data={trips}
+          keyExtractor={(trip) => trip.trip_id}
+          emptyMessage="No se encontraron viajes para los filtros seleccionados."
+        />
+      </div>
+    </>
   );
 };

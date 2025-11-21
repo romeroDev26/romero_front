@@ -401,8 +401,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           </div>
           <h2 className="text-lg font-semibold text-gray-800">Transportes Romero</h2>
         </div>
-        <button onClick={onCloseMobile} className="lg:hidden p-1 rounded-md hover:bg-gray-100">
-          <XMarkIcon className="w-5 h-5 text-gray-500" />
+        <button onClick={onCloseMobile} className="lg:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
+          <XMarkIcon className="w-6 h-6 text-gray-500" />
         </button>
       </div>
 

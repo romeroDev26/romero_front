@@ -1,10 +1,13 @@
+
 // src/features/fluvial/pages/RoutesPage.tsx
 import React, { useState, useMemo } from 'react';
 import { 
   PlusIcon, 
   MagnifyingGlassIcon, 
   MapIcon, 
-  ClockIcon 
+  ClockIcon,
+  PencilIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
@@ -335,42 +338,125 @@ export const RoutesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Rutas Fluviales</h1>
           <p className="text-gray-600">Crea, edita y gestiona las rutas y sus paradas.</p>
         </div>
-        <Button onClick={handleOpenNewRouteModal}><PlusIcon className="h-5 w-5 mr-2" />Nueva Ruta</Button>
+        <Button onClick={handleOpenNewRouteModal} className="w-full sm:w-auto justify-center">
+          <PlusIcon className="h-5 w-5 mr-2" />
+          Nueva Ruta
+        </Button>
       </div>
       
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
         <div className="relative flex-grow w-full sm:max-w-md">
           <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input type="text" className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Buscar por nombre o puerto..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <input 
+            type="text" 
+            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border" 
+            placeholder="Buscar por nombre o puerto..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)} 
+          />
         </div>
-        <label className="flex items-center text-sm text-gray-700">
-          <input type="checkbox" checked={showOnlyActive} onChange={(e) => setShowOnlyActive(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"/>
+        <label className="flex items-center text-sm text-gray-700 w-full sm:w-auto">
+          <input 
+            type="checkbox" 
+            checked={showOnlyActive} 
+            onChange={(e) => setShowOnlyActive(e.target.checked)} 
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+          />
           Mostrar solo activas
         </label>
       </div>
       
-      <DataTable
-        // ** PASO 3: PASAR LOS DATOS CORRECTOS A LA TABLA **
-        data={filteredRoutes} 
-        columns={routeColumns}
-        isLoading={routesLoading || portsLoading} // Mostrar loading si cualquiera de los dos está cargando
-        error={routesError as Error | null}
-        onEdit={handleEditRoute}
-        onDelete={handleDelete}
-        keyExtractor={(route) => route.id}
-        emptyMessage="No se encontraron rutas que coincidan con los filtros."
-        showActions={true}
-        customActions={(route) => (
-          <Button variant="outline" size="sm" onClick={() => handleConfigureStops(route)} title="Gestionar paradas en el mapa" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
-            <MapIcon className="h-4 w-4" />
-          </Button>
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-4">
+        {filteredRoutes.map((route) => (
+          <div key={route.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">{route.name}</h3>
+                <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
+                  <span className="font-medium">
+                    {route.origin_port?.name || 'N/A'} → {route.destination_port?.name || 'N/A'}
+                  </span>
+                </div>
+              </div>
+              <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${ 
+                route.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' 
+              }`}>
+                {route.is_active ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
+              <div className="flex items-center">
+                <ClockIcon className="h-4 w-4 mr-1.5 text-gray-400" />
+                <span>{routeHelpers.isoStringToHours(route.estimated_duration).toFixed(1)}h</span>
+              </div>
+              <div className="flex items-center">
+                <MapIcon className="h-4 w-4 mr-1.5 text-gray-400" />
+                <span>{route.stops?.length || 0} paradas</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleConfigureStops(route)} 
+                className="text-blue-700 border-blue-200 bg-blue-50 hover:bg-blue-100"
+              >
+                <MapIcon className="h-4 w-4 mr-1" />
+                Mapa
+              </Button>
+              <button
+                onClick={() => handleEditRoute(route)}
+                className="flex items-center text-primary hover:text-primary/80 text-sm font-medium px-2"
+              >
+                <PencilIcon className="h-4 w-4 mr-1" />
+                Editar
+              </button>
+              <button
+                onClick={() => handleDelete(route)}
+                className="flex items-center text-red-600 hover:text-red-900 text-sm font-medium px-2"
+              >
+                <TrashIcon className="h-4 w-4 mr-1" />
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        {filteredRoutes.length === 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+            No se encontraron rutas que coincidan con los filtros.
+          </div>
         )}
-      />
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <DataTable
+          // ** PASO 3: PASAR LOS DATOS CORRECTOS A LA TABLA **
+          data={filteredRoutes} 
+          columns={routeColumns}
+          isLoading={routesLoading || portsLoading} // Mostrar loading si cualquiera de los dos está cargando
+          error={routesError as Error | null}
+          onEdit={handleEditRoute}
+          onDelete={handleDelete}
+          keyExtractor={(route) => route.id}
+          emptyMessage="No se encontraron rutas que coincidan con los filtros."
+          showActions={true}
+          customActions={(route) => (
+            <Button variant="outline" size="sm" onClick={() => handleConfigureStops(route)} title="Gestionar paradas en el mapa" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
+              <MapIcon className="h-4 w-4" />
+            </Button>
+          )}
+        />
+      </div>
       
       <RouteFormModal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} route={selectedRoute} routes={routes} />
       

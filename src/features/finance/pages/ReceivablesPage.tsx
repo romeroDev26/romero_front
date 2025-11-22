@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import {
   SearchIcon,
   FilterIcon,
@@ -8,9 +6,8 @@ import {
   XCircleIcon,
   RefreshCwIcon,
   CalendarIcon,
-  TruckIcon,
-  UserIcon,
-  CreditCardIcon
+  CreditCardIcon,
+  TruckIcon
 } from 'lucide-react';
 import { useReceivables } from '../hooks/useReceivables';
 import { useBranchOffices } from '../../../hooks/useBranchOffices';
@@ -294,30 +291,21 @@ const ReceivablesPage: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <UserIcon className="w-4 h-4 text-gray-400 mr-2" />
-                            <div>
-                              <div className="font-medium text-gray-900">{item.sender_name}</div>
-                              <div className="text-sm text-gray-600">{item.sender_document}</div>
-                            </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{item.sender_name}</div>
+                            <div className="text-sm text-gray-600">{item.sender_document}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <UserIcon className="w-4 h-4 text-gray-400 mr-2" />
-                            <div>
-                              <div className="font-medium text-gray-900">{item.recipient_name}</div>
-                              <div className="text-sm text-gray-600">{item.recipient_document}</div>
-                            </div>
+                          <div>
+                            <div className="font-medium text-gray-900">{item.recipient_name}</div>
+                            <div className="text-sm text-gray-600">{item.recipient_document}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <TruckIcon className="w-4 h-4 text-gray-400 mr-2" />
-                            <div>
-                              <div className="font-medium text-gray-900">Viaje #{item.trip_id}</div>
-                              <div className="text-sm text-gray-600">{item.origin_port} → {item.destination_port}</div>
-                            </div>
+                          <div>
+                            <div className="font-medium text-gray-900">Viaje #{item.trip_id}</div>
+                            <div className="text-sm text-gray-600">{item.origin_port} → {item.destination_port}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -335,7 +323,7 @@ const ReceivablesPage: React.FC = () => {
                           <div className="flex items-center">
                             <CalendarIcon className="w-4 h-4 text-gray-400 mr-2" />
                             <div className="text-sm text-gray-900">
-                              {format(new Date(item.issue_date), 'dd/MM/yyyy', { locale: es })}
+                              {item.issue_date.split('-').reverse().join('/')}
                             </div>
                           </div>
                         </td>

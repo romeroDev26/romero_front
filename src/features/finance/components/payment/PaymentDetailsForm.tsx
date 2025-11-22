@@ -25,9 +25,8 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
   // Estados (mismo patrón que CargoSalePage)
   const [paymentMethod, setPaymentMethod] = useState("EFE");
   const [operationCode, setOperationCode] = useState("");
-  const [paymentDate, setPaymentDate] = useState(
-    format(new Date(), "yyyy-MM-dd'T'HH:mm")
-  );
+  // Fecha fija del sistema (no modificable por el usuario)
+  const paymentDate = format(new Date(), "yyyy-MM-dd");
   const [notes, setNotes] = useState("");
 
   // Notificar cambios al padre
@@ -69,19 +68,21 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
           </select>
         </div>
 
-        {/* Fecha y Hora del Pago */}
+        {/* Fecha del Pago */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha y Hora del Pago *
+            Fecha del Pago
           </label>
           <input
-            type="datetime-local"
+            type="date"
             value={paymentDate}
-            onChange={(e) => setPaymentDate(e.target.value)}
-            max={format(new Date(), "yyyy-MM-dd'T'HH:mm")}
-            disabled={disabled}
-            className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+            disabled
+            readOnly
+            className="w-full p-2 border border-gray-200 rounded-md bg-gray-50 cursor-not-allowed text-sm"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Fecha actual del sistema
+          </p>
         </div>
       </div>
 

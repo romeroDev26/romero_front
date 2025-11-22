@@ -41,6 +41,9 @@ export interface ReceivablesItem {
   destination_port: string;
   branch_office_name: string;
   branch_office_id: number;
+  // URLs de comprobantes PDF
+  pdf_ticket_file_path?: string;
+  pdf_ticket58_file_path?: string;
 }
 
 export interface ReceivablesSummary {

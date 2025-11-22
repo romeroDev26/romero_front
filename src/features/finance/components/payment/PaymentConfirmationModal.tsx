@@ -1,9 +1,9 @@
 // src/features/finance/components/payment/PaymentConfirmationModal.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CheckCircleIcon, AlertTriangleIcon } from 'lucide-react';
+import { CheckCircleIcon, AlertTriangleIcon, FileTextIcon } from 'lucide-react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
@@ -38,12 +38,42 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
   });
 
   const [validationError, setValidationError] = useState<string>('');
+  const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
+  const [selectedPdfType, setSelectedPdfType] = useState<'80mm' | '58mm' | null>(null);
+
+  // Seleccionar PDF para preview
+  const handleSelectPDF = useCallback((url: string, type: '80mm' | '58mm') => {
+    if (!url) {
+      console.warn(`No hay URL disponible para el comprobante ${type}`);
+      return;
+    }
+    setSelectedPdfUrl(url);
+    setSelectedPdfType(type);
+  }, []);
 
   // Manejar cambios en el formulario
   const handleFormDataChange = useCallback((data: PaymentFormData) => {
     setFormData(data);
     setValidationError(''); // Limpiar errores al cambiar datos
   }, []);
+
+  // Seleccionar automáticamente el primer PDF disponible cuando se abre el modal
+  useEffect(() => {
+    if (isOpen && receivableItem && !selectedPdfUrl) {
+      if (receivableItem.pdf_ticket_file_path) {
+        setSelectedPdfUrl(receivableItem.pdf_ticket_file_path);
+        setSelectedPdfType('80mm');
+      } else if (receivableItem.pdf_ticket58_file_path) {
+        setSelectedPdfUrl(receivableItem.pdf_ticket58_file_path);
+        setSelectedPdfType('58mm');
+      }
+    }
+    // Limpiar selección cuando se cierra el modal
+    if (!isOpen) {
+      setSelectedPdfUrl(null);
+      setSelectedPdfType(null);
+    }
+  }, [isOpen, receivableItem, selectedPdfUrl]);
 
   // Validar formulario antes de confirmar
   const validateForm = (): boolean => {
@@ -108,14 +138,18 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
 
   if (!receivableItem) return null;
 
+  const hasPdfFiles = receivableItem.pdf_ticket_file_path || receivableItem.pdf_ticket58_file_path;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title="Confirmar Pago de Encomienda"
-      maxWidth="2xl"
+      maxWidth={hasPdfFiles ? "6xl" : "2xl"}
     >
-      <div className="space-y-6">
+      <div className={`flex flex-col ${hasPdfFiles ? 'lg:flex-row' : ''} gap-6`}>
+        {/* Panel izquierdo - Formulario de confirmación */}
+        <div className={`${hasPdfFiles ? 'lg:w-1/2' : 'w-full'} space-y-6`}>
         {/* Detalles de la encomienda */}
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -172,6 +206,40 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
               {format(new Date(receivableItem.issue_date), "dd 'de' MMMM 'de' yyyy", { locale: es })}
             </p>
           </div>
+
+          {/* Preview de Comprobantes */}
+          {(receivableItem.pdf_ticket_file_path || receivableItem.pdf_ticket58_file_path) && (
+            <div className="mt-4">
+              <h4 className="font-medium text-gray-700 mb-3">Seleccionar Comprobante</h4>
+              <div className="flex flex-wrap gap-3">
+                {receivableItem.pdf_ticket_file_path && (
+                  <Button
+                    variant={selectedPdfType === '80mm' ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => handleSelectPDF(receivableItem.pdf_ticket_file_path!, '80mm')}
+                    className="flex items-center"
+                  >
+                    <FileTextIcon className="w-4 h-4 mr-2" />
+                    Ticket 80mm
+                  </Button>
+                )}
+                {receivableItem.pdf_ticket58_file_path && (
+                  <Button
+                    variant={selectedPdfType === '58mm' ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => handleSelectPDF(receivableItem.pdf_ticket58_file_path!, '58mm')}
+                    className="flex items-center"
+                  >
+                    <FileTextIcon className="w-4 h-4 mr-2" />
+                    Ticket 58mm
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                * Selecciona un formato para ver la vista previa
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Formulario de pago */}
@@ -240,6 +308,39 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
             )}
           </Button>
         </div>
+        </div>
+
+        {/* Panel derecho - Vista previa del PDF */}
+        {hasPdfFiles && (
+          <div className="lg:w-1/2 flex flex-col">
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Vista Previa del Comprobante
+              </h3>
+              
+              {selectedPdfUrl ? (
+                <div className="h-[600px] lg:h-[700px] border border-gray-300 rounded-lg overflow-hidden bg-white">
+                  <iframe
+                    src={selectedPdfUrl}
+                    className="w-full h-full"
+                    title={`Comprobante ${selectedPdfType}`}
+                  />
+                </div>
+              ) : (
+                <div className="h-[600px] lg:h-[700px] border border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
+                  <div className="text-center text-gray-500">
+                    <FileTextIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <p className="text-lg font-medium mb-2">Sin vista previa</p>
+                    <p className="text-sm">
+                      Selecciona un formato de comprobante<br />
+                      para ver la vista previa
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   );

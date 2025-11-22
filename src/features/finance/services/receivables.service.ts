@@ -31,7 +31,37 @@ export const receivablesService = {
 
       const response = await api.get(`/dispatch/manifests/cash-on-delivery?${queryParams.toString()}`);
 
-      return response.data;
+      // Transformar la respuesta del backend: extraer parcels de cada invoice y agregar info de PDF e invoice
+      const backendData = response.data;
+      const allParcels = backendData.invoices?.flatMap((invoice: any) => 
+        invoice.parcels.map((parcel: any) => ({
+          ...parcel,
+          // Agregar campos desde el nivel de invoice
+          invoice_id: invoice.invoice_id,
+          invoice_series: invoice.invoice_series,
+          invoice_number: invoice.invoice_number,
+          issue_date: invoice.issue_date,
+          is_credit_sale: invoice.is_credit_sale,
+          // Agregar URLs de PDFs desde el nivel de invoice
+          pdf_ticket_file_path: invoice.pdf_ticket_file_path,
+          pdf_ticket58_file_path: invoice.pdf_ticket58_file_path,
+        }))
+      ) || [];
+
+      // Calcular paid_parcels y unpaid_parcels desde los parcels transformados
+      const paid_parcels = allParcels.filter((p: any) => p.payment_status === 'PAGADO').length;
+      const unpaid_parcels = allParcels.filter((p: any) => p.payment_status === 'NO PAGADO').length;
+
+      return {
+        parcels: allParcels,
+        pagination: backendData.pagination,
+        summary: {
+          ...backendData.summary,
+          paid_parcels,
+          unpaid_parcels
+        },
+        filters_applied: backendData.filters_applied
+      };
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Error al obtener las encomiendas por cobrar');
     }

@@ -323,7 +323,7 @@ const ReceivablesPage: React.FC = () => {
                           <div className="flex items-center">
                             <CalendarIcon className="w-4 h-4 text-gray-400 mr-2" />
                             <div className="text-sm text-gray-900">
-                              {item.issue_date.split('-').reverse().join('/')}
+                              {item.issue_date ? item.issue_date.split('-').reverse().join('/') : 'N/A'}
                             </div>
                           </div>
                         </td>

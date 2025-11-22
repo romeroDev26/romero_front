@@ -1271,19 +1271,11 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   </label>
                   <textarea
                     value={itemDescription}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 85) {
-                        setItemDescription(e.target.value);
-                      }
-                    }}
+                    onChange={(e) => setItemDescription(e.target.value)}
                     placeholder="Ingrese una descripción adicional para el comprobante..."
                     className="w-full p-2 border border-gray-300 rounded-md resize-none"
                     rows={3}
-                    maxLength={85}
                   />
-                  <div className="text-xs text-gray-500 mt-1">
-                    {itemDescription.length}/85 caracteres
-                  </div>
                 </div>
 
                 {/* Campo de método de pago */}
@@ -1313,18 +1305,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                     <input
                       type="text"
                       value={paymentOperationCode}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 20) {
-                          setPaymentOperationCode(e.target.value);
-                        }
-                      }}
+                      onChange={(e) => setPaymentOperationCode(e.target.value)}
                       placeholder="Ingrese el código de operación..."
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      maxLength={20}
                     />
-                    <div className="text-xs text-gray-500 mt-1">
-                      {paymentOperationCode.length}/20 caracteres
-                    </div>
                   </div>
                 )}
 

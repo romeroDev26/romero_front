@@ -18,12 +18,11 @@ import { authService } from '../../../services/auth.service';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Spinner } from '../../../components/common/Spinner';
-import { Modal } from '../../../components/common/Modal';
+import { usePaymentConfirmation } from '../hooks/usePaymentConfirmation';
+import { PaymentConfirmationModal } from '../components/payment/PaymentConfirmationModal';
 
 const ReceivablesPage: React.FC = () => {
   const [companyId, setCompanyId] = useState<number | undefined>();
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
   
   // Obtener companyId del usuario actual
   useEffect(() => {
@@ -52,32 +51,13 @@ const ReceivablesPage: React.FC = () => {
     clearFilters,
     goToPage,
     changePageSize,
-    markAsPaid,
     refresh,
-    isMarkingPaid
   } = useReceivables();
 
+  // Hook para gestionar confirmación de pagos
+  const payment = usePaymentConfirmation();
+
   const [showFilters, setShowFilters] = useState(false);
-
-  const handleMarkAsPaidClick = (item: any) => {
-    setSelectedItem(item);
-    setShowConfirmModal(true);
-  };
-
-  const handleConfirmPayment = async () => {
-    if (!selectedItem) return;
-    
-    const success = await markAsPaid(selectedItem.invoice_item_id);
-    if (success) {
-      setShowConfirmModal(false);
-      setSelectedItem(null);
-    }
-  };
-
-  const handleCancelPayment = () => {
-    setShowConfirmModal(false);
-    setSelectedItem(null);
-  };
 
   const getStatusColor = (status: string) => {
     return status === 'PAGADO' ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100';
@@ -363,8 +343,8 @@ const ReceivablesPage: React.FC = () => {
                           {item.payment_status === 'NO PAGADO' && (
                             <Button
                               size="sm"
-                              onClick={() => handleMarkAsPaidClick(item)}
-                              disabled={isMarkingPaid}
+                              onClick={() => payment.openModal(item)}
+                              disabled={payment.isConfirming}
                               className="bg-green-600 hover:bg-green-700"
                             >
                               <CheckCircleIcon className="w-4 h-4 mr-1" />
@@ -454,109 +434,14 @@ const ReceivablesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal de confirmación de pago */}
-      <Modal
-        isOpen={showConfirmModal}
-        onClose={handleCancelPayment}
-        title="Confirmar Pago de Encomienda"
-        maxWidth="lg"
-      >
-        {selectedItem && (
-          <div className="space-y-6">
-            {/* Detalles de la encomienda */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Detalles de la Encomienda #{selectedItem.invoice_item_id}
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Remitente</h4>
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium">{selectedItem.sender_name}</p>
-                    <p>DNI/RUC: {selectedItem.sender_document}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Destinatario</h4>
-                  <div className="text-sm text-gray-600">
-                    <p className="font-medium">{selectedItem.recipient_name}</p>
-                    <p>DNI/RUC: {selectedItem.recipient_document}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Viaje</h4>
-                  <div className="text-sm text-gray-600">
-                    <p>Viaje #{selectedItem.trip_id}</p>
-                    <p>{selectedItem.origin_port} → {selectedItem.destination_port}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Monto</h4>
-                  <div className="text-lg font-bold text-green-600">
-                    S/ {parseFloat(selectedItem.amount).toFixed(2)}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <h4 className="font-medium text-gray-700 mb-2">Descripción</h4>
-                <p className="text-sm text-gray-600">{selectedItem.cargo_description}</p>
-              </div>
-            </div>
-
-            {/* Mensaje de confirmación */}
-            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <CheckCircleIcon className="w-5 h-5 text-yellow-600" />
-                </div>
-                <div className="ml-3">
-                  <h4 className="text-sm font-medium text-yellow-800">
-                    Confirmar Pago
-                  </h4>
-                  <p className="mt-1 text-sm text-yellow-700">
-                    ¿Está seguro de que desea marcar esta encomienda como pagada? 
-                    Esta acción confirmará que el cliente ha pagado el monto de S/ {parseFloat(selectedItem.amount).toFixed(2)} 
-                    y que la encomienda ha sido entregada correctamente.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Botones de acción */}
-            <div className="flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={handleCancelPayment}
-                disabled={isMarkingPaid}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleConfirmPayment}
-                disabled={isMarkingPaid}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {isMarkingPaid ? (
-                  <>
-                    <Spinner className="w-4 h-4 mr-2" />
-                    Confirmando...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircleIcon className="w-4 h-4 mr-2" />
-                    Confirmar Pago
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
+      {/* Modal de confirmación de pago con nuevo componente */}
+      <PaymentConfirmationModal
+        isOpen={payment.isModalOpen}
+        onClose={payment.closeModal}
+        receivableItem={payment.selectedItem}
+        onConfirm={payment.confirmPayment}
+        isLoading={payment.isConfirming}
+      />
     </div>
   );
 };

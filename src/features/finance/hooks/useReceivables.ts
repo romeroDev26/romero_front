@@ -1,8 +1,7 @@
 // src/features/finance/hooks/useReceivables.ts
 
 import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { useQuery } from '@tanstack/react-query';
 import { receivablesService } from '../services/receivables.service';
 import {
   ReceivablesFilters,
@@ -26,6 +25,10 @@ const initialPagination: ReceivablesPagination = {
   has_prev: false
 };
 
+/**
+ * Hook para gestionar el estado y operaciones de receivables
+ * La confirmación de pagos se maneja ahora en usePaymentConfirmation
+ */
 export const useReceivables = () => {
   const [filters, setFilters] = useState<ReceivablesFilters>(initialFilters);
   const [pagination, setPagination] = useState<ReceivablesPagination>(initialPagination);
@@ -40,22 +43,6 @@ export const useReceivables = () => {
     queryKey: ['receivables', filters, pagination],
     queryFn: () => receivablesService.getReceivables({ ...filters, ...pagination }),
     staleTime: 5 * 60 * 1000, // 5 minutos
-  });
-
-  // Mutation para marcar como pagada
-  const queryClient = useQueryClient();
-  const markAsPaidMutation = useMutation({
-    mutationFn: (receivableId: number) => receivablesService.markAsPaid(receivableId),
-    onSuccess: (data) => {
-      // Mostrar mensaje de éxito
-      toast.success(data.message || 'Pago confirmado exitosamente');
-      
-      // Invalidar queries para refrescar los datos
-      queryClient.invalidateQueries({ queryKey: ['receivables'] });
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Error al confirmar el pago');
-    },
   });
 
   // Estado computado
@@ -95,17 +82,6 @@ export const useReceivables = () => {
     setPagination(prev => ({ ...prev, page_size, current_page: 1 }));
   }, []);
 
-  // Función para marcar como pagada
-  const markAsPaid = useCallback(async (receivableId: number) => {
-    try {
-      await markAsPaidMutation.mutateAsync(receivableId);
-      return true;
-    } catch (error) {
-      // El error ya se maneja en el mutation con toast
-      return false;
-    }
-  }, [markAsPaidMutation]);
-
   // Función para refrescar datos
   const refresh = useCallback(() => {
     refetch();
@@ -120,10 +96,6 @@ export const useReceivables = () => {
     clearFilters,
     goToPage,
     changePageSize,
-    markAsPaid,
     refresh,
-
-    // Estados de carga
-    isMarkingPaid: markAsPaidMutation.isPending,
   };
 };

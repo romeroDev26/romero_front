@@ -5,7 +5,6 @@ import { authService } from '../../../services/auth.service';
 import {
   ReceivablesQueryParams,
   ReceivablesResponse,
-  PaymentConfirmationResponse
 } from '../types/receivables.types';
 
 export const receivablesService = {
@@ -39,11 +38,12 @@ export const receivablesService = {
   },
 
   /**
-   * Marca una encomienda como pagada
+   * @deprecated Usar paymentService.confirmPayment() en su lugar
+   * Marca una encomienda como pagada (sin detalles adicionales)
    */
-  async markAsPaid(invoiceItemId: number): Promise<PaymentConfirmationResponse> {
+  async markAsPaid(invoiceItemId: number): Promise<any> {
     try {
-      const response = await api.post<PaymentConfirmationResponse>(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
+      const response = await api.post(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Error al marcar como pagada');

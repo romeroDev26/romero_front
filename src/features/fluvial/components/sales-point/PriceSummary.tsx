@@ -284,7 +284,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         
         {/* --- CAMPO PARA DESCUENTO MANUAL --- */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Manual</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descuento Manual por Pasaje</label>
           <Input
             type="number"
             value={discount === 0 ? '' : discount.toString()}

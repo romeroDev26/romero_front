@@ -1002,11 +1002,15 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
       ? (manualPrice !== null && manualPrice > 0) 
       : true; // Si no es modo manual, siempre es válido (puede ser que no haya destino seleccionado)
     
+    // VALIDACIÓN CRÍTICA: El monto total final debe ser mayor a 0
+    const hasValidTotalAmount = finalTicketPrice > 0;
+    
     return !!selectedBoardingStopId &&
       !!selectedDisembarkingStopId &&
       !!passengerData.docNumber.trim() &&
       !!passengerData.name.trim() &&
       hasValidPrice && // NUEVO: Validar que haya precio manual si se requiere
+      hasValidTotalAmount && // NUEVO: Validar que el monto total sea mayor a 0
       (isRuc ? representatives.length > 0 : !showSeatMap || !!selectedSeat);
   }, [
     selectedBoardingStopId,
@@ -1019,6 +1023,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     selectedSeat?.id, // Ya optimizado
     isManualPriceMode, // NUEVO
     manualPrice, // NUEVO
+    finalTicketPrice, // NUEVO: Validar monto total
   ]);
 
   return (
@@ -1484,6 +1489,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">Ingrese un precio manual para continuar con la venta.</span>
+                </div>
+              )}
+              
+              {finalTicketPrice <= 0 && selectedBoardingStopId && selectedDisembarkingStopId && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="font-medium">El monto total de la venta debe ser mayor a S/ 0.00 para continuar.</span>
                 </div>
               )}
             </div>

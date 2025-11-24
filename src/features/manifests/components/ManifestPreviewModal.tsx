@@ -66,9 +66,12 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
   };
 
   const generatePDFBlob = async (): Promise<Blob> => {
-    const pdf = new jsPDF("p", "mm", "a4");
+    // Orientación: horizontal para pasajeros, vertical para carga
+    const orientation = manifestData.manifest_type === "PASSENGER" ? "l" : "p";
+    const pdf = new jsPDF(orientation, "mm", "a4");
     const pageWidth = pdf.internal.pageSize.width;
-    const margin = 15;
+    // Margen optimizado para pasajeros (6mm) para balance entre legibilidad y diseño
+    const margin = manifestData.manifest_type === "PASSENGER" ? 6 : 15;
     let currentY = 20;
 
     // NUEVO HEADER SEGÚN DISEÑO DEL CLIENTE
@@ -183,84 +186,116 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         })
       : "N/A";
 
-    // Calcular posiciones para 3 columnas
-    const availableWidth = pageWidth - 2 * margin;
-    const colWidth = availableWidth / 3;
-    const col1X = margin;
-    const col2X = margin + colWidth;
-    const col3X = margin + 2 * colWidth;
+    // Tamaño de fuente optimizado para pasajeros
+    const infoFontSize = manifestData.manifest_type === "PASSENGER" ? 10 : 9;
+    pdf.setFontSize(infoFontSize);
 
-    pdf.setFontSize(9);
+    // Para pasajeros (horizontal): distribuir en 3 columnas con más espacio
+    // Para carga (vertical): mantener diseño en 3 columnas estándar
+    if (manifestData.manifest_type === "PASSENGER") {
+      // Calcular anchos de columna para mejor distribución en horizontal
+      const col1X = margin;
+      const col2X = margin + 95;
+      const col3X = margin + 190;
 
-    // Primera fila
-    // Columna 1: Fecha de salida
-    pdf.setFont("helvetica", "bold");
-    pdf.text("FECHA SALIDA:", col1X, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(String(fechaSalida), col1X + 28, currentY);
+      // Primera fila
+      pdf.setFont("helvetica", "bold");
+      pdf.text("FECHA SALIDA:", col1X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String(fechaSalida), col1X + 32, currentY);
 
-    // Columna 2: Origen
-    pdf.setFont("helvetica", "bold");
-    pdf.text("ORIGEN:", col2X, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(String((manifestData as any).trip_info?.origin_port_name || "N/A"), col2X + 15, currentY);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("ORIGEN:", col2X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String((manifestData as any).trip_info?.origin_port_name || "N/A"), col2X + 20, currentY);
 
-    // Columna 3: Placa
-    pdf.setFont("helvetica", "bold");
-    pdf.text("PLACA:", col3X, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(
-      String((manifestData as any).trip_info?.vehicle_license_plate || "N/A"),
-      col3X + 12,
-      currentY
-    );
+      pdf.setFont("helvetica", "bold");
+      pdf.text("PLACA:", col3X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String((manifestData as any).trip_info?.vehicle_license_plate || "N/A"), col3X + 17, currentY);
 
-    currentY += 6;
+      currentY += 6;
 
-    // Segunda fila
-    // Columna 1: Hora de salida
-    pdf.setFont("helvetica", "bold");
-    pdf.text("HORA DE SALIDA:", col1X, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(String(horaSalida), col1X + 30, currentY);
+      // Segunda fila
+      pdf.setFont("helvetica", "bold");
+      pdf.text("HORA DE SALIDA:", col1X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String(horaSalida), col1X + 35, currentY);
 
-    // Columna 2: Destino
-    pdf.setFont("helvetica", "bold");
-    pdf.text("DESTINO:", col2X, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(
-      String((manifestData as any).trip_info?.destination_port_name || "N/A"),
-      col2X + 18,
-      currentY
-    );
+      pdf.setFont("helvetica", "bold");
+      pdf.text("DESTINO:", col2X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String((manifestData as any).trip_info?.destination_port_name || "N/A"), col2X + 22, currentY);
 
-    // Columna 3: Embarcación
-    const vehicleName = String((manifestData as any).trip_info?.vehicle_model || "N/A");
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Embarcación:", col3X, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(vehicleName, col3X + 25, currentY);
+      const vehicleName = String((manifestData as any).trip_info?.vehicle_model || "N/A");
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Embarcación:", col3X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(vehicleName, col3X + 28, currentY);
 
-    currentY += 6;
+      currentY += 6;
 
-    // Columna 3: Total
-    pdf.setFont("helvetica", "bold");
-    if (manifestData.manifest_type === "CARGO") {
+      // Tercera fila - Total
+      pdf.setFont("helvetica", "bold");
+      pdf.text(`Total de Pasajeros: ${(manifestData as any).data?.length || 0}`, col1X, currentY);
+
+      currentY += 4;
+    } else {
+      // Diseño original para carga (3 columnas estándar)
+      const availableWidth = pageWidth - 2 * margin;
+      const colWidth = availableWidth / 3;
+      const col1X = margin;
+      const col2X = margin + colWidth;
+      const col3X = margin + 2 * colWidth;
+
+      // Primera fila
+      pdf.setFont("helvetica", "bold");
+      pdf.text("FECHA SALIDA:", col1X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String(fechaSalida), col1X + 28, currentY);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.text("ORIGEN:", col2X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String((manifestData as any).trip_info?.origin_port_name || "N/A"), col2X + 15, currentY);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.text("PLACA:", col3X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String((manifestData as any).trip_info?.vehicle_license_plate || "N/A"), col3X + 12, currentY);
+
+      currentY += 6;
+
+      // Segunda fila
+      pdf.setFont("helvetica", "bold");
+      pdf.text("HORA DE SALIDA:", col1X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String(horaSalida), col1X + 30, currentY);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.text("DESTINO:", col2X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(String((manifestData as any).trip_info?.destination_port_name || "N/A"), col2X + 18, currentY);
+
+      const vehicleName = String((manifestData as any).trip_info?.vehicle_model || "N/A");
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Embarcación:", col3X, currentY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(vehicleName, col3X + 25, currentY);
+
+      currentY += 6;
+
+      // Tercera fila - Total
+      pdf.setFont("helvetica", "bold");
       const rawTotalCargo = (manifestData as any).total_cargo_weight_kg;
       const totalCargo =
         rawTotalCargo && !isNaN(Number(rawTotalCargo))
           ? Math.round(Number(rawTotalCargo))
-          : ( (manifestData as any).data?.length || 0 );
+          : ((manifestData as any).data?.length || 0);
       pdf.text(`Total de carga: ${totalCargo}`, col3X, currentY);
-    } else {
-      pdf.text(
-        `Total de Pasajeros: ${(manifestData as any).data?.length || 0}`,
-        col3X,
-        currentY
-      );
-    }
 
-    currentY += 4;
+      currentY += 4;
+    }
 
     // Tables
     if (manifestData.manifest_type === "CARGO") {
@@ -542,8 +577,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           }
           totalTableWidth = adjustedColWidths.reduce((s, w) => s + w, 0);
         } else {
-          // Si hay espacio, ampliar ligeramente la tabla (hasta 20%) para mejor legibilidad
-          const expansionFactor = 1.2; // hasta +20%
+          // Si hay espacio, ampliar moderadamente la tabla (hasta 30%) para buena legibilidad
+          const expansionFactor = 1.30; // hasta +30%
           const desiredWidth = Math.round(totalTableWidth * expansionFactor);
           let extra = Math.max(0, desiredWidth - totalTableWidth);
           adjustedColWidths = [...initialColWidths];
@@ -594,8 +629,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           ],
           body: tableData,
           styles: {
-            fontSize: 6,
-            cellPadding: 1.5,
+            fontSize: 8.5,
+            cellPadding: 3,
             halign: "center",
             valign: "middle",
           },
@@ -603,7 +638,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             fillColor: [100, 100, 100], // Mismo color gris que la tabla de carga
             textColor: [255, 255, 255],
             fontStyle: "bold",
-            fontSize: 6,
+            fontSize: 8.5,
             halign: "center",
             valign: "middle",
           },

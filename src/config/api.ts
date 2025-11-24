@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // Definir la URL base de la API
-const baseURL = import.meta.env.VITE_API_URL || 'https://romeroapi-production-5dec.up.railway.app';
+const baseURL = import.meta.env.VITE_API_URL || 'https://romeroapi-production.up.railway.app';
 const apiPrefix = '/api/v1'; // Prefijo de la API
 
 // Crear instancia de axios con configuración personalizada

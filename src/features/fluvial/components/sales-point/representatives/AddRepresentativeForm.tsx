@@ -96,7 +96,9 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     setDniError(null);
 
     try {
-      const response = await api.get(`/external/query-dni?dni=${dni}`);
+      const response = await api.get(`/external/query-dni?dni=${dni}`, {
+        headers: { 'X-Skip-Auth-Redirect': '1' }
+      });
       if (response.data && response.data.nombreCompleto) {
         setFormData(prev => ({
           ...prev,
@@ -107,7 +109,12 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       }
     } catch (error: any) {
       setDniError('No se pudieron obtener los datos del DNI');
-      toast.warning('No se encontraron datos para este DNI. Ingrese el nombre manualmente.');
+      // Mostrar mensaje apropiado según el tipo de error
+      if (error?.response?.status === 401) {
+        toast.warning('No se pudo realizar la consulta automática del DNI. Puede ingresar los datos manualmente para continuar.');
+      } else {
+        toast.warning('No se encontraron datos para este DNI. Ingrese el nombre manualmente.');
+      }
     } finally {
       setIsLoadingDni(false);
     }

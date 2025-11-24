@@ -179,8 +179,8 @@ export const CompanySettingsPage: React.FC = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Datos Generales</h2></div>
-          <div className="border-t border-gray-200 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="px-4 lg:px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Datos Generales</h2></div>
+          <div className="border-t border-gray-200 p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input label="RUC *" {...register('ruc')} error={errors.ruc?.message} />
             <Input label="Razón Social *" {...register('business_name')} error={errors.business_name?.message} />
             <Input label="Nombre Comercial" {...register('trade_name')} error={errors.trade_name?.message} />
@@ -193,8 +193,8 @@ export const CompanySettingsPage: React.FC = () => {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Configuración SUNAT</h2></div>
-          <div className="border-t border-gray-200 p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="px-4 lg:px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Configuración SUNAT</h2></div>
+          <div className="border-t border-gray-200 p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input label="Usuario SOL *" {...register('sunat_username')} error={errors.sunat_username?.message} />
             <div className="relative">
               <Input label="Contraseña SOL (si desea cambiar)" type={showSunatPassword ? 'text' : 'password'} {...register('sunat_password_sol')} error={errors.sunat_password_sol?.message} />
@@ -229,8 +229,8 @@ export const CompanySettingsPage: React.FC = () => {
         </div>
 
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Archivos Digitales</h2></div>
-          <div className="border-t border-gray-200 p-6 space-y-6">
+          <div className="px-4 lg:px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Archivos Digitales</h2></div>
+          <div className="border-t border-gray-200 p-4 lg:p-6 space-y-6">
             <div className="flex items-center gap-4">
               <div className="flex items-center min-w-[120px] max-w-[320px] h-32 bg-gray-100 rounded-md justify-center">
                 <img

@@ -24,7 +24,7 @@ import { Spinner } from "../../../../components/common/Spinner";
 import { SearchableSelect } from "../../../../components/common/SearchableSelect";
 import { ReservationModal } from "./ReservationModal";
 import { RepresentativesManager } from "./representatives";
-// ACTUALIZADO: Usar nuevo modal de preview de tickets
+// ACTUALIZADO: Usar nuevo modal de preview de tickets (ahora usa backend)
 import { TicketPreviewModal } from "./TicketPreviewModal";
 // NUEVO: Importar sistema de confirmación de reservas
 import { 
@@ -35,13 +35,8 @@ import {
   BackendInvoiceData,
   BackendCompanyInvoiceData,
 } from "./tickets/types/backend.types";
-import { CompanySaleTransformer } from "./tickets/transformers/companySale.transformer";
-import { CompanyTicketTemplate } from "./tickets/templates/companyTicket.template";
 // NUEVO: Importar sistema centralizado de detección de embarcaciones
 import { useVesselDetection } from "./vessel-detection";
-// NUEVO: Importar sistema especializado para compañías sin asientos
-import { NoSeatsCompanyTicketGenerator } from "./tickets/generators/noSeatsCompanyTicket.generator";
-import { isVesselWithoutSeats } from "./tickets/utils/ticketHelpers";
 // NUEVO: Importar sistema de monedas
 import { useCurrencyManager } from './hooks/useCurrencyManager';
 import { CurrencySelector } from './components/CurrencySelector';
@@ -95,8 +90,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const [ticketBackendData, setTicketBackendData] = useState<
     BackendInvoiceData | BackendCompanyInvoiceData | null
   >(null);
-  const [isCompanyTicket, setIsCompanyTicket] = useState(false); // Guarda el tipo de ticket
-  const [showRepresentativesInA4, setShowRepresentativesInA4] = useState(false); // Flag para mostrar representantes en A4
 
   // Función para mostrar modal de preview de ticket
   // Eliminar función de mock, ahora el preview se activa solo con datos reales
@@ -395,7 +388,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // Limpiar datos del ticket
     setShowTicketPreview(false);
     setTicketBackendData(null);
-    setIsCompanyTicket(false);
 
     // Limpiar series de documentos (forzar re-selección)
     setSelectedBoletaSeries("");
@@ -760,13 +752,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     ];
   };
 
-  // Helper function para verificar si los datos son de venta empresarial
-  const isCompanyInvoiceData = (
-    data: BackendInvoiceData | BackendCompanyInvoiceData
-  ): data is BackendCompanyInvoiceData => {
-    return "invoice" in data && "representatives" in data && "summary" in data;
-  };
-
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
   // Estado para las funciones del WebSocket obtenidas del SeatAndFareSelector
@@ -904,7 +889,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           (invoiceData) => {
             // Callback de éxito: mostrar modal de preview de ticket con datos reales
             setTicketBackendData(invoiceData);
-            setIsCompanyTicket(true); // ← NUEVO: Marcar como ticket empresarial
             setShowTicketPreview(true);
             // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
             setIsProcessingSale(false);
@@ -947,7 +931,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         reservationToConfirm,
         (invoiceData) => {
           setTicketBackendData(invoiceData);
-          setIsCompanyTicket(false); // ← NUEVO: Marcar como ticket regular
           setShowTicketPreview(true);
           // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
           setIsProcessingSale(false);
@@ -1002,15 +985,15 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
       ? (manualPrice !== null && manualPrice > 0) 
       : true; // Si no es modo manual, siempre es válido (puede ser que no haya destino seleccionado)
     
-    // VALIDACIÓN CRÍTICA: El monto total final debe ser mayor a 0
-    const hasValidTotalAmount = finalTicketPrice > 0;
+    // CRÍTICO: Validar que el monto final sea mayor a 0 (previene facturas de S/ 0.00)
+    const hasFinalPriceGreaterThanZero = finalTicketPrice > 0;
     
     return !!selectedBoardingStopId &&
       !!selectedDisembarkingStopId &&
       !!passengerData.docNumber.trim() &&
       !!passengerData.name.trim() &&
       hasValidPrice && // NUEVO: Validar que haya precio manual si se requiere
-      hasValidTotalAmount && // NUEVO: Validar que el monto total sea mayor a 0
+      hasFinalPriceGreaterThanZero && // CRÍTICO: El monto final debe ser > 0
       (isRuc ? representatives.length > 0 : !showSeatMap || !!selectedSeat);
   }, [
     selectedBoardingStopId,
@@ -1023,7 +1006,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     selectedSeat?.id, // Ya optimizado
     isManualPriceMode, // NUEVO
     manualPrice, // NUEVO
-    finalTicketPrice, // NUEVO: Validar monto total
+    finalTicketPrice, // CRÍTICO: Agregar finalTicketPrice como dependencia
   ]);
 
   return (
@@ -1048,13 +1031,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         </div>
       )}
       
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="flex items-start justify-between mb-6 pb-4 border-b">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+      <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-4 lg:mb-6 pb-4 border-b">
+          <div className="flex-1">
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-800">
               Registrar Venta de Pasaje
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm lg:text-base text-gray-600">
               Desde: <span className="font-semibold">{branch.name}</span>
             </p>
           </div>
@@ -1062,24 +1045,30 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             // Limpiar completamente el estado antes de volver
             clearStateForVesselChange();
             onBack();
-          }} disabled={isProcessingSale}>
+          }} disabled={isProcessingSale} className="w-full sm:w-auto justify-center">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-6 flex items-center gap-4 text-sm">
-          <Ship className="h-5 w-5 text-blue-700" />
-          <span className="font-semibold">
-            {trip.trip_name} ({trip.vessel_name})
-          </span>
-          <Clock className="h-5 w-5 text-blue-700 ml-auto" />
-          <span>
-            {format(
-              new Date(trip.estimated_departure_time),
-              "dd/MM/yyyy hh:mm a"
-            )}
-          </span>
+        <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 lg:mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm">
+            <div className="flex items-center gap-2 flex-1">
+              <Ship className="h-5 w-5 text-blue-700 shrink-0" />
+              <span className="font-semibold">
+                {trip.trip_name} ({trip.vessel_name})
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-700 shrink-0" />
+              <span>
+                {format(
+                  new Date(trip.estimated_departure_time),
+                  "dd/MM/yyyy hh:mm a"
+                )}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* NUEVO: Mostrar información de confirmación de reserva */}
@@ -1096,9 +1085,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           />
         )}
 
-        <div className="grid lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3 space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="grid lg:grid-cols-5 gap-4 lg:gap-8">
+          <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+            <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
               <PassengerDataForm
                 passengerData={passengerData}
                 setPassengerData={setPassengerData}
@@ -1109,41 +1098,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             {/* Sección de Representantes para RUC */}
             {showRepresentatives && (
               <>
-                {/* Switch para mostrar/ocultar representantes en A4 */}
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label htmlFor="showRepresentativesSwitch" className="text-sm font-medium text-gray-700">
-                        Incluir lista de pasajeros en PDF A4
-                      </label>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Muestra la tabla detallada de representantes en el documento A4 corporativo
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      id="showRepresentativesSwitch"
-                      role="switch"
-                      aria-checked={showRepresentativesInA4}
-                      onClick={() => setShowRepresentativesInA4(!showRepresentativesInA4)}
-                      className={`
-                        relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
-                        transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                        ${showRepresentativesInA4 ? 'bg-blue-600' : 'bg-gray-200'}
-                      `}
-                    >
-                      <span
-                        aria-hidden="true"
-                        className={`
-                          pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 
-                          transition duration-200 ease-in-out
-                          ${showRepresentativesInA4 ? 'translate-x-5' : 'translate-x-0'}
-                        `}
-                      />
-                    </button>
-                  </div>
-                </div>
-                
                 <RepresentativesManager
                   representatives={representatives}
                   onAddRepresentative={handleAddRepresentative}
@@ -1165,10 +1119,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
               </>
             )}
 
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
               {showAddForm && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="text-sm font-medium text-blue-800">
+                <div className="mb-4 p-2.5 lg:p-3 bg-blue-50 border border-blue-200 rounded-md">
+                  <div className="text-xs lg:text-sm font-medium text-blue-800">
                     Modo: Selección de asiento para representante
                   </div>
                   <div className="text-xs text-blue-600">
@@ -1205,13 +1159,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 />
               ) : (
                 // UI alternativa para embarcaciones sin asientos
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                  <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-                    <Ship className="h-6 w-6 mr-2 text-gray-500" />
+                <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+                  <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-3 lg:mb-4 flex items-center">
+                    <Ship className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
                     Tramo y Asiento
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 gap-3 lg:gap-4 mb-4">
                     <SearchableSelect
                       label="Origen (Embarque)"
                       value={selectedBoardingStopId}
@@ -1258,10 +1212,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           </div>
 
           <div className="lg:col-span-2">
-            <div className="sticky top-24 max-h-[calc(100vh-1rem)] overflow-y-auto pr-2 space-y-6 pb-56 scroll-pb-64">
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center">
-                  <ClipboardDocumentListIcon className="h-6 w-6 mr-2 text-gray-500" />
+            <div className="lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100vh-1rem)] overflow-y-auto lg:pr-2 space-y-4 lg:space-y-6 pb-4 lg:pb-56 lg:scroll-pb-64">
+              <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+                <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-2 flex items-center">
+                  <ClipboardDocumentListIcon className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
                   Comprobante
                 </h3>
                 {isLoadingSeries ? (
@@ -1322,19 +1276,11 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   </label>
                   <textarea
                     value={itemDescription}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 85) {
-                        setItemDescription(e.target.value);
-                      }
-                    }}
+                    onChange={(e) => setItemDescription(e.target.value)}
                     placeholder="Ingrese una descripción adicional para el comprobante..."
                     className="w-full p-2 border border-gray-300 rounded-md resize-none"
                     rows={3}
-                    maxLength={85}
                   />
-                  <div className="text-xs text-gray-500 mt-1">
-                    {itemDescription.length}/85 caracteres
-                  </div>
                 </div>
 
                 {/* Campo de método de pago */}
@@ -1364,18 +1310,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                     <input
                       type="text"
                       value={paymentOperationCode}
-                      onChange={(e) => {
-                        if (e.target.value.length <= 20) {
-                          setPaymentOperationCode(e.target.value);
-                        }
-                      }}
+                      onChange={(e) => setPaymentOperationCode(e.target.value)}
                       placeholder="Ingrese el código de operación..."
                       className="w-full p-2 border border-gray-300 rounded-md"
-                      maxLength={20}
                     />
-                    <div className="text-xs text-gray-500 mt-1">
-                      {paymentOperationCode.length}/20 caracteres
-                    </div>
                   </div>
                 )}
 
@@ -1419,14 +1357,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 currencySymbol={getCurrencySymbol()}
               />
 
-              <div className="bg-white p-4 rounded-lg shadow-sm border space-y-3">
-                <h3 className="font-semibold text-center text-gray-700">
+              <div className="bg-white p-4 rounded-lg shadow-sm border space-y-2.5 lg:space-y-3">
+                <h3 className="font-semibold text-sm lg:text-base text-center text-gray-700">
                   Acciones
                 </h3>
 
                 <Button
                   onClick={handleConfirmSale}
-                  className={`w-full text-lg py-3 ${
+                  className={`w-full text-base lg:text-lg py-2.5 lg:py-3 ${
                     areActionsEnabled && !isProcessingSale
                       ? "bg-green-600 hover:bg-green-700"
                       : "bg-gray-400 cursor-not-allowed"
@@ -1441,12 +1379,21 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   }
                   disabled={!areActionsEnabled || isProcessingSale}
                 >
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  {isConfirmingMode
-                    ? "Confirmar y Cobrar"
-                    : isRuc
-                    ? "Crear Factura Empresarial con Representantes"
-                    : "Generar y Cobrar"}
+                  <CreditCard className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
+                  <span className="hidden sm:inline">
+                    {isConfirmingMode
+                      ? "Confirmar y Cobrar"
+                      : isRuc
+                      ? "Crear Factura Empresarial con Representantes"
+                      : "Generar y Cobrar"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isConfirmingMode
+                      ? "Confirmar"
+                      : isRuc
+                      ? "Factura Empresarial"
+                      : "Generar"}
+                  </span>
                   {!areActionsEnabled && (
                     <span className="ml-2 text-xs opacity-75">
                       (Desactivado)
@@ -1457,10 +1404,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   <Button
                     onClick={() => setReservationModalOpen(true)}
                     variant="outline"
-                    className="w-full text-lg py-3"
+                    className="w-full text-base lg:text-lg py-2.5 lg:py-3"
                     disabled={!areActionsEnabled || isProcessingSale}
                   >
-                    <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
+                    <ClipboardDocumentListIcon className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                     Reservar Asiento
                   </Button>
                 )}
@@ -1469,9 +1416,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   <Button
                     onClick={() => setShowRepresentatives(!showRepresentatives)}
                     variant="outline"
-                    className="w-full text-lg py-3 border-blue-600 text-blue-600 hover:bg-blue-50"
+                    className="w-full text-base lg:text-lg py-2.5 lg:py-3 border-blue-600 text-blue-600 hover:bg-blue-50"
                   >
-                    <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
+                    <ClipboardDocumentListIcon className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                     {showRepresentatives ? "Ocultar" : "Gestionar"}{" "}
                     Representantes
                   </Button>
@@ -1492,10 +1439,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 </div>
               )}
               
-              {finalTicketPrice <= 0 && selectedBoardingStopId && selectedDisembarkingStopId && (
+              {finalTicketPrice === 0 && (basePrice || manualPrice) && (
                 <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
                   <AlertTriangle className="h-4 w-4" />
-                  <span className="font-medium">El monto total de la venta debe ser mayor a S/ 0.00 para continuar.</span>
+                  <span className="font-medium">El monto total no puede ser S/ 0.00. Ajuste el precio o el descuento.</span>
                 </div>
               )}
             </div>
@@ -1520,85 +1467,24 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         />
       )}
 
-      {/* Modal de preview de ticket */}
-      {showTicketPreview &&
-        ticketBackendData &&
-        (isCompanyTicket ? (
-          <TicketPreviewModal
-            isOpen={showTicketPreview}
-            onClose={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // ← NUEVO: Limpiar tipo de ticket
-            }}
-            backendData={ticketBackendData}
-            onSuccess={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // Limpiar tipo de ticket
-              onSaleSuccess();
-            }}
-            showRepresentativesInA4={showRepresentativesInA4}
-            // NUEVO: Props para empresa
-            customGeneratePDF={async () => {
-              // Verificar que los datos sean de tipo empresarial
-              if (!isCompanyInvoiceData(ticketBackendData)) {
-                throw new Error(
-                  "Los datos no corresponden a una venta empresarial válida"
-                );
-              }
-
-              // Verificar que los datos sean válidos para venta empresarial
-              if (
-                !ticketBackendData.invoice ||
-                !ticketBackendData.representatives ||
-                ticketBackendData.representatives.length === 0
-              ) {
-                throw new Error(
-                  "Los datos no corresponden a una venta empresarial válida"
-                );
-              }
-
-              // NUEVA LÓGICA: Detectar si es embarcación sin asientos y usar el generador especializado
-              const hasVesselWithoutSeats = isVesselWithoutSeats(
-                ticketBackendData.invoice.items
-              );
-
-              if (hasVesselWithoutSeats) {
-                // Usar el nuevo generador especializado para compañías sin asientos
-                return await NoSeatsCompanyTicketGenerator.generate(
-                  ticketBackendData
-                );
-              } else {
-                // Usar el generador tradicional para compañías con asientos numerados
-                const summaryData =
-                  CompanySaleTransformer.transformSummary(ticketBackendData);
-                return await CompanyTicketTemplate.generatePDF(summaryData);
-              }
-            }}
-            initialPhoneNumber={passengerData.phone}
-            onClearForm={clearFormAfterSale}
-          />
-        ) : (
-          <TicketPreviewModal
-            isOpen={showTicketPreview}
-            onClose={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // Limpiar tipo de ticket
-            }}
-            backendData={ticketBackendData}
-            onSuccess={() => {
-              setShowTicketPreview(false);
-              setTicketBackendData(null);
-              setIsCompanyTicket(false); // Limpiar tipo de ticket
-              onSaleSuccess();
-            }}
-            showRepresentativesInA4={showRepresentativesInA4}
-            initialPhoneNumber={passengerData.phone}
-            onClearForm={clearFormAfterSale}
-          />
-        ))}
+      {/* Modal de preview de ticket - Simplificado */}
+      {showTicketPreview && ticketBackendData && (
+        <TicketPreviewModal
+          isOpen={showTicketPreview}
+          onClose={() => {
+            setShowTicketPreview(false);
+            setTicketBackendData(null);
+          }}
+          backendData={ticketBackendData}
+          onSuccess={() => {
+            setShowTicketPreview(false);
+            setTicketBackendData(null);
+            onSaleSuccess();
+          }}
+          initialPhoneNumber={passengerData.phone}
+          onClearForm={clearFormAfterSale}
+        />
+      )}
     </>
   );
 });

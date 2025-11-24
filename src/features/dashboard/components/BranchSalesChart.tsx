@@ -37,7 +37,7 @@ export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoad
   })) || [];
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-md border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Ventas por Sucursales</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>

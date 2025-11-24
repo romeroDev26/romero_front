@@ -136,6 +136,82 @@ class InvoicesService {
     // Extraer el array de facturas del formato de respuesta
     return response.data?.invoices || response.data || [];
   }
+
+  /**
+   * Genera y obtiene el PDF de una factura desde el backend
+   * @param invoiceId - ID de la factura
+   * @param size - Tamaño del PDF: '80mm', '58mm' o 'a4'
+   * @returns URL del PDF generado (almacenado en el backend)
+   */
+  async generatePdf(invoiceId: number, size: '80mm' | '58mm' | 'a4' = '80mm'): Promise<string> {
+    const response = await api.post<string>(
+      `${this.basePath}${invoiceId}/generate-pdf`,
+      null,
+      {
+        params: { size }
+      }
+    );
+    return response.data;
+  }
+
+  /**
+   * Obtiene el PDF ya generado como Blob para vista previa
+   * Primero genera el PDF (si no existe) y luego obtiene la URL desde la invoice
+   * Finalmente hace fetch del PDF usando el backend como proxy para evitar CORS
+   * @param invoiceId - ID de la factura
+   * @param size - Tamaño del PDF para determinar qué PDF obtener
+   * @returns Blob del PDF para mostrar/descargar
+   */
+  async getPdfBlob(invoiceId: number, size: '80mm' | '58mm' | 'a4' = '80mm'): Promise<Blob> {
+    // 1. Obtener la invoice actualizada (que debería tener la URL del PDF)
+    const invoice = await this.getById(invoiceId);
+    
+    // 2. Extraer la URL según el tamaño solicitado
+    let pdfUrl: string | null | undefined = null;
+    
+    switch (size) {
+      case '80mm':
+        pdfUrl = invoice.pdf_ticket_file_path;
+        break;
+      case '58mm':
+        pdfUrl = (invoice as any).pdf_ticket58_file_path;
+        break;
+      case 'a4':
+        pdfUrl = invoice.pdf_a4_file_path;
+        break;
+    }
+    
+    if (!pdfUrl) {
+      throw new Error(`PDF ${size} no está disponible. La URL es null o vacía.`);
+    }
+    
+    // 3. Hacer fetch del PDF a través de un proxy simple usando axios con modo cors
+    // Importante: axios manejará mejor el CORS que fetch nativo
+    const response = await api.get(pdfUrl, {
+      responseType: 'blob',
+      // Configurar axios para hacer la petición directamente sin pasar por nuestro backend
+      baseURL: '', // Resetear baseURL para usar la URL completa
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
+    
+    return response.data;
+  }
+
+  /**
+   * Genera ambos PDFs (80mm y A4) y retorna sus URLs
+   * @param invoiceId - ID de la factura
+   * @returns URLs de ambos PDFs generados
+   */
+  async generateBothPdfs(invoiceId: number): Promise<{ url80mm: string; urlA4: string }> {
+    const [url80mm, urlA4] = await Promise.all([
+      this.generatePdf(invoiceId, '80mm'),
+      this.generatePdf(invoiceId, 'a4')
+    ]);
+    
+    return { url80mm, urlA4 };
+  }
 }
 
 export const invoicesService = new InvoicesService();

@@ -66,20 +66,20 @@ export const DashboardPage: React.FC = () => {
 
   // Para administradores, mostrar el dashboard analítico completo
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="p-4 lg:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard de Rendimiento</h1>
         
         {/* Selector de período global */}
-        <div className="flex items-center gap-2">
-          <label htmlFor="global-period" className="text-sm font-medium text-gray-700">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <label htmlFor="global-period" className="text-sm font-medium text-gray-700 whitespace-nowrap">
             Período:
           </label>
           <select
             id="global-period"
             value={period}
             onChange={(e) => setPeriod(e.target.value as 'today' | 'week' | 'month' | 'year')}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="today">Hoy</option>
             <option value="week">Esta Semana</option>

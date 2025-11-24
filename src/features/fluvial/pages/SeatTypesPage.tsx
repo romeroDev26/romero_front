@@ -1,4 +1,3 @@
-// src/features/fluvial/pages/SeatTypesPage.tsx
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, AdjustmentsHorizontalIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
@@ -411,7 +410,7 @@ export const SeatTypesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Tipos de Asiento</h1>
           <p className="text-gray-600">Gestiona los tipos de asiento y sus multiplicadores de precio</p>
@@ -420,8 +419,8 @@ export const SeatTypesPage: React.FC = () => {
 
       {/* Filtros y acciones */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        <div className="flex gap-4 items-center flex-grow">
-          <div className="relative flex-grow max-w-md">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-grow w-full sm:w-auto">
+          <div className="relative flex-grow w-full sm:max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
             </div>
@@ -450,7 +449,7 @@ export const SeatTypesPage: React.FC = () => {
             setEditingSeatType(undefined);
             setShowSeatTypeModal(true);
           }}
-          className="flex items-center"
+          className="flex items-center w-full sm:w-auto justify-center"
         >
           <PlusIcon className="h-5 w-5 mr-2" />
           Nuevo Tipo de Asiento
@@ -458,7 +457,7 @@ export const SeatTypesPage: React.FC = () => {
       </div>
 
       {/* Resumen de estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <AdjustmentsHorizontalIcon className="h-8 w-8 text-blue-500" />
@@ -506,20 +505,111 @@ export const SeatTypesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabla de tipos de asiento */}
-      <DataTable
-        data={filteredSeatTypes}
-        columns={columns}
-        isLoading={isLoading}
-        error={error}
-        onEdit={(seatType) => {
-          setEditingSeatType(seatType);
-          setShowSeatTypeModal(true);
-        }}
-        onDelete={handleDeleteSeatType}
-        keyExtractor={(seatType) => seatType.id}
-        emptyMessage="No se encontraron tipos de asiento"
-      />
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-4">
+        {filteredSeatTypes.map((seatType) => (
+          <div key={seatType.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-semibold text-gray-900">{seatType.name}</h3>
+                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                    {seatType.code}
+                  </span>
+                </div>
+                {seatType.description && (
+                  <p className="text-sm text-gray-500 mt-1">{seatType.description}</p>
+                )}
+              </div>
+              <button
+                onClick={() => handleToggleStatus(seatType)}
+                className={`px-2 py-0.5 text-xs font-semibold rounded-full cursor-pointer ${
+                  seatType.is_active 
+                    ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                }`}
+              >
+                {seatType.is_active ? 'Activo' : 'Inactivo'}
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+              <div>
+                <span className="block text-xs text-gray-500">Multiplicador</span>
+                <span className="font-medium text-gray-900">x{seatType.price_multiplier.toFixed(1)}</span>
+              </div>
+              <div>
+                <span className="block text-xs text-gray-500">Orden</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-900">{seatType.display_order}</span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => handleMoveOrder(seatType.id, 'up')}
+                      disabled={filteredSeatTypes.findIndex(st => st.id === seatType.id) === 0}
+                      className="text-gray-400 hover:text-gray-600 disabled:opacity-50 p-1"
+                    >
+                      <ArrowUpIcon className="h-3 w-3" />
+                    </button>
+                    <button
+                      onClick={() => handleMoveOrder(seatType.id, 'down')}
+                      disabled={filteredSeatTypes.findIndex(st => st.id === seatType.id) === filteredSeatTypes.length - 1}
+                      className="text-gray-400 hover:text-gray-600 disabled:opacity-50 p-1"
+                    >
+                      <ArrowDownIcon className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-4 p-2 bg-gray-50 rounded text-xs">
+              <span className="block text-gray-500 mb-1">Impacto en Precio:</span>
+              <PricePreview multiplier={seatType.price_multiplier} />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+              <button
+                onClick={() => {
+                  setEditingSeatType(seatType);
+                  setShowSeatTypeModal(true);
+                }}
+                className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                <PencilIcon className="h-4 w-4 mr-1" /> Editar
+              </button>
+              <button
+                onClick={() => handleDeleteSeatType(seatType)}
+                className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
+              >
+                <TrashIcon className="h-4 w-4 mr-1" /> Eliminar
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        {filteredSeatTypes.length === 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+            No se encontraron tipos de asiento.
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block">
+        <DataTable
+          data={filteredSeatTypes}
+          columns={columns}
+          isLoading={isLoading}
+          error={error}
+          onEdit={(seatType) => {
+            setEditingSeatType(seatType);
+            setShowSeatTypeModal(true);
+          }}
+          onDelete={handleDeleteSeatType}
+          keyExtractor={(seatType) => seatType.id}
+          emptyMessage="No se encontraron tipos de asiento"
+        />
+      </div>
 
       {/* Modal */}
       <SeatTypeFormModal

@@ -100,7 +100,7 @@ export const TripManifestsPage: React.FC = () => {
 
     return (
       <div className={`${bgColor.replace('50', '25')} border rounded-lg p-6`}>
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex flex-col md:flex-row items-start justify-between mb-4 gap-4">
           <div className="flex items-center space-x-3">
             <div className={`p-2 ${bgColor} rounded-lg`}>
               <Icon className={`w-6 h-6 ${iconColor}`} />
@@ -124,7 +124,7 @@ export const TripManifestsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <p className="text-sm font-medium text-gray-700">Fecha de Generación</p>
             <p className="text-sm text-gray-600">
@@ -275,7 +275,7 @@ export const TripManifestsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header con información del viaje */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-4">
             <Button
               variant="outline"
@@ -294,7 +294,7 @@ export const TripManifestsPage: React.FC = () => {
                 <h1 className="text-2xl font-bold text-gray-900">
                   Manifiestos del Viaje
                 </h1>
-                <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                <div className="flex flex-col md:flex-row md:items-center md:space-x-4 text-sm text-gray-600 mt-1 gap-2 md:gap-0">
                   <div className="flex items-center space-x-1">
                     <MapPinIcon className="w-4 h-4" />
                     <span>{tripInfo.route_name}</span>

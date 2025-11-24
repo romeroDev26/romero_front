@@ -23,7 +23,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   }[changeType];
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-md border border-gray-200">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>

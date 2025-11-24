@@ -28,6 +28,7 @@ class ExternalQueryService {
   async queryDni(dni: string): Promise<DniResponse> {
     const response = await api.get<DniResponse>('/external/query-dni', {
       params: { dni },
+      headers: { 'X-Skip-Auth-Redirect': '1' }
     });
     return response.data;
   }
@@ -35,6 +36,7 @@ class ExternalQueryService {
   async queryRuc(ruc: string): Promise<RucResponse> {
     const response = await api.get<RucResponse>('/external/query-ruc', {
       params: { ruc },
+      headers: { 'X-Skip-Auth-Redirect': '1' }
     });
     return response.data;
   }

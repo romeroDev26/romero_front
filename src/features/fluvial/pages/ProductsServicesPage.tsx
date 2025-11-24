@@ -199,20 +199,22 @@ export const ProductsServicesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Productos y Servicios</h1>
           <p className="text-gray-600">Gestiona los productos y servicios disponibles</p>
         </div>
-        <Button onClick={openCreateModal} className="flex items-center gap-2">
+        <Button onClick={openCreateModal} className="flex items-center gap-2 w-full sm:w-auto justify-center">
           <PlusIcon className="w-4 h-4" />
           Nuevo
         </Button>
       </div>
 
+      {/* Search and Filters - Responsive */}
       <div className="bg-white p-4 rounded-lg shadow space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:justify-between">
+          <div className="flex-1 w-full sm:max-w-md">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <MagnifyingGlassIcon className="h-4 w-4 text-gray-500" />
@@ -221,14 +223,14 @@ export const ProductsServicesPage: React.FC = () => {
                 placeholder="Buscar productos/servicios..."
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10"
+                className="pl-10 w-full"
               />
             </div>
           </div>
           <Button
             variant="outline"
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 justify-center w-full sm:w-auto"
           >
             <FunnelIcon className="w-4 h-4" />
             Filtros
@@ -290,7 +292,76 @@ export const ProductsServicesPage: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-x-auto">
+      {/* Mobile Card View */}
+      <div className="block lg:hidden space-y-4">
+        {(productsServices || []).map((item) => (
+          <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-base font-semibold text-gray-900">{item.name}</h3>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${
+                    item.item_type === 'SERVICE'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {item.item_type === 'SERVICE' ? 'Servicio' : 'Producto'}
+                  </span>
+                </div>
+                {item.internal_code && (
+                  <p className="text-sm text-gray-500">Código: {item.internal_code}</p>
+                )}
+              </div>
+              <span className={`px-2 py-0.5 text-xs rounded-full ${
+                item.is_active
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {item.is_active ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+              <div>
+                <span className="block text-xs text-gray-500">Precio Venta</span>
+                <span className="font-medium text-gray-900">
+                  {item.currency_code} {Number(item.sale_price).toFixed(2)}
+                </span>
+              </div>
+              <div>
+                <span className="block text-xs text-gray-500">IGV</span>
+                <span className="font-medium text-gray-900">
+                  {getTaxCategoryLabel(item.tax_category_code)}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+              <button
+                onClick={() => { setSelectedItem(item); setShowViewModal(true); }}
+                className="flex items-center text-gray-600 hover:text-blue-800 text-sm font-medium"
+              >
+                <EyeIcon className="h-4 w-4 mr-1" /> Ver
+              </button>
+              <button
+                onClick={() => openEditModal(item)}
+                className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+              >
+                <PencilIcon className="h-4 w-4 mr-1" /> Editar
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        {(!productsServices || productsServices.length === 0) && (
+          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+            No se encontraron productos o servicios.
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden lg:block bg-white rounded-lg shadow overflow-x-auto">
         <DataTable
           data={productsServices || []}
           columns={columns}

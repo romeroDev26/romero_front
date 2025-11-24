@@ -338,60 +338,175 @@ export const DocumentSeriesPage: React.FC = () => {
         <p className="text-gray-600">Gestiona las sucursales y las series de documentos de tu compañía.</p>
       </div>
 
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          <button onClick={() => setActiveTab('offices')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === 'offices' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><BuildingStorefrontIcon className="h-5 w-5 mr-2"/>Sucursales ({offices.length})</button>
-          <button onClick={() => setActiveTab('series')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center ${activeTab === 'series' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><ClipboardDocumentListIcon className="h-5 w-5 mr-2"/>Series ({series.length})</button>
+      <div className="border-b border-gray-200 overflow-x-auto">
+        <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max">
+          <button onClick={() => setActiveTab('offices')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${activeTab === 'offices' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><BuildingStorefrontIcon className="h-5 w-5 mr-2"/>Sucursales ({offices.length})</button>
+          <button onClick={() => setActiveTab('series')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${activeTab === 'series' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}><ClipboardDocumentListIcon className="h-5 w-5 mr-2"/>Series ({series.length})</button>
         </nav>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div className="relative max-w-md">
+      <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+        <div className="relative w-full sm:max-w-md">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input type="text" className="pl-10 p-2 border rounded-md w-full" placeholder={`Buscar en ${activeTab === 'offices' ? 'sucursales' : 'series'}...`} onChange={e => setSearchTerm(e.target.value)} />
         </div>
-        <Button onClick={() => handleOpenModal()} className="flex items-center">
+        <Button onClick={() => handleOpenModal()} className="flex items-center justify-center w-full sm:w-auto">
             <PlusIcon className="h-5 w-5 mr-2" />{activeTab === 'offices' ? 'Nueva Sucursal' : 'Nueva Serie'}
         </Button>
       </div>
 
       {isLoading ? <div className="flex justify-center items-center h-64"><Spinner/></div> : (
         activeTab === 'offices' ? (
-          <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50"><tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          <th className="px-6 py-3">Sucursal</th>
-          <th className="px-6 py-3">Dirección de la Sucursal</th>
-          <th className="px-6 py-3">Puerto</th>
-          <th className="px-6 py-3">Dirección del Puerto</th>
-          <th className="px-6 py-3">Contacto</th>
-          <th className="px-6 py-3 text-center">Principal</th>
-          <th className="px-6 py-3 text-center">Estado</th>
-          <th className="px-6 py-3 text-right">Acciones</th>
-        </tr></thead>
-        <tbody className="divide-y divide-gray-200">
-          {filteredOffices.map(office => (<tr key={office.id}>
-            <td className="px-6 py-4">
-              <div className="font-medium">{office.name}</div>
-              <div className="text-sm text-gray-500">{office.code}</div>
-            </td>
-            <td className="px-6 py-4"><div className="text-sm text-gray-700">{office.address_line || 'Sin dirección'}</div></td>
-            <td className="px-6 py-4"><div className="text-sm">{office.port_name && office.port_name.trim() ? office.port_name : 'N/A'}</div></td>
-            <td className="px-6 py-4"><div className="text-sm text-gray-500">{office.port_address && office.port_address.trim() ? office.port_address : 'Sin dirección'}</div></td>
-            <td className="px-6 py-4"><div className="text-sm">{office.phone || '-'}</div><div className="text-sm text-gray-500">{office.email || '-'}</div></td>
-            <td className="px-6 py-4 text-center">{office.is_main_office ? 'Sí' : 'No'}</td>
-            <td className="px-6 py-4 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{office.is_active ? 'Activa' : 'Inactiva'}</span></td>
-            <td className="px-6 py-4 text-right space-x-2">
-              <button onClick={() => handleOpenModal(office)} className="text-blue-600 hover:text-blue-900"><PencilIcon className="h-5 w-5"/></button>
-              {office.is_active && <button onClick={() => handleDelete(office.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-5 w-5"/></button>}
-            </td>
-          </tr>))}
-        </tbody>
-            </table>
-          </div>
+          <>
+            {/* Mobile Card View - Offices */}
+            <div className="block lg:hidden space-y-4">
+              {filteredOffices.map((office) => (
+                <div key={office.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-base font-semibold text-gray-900">{office.name}</h3>
+                      {office.code && <p className="text-sm text-gray-500">Código: {office.code}</p>}
+                    </div>
+                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {office.is_active ? 'Activa' : 'Inactiva'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm mb-3">
+                    <div>
+                      <span className="block text-xs text-gray-500">Dirección de la Sucursal</span>
+                      <span className="font-medium text-gray-900">{office.address_line || 'Sin dirección'}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-gray-500">Puerto</span>
+                      <span className="font-medium text-gray-900">{office.port_name && office.port_name.trim() ? office.port_name : 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-gray-500">Dirección del Puerto</span>
+                      <span className="font-medium text-gray-900">{office.port_address && office.port_address.trim() ? office.port_address : 'Sin dirección'}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-gray-500">Contacto</span>
+                      <span className="font-medium text-gray-900">{office.phone || '-'}</span>
+                      {office.email && <span className="text-gray-500 block">{office.email}</span>}
+                    </div>
+                    {office.is_main_office && (
+                      <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                        Sucursal Principal
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                    <button onClick={() => handleOpenModal(office)} className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      <PencilIcon className="h-4 w-4 mr-1" /> Editar
+                    </button>
+                    {office.is_active && (
+                      <button onClick={() => handleDelete(office.id)} className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium">
+                        <TrashIcon className="h-4 w-4 mr-1" /> Desactivar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {filteredOffices.length === 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+                  No se encontraron sucursales.
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View - Offices */}
+            <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50"><tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3">Sucursal</th>
+                  <th className="px-6 py-3">Dirección de la Sucursal</th>
+                  <th className="px-6 py-3">Puerto</th>
+                  <th className="px-6 py-3">Dirección del Puerto</th>
+                  <th className="px-6 py-3">Contacto</th>
+                  <th className="px-6 py-3 text-center">Principal</th>
+                  <th className="px-6 py-3 text-center">Estado</th>
+                  <th className="px-6 py-3 text-right">Acciones</th>
+                </tr></thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredOffices.map(office => (<tr key={office.id}>
+                    <td className="px-6 py-4">
+                      <div className="font-medium">{office.name}</div>
+                      <div className="text-sm text-gray-500">{office.code}</div>
+                    </td>
+                    <td className="px-6 py-4"><div className="text-sm text-gray-700">{office.address_line || 'Sin dirección'}</div></td>
+                    <td className="px-6 py-4"><div className="text-sm">{office.port_name && office.port_name.trim() ? office.port_name : 'N/A'}</div></td>
+                    <td className="px-6 py-4"><div className="text-sm text-gray-500">{office.port_address && office.port_address.trim() ? office.port_address : 'Sin dirección'}</div></td>
+                    <td className="px-6 py-4"><div className="text-sm">{office.phone || '-'}</div><div className="text-sm text-gray-500">{office.email || '-'}</div></td>
+                    <td className="px-6 py-4 text-center">{office.is_main_office ? 'Sí' : 'No'}</td>
+                    <td className="px-6 py-4 text-center"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{office.is_active ? 'Activa' : 'Inactiva'}</span></td>
+                    <td className="px-6 py-4 text-right space-x-2">
+                      <button onClick={() => handleOpenModal(office)} className="text-blue-600 hover:text-blue-900"><PencilIcon className="h-5 w-5"/></button>
+                      {office.is_active && <button onClick={() => handleDelete(office.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="h-5 w-5"/></button>}
+                    </td>
+                  </tr>))}
+                </tbody>
+              </table>
+            </div>
+          </>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <>
+            {/* Mobile Card View - Series */}
+            <div className="block lg:hidden space-y-4">
+              {filteredSeries.map((s) => (
+                <div key={s.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="text-base font-semibold text-gray-900">
+                        {DOCUMENT_TYPE_OPTIONS.find((d) => d.code === s.document_type_code)?.name || s.document_type_code}
+                      </h3>
+                      <p className="text-sm text-gray-500 font-mono">Serie: {s.series_code}</p>
+                    </div>
+                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${s.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {s.is_active ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-sm mb-3">
+                    <div>
+                      <span className="block text-xs text-gray-500">Número Actual</span>
+                      <span className="font-mono font-medium text-gray-900">{s.current_number.toString().padStart(8, '0')}</span>
+                    </div>
+                    <div>
+                      <span className="block text-xs text-gray-500">Sucursal Asignada</span>
+                      <span className="font-medium text-gray-900">{offices.find(o => o.id === s.branch_office_id)?.name || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <span className="block text-xs text-gray-500">Electrónica</span>
+                        <span className="font-medium text-gray-900">{s.is_electronic ? 'Sí' : 'No'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                    <button onClick={() => handleOpenModal(s)} className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                      <PencilIcon className="h-4 w-4 mr-1" /> Editar
+                    </button>
+                    {s.is_active && (
+                      <button onClick={() => handleDelete(s.id)} className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium">
+                        <TrashIcon className="h-4 w-4 mr-1" /> Desactivar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {filteredSeries.length === 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+                  No se encontraron series.
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View - Series */}
+            <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50"><tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <th className="px-6 py-3">Tipo Documento</th><th className="px-6 py-3">Serie</th>
                     <th className="px-6 py-3">Número Actual</th><th className="px-6 py-3">Sucursal Asignada</th>
@@ -410,8 +525,9 @@ export const DocumentSeriesPage: React.FC = () => {
                         </td>
                     </tr>))}
                 </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )
       )}
 

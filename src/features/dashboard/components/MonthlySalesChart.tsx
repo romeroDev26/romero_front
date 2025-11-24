@@ -35,12 +35,12 @@ export const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ data, isLo
   })) || [];
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-md border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Ventas Mensuales</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
           <YAxis />
           <Tooltip 
             formatter={(value, name) => {

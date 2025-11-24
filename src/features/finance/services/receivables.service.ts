@@ -5,7 +5,6 @@ import { authService } from '../../../services/auth.service';
 import {
   ReceivablesQueryParams,
   ReceivablesResponse,
-  PaymentConfirmationResponse
 } from '../types/receivables.types';
 
 export const receivablesService = {
@@ -32,18 +31,49 @@ export const receivablesService = {
 
       const response = await api.get(`/dispatch/manifests/cash-on-delivery?${queryParams.toString()}`);
 
-      return response.data;
+      // Transformar la respuesta del backend: extraer parcels de cada invoice y agregar info de PDF e invoice
+      const backendData = response.data;
+      const allParcels = backendData.invoices?.flatMap((invoice: any) => 
+        invoice.parcels.map((parcel: any) => ({
+          ...parcel,
+          // Agregar campos desde el nivel de invoice
+          invoice_id: invoice.invoice_id,
+          invoice_series: invoice.invoice_series,
+          invoice_number: invoice.invoice_number,
+          issue_date: invoice.issue_date,
+          is_credit_sale: invoice.is_credit_sale,
+          // Agregar URLs de PDFs desde el nivel de invoice
+          pdf_ticket_file_path: invoice.pdf_ticket_file_path,
+          pdf_ticket58_file_path: invoice.pdf_ticket58_file_path,
+        }))
+      ) || [];
+
+      // Calcular paid_parcels y unpaid_parcels desde los parcels transformados
+      const paid_parcels = allParcels.filter((p: any) => p.payment_status === 'PAGADO').length;
+      const unpaid_parcels = allParcels.filter((p: any) => p.payment_status === 'NO PAGADO').length;
+
+      return {
+        parcels: allParcels,
+        pagination: backendData.pagination,
+        summary: {
+          ...backendData.summary,
+          paid_parcels,
+          unpaid_parcels
+        },
+        filters_applied: backendData.filters_applied
+      };
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Error al obtener las encomiendas por cobrar');
     }
   },
 
   /**
-   * Marca una encomienda como pagada
+   * @deprecated Usar paymentService.confirmPayment() en su lugar
+   * Marca una encomienda como pagada (sin detalles adicionales)
    */
-  async markAsPaid(invoiceItemId: number): Promise<PaymentConfirmationResponse> {
+  async markAsPaid(invoiceItemId: number): Promise<any> {
     try {
-      const response = await api.post<PaymentConfirmationResponse>(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
+      const response = await api.post(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || 'Error al marcar como pagada');

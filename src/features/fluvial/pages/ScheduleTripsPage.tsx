@@ -190,15 +190,15 @@ export const ScheduleTripsPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
+      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
           <h2 className="text-lg font-semibold text-gray-900">
             Plantillas de Viajes Recurrentes
           </h2>
           <Button
             variant="primary"
             onClick={handleCreateTemplate}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto justify-center"
           >
             <PlusIcon className="h-5 w-5" />
             Nueva Plantilla
@@ -218,15 +218,15 @@ export const ScheduleTripsPage: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
         <div className="space-y-4">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
             <h2 className="text-lg font-semibold text-gray-900">Viajes Programados</h2>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <div className="flex bg-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 sm:flex-initial px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'table'
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -236,7 +236,7 @@ export const ScheduleTripsPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setViewMode('calendar')}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 sm:flex-initial px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                     viewMode === 'calendar'
                       ? 'bg-white text-gray-900 shadow-sm'
                       : 'text-gray-600 hover:text-gray-900'
@@ -246,23 +246,23 @@ export const ScheduleTripsPage: React.FC = () => {
                   Calendario
                 </button>
               </div>
-              <Button variant="outline" onClick={handleRefresh}>
+              <Button variant="outline" onClick={handleRefresh} className="w-full sm:w-auto justify-center">
                 <ArrowPathIcon className="h-4 w-4 mr-2" />
                 Actualizar
               </Button>
-              <Button variant="primary" onClick={handleCreateTrip}>
+              <Button variant="primary" onClick={handleCreateTrip} className="w-full sm:w-auto justify-center">
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Nuevo Viaje
               </Button>
             </div>
           </div>
 
-          <div className="flex border-b border-gray-200">
+          <div className="flex border-b border-gray-200 overflow-x-auto">
             {(['upcoming', 'week', 'history'] as ViewFilterMode[]).map(mode => (
               <button
                 key={mode}
                 onClick={() => setViewFilter(mode)}
-                className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 ${
+                className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 whitespace-nowrap ${
                   viewFilter === mode
                     ? 'border-primary text-primary'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'

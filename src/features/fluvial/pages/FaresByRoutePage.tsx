@@ -160,7 +160,7 @@ export const FaresByRoutePage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Tarifas</h1>
           <p className="text-gray-600">Configure los precios por parada y categoría de servicio</p>
@@ -169,7 +169,7 @@ export const FaresByRoutePage: React.FC = () => {
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-grow max-w-md">
+        <div className="relative flex-grow w-full sm:max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
           </div>
@@ -188,7 +188,7 @@ export const FaresByRoutePage: React.FC = () => {
             setSelectedCategory(e.target.value as ServiceCategory);
             setSelectedRouteId(null);
           }}
-          className="rounded-md border-gray-300 shadow-sm p-2 pr-8 border"
+          className="w-full sm:w-auto rounded-md border-gray-300 shadow-sm p-2 pr-8 border"
         >
           {SERVICE_CATEGORIES.map((category) => (
             <option key={category.value} value={category.value}>
@@ -207,7 +207,7 @@ export const FaresByRoutePage: React.FC = () => {
               Rutas ({filteredRoutes.length})
             </h2>
           </div>
-          <div className="divide-y divide-gray-200 max-h-[calc(100vh-300px)] overflow-y-auto">
+          <div className="divide-y divide-gray-200 max-h-[300px] lg:max-h-[calc(100vh-300px)] overflow-y-auto">
             {filteredRoutes.length === 0 ? (
               <div className="p-4 text-center text-gray-500">
                 No se encontraron rutas
@@ -238,7 +238,7 @@ export const FaresByRoutePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Fares Table */}
+        {/* Fares Content */}
         <div className="lg:col-span-3 bg-white rounded-lg shadow-md overflow-hidden">
           {selectedRoute ? (
             <>
@@ -251,7 +251,123 @@ export const FaresByRoutePage: React.FC = () => {
                 </p>
               </div>
               
-              <div className="overflow-x-auto">
+              {/* Mobile Card View for Fares */}
+              <div className="block lg:hidden p-4 space-y-4">
+                {selectedRoute.segments.map((segment) => {
+                  const isEditing = editingFare?.segment.stop_order === segment.stop_order;
+                  
+                  return (
+                    <div key={segment.stop_order} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <span className="text-xs font-medium text-gray-500 uppercase">Destino</span>
+                          <div className="text-base font-medium text-gray-900">{segment.to_port_name}</div>
+                        </div>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          Orden: {segment.stop_order}
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Precio</label>
+                          {isEditing ? (
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={editingFare.price}
+                              onChange={(e) => setEditingFare({ ...editingFare, price: e.target.value })}
+                              className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                              placeholder="0.00"
+                            />
+                          ) : (
+                            <div className="flex items-center text-sm">
+                              {segment.price !== null ? (
+                                <>
+                                  <CurrencyDollarIcon className="h-4 w-4 text-green-500 mr-1" />
+                                  <span className="font-medium text-gray-900">{segment.price.toFixed(2)}</span>
+                                </>
+                              ) : (
+                                <span className="text-gray-400 italic">Sin precio</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1">Moneda</label>
+                            {isEditing ? (
+                              <select
+                                value={editingFare.currency_code}
+                                onChange={(e) => setEditingFare({ ...editingFare, currency_code: e.target.value })}
+                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                              >
+                                <option value="PEN">PEN</option>
+                                <option value="USD">USD</option>
+                              </select>
+                            ) : (
+                              <span className="text-sm text-gray-900">{segment.currency_code || '-'}</span>
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-500 mb-1">IGV</label>
+                            {isEditing ? (
+                              <select
+                                value={editingFare.tax_category_code}
+                                onChange={(e) => setEditingFare({ ...editingFare, tax_category_code: e.target.value })}
+                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                              >
+                                <option value="10">Gravado</option>
+                                <option value="20">Exonerado</option>
+                                <option value="30">Inafecto</option>
+                              </select>
+                            ) : (
+                              <span className="text-sm text-gray-900">
+                                {segment.tax_category_code === '10' && 'Gravado'}
+                                {segment.tax_category_code === '20' && 'Exonerado'}
+                                {segment.tax_category_code === '30' && 'Inafecto'}
+                                {!segment.tax_category_code && '-'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end gap-2">
+                        {isEditing ? (
+                          <>
+                            <button
+                              onClick={handleCancelEdit}
+                              disabled={isUpdating || isCreating}
+                              className="flex items-center px-3 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                            >
+                              <XMarkIcon className="h-4 w-4 mr-1" /> Cancelar
+                            </button>
+                            <button
+                              onClick={handleSaveFare}
+                              disabled={isUpdating || isCreating}
+                              className="flex items-center px-3 py-1.5 border border-transparent rounded text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                            >
+                              <CheckIcon className="h-4 w-4 mr-1" /> Guardar
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleEditClick(segment)}
+                            className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          >
+                            <PencilIcon className="h-4 w-4 mr-1" /> Editar Tarifa
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>

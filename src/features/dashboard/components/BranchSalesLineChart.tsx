@@ -90,22 +90,22 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
     Object.keys(data.datos[0].sucursales) : [];
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{getChartTitle()}</h3>
 
         {/* Controles - solo mostrar si se proporciona el handler */}
         {onPeriodChange && (
-          <div className="flex gap-4">
-            <div className="flex items-center gap-2">
-              <label htmlFor="period-grouping" className="text-sm font-medium text-gray-700">
+          <div className="flex gap-4 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <label htmlFor="period-grouping" className="text-sm font-medium text-gray-700 whitespace-nowrap">
                 Período:
               </label>
               <select
                 id="period-grouping"
                 value={period}
                 onChange={(e) => onPeriodChange(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 sm:flex-none px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="daily">Diario</option>
                 <option value="weekly">Semanal</option>

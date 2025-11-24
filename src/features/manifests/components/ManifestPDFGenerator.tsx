@@ -6,9 +6,12 @@ import { Manifest } from "../types/manifest.types";
 export const generatePassengerManifestPDF = (
   manifestData: Manifest
 ): { pdf: jsPDF; blob: Blob } => {
-  const pdf = new jsPDF("p", "mm", "a4");
+  // Orientación: horizontal para pasajeros, vertical para carga
+  const orientation = manifestData.manifest_type === "PASSENGER" ? "l" : "p";
+  const pdf = new jsPDF(orientation, "mm", "a4");
   const pageWidth = pdf.internal.pageSize.width;
-  const margin = 15;
+  // Margen optimizado para pasajeros (6mm) para balance entre legibilidad y diseño
+  const margin = manifestData.manifest_type === "PASSENGER" ? 6 : 15;
   let currentY = 20;
 
   // NUEVO HEADER SEGÚN DISEÑO DEL CLIENTE
@@ -114,73 +117,105 @@ export const generatePassengerManifestPDF = (
       })
     : "N/A";
 
-  // Primera fila
+  // Tamaño de fuente optimizado para pasajeros
+  const infoFontSize = manifestData.manifest_type === "PASSENGER" ? 10 : 9;
   pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(9);
-  pdf.text("FECHA SALIDA:", margin, currentY);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(fechaSalida, margin + 30, currentY);
+  pdf.setFontSize(infoFontSize);
 
-  pdf.setFont("helvetica", "bold");
-  pdf.text("HORA DE SALIDA:", pageWidth / 2 + 10, currentY);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(horaSalida, pageWidth / 2 + 40, currentY);
+  // Para pasajeros (horizontal): distribuir en 3 columnas con más espacio
+  // Para carga (vertical): mantener diseño en 2 columnas
+  if (manifestData.manifest_type === "PASSENGER") {
+    // Calcular anchos de columna para mejor distribución en horizontal
+    const col1X = margin;
+    const col2X = margin + 95;
+    const col3X = margin + 190;
 
-  currentY += 6;
+    // Primera fila
+    pdf.setFont("helvetica", "bold");
+    pdf.text("FECHA SALIDA:", col1X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(fechaSalida, col1X + 32, currentY);
 
-  // Segunda fila
-  pdf.setFont("helvetica", "bold");
-  pdf.text("ORIGEN:", margin, currentY);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(manifestData.origin_port_name || "N/A", margin + 20, currentY);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("ORIGEN:", col2X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(manifestData.origin_port_name || "N/A", col2X + 20, currentY);
 
-  pdf.setFont("helvetica", "bold");
-  pdf.text("DESTINO:", pageWidth / 2 + 10, currentY);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(
-    manifestData.destination_port_name || "N/A",
-    pageWidth / 2 + 30,
-    currentY
-  );
+    pdf.setFont("helvetica", "bold");
+    pdf.text("PLACA:", col3X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(manifestData.vessel_registration_number || "N/A", col3X + 17, currentY);
 
-  // Embarcación al final de la segunda fila (lado derecho)
-  const vehicleName = manifestData.trip_info?.vehicle_model || "N/A";
-  const embarcacionX = pageWidth - margin - 50; // Ajustar según necesidad
-  pdf.setFont("helvetica", "bold");
-  pdf.text("Embarcación:", embarcacionX, currentY);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(vehicleName, embarcacionX + 25, currentY);
+    currentY += 6;
 
-  currentY += 6;
+    // Segunda fila
+    pdf.setFont("helvetica", "bold");
+    pdf.text("HORA DE SALIDA:", col1X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(horaSalida, col1X + 35, currentY);
 
-  // Tercera fila
-  pdf.setFont("helvetica", "bold");
-  pdf.text("PLACA:", margin, currentY);
-  pdf.setFont("helvetica", "normal");
-  pdf.text(
-    manifestData.vessel_registration_number || "N/A",
-    margin + 15,
-    currentY
-  );
+    pdf.setFont("helvetica", "bold");
+    pdf.text("DESTINO:", col2X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(manifestData.destination_port_name || "N/A", col2X + 22, currentY);
 
-  currentY += 10;
+    const vehicleName = manifestData.trip_info?.vehicle_model || "N/A";
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Embarcación:", col3X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(vehicleName, col3X + 28, currentY);
 
-  // Totales
-  pdf.setFont("helvetica", "bold");
-  if (manifestData.manifest_type === "CARGO") {
-    pdf.text(
-      `Total de carga: ${Math.round(manifestData.total_cargo_weight_kg)}`,
-      margin,
-      currentY
-    );
+    currentY += 6;
+
+    // Tercera fila - Total
+    pdf.setFont("helvetica", "bold");
+    pdf.text(`Total de Pasajeros: ${manifestData.total_passengers}`, col1X, currentY);
+
+    currentY += 10;
   } else {
-    pdf.text(
-      `Total de Pasajeros: ${manifestData.total_passengers}`,
-      margin,
-      currentY
-    );
+    // Diseño original para carga (vertical)
+    pdf.text("FECHA SALIDA:", margin, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(fechaSalida, margin + 30, currentY);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("HORA DE SALIDA:", pageWidth / 2 + 10, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(horaSalida, pageWidth / 2 + 40, currentY);
+
+    currentY += 6;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("ORIGEN:", margin, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(manifestData.origin_port_name || "N/A", margin + 20, currentY);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("DESTINO:", pageWidth / 2 + 10, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(manifestData.destination_port_name || "N/A", pageWidth / 2 + 30, currentY);
+
+    const vehicleName = manifestData.trip_info?.vehicle_model || "N/A";
+    const embarcacionX = pageWidth - margin - 50;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("Embarcación:", embarcacionX, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(vehicleName, embarcacionX + 25, currentY);
+
+    currentY += 6;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("PLACA:", margin, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(manifestData.vessel_registration_number || "N/A", margin + 15, currentY);
+
+    currentY += 10;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text(`Total de carga: ${Math.round(manifestData.total_cargo_weight_kg)}`, margin, currentY);
+    
+    currentY += 12;
   }
-  currentY += 12;
 
   // TABLAS
   if (manifestData.manifest_type === "CARGO") {
@@ -436,9 +471,9 @@ export const generatePassengerManifestPDF = (
         }
         totalTableWidth = adjustedColWidths.reduce((s, w) => s + w, 0);
       } else {
-        // Si hay espacio, ampliar la tabla ligeramente (hasta 18%) para mayor legibilidad
+        // Si hay espacio, ampliar la tabla moderadamente (hasta 30%) para buena legibilidad
         // NOTA: permitimos que la tabla quede fuera del margen si es necesario, siempre y cuando esté centrada
-        const expansionFactor = 1.18; // hasta +18%
+        const expansionFactor = 1.30; // hasta +30%
         const desiredWidth = Math.round(totalTableWidth * expansionFactor);
         if (desiredWidth > totalTableWidth) {
           let extra = desiredWidth - totalTableWidth;
@@ -492,18 +527,18 @@ export const generatePassengerManifestPDF = (
         headStyles: {
           fillColor: [100, 100, 100],
           textColor: 255,
-          fontSize: 7,
+          fontSize: 8.5,
           fontStyle: "bold",
           halign: "center",
           valign: "middle",
         },
-        bodyStyles: { fontSize: 7, cellPadding: 2, valign: "middle" },
+        bodyStyles: { fontSize: 8.5, cellPadding: 3, valign: "middle" },
         columnStyles: passengerColumnStyles,
         margin: { left: leftMargin, right: leftMargin },
         tableWidth: "auto",
         styles: {
           overflow: "linebreak",
-          fontSize: 7,
+          fontSize: 8.5,
           lineColor: [0, 0, 0],
           lineWidth: 0.1,
         },

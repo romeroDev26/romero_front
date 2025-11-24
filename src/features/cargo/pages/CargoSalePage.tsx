@@ -1,4 +1,4 @@
-// src/features/cargo/pages/CargoSalePage.tsx
+﻿// src/features/cargo/pages/CargoSalePage.tsx
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -70,11 +70,11 @@ export const CargoSalePage: React.FC = () => {
   const [showTicketPreview, setShowTicketPreview] = useState(false);
   const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
 
-  // Estados para método de pago
+  // Estados para mÃ©todo de pago
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("EFE");
   const [paymentOperationCode, setPaymentOperationCode] = useState("");
 
-  // Opciones para método de pago
+  // Opciones para mÃ©todo de pago
   const paymentMethodOptions = [
     { value: 'EFE', label: 'Efectivo' },
     { value: 'TRF', label: 'Transferencia Bancaria' },
@@ -103,7 +103,7 @@ export const CargoSalePage: React.FC = () => {
   
   const { availableBoletaSeries, availableFacturaSeries, isLoading: isLoadingSeries } = useDocumentSeriesForBranch(selectedBranch?.id || null);
 
-  // Efecto para limpiar código de operación cuando se cambia a efectivo
+  // Efecto para limpiar cÃ³digo de operaciÃ³n cuando se cambia a efectivo
   useEffect(() => {
     if (selectedPaymentMethod === "EFE") {
       setPaymentOperationCode("");
@@ -254,7 +254,7 @@ export const CargoSalePage: React.FC = () => {
   };
 
   const handleTicketSuccess = () => {
-    // Resetear completamente para una nueva venta después del ticket
+    // Resetear completamente para una nueva venta despuÃ©s del ticket
     setRemitter({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
     setRecipient({
       isSameAsSender: true,
@@ -343,7 +343,7 @@ export const CargoSalePage: React.FC = () => {
         return (
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Datos del Remitente */}
-            <div className="bg-white p-8 rounded-lg shadow-sm border">
+            <div className="bg-white p-4 md:p-8 rounded-lg shadow-sm border">
               <h2 className="text-xl font-semibold text-gray-800 mb-6">Datos del Remitente</h2>
               <p className="text-gray-500 mb-6">Complete la información de la persona o empresa que realiza el envío.</p>
               <PassengerDataForm passengerData={remitter} setPassengerData={setRemitter} />
@@ -353,15 +353,15 @@ export const CargoSalePage: React.FC = () => {
             <RecipientForm recipient={recipient} setRecipient={setRecipient} remitter={remitter} />
             
             {/* Botón de navegación */}
-            <div className="flex justify-end">
-              <Button disabled={isNextDisabled} onClick={() => handleNextStep('tripSelection')}>Siguiente: Seleccionar Viaje</Button>
+            <div className="flex flex-col md:flex-row justify-end">
+              <Button className="w-full md:w-auto" disabled={isNextDisabled} onClick={() => handleNextStep('tripSelection')}>Siguiente: Seleccionar Viaje</Button>
             </div>
           </div>
         );
 
       case 'tripSelection':
         return (
-          <div className="bg-white p-8 rounded-lg shadow-sm border">
+          <div className="bg-white p-4 md:p-8 rounded-lg shadow-sm border">
             <p className="text-gray-500 mb-6 text-center">Seleccione el viaje en el que se transportará la encomienda.</p>
             <TripSelection 
               branch={selectedBranch}
@@ -375,14 +375,14 @@ export const CargoSalePage: React.FC = () => {
                 }, 0);
               }}
               onChangeBranch={() => navigate('/fluvial/operations/sales-point')}
+              className="!p-0"
             />
-             <div className="mt-6"><Button variant="outline" onClick={() => setCurrentView('clientSelection')}>Volver a Datos del Remitente</Button></div>
+             <div className="mt-6"><Button variant="outline" className="w-full md:w-auto" onClick={() => setCurrentView('clientSelection')}>Volver a Datos del Remitente</Button></div>
           </div>
         );
-
       case 'tripSegmentSelection':
         return (
-          <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-sm border">
+          <div className="max-w-4xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-sm border">
             <p className="text-gray-500 mb-6 text-center">Seleccione el tramo específico para la encomienda.</p>
             {selectedTrip && (
               <CargoTripSelector
@@ -393,11 +393,11 @@ export const CargoSalePage: React.FC = () => {
                 onDestinationChange={setSelectedDestinationId}
               />
             )}
-            <div className="mt-6 flex justify-between">
-              <Button variant="outline" onClick={() => { setSelectedTrip(null); setCurrentView('tripSelection'); }}>
+            <div className="mt-6 flex flex-col-reverse md:flex-row justify-between gap-4">
+              <Button variant="outline" className="w-full md:w-auto" onClick={() => { setSelectedTrip(null); setCurrentView('tripSelection'); }}>
                 Volver a Seleccionar Viaje
               </Button>
-              <Button onClick={() => handleNextStep('itemsDefinition')}>
+              <Button className="w-full md:w-auto" onClick={() => handleNextStep('itemsDefinition')}>
                 Siguiente: Definir Encomiendas
               </Button>
             </div>
@@ -408,15 +408,16 @@ export const CargoSalePage: React.FC = () => {
         return (
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Header con información del paso */}
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="flex justify-between items-start mb-4">
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border">
+              <div className="flex flex-col md:flex-row justify-between items-start mb-4 gap-4">
                 <Button 
                   variant="outline" 
+                  className="w-full md:w-auto"
                   onClick={() => { setSelectedDestinationId(null); setCurrentView('tripSegmentSelection'); }}
                 >
                   Volver a Seleccionar Tramo
                 </Button>
-                <div className="bg-gray-50 p-4 rounded-lg border flex-1 max-w-md">
+                <div className="bg-gray-50 p-4 rounded-lg border flex-1 w-full md:max-w-md">
                   <h3 className="font-semibold text-sm text-gray-800 mb-3 flex items-center">
                     <ClipboardListIcon className="h-4 w-4 mr-2 text-gray-500" />
                     Comprobante
@@ -460,8 +461,8 @@ export const CargoSalePage: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div className="flex justify-between items-center">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 w-full">
                   {/* Remitente */}
                   <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
                     <p className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-1">Remitente</p>
@@ -497,13 +498,13 @@ export const CargoSalePage: React.FC = () => {
                 <Button 
                   onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }} 
                   size="md"
-                  className="bg-blue-600 hover:bg-blue-700 ml-6"
+                  className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto md:ml-6"
                 >
                   <PlusIcon className="w-5 h-5 mr-2" /> Añadir Encomienda
                 </Button>
               </div>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm border overflow-hidden overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -564,7 +565,7 @@ export const CargoSalePage: React.FC = () => {
                 </tbody>
               </table>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Columna Izquierda: Total y Método de Pago */}
                 <div className="space-y-4">
@@ -660,17 +661,17 @@ export const CargoSalePage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-4xl mx-auto mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 text-center mb-2">Venta de Encomiendas y Carga</h1>
-        <p className="text-center text-gray-500 mb-8">Siga los pasos para registrar un nuevo envío.</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Venta de Encomiendas y Carga</h1>
+        <p className="text-center text-gray-500 mb-8">Siga los pasos para registrar un nuevo enví­o.</p>
         <Stepper steps={steps} currentStep={currentStepIndex} />
       </div>
       {renderContent()}
       <Modal 
         isOpen={isItemModalOpen} 
         onClose={() => setIsItemModalOpen(false)} 
-        title={editingItem ? 'Editar Ítem de Encomienda' : 'Añadir Ítem de Encomienda'} 
+        title={editingItem ? 'Editar Item de Encomienda' : 'Añadir Item de Encomienda'} 
         maxWidth="3xl"
       >
         <CargoItemForm 

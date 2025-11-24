@@ -24,20 +24,21 @@ export class TicketGenerator {
   static async generateTicket(backendData: BackendInvoiceData): Promise<jsPDF> {
     try {
       // DETECCIÓN AUTOMÁTICA COMPLETA:
+      // IMPORTANTE: El orden importa - verificar cargo ANTES de empresa
       
-      // 1. Verificar si es encomienda/cargo
+      // 1. Verificar si es encomienda/cargo - PRIMERO
       if (isCargoInvoice(backendData)) {
         const ticketData = CargoSaleTransformer.transform(backendData);
         return await CargoTicketTemplate.generatePDF(ticketData);
       }
       
-      // 2. Verificar si es empresa (RUC)
+      // 2. Verificar si es empresa (RUC) - SEGUNDO
       if (backendData.client?.doc_type === '6') {
         const ticketData = CompanySaleTransformer.transformSummary(backendData as any);
         return await CompanyTicketTemplate.generatePDF(ticketData);
       }
       
-      // 3. Verificar si es embarcación sin asientos numerados
+      // 3. Verificar si es embarcación sin asientos numerados - TERCERO
       if (backendData.items && isVesselWithoutSeats(backendData.items)) {
         return NoSeatsTicketGenerator.generateNoSeatsTicket(backendData);
       }

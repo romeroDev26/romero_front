@@ -34,22 +34,23 @@ export class TicketGenerator {
   public async generateTicket(backendData: BackendInvoiceData): Promise<Blob> {
     try {
       // DETECCIÓN AUTOMÁTICA DEL TIPO DE TICKET:
+      // IMPORTANTE: El orden importa - verificar cargo ANTES de empresa
       
-      // 1. Verificar si es encomienda/cargo
+      // 1. Verificar si es encomienda/cargo - PRIMERO
       if (isCargoInvoice(backendData)) {
         const ticketData = CargoSaleTransformer.transform(backendData);
         const cargoDoc = await CargoTicketTemplate.generatePDF(ticketData);
         return cargoDoc.output('blob');
       }
       
-      // 2. Verificar si es empresa (RUC)
+      // 2. Verificar si es empresa (RUC) - SEGUNDO
       if (backendData.client?.doc_type === '6') {
         const ticketData = CompanySaleTransformer.transformSummary(backendData as any);
         const companyDoc = await CompanyTicketTemplate.generatePDF(ticketData);
         return companyDoc.output('blob');
       }
       
-      // 3. Verificar si es embarcación sin asientos numerados
+      // 3. Verificar si es embarcación sin asientos numerados - TERCERO
       if (backendData.items && isVesselWithoutSeats(backendData.items)) {
         const ticketData = NoSeatsSaleTransformer.transform(backendData);
         const noSeatsDoc = await NoSeatsTicketTemplate.generatePDF(ticketData);
@@ -83,10 +84,32 @@ export class TicketGenerator {
       const invoiceData = 'invoice' in backendData ? backendData.invoice : backendData;
       
       // DETECCION AUTOMATICA DEL TIPO DE VENTA:
-      // IMPORTANTE: El orden importa - verificar empresa ANTES de cargo
-      // porque las ventas empresariales tambien pueden tener recipient_name
+      // IMPORTANTE: El orden importa - verificar cargo ANTES de empresa
+      // porque las encomiendas empresariales (con RUC) deben usar el template de cargo
       
-      // 1. Verificar si es empresa (RUC) - PRIMERO
+      // 1. Verificar si es encomienda/cargo - PRIMERO
+      const isCargo = isCargoInvoice(invoiceData);
+      
+      if (isCargo) {
+        const ticketData = CargoSaleTransformer.transform(invoiceData);
+        
+        // Agregar rawBackendItems para que A4 tenga acceso a unit_code
+        const ticketDataWithRaw = { ...ticketData, rawBackendItems: invoiceData.items };
+        
+        const [doc80mm, docA4] = await Promise.all([
+          CargoTicketTemplate.generatePDF(ticketData),
+          A4Template.generatePDF(ticketDataWithRaw)
+        ]);
+        
+        return {
+          ticket80mm: doc80mm.output('blob'),
+          ticketA4: docA4.output('blob'),
+          ticket80mmDoc: doc80mm,
+          ticketA4Doc: docA4
+        };
+      }
+      
+      // 2. Verificar si es empresa (RUC) - SEGUNDO
       const isCompany = invoiceData.client?.doc_type === '6';
       
       if (isCompany) {
@@ -110,29 +133,7 @@ export class TicketGenerator {
         };
       }
       
-      // 2. Verificar si es encomienda/cargo - SEGUNDO
-      const isCargo = isCargoInvoice(invoiceData);
-      
-      if (isCargo) {
-        const ticketData = CargoSaleTransformer.transform(invoiceData);
-        
-        // Agregar rawBackendItems para que A4 tenga acceso a unit_code
-        const ticketDataWithRaw = { ...ticketData, rawBackendItems: invoiceData.items };
-        
-        const [doc80mm, docA4] = await Promise.all([
-          CargoTicketTemplate.generatePDF(ticketData),
-          A4Template.generatePDF(ticketDataWithRaw)
-        ]);
-        
-        return {
-          ticket80mm: doc80mm.output('blob'),
-          ticketA4: docA4.output('blob'),
-          ticket80mmDoc: doc80mm,
-          ticketA4Doc: docA4
-        };
-      }
-      
-      // 3. Verificar si es embarcacion sin asientos numerados
+      // 3. Verificar si es embarcacion sin asientos numerados - TERCERO
       const isNoSeats = invoiceData.items && isVesselWithoutSeats(invoiceData.items);
       
       if (isNoSeats) {

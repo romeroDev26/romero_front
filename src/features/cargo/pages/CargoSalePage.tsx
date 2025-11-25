@@ -499,6 +499,8 @@ export const CargoSalePage: React.FC = () => {
                   onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }} 
                   size="md"
                   className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto md:ml-6"
+                  disabled={cargoItems.length >= 1}
+                  title={cargoItems.length >= 1 ? "Solo se permite una encomienda por venta" : "Añadir encomienda"}
                 >
                   <PlusIcon className="w-5 h-5 mr-2" /> Añadir Encomienda
                 </Button>

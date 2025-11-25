@@ -1,3 +1,4 @@
+//src/features/manifests/components/ManifestPDFGenerator.tsx
 import React from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -255,9 +256,18 @@ export const generatePassengerManifestPDF = (
           }
           if (!contactos) contactos = "N/A";
 
+          // Formatear descripción: separar por "-" y agregar viñetas
+          let formattedDescription = item.cargo_description || "N/A";
+          if (formattedDescription !== "N/A" && formattedDescription.includes("-")) {
+            const items = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+            if (items.length > 1) {
+              formattedDescription = items.map((i: string) => `• ${i}`).join("\n");
+            }
+          }
+
           return [
             globalItemNumber++, // Numeración continua
-            item.cargo_description || "N/A",
+            formattedDescription,
             item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
             item.remitente_nombre || "N/A",
             item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
@@ -273,8 +283,8 @@ export const generatePassengerManifestPDF = (
           ];
         });
 
-        // Anchos optimizados para formato horizontal con mejor legibilidad
-        const initialColWidths = [10, 40, 18, 32, 24, 32, 24, 26, 18, 20];
+        // Anchos optimizados para formato horizontal con mejor legibilidad (aumentados para carga)
+        const initialColWidths = [12, 48, 20, 38, 28, 38, 28, 30, 20, 22];
         const availableWidth = pageWidth - margin * 2;
         let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
         let adjustedColWidths = [...initialColWidths];
@@ -327,7 +337,7 @@ export const generatePassengerManifestPDF = (
           ],
           body: tableData,
           styles: {
-            fontSize: 8.5,
+            fontSize: 9.5,
             cellPadding: 3,
             halign: "center",
             valign: "middle",
@@ -336,7 +346,7 @@ export const generatePassengerManifestPDF = (
             fillColor: [100, 100, 100],
             textColor: 255,
             fontStyle: "bold",
-            fontSize: 8.5,
+            fontSize: 9.5,
             halign: "center",
             valign: "middle",
           },
@@ -369,9 +379,18 @@ export const generatePassengerManifestPDF = (
         }
         if (!contactos) contactos = "N/A";
 
+        // Formatear descripción: separar por "-" y agregar viñetas
+        let formattedDescription = item.cargo_description || "N/A";
+        if (formattedDescription !== "N/A" && formattedDescription.includes("-")) {
+          const items = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+          if (items.length > 1) {
+            formattedDescription = items.map((i: string) => `• ${i}`).join("\n");
+          }
+        }
+
         return [
           (idx + 1).toString(),
-          item.cargo_description || "N/A",
+          formattedDescription,
           item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
           item.remitente_nombre || "N/A",
           item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
@@ -387,8 +406,8 @@ export const generatePassengerManifestPDF = (
         ];
       });
 
-      // Anchos optimizados para formato horizontal con mejor legibilidad
-      const initialColWidths = [10, 40, 18, 32, 24, 32, 24, 26, 18, 20];
+      // Anchos optimizados para formato horizontal con mejor legibilidad (aumentados para carga)
+      const initialColWidths = [12, 48, 20, 38, 28, 38, 28, 30, 20, 22];
       const availableWidth = pageWidth - margin * 2;
       let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
       let adjustedColWidths = [...initialColWidths];
@@ -441,7 +460,7 @@ export const generatePassengerManifestPDF = (
         ],
         body: tableData,
         styles: {
-          fontSize: 8.5,
+          fontSize: 9.5,
           cellPadding: 3,
           halign: "center",
           valign: "middle",
@@ -450,7 +469,7 @@ export const generatePassengerManifestPDF = (
           fillColor: [100, 100, 100],
           textColor: 255,
           fontStyle: "bold",
-          fontSize: 8.5,
+          fontSize: 9.5,
           halign: "center",
           valign: "middle",
         },
@@ -585,18 +604,18 @@ export const generatePassengerManifestPDF = (
         headStyles: {
           fillColor: [100, 100, 100],
           textColor: 255,
-          fontSize: 8.5,
+          fontSize: 9.5,
           fontStyle: "bold",
           halign: "center",
           valign: "middle",
         },
-        bodyStyles: { fontSize: 8.5, cellPadding: 3, valign: "middle" },
+        bodyStyles: { fontSize: 9.5, cellPadding: 3, valign: "middle" },
         columnStyles: passengerColumnStyles,
         margin: { left: leftMargin, right: leftMargin },
         tableWidth: "auto",
         styles: {
           overflow: "linebreak",
-          fontSize: 8.5,
+          fontSize: 9.5,
           lineColor: [0, 0, 0],
           lineWidth: 0.1,
         },

@@ -1,3 +1,4 @@
+//src/features/manifests/components/ManifestPreviewModal.tsx
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
@@ -338,9 +339,18 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             }
             if (!contactos) contactos = "N/A";
 
+            // Formatear descripción: separar por "-" y agregar viñetas
+            let formattedDescription = item.cargo_description || "N/A";
+            if (formattedDescription !== "N/A" && formattedDescription.includes("-")) {
+              const items = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+              if (items.length > 1) {
+                formattedDescription = items.map((i: string) => `• ${i}`).join("\n");
+              }
+            }
+
             return [
               item.parcel_number || globalItemNumber++, // Usar parcel_number si existe, sino numeración continua
-              item.cargo_description || "N/A",
+              formattedDescription,
               item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
               item.remitente_nombre || "N/A",
               item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
@@ -356,8 +366,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             ];
           });
 
-          // Anchos optimizados para formato horizontal con mejor legibilidad
-          const initialColWidths = [10, 40, 18, 32, 24, 32, 24, 26, 18, 20];
+          // Anchos optimizados para formato horizontal con mejor legibilidad (aumentados para carga)
+          const initialColWidths = [12, 48, 20, 38, 28, 38, 28, 30, 20, 22];
           const availableWidth = pageWidth - margin * 2;
           let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
           let adjustedColWidths = [...initialColWidths];
@@ -410,7 +420,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             ],
             body: tableData,
             styles: {
-              fontSize: 8.5,
+              fontSize: 9.5,
               cellPadding: 3,
               halign: "center",
               valign: "middle",
@@ -419,7 +429,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
               fillColor: [100, 100, 100],
               textColor: [255, 255, 255],
               fontStyle: "bold",
-              fontSize: 8.5,
+              fontSize: 9.5,
               halign: "center",
               valign: "middle",
             },
@@ -456,6 +466,15 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           }
           if (!contactos) contactos = "N/A";
 
+            // Formatear descripción: separar por "-" y agregar viñetas
+            let formattedDescription = item.cargo_description || "N/A";
+            if (formattedDescription !== "N/A" && formattedDescription.includes("-")) {
+              const items = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+              if (items.length > 1) {
+                formattedDescription = items.map((i: string) => `• ${i}`).join("\n");
+              }
+            }
+
             // normalizar estado de pago (soporta "PAGADO"/"PENDIENTE" y "PAID"/"PENDING")
             const rawStatus = (item.payment_status || "").toString().toUpperCase();
             const paymentStatus =
@@ -467,7 +486,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
 
             return [
               item.parcel_number || (idx + 1).toString(), // Usar parcel_number si existe, sino numeración por índice
-              item.cargo_description || "N/A",
+              formattedDescription,
               item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
               item.remitente_nombre || "N/A",
               item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
@@ -479,8 +498,8 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             ];
         });
 
-        // Anchos optimizados para formato horizontal con mejor legibilidad
-        const initialColWidths = [10, 40, 18, 32, 24, 32, 24, 26, 18, 20];
+        // Anchos optimizados para formato horizontal con mejor legibilidad (aumentados para carga)
+        const initialColWidths = [12, 48, 20, 38, 28, 38, 28, 30, 20, 22];
         const availableWidth = pageWidth - margin * 2;
         let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
         let adjustedColWidths = [...initialColWidths];
@@ -533,7 +552,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           ],
           body: tableData,
           styles: {
-            fontSize: 8.5,
+            fontSize: 9.5,
             cellPadding: 3,
             halign: "center",
             valign: "middle",
@@ -542,7 +561,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             fillColor: [100, 100, 100],
             textColor: [255, 255, 255],
             fontStyle: "bold",
-            fontSize: 8.5,
+            fontSize: 9.5,
             halign: "center",
             valign: "middle",
           },
@@ -674,7 +693,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           ],
           body: tableData,
           styles: {
-            fontSize: 8.5,
+            fontSize: 9.5,
             cellPadding: 3,
             halign: "center",
             valign: "middle",
@@ -683,7 +702,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
             fillColor: [100, 100, 100], // Mismo color gris que la tabla de carga
             textColor: [255, 255, 255],
             fontStyle: "bold",
-            fontSize: 8.5,
+            fontSize: 9.5,
             halign: "center",
             valign: "middle",
           },

@@ -6,12 +6,12 @@ import { Manifest } from "../types/manifest.types";
 export const generatePassengerManifestPDF = (
   manifestData: Manifest
 ): { pdf: jsPDF; blob: Blob } => {
-  // Orientación: horizontal para pasajeros, vertical para carga
-  const orientation = manifestData.manifest_type === "PASSENGER" ? "l" : "p";
+  // Orientación: horizontal para ambos tipos (pasajeros y carga)
+  const orientation = "l"; // Siempre horizontal
   const pdf = new jsPDF(orientation, "mm", "a4");
   const pageWidth = pdf.internal.pageSize.width;
-  // Margen optimizado para pasajeros (6mm) para balance entre legibilidad y diseño
-  const margin = manifestData.manifest_type === "PASSENGER" ? 6 : 15;
+  // Margen optimizado de 6mm para ambos tipos para mejor legibilidad
+  const margin = 6;
   let currentY = 20;
 
   // NUEVO HEADER SEGÚN DISEÑO DEL CLIENTE
@@ -117,13 +117,12 @@ export const generatePassengerManifestPDF = (
       })
     : "N/A";
 
-  // Tamaño de fuente optimizado para pasajeros
-  const infoFontSize = manifestData.manifest_type === "PASSENGER" ? 10 : 9;
+  // Tamaño de fuente optimizado: 10 para ambos tipos
+  const infoFontSize = 10;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(infoFontSize);
 
-  // Para pasajeros (horizontal): distribuir en 3 columnas con más espacio
-  // Para carga (vertical): mantener diseño en 2 columnas
+  // Diseño de 3 columnas para ambos tipos (pasajeros y carga)
   if (manifestData.manifest_type === "PASSENGER") {
     // Calcular anchos de columna para mejor distribución en horizontal
     const col1X = margin;
@@ -173,48 +172,57 @@ export const generatePassengerManifestPDF = (
 
     currentY += 10;
   } else {
-    // Diseño original para carga (vertical)
-    pdf.text("FECHA SALIDA:", margin, currentY);
+    // Diseño de 3 columnas para carga (igual que pasajeros)
+    const col1X = margin;
+    const col2X = margin + 95;
+    const col3X = margin + 190;
+
+    // Primera fila
+    pdf.setFont("helvetica", "bold");
+    pdf.text("FECHA SALIDA:", col1X, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(fechaSalida, margin + 30, currentY);
+    pdf.text(fechaSalida, col1X + 32, currentY);
 
     pdf.setFont("helvetica", "bold");
-    pdf.text("HORA DE SALIDA:", pageWidth / 2 + 10, currentY);
+    pdf.text("ORIGEN:", col2X, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(horaSalida, pageWidth / 2 + 40, currentY);
+    pdf.text(manifestData.origin_port_name || "N/A", col2X + 20, currentY);
+
+    pdf.setFont("helvetica", "bold");
+    pdf.text("PLACA:", col3X, currentY);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(manifestData.vessel_registration_number || "N/A", col3X + 17, currentY);
 
     currentY += 6;
 
+    // Segunda fila
     pdf.setFont("helvetica", "bold");
-    pdf.text("ORIGEN:", margin, currentY);
+    pdf.text("HORA DE SALIDA:", col1X, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(manifestData.origin_port_name || "N/A", margin + 20, currentY);
+    pdf.text(horaSalida, col1X + 35, currentY);
 
     pdf.setFont("helvetica", "bold");
-    pdf.text("DESTINO:", pageWidth / 2 + 10, currentY);
+    pdf.text("DESTINO:", col2X, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(manifestData.destination_port_name || "N/A", pageWidth / 2 + 30, currentY);
+    pdf.text(manifestData.destination_port_name || "N/A", col2X + 22, currentY);
 
     const vehicleName = manifestData.trip_info?.vehicle_model || "N/A";
-    const embarcacionX = pageWidth - margin - 50;
     pdf.setFont("helvetica", "bold");
-    pdf.text("Embarcación:", embarcacionX, currentY);
+    pdf.text("Embarcación:", col3X, currentY);
     pdf.setFont("helvetica", "normal");
-    pdf.text(vehicleName, embarcacionX + 25, currentY);
+    pdf.text(vehicleName, col3X + 28, currentY);
 
     currentY += 6;
 
+    // Tercera fila - Total
     pdf.setFont("helvetica", "bold");
-    pdf.text("PLACA:", margin, currentY);
-    pdf.setFont("helvetica", "normal");
-    pdf.text(manifestData.vessel_registration_number || "N/A", margin + 15, currentY);
+    const rawTotalCargo = manifestData.total_cargo_weight_kg;
+    const totalCargo = rawTotalCargo && !isNaN(Number(rawTotalCargo))
+      ? Math.round(Number(rawTotalCargo))
+      : (manifestData.items?.length || 0);
+    pdf.text(`Total de carga: ${totalCargo}`, col1X, currentY);
 
     currentY += 10;
-
-    pdf.setFont("helvetica", "bold");
-    pdf.text(`Total de carga: ${Math.round(manifestData.total_cargo_weight_kg)}`, margin, currentY);
-    
-    currentY += 12;
   }
 
   // TABLAS
@@ -265,17 +273,40 @@ export const generatePassengerManifestPDF = (
           ];
         });
 
+        // Anchos optimizados para formato horizontal con mejor legibilidad
+        const initialColWidths = [10, 40, 18, 32, 24, 32, 24, 26, 18, 20];
+        const availableWidth = pageWidth - margin * 2;
+        let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
+        let adjustedColWidths = [...initialColWidths];
+
+        if (totalTableWidth > availableWidth) {
+          const scale = availableWidth / totalTableWidth;
+          adjustedColWidths = initialColWidths.map((w) => Math.floor(w * scale));
+          let sumAdj = adjustedColWidths.reduce((s, w) => s + w, 0);
+          let i = adjustedColWidths.length - 1;
+          while (sumAdj > availableWidth && i >= 0) {
+            const reduceBy = Math.min(sumAdj - availableWidth, 1);
+            adjustedColWidths[i] = Math.max(8, adjustedColWidths[i] - reduceBy);
+            sumAdj = adjustedColWidths.reduce((s, w) => s + w, 0);
+            i -= 1;
+          }
+          totalTableWidth = adjustedColWidths.reduce((s, w) => s + w, 0);
+        }
+
+        // Centrar la tabla
+        const leftMargin = (pageWidth - totalTableWidth) / 2;
+
         const columnStyles: any = {
-          0: { halign: "center", cellWidth: 8 },
-          1: { halign: "left", cellWidth: 30 }, // Reducido para hacer espacio
-          2: { halign: "center", cellWidth: 15 }, // Reducido para hacer espacio
-          3: { halign: "left", cellWidth: 24 },
-          4: { halign: "center", cellWidth: 18 },
-          5: { halign: "left", cellWidth: 24 },
-          6: { halign: "center", cellWidth: 18 },
-          7: { halign: "center", cellWidth: 20 },
-          8: { halign: "center", cellWidth: 15 }, // Nueva columna Monto
-          9: { halign: "center", cellWidth: 18 }, // Nueva columna Estado
+          0: { halign: "center", cellWidth: adjustedColWidths[0] },
+          1: { halign: "left", cellWidth: adjustedColWidths[1] },
+          2: { halign: "center", cellWidth: adjustedColWidths[2] },
+          3: { halign: "left", cellWidth: adjustedColWidths[3] },
+          4: { halign: "center", cellWidth: adjustedColWidths[4] },
+          5: { halign: "left", cellWidth: adjustedColWidths[5] },
+          6: { halign: "center", cellWidth: adjustedColWidths[6] },
+          7: { halign: "center", cellWidth: adjustedColWidths[7] },
+          8: { halign: "center", cellWidth: adjustedColWidths[8] },
+          9: { halign: "center", cellWidth: adjustedColWidths[9] },
         };
 
         autoTable(pdf, {
@@ -296,8 +327,8 @@ export const generatePassengerManifestPDF = (
           ],
           body: tableData,
           styles: {
-            fontSize: 6,
-            cellPadding: 1.5,
+            fontSize: 8.5,
+            cellPadding: 3,
             halign: "center",
             valign: "middle",
           },
@@ -305,11 +336,13 @@ export const generatePassengerManifestPDF = (
             fillColor: [100, 100, 100],
             textColor: 255,
             fontStyle: "bold",
-            fontSize: 6,
+            fontSize: 8.5,
+            halign: "center",
+            valign: "middle",
           },
           columnStyles,
-          margin: { left: 11, right: 17 }, // 11mm izquierda, 17mm derecha
-          tableWidth: "wrap",
+          margin: { left: leftMargin, right: leftMargin },
+          tableWidth: "auto",
           theme: "grid",
         });
 
@@ -354,17 +387,40 @@ export const generatePassengerManifestPDF = (
         ];
       });
 
+      // Anchos optimizados para formato horizontal con mejor legibilidad
+      const initialColWidths = [10, 40, 18, 32, 24, 32, 24, 26, 18, 20];
+      const availableWidth = pageWidth - margin * 2;
+      let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
+      let adjustedColWidths = [...initialColWidths];
+
+      if (totalTableWidth > availableWidth) {
+        const scale = availableWidth / totalTableWidth;
+        adjustedColWidths = initialColWidths.map((w) => Math.floor(w * scale));
+        let sumAdj = adjustedColWidths.reduce((s, w) => s + w, 0);
+        let i = adjustedColWidths.length - 1;
+        while (sumAdj > availableWidth && i >= 0) {
+          const reduceBy = Math.min(sumAdj - availableWidth, 1);
+          adjustedColWidths[i] = Math.max(8, adjustedColWidths[i] - reduceBy);
+          sumAdj = adjustedColWidths.reduce((s, w) => s + w, 0);
+          i -= 1;
+        }
+        totalTableWidth = adjustedColWidths.reduce((s, w) => s + w, 0);
+      }
+
+      // Centrar la tabla
+      const leftMargin = (pageWidth - totalTableWidth) / 2;
+
       const columnStyles2: any = {
-        0: { halign: "center", cellWidth: 8 },
-        1: { halign: "left", cellWidth: 30 }, // Reducido para hacer espacio
-        2: { halign: "center", cellWidth: 15 }, // Reducido para hacer espacio
-        3: { halign: "left", cellWidth: 24 },
-        4: { halign: "center", cellWidth: 18 },
-        5: { halign: "left", cellWidth: 24 },
-        6: { halign: "center", cellWidth: 18 },
-        7: { halign: "center", cellWidth: 20 },
-        8: { halign: "center", cellWidth: 15 }, // Nueva columna Monto
-        9: { halign: "center", cellWidth: 18 }, // Nueva columna Estado
+        0: { halign: "center", cellWidth: adjustedColWidths[0] },
+        1: { halign: "left", cellWidth: adjustedColWidths[1] },
+        2: { halign: "center", cellWidth: adjustedColWidths[2] },
+        3: { halign: "left", cellWidth: adjustedColWidths[3] },
+        4: { halign: "center", cellWidth: adjustedColWidths[4] },
+        5: { halign: "left", cellWidth: adjustedColWidths[5] },
+        6: { halign: "center", cellWidth: adjustedColWidths[6] },
+        7: { halign: "center", cellWidth: adjustedColWidths[7] },
+        8: { halign: "center", cellWidth: adjustedColWidths[8] },
+        9: { halign: "center", cellWidth: adjustedColWidths[9] },
       };
 
       autoTable(pdf, {
@@ -385,8 +441,8 @@ export const generatePassengerManifestPDF = (
         ],
         body: tableData,
         styles: {
-          fontSize: 6,
-          cellPadding: 1.5,
+          fontSize: 8.5,
+          cellPadding: 3,
           halign: "center",
           valign: "middle",
         },
@@ -394,11 +450,13 @@ export const generatePassengerManifestPDF = (
           fillColor: [100, 100, 100],
           textColor: 255,
           fontStyle: "bold",
-          fontSize: 6,
+          fontSize: 8.5,
+          halign: "center",
+          valign: "middle",
         },
         columnStyles: columnStyles2,
-        margin: { left: 11, right: 17 }, // 11mm izquierda, 17mm derecha
-        tableWidth: "wrap",
+        margin: { left: leftMargin, right: leftMargin },
+        tableWidth: "auto",
         theme: "grid",
       });
     } else {

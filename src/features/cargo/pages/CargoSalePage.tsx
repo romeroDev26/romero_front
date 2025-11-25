@@ -334,6 +334,7 @@ export const CargoSalePage: React.FC = () => {
   }, [currentView]);
 
   const isNextDisabled = !remitter.docNumber || !remitter.name || (!recipient.isSameAsSender && (!recipient.docNumber || !recipient.name));
+
   const renderContent = () => {
     if (!selectedBranch) return <div className="p-6 text-center text-gray-500">Cargando...</div>;
     
@@ -351,7 +352,7 @@ export const CargoSalePage: React.FC = () => {
             {/* Datos del Destinatario */}
             <RecipientForm recipient={recipient} setRecipient={setRecipient} remitter={remitter} />
             
-            {/* BotÃ³n de navegaciÃ³n */}
+            {/* Botón de navegación */}
             <div className="flex flex-col md:flex-row justify-end">
               <Button className="w-full md:w-auto" disabled={isNextDisabled} onClick={() => handleNextStep('tripSelection')}>Siguiente: Seleccionar Viaje</Button>
             </div>
@@ -498,6 +499,8 @@ export const CargoSalePage: React.FC = () => {
                   onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }} 
                   size="md"
                   className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto md:ml-6"
+                  disabled={cargoItems.length >= 1}
+                  title={cargoItems.length >= 1 ? "Solo se permite una encomienda por venta" : "Añadir encomienda"}
                 >
                   <PlusIcon className="w-5 h-5 mr-2" /> Añadir Encomienda
                 </Button>

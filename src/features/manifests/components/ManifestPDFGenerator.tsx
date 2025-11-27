@@ -268,7 +268,6 @@ export const generatePassengerManifestPDF = (
           return [
             globalItemNumber++, // Numeración continua
             formattedDescription,
-            item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
             item.remitente_nombre || "N/A",
             item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
             item.destinatario_nombre || "N/A",
@@ -283,8 +282,8 @@ export const generatePassengerManifestPDF = (
           ];
         });
 
-        // Anchos optimizados para formato horizontal con mejor legibilidad (aumentados para carga)
-        const initialColWidths = [12, 48, 20, 38, 28, 38, 28, 30, 20, 22];
+        // Anchos optimizados para formato horizontal con mejor legibilidad (sin columna CANTIDAD)
+        const initialColWidths = [12, 52, 40, 28, 40, 28, 32, 22, 24];
         const availableWidth = pageWidth - margin * 2;
         let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
         let adjustedColWidths = [...initialColWidths];
@@ -309,14 +308,13 @@ export const generatePassengerManifestPDF = (
         const columnStyles: any = {
           0: { halign: "center", cellWidth: adjustedColWidths[0] },
           1: { halign: "left", cellWidth: adjustedColWidths[1] },
-          2: { halign: "center", cellWidth: adjustedColWidths[2] },
-          3: { halign: "left", cellWidth: adjustedColWidths[3] },
-          4: { halign: "center", cellWidth: adjustedColWidths[4] },
-          5: { halign: "left", cellWidth: adjustedColWidths[5] },
+          2: { halign: "left", cellWidth: adjustedColWidths[2] },
+          3: { halign: "center", cellWidth: adjustedColWidths[3] },
+          4: { halign: "left", cellWidth: adjustedColWidths[4] },
+          5: { halign: "center", cellWidth: adjustedColWidths[5] },
           6: { halign: "center", cellWidth: adjustedColWidths[6] },
           7: { halign: "center", cellWidth: adjustedColWidths[7] },
           8: { halign: "center", cellWidth: adjustedColWidths[8] },
-          9: { halign: "center", cellWidth: adjustedColWidths[9] },
         };
 
         autoTable(pdf, {
@@ -325,7 +323,6 @@ export const generatePassengerManifestPDF = (
             [
               "N°",
               "DESCRIPCIÓN",
-              "CANTIDAD",
               "REMITENTE",
               "DOC. REM.",
               "DESTINATARIO",
@@ -391,7 +388,6 @@ export const generatePassengerManifestPDF = (
         return [
           (idx + 1).toString(),
           formattedDescription,
-          item.cargo_weight_kg || "N/A", // Usar el valor directo del JSON (ej: "1 unidad")
           item.remitente_nombre || "N/A",
           item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
           item.destinatario_nombre || "N/A",
@@ -406,8 +402,8 @@ export const generatePassengerManifestPDF = (
         ];
       });
 
-      // Anchos optimizados para formato horizontal con mejor legibilidad (aumentados para carga)
-      const initialColWidths = [12, 48, 20, 38, 28, 38, 28, 30, 20, 22];
+      // Anchos optimizados para formato horizontal con mejor legibilidad (sin columna CANTIDAD)
+      const initialColWidths = [12, 52, 40, 28, 40, 28, 32, 22, 24];
       const availableWidth = pageWidth - margin * 2;
       let totalTableWidth = initialColWidths.reduce((s, w) => s + w, 0);
       let adjustedColWidths = [...initialColWidths];
@@ -432,14 +428,13 @@ export const generatePassengerManifestPDF = (
       const columnStyles2: any = {
         0: { halign: "center", cellWidth: adjustedColWidths[0] },
         1: { halign: "left", cellWidth: adjustedColWidths[1] },
-        2: { halign: "center", cellWidth: adjustedColWidths[2] },
-        3: { halign: "left", cellWidth: adjustedColWidths[3] },
-        4: { halign: "center", cellWidth: adjustedColWidths[4] },
-        5: { halign: "left", cellWidth: adjustedColWidths[5] },
+        2: { halign: "left", cellWidth: adjustedColWidths[2] },
+        3: { halign: "center", cellWidth: adjustedColWidths[3] },
+        4: { halign: "left", cellWidth: adjustedColWidths[4] },
+        5: { halign: "center", cellWidth: adjustedColWidths[5] },
         6: { halign: "center", cellWidth: adjustedColWidths[6] },
         7: { halign: "center", cellWidth: adjustedColWidths[7] },
         8: { halign: "center", cellWidth: adjustedColWidths[8] },
-        9: { halign: "center", cellWidth: adjustedColWidths[9] },
       };
 
       autoTable(pdf, {
@@ -448,7 +443,6 @@ export const generatePassengerManifestPDF = (
           [
             "N°",
             "DESCRIPCIÓN",
-            "CANTIDAD",
             "REMITENTE",
             "DOC. REM.",
             "DESTINATARIO",

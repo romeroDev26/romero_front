@@ -174,6 +174,9 @@ export interface WhatsAppEventPollingCallbacks {
 /**
  * Hook avanzado para polling de eventos con callbacks
  * Maneja automáticamente la actualización del QR y la detección de conexión
+ * 
+ * Optimización: Usa since_ts del último evento recibido para evitar
+ * procesar eventos duplicados y reducir carga de red
  */
 export const useWhatsAppEventPolling = (
   instanceName: string | undefined,
@@ -183,31 +186,41 @@ export const useWhatsAppEventPolling = (
   const [isPolling, setIsPolling] = useState(false);
   const [lastQRCode, setLastQRCode] = useState<string | null>(null);
   const [connectionState, setConnectionState] = useState<'open' | 'close' | 'connecting' | null>(null);
-  const startTimeRef = useRef<string | null>(null);
+  
+  // Usamos un ref para el timestamp que se actualiza con cada evento
+  const lastEventTimestampRef = useRef<string | null>(null);
   const processedEventsRef = useRef<Set<string>>(new Set());
+  
+  // Contador para forzar re-fetch con nuevo timestamp
+  const [fetchCounter, setFetchCounter] = useState(0);
 
   // Iniciar polling
   const startPolling = useCallback(() => {
     if (!instanceName) return;
-    startTimeRef.current = new Date().toISOString();
+    // Iniciar desde ahora, luego se actualizará con cada evento
+    lastEventTimestampRef.current = new Date().toISOString();
     processedEventsRef.current.clear();
+    setFetchCounter(0);
     setIsPolling(true);
   }, [instanceName]);
 
   // Detener polling
   const stopPolling = useCallback(() => {
     setIsPolling(false);
-    startTimeRef.current = null;
+    lastEventTimestampRef.current = null;
   }, []);
 
-  // Query de eventos
+  // Query de eventos - usa fetchCounter para invalidar cuando hay nuevos eventos
   const eventsQuery = useQuery<WhatsAppEventsResponse, Error>({
-    queryKey: [QUERY_KEY, 'events-polling', instanceName, startTimeRef.current],
-    queryFn: () => whatsappConfigService.getEvents(instanceName!, startTimeRef.current || undefined),
+    queryKey: [QUERY_KEY, 'events-polling', instanceName, fetchCounter],
+    queryFn: () => whatsappConfigService.getEvents(instanceName!, lastEventTimestampRef.current || undefined),
     enabled: !!instanceName && isPolling && enabled,
-    refetchInterval: 2500, // Cada 2.5 segundos
+    refetchInterval: 3000, // Cada 3 segundos (un poco más ligero)
     retry: 2,
     staleTime: 0,
+    // No refetch en focus/reconnect para evitar duplicados
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 
   // Procesar eventos cuando lleguen
@@ -215,12 +228,21 @@ export const useWhatsAppEventPolling = (
     if (!eventsQuery.data?.events || !isPolling) return;
 
     const events = eventsQuery.data.events;
+    let hasNewEvents = false;
+    let latestTimestamp: string | null = null;
     
     for (const event of events) {
       // Crear un ID único para evitar procesar el mismo evento dos veces
       const eventId = `${event.type}-${event.timestamp}`;
       if (processedEventsRef.current.has(eventId)) continue;
+      
       processedEventsRef.current.add(eventId);
+      hasNewEvents = true;
+      
+      // Trackear el timestamp más reciente
+      if (!latestTimestamp || event.timestamp > latestTimestamp) {
+        latestTimestamp = event.timestamp;
+      }
 
       // Procesar según el tipo de evento
       switch (event.type) {
@@ -248,6 +270,13 @@ export const useWhatsAppEventPolling = (
           break;
       }
     }
+    
+    // Actualizar el timestamp para el próximo fetch si hubo eventos nuevos
+    if (hasNewEvents && latestTimestamp) {
+      lastEventTimestampRef.current = latestTimestamp;
+      // Incrementar contador para que el próximo query use el nuevo timestamp
+      setFetchCounter(prev => prev + 1);
+    }
   }, [eventsQuery.data, isPolling, callbacks, lastQRCode, stopPolling]);
 
   // Manejar errores
@@ -270,6 +299,7 @@ export const useWhatsAppEventPolling = (
       setLastQRCode(null);
       setConnectionState(null);
       processedEventsRef.current.clear();
+      setFetchCounter(0);
     }, [stopPolling]),
   };
 };

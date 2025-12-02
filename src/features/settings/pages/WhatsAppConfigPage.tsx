@@ -7,7 +7,6 @@ import {
   QrCodeIcon,
   CheckCircleIcon,
   XCircleIcon,
-  TrashIcon,
   ArrowPathIcon,
   PlusIcon,
   PhoneIcon,
@@ -20,10 +19,10 @@ import { useBranchOffices } from '../../../hooks/useBranchOffices';
 import {
   useCreateWhatsAppInstance,
   useGetQRCode,
-  useDeleteWhatsAppInstance,
   useLogoutInstance,
   useRestartInstance,
   useWhatsAppEventPolling,
+  useCheckConnectionStatus,
 } from '../../../hooks/useWhatsAppConfig';
 import { whatsappConfigService } from '../../../services/whatsappConfig.service';
 import { BranchOffice } from '../../../types';
@@ -45,39 +44,80 @@ export const WhatsAppConfigPage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<BranchWithStatus | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showChangePhoneModal, setShowChangePhoneModal] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [newInstanceName, setNewInstanceName] = useState('');
   const [isChangingPhone, setIsChangingPhone] = useState(false);
   const [connectionStates, setConnectionStates] = useState<Record<string, ConnectionState>>({});
+  const [checkingInstances, setCheckingInstances] = useState<Set<string>>(new Set());
+  const [isCheckingAll, setIsCheckingAll] = useState(false);
 
   // Queries y mutations
   const { data: branchOffices = [], isLoading: loadingBranches, refetch: refetchBranches } = useBranchOffices(companyId);
   const createInstanceMutation = useCreateWhatsAppInstance();
   const getQRCodeMutation = useGetQRCode();
-  const deleteInstanceMutation = useDeleteWhatsAppInstance();
   const logoutMutation = useLogoutInstance();
   const restartMutation = useRestartInstance();
+  const checkStatusMutation = useCheckConnectionStatus();
 
   // Verificar estados de conexión para sucursales con instancia
   const checkConnectionStates = useCallback(async () => {
     const branchesWithInstance = branchOffices.filter(b => b.whatsapp_instance_name);
     const newStates: Record<string, ConnectionState> = {};
     
-    for (const branch of branchesWithInstance) {
-      if (branch.whatsapp_instance_name) {
-        try {
-          const status = await whatsappConfigService.getConnectionStatus(branch.whatsapp_instance_name);
-          newStates[branch.whatsapp_instance_name] = status.connection_state;
-        } catch (error) {
-          newStates[branch.whatsapp_instance_name] = 'unknown';
+    setIsCheckingAll(true);
+    
+    // Usar Promise.all para verificar en paralelo
+    await Promise.all(
+      branchesWithInstance.map(async (branch) => {
+        if (branch.whatsapp_instance_name) {
+          try {
+            const status = await whatsappConfigService.getConnectionStatus(branch.whatsapp_instance_name);
+            newStates[branch.whatsapp_instance_name] = status.connection_state;
+          } catch (error) {
+            newStates[branch.whatsapp_instance_name] = 'unknown';
+          }
         }
-      }
-    }
+      })
+    );
     
     setConnectionStates(newStates);
+    setIsCheckingAll(false);
   }, [branchOffices]);
+
+  // Verificar estado de una instancia individual
+  const checkSingleInstanceStatus = useCallback(async (instanceName: string) => {
+    setCheckingInstances(prev => new Set(prev).add(instanceName));
+    
+    try {
+      const status = await checkStatusMutation.mutateAsync(instanceName);
+      setConnectionStates(prev => ({
+        ...prev,
+        [instanceName]: status.connection_state
+      }));
+      
+      // Mostrar mensaje según el estado
+      if (status.is_connected) {
+        toast.success(`${instanceName}: Conectado correctamente`);
+      } else if (status.requires_qr) {
+        toast.warning(`${instanceName}: Requiere escanear código QR`);
+      } else {
+        toast.info(`${instanceName}: ${status.message}`);
+      }
+    } catch (error) {
+      setConnectionStates(prev => ({
+        ...prev,
+        [instanceName]: 'unknown'
+      }));
+      toast.error(`Error verificando ${instanceName}`);
+    } finally {
+      setCheckingInstances(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(instanceName);
+        return newSet;
+      });
+    }
+  }, [checkStatusMutation]);
 
   // Callbacks memorizados para el polling de eventos
   const eventCallbacks = useMemo(() => ({
@@ -171,19 +211,6 @@ export const WhatsAppConfigPage: React.FC = () => {
       // El polling se inicia automáticamente al abrir el modal (via useEffect)
     } catch (error) {
       console.error('Error obteniendo QR:', error);
-    }
-  };
-
-  const handleDeleteInstance = async () => {
-    if (!selectedBranch?.whatsapp_instance_name) return;
-
-    try {
-      await deleteInstanceMutation.mutateAsync(selectedBranch.whatsapp_instance_name);
-      setShowDeleteModal(false);
-      setSelectedBranch(null);
-      refetchBranches();
-    } catch (error) {
-      console.error('Error eliminando instancia:', error);
     }
   };
 
@@ -347,10 +374,11 @@ export const WhatsAppConfigPage: React.FC = () => {
                 refetchBranches();
                 checkConnectionStates();
               }}
+              disabled={isCheckingAll}
               className="flex items-center space-x-2"
             >
-              <ArrowPathIcon className="w-4 h-4" />
-              <span>Actualizar</span>
+              <ArrowPathIcon className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
+              <span>{isCheckingAll ? 'Verificando...' : 'Actualizar'}</span>
             </Button>
           </div>
         </div>
@@ -359,6 +387,7 @@ export const WhatsAppConfigPage: React.FC = () => {
           {branchOffices.map((branch) => {
             const instanceName = branch.whatsapp_instance_name;
             const connectionState = instanceName ? connectionStates[instanceName] : undefined;
+            const isCheckingThis = instanceName ? checkingInstances.has(instanceName) : false;
             
             return (
               <div
@@ -377,7 +406,7 @@ export const WhatsAppConfigPage: React.FC = () => {
                       </p>
                       {instanceName && (
                         <p className="text-xs text-blue-600 font-mono mt-1">
-                          📱 {instanceName}
+                         {instanceName}
                         </p>
                       )}
                     </div>
@@ -386,9 +415,28 @@ export const WhatsAppConfigPage: React.FC = () => {
                   <div className="flex items-center space-x-4">
                     {instanceName ? (
                       <>
-                        {getStatusBadge(connectionState)}
+                        {/* Badge de estado con indicador de verificación */}
+                        {isCheckingThis ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <ArrowPathIcon className="w-3 h-3 mr-1 animate-spin" />
+                            Verificando...
+                          </span>
+                        ) : (
+                          getStatusBadge(connectionState)
+                        )}
                         
                         <div className="flex items-center space-x-2">
+                          {/* Botón verificar estado */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => checkSingleInstanceStatus(instanceName)}
+                            disabled={isCheckingThis}
+                            title="Verificar estado de conexión"
+                          >
+                            <SignalIcon className={`w-4 h-4 ${isCheckingThis ? 'animate-pulse' : ''}`} />
+                          </Button>
+                          
                           {connectionState !== 'open' && (
                             <Button
                               variant="outline"
@@ -438,18 +486,6 @@ export const WhatsAppConfigPage: React.FC = () => {
                             title="Reiniciar instancia"
                           >
                             <ArrowPathIcon className={`w-4 h-4 ${restartMutation.isPending ? 'animate-spin' : ''}`} />
-                          </Button>
-                          
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBranch({ ...branch, connectionState });
-                              setShowDeleteModal(true);
-                            }}
-                            title="Eliminar instancia"
-                          >
-                            <TrashIcon className="w-4 h-4" />
                           </Button>
                         </div>
                       </>
@@ -668,53 +704,6 @@ export const WhatsAppConfigPage: React.FC = () => {
         </div>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        title="Eliminar Instancia de WhatsApp"
-      >
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-4 bg-red-50 rounded-lg">
-            <ExclamationTriangleIcon className="w-6 h-6 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-700">
-              Esta acción eliminará permanentemente la instancia de WhatsApp y no se puede deshacer.
-            </p>
-          </div>
-          
-          <p className="text-sm text-gray-600">
-            ¿Estás seguro de que deseas eliminar la instancia{' '}
-            <strong className="font-mono text-blue-600">{selectedBranch?.whatsapp_instance_name}</strong>{' '}
-            de la sucursal <strong>{selectedBranch?.name}</strong>?
-          </p>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteModal(false)}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="danger"
-              onClick={handleDeleteInstance}
-              disabled={deleteInstanceMutation.isPending}
-            >
-              {deleteInstanceMutation.isPending ? (
-                <>
-                  <Spinner size="sm" className="mr-2" />
-                  Eliminando...
-                </>
-              ) : (
-                <>
-                  <TrashIcon className="w-4 h-4 mr-2" />
-                  Eliminar
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 };

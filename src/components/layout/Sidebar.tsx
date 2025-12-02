@@ -8,7 +8,7 @@ import {
   CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
   UsersIcon, KeyIcon, MapIcon, BuildingOffice2Icon, CalendarDaysIcon, TicketIcon,
   ClipboardDocumentListIcon, CurrencyDollarIcon, AdjustmentsHorizontalIcon,
-  ChartPieIcon, CubeIcon
+  ChartPieIcon, CubeIcon, ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
@@ -115,8 +115,7 @@ const navGroups: NavGroup[] = [
       { name: 'Facturas/Boletas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
-      { name: 'Resúmenes', path: '/accounting/summaries', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
-            { name: 'Anulaciones', path: '/accounting/voids', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
+      { name: 'Anulaciones', path: '/accounting/voids', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
     ]
   },
 
@@ -136,7 +135,8 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'Usuarios', path: '/settings/users', icon: UsersIcon, iconColor: 'text-gray-500' },
       { name: 'Roles', path: '/settings/roles', icon: KeyIcon, iconColor: 'text-gray-500' },
-      { name: 'Configuración Empresa', path: '/settings/company', icon: CogIcon, iconColor: 'text-gray-500' }
+      { name: 'Configuración Empresa', path: '/settings/company', icon: CogIcon, iconColor: 'text-gray-500' },
+      { name: 'WhatsApp', path: '/settings/whatsapp', icon: ChatBubbleLeftRightIcon, iconColor: 'text-green-500' }
     ]
   }
 ];
@@ -188,7 +188,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
         if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
         if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
         if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);
-        if (item.name === 'Resúmenes') return hasPermission('accounting', 'summaries', userRole);
         if (item.name === 'Anulaciones') return hasPermission('accounting', 'voids', userRole);
         return true; // Para otros items
       }).map(item => {

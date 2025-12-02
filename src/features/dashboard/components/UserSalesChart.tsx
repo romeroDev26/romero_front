@@ -1,26 +1,22 @@
 // src/features/dashboard/components/UserSalesChart.tsx
 import React, { useState } from 'react';
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from 'recharts';
 import { useLast7DaysStatistics, useLast12MonthsStatistics } from '../../../hooks/useUserStatistics';
 import { parseLocalDate } from '../../../utils/dateUtils';
 
 type ChartPeriod = '7days' | '12months';
-type ChartType = 'line' | 'bar';
 
 interface ChartData {
   date: string;
-  total_revenue: number; // Para compatibilidad, usará net si existe
+  total_revenue: number;
   total_revenue_net?: number;
   total_revenue_gross?: number;
   total_credit_notes?: number;
@@ -30,9 +26,32 @@ interface ChartData {
   cargo_revenue: number;
 }
 
+// Tooltip personalizado elegante
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">
+        <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2 text-sm">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: entry.stroke || entry.color }}
+            />
+            <span className="text-gray-600">{entry.name}:</span>
+            <span className="font-semibold text-gray-900">
+              S/ {Number(entry.value).toLocaleString('es-PE')}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 const UserSalesChart: React.FC = () => {
   const [period, setPeriod] = useState<ChartPeriod>('7days');
-  const [chartType, setChartType] = useState<ChartType>('line');
 
   // Hooks para obtener datos
   const { 
@@ -52,18 +71,16 @@ const UserSalesChart: React.FC = () => {
     if (!data || data.length === 0) return [];
 
     return data.map(item => {
-      // Usar parseLocalDate para evitar problemas de zona horaria
       const dateObj = parseLocalDate(item.date);
       const formattedDate = period === '7days' 
-        ? dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })
-        : dateObj.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+        ? dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
+        : dateObj.toLocaleDateString('es-ES', { month: 'short' });
 
-      // Usar total_revenue_net si existe, sino usar total_revenue (compatibilidad)
       const netRevenue = item.total_revenue_net ?? item.total_revenue ?? 0;
 
       return {
         date: formattedDate,
-        total_revenue: netRevenue, // Usar el neto como principal
+        total_revenue: netRevenue,
         total_revenue_net: item.total_revenue_net,
         total_revenue_gross: item.total_revenue_gross,
         total_credit_notes: item.total_credit_notes,
@@ -82,144 +99,12 @@ const UserSalesChart: React.FC = () => {
 
   const chartData = formatChartData(currentData || []);
 
-  const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setPeriod(e.target.value as ChartPeriod);
-  };
-
-  const handleChartTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setChartType(e.target.value as ChartType);
-  };
-
-  const getChartTitle = () => {
-    const periodText = period === '7days' ? 'Últimos 7 Días' : 'Últimos 12 Meses';
-    return `Mi Rendimiento de Ventas - ${periodText}`;
-  };
-
-  const renderChart = () => {
-    const commonProps = {
-      data: chartData,
-      width: '100%',
-      height: 300,
-    };
-
-    if (chartType === 'line') {
-      return (
-        <ResponsiveContainer {...commonProps}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date" 
-              tick={{ fontSize: 12 }}
-              interval="preserveStartEnd"
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `S/ ${value.toLocaleString()}`}
-            />
-            <Tooltip 
-              formatter={(value, name) => {
-                if (name === 'total_sales') {
-                  return [Number(value).toLocaleString('es-PE'), 'Ventas Totales'];
-                }
-                return [`S/ ${Number(value).toLocaleString('es-PE')}`, getTooltipLabel(name as string)];
-              }}
-              labelFormatter={(label) => `Fecha: ${label}`}
-            />
-            <Legend formatter={getLegendLabel} />
-            <Line
-              type="monotone"
-              dataKey="total_revenue"
-              stroke="#8884d8"
-              name="total_revenue"
-              strokeWidth={3}
-              dot={{ r: 5 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="tickets_revenue"
-              stroke="#82ca9d"
-              name="tickets_revenue"
-              strokeWidth={2}
-              dot={{ r: 4 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="cargo_revenue"
-              stroke="#ffc658"
-              name="cargo_revenue"
-              strokeWidth={2}
-              dot={{ r: 4 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      );
-    } else {
-      return (
-        <ResponsiveContainer {...commonProps}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date" 
-              tick={{ fontSize: 12 }}
-              interval="preserveStartEnd"
-            />
-            <YAxis 
-              tick={{ fontSize: 12 }}
-              tickFormatter={(value) => `S/ ${value.toLocaleString()}`}
-            />
-            <Tooltip 
-              formatter={(value, name) => {
-                if (name === 'total_sales') {
-                  return [Number(value).toLocaleString('es-PE'), 'Ventas Totales'];
-                }
-                return [`S/ ${Number(value).toLocaleString('es-PE')}`, getTooltipLabel(name as string)];
-              }}
-              labelFormatter={(label) => `Fecha: ${label}`}
-            />
-            <Legend formatter={getLegendLabel} />
-            <Bar
-              dataKey="tickets_revenue"
-              fill="#82ca9d"
-              name="tickets_revenue"
-            />
-            <Bar
-              dataKey="cargo_revenue"
-              fill="#ffc658"
-              name="cargo_revenue"
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    }
-  };
-
-  const getLegendLabel = (value: string) => {
-    const labels: { [key: string]: string } = {
-      'total_revenue': 'Ingresos Totales',
-      'tickets_revenue': 'Ingresos Pasajes',
-      'cargo_revenue': 'Ingresos Encomiendas',
-      'total_sales': 'Ventas Totales'
-    };
-    return labels[value] || value;
-  };
-
-  const getTooltipLabel = (name: string) => {
-    const labels: { [key: string]: string } = {
-      'total_revenue': 'Ingresos Totales',
-      'tickets_revenue': 'Ingresos Pasajes',
-      'cargo_revenue': 'Ingresos Encomiendas',
-      'total_sales': 'Ventas Totales'
-    };
-    return labels[name] || name;
-  };
-
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-8 bg-gray-200 rounded w-full mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-gray-100 rounded-lg"></div>
         </div>
       </div>
     );
@@ -227,9 +112,9 @@ const UserSalesChart: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="text-red-500 text-center py-8">
-          <div className="mb-2">Error al cargar estadísticas de ventas</div>
+          <div className="mb-2">Error al cargar estadísticas</div>
           <div className="text-sm text-red-400">
             {error.message || 'No se pudieron obtener los datos'}
           </div>
@@ -240,7 +125,7 @@ const UserSalesChart: React.FC = () => {
 
   if (!chartData || chartData.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="text-gray-500 text-center py-8">
           <div className="mb-2">No hay datos de ventas disponibles</div>
           <div className="text-sm">
@@ -254,75 +139,148 @@ const UserSalesChart: React.FC = () => {
     );
   }
 
+  // Calcular totales para las métricas
+  const totalSales = chartData.reduce((sum, item) => sum + item.total_sales, 0);
+  const totalRevenue = chartData.reduce((sum, item) => sum + item.total_revenue, 0);
+  const totalTickets = chartData.reduce((sum, item) => sum + item.tickets_revenue, 0);
+  const totalCargo = chartData.reduce((sum, item) => sum + item.cargo_revenue, 0);
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-        <h3 className="text-lg font-semibold text-gray-900">{getChartTitle()}</h3>
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      {/* Header con título y controles */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800">Mi Rendimiento de Ventas</h3>
+          <p className="text-sm text-gray-500">Evolución de ingresos por período</p>
+        </div>
 
-        {/* Controles */}
-        <div className="flex flex-col sm:flex-row gap-6">
-          <div className="flex items-center gap-3">
-            <label htmlFor="period" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-              Período:
-            </label>
-            <select
-              id="period"
-              value={period}
-              onChange={handlePeriodChange}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]"
-            >
-              <option value="7days">Últimos 7 Días</option>
-              <option value="12months">Últimos 12 Meses</option>
-            </select>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <label htmlFor="chart-type" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-              Tipo:
-            </label>
-            <select
-              id="chart-type"
-              value={chartType}
-              onChange={handleChartTypeChange}
-              className="px-4 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[100px]"
-            >
-              <option value="line">Líneas</option>
-              <option value="bar">Barras</option>
-            </select>
-          </div>
+        {/* Period Toggle Buttons */}
+        <div className="flex bg-gray-100 rounded-lg p-1">
+          <button
+            onClick={() => setPeriod('7days')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+              period === '7days'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            7 Días
+          </button>
+          <button
+            onClick={() => setPeriod('12months')}
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+              period === '12months'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            12 Meses
+          </button>
         </div>
       </div>
 
-      {/* Métricas resumen */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {/* Métricas resumen compactas */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        <div className="text-center p-3 bg-indigo-50 rounded-lg">
+          <div className="text-lg font-bold text-indigo-600">{totalSales}</div>
+          <div className="text-xs text-gray-500">Ventas</div>
+        </div>
+        <div className="text-center p-3 bg-emerald-50 rounded-lg">
+          <div className="text-lg font-bold text-emerald-600">
+            S/ {totalRevenue >= 1000 ? `${(totalRevenue/1000).toFixed(1)}k` : totalRevenue.toLocaleString('es-PE')}
+          </div>
+          <div className="text-xs text-gray-500">Ingresos</div>
+        </div>
         <div className="text-center p-3 bg-blue-50 rounded-lg">
           <div className="text-lg font-bold text-blue-600">
-            {chartData.reduce((sum, item) => sum + item.total_sales, 0)}
+            S/ {totalTickets >= 1000 ? `${(totalTickets/1000).toFixed(1)}k` : totalTickets.toLocaleString('es-PE')}
           </div>
-          <div className="text-xs text-gray-600">Total Ventas</div>
+          <div className="text-xs text-gray-500">Pasajes</div>
         </div>
-        <div className="text-center p-3 bg-green-50 rounded-lg">
-          <div className="text-lg font-bold text-green-600">
-            S/ {chartData.reduce((sum, item) => sum + item.total_revenue, 0).toLocaleString('es-PE')}
+        <div className="text-center p-3 bg-amber-50 rounded-lg">
+          <div className="text-lg font-bold text-amber-600">
+            S/ {totalCargo >= 1000 ? `${(totalCargo/1000).toFixed(1)}k` : totalCargo.toLocaleString('es-PE')}
           </div>
-          <div className="text-xs text-gray-600">Total Ingresos</div>
-        </div>
-        <div className="text-center p-3 bg-purple-50 rounded-lg">
-          <div className="text-lg font-bold text-purple-600">
-            S/ {chartData.reduce((sum, item) => sum + item.tickets_revenue, 0).toLocaleString('es-PE')}
-          </div>
-          <div className="text-xs text-gray-600">Pasajes</div>
-        </div>
-        <div className="text-center p-3 bg-orange-50 rounded-lg">
-          <div className="text-lg font-bold text-orange-600">
-            S/ {chartData.reduce((sum, item) => sum + item.cargo_revenue, 0).toLocaleString('es-PE')}
-          </div>
-          <div className="text-xs text-gray-600">Encomiendas</div>
+          <div className="text-xs text-gray-500">Encomiendas</div>
         </div>
       </div>
 
-      {/* Gráfico */}
-      {renderChart()}
+      {/* Gráfico de Área Elegante */}
+      <ResponsiveContainer width="100%" height={280}>
+        <AreaChart 
+          data={chartData}
+          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+        >
+          <defs>
+            {/* Gradiente para Ingresos Totales */}
+            <linearGradient id="gradientRevenue" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity={0.05} />
+            </linearGradient>
+            {/* Gradiente para Pasajes */}
+            <linearGradient id="gradientTickets" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            vertical={false} 
+            stroke="#f0f0f0"
+          />
+          <XAxis 
+            dataKey="date" 
+            tick={{ fontSize: 12, fill: '#9ca3af' }}
+            axisLine={false}
+            tickLine={false}
+            dy={10}
+          />
+          <YAxis 
+            tick={{ fontSize: 12, fill: '#9ca3af' }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}
+            dx={-5}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          
+          {/* Área de Ingresos Totales */}
+          <Area
+            type="monotone"
+            dataKey="total_revenue"
+            name="Ingresos Totales"
+            stroke="#6366f1"
+            strokeWidth={2}
+            fill="url(#gradientRevenue)"
+            dot={false}
+            activeDot={{ r: 6, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }}
+          />
+          
+          {/* Área de Pasajes */}
+          <Area
+            type="monotone"
+            dataKey="tickets_revenue"
+            name="Pasajes"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            fill="url(#gradientTickets)"
+            dot={false}
+            activeDot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+
+      {/* Leyenda personalizada */}
+      <div className="flex justify-center gap-6 mt-4">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
+          <span className="text-sm text-gray-600">Ingresos Totales</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+          <span className="text-sm text-gray-600">Pasajes</span>
+        </div>
+      </div>
     </div>
   );
 };

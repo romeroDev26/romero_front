@@ -53,8 +53,6 @@ export const usePermissions = () => {
             return ['sales', 'accountant'].includes(role); // SALES también puede gestionar notas de crédito
           case 'debit-notes':
             return ['sales', 'accountant'].includes(role); // SALES también puede gestionar notas de débito
-          case 'summaries':
-            return ['sales', 'accountant'].includes(role); // SALES puede ver resúmenes
           case 'voids':
             return ['sales', 'accountant'].includes(role); // SALES puede hacer anulaciones
           default:
@@ -92,7 +90,6 @@ export const usePermissions = () => {
       '/accounting/invoices': ['admin', 'sales', 'accountant'], // SALES puede hacer todo
       '/accounting/credit-notes': ['admin', 'sales', 'accountant'], // SALES también puede gestionar notas
       '/accounting/debit-notes': ['admin', 'sales', 'accountant'], // SALES también puede gestionar notas
-      '/accounting/summaries': ['admin', 'sales', 'accountant'], // SALES puede ver resúmenes
       '/accounting/voids': ['admin', 'sales', 'accountant'], // SALES puede hacer anulaciones
       '/finance': ['admin', 'sales', 'accountant'],
       '/settings': ['admin']

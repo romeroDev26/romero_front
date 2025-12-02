@@ -171,6 +171,7 @@ export interface BranchOffice {
   port_name?: string;
   port_address?: string;
   port?: Port;
+  whatsapp_instance_name?: string | null; // Nombre de la instancia de WhatsApp
 }
 
 
@@ -611,6 +612,10 @@ export interface Invoice {
   created_at: string;
   updated_at: string;
   items?: InvoiceItem[];
+  // Campos de sucursal (devueltos por el backend)
+  branch_office_name?: string | null;
+  branch_office_address?: string | null;
+  branch_office_phone?: string | null;
 }
 
 export interface InvoiceItem {

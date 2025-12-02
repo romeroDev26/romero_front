@@ -1,4 +1,5 @@
 // src/features/quotations/components/QuotationWhatsAppModal.tsx
+// ACTUALIZADO: Ahora usa la instancia de WhatsApp de la sucursal correspondiente
 
 import React, { useState } from 'react';
 import { Modal } from '../../../components/common/Modal';
@@ -8,6 +9,7 @@ import { Spinner } from '../../../components/common/Spinner';
 import { MessageCircle, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { whatsappService, WhatsAppSendResponse } from '../../../services/whatsapp.service';
 import { Quotation } from '../types';
+import { useWhatsAppInstanceByName } from '../../../hooks/useWhatsAppInstance';
 
 interface QuotationWhatsAppModalProps {
   isOpen: boolean;
@@ -25,6 +27,9 @@ export const QuotationWhatsAppModal: React.FC<QuotationWhatsAppModalProps> = ({
   const [customMessage, setCustomMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendResult, setSendResult] = useState<WhatsAppSendResponse | null>(null);
+
+  // Obtener la instancia de WhatsApp de la sucursal de la cotización
+  const whatsAppInstance = useWhatsAppInstanceByName(quotation.branch_office_name);
 
   const defaultMessage = `¡Hola!
 
@@ -48,6 +53,15 @@ El equipo de GLOBAL ROMERO S.A.C.`;
       return;
     }
 
+    // Verificar que la sucursal tenga WhatsApp configurado
+    if (!whatsAppInstance.hasInstance || !whatsAppInstance.instanceName) {
+      setSendResult({
+        success: false,
+        error: whatsAppInstance.error || 'Esta sucursal no tiene WhatsApp configurado'
+      });
+      return;
+    }
+
     try {
       setIsSending(true);
       setSendResult(null);
@@ -56,7 +70,8 @@ El equipo de GLOBAL ROMERO S.A.C.`;
       const result = await whatsappService.sendQuotationPdf({
         quotationId: quotation.id,
         phoneNumber,
-        customMessage: customMessage.trim() || undefined
+        customMessage: customMessage.trim() || undefined,
+        instanceName: whatsAppInstance.instanceName
       });
 
       setSendResult(result);
@@ -201,7 +216,7 @@ El equipo de GLOBAL ROMERO S.A.C.`;
           
           <Button
             onClick={handleSend}
-            disabled={isSending || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber)}
+            disabled={isSending || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber) || !whatsAppInstance.hasInstance}
             className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSending ? (
@@ -218,20 +233,40 @@ El equipo de GLOBAL ROMERO S.A.C.`;
           </Button>
         </div>
 
-        {/* Nota informativa */}
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-start">
-            <MessageCircle className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-            <div className="text-blue-800 text-xs">
-              <p className="font-medium mb-1">Importante:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Verifica que el número tenga WhatsApp activo</li>
-                <li>El envío puede tardar unos segundos</li>
-                <li>Se usará la instancia "romero_ventas"</li>
-              </ul>
+        {/* Advertencia si no hay WhatsApp configurado para la sucursal */}
+        {!whatsAppInstance.hasInstance && !whatsAppInstance.isLoading && (
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start">
+              <AlertCircle className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-yellow-800 text-xs">
+                <p className="font-medium mb-1">WhatsApp no configurado</p>
+                <p>
+                  {whatsAppInstance.error || `La sucursal "${quotation.branch_office_name || 'desconocida'}" no tiene una instancia de WhatsApp configurada.`}
+                </p>
+                <p className="mt-1">
+                  Contacta al administrador para configurar WhatsApp en esta sucursal.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Nota informativa - Solo mostrar si hay WhatsApp configurado */}
+        {whatsAppInstance.hasInstance && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-start">
+              <MessageCircle className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-blue-800 text-xs">
+                <p className="font-medium mb-1">Información:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Verifica que el número tenga WhatsApp activo</li>
+                  <li>El envío puede tardar unos segundos</li>
+                  <li>Sucursal: <strong>{whatsAppInstance.branchOfficeName}</strong></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   );

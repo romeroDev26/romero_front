@@ -24,6 +24,7 @@ const CompanySettingsPage = React.lazy(() => import('./features/settings/pages/C
 const UsersPage = React.lazy(() => import('./features/settings/pages/UsersPage').then(module => ({ default: module.UsersPage })));
 const RolesPage = React.lazy(() => import('./features/settings/pages/RolesPage').then(module => ({ default: module.RolesPage })));
 const SettingsIndexPage = React.lazy(() => import('./features/settings/pages/SettingslndexPage'));
+const WhatsAppConfigPage = React.lazy(() => import('./features/settings/pages/WhatsAppConfigPage'));
 
 // Páginas de ventas (lazy)
 const QuotationsListPage = React.lazy(() => import('./features/sales/pages/QuotationsListPage').then(module => ({ default: module.QuotationsListPage })));
@@ -63,9 +64,6 @@ const DebitNoteNewPage = React.lazy(() => import('./features/accounting/debit-no
 const DebitNoteFormPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteFormPage').then(module => ({ default: module.DebitNoteFormPage })));
 const DebitNoteAnnulPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteAnnulPage').then(module => ({ default: module.DebitNoteAnnulPage })));
 const DebitNoteDetailPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteDetailPage').then(module => ({ default: module.DebitNoteDetailPage })));
-const DailySummariesListPage = React.lazy(() => import('./features/accounting/daily-summaries/pages/DailySummariesListPage').then(module => ({ default: module.DailySummariesListPage })));
-const DailySummaryFormPage = React.lazy(() => import('./features/accounting/daily-summaries/pages/DailySummaryFormPage').then(module => ({ default: module.DailySummaryFormPage })));
-const DailySummaryDetailPage = React.lazy(() => import('./features/accounting/daily-summaries/pages/DailySummaryDetailPage').then(module => ({ default: module.DailySummaryDetailPage })));
 const VoidDocumentsListPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentsListPage').then(module => ({ default: module.VoidDocumentsListPage })));
 const VoidDocumentFormPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentFormPage').then(module => ({ default: module.VoidDocumentFormPage })));
 const VoidDocumentDetailPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentDetailPage').then(module => ({ default: module.VoidDocumentDetailPage })));
@@ -276,21 +274,6 @@ function App() {
                   <DebitNoteDetailPage />
                 </Suspense>
               } />
-              <Route path="summaries" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <DailySummariesListPage />
-                </Suspense>
-              } />
-              <Route path="summaries/new" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <DailySummaryFormPage />
-                </Suspense>
-              } />
-              <Route path="summaries/:id" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <DailySummaryDetailPage />
-                </Suspense>
-              } />
               <Route path="voids" element={
                 <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
                   <VoidDocumentsListPage />
@@ -328,6 +311,11 @@ function App() {
               <Route path="company" element={<CompanySettingsPage />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="roles" element={<RolesPage />} />
+              <Route path="whatsapp" element={
+                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                  <WhatsAppConfigPage />
+                </Suspense>
+              } />
             </Route>
           </Route>
           

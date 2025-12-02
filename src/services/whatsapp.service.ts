@@ -35,17 +35,20 @@ class WhatsAppService {
   /**
    * Envía una cotización por WhatsApp usando el endpoint directo del backend
    * @param quotationId ID de la cotización
-   * @param phoneNumber 
-   * @param customMessage 
+   * @param phoneNumber Número de teléfono
+   * @param customMessage Mensaje personalizado (opcional)
+   * @param instanceName Nombre de la instancia de WhatsApp de la sucursal
    */
   async sendQuotationPdf({
     quotationId,
     phoneNumber,
-    customMessage
+    customMessage,
+    instanceName
   }: {
     quotationId: number;
     phoneNumber: string;
     customMessage?: string;
+    instanceName: string;
   }): Promise<WhatsAppSendResponse> {
     try {
       const defaultMessage = `¡Hola!
@@ -61,7 +64,7 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         quotation_id: quotationId,
         phone_number: this.formatPhoneNumber(phoneNumber),
         custom_message: customMessage || defaultMessage,
-        instance_name: 'romero_ventas'
+        instance_name: instanceName
       };
 
       await api.post('/external/whatsapp/send-quotation-pdf', requestData);
@@ -89,17 +92,20 @@ El equipo de GLOBAL ROMERO S.A.C.`;
    * @param phoneNumber Número de teléfono con código de país
    * @param customMessage Mensaje personalizado (opcional)
    * @param pdfType Tipo de PDF a enviar
+   * @param instanceName Nombre de la instancia de WhatsApp de la sucursal
    */
   async sendInvoicePdf({
     invoiceId,
     phoneNumber,
     customMessage,
-    pdfType = 'a4'
+    pdfType = 'a4',
+    instanceName
   }: {
     invoiceId: number;
     phoneNumber: string;
     customMessage?: string;
     pdfType?: 'a4' | 'ticket' | 'legacy';
+    instanceName: string;
   }): Promise<WhatsAppSendResponse> {
     try {
       const defaultMessage = `¡Hola!
@@ -116,7 +122,7 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         phone_number: this.formatPhoneNumber(phoneNumber),
         custom_message: customMessage || defaultMessage,
         pdf_type: pdfType,
-        instance_name: 'romero_ventas'
+        instance_name: instanceName
       };
 
       await api.post('/external/whatsapp/send-invoice-pdf', requestData);
@@ -144,17 +150,20 @@ El equipo de GLOBAL ROMERO S.A.C.`;
    * @param pdfBase64 Contenido del PDF en formato base64
    * @param fileName Nombre del archivo PDF
    * @param customMessage Mensaje personalizado (opcional)
+   * @param instanceName Nombre de la instancia de WhatsApp de la sucursal
    */
   async sendDocument({
     phoneNumber,
     pdfBase64,
     fileName,
     customMessage,
+    instanceName,
   }: {
     phoneNumber: string;
     pdfBase64: string;
     fileName: string;
     customMessage?: string;
+    instanceName: string;
   }): Promise<WhatsAppSendResponse> {
     try {
       const defaultMessage = `¡Hola!
@@ -172,7 +181,7 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         media: pdfBase64,
         fileName: fileName,
         mimetype: 'application/pdf',
-        instance_name: 'romero_ventas'
+        instance_name: instanceName
       };
 
       await api.post<WhatsAppSendResponse>('/external/whatsapp/send-document', requestData);

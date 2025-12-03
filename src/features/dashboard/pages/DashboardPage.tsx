@@ -15,7 +15,6 @@ import { dashboardService } from '../../../services/dashboard.service';
 export const DashboardPage: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'year'>('today');
-  const [evolutionPeriod, setEvolutionPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
   const [topSellersPeriod, setTopSellersPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
   const [includeSellerDetails, setIncludeSellerDetails] = useState(true);
 
@@ -118,8 +117,6 @@ export const DashboardPage: React.FC = () => {
         <BranchSalesLineChart 
           data={dashboardData?.evolucion_ventas_sucursales}
           isLoading={isDashboardLoading}
-          period={evolutionPeriod}
-          onPeriodChange={setEvolutionPeriod}
         />
       </div>
 

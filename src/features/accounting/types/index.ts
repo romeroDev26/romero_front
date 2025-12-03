@@ -202,15 +202,6 @@ export interface DailySummaryResponse {
   created_at: string;
 }
 
-// Parámetros para listar resúmenes diarios
-export interface DailySummariesListParams {
-  company_id: number;
-  skip?: number;
-  limit?: number;
-  summary_date?: string;
-  sunat_status?: string;
-}
-
 // Tipos para Comunicaciones de Baja (Anulaciones) - Actualizados según backend
 export interface VoidDocumentItem {
   document_type_code: string; // '01' (Factura) o '03' (Boleta)
@@ -293,3 +284,6 @@ export type TaxCategoryCode = '10' | '20' | '30' | '40' | 'EXO' | 'INA' | 'GRA' 
 
 // Códigos de Tipo de Precio
 export type PriceTypeCode = '01' | '02' | '03'; 
+
+// Alias para compatibilidad con hooks
+export type VoidCreateData = VoidDocumentCreateData;

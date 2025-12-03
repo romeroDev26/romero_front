@@ -1,7 +1,7 @@
 import React from 'react';
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -11,44 +11,49 @@ import {
 } from 'recharts';
 import { EvolucionVentasSucursales } from '../../../types/dashboard';
 
-// Colores fijos para cada sucursal para mantener consistencia
+// Colores modernos con estilo elegante para cada sucursal
 const BRANCH_COLORS = {
-  'Sucursal NAUTA': '#8884d8',
-  'Sucursal YURIMAGUAS': '#82ca9d',
-  'Sucursal IQUITOS': '#ffc658',
-  'Sucursal REQUENA': '#ff7c7c',
-  'Sucursal CONTAMANA': '#8dd1e1',
-  'Sin Sucursal': '#d084d0'
+  'Sucursal NAUTA': '#6366f1',      // Indigo moderno
+  'Sucursal YURIMAGUAS': '#10b981', // Esmeralda
+  'Sucursal IQUITOS': '#f59e0b',    // Ámbar
+  'Sucursal REQUENA': '#ef4444',    // Rojo coral
+  'Sucursal CONTAMANA': '#06b6d4',  // Cyan
+  'Sin Sucursal': '#8b5cf6'         // Violeta
+};
+
+// Tooltip personalizado elegante
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">
+        <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2 text-sm">
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: entry.color }}
+            />
+            <span className="text-gray-600">{entry.name}:</span>
+            <span className="font-semibold text-gray-900">
+              S/ {Number(entry.value).toLocaleString('es-PE')}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
 };
 
 interface BranchSalesLineChartProps {
   data?: EvolucionVentasSucursales;
   isLoading?: boolean;
-  period?: 'daily' | 'weekly' | 'monthly' | 'yearly';
-  onPeriodChange?: (period: 'daily' | 'weekly' | 'monthly' | 'yearly') => void;
 }
 
 export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({ 
   data, 
-  isLoading = false,
-  period = 'daily',
-  onPeriodChange 
+  isLoading = false
 }) => {
-  // Título dinámico según el período
-  const getChartTitle = () => {
-    switch (period) {
-      case 'daily':
-        return 'Ventas del Día por Sucursal';
-      case 'weekly':
-        return 'Evolución Semanal de Ventas por Sucursal';
-      case 'monthly':
-        return 'Evolución Mensual de Ventas por Sucursal';
-      case 'yearly':
-        return 'Evolución Anual de Ventas por Sucursal';
-      default:
-        return 'Ventas por Sucursal';
-    }
-  };
 
   // Obtener color para una sucursal
   const getBranchColor = (branchName: string): string => {
@@ -65,15 +70,15 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
     }
     
     const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 70%, 50%)`;
+    return `hsl(${hue}, 70%, 55%)`;
   };
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-gray-100 rounded-lg"></div>
         </div>
       </div>
     );
@@ -90,63 +95,58 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
     Object.keys(data.datos[0].sucursales) : [];
 
   return (
-    <div className="bg-white p-4 lg:p-6 rounded-lg shadow-md border border-gray-200">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">{getChartTitle()}</h3>
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <h3 className="text-lg font-semibold text-gray-800 mb-6">Ventas del Día por Sucursal</h3>
 
-        {/* Controles - solo mostrar si se proporciona el handler */}
-        {onPeriodChange && (
-          <div className="flex gap-4 w-full sm:w-auto">
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <label htmlFor="period-grouping" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                Período:
-              </label>
-              <select
-                id="period-grouping"
-                value={period}
-                onChange={(e) => onPeriodChange(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
-                className="flex-1 sm:flex-none px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="daily">Diario</option>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensual</option>
-                <option value="yearly">Anual</option>
-              </select>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
+      <ResponsiveContainer width="100%" height={320}>
+        <BarChart 
+          data={chartData} 
+          barCategoryGap="20%"
+          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+        >
+          <defs>
+            {branchNames.map((branch) => (
+              <linearGradient key={`gradient-${branch}`} id={`gradient-${branch.replace(/\s/g, '')}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={getBranchColor(branch)} stopOpacity={1} />
+                <stop offset="100%" stopColor={getBranchColor(branch)} stopOpacity={0.8} />
+              </linearGradient>
+            ))}
+          </defs>
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            vertical={false} 
+            stroke="#f0f0f0"
+          />
           <XAxis 
             dataKey="date" 
-            tick={{ fontSize: 12 }}
-            interval="preserveStartEnd"
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            axisLine={false}
+            tickLine={false}
+            dy={10}
           />
           <YAxis 
-            tick={{ fontSize: 12 }}
-            tickFormatter={(value) => `S/ ${value.toLocaleString()}`}
+            tick={{ fontSize: 12, fill: '#6b7280' }}
+            axisLine={false}
+            tickLine={false}
+            tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}
+            dx={-5}
           />
-          <Tooltip 
-            formatter={(value, name) => [`S/ ${Number(value).toLocaleString('es-PE')}`, name]} 
-            labelFormatter={(label) => `Fecha: ${label}`}
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
+          <Legend 
+            wrapperStyle={{ paddingTop: 20 }}
+            formatter={(value) => <span className="text-sm text-gray-600">{value}</span>}
           />
-          <Legend />
-          {/* Generar líneas dinámicamente para cada sucursal con colores consistentes */}
           {branchNames.map((branch) => (
-            <Line
+            <Bar
               key={branch}
-              type="monotone"
               dataKey={branch}
-              stroke={getBranchColor(branch)}
+              fill={`url(#gradient-${branch.replace(/\s/g, '')})`}
               name={branch}
-              strokeWidth={2}
-              dot={{ r: 4 }}
+              radius={[6, 6, 0, 0]}
+              maxBarSize={50}
             />
           ))}
-        </LineChart>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

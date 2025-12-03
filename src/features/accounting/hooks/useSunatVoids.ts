@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { sunatBatchesService } from '../services/sunatBatches.service';
 import { invoicesService } from '../../../services/invoices.service';
-import { VoidCreateData, VoidableInvoice } from '../types';
+import { VoidCreateData, VoidableInvoice, VoidDocument } from '../types';
 
 // NUEVO HOOK: Para obtener las facturas que se pueden dar de baja
 export const useVoidableInvoices = (companyId: number | null) => {
@@ -22,7 +22,7 @@ export const useVoidableInvoices = (companyId: number | null) => {
 
 // Hook para listar comunicaciones de baja
 export const useSunatVoids = (companyId: number) => {
-  return useQuery({
+  return useQuery<VoidDocument[], Error>({
     queryKey: ['sunatVoids', companyId],
     queryFn: () => sunatBatchesService.getVoids(companyId),
     enabled: !!companyId,
@@ -32,7 +32,7 @@ export const useSunatVoids = (companyId: number) => {
 
 // Hook para obtener una comunicación de baja por ID
 export const useSunatVoid = (id: number | null) => {
-  return useQuery({
+  return useQuery<VoidDocument, Error>({
     queryKey: ['sunatVoid', id],
     queryFn: () => sunatBatchesService.getVoidById(id!),
     enabled: !!id,
@@ -46,8 +46,8 @@ export const useCreateSunatVoid = () => {
   
   return useMutation({
     mutationFn: (data: VoidCreateData) => sunatBatchesService.createVoid(data),
-    onSuccess: (data) => {
-      toast.success(`Lote de Baja ${data.batch_number} creado y enviado a SUNAT. Consulte el estado en unos minutos.`);
+    onSuccess: (data: VoidDocument) => {
+      toast.success(`Lote de Baja ${data.identifier} creado y enviado a SUNAT. Consulte el estado en unos minutos.`);
       queryClient.invalidateQueries({ queryKey: ['sunatVoids'] });
       // Invalidar también las facturas anulables para actualizar la lista
       queryClient.invalidateQueries({ queryKey: ['voidableInvoices'] });
@@ -64,8 +64,8 @@ export const useCheckVoidStatus = () => {
   
   return useMutation({
     mutationFn: (id: number) => sunatBatchesService.checkVoidStatus(id),
-    onSuccess: (data) => {
-      const statusMessages = {
+    onSuccess: (data: VoidDocument) => {
+      const statusMessages: Record<string, string> = {
         'ACCEPTED': 'Comunicación de baja aceptada por SUNAT',
         'REJECTED': 'Comunicación de baja rechazada por SUNAT',
         'PENDING': 'Comunicación de baja pendiente de procesamiento',

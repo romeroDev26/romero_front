@@ -12,12 +12,22 @@ import { PopularRoutesChart } from '../components/PopularRoutesChart';
 import { SunatStatusChart } from '../components/SunatStatusChart';
 import { Modal } from '../../../components/common/Modal';
 import { useExportReport } from '../../../hooks/useExportReport';
+import { DateRangeFilter, DateFilterOption } from '../components/DateRangeFilter';
 
 export const ReportsPage: React.FC = () => {
-  const [dateRange, setDateRange] = useState({
-    start_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    end_date: new Date().toISOString().split('T')[0],
-  });
+  // Inicializar con la fecha de hoy
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const [startDate, setStartDate] = useState<Date>(today);
+  const [endDate, setEndDate] = useState<Date>(today);
+  const [filterOption, setFilterOption] = useState<DateFilterOption>('today');
+
+  // Convertir a formato string para la API
+  const dateRange = {
+    start_date: startDate.toISOString().split('T')[0],
+    end_date: endDate.toISOString().split('T')[0],
+  };
 
   const [syncExporting, setSyncExporting] = useState(false);
   const [showFormatModal, setShowFormatModal] = useState(false);
@@ -41,22 +51,9 @@ export const ReportsPage: React.FC = () => {
     enabled: true,
   });
 
-  const handleDateChange = (field: 'start_date' | 'end_date', value: string) => {
-    setDateRange(prev => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleQuickFilter = (days: number) => {
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - days);
-
-    setDateRange({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
-    });
+  const handleDateChange = (newStartDate: Date, newEndDate: Date) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
   };
 
   const handleExportExcel = async () => {
@@ -132,67 +129,25 @@ export const ReportsPage: React.FC = () => {
 
       {/* Filtros */}
       <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtros</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Inicio
-            </label>
-            <input
-              type="date"
-              value={dateRange.start_date}
-              onChange={(e) => handleDateChange('start_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Filtros de Fecha</h3>
+            <DateRangeFilter
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={handleDateChange}
+              selectedOption={filterOption}
+              onOptionChange={setFilterOption}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Fin
-            </label>
-            <input
-              type="date"
-              value={dateRange.end_date}
-              onChange={(e) => handleDateChange('end_date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div className="md:col-span-2 flex items-end space-x-2">
-            <button
-              onClick={() => handleQuickFilter(7)}
-              className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-sm font-medium"
-            >
-              Últimos 7 días
-            </button>
-            <button
-              onClick={() => handleQuickFilter(30)}
-              className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-sm font-medium"
-            >
-              Últimos 30 días
-            </button>
-            <button
-              onClick={() => handleQuickFilter(90)}
-              className="px-4 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-sm font-medium"
-            >
-              Últimos 90 días
-            </button>
-          </div>
-        </div>
-
-        {/* Botones de Exportación */}
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-gray-600">
-              Exportar reportes completos con descarga directa
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
+          {/* Botones de Exportación */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <span className="text-sm text-gray-500 hidden sm:inline">Exportar:</span>
             <button
               onClick={handleExportExcel}
               disabled={syncExporting || isLoading}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors shadow-sm"
             >
               <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
               {syncExporting ? 'Exportando...' : 'Reportes Detallados'}

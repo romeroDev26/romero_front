@@ -1,15 +1,16 @@
 // src/features/fluvial/components/sales-point/WhatsAppSendModal.tsx
 // ACTUALIZADO: Ahora usa la instancia de WhatsApp de la sucursal correspondiente
+// con fallback automático a otra sucursal conectada si la principal no está disponible
 
 import React, { useState } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Input } from '../../../../components/common/Input';
 import { Spinner } from '../../../../components/common/Spinner';
-import { MessageCircle, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { MessageCircle, Send, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 import { whatsappService, WhatsAppSendResponse } from '../../../../services/whatsapp.service';
 import { BackendInvoiceData } from './tickets/types/backend.types';
-import { useWhatsAppInstanceByName } from '../../../../hooks/useWhatsAppInstance';
+import { useWhatsAppInstanceWithFallback } from '../../../../hooks/useWhatsAppInstance';
 
 interface WhatsAppSendModalProps {
   isOpen: boolean;
@@ -37,8 +38,8 @@ export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [sendResult, setSendResult] = useState<WhatsAppSendResponse | null>(null);
 
-  // Obtener la instancia de WhatsApp de la sucursal del comprobante
-  const whatsAppInstance = useWhatsAppInstanceByName(backendData.branch_office_name);
+  // Obtener la instancia de WhatsApp con verificación de conexión y fallback automático
+  const whatsAppInstance = useWhatsAppInstanceWithFallback(backendData.branch_office_name);
 
   const defaultMessage = `¡Hola!
 
@@ -58,11 +59,11 @@ El equipo de GLOBAL ROMERO S.A.C.`;
       return;
     }
 
-    // Verificar que la sucursal tenga WhatsApp configurado
-    if (!whatsAppInstance.hasInstance || !whatsAppInstance.instanceName) {
+    // Verificar que haya una instancia disponible (la original o el fallback)
+    if (!whatsAppInstance.effectiveInstanceName) {
       setSendResult({
         success: false,
-        error: whatsAppInstance.error || 'Esta sucursal no tiene WhatsApp configurado'
+        error: whatsAppInstance.error || 'No hay ninguna instancia de WhatsApp disponible para enviar'
       });
       return;
     }
@@ -92,12 +93,13 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         }
       }
 
+      // Usar la instancia efectiva (original si está conectada, o fallback)
       const result = await whatsappService.sendInvoicePdf({
         invoiceId: backendData.id as number,
         phoneNumber,
         customMessage: customMessage.trim() || undefined,
         pdfType: pdfType,
-        instanceName: whatsAppInstance.instanceName
+        instanceName: whatsAppInstance.effectiveInstanceName
       });
 
       setSendResult(result);
@@ -257,13 +259,18 @@ El equipo de GLOBAL ROMERO S.A.C.`;
           
           <Button
             onClick={handleSend}
-            disabled={isSending || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber) || !whatsAppInstance.hasInstance}
+            disabled={isSending || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber) || !whatsAppInstance.effectiveInstanceName}
             className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {isSending ? (
               <>
                 <Spinner size="sm" className="mr-2" />
                 Enviando...
+              </>
+            ) : whatsAppInstance.isCheckingConnection ? (
+              <>
+                <Spinner size="sm" className="mr-2" />
+                Verificando...
               </>
             ) : (
               <>
@@ -274,35 +281,63 @@ El equipo de GLOBAL ROMERO S.A.C.`;
           </Button>
         </div>
 
-        {/* Advertencia si no hay WhatsApp configurado para la sucursal */}
-        {!whatsAppInstance.hasInstance && !whatsAppInstance.isLoading && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        {/* Aviso: Usando sucursal alternativa (fallback) */}
+        {whatsAppInstance.usingFallback && whatsAppInstance.effectiveInstanceName && (
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="flex items-start">
-              <AlertCircle className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-yellow-800 text-xs">
-                <p className="font-medium mb-1">WhatsApp no configurado</p>
+              <AlertTriangle className="h-4 w-4 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-amber-800 text-xs">
+                <p className="font-medium mb-1">Usando sucursal alternativa</p>
                 <p>
-                  {whatsAppInstance.error || `La sucursal "${backendData.branch_office_name || 'desconocida'}" no tiene una instancia de WhatsApp configurada.`}
+                  La sucursal <strong>"{whatsAppInstance.branchOfficeName}"</strong> no tiene WhatsApp 
+                  {whatsAppInstance.hasInstance && !whatsAppInstance.isConnected ? ' conectado' : ' configurado'}.
                 </p>
                 <p className="mt-1">
-                  Contacta al administrador para configurar WhatsApp en esta sucursal.
+                  Se enviará desde: <strong className="text-amber-900">{whatsAppInstance.effectiveBranchOfficeName}</strong>
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Nota informativa - Solo mostrar si hay WhatsApp configurado */}
-        {whatsAppInstance.hasInstance && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        {/* Advertencia si no hay WhatsApp disponible en ninguna sucursal */}
+        {!whatsAppInstance.effectiveInstanceName && !whatsAppInstance.isLoading && !whatsAppInstance.isCheckingConnection && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start">
-              <MessageCircle className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-blue-800 text-xs">
-                <p className="font-medium mb-1">Información:</p>
+              <AlertCircle className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-red-800 text-xs">
+                <p className="font-medium mb-1">WhatsApp no disponible</p>
+                <p>
+                  {whatsAppInstance.error || `No hay ninguna instancia de WhatsApp conectada disponible.`}
+                </p>
+                <p className="mt-1">
+                  Contacta al administrador para verificar la configuración de WhatsApp.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Verificando conexión */}
+        {whatsAppInstance.isCheckingConnection && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center">
+              <Spinner size="sm" className="mr-2 text-blue-600" />
+              <span className="text-blue-800 text-xs">Verificando estado de conexión de WhatsApp...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Nota informativa - Solo mostrar si hay WhatsApp disponible y está conectado directamente */}
+        {whatsAppInstance.effectiveInstanceName && !whatsAppInstance.usingFallback && !whatsAppInstance.isCheckingConnection && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-start">
+              <MessageCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-green-800 text-xs">
+                <p className="font-medium mb-1">WhatsApp conectado</p>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>Verifica que el número tenga WhatsApp activo</li>
-                  <li>El envío puede tardar unos segundos</li>
                   <li>Sucursal: <strong>{whatsAppInstance.branchOfficeName}</strong></li>
+                  <li>Verifica que el número tenga WhatsApp activo</li>
                 </ul>
               </div>
             </div>

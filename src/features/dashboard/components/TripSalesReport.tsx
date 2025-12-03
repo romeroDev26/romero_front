@@ -295,6 +295,63 @@ export const TripSalesReport: React.FC = () => {
               </div>
             </div>
 
+            {/* Desglose por Método de Pago */}
+            {report.sales.payment_breakdown && report.sales.payment_breakdown.length > 0 && (
+              <div className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  Desglose por Método de Pago
+                </h4>
+                <div className="space-y-4">
+                  {/* Barra de distribución visual */}
+                  <div className="flex h-4 rounded-full overflow-hidden bg-gray-200">
+                    {report.sales.payment_breakdown.map((payment) => {
+                      const percentage = (payment.amount / report.sales.total_revenue) * 100;
+                      return (
+                        <div
+                          key={payment.payment_method}
+                          className="h-full transition-all duration-500"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: getPaymentColor(payment.payment_method),
+                          }}
+                          title={`${payment.payment_method}: ${formatCurrency(payment.amount)} (${percentage.toFixed(1)}%)`}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Lista de métodos de pago */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {report.sales.payment_breakdown.map((payment) => {
+                      const percentage = (payment.amount / report.sales.total_revenue) * 100;
+                      return (
+                        <div
+                          key={payment.payment_method}
+                          className="bg-gray-50 rounded-lg p-3 border border-gray-100"
+                        >
+                          <div className="flex items-center gap-2 mb-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: getPaymentColor(payment.payment_method) }}
+                            />
+                            <span className="text-sm font-medium text-gray-700">
+                              {payment.payment_method.replace('_', ' ')}
+                            </span>
+                          </div>
+                          <p className="text-lg font-bold text-gray-900">
+                            {formatCurrency(payment.amount)}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {percentage.toFixed(1)}% del total
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Desglose por Servicio */}
             {report.sales.service_breakdown && Object.keys(report.sales.service_breakdown).length > 0 && (
               <div className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">

@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DatePicker from 'react-datepicker';
+import { es } from 'date-fns/locale';
 import { 
   ArrowLeftIcon,
   TruckIcon,
@@ -228,17 +229,20 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                     onClick={() => setShowCustomPicker(false)}
                   />
                   <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4">
-                    <DatePicker
-                      selected={customStartDate}
-                      onChange={handleCustomDateChange}
-                      startDate={customStartDate}
-                      endDate={customEndDate}
-                      selectsRange
-                      inline
-                      monthsShown={2}
-                      maxDate={new Date()}
-                      calendarClassName="custom-datepicker"
-                    />
+                    <div className="custom-datepicker-wrapper">
+                      <DatePicker
+                        selected={customStartDate}
+                        onChange={handleCustomDateChange}
+                        startDate={customStartDate}
+                        endDate={customEndDate}
+                        selectsRange
+                        inline
+                        monthsShown={2}
+                        maxDate={new Date()}
+                        locale={es}
+                        calendarClassName="custom-datepicker"
+                      />
+                    </div>
                   </div>
                 </>
               )}

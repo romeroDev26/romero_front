@@ -15,7 +15,6 @@ import {
 import { reportsService } from '../../../services/reports.service';
 import { TripsListResponse, TripListItem } from '../../../types/tripSalesReport';
 import { TripSalesDetailReport } from './TripSalesDetailReport';
-import { DateRangeFilter, DateFilterOption } from './DateRangeFilter';
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('es-PE', {
@@ -53,33 +52,30 @@ interface DayTrips {
 }
 
 export const TripsCalendarReport: React.FC = () => {
-  // Estado del mes actual
+  // Estado del mes actual (por defecto el mes actual)
   const [currentMonth, setCurrentMonth] = useState<Date>(() => {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
 
-  // Estado del filtro de fechas
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  
-  const [startDate, setStartDate] = useState<Date>(startOfMonth);
-  const [endDate, setEndDate] = useState<Date>(endOfMonth);
-  const [filterOption, setFilterOption] = useState<DateFilterOption>('lastMonth');
+  // Calcular el rango de fechas basado en el mes actual
+  const dateRange = useMemo(() => {
+    const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    return {
+      start_date: startOfMonth.toISOString().split('T')[0],
+      end_date: endOfMonth.toISOString().split('T')[0],
+    };
+  }, [currentMonth]);
 
   // Estado de selección
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
 
-  // Consultar viajes del período
+  // Consultar viajes del mes actual
   const { data: tripsData, isLoading } = useQuery<TripsListResponse>({
-    queryKey: ['trips-list', startDate.toISOString(), endDate.toISOString()],
-    queryFn: () => reportsService.getTripsList({
-      start_date: startDate.toISOString().split('T')[0],
-      end_date: endDate.toISOString().split('T')[0],
-    }),
+    queryKey: ['trips-list', dateRange.start_date, dateRange.end_date],
+    queryFn: () => reportsService.getTripsList(dateRange),
     enabled: true,
   });
 
@@ -146,20 +142,16 @@ export const TripsCalendarReport: React.FC = () => {
     return days;
   }, [currentMonth]);
 
-  const handleDateChange = (newStartDate: Date, newEndDate: Date) => {
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
-    setCurrentMonth(new Date(newStartDate.getFullYear(), newStartDate.getMonth(), 1));
+  const handlePrevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
     setSelectedDate(null);
     setSelectedTripId(null);
   };
 
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-
   const handleNextMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+    setSelectedDate(null);
+    setSelectedTripId(null);
   };
 
   const handleDayClick = (date: Date) => {
@@ -214,16 +206,6 @@ export const TripsCalendarReport: React.FC = () => {
           <p className="text-indigo-100 text-sm mt-1">
             Selecciona un día para ver los viajes y sus estadísticas
           </p>
-        </div>
-
-        <div className="p-6 border-b border-gray-200 bg-gray-50">
-          <DateRangeFilter
-            startDate={startDate}
-            endDate={endDate}
-            onDateChange={handleDateChange}
-            selectedOption={filterOption}
-            onOptionChange={setFilterOption}
-          />
         </div>
       </div>
 

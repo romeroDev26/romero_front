@@ -1,6 +1,7 @@
 // src/services/reports.service.ts
 import api from '../config/api';
 import { DailySalesFilters, DailySalesReportResponse } from '../types/reports';
+import { TripSalesFilters, TripSalesReportResponse, TripsListFilters, TripsListResponse } from '../types/tripSalesReport';
 
 export const reportsService = {
   getDailySales: async (filters: DailySalesFilters): Promise<DailySalesReportResponse> => {
@@ -49,6 +50,40 @@ export const reportsService = {
       start_date: startDate.toISOString().split('T')[0],
       end_date: endDate.toISOString().split('T')[0],
     });
+  },
+
+  // Reporte de ventas por viaje
+  getTripSales: async (filters: TripSalesFilters): Promise<TripSalesReportResponse> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('trip_id', filters.trip_id.toString());
+
+      if (filters.compare_start_date) {
+        params.append('compare_start_date', filters.compare_start_date);
+      }
+      if (filters.compare_end_date) {
+        params.append('compare_end_date', filters.compare_end_date);
+      }
+
+      const response = await api.get<TripSalesReportResponse>(`/admin/reports/trip-sales?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Lista de viajes con detalles por período
+  getTripsList: async (filters: TripsListFilters): Promise<TripsListResponse> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('start_date', filters.start_date);
+      params.append('end_date', filters.end_date);
+
+      const response = await api.get<TripsListResponse>(`/admin/reports/trips?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   },
 };
 

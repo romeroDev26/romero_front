@@ -13,6 +13,7 @@ import { SunatStatusChart } from '../components/SunatStatusChart';
 import { Modal } from '../../../components/common/Modal';
 import { useExportReport } from '../../../hooks/useExportReport';
 import { DateRangeFilter, DateFilterOption } from '../components/DateRangeFilter';
+import { TripsCalendarReport } from '../components/TripsCalendarReport';
 
 export const ReportsPage: React.FC = () => {
   // Inicializar con la fecha de hoy
@@ -257,6 +258,12 @@ export const ReportsPage: React.FC = () => {
           />
         </div>
       )}
+
+      {/* Separador */}
+      <div className="border-t border-gray-200 my-8"></div>
+
+      {/* Reporte de Ventas por Viaje con Calendario */}
+      <TripsCalendarReport />
     </div>
   );
 };

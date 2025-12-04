@@ -384,6 +384,13 @@ export const TripsCalendarReport: React.FC = () => {
                       </span>
                     </div>
 
+                    {/* Nombre del viaje */}
+                    {item.trip.trip_name && (
+                      <div className="text-sm font-medium text-indigo-700 mb-1 truncate">
+                        {item.trip.trip_name}
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
                       <MapPinIcon className="w-4 h-4 flex-shrink-0" />
                       <span className="truncate">{item.trip.route.origin_port}</span>
@@ -392,7 +399,7 @@ export const TripsCalendarReport: React.FC = () => {
                     </div>
 
                     <div className="text-xs text-gray-500 mb-3">
-                      {item.trip.vessel.actual.vessel_name}
+                      {item.trip.vessel.actual.vessel_name || item.trip.vessel.scheduled.vessel_name}
                       {item.trip.vessel.changed && (
                         <span className="ml-2 text-orange-600">(cambio de embarcación)</span>
                       )}

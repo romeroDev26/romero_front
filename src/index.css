@@ -195,3 +195,48 @@
 .custom-datepicker .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
   border-color: #4f46e5;
 }
+
+/* ================================================
+   Layout horizontal para múltiples meses
+   ================================================ */
+
+/* Wrapper para forzar layout horizontal */
+.custom-datepicker-wrapper .react-datepicker {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.custom-datepicker-wrapper .react-datepicker__month-container {
+  float: none !important;
+  flex-shrink: 0;
+}
+
+/* Aplicar también directamente a la clase del calendario */
+.custom-datepicker.react-datepicker,
+.react-datepicker.custom-datepicker {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Separador visual entre meses */
+.custom-datepicker-wrapper .react-datepicker__month-container + .react-datepicker__month-container,
+.custom-datepicker .react-datepicker__month-container + .react-datepicker__month-container {
+  border-left: 1px solid #e5e7eb;
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+}
+
+/* Asegurar que las flechas de navegación estén bien posicionadas */
+.custom-datepicker-wrapper .react-datepicker__navigation--previous,
+.custom-datepicker .react-datepicker__navigation--previous {
+  left: 10px;
+}
+
+.custom-datepicker-wrapper .react-datepicker__navigation--next,
+.custom-datepicker .react-datepicker__navigation--next {
+  right: 10px;
+}

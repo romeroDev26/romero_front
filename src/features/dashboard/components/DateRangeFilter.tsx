@@ -145,35 +145,37 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
       {/* Calendario desplegable */}
       {showCalendar && (
         <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4">
-          <DatePicker
-            selected={tempStartDate}
-            onChange={handleDateSelect}
-            startDate={tempStartDate}
-            endDate={tempEndDate}
-            selectsRange
-            inline
-            monthsShown={2}
-            locale={es}
-            minDate={new Date(2020, 0, 1)}
-            maxDate={new Date()}
-            calendarClassName="custom-datepicker"
-            dayClassName={(date) => {
-              const isToday = date.toDateString() === new Date().toDateString();
-              const isSelected = 
-                (tempStartDate && date.toDateString() === tempStartDate.toDateString()) ||
-                (tempEndDate && date.toDateString() === tempEndDate.toDateString());
-              const isInRange = 
-                tempStartDate && 
-                tempEndDate && 
-                date > tempStartDate && 
-                date < tempEndDate;
+          <div className="custom-datepicker-wrapper">
+            <DatePicker
+              selected={tempStartDate}
+              onChange={handleDateSelect}
+              startDate={tempStartDate}
+              endDate={tempEndDate}
+              selectsRange
+              inline
+              monthsShown={2}
+              locale={es}
+              minDate={new Date(2020, 0, 1)}
+              maxDate={new Date()}
+              calendarClassName="custom-datepicker"
+              dayClassName={(date) => {
+                const isToday = date.toDateString() === new Date().toDateString();
+                const isSelected = 
+                  (tempStartDate && date.toDateString() === tempStartDate.toDateString()) ||
+                  (tempEndDate && date.toDateString() === tempEndDate.toDateString());
+                const isInRange = 
+                  tempStartDate && 
+                  tempEndDate && 
+                  date > tempStartDate && 
+                  date < tempEndDate;
 
-              if (isSelected) return 'bg-indigo-600 text-white rounded-full';
-              if (isInRange) return 'bg-indigo-100 text-indigo-800';
-              if (isToday) return 'border-2 border-indigo-600 rounded-full';
-              return '';
-            }}
-          />
+                if (isSelected) return 'bg-indigo-600 text-white rounded-full';
+                if (isInRange) return 'bg-indigo-100 text-indigo-800';
+                if (isToday) return 'border-2 border-indigo-600 rounded-full';
+                return '';
+              }}
+            />
+          </div>
           
           {/* Acciones del calendario */}
           <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">

@@ -315,7 +315,7 @@ const generateQuotationPDFWithLogo = async (quotationData: Quotation): Promise<{
     }
     
     pdf.text(
-      'Sistema de Gestión - Transportes Romero',
+      'Sistema de Gestión',
       pageWidth - margin - 70,
       finalFooterY + 3
     );

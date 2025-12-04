@@ -543,7 +543,7 @@ export const WhatsAppConfigPage: React.FC = () => {
               value={newInstanceName}
               onChange={(e) => setNewInstanceName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_'))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono"
-              placeholder="ej: ROMERO_IQUITOS"
+              placeholder="ej: [EMPRESA]_IQUITOS"
             />
             <p className="text-xs text-gray-500 mt-1">
               Solo letras mayúsculas, números y guiones bajos

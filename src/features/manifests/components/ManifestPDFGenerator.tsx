@@ -660,8 +660,9 @@ export const generatePassengerManifestPDF = (
     pdf.text(`Por: ${manifestData.generated_by_user.full_name}`, margin, footerY + 8);
   else if (manifestData.generated_by_name)
     pdf.text(`Por: ${manifestData.generated_by_name}`, margin, footerY + 8);
+  const systemName = manifestData.company?.name ? `Sistema de Gestión - ${manifestData.company.name}` : "Sistema de Gestión";
   pdf.text(
-    "Sistema de Gestión - Transportes Romero",
+    systemName,
     pageWidth - margin - 60,
     footerY + 3
   );

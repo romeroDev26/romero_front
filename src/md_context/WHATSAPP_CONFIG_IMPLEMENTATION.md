@@ -1,8 +1,10 @@
 # Implementación de Configuración de WhatsApp
 
+> **Última actualización:** 4 de diciembre de 2025
+
 ## Descripción General
 
-Se ha implementado un módulo completo para la configuración y gestión de instancias de WhatsApp usando **Evolution API** a través del backend de Transportes Romero.
+Se ha implementado un módulo completo para la configuración y gestión de instancias de WhatsApp usando **Evolution API** a través del backend de Transportes Romero. El sistema funciona de manera **dinámica**, donde cada sucursal puede tener su propia instancia de WhatsApp configurada.
 
 ## Arquitectura
 

@@ -11,6 +11,7 @@ import { MessageCircle, Send, CheckCircle, AlertCircle, AlertTriangle } from 'lu
 import { whatsappService, WhatsAppSendResponse } from '../../../../services/whatsapp.service';
 import { BackendInvoiceData } from './tickets/types/backend.types';
 import { useWhatsAppInstanceWithFallback } from '../../../../hooks/useWhatsAppInstance';
+import { useCompanyInfo } from '../../../../hooks/useCompanyInfo';
 
 interface WhatsAppSendModalProps {
   isOpen: boolean;
@@ -40,6 +41,8 @@ export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
 
   // Obtener la instancia de WhatsApp con verificación de conexión y fallback automático
   const whatsAppInstance = useWhatsAppInstanceWithFallback(backendData.branch_office_name);
+  const { data: company } = useCompanyInfo();
+  const businessName = company?.business_name || 'Nuestra Empresa';
 
   const defaultMessage = `¡Hola!
 
@@ -48,7 +51,7 @@ Adjuntamos a continuación tu comprobante electrónico correspondiente.
 
 Gracias por tu preferencia.
 Atentamente,
-El equipo de GLOBAL ROMERO S.A.C.`;
+El equipo de ${businessName}`;
 
   const handleSend = async () => {
     if (!phoneNumber.trim()) {
@@ -99,7 +102,8 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         phoneNumber,
         customMessage: customMessage.trim() || undefined,
         pdfType: pdfType,
-        instanceName: whatsAppInstance.effectiveInstanceName
+        instanceName: whatsAppInstance.effectiveInstanceName,
+        businessName: businessName
       });
 
       setSendResult(result);

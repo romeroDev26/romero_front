@@ -304,8 +304,18 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         grouped.groups.length > 0
       ) {
         let globalItemNumber = 1; // Numeración continua entre grupos
+        const pageHeight = pdf.internal.pageSize.height;
+        const bottomMargin = 20; // Margen inferior mínimo
+        const minSpaceForGroupHeader = 50; // Espacio mínimo necesario para título + al menos 1 fila de tabla
 
         for (const group of grouped.groups) {
+          // Verificar si hay espacio suficiente para el título del grupo + header de tabla
+          // Si no hay espacio, crear nueva página
+          if (currentY + minSpaceForGroupHeader > pageHeight - bottomMargin) {
+            pdf.addPage();
+            currentY = 20; // Reiniciar posición Y en la nueva página
+          }
+
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(10);
           // Ruta: usar guión simple para mejor visualización

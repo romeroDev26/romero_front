@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
@@ -9,6 +9,7 @@ import { Dashboard } from './components/layout/Dashboard';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Spinner } from './components/common/Spinner';
+import { useCompanyInfo } from './hooks/useCompanyInfo';
 
 // Páginas del dashboard (carga inmediata)
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
@@ -86,7 +87,21 @@ export const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
+      <AppContent />
+    </QueryClientProvider>
+  );
+}
+
+function AppContent() {
+  const { data: company } = useCompanyInfo();
+
+  useEffect(() => {
+    const businessName = company?.business_name || 'Panel de Gestión';
+    document.title = `Panel ${businessName}`;
+  }, [company]);
+
+  return (
+    <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/welcome" element={
@@ -325,8 +340,7 @@ function App() {
         
         <ToastContainer position="top-right" autoClose={3000} />
       </Router>
-    </QueryClientProvider>
-  );
+    );
 }
 
 export default App;

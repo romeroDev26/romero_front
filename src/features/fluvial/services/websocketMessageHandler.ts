@@ -27,8 +27,6 @@ export class WebSocketMessageHandler {
   }
 
   handleMessage(message: SeatUpdateMessage): void {
-
-
     switch (message.type) {
       case 'INITIAL_STATE':
         this.handleInitialState(message);
@@ -60,6 +58,10 @@ export class WebSocketMessageHandler {
 
       case 'SEATS_OCCUPIED':
         this.handleSeatsOccupied(message);
+        break;
+
+      case 'SEAT_MAP_UPDATE':
+        this.handleSeatMapUpdate(message);
         break;
 
       case 'PONG':
@@ -127,18 +129,21 @@ export class WebSocketMessageHandler {
   }
 
   private handleSeatUpdate(message: SeatUpdateMessage): void {
-
-
     if (message.seatId !== undefined && message.status) {
+      // Si el asiento esta vendido/confirmado, agregarlo a confirmedSeats
+      // para protegerlo de ser liberado accidentalmente por otros eventos
+      const confirmedStatuses = ['SOLD', 'CONFIRMED', 'OCCUPIED'];
+      if (confirmedStatuses.includes(message.status.toUpperCase())) {
+        this.confirmedSeats.add(message.seatId);
+      }
+      
       this.onSeatMapUpdate(message.seatId, message.status);
       this.onSelectionRemove(message.seatId);
     }
   }
 
   private handleSeatSelection(message: SeatUpdateMessage): void {
-
-
-    //  CORRECCIÓN: Comparar userId base
+    // Comparar userId base
     const messageBaseUserId = message.userId?.split('-company-')[0] || '';
     const isFromDifferentUser = messageBaseUserId !== this.userId;
     
@@ -156,23 +161,19 @@ export class WebSocketMessageHandler {
   }
 
   private handleSeatReleased(message: SeatUpdateMessage): void {
-
-
     if (message.seatId !== undefined) {
       // No liberar asientos que han sido vendidos definitivamente
       if (this.confirmedSeats.has(message.seatId)) {
         return;
       }
       
-      //  CORRECCIÓN: SIEMPRE procesar liberaciones (propias y de otros)
+      // Procesar liberaciones (propias y de otros)
       // Necesario para limpiar correctamente los representantes al eliminarlos
       this.onSelectionRemove(message.seatId);
     }
   }
 
   private handleTempReserveResponse(message: SeatUpdateMessage): void {
-
-
     if (message.seatId !== undefined) {
       if (!message.success) {
         this.showReserveError(message);
@@ -181,13 +182,11 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReserved(message: SeatUpdateMessage): void {
-
-
     const isRepresentativeReservation = message.reservationType === 'REPRESENTATIVE_TEMP_RESERVATION' ||
                                        message.reservationType === 'representative' ||
                                        (message as any).reservationCategory === 'representative';
 
-    //  CORRECCIÓN: Extraer userId base para comparar correctamente
+    // Extraer userId base para comparar correctamente
     // Los representantes tienen userId como "user123-company-session-rep-0", 
     // necesitamos comparar solo el userId base "user123"
     const messageBaseUserId = message.userId?.split('-company-')[0] || '';
@@ -217,29 +216,56 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReleased(message: SeatUpdateMessage): void {
-
-
-    //  CORRECCIÓN: SIEMPRE procesar liberaciones (propias y de otros)
+    // Procesar liberaciones temporales (propias y de otros)
     // Necesario para limpiar correctamente los representantes al eliminarlos
     if (message.seatId !== undefined) {
+      // No liberar asientos que han sido vendidos definitivamente
+      if (this.confirmedSeats.has(message.seatId)) {
+        return;
+      }
       this.onSelectionRemove(message.seatId);
     }
   }
 
   private handleSeatsOccupied(message: SeatUpdateMessage): void {
-
-
     // Marcar los asientos como vendidos definitivamente (CONFIRMED)
     if (message.seatIds && Array.isArray(message.seatIds)) {
       message.seatIds.forEach((seatId: number) => {
-
         // Agregar al conjunto de asientos confirmados
         this.confirmedSeats.add(seatId);
         // Actualizar el estado del asiento a CONFIRMED (rojo)
         this.onSeatMapUpdate(seatId, 'CONFIRMED');
-        // Remover cualquier selección temporal de este asiento
+        // Remover cualquier seleccion temporal de este asiento
         this.onSelectionRemove(seatId);
       });
+    }
+  }
+
+  private handleSeatMapUpdate(message: SeatUpdateMessage): void {
+    // Procesar actualizacion masiva del mapa de asientos
+    // El backend envia esto despues de una venta para sincronizar el estado
+    if (message.seats && Array.isArray(message.seats)) {
+      message.seats.forEach((seat) => {
+        if (seat.seatId && seat.status) {
+          // Si el asiento esta vendido/ocupado, agregarlo a confirmedSeats
+          const confirmedStatuses = ['SOLD', 'CONFIRMED', 'OCCUPIED'];
+          if (confirmedStatuses.includes(seat.status.toUpperCase())) {
+            this.confirmedSeats.add(seat.seatId);
+          }
+          this.onSeatMapUpdate(seat.seatId, seat.status);
+          this.onSelectionRemove(seat.seatId);
+        }
+      });
+    }
+    
+    // Tambien puede venir con seatId individual
+    if (message.seatId !== undefined && message.status) {
+      const confirmedStatuses = ['SOLD', 'CONFIRMED', 'OCCUPIED'];
+      if (confirmedStatuses.includes(message.status.toUpperCase())) {
+        this.confirmedSeats.add(message.seatId);
+      }
+      this.onSeatMapUpdate(message.seatId, message.status);
+      this.onSelectionRemove(message.seatId);
     }
   }
 

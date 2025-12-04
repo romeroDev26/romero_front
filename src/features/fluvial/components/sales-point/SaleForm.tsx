@@ -847,27 +847,27 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     return seatIds;
   }, [representatives.length, seatMap.length]); // Ya optimizado con longitudes
 
-  // Función para encontrar el seatId a partir del seat_number - Memoizada
+  // Funcion para encontrar el seatId a partir del seat_number - Memoizada
   const findSeatIdBySeatNumber = useCallback((seatNumber: string): number | null => {
     const seat = seatMap.find((seat) => seat.seat_number === seatNumber);
     return seat ? seat.id : null;
   }, [seatMap.length]); // Ya optimizado con longitud
 
-  // ← NUEVO: Handler principal de venta usando el hook de lógica de negocio - Optimizado
+  // Handler principal de venta usando el hook de logica de negocio
   const handleConfirmSale = useCallback(async () => {
     try {
-      // Validación: si se agrega un costo adicional, la descripción debe ser obligatoria
+      // Validacion: si se agrega un costo adicional, la descripcion debe ser obligatoria
       if (
         (extraCost || 0) > 0 &&
         (!extraCostDescription || !extraCostDescription.trim())
       ) {
         toast.error(
-          "Ingrese una descripción para el costo adicional antes de confirmar la venta."
+          "Ingrese una descripcion para el costo adicional antes de confirmar la venta."
         );
         return;
       }
       
-      // NUEVO: Validación crítica para precio manual
+      // Validacion critica para precio manual
       if (isManualPriceMode && (!manualPrice || manualPrice <= 0)) {
         toast.error(
           "Debe ingresar un precio manual válido antes de confirmar la venta."

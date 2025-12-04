@@ -232,8 +232,18 @@ export const generatePassengerManifestPDF = (
     const grouped = (manifestData as any).cargo_grouped_by_stops;
     if (grouped && Array.isArray(grouped.groups) && grouped.groups.length > 0) {
       let globalItemNumber = 1; // Numeración continua entre grupos
+      const pageHeight = pdf.internal.pageSize.height;
+      const bottomMargin = 20; // Margen inferior mínimo
+      const minSpaceForGroupHeader = 50; // Espacio mínimo necesario para título + al menos 1 fila de tabla
 
       for (const group of grouped.groups) {
+        // Verificar si hay espacio suficiente para el título del grupo + header de tabla
+        // Si no hay espacio, crear nueva página
+        if (currentY + minSpaceForGroupHeader > pageHeight - bottomMargin) {
+          pdf.addPage();
+          currentY = 20; // Reiniciar posición Y en la nueva página
+        }
+
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(10);
         const origin = (group.origin_port_name || "N/A").toString();
@@ -660,8 +670,9 @@ export const generatePassengerManifestPDF = (
     pdf.text(`Por: ${manifestData.generated_by_user.full_name}`, margin, footerY + 8);
   else if (manifestData.generated_by_name)
     pdf.text(`Por: ${manifestData.generated_by_name}`, margin, footerY + 8);
+  const systemName = manifestData.company?.name ? `Sistema de Gestión - ${manifestData.company.name}` : "Sistema de Gestión";
   pdf.text(
-    "Sistema de Gestión - Transportes Romero",
+    systemName,
     pageWidth - margin - 60,
     footerY + 3
   );

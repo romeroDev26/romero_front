@@ -16,8 +16,8 @@ import { ServiceCategory } from '../../../types';
 import { toast } from 'react-toastify';
 
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
-  { value: 'PASAJES', label: 'Romero Express' },
-  { value: 'OTROS', label: 'Romero Cargo' }
+  { value: 'PASAJES', label: 'Express' },
+  { value: 'OTROS', label: 'Cargo' }
 ];
 
 interface EditingFare {

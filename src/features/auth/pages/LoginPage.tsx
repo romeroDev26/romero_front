@@ -19,7 +19,6 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export const LoginPage: React.FC = () => {
-  // Mantenemos toda tu lógica original
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
@@ -60,14 +59,15 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 text-gray-900 flex justify-center items-center">
       <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-xl sm:rounded-lg flex justify-center flex-1">
         
-        {/* Sección Izquierda: Formulario de Login (con tu contenido) */}
+        {/* Sección Izquierda: Formulario de Login */}
         <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12 flex flex-col justify-center">
           <div className="flex justify-center mb-6">
-            <img 
-              src="/icon_romero.png" 
-              alt="Logo Transportes Romero" 
-              className="w-40 h-40" // Tamaño ligeramente mayor
-            />
+            <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 17h1m16 0h1M5.5 17l1.5-8h10l1.5 8M5.5 17h13M8 9V6a1 1 0 011-1h2a1 1 0 011 1v3M12 9V4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 20.5c1.5-1 3-1.5 4.5-1.5s3 .5 4.5 1.5c1.5-1 3-1.5 4.5-1.5s3 .5 4.5 1.5" />
+              </svg>
+            </div>
           </div>
           <div className="w-full flex-1">
             <div className="mx-auto max-w-xs text-center">
@@ -148,17 +148,24 @@ export const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Sección Derecha: Banner con tu contenido e imagen */}
-        <div className="flex-1 bg-indigo-100 text-center hidden lg:flex rounded-r-lg" // <-- Aquí está el borde redondeado
-             style={{ backgroundImage: `url('/banner_login.webp')`, backgroundSize: 'cover', backgroundPosition: 'center center' }}>
-          <div className="w-full h-full bg-indigo-800 bg-opacity-60 flex items-center justify-center p-12">
+        {/* Sección Derecha: Banner */}
+        <div className="flex-1 bg-gradient-to-br from-indigo-600 to-indigo-800 text-center hidden lg:flex rounded-r-lg">
+          <div className="w-full h-full flex items-center justify-center p-12">
             <div className="text-white">
-              <h1 className="text-5xl font-bold leading-tight">
-                Transportes Romero
+              <div className="flex justify-center mb-6">
+                <div className="w-24 h-24 bg-white/10 rounded-3xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-14 h-14 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 17h1m16 0h1M5.5 17l1.5-8h10l1.5 8M5.5 17h13M8 9V6a1 1 0 011-1h2a1 1 0 011 1v3M12 9V4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 20.5c1.5-1 3-1.5 4.5-1.5s3 .5 4.5 1.5c1.5-1 3-1.5 4.5-1.5s3 .5 4.5 1.5" />
+                  </svg>
+                </div>
+              </div>
+              <h1 className="text-4xl font-bold leading-tight">
+                Sistema de Gestión
               </h1>
               <p className="mt-4 text-indigo-100 max-w-lg mx-auto text-lg">
-                Sistema integrado de gestión y facturación electrónica. 
-                Administre sus operaciones de transporte de manera eficiente y moderna.
+                Plataforma integrada de gestión y facturación electrónica. 
+                Administre sus operaciones de manera eficiente y moderna.
               </p>
             </div>
           </div>

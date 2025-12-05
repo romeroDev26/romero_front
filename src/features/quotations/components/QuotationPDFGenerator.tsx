@@ -231,8 +231,9 @@ export const generateQuotationPDF = (
       );
     }
     
+    const systemName = quotationData.company?.business_name ? `Sistema de Gestión - ${quotationData.company.business_name}` : "Sistema de Gestión";
     pdf.text(
-      'Sistema de Gestión - Transportes Romero',
+      systemName,
       pageWidth - margin - 70,
       finalFooterY + 3
     );

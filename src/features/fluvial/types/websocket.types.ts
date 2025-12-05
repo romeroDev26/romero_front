@@ -22,11 +22,11 @@ export interface SeatUpdateMessage {
   type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG'
         | 'SEAT_TEMP_RESERVE' | 'SEAT_TEMP_RELEASE' | 'SEAT_TEMP_RESERVE_RESPONSE'
         | 'SEAT_TEMP_RESERVED' | 'SEAT_TEMP_RELEASED' | 'SEAT_TEMP_RELEASE_ALL'
-        | 'SEATS_OCCUPIED';
+        | 'SEATS_OCCUPIED' | 'SEAT_MAP_UPDATE';
   tripId: number;
   seatId?: number;
   seatIds?: number[];
-  seats?: Array<{ seatId: number; userId: string; userName: string }>;
+  seats?: Array<{ seatId: number; userId: string; userName: string; status?: string }>;
   // Nuevos campos para INITIAL_STATE mejorado
   selecctionSeats?: SelectionSeat[];
   occupiedSeats?: OccupiedSeat[];

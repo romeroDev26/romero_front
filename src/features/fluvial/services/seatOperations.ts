@@ -57,7 +57,7 @@ export class SeatOperations {
       type: 'SEAT_RELEASED',
       seatId,
       userId: this.userId, //  SOLUCIÓN: Asegurar que el userId se envíe
-      userName: this.userName, // SOLUCIÓN: Asegurar que el userName se envíe
+      userName: this.userName,
       timestamp: new Date().toISOString()
     };
     
@@ -81,7 +81,7 @@ export class SeatOperations {
     representativeIndex: number, 
     representativeName: string
   ): boolean {
-    // SOLUCIÓN: Formato exacto que requiere el backend
+    // Formato exacto que requiere el backend
     const sessionId = this.getOrCreateCompanySessionId();
     const representativeUserId = `${this.userId}-company-${sessionId}-rep-${representativeIndex}`;
     

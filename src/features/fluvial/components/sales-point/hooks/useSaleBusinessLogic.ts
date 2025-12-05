@@ -392,37 +392,32 @@ export const useSaleBusinessLogic = ({
             passenger_name: passengerData.name,
             passenger_doc_type: passengerData.docType,
             passenger_doc_number: passengerData.docNumber,
-            seat_number: selectedSeat?.seat_number || "Elección libre",
+            seat_number: selectedSeat?.seat_number || "Eleccion libre",
             invoice_item_id: createdInvoice.items[0].id,
           };
           await createSeatAssignment(assignmentPayload);
         }
       }
 
-      // ← NUEVO: Confirmar compra vía WebSocket para actualizar el mapa de asientos
+      // Confirmar compra via WebSocket para actualizar el mapa de asientos
       if (confirmPurchaseCallback && selectedSeat) {
         confirmPurchaseCallback([selectedSeat.id]);
       }
 
-      // Toast de éxito
+      // Toast de exito
       const isRuc = passengerData.docType === "6";
       const documentType = isRuc ? "Factura" : "Boleta";
       const documentNumber = `${createdInvoice.series}-${String(createdInvoice.number).padStart(8, '0')}`;
       const operationType = isConfirmingMode ? "Reserva confirmada" : "Venta registrada";
-      const seatInfo = selectedSeat ? `Asiento: ${selectedSeat.seat_number}` : "Elección libre";
+      const seatInfo = selectedSeat ? `Asiento: ${selectedSeat.seat_number}` : "Eleccion libre";
       
       toast.success(
         `${operationType} exitosamente. ${documentType}: ${documentNumber} | ${seatInfo}`
       );
 
-      // Liberar reserva temporal
-      if (selectedSeat) {
-        await seatValidation.releaseSeatReservation({
-          tripId,
-          seatId: selectedSeat.id,
-          userId: currentUser?.id || 'unknown'
-        });
-      }
+      // NOTA: No liberar reserva temporal cuando la venta es exitosa
+      // El asiento ya fue vendido, no debe liberarse
+      // releaseSeatReservation solo debe llamarse en caso de error/cancelacion
 
       onSuccess(createdInvoice);
 

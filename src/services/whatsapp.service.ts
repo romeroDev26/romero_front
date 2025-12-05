@@ -8,6 +8,7 @@ export interface WhatsAppSendDocumentRequest {
   fileName: string;
   mimetype?: string;
   instance_name?: string;
+  business_name?: string;
 }
 
 export interface WhatsAppSendResponse {
@@ -22,6 +23,7 @@ export interface WhatsAppSendInvoiceRequest {
   custom_message?: string;
   pdf_type?: 'a4' | 'ticket' | 'legacy';
   instance_name?: string;
+  business_name?: string;
 }
 
 export interface WhatsAppSendQuotationRequest {
@@ -29,6 +31,7 @@ export interface WhatsAppSendQuotationRequest {
   phone_number: string;
   custom_message?: string;
   instance_name?: string;
+  business_name?: string;
 }
 
 class WhatsAppService {
@@ -43,12 +46,14 @@ class WhatsAppService {
     quotationId,
     phoneNumber,
     customMessage,
-    instanceName
+    instanceName,
+    businessName
   }: {
     quotationId: number;
     phoneNumber: string;
     customMessage?: string;
     instanceName: string;
+    businessName?: string;
   }): Promise<WhatsAppSendResponse> {
     try {
       const defaultMessage = `¡Hola!
@@ -58,13 +63,14 @@ Adjuntamos el documento PDF para su revisión.
 
 Gracias por su confianza.
 Atentamente,
-El equipo de GLOBAL ROMERO S.A.C.`;
+${businessName || 'Nuestra Empresa'}`;
 
       const requestData: WhatsAppSendQuotationRequest = {
         quotation_id: quotationId,
         phone_number: this.formatPhoneNumber(phoneNumber),
         custom_message: customMessage || defaultMessage,
-        instance_name: instanceName
+        instance_name: instanceName,
+        business_name: businessName
       };
 
       await api.post('/external/whatsapp/send-quotation-pdf', requestData);
@@ -99,13 +105,15 @@ El equipo de GLOBAL ROMERO S.A.C.`;
     phoneNumber,
     customMessage,
     pdfType = 'a4',
-    instanceName
+    instanceName,
+    businessName
   }: {
     invoiceId: number;
     phoneNumber: string;
     customMessage?: string;
     pdfType?: 'a4' | 'ticket' | 'legacy';
     instanceName: string;
+    businessName?: string;
   }): Promise<WhatsAppSendResponse> {
     try {
       const defaultMessage = `¡Hola!
@@ -115,14 +123,15 @@ Adjuntamos a continuación tu comprobante electrónico correspondiente.
 
 Gracias por tu preferencia.
 Atentamente,
-El equipo de GLOBAL ROMERO S.A.C.`;
+${businessName || 'Nuestra Empresa'}`;
 
       const requestData: WhatsAppSendInvoiceRequest = {
         invoice_id: invoiceId,
         phone_number: this.formatPhoneNumber(phoneNumber),
         custom_message: customMessage || defaultMessage,
         pdf_type: pdfType,
-        instance_name: instanceName
+        instance_name: instanceName,
+        business_name: businessName
       };
 
       await api.post('/external/whatsapp/send-invoice-pdf', requestData);
@@ -151,6 +160,7 @@ El equipo de GLOBAL ROMERO S.A.C.`;
    * @param fileName Nombre del archivo PDF
    * @param customMessage Mensaje personalizado (opcional)
    * @param instanceName Nombre de la instancia de WhatsApp de la sucursal
+   * @param businessName Nombre de la empresa para el mensaje
    */
   async sendDocument({
     phoneNumber,
@@ -158,12 +168,14 @@ El equipo de GLOBAL ROMERO S.A.C.`;
     fileName,
     customMessage,
     instanceName,
+    businessName
   }: {
     phoneNumber: string;
     pdfBase64: string;
     fileName: string;
     customMessage?: string;
     instanceName: string;
+    businessName?: string;
   }): Promise<WhatsAppSendResponse> {
     try {
       const defaultMessage = `¡Hola!
@@ -173,7 +185,7 @@ Adjuntamos a continuación tu comprobante electrónico correspondiente.
 
 Gracias por tu preferencia.
 Atentamente,
-El equipo de GLOBAL ROMERO S.A.C.`;
+El equipo de ${businessName || 'Nuestra Empresa'}`;
 
       const requestData: WhatsAppSendDocumentRequest = {
         number: this.formatPhoneNumber(phoneNumber),
@@ -181,7 +193,8 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         media: pdfBase64,
         fileName: fileName,
         mimetype: 'application/pdf',
-        instance_name: instanceName
+        instance_name: instanceName,
+        business_name: businessName
       };
 
       await api.post<WhatsAppSendResponse>('/external/whatsapp/send-document', requestData);

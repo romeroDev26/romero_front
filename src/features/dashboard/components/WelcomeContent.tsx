@@ -4,12 +4,16 @@ import { UserGroupIcon, CubeIcon, DocumentTextIcon } from '@heroicons/react/24/o
 import { Ship } from 'lucide-react';
 import { SalesPointSelector } from './SalesPointSelector';
 import { ThreeBackground } from './ThreeBackground';
+import { useCompanyInfo } from '../../../hooks/useCompanyInfo';
 
 interface WelcomeContentProps {
   showHeader?: boolean;
 }
 
 export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = false }) => {
+  const { data: company } = useCompanyInfo();
+  const businessName = company?.business_name || '';
+  const tradeName = company?.trade_name || '';
 
   const features = [
     {
@@ -53,7 +57,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
             <div className="absolute inset-0 z-20 flex items-center justify-center">
               <div className="text-center">
                 <h1 className="text-3xl md:text-4xl font-bold text-white drop-shadow-lg">
-                  Transportes <span className="text-blue-400">Romero</span>
+                  Transportes <span className="text-blue-400">{tradeName}</span>
                 </h1>
                 <p className="text-blue-200/70 mt-2 text-sm">Sistema de Gestión Fluvial</p>
               </div>
@@ -91,7 +95,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
               {/* Footer */}
               <div className="mt-6 text-center">
                 <p className="text-blue-200/40 text-xs uppercase tracking-wider font-medium">
-                  Transportes Romero &copy; {new Date().getFullYear()} • BUGBUSTERS
+                  {businessName} &copy; {new Date().getFullYear()} • BUGBUSTERS
                 </p>
               </div>
             </div>
@@ -107,7 +111,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
           </div>
           <div className="mt-8 border-t border-slate-200/60 pt-6 text-center lg:text-left">
             <p className="text-slate-400 text-xs uppercase tracking-wider font-medium">
-              Transportes Romero &copy; {new Date().getFullYear()} • Soporte Técnico
+              {businessName} &copy; {new Date().getFullYear()} • Soporte Técnico
             </p>
           </div>
         </div>

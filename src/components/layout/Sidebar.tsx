@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
+import { useCompanyInfo } from '../../hooks/useCompanyInfo';
 import {
   HomeIcon, UserGroupIcon, DocumentTextIcon, CreditCardIcon, TruckIcon,
   CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
@@ -145,6 +146,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
   const location = useLocation();
   const { scrollRef, handleScroll } = useSidebarScroll();
   const { hasPermission } = usePermissions();
+  const { data: company } = useCompanyInfo();
+  const businessName = company?.business_name || '';
   
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_EXPANDED_MENUS);
@@ -398,7 +401,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
             <ChartPieIcon className="w-5 h-5 text-white" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-800">Transportes Romero</h2>
+          <h2 className="text-lg font-semibold text-gray-800">{businessName}</h2>
         </div>
         <button onClick={onCloseMobile} className="lg:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
           <XMarkIcon className="w-6 h-6 text-gray-500" />

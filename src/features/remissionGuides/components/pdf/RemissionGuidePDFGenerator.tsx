@@ -90,7 +90,7 @@ export const generateRemissionGuidePDF = async (
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(11);
     pdf.setTextColor(0, 0, 0);
-    pdf.text('GLOBAL ROMERO', logoX + logoW / 2, logoY + logoH / 2 - 2, { align: 'center' });
+    pdf.text(guideData.company_business_name || 'Empresa', logoX + logoW / 2, logoY + logoH / 2 - 2, { align: 'center' });
     pdf.setFontSize(7);
     const companyType = guideType === 'transportista' ? 'TRANSPORTISTA' : 'REMITENTE';
     pdf.text(`S.A.C. - ${companyType}`, logoX + logoW / 2, logoY + logoH / 2 + 4, { align: 'center' });

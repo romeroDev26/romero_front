@@ -86,7 +86,14 @@ export const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
+      <AppContent />
+    </QueryClientProvider>
+  );
+}
+
+function AppContent() {
+  return (
+    <Router>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/welcome" element={
@@ -325,8 +332,7 @@ function App() {
         
         <ToastContainer position="top-right" autoClose={3000} />
       </Router>
-    </QueryClientProvider>
-  );
+    );
 }
 
 export default App;

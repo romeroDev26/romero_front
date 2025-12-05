@@ -10,6 +10,7 @@ import { MessageCircle, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { whatsappService, WhatsAppSendResponse } from '../../../services/whatsapp.service';
 import { Quotation } from '../types';
 import { useWhatsAppInstanceByName } from '../../../hooks/useWhatsAppInstance';
+import { useCompanyInfo } from '../../../hooks/useCompanyInfo';
 
 interface QuotationWhatsAppModalProps {
   isOpen: boolean;
@@ -28,6 +29,10 @@ export const QuotationWhatsAppModal: React.FC<QuotationWhatsAppModalProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [sendResult, setSendResult] = useState<WhatsAppSendResponse | null>(null);
 
+  // Obtener información de la empresa
+  const { data: company } = useCompanyInfo();
+  const businessName = company?.business_name || 'Nuestra Empresa';
+
   // Obtener la instancia de WhatsApp de la sucursal de la cotización
   const whatsAppInstance = useWhatsAppInstanceByName(quotation.branch_office_name);
 
@@ -42,7 +47,7 @@ Adjuntamos el documento PDF para su revisión.
 
 Gracias por su confianza.
 Atentamente,
-El equipo de GLOBAL ROMERO S.A.C.`;
+El equipo de ${businessName}`;
 
   const handleSend = async () => {
     if (!phoneNumber.trim()) {
@@ -71,7 +76,8 @@ El equipo de GLOBAL ROMERO S.A.C.`;
         quotationId: quotation.id,
         phoneNumber,
         customMessage: customMessage.trim() || undefined,
-        instanceName: whatsAppInstance.instanceName
+        instanceName: whatsAppInstance.instanceName,
+        businessName: businessName
       });
 
       setSendResult(result);

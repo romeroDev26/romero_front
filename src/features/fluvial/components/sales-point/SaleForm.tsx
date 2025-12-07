@@ -674,10 +674,18 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   // Funciones para gestionar representantes
   const handleAddRepresentative = async (representative: Representative) => {
-    // El asiento ya fue reservado via WebSocket al momento de seleccionarlo
-    // Solo agregamos el representante a la lista local
+    // Primero, reservar el asiento vía WebSocket si hay uno seleccionado
+    if (selectedSeatForRepresentative && isWebSocketConnected && selectSeatForRepresentative) {
+      selectSeatForRepresentative(
+        selectedSeatForRepresentative.id,
+        representatives.length,
+        representative.name
+      );
+    }
+
+    // Luego, agregar el representante a la lista local
     setRepresentatives((prev) => [...prev, representative]);
-    setSelectedSeatForRepresentative(null); // Limpiar la seleccion temporal
+    setSelectedSeatForRepresentative(null); // Limpiar la selección temporal
     setShowAddForm(false);
     toast.success("Representante agregado exitosamente");
   };
@@ -705,12 +713,44 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     toast.success("Representante eliminado");
   };
 
+  // Handler para manejar el cambio de estado del formulario de agregar representante
+  const handleShowAddFormChange = (show: boolean) => {
+    setShowAddForm(show);
+    if (!show) {
+      // Limpiar la selección temporal cuando se cancela la adición
+      setSelectedSeatForRepresentative(null);
+    }
+  };
+
   const existingDocuments = representatives.map((rep) => rep.document_number);
   const usedSeatNumbers = representatives
     .map((rep) => rep.seat_number)
     .filter(
       (seat): seat is string => seat != null && seat !== "Elección libre"
     );
+
+  // Crear lista completa de asientos ocupados incluyendo reservas WebSocket
+  const getAllOccupiedSeatNumbers = () => {
+    const reservedNumbers = getReservedSeatNumbers();
+
+    // Obtener asientos reservados temporalmente por otros usuarios vía WebSocket
+    const webSocketReservedNumbers: string[] = [];
+    activeSeatSelections.forEach((selection, seatId) => {
+      // Solo incluir selecciones de otros usuarios
+      if (selection.userId !== currentUser?.id) {
+        const seat = seatMap.find((s) => s.id === seatId);
+        if (seat) {
+          webSocketReservedNumbers.push(seat.seat_number);
+        }
+      }
+    });
+
+    return [
+      ...usedSeatNumbers,
+      ...reservedNumbers,
+      ...webSocketReservedNumbers,
+    ];
+  };
 
   const isRuc = passengerData.docType === SunatDocType.RUC;
 
@@ -743,68 +783,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const activeSeatSelections = webSocketFunctions?.activeSeatSelections || new Map();
   const seatMap = webSocketFunctions?.seatMap || [];
   const isWebSocketConnected = webSocketFunctions?.isWebSocketConnected || false;
-
-  // Handler para manejar el cambio de estado del formulario de agregar representante
-  const handleShowAddFormChange = (show: boolean) => {
-    setShowAddForm(show);
-    if (!show) {
-      // Si se cancela y habia un asiento seleccionado, liberarlo via WebSocket
-      if (selectedSeatForRepresentative && releaseSeatForRepresentative && isWebSocketConnected) {
-        releaseSeatForRepresentative(selectedSeatForRepresentative.id, representatives.length);
-      }
-      // Limpiar la seleccion temporal cuando se cancela la adicion
-      setSelectedSeatForRepresentative(null);
-    }
-  };
-
-  // Handler para seleccionar asiento para representante con reserva inmediata via WebSocket
-  const handleSelectSeatForRepresentative = useCallback((seat: SeatMapItem | null) => {
-    // Si hay un asiento previamente seleccionado, liberarlo
-    if (selectedSeatForRepresentative && selectedSeatForRepresentative.id !== seat?.id) {
-      if (releaseSeatForRepresentative && isWebSocketConnected) {
-        releaseSeatForRepresentative(selectedSeatForRepresentative.id, representatives.length);
-      }
-    }
-    
-    // Establecer el nuevo asiento seleccionado
-    setSelectedSeatForRepresentative(seat);
-    
-    // Reservar inmediatamente el nuevo asiento via WebSocket
-    if (seat && selectSeatForRepresentative && isWebSocketConnected) {
-      // Usar un nombre temporal hasta que se confirme el representante
-      const tempRepName = `Representante ${representatives.length + 1}`;
-      selectSeatForRepresentative(seat.id, representatives.length, tempRepName);
-    }
-  }, [
-    selectedSeatForRepresentative,
-    releaseSeatForRepresentative,
-    selectSeatForRepresentative,
-    isWebSocketConnected,
-    representatives.length
-  ]);
-
-  // Crear lista completa de asientos ocupados incluyendo reservas WebSocket
-  const getAllOccupiedSeatNumbers = () => {
-    const reservedNumbers = getReservedSeatNumbers();
-
-    // Obtener asientos reservados temporalmente por otros usuarios vía WebSocket
-    const webSocketReservedNumbers: string[] = [];
-    activeSeatSelections.forEach((selection, seatId) => {
-      // Solo incluir selecciones de otros usuarios
-      if (selection.userId !== currentUser?.id) {
-        const seat = seatMap.find((s) => s.id === seatId);
-        if (seat) {
-          webSocketReservedNumbers.push(seat.seat_number);
-        }
-      }
-    });
-
-    return [
-      ...usedSeatNumbers,
-      ...reservedNumbers,
-      ...webSocketReservedNumbers,
-    ];
-  };
 
   // NUEVO: useEffect para manejo de confirmación de reservas (ahora después de definir seatMap)
   useEffect(() => {
@@ -1131,7 +1109,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   tripId={trip.id}
                   usedSeatNumbers={usedSeatNumbers}
                   selectedSeatForRepresentative={selectedSeatForRepresentative}
-                  onSeatSelectForRepresentative={handleSelectSeatForRepresentative}
+                  onSeatSelectForRepresentative={
+                    setSelectedSeatForRepresentative
+                  }
                   onSeatReserve={reserveSeat}
                   onSeatRelease={releaseSeat}
                   getReservedSeatNumbers={getReservedSeatNumbers}
@@ -1163,7 +1143,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   }
                   onSeatSelect={
                     showAddForm
-                      ? handleSelectSeatForRepresentative
+                      ? setSelectedSeatForRepresentative
                       : setSelectedSeat
                   }
                   isConfirmingMode={isConfirmingMode}
@@ -1173,8 +1153,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                     currentUser?.full_name || currentUser?.first_name || "Usuario"
                   }
                   occupiedSeatNumbers={getAllOccupiedSeatNumbers()}
-                  isCompanyMode={isRuc} // Pasar modo empresa basado en RUC
-                  representativeSelectedSeatIds={representativeSelectedSeatIds}
+                  isCompanyMode={isRuc} // NUEVA: Pasar modo empresa basado en RUC
+                  representativeSelectedSeatIds={representativeSelectedSeatIds} // CORRECCIÓN: Usar useMemo
                   onWebSocketReady={handleWebSocketReady}
                 />
               ) : (

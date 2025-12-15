@@ -5,7 +5,7 @@ export class WebSocketMessageHandler {
   private userId: string;
   private onSeatMapUpdate: (seatId: number, status: string) => void;
   private onSelectionUpdate: (selection: SeatSelection) => void;
-  private onSelectionRemove: (seatId: number) => void;
+  private onSelectionRemove: (seatId: number, sourceUserId?: string) => void;
   private onInitialState: (selections: SeatSelection[]) => void;
   private confirmedSeats: Set<number> = new Set(); // Rastrear asientos vendidos definitivamente
 
@@ -14,10 +14,9 @@ export class WebSocketMessageHandler {
     callbacks: {
       onSeatMapUpdate: (seatId: number, status: string) => void;
       onSelectionUpdate: (selection: SeatSelection) => void;
-      onSelectionRemove: (seatId: number) => void;
+      onSelectionRemove: (seatId: number, sourceUserId?: string) => void;
       onInitialState: (selections: SeatSelection[]) => void;
-    },
-    _enableDebugLogs: boolean = false
+    }
   ) {
     this.userId = userId;
     this.onSeatMapUpdate = callbacks.onSeatMapUpdate;
@@ -167,9 +166,8 @@ export class WebSocketMessageHandler {
         return;
       }
       
-      // Procesar liberaciones (propias y de otros)
-      // Necesario para limpiar correctamente los representantes al eliminarlos
-      this.onSelectionRemove(message.seatId);
+      // Procesar liberaciones, pasando el sourceUserId para validación
+      this.onSelectionRemove(message.seatId, message.userId);
     }
   }
 
@@ -216,14 +214,15 @@ export class WebSocketMessageHandler {
   }
 
   private handleTempReleased(message: SeatUpdateMessage): void {
-    // Procesar liberaciones temporales (propias y de otros)
-    // Necesario para limpiar correctamente los representantes al eliminarlos
+    // Procesar liberaciones temporales
     if (message.seatId !== undefined) {
       // No liberar asientos que han sido vendidos definitivamente
       if (this.confirmedSeats.has(message.seatId)) {
         return;
       }
-      this.onSelectionRemove(message.seatId);
+      
+      // Procesar liberación pasando el sourceUserId para validación
+      this.onSelectionRemove(message.seatId, message.userId);
     }
   }
 

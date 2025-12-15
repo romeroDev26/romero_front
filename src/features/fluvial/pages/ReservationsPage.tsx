@@ -18,9 +18,12 @@ const ReservationFilters = ({ onFilterChange, selectedBranch }: { onFilterChange
     const debouncedDocNumber = useDebounce(docNumber, 500);
 
     useEffect(() => {
+        // Limpiar el número de documento (quitar espacios) antes de enviar
+        const cleanDocNumber = debouncedDocNumber?.trim() || '';
         onFilterChange({
             status: status ? [status] : undefined,
-            customer_doc_number: debouncedDocNumber || undefined,
+            // Enviar el documento completo sin truncar, mínimo 3 caracteres para buscar
+            customer_doc_number: cleanDocNumber.length >= 3 ? cleanDocNumber : undefined,
         });
     }, [status, debouncedDocNumber, onFilterChange]);
 
@@ -98,8 +101,8 @@ export const ReservationsPage: React.FC = () => {
       header: 'Viaje / Asiento',
       accessor: (item) => (
         <div>
-          <div className="text-sm font-bold text-gray-900">Asiento: {item.seat_number}</div>
-          <div className="text-xs text-gray-500">Viaje ID: {item.trip_id}</div>
+          <div className="text-sm font-bold text-blue-700">{item.trip_name || `Viaje #${item.trip_id}`}</div>
+          <div className="text-sm font-semibold text-gray-900">Asiento: {item.seat_number}</div>
           <div className="text-xs text-gray-500">Embarque: {item.boarding_stop?.port?.name || 'N/A'}</div>
         </div>
       )
@@ -191,11 +194,11 @@ export const ReservationsPage: React.FC = () => {
         )}
         {!isLoading && !error && reservations.map((reservation) => (
           <div key={reservation.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-            {/* Header con Asiento y Estado */}
+            {/* Header con Viaje, Asiento y Estado */}
             <div className="flex items-start justify-between mb-3 pb-3 border-b">
               <div>
-                <div className="text-sm font-bold text-gray-900">Asiento: {reservation.seat_number}</div>
-                <div className="text-xs text-gray-500">Viaje ID: {reservation.trip_id}</div>
+                <div className="text-sm font-bold text-blue-700">{reservation.trip_name || `Viaje #${reservation.trip_id}`}</div>
+                <div className="text-sm font-semibold text-gray-900">Asiento: {reservation.seat_number}</div>
               </div>
               <span className={`px-2.5 py-1 text-xs font-semibold rounded-full shrink-0 ${
                 reservation.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :

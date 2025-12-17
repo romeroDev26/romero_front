@@ -42,7 +42,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
     vessel_id: 0,
     is_active: true,
     auto_generate_trips: true,
-    generate_weeks_ahead: 4,
+    generate_weeks_ahead: 4 as number | string,
   });
 
   const [errors, setErrors] = useState<any>({});
@@ -59,7 +59,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
         vessel_id: template.vessel_id || 0,
         is_active: template.is_active,
         auto_generate_trips: template.auto_generate_trips,
-        generate_weeks_ahead: template.generate_weeks_ahead,
+        generate_weeks_ahead: template.generate_weeks_ahead as number | string,
       });
     } else {
       setFormData({
@@ -70,7 +70,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
         vessel_id: 0,
         is_active: true,
         auto_generate_trips: true,
-        generate_weeks_ahead: 4,
+        generate_weeks_ahead: 4 as number | string,
       });
     }
     setErrors({});
@@ -97,7 +97,8 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
     if (!isEditing && (!formData.vessel_id || formData.vessel_id === 0)) {
       newErrors.vessel_id = 'Debe seleccionar una embarcación';
     }
-    if (formData.generate_weeks_ahead < 1 || formData.generate_weeks_ahead > 52) {
+    const weeksNum = Number(formData.generate_weeks_ahead) || 0;
+    if (weeksNum < 1 || weeksNum > 52) {
       newErrors.generate_weeks_ahead = 'Debe ser entre 1 y 52 semanas';
     }
     setErrors(newErrors);
@@ -116,7 +117,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
       departure_time: timeWithSeconds,
       is_active: formData.is_active,
       auto_generate_trips: formData.auto_generate_trips,
-      generate_weeks_ahead: formData.generate_weeks_ahead,
+      generate_weeks_ahead: Number(formData.generate_weeks_ahead || 0),
       vessel_id: formData.vessel_id > 0 ? formData.vessel_id : undefined,
     };
     onSave(dataToSave);
@@ -216,7 +217,9 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
           type="number"
           label="Generar viajes con anticipación (semanas)"
           value={formData.generate_weeks_ahead}
-          onChange={(e) => handleChange('generate_weeks_ahead', parseInt(e.target.value) || 1)}
+          onChange={(e) => handleChange('generate_weeks_ahead', e.target.value === '' ? '' : parseInt(e.target.value))}
+          onFocus={() => { if (Number(formData.generate_weeks_ahead) === 0) handleChange('generate_weeks_ahead', ''); }}
+          onBlur={() => { if (formData.generate_weeks_ahead === '') handleChange('generate_weeks_ahead', 0); }}
           error={errors.generate_weeks_ahead}
           min={1}
           max={52}

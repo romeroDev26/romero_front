@@ -23,8 +23,8 @@ interface AddStopModalProps {
 
 interface StopFormData {
   port_id: number;
-  estimated_duration_hours: number;
-  estimated_duration_minutes: number;
+  estimated_duration_hours: number | string;
+  estimated_duration_minutes: number | string;
   notes: string;
   is_boarding_allowed: boolean;
   is_disembarking_allowed: boolean;
@@ -83,11 +83,14 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
       newErrors.port_id = 'Debe seleccionar un puerto';
     }
 
-    if (formData.estimated_duration_hours < 0 || formData.estimated_duration_minutes < 0) {
+    const hoursNum = Number(formData.estimated_duration_hours) || 0;
+    const minutesNum = Number(formData.estimated_duration_minutes) || 0;
+
+    if (hoursNum < 0 || minutesNum < 0) {
       newErrors.duration = 'La duración no puede ser negativa';
     }
 
-    if (formData.estimated_duration_minutes >= 60) {
+    if (minutesNum >= 60) {
       newErrors.duration = 'Los minutos deben ser menores a 60';
     }
 
@@ -96,7 +99,7 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
       const previousStop = existingStops[insertPosition - 1];
       if (previousStop?.estimated_duration_from_origin) {
         const previousHours = routeHelpers.isoStringToHours(previousStop.estimated_duration_from_origin);
-        const currentHours = formData.estimated_duration_hours + (formData.estimated_duration_minutes / 60);
+        const currentHours = hoursNum + (minutesNum / 60);
         
         if (currentHours <= previousHours) {
           newErrors.duration = `La duración debe ser mayor a ${previousHours.toFixed(1)} horas (parada anterior)`;
@@ -109,7 +112,7 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
       const nextStop = existingStops[insertPosition];
       if (nextStop?.estimated_duration_from_origin) {
         const nextHours = routeHelpers.isoStringToHours(nextStop.estimated_duration_from_origin);
-        const currentHours = formData.estimated_duration_hours + (formData.estimated_duration_minutes / 60);
+        const currentHours = hoursNum + (minutesNum / 60);
         
         if (currentHours >= nextHours) {
           newErrors.duration = `La duración debe ser menor a ${nextHours.toFixed(1)} horas (parada siguiente)`;
@@ -131,7 +134,7 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const totalHours = formData.estimated_duration_hours + (formData.estimated_duration_minutes / 60);
+      const totalHours = Number(formData.estimated_duration_hours || 0) + (Number(formData.estimated_duration_minutes || 0) / 60);
       const selectedPort = ports.find(p => p.id === formData.port_id);
 
       const newStop: Partial<RouteStop> = {
@@ -216,7 +219,9 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
               <input
                 type="number"
                 value={formData.estimated_duration_hours}
-                onChange={(e) => handleInputChange('estimated_duration_hours', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('estimated_duration_hours', e.target.value === '' ? '' : parseInt(e.target.value))}
+                onFocus={() => { if (formData.estimated_duration_hours === 0) handleInputChange('estimated_duration_hours', ''); }}
+                onBlur={() => { if (formData.estimated_duration_hours === '') handleInputChange('estimated_duration_hours', 0); }}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                   errors.duration ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -229,7 +234,9 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
               <input
                 type="number"
                 value={formData.estimated_duration_minutes}
-                onChange={(e) => handleInputChange('estimated_duration_minutes', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleInputChange('estimated_duration_minutes', e.target.value === '' ? '' : parseInt(e.target.value))}
+                onFocus={() => { if (formData.estimated_duration_minutes === 0) handleInputChange('estimated_duration_minutes', ''); }}
+                onBlur={() => { if (formData.estimated_duration_minutes === '') handleInputChange('estimated_duration_minutes', 0); }}
                 className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                   errors.duration ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -246,7 +253,7 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
             </p>
           )}
           <p className="text-xs text-gray-500">
-            Tiempo total: {formData.estimated_duration_hours}h {formData.estimated_duration_minutes}m
+            Tiempo total: {Number(formData.estimated_duration_hours || 0)}h {Number(formData.estimated_duration_minutes || 0)}m
           </p>
         </div>
 

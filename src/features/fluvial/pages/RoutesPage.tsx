@@ -7,8 +7,10 @@ import {
   MapIcon, 
   ClockIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
+import { toast } from 'react-toastify';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
@@ -28,7 +30,8 @@ import {
   RouteCreateData, 
   RouteUpdateData, 
   RouteWithStops, 
-  routeHelpers 
+  routeHelpers,
+  routesService
 } from '../../../services/routes.service';
 
 import { RouteMapModal } from '../components/routes/RouteMapModal';
@@ -272,6 +275,7 @@ export const RoutesPage: React.FC = () => {
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<Route | undefined>();
   const [configuringRouteId, setConfiguringRouteId] = useState<number | null>(null);
+  const [syncingRouteId, setSyncingRouteId] = useState<number | null>(null);
 
   // Hooks de datos
   const { data: routes = [], isLoading: routesLoading, error: routesError } = useRoutes(showOnlyActive);
@@ -325,6 +329,19 @@ export const RoutesPage: React.FC = () => {
   const handleConfigureStops = (route: Route) => {
     setConfiguringRouteId(route.id);
     setIsMapModalOpen(true);
+  };
+
+  const handleSyncTripStops = async (route: Route) => {
+    setSyncingRouteId(route.id);
+    try {
+      await routesService.syncTripStops(route.id, 'append_new');
+      toast.success(`Paradas sincronizadas correctamente para la ruta "${route.name}"`);
+    } catch (error) {
+      console.error('Error al sincronizar paradas:', error);
+      toast.error('Error al sincronizar las paradas de la ruta');
+    } finally {
+      setSyncingRouteId(null);
+    }
   };
 
   // La definición de columnas ya es correcta, no necesita cambios.
@@ -412,6 +429,17 @@ export const RoutesPage: React.FC = () => {
                 <MapIcon className="h-4 w-4 mr-1" />
                 Mapa
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSyncTripStops(route)}
+                disabled={syncingRouteId === route.id}
+                className="text-purple-700 border-purple-200 bg-purple-50 hover:bg-purple-100 disabled:opacity-50"
+                title="Sincronizar paradas de viajes con la ruta"
+              >
+                <ArrowPathIcon className={`h-4 w-4 mr-1 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} />
+                {syncingRouteId === route.id ? 'Sincronizando...' : 'Sincronizar'}
+              </Button>
               <button
                 onClick={() => handleEditRoute(route)}
                 className="flex items-center text-primary hover:text-primary/80 text-sm font-medium px-2"
@@ -451,9 +479,21 @@ export const RoutesPage: React.FC = () => {
           emptyMessage="No se encontraron rutas que coincidan con los filtros."
           showActions={true}
           customActions={(route) => (
-            <Button variant="outline" size="sm" onClick={() => handleConfigureStops(route)} title="Gestionar paradas en el mapa" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
-              <MapIcon className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleConfigureStops(route)} title="Gestionar paradas en el mapa" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
+                <MapIcon className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleSyncTripStops(route)} 
+                disabled={syncingRouteId === route.id}
+                title="Sincronizar paradas de viajes con la ruta" 
+                className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 disabled:opacity-50"
+              >
+                <ArrowPathIcon className={`h-4 w-4 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           )}
         />
       </div>

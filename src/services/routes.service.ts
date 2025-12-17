@@ -83,6 +83,13 @@ export const routesService = {
   updateStops: async (routeId: number, stops: RouteStopCreateData[]): Promise<RouteStop[]> => {
     const response = await api.put<RouteStop[]>(`/config/routes/${routeId}/stops`, stops);
     return response.data;
+  },
+
+  syncTripStops: async (routeId: number, mode: string = 'append_new'): Promise<string> => {
+    const response = await api.post<string>(`/config/routes/${routeId}/sync-trip-stops`, null, {
+      params: { mode }
+    });
+    return response.data;
   }
 };
 

@@ -205,17 +205,30 @@ export const CreditNotesListPage: React.FC = () => {
                         <Link
                           to={`/accounting/credit-notes/${creditNote.id}`}
                           className="text-blue-600 hover:text-blue-900"
+                          title="Ver detalle"
                         >
-                          <EyeIcon className="h-4 w-4" />
+                          <EyeIcon className="h-5 w-5" />
                         </Link>
-                        {creditNote.pdf_file_path && (
+                        {creditNote.pdf_a4_file_path && (
                           <a
-                            href={creditNote.pdf_file_path}
+                            href={creditNote.pdf_a4_file_path}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-red-600 hover:text-red-900"
+                            title="Descargar PDF A4"
+                          >
+                            <DocumentArrowDownIcon className="h-5 w-5" />
+                          </a>
+                        )}
+                        {creditNote.pdf_ticket_file_path && (
+                          <a
+                            href={creditNote.pdf_ticket_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-green-600 hover:text-green-900"
+                            title="Descargar Ticket 80mm"
                           >
-                            <DocumentArrowDownIcon className="h-4 w-4" />
+                            <DocumentArrowDownIcon className="h-5 w-5" />
                           </a>
                         )}
                       </div>

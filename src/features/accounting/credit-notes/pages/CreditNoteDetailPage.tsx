@@ -1,6 +1,6 @@
 // src/features/accounting/credit-notes/pages/CreditNoteDetailPage.tsx
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -9,13 +9,20 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
+  PrinterIcon,
+  ArrowDownTrayIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
+import { toast } from 'react-toastify';
 import { useCreditNote, useCreditNoteSunatStatus } from '../hooks/useCreditNotes';
 
 export const CreditNoteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4'>('ticket80mm');
+  const [showPdfError, setShowPdfError] = useState(false);
+  const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   
   const creditNoteId = id ? parseInt(id, 10) : null;
   const { data: creditNote, isLoading } = useCreditNote(creditNoteId);
@@ -72,6 +79,55 @@ export const CreditNoteDetailPage: React.FC = () => {
     });
   };
 
+  const handlePrint = () => {
+    if (pdfIframeRef.current) {
+      try {
+        const iframeWindow = pdfIframeRef.current.contentWindow;
+        if (iframeWindow) {
+          iframeWindow.print();
+        } else {
+          throw new Error('No se puede acceder al contenido del iframe');
+        }
+      } catch (error) {
+        console.warn('Error al imprimir desde iframe:', error);
+        const pdfUrl = activeTab === 'ticket80mm' ? creditNote?.pdf_ticket_file_path : creditNote?.pdf_a4_file_path;
+        const printWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');
+        if (printWindow) {
+          printWindow.onload = () => {
+            try {
+              printWindow.print();
+            } catch (fallbackError) {
+              toast.info('Haz clic en "Imprimir" en la ventana que se abrió');
+            }
+          };
+        } else {
+          toast.error('El navegador bloqueó la ventana emergente');
+        }
+      }
+    } else {
+      toast.error('El visor PDF no está disponible');
+    }
+  };
+
+  const handleDownload = () => {
+    const pdfUrl = activeTab === 'ticket80mm' ? creditNote?.pdf_ticket_file_path : creditNote?.pdf_a4_file_path;
+    const fileName = activeTab === 'ticket80mm' 
+      ? `nc-ticket-${creditNote?.series}-${String(creditNote?.number).padStart(8, '0')}.pdf`
+      : `nc-a4-${creditNote?.series}-${String(creditNote?.number).padStart(8, '0')}.pdf`;
+    
+    if (pdfUrl) {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success('PDF descargado correctamente');
+    } else {
+      toast.error(`No hay PDF ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} disponible para descargar`);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-8 text-center">
@@ -116,20 +172,131 @@ export const CreditNoteDetailPage: React.FC = () => {
           </div>
         </div>
         <div className="flex space-x-3">
-          {creditNote.pdf_file_path && (
+          {creditNote.pdf_a4_file_path && (
             <a
-              href={creditNote.pdf_file_path}
+              href={creditNote.pdf_a4_file_path}
               target="_blank"
               rel="noopener noreferrer"
             >
               <Button variant="outline">
                 <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                Descargar PDF
+                PDF A4
+              </Button>
+            </a>
+          )}
+          {creditNote.pdf_ticket_file_path && (
+            <a
+              href={creditNote.pdf_ticket_file_path}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline">
+                <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                PDF Ticket
               </Button>
             </a>
           )}
         </div>
       </div>
+
+      {/* Vista previa del PDF */}
+      {(creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+          <div className="border-b border-gray-200">
+            <div className="px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center space-x-2 mb-2 md:mb-0">
+                  <DocumentArrowDownIcon className="h-5 w-5 text-blue-600" />
+                  <h2 className="font-semibold text-gray-900">Vista Previa de Nota de Crédito</h2>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Cliente: {creditNote.client?.name}
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs para seleccionar formato */}
+            {creditNote.pdf_ticket_file_path && creditNote.pdf_a4_file_path && (
+              <div className="px-6 pt-4">
+                <div className="flex border-b border-gray-200">
+                  <button
+                    onClick={() => {
+                      setActiveTab('ticket80mm');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'ticket80mm'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Ticket 80mm (Térmico)
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('a4');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'a4'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Formato A4
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Contenedor del PDF */}
+          <div className="relative bg-gray-100">
+            {showPdfError ? (
+              <div className="flex flex-col items-center justify-center py-12 px-4">
+                <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 mb-4" />
+                <p className="text-gray-600 text-center mb-4">
+                  No se pudo cargar el PDF. Puedes descargarlo directamente.
+                </p>
+                <Button onClick={handleDownload} variant="primary">
+                  <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                  Descargar PDF
+                </Button>
+              </div>
+            ) : (
+              <iframe
+                ref={pdfIframeRef}
+                src={(activeTab === 'ticket80mm' ? creditNote.pdf_ticket_file_path : creditNote.pdf_a4_file_path) || ''}
+                className="w-full"
+                style={{ height: '700px' }}
+                title="Vista previa del PDF"
+                onError={() => setShowPdfError(true)}
+              />
+            )}
+          </div>
+
+          {/* Botones de acción */}
+          <div className="border-t border-gray-200 px-6 py-4 bg-white">
+            <div className="flex flex-wrap gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={handlePrint}
+                disabled={showPdfError}
+              >
+                <PrinterIcon className="h-4 w-4 mr-2" />
+                Imprimir
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleDownload}
+              >
+                <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                Descargar PDF
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Información Principal */}

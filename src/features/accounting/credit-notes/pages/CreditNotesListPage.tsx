@@ -49,8 +49,21 @@ export const CreditNotesListPage: React.FC = () => {
     }).format(amount);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-PE');
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '—';
+    // Si la fecha viene en formato YYYY-MM-DD (sin zona), crear Date en local
+    const dateOnlyMatch = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    try {
+      if (dateOnlyMatch) {
+        const [, y, m, d] = dateOnlyMatch;
+        const date = new Date(Number(y), Number(m) - 1, Number(d));
+        return date.toLocaleDateString('es-PE');
+      }
+      // Para ISO con zona, usar el constructor normal
+      return new Date(dateString).toLocaleDateString('es-PE');
+    } catch {
+      return String(dateString);
+    }
   };
 
   return (
@@ -163,7 +176,7 @@ export const CreditNotesListPage: React.FC = () => {
                     Estado SUNAT
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
+                    Fecha de Emisión
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Acciones
@@ -180,8 +193,8 @@ export const CreditNotesListPage: React.FC = () => {
                       <div className="text-sm text-gray-500">NC</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{creditNote.client?.name}</div>
-                      <div className="text-sm text-gray-500">{creditNote.client?.doc_number}</div>
+                      <div className="text-sm text-gray-900">{creditNote.client?.name || (creditNote as any).client_name || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{creditNote.client?.doc_number || (creditNote as any).client_document || ''}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
@@ -198,7 +211,7 @@ export const CreditNotesListPage: React.FC = () => {
                       <SunatStatusBadge status={creditNote.sunat_status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(creditNote.issue_date)}
+                      {creditNote.issue_date ? formatDate(creditNote.issue_date) : formatDate((creditNote as any).created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">

@@ -88,7 +88,13 @@ export const CreditNoteDetailPage: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-PE', {
+    // Manejar fechas en formato YYYY-MM-DD sin zona horaria creando fecha en local
+    const dateOnlyMatch = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const dateObj = dateOnlyMatch
+      ? new Date(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3]))
+      : new Date(dateString);
+
+    return dateObj.toLocaleDateString('es-PE', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -96,7 +102,13 @@ export const CreditNoteDetailPage: React.FC = () => {
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('es-PE', {
+    // Si sólo viene YYYY-MM-DD, tratar como midnight local
+    const dateOnlyMatch = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const dateObj = dateOnlyMatch
+      ? new Date(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3]))
+      : new Date(dateString);
+
+    return dateObj.toLocaleString('es-PE', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -193,8 +205,8 @@ export const CreditNoteDetailPage: React.FC = () => {
               <h1 className="text-3xl font-bold text-gray-900">
                 Nota de Crédito {creditNote.series}-{String(creditNote.number).padStart(8, '0')}
               </h1>
-              <p className="text-gray-600 mt-1">
-                Emitida el {formatDate(creditNote.issue_date)} • Cliente: {creditNote.client?.name || 'N/A'}
+                <p className="text-gray-600 mt-1">
+                Emitida el {formatDate(creditNote.issue_date)} • Cliente: {creditNote.client?.name || (creditNote as any).client_name || 'N/A'}
               </p>
               <div className="flex items-center mt-2">
                 <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getSunatStatusColor(resolvedSunatStatus)}`}>
@@ -252,7 +264,7 @@ export const CreditNoteDetailPage: React.FC = () => {
                   <h2 className="font-semibold text-gray-900">Vista Previa de Nota de Crédito</h2>
                 </div>
                 <div className="text-sm text-gray-500">
-                  Cliente: {creditNote.client?.name || 'N/A'}
+                  Cliente: {creditNote.client?.name || (creditNote as any).client_name || 'N/A'}
                 </div>
               </div>
             </div>
@@ -341,7 +353,7 @@ export const CreditNoteDetailPage: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Información Principal */}
+        {/* Información Principal (reordenado) */}
         <div className="lg:col-span-2 space-y-6">
           {/* Información de la Empresa */}
           <div className="bg-white rounded-lg shadow p-6">
@@ -370,66 +382,7 @@ export const CreditNoteDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Información del Cliente */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Nombre/Razón Social</p>
-                <p className="text-gray-900">{creditNote.client?.name || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Tipo Documento</p>
-                <p className="text-gray-900">
-                  {creditNote.client?.doc_type === '1' ? 'DNI' :
-                   creditNote.client?.doc_type === '6' ? 'RUC' : 'Otro'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Número Documento</p>
-                <p className="text-gray-900">{creditNote.client?.doc_number || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                <p className="text-gray-900">{creditNote.client?.phone || 'No especificado'}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm font-medium text-gray-500">Email</p>
-                <p className="text-gray-900">{creditNote.client?.email || 'No especificado'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Documento Afectado */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Documento Afectado</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Tipo de Documento</p>
-                <p className="text-gray-900">
-                  {creditNote.affected_document_type_code === '01' ? 'Factura' :
-                   creditNote.affected_document_type_code === '03' ? 'Boleta' : 'Otro'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Número de Documento</p>
-                <p className="text-gray-900">{creditNote.affected_document_series_number || 'N/A'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Motivo de la Nota de Crédito */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Motivo de la Nota de Crédito</h2>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm font-medium text-gray-500 mb-1">
-                Código: {creditNote.credit_note_type_code || 'N/A'}
-              </p>
-              <p className="text-gray-900">{creditNote.reason || 'Sin motivo especificado'}</p>
-            </div>
-          </div>
-
-          {/* Información Técnica del Documento */}
+          {/* Información Técnica del Documento (movida) */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Información Técnica</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -480,7 +433,36 @@ export const CreditNoteDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Items */}
+          {/* Motivo de la Nota de Crédito (movido) */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Motivo de la Nota de Crédito</h2>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <p className="text-sm font-medium text-gray-500 mb-1">
+                Código: {creditNote.credit_note_type_code || 'N/A'}
+              </p>
+              <p className="text-gray-900">{creditNote.reason || 'Sin motivo especificado'}</p>
+            </div>
+          </div>
+
+          {/* Documento Afectado (movido) */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Documento Afectado</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Tipo de Documento</p>
+                <p className="text-gray-900">
+                  {creditNote.affected_document_type_code === '01' ? 'Factura' :
+                   creditNote.affected_document_type_code === '03' ? 'Boleta' : 'Otro'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Número de Documento</p>
+                <p className="text-gray-900">{creditNote.affected_document_series_number || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Items (movidos) */}
           {creditNote.items && creditNote.items.length > 0 && (
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Detalle de Items</h2>
@@ -539,6 +521,36 @@ export const CreditNoteDetailPage: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* Información del Cliente (movida al final) */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Nombre/Razón Social</p>
+                <p className="text-gray-900">{creditNote.client?.name || (creditNote as any).client_name || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Tipo Documento</p>
+                <p className="text-gray-900">
+                  {creditNote.client?.doc_type === '1' ? 'DNI' :
+                   creditNote.client?.doc_type === '6' ? 'RUC' : 'Otro'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Número Documento</p>
+                <p className="text-gray-900">{creditNote.client?.doc_number || (creditNote as any).client_document || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Teléfono</p>
+                <p className="text-gray-900">{creditNote.client?.phone || 'No especificado'}</p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-sm font-medium text-gray-500">Email</p>
+                <p className="text-gray-900">{creditNote.client?.email || 'No especificado'}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Panel Lateral */}

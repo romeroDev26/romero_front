@@ -54,7 +54,7 @@ class CreditNotesService {
 
   // Obtener una nota de crédito por ID
   async getById(id: number): Promise<CreditNote> {
-    const response = await api.get<CreditNote>(`/sunat/invoices/notes/${id}`);
+    const response = await api.get<CreditNote>(`/sunat/credit-notes/${id}`);
     return response.data;
   }
 

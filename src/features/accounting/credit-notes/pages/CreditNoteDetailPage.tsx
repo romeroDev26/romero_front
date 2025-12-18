@@ -64,11 +64,27 @@ export const CreditNoteDetailPage: React.FC = () => {
     return messages[status as keyof typeof messages] || 'Estado desconocido';
   };
 
-  const formatCurrency = (amount: number) => {
+  // Resolver estado SUNAT usando posibles formas de respuesta del backend
+  const resolvedSunatStatus =
+    (sunatStatus as any)?.sunat_status ??
+    (sunatStatus as any)?.state?.data?.sunat_status ??
+    creditNote?.sunat_status;
+
+  const resolvedSunatResponseDescription =
+    (sunatStatus as any)?.sunat_response_description ??
+    (sunatStatus as any)?.state?.data?.sunat_response_description ??
+    creditNote?.sunat_response_description;
+
+  const resolvedSunatTicket =
+    (sunatStatus as any)?.sunat_ticket ??
+    (sunatStatus as any)?.state?.data?.sunat_ticket;
+
+  const formatCurrency = (amount: number | string) => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
       currency: 'PEN'
-    }).format(amount);
+    }).format(numAmount);
   };
 
   const formatDate = (dateString: string) => {
@@ -76,6 +92,16 @@ export const CreditNoteDetailPage: React.FC = () => {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+    });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('es-PE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -153,49 +179,65 @@ export const CreditNoteDetailPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/accounting/credit-notes')}
-            className="mr-4"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Nota de Crédito {creditNote.series}-{String(creditNote.number).padStart(8, '0')}
-            </h1>
-            <p className="text-gray-600">
-              Emitida el {formatDate(creditNote.issue_date)}
-            </p>
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/accounting/credit-notes')}
+              className="mr-4"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Nota de Crédito {creditNote.series}-{String(creditNote.number).padStart(8, '0')}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Emitida el {formatDate(creditNote.issue_date)} • Cliente: {creditNote.client?.name || 'N/A'}
+              </p>
+              <div className="flex items-center mt-2">
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getSunatStatusColor(resolvedSunatStatus)}`}>
+                  {getSunatStatusIcon(resolvedSunatStatus)}
+                  <span className="ml-2">
+                    {resolvedSunatStatus === 'ACCEPTED' ? 'Aceptado por SUNAT' :
+                     resolvedSunatStatus === 'REJECTED' ? 'Rechazado por SUNAT' :
+                     resolvedSunatStatus === 'SENT' ? 'Enviado a SUNAT' :
+                     resolvedSunatStatus === 'PENDING' ? 'Pendiente de envío' : 'Estado desconocido'}
+                  </span>
+                </div>
+                <span className="ml-4 text-sm text-gray-500">
+                  Total: {formatCurrency(creditNote.total_payable)}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="flex space-x-3">
-          {creditNote.pdf_a4_file_path && (
-            <a
-              href={creditNote.pdf_a4_file_path}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline">
-                <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                PDF A4
-              </Button>
-            </a>
-          )}
-          {creditNote.pdf_ticket_file_path && (
-            <a
-              href={creditNote.pdf_ticket_file_path}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline">
-                <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                PDF Ticket
-              </Button>
-            </a>
-          )}
+          <div className="flex space-x-3">
+            {creditNote.pdf_a4_file_path && (
+              <a
+                href={creditNote.pdf_a4_file_path}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline">
+                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                  PDF A4
+                </Button>
+              </a>
+            )}
+            {creditNote.pdf_ticket_file_path && (
+              <a
+                href={creditNote.pdf_ticket_file_path}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline">
+                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                  PDF Ticket
+                </Button>
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
@@ -210,7 +252,7 @@ export const CreditNoteDetailPage: React.FC = () => {
                   <h2 className="font-semibold text-gray-900">Vista Previa de Nota de Crédito</h2>
                 </div>
                 <div className="text-sm text-gray-500">
-                  Cliente: {creditNote.client?.name}
+                  Cliente: {creditNote.client?.name || 'N/A'}
                 </div>
               </div>
             </div>
@@ -301,17 +343,59 @@ export const CreditNoteDetailPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Información Principal */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Información de la Empresa */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Empresa</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">RUC</p>
+                <p className="text-gray-900">{creditNote.company?.ruc || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Razón Social</p>
+                <p className="text-gray-900">{creditNote.company?.business_name || 'N/A'}</p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-sm font-medium text-gray-500">Dirección</p>
+                <p className="text-gray-900">{creditNote.company?.address || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Teléfono</p>
+                <p className="text-gray-900">{creditNote.company?.phone || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Email</p>
+                <p className="text-gray-900">{creditNote.company?.email || 'N/A'}</p>
+              </div>
+            </div>
+          </div>
+
           {/* Información del Cliente */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Nombre/Razón Social</p>
-                <p className="text-gray-900">{creditNote.client?.name}</p>
+                <p className="text-gray-900">{creditNote.client?.name || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Documento</p>
-                <p className="text-gray-900">{creditNote.client?.doc_number}</p>
+                <p className="text-sm font-medium text-gray-500">Tipo Documento</p>
+                <p className="text-gray-900">
+                  {creditNote.client?.doc_type === '1' ? 'DNI' :
+                   creditNote.client?.doc_type === '6' ? 'RUC' : 'Otro'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Número Documento</p>
+                <p className="text-gray-900">{creditNote.client?.doc_number || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Teléfono</p>
+                <p className="text-gray-900">{creditNote.client?.phone || 'No especificado'}</p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-sm font-medium text-gray-500">Email</p>
+                <p className="text-gray-900">{creditNote.client?.email || 'No especificado'}</p>
               </div>
             </div>
           </div>
@@ -323,24 +407,76 @@ export const CreditNoteDetailPage: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-gray-500">Tipo de Documento</p>
                 <p className="text-gray-900">
-                  {creditNote.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
+                  {creditNote.affected_document_type_code === '01' ? 'Factura' :
+                   creditNote.affected_document_type_code === '03' ? 'Boleta' : 'Otro'}
                 </p>
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-500">Número de Documento</p>
-                <p className="text-gray-900">{creditNote.affected_document_series_number}</p>
+                <p className="text-gray-900">{creditNote.affected_document_series_number || 'N/A'}</p>
               </div>
             </div>
           </div>
 
-          {/* Motivo */}
+          {/* Motivo de la Nota de Crédito */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Motivo de la Nota de Crédito</h2>
             <div className="bg-gray-50 rounded-lg p-4">
               <p className="text-sm font-medium text-gray-500 mb-1">
-                Código: {creditNote.credit_note_type_code}
+                Código: {creditNote.credit_note_type_code || 'N/A'}
               </p>
-              <p className="text-gray-900">{creditNote.reason}</p>
+              <p className="text-gray-900">{creditNote.reason || 'Sin motivo especificado'}</p>
+            </div>
+          </div>
+
+          {/* Información Técnica del Documento */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información Técnica</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Serie - Número</p>
+                <p className="text-gray-900 font-mono">{creditNote.series}-{String(creditNote.number).padStart(8, '0')}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Tipo de Documento</p>
+                <p className="text-gray-900">Nota de Crédito (07)</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Moneda</p>
+                <p className="text-gray-900">
+                  {creditNote.currency_code === 'PEN' ? 'Soles (PEN)' : creditNote.currency_code || 'PEN'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Versión UBL</p>
+                <p className="text-gray-900">{creditNote.ubl_version || '2.1'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Fecha de Emisión</p>
+                <p className="text-gray-900">{formatDate(creditNote.issue_date)}</p>
+              </div>
+              {(creditNote as any).issue_time && (
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Hora de Emisión</p>
+                  <p className="text-gray-900">{(creditNote as any).issue_time}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-medium text-gray-500">Creado por</p>
+                <p className="text-gray-900 text-xs font-mono">{creditNote.created_by || 'N/A'}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Fecha de Creación</p>
+                <p className="text-gray-900 text-xs">
+                  {formatDateTime(creditNote.created_at)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Última Actualización</p>
+                <p className="text-gray-900 text-xs">
+                  {formatDateTime(creditNote.updated_at)}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -352,23 +488,48 @@ export const CreditNoteDetailPage: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cant.</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">P. Unit.</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cant.</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidad</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">P. Unit.</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descuento</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IGV</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {creditNote.items.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-4 py-2 text-sm text-gray-900">
-                          {item.product?.name || 'Producto sin nombre'}
+                      <tr key={item.id || index} className="hover:bg-gray-50">
+                        <td className="px-4 py-4">
+                          <div className="text-sm text-gray-900">
+                            {item.product?.name || (item as any).item_description || 'Producto sin nombre'}
+                          </div>
+                          {(item as any).product_internal_code && (
+                            <div className="text-xs text-gray-500">
+                              Código: {(item as any).product_internal_code}
+                            </div>
+                          )}
                         </td>
-                        <td className="px-4 py-2 text-sm text-gray-900">{item.quantity}</td>
-                        <td className="px-4 py-2 text-sm text-gray-900">
+                        <td className="px-4 py-4 text-sm text-gray-900 text-center">
+                          {item.quantity || '0'}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 text-center">
+                          {item.unit_code || 'N/A'}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 text-right">
                           {formatCurrency(item.unit_price)}
                         </td>
-                        <td className="px-4 py-2 text-sm text-gray-900">
+                        <td className="px-4 py-4 text-sm text-gray-900 text-right">
+                          {formatCurrency(item.discount || '0')}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 text-right">
+                          {formatCurrency(item.subtotal)}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900 text-right">
+                          {formatCurrency(item.igv_amount || '0')}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium text-gray-900 text-right">
                           {formatCurrency(item.total_line)}
                         </td>
                       </tr>
@@ -392,33 +553,33 @@ export const CreditNoteDetailPage: React.FC = () => {
                 <span className="ml-2 text-sm text-gray-600">Consultando estado...</span>
               </div>
             ) : (
-              <div className={`border rounded-lg p-4 ${getSunatStatusColor(sunatStatus?.sunat_status || creditNote.sunat_status)}`}>
+              <div className={`border rounded-lg p-4 ${getSunatStatusColor(resolvedSunatStatus)}`}>
                 <div className="flex items-center mb-3">
-                  {getSunatStatusIcon(sunatStatus?.sunat_status || creditNote.sunat_status)}
+                  {getSunatStatusIcon(resolvedSunatStatus)}
                   <div className="ml-3">
                     <p className="font-medium">
-                      {sunatStatus?.sunat_status === 'ACCEPTED' ? 'Aceptado' :
-                       sunatStatus?.sunat_status === 'REJECTED' ? 'Rechazado' :
-                       sunatStatus?.sunat_status === 'SENT' ? 'Enviado' :
-                       sunatStatus?.sunat_status === 'PENDING' ? 'Pendiente' : 'Error'}
+                      {resolvedSunatStatus === 'ACCEPTED' ? 'Aceptado' :
+                       resolvedSunatStatus === 'REJECTED' ? 'Rechazado' :
+                       resolvedSunatStatus === 'SENT' ? 'Enviado' :
+                       resolvedSunatStatus === 'PENDING' ? 'Pendiente' : 'Error'}
                     </p>
                     <p className="text-sm opacity-75">
-                      {getStatusMessage(sunatStatus?.sunat_status || creditNote.sunat_status)}
+                      {getStatusMessage(resolvedSunatStatus)}
                     </p>
                   </div>
                 </div>
-                
-                {sunatStatus?.sunat_response_description && (
+
+                {resolvedSunatResponseDescription && (
                   <div className="mt-3 pt-3 border-t border-current border-opacity-20">
                     <p className="text-xs font-medium">Respuesta SUNAT:</p>
-                    <p className="text-xs mt-1">{sunatStatus.sunat_response_description}</p>
+                    <p className="text-xs mt-1">{resolvedSunatResponseDescription}</p>
                   </div>
                 )}
-                
-                {sunatStatus?.sunat_ticket && (
+
+                {resolvedSunatTicket && (
                   <div className="mt-2">
                     <p className="text-xs">
-                      <span className="font-medium">Ticket:</span> {sunatStatus.sunat_ticket}
+                      <span className="font-medium">Ticket:</span> {resolvedSunatTicket}
                     </p>
                   </div>
                 )}
@@ -428,59 +589,141 @@ export const CreditNoteDetailPage: React.FC = () => {
 
           {/* Totales */}
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Totales</h2>
-            <div className="space-y-3">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumen de Totales</h2>
+            <div className="space-y-2">
+              {(parseFloat(String(creditNote.total_taxable ?? '0')) > 0) && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Gravado:</span>
+                  <span className="text-sm font-medium">{formatCurrency(creditNote.total_taxable)}</span>
+                </div>
+              )}
+              {(parseFloat(String(creditNote.total_exonerated ?? '0')) > 0) && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Exonerado:</span>
+                  <span className="text-sm font-medium">{formatCurrency(creditNote.total_exonerated)}</span>
+                </div>
+              )}
+              {(parseFloat(String(creditNote.total_unaffected ?? '0')) > 0) && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Inafecto:</span>
+                  <span className="text-sm font-medium">{formatCurrency(creditNote.total_unaffected)}</span>
+                </div>
+              )}
+              {(parseFloat(String(creditNote.total_free ?? '0')) > 0) && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Gratuito:</span>
+                  <span className="text-sm font-medium">{formatCurrency(creditNote.total_free)}</span>
+                </div>
+              )}
+              {(parseFloat(String(creditNote.total_discount ?? '0')) > 0) && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Descuento:</span>
+                  <span className="text-sm font-medium text-red-600">-{formatCurrency(creditNote.total_discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Subtotal:</span>
-                <span className="text-sm font-medium">{formatCurrency(creditNote.total_taxable)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">IGV:</span>
+                <span className="text-sm text-gray-600">IGV (18%):</span>
                 <span className="text-sm font-medium">{formatCurrency(creditNote.total_igv)}</span>
               </div>
+              {(parseFloat(String(creditNote.total_isc ?? '0')) > 0) && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">ISC:</span>
+                  <span className="text-sm font-medium">{formatCurrency(creditNote.total_isc)}</span>
+                </div>
+              )}
+              {(parseFloat(String(creditNote.total_other_taxes ?? '0')) > 0) && (
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Otros Impuestos:</span>
+                  <span className="text-sm font-medium">{formatCurrency(creditNote.total_other_taxes)}</span>
+                </div>
+              )}
               <div className="flex justify-between pt-3 border-t border-gray-200">
-                <span className="font-medium">Total:</span>
-                <span className="font-bold text-lg">{formatCurrency(creditNote.total_payable)}</span>
+                <span className="font-semibold text-gray-900">Total a Pagar:</span>
+                <span className="font-bold text-xl text-gray-900">{formatCurrency(creditNote.total_payable)}</span>
               </div>
+              {creditNote.total_in_words && (
+                <div className="pt-2 border-t border-gray-200">
+                  <p className="text-xs text-gray-600 italic">
+                    Son: {creditNote.total_in_words}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Archivos Disponibles */}
-          {(sunatStatus?.xml_file_path || sunatStatus?.cdr_file_path || creditNote.pdf_file_path) && (
+          {(creditNote.signed_xml_file_path || creditNote.cdr_file_path || creditNote.pdf_file_path || creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Archivos</h2>
-              <div className="space-y-2">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Archivos Electrónicos</h2>
+              <div className="space-y-3">
+                {creditNote.pdf_a4_file_path && (
+                  <a
+                    href={creditNote.pdf_a4_file_path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+                  >
+                    <DocumentArrowDownIcon className="h-5 w-5 text-red-600 mr-3" />
+                    <div>
+                      <span className="font-medium text-gray-900">PDF Formato A4</span>
+                      <p className="text-sm text-gray-500">Documento en formato A4 para impresión</p>
+                    </div>
+                  </a>
+                )}
+                {creditNote.pdf_ticket_file_path && (
+                  <a
+                    href={creditNote.pdf_ticket_file_path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+                  >
+                    <DocumentArrowDownIcon className="h-5 w-5 text-orange-600 mr-3" />
+                    <div>
+                      <span className="font-medium text-gray-900">PDF Ticket 80mm</span>
+                      <p className="text-sm text-gray-500">Formato térmico para impresoras de tickets</p>
+                    </div>
+                  </a>
+                )}
                 {creditNote.pdf_file_path && (
                   <a
                     href={creditNote.pdf_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 text-sm"
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
                     <DocumentArrowDownIcon className="h-5 w-5 text-red-600 mr-3" />
-                    <span>Descargar PDF</span>
+                    <div>
+                      <span className="font-medium text-gray-900">PDF General</span>
+                      <p className="text-sm text-gray-500">Archivo PDF general del documento</p>
+                    </div>
                   </a>
                 )}
-                {sunatStatus?.xml_file_path && (
+                {creditNote.signed_xml_file_path && (
                   <a
-                    href={sunatStatus.xml_file_path}
+                    href={creditNote.signed_xml_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 text-sm"
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
                     <DocumentArrowDownIcon className="h-5 w-5 text-blue-600 mr-3" />
-                    <span>Descargar XML</span>
+                    <div>
+                      <span className="font-medium text-gray-900">XML Firmado</span>
+                      <p className="text-sm text-gray-500">Archivo XML con firma digital para SUNAT</p>
+                    </div>
                   </a>
                 )}
-                {sunatStatus?.cdr_file_path && (
+                {creditNote.cdr_file_path && (
                   <a
-                    href={sunatStatus.cdr_file_path}
+                    href={creditNote.cdr_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 text-sm"
+                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
                     <DocumentArrowDownIcon className="h-5 w-5 text-green-600 mr-3" />
-                    <span>Descargar CDR</span>
+                    <div>
+                      <span className="font-medium text-gray-900">CDR (Constancia de Recepción)</span>
+                      <p className="text-sm text-gray-500">Respuesta oficial de SUNAT</p>
+                    </div>
                   </a>
                 )}
               </div>

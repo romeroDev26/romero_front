@@ -465,6 +465,50 @@ export const CreditNoteDetailPage: React.FC = () => {
             {(creditNote as any).affected_invoice && (
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <h3 className="text-md font-semibold text-gray-800 mb-4">Detalles del Documento Afectado</h3>
+                
+                {/* Preview de PDFs de la factura afectada */}
+                {((creditNote as any).affected_invoice.pdf_ticket_file_path || (creditNote as any).affected_invoice.pdf_a4_file_path) && (
+                  <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-gray-700">Vista Previa del Documento</h4>
+                      <div className="flex gap-2">
+                        {(creditNote as any).affected_invoice.pdf_ticket_file_path && (
+                          <button
+                            onClick={() => setActiveTab('ticket80mm')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                              activeTab === 'ticket80mm'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            Ticket
+                          </button>
+                        )}
+                        {(creditNote as any).affected_invoice.pdf_a4_file_path && (
+                          <button
+                            onClick={() => setActiveTab('a4')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                              activeTab === 'a4'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            A4
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                      <iframe
+                        src={(activeTab === 'ticket80mm' ? (creditNote as any).affected_invoice.pdf_ticket_file_path : (creditNote as any).affected_invoice.pdf_a4_file_path) || ''}
+                        className="w-full"
+                        style={{ height: '500px' }}
+                        title="Vista previa del documento afectado"
+                      />
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-500">Fecha de Emisión</p>
@@ -812,38 +856,100 @@ export const CreditNoteDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Código QR */}
-          {creditNote.qr_code_data && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Código QR</h2>
-              <div className="flex flex-col items-center justify-center p-4">
-                <img 
-                  src={`data:image/png;base64,${creditNote.qr_code_data}`} 
-                  alt="Código QR" 
-                  className="w-48 h-48 border border-gray-200 rounded-lg"
-                />
-                <p className="text-xs text-gray-500 mt-2 text-center">Escanea este código para verificar el documento</p>
-              </div>
-            </div>
-          )}
-
-          {/* Archivos Disponibles */}
+          {/* Archivos Electrónicos con Preview */}
           {(creditNote.signed_xml_file_path || creditNote.cdr_file_path || creditNote.pdf_file_path || creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Archivos Electrónicos</h2>
-              <div className="space-y-3">
+              
+              {/* Preview de PDFs con Tabs */}
+              {(creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-gray-700">Vista Previa</h3>
+                    <div className="flex gap-2">
+                      {creditNote.pdf_ticket_file_path && (
+                        <button
+                          onClick={() => setActiveTab('ticket80mm')}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                            activeTab === 'ticket80mm'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Ticket
+                        </button>
+                      )}
+                      {creditNote.pdf_a4_file_path && (
+                        <button
+                          onClick={() => setActiveTab('a4')}
+                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                            activeTab === 'a4'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          A4
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                    <iframe
+                      src={(activeTab === 'ticket80mm' ? creditNote.pdf_ticket_file_path : creditNote.pdf_a4_file_path) || ''}
+                      className="w-full"
+                      style={{ height: '400px' }}
+                      title="Vista previa del PDF lateral"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* QR Code de la Factura Afectada */}
+              {(creditNote as any).affected_invoice?.qr_code_data && (
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">QR del Documento Afectado</h3>
+                  <div className="flex justify-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-center">
+                      <img 
+                        src={`data:image/png;base64,${(creditNote as any).affected_invoice.qr_code_data}`} 
+                        alt="Código QR del documento afectado" 
+                        className="w-40 h-40 mx-auto border border-gray-300 rounded-lg"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">QR de la factura/boleta afectada</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* QR Code de la Nota de Crédito */}
+              {creditNote.qr_code_data && (
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">QR de la Nota de Crédito</h3>
+                  <div className="flex justify-center p-4 bg-gray-50 rounded-lg">
+                    <div className="text-center">
+                      <img 
+                        src={`data:image/png;base64,${creditNote.qr_code_data}`} 
+                        alt="Código QR de la nota de crédito" 
+                        className="w-40 h-40 mx-auto border border-gray-300 rounded-lg"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">QR de la nota de crédito</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Lista de descargas */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Descargar Archivos</h3>
                 {creditNote.pdf_a4_file_path && (
                   <a
                     href={creditNote.pdf_a4_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
-                    <DocumentArrowDownIcon className="h-5 w-5 text-red-600 mr-3" />
-                    <div>
-                      <span className="font-medium text-gray-900">PDF Formato A4</span>
-                      <p className="text-sm text-gray-500">Documento en formato A4 para impresión</p>
-                    </div>
+                    <DocumentArrowDownIcon className="h-4 w-4 text-red-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">PDF A4</span>
                   </a>
                 )}
                 {creditNote.pdf_ticket_file_path && (
@@ -851,13 +957,10 @@ export const CreditNoteDetailPage: React.FC = () => {
                     href={creditNote.pdf_ticket_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
-                    <DocumentArrowDownIcon className="h-5 w-5 text-orange-600 mr-3" />
-                    <div>
-                      <span className="font-medium text-gray-900">PDF Ticket 80mm</span>
-                      <p className="text-sm text-gray-500">Formato térmico para impresoras de tickets</p>
-                    </div>
+                    <DocumentArrowDownIcon className="h-4 w-4 text-orange-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">PDF Ticket</span>
                   </a>
                 )}
                 {creditNote.pdf_file_path && (
@@ -865,13 +968,10 @@ export const CreditNoteDetailPage: React.FC = () => {
                     href={creditNote.pdf_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
-                    <DocumentArrowDownIcon className="h-5 w-5 text-red-600 mr-3" />
-                    <div>
-                      <span className="font-medium text-gray-900">PDF General</span>
-                      <p className="text-sm text-gray-500">Archivo PDF general del documento</p>
-                    </div>
+                    <DocumentArrowDownIcon className="h-4 w-4 text-red-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">PDF General</span>
                   </a>
                 )}
                 {creditNote.signed_xml_file_path && (
@@ -879,13 +979,10 @@ export const CreditNoteDetailPage: React.FC = () => {
                     href={creditNote.signed_xml_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
-                    <DocumentArrowDownIcon className="h-5 w-5 text-blue-600 mr-3" />
-                    <div>
-                      <span className="font-medium text-gray-900">XML Firmado</span>
-                      <p className="text-sm text-gray-500">Archivo XML con firma digital para SUNAT</p>
-                    </div>
+                    <DocumentArrowDownIcon className="h-4 w-4 text-blue-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">XML Firmado</span>
                   </a>
                 )}
                 {creditNote.cdr_file_path && (
@@ -893,13 +990,10 @@ export const CreditNoteDetailPage: React.FC = () => {
                     href={creditNote.cdr_file_path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
+                    className="flex items-center p-2 rounded-lg hover:bg-gray-50 border border-gray-200 transition-colors"
                   >
-                    <DocumentArrowDownIcon className="h-5 w-5 text-green-600 mr-3" />
-                    <div>
-                      <span className="font-medium text-gray-900">CDR (Constancia de Recepción)</span>
-                      <p className="text-sm text-gray-500">Respuesta oficial de SUNAT</p>
-                    </div>
+                    <DocumentArrowDownIcon className="h-4 w-4 text-green-600 mr-2" />
+                    <span className="text-sm font-medium text-gray-900">CDR (SUNAT)</span>
                   </a>
                 )}
               </div>

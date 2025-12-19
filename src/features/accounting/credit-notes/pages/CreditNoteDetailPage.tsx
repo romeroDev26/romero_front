@@ -460,6 +460,93 @@ export const CreditNoteDetailPage: React.FC = () => {
                 <p className="text-gray-900">{creditNote.affected_document_series_number || 'N/A'}</p>
               </div>
             </div>
+            
+            {/* Información detallada de la factura afectada */}
+            {(creditNote as any).affected_invoice && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h3 className="text-md font-semibold text-gray-800 mb-4">Detalles del Documento Afectado</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Fecha de Emisión</p>
+                    <p className="text-gray-900 text-sm">{formatDate((creditNote as any).affected_invoice.issue_date)}</p>
+                  </div>
+                  {(creditNote as any).affected_invoice.issue_time && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Hora de Emisión</p>
+                      <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.issue_time}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Estado SUNAT</p>
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      (creditNote as any).affected_invoice.sunat_status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                      (creditNote as any).affected_invoice.sunat_status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {(creditNote as any).affected_invoice.sunat_status || 'N/A'}
+                    </div>
+                  </div>
+                  {(creditNote as any).affected_invoice.business_status && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Estado de Negocio</p>
+                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        (creditNote as any).affected_invoice.business_status === 'PAID' ? 'bg-green-100 text-green-800' :
+                        (creditNote as any).affected_invoice.business_status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
+                        (creditNote as any).affected_invoice.business_status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {(creditNote as any).affected_invoice.business_status}
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Tipo de Operación</p>
+                    <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.operation_type_code || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Método de Pago</p>
+                    <p className="text-gray-900 text-sm">
+                      {(creditNote as any).affected_invoice.payment_method_code === 'EFE' ? 'Efectivo' :
+                       (creditNote as any).affected_invoice.payment_method_code === 'TRA' ? 'Transferencia' :
+                       (creditNote as any).affected_invoice.payment_method_code || 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Tipo de Venta</p>
+                    <p className="text-gray-900 text-sm">
+                      {(creditNote as any).affected_invoice.is_credit_sale ? 'Crédito' : 'Contado'}
+                    </p>
+                  </div>
+                  {(creditNote as any).affected_invoice.payment_terms_description && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Términos de Pago</p>
+                      <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.payment_terms_description}</p>
+                    </div>
+                  )}
+                  <div className="md:col-span-2">
+                    <p className="text-sm font-medium text-gray-500">Totales del Documento Afectado</p>
+                    <div className="grid grid-cols-2 gap-2 mt-1">
+                      <p className="text-xs text-gray-600">Gravado: <span className="font-medium">{formatCurrency((creditNote as any).affected_invoice.total_taxable || '0')}</span></p>
+                      <p className="text-xs text-gray-600">Exonerado: <span className="font-medium">{formatCurrency((creditNote as any).affected_invoice.total_exonerated || '0')}</span></p>
+                      <p className="text-xs text-gray-600">IGV: <span className="font-medium">{formatCurrency((creditNote as any).affected_invoice.total_igv || '0')}</span></p>
+                      <p className="text-xs text-gray-600">Total: <span className="font-semibold text-gray-900">{formatCurrency((creditNote as any).affected_invoice.total_payable || '0')}</span></p>
+                    </div>
+                  </div>
+                  {(creditNote as any).affected_invoice.notes && (
+                    <div className="md:col-span-3">
+                      <p className="text-sm font-medium text-gray-500">Notas</p>
+                      <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.notes}</p>
+                    </div>
+                  )}
+                  {(creditNote as any).affected_invoice.sunat_response_description && (
+                    <div className="md:col-span-3">
+                      <p className="text-sm font-medium text-gray-500">Respuesta SUNAT</p>
+                      <p className="text-gray-900 text-xs">{(creditNote as any).affected_invoice.sunat_response_description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Items (movidos) */}
@@ -518,6 +605,68 @@ export const CreditNoteDetailPage: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* Información del Vendedor */}
+          {(creditNote as any).seller && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Vendedor</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Nombre del Vendedor</p>
+                  <p className="text-gray-900">{(creditNote as any).seller.name || (creditNote as any).seller.full_name || 'N/A'}</p>
+                </div>
+                {(creditNote as any).seller.email && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-gray-900">{(creditNote as any).seller.email}</p>
+                  </div>
+                )}
+                {(creditNote as any).seller.phone && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Teléfono</p>
+                    <p className="text-gray-900">{(creditNote as any).seller.phone}</p>
+                  </div>
+                )}
+                {(creditNote as any).seller.code && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Código</p>
+                    <p className="text-gray-900 font-mono text-sm">{(creditNote as any).seller.code}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Información de la Sucursal */}
+          {(creditNote as any).branch_office && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Sucursal</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm font-medium text-gray-500">Nombre de la Sucursal</p>
+                  <p className="text-gray-900">{(creditNote as any).branch_office.name || 'N/A'}</p>
+                </div>
+                {(creditNote as any).branch_office.address && (
+                  <div className="md:col-span-2">
+                    <p className="text-sm font-medium text-gray-500">Dirección</p>
+                    <p className="text-gray-900">{(creditNote as any).branch_office.address}</p>
+                  </div>
+                )}
+                {(creditNote as any).branch_office.phone && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Teléfono</p>
+                    <p className="text-gray-900">{(creditNote as any).branch_office.phone}</p>
+                  </div>
+                )}
+                {(creditNote as any).branch_office.code && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Código</p>
+                    <p className="text-gray-900 font-mono text-sm">{(creditNote as any).branch_office.code}</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -662,6 +811,21 @@ export const CreditNoteDetailPage: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Código QR */}
+          {creditNote.qr_code_data && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Código QR</h2>
+              <div className="flex flex-col items-center justify-center p-4">
+                <img 
+                  src={`data:image/png;base64,${creditNote.qr_code_data}`} 
+                  alt="Código QR" 
+                  className="w-48 h-48 border border-gray-200 rounded-lg"
+                />
+                <p className="text-xs text-gray-500 mt-2 text-center">Escanea este código para verificar el documento</p>
+              </div>
+            </div>
+          )}
 
           {/* Archivos Disponibles */}
           {(creditNote.signed_xml_file_path || creditNote.cdr_file_path || creditNote.pdf_file_path || creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (

@@ -669,14 +669,19 @@ export interface CreditNote {
   company?: Company;
   client_id: number;
   client?: Client;
+  seller?: any; // Información del vendedor
+  branch_office?: any; // Información de la sucursal
+  trip?: any; // Información del viaje
   ubl_version?: string;
   document_type_code: string;
   series: string;
   number: number;
   issue_date: string;
+  issue_time?: string;
   currency_code: string;
   affected_document_type_code: string;
   affected_document_series_number: string;
+  affected_invoice?: any; // Información completa de la factura afectada
   credit_note_type_code: string;
   reason: string;
   total_taxable: number;
@@ -689,6 +694,7 @@ export interface CreditNote {
   total_other_taxes: number;
   total_payable: number;
   total_in_words?: string;
+  qr_code_data?: string; // Código QR en base64
   sunat_status: SunatDocumentStatus;
   sunat_ticket?: string;
   sunat_response_code?: string;

@@ -14,7 +14,7 @@ interface UseSeatSelectionsReturn {
   myActiveSelections: Set<number>; // ✅ NUEVO: Mis selecciones activas
   myReservedSeatsRef: React.RefObject<Set<number>>; // Nueva referencia expuesta
   addSelection: (selection: SeatSelection) => void;
-  removeSelection: (seatId: number) => void;
+  removeSelection: (seatId: number, sourceUserId?: string) => void;
   addMySelection: (seatId: number) => void; // ✅ NUEVO: Agregar mi propia selección
   addReservation: (seatId: number) => void;
   removeReservation: (seatId: number) => void;
@@ -57,22 +57,42 @@ export const useSeatSelections = ({
     }
   }, [userId]);
 
-  const removeSelection = useCallback((seatId: number) => {
+  const removeSelection = useCallback((seatId: number, sourceUserId?: string) => {
     setActiveSeatSelections(prev => {
       const newMap = new Map(prev);
-      const removedSelection = newMap.get(seatId);
-      newMap.delete(seatId);
-      //  CORRECCIÓN: Comparar userId base para reconocer representantes propios
-      if (removedSelection) {
-        const removedBaseUserId = removedSelection.userId.split('-company-')[0];
-        if (removedBaseUserId === userId) {
-          setMyActiveSelections(prevMine => {
-            const newSet = new Set(prevMine);
-            newSet.delete(seatId);
-            return newSet;
-          });
+      const existingSelection = newMap.get(seatId);
+      
+      if (!existingSelection) {
+        return prev; // No hay cambios si no existe
+      }
+
+      // Verificar si el mensaje de liberación viene del mismo usuario
+      // que tiene la selección. Si sourceUserId está definido y no coincide con el
+      // userId de la selección existente, NO eliminar.
+      if (sourceUserId) {
+        const sourceBaseUserId = sourceUserId.split('-company-')[0];
+        const existingBaseUserId = existingSelection.userId.split('-company-')[0];
+        
+        // Si los userId base NO coinciden, no eliminar la selección
+        // Esto previene que liberaciones de un usuario afecten las selecciones de otro
+        if (sourceBaseUserId !== existingBaseUserId) {
+          return prev; // No eliminar, los userId base no coinciden
         }
       }
+
+      // Proceder con la eliminación
+      newMap.delete(seatId);
+      
+      //  CORRECCIÓN: Comparar userId base para reconocer representantes propios
+      const removedBaseUserId = existingSelection.userId.split('-company-')[0];
+      if (removedBaseUserId === userId) {
+        setMyActiveSelections(prevMine => {
+          const newSet = new Set(prevMine);
+          newSet.delete(seatId);
+          return newSet;
+        });
+      }
+      
       return newMap;
     });
   }, [userId]);

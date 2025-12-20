@@ -86,6 +86,35 @@ export const ReportsPage: React.FC = () => {
     }
   };
 
+  const handleExportAccountant = async () => {
+    setSyncExporting(true);
+    
+    try {
+      const monthNames = [
+        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+      ];
+      
+      const month = monthNames[startDate.getMonth()];
+      const year = startDate.getFullYear();
+      
+      await requestExport({
+        category: 'accountant_series',
+        format: 'excel',
+        start_date: dateRange.start_date,
+        end_date: dateRange.end_date,
+        metadata: {
+          report_title: `Reporte Contable - ${month} ${year}.xlsx`
+        },
+        sync: true
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setSyncExporting(false);
+    }
+  };
+
   if (error) {
     return (
       <div className="p-6">
@@ -145,6 +174,14 @@ export const ReportsPage: React.FC = () => {
           {/* Botones de Exportación */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <span className="text-sm text-gray-500 hidden sm:inline">Exportar:</span>
+            <button
+              onClick={handleExportAccountant}
+              disabled={syncExporting || isLoading}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors shadow-sm"
+            >
+              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+              {syncExporting ? 'Exportando...' : 'Reporte Contable'}
+            </button>
             <button
               onClick={handleExportExcel}
               disabled={syncExporting || isLoading}

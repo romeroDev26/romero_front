@@ -118,8 +118,8 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
       onSelectionUpdate: (selection: SeatSelection) => {
         addSelectionRef.current(selection);
       },
-      onSelectionRemove: (seatId: number) => {
-        removeSelectionRef.current(seatId);
+      onSelectionRemove: (seatId: number, sourceUserId?: string) => {
+        removeSelectionRef.current(seatId, sourceUserId);
       },
       onInitialState: (selections: SeatSelection[]) => {
         // Usar una callback function para acceder al estado actual sin dependencias
@@ -132,8 +132,8 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
           return currentSeatMap; // No modificar el estado aquí
         });
       }
-    }, enableDebugLogs);
-  }, [userId, enableDebugLogs]); // Removidas dependencias cambiantes: addSelection, removeSelection, debouncedSeatMapUpdate
+    });
+  }, [userId]); // Solo depende de userId
 
   const handleWebSocketMessage = useCallback((message: SeatUpdateMessage) => {
     messageHandler.handleMessage(message);

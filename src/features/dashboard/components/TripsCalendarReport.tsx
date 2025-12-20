@@ -13,7 +13,7 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import { reportsService } from '../../../services/reports.service';
-import { TripsListResponse, TripListItem } from '../../../types/tripSalesReport';
+import { TripListItem } from '../../../types/tripSalesReport';
 import { TripSalesDetailReport } from './TripSalesDetailReport';
 
 const formatCurrency = (amount: number): string => {
@@ -73,10 +73,14 @@ export const TripsCalendarReport: React.FC = () => {
   const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
 
   // Consultar viajes del mes actual
-  const { data: tripsData, isLoading } = useQuery<TripsListResponse>({
+  const { data: tripsData, isLoading } = useQuery({
     queryKey: ['trips-list', dateRange.start_date, dateRange.end_date],
     queryFn: () => reportsService.getTripsList(dateRange),
     enabled: true,
+    staleTime: 0, // Los datos siempre se consideran obsoletos
+    refetchOnMount: 'always' as const, // Siempre refrescar al montar el componente
+    refetchOnWindowFocus: true, // Refrescar cuando el usuario vuelve a la ventana
+    gcTime: 1000 * 60 * 5, // Mantener en caché por 5 minutos (antes cacheTime)
   });
 
   // Agrupar viajes por día
@@ -86,7 +90,8 @@ export const TripsCalendarReport: React.FC = () => {
     if (!tripsData?.items) return map;
 
     tripsData.items.forEach((item) => {
-      const dateKey = item.trip.departure_datetime.split('T')[0];
+      // Normalizar fecha: extraer solo YYYY-MM-DD independientemente del formato
+      const dateKey = item.trip.departure_datetime.split(' ')[0].split('T')[0];
       
       if (!map.has(dateKey)) {
         map.set(dateKey, {

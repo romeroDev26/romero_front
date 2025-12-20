@@ -4,7 +4,10 @@
 // ========================================
 // 1. Tipos de Exportación
 // ========================================
-export type ExportCategory = 'branch_global';
+export type ExportCategory = 
+  | 'branch_global' 
+  | 'accountant_series';
+
 export type ExportFormat = 'excel' | 'pdf';
 export type ExportStatus = 'queued' | 'processing' | 'completed' | 'failed';
 

@@ -8,6 +8,7 @@ import {
   DocumentArrowDownIcon,
   PlusIcon,
   XCircleIcon,
+  EyeIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { SunatStatusBadge } from '../../components/SunatStatusBadge';
@@ -218,6 +219,13 @@ export const DebitNotesListPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
+                        <Link
+                          to={`/accounting/debit-notes/${debitNote.id}`}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Ver detalle"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                        </Link>
                         <button
                           onClick={(e) => {
                             e.preventDefault();

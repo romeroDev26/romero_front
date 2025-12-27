@@ -775,6 +775,8 @@ export interface DebitNote {
   zip_file_path?: string;
   cdr_file_path?: string;
   pdf_file_path?: string;
+  pdf_a4_file_path?: string;
+  pdf_ticket_file_path?: string;
   created_by?: string;
   created_at: string;
   updated_at: string;

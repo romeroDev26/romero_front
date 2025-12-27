@@ -46,13 +46,20 @@ class DebitNotesService {
 
   // Obtener una nota de débito por ID
   async getById(id: number): Promise<DebitNote> {
-    const response = await api.get<DebitNote>(`/invoices/notes/${id}`);
+    // Obtener recurso de nota de débito con datos enriquecidos
+    const response = await api.get<DebitNote>(`${this.basePath}${id}`, {
+      params: { enriched: true }
+    });
     return response.data;
   }
 
-  // Consultar estado SUNAT de una nota de débito
+  // Consultar detalle/estado SUNAT de una nota de débito.
+  // Endpoint requerido: /api/v1/sunat/debit-notes/{debit_note_id}
   async checkSunatStatus(id: number): Promise<SunatStatusResponse> {
-    const response = await api.get<SunatStatusResponse>(`/sunat/tickets/documents/debit_note/${id}/status`);
+    // Pedir siempre con enriched=true para obtener información completa
+    const response = await api.get<SunatStatusResponse>(`${this.basePath}${id}`, {
+      params: { enriched: true }
+    });
     return response.data;
   }
 

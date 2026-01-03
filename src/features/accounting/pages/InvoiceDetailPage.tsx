@@ -131,6 +131,18 @@ export const InvoiceDetailPage: React.FC = () => {
   const currentPdfUrl = activeTab === 'ticket80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
   const hasCurrentPdf = activeTab === 'ticket80mm' ? hasTicketPdf : hasA4Pdf;
 
+  // Formatea la fecha de emisión tal como viene del backend (YYYY-MM-DD)
+  const formatIssueDate = (dateStr?: string): string => {
+    if (!dateStr) return '';
+    const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+    try {
+      return format(new Date(dateStr), 'dd/MM/yyyy');
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header con información básica */}
@@ -157,7 +169,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     businessStatus={invoice.business_status}
                   />
                   <span className="text-sm text-gray-500">
-                    {format(new Date(invoice.issue_date), 'dd/MM/yyyy')}
+                    {formatIssueDate(invoice.issue_date)}
                   </span>
                   <span className="text-sm text-gray-500">•</span>
                   <span className="text-sm text-gray-900 font-medium">

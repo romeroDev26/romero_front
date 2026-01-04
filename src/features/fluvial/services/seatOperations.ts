@@ -12,6 +12,7 @@ export interface SeatOperationMessage {
   representativeName?: string;
   representativeIndex?: number;
   timestamp: string;
+  tripId?: number; // ← NUEVO: Agregar tripId para que el backend pueda hacer broadcast
   // NUEVO: Campos adicionales para sesión de empresa
   sessionId?: string;
   maxGroupReservations?: number;
@@ -46,6 +47,7 @@ export class SeatOperations {
       userId: this.userId, //  SOLUCIÓN: Asegurar que el userId se envíe
       userName: this.userName, //  SOLUCIÓN: Asegurar que el userName se envíe
       selectionType,
+      tripId: this.tripId, // ← NUEVO: Agregar tripId
       timestamp: new Date().toISOString()
     };
     
@@ -58,6 +60,7 @@ export class SeatOperations {
       seatId,
       userId: this.userId, //  SOLUCIÓN: Asegurar que el userId se envíe
       userName: this.userName,
+      tripId: this.tripId, // ← NUEVO: Agregar tripId
       timestamp: new Date().toISOString()
     };
     
@@ -69,6 +72,7 @@ export class SeatOperations {
       type: 'SEAT_UPDATE',
       seatId,
       status,
+      tripId: this.tripId, // ← NUEVO: Agregar tripId
       timestamp: new Date().toISOString()
     };
     
@@ -92,7 +96,8 @@ export class SeatOperations {
       userName: `${this.companyName || 'Empresa'} - ${representativeName}`,
       representativeName: representativeName,
       sessionId: sessionId,
-      reservationType: 'representative'
+      reservationType: 'representative',
+      tripId: this.tripId // ← NUEVO: Agregar tripId
     };
 
     this.trackRepresentativeReservation(seatId, representativeIndex, representativeName);
@@ -134,16 +139,22 @@ export class SeatOperations {
         seatId: seatId,
         userId: representativeUserId,
         sessionId: sessionId,
-        reservationType: 'representative'
+        reservationType: 'representative',
+        tripId: this.tripId,
+        timestamp: new Date().toISOString()
       };
+      
       return this.sendMessage(message);
     } else {
       const message = {
         type: 'SEAT_TEMP_RELEASE',
         seatId: seatId,
         userId: this.userId,
-        reservationType: 'representative'
+        reservationType: 'representative',
+        tripId: this.tripId,
+        timestamp: new Date().toISOString()
       };
+      
       return this.sendMessage(message);
     }
   }
@@ -166,6 +177,7 @@ export class SeatOperations {
       type: 'SEAT_TEMP_RELEASE_ALL',
       userId: this.userId,
       userName: this.userName,
+      tripId: this.tripId, // ← NUEVO: Agregar tripId
       timestamp: new Date().toISOString()
     };
 

@@ -63,7 +63,7 @@ export const useSeatSelections = ({
       const existingSelection = newMap.get(seatId);
       
       if (!existingSelection) {
-        return prev; // No hay cambios si no existe
+        return prev;
       }
 
       // Verificar si el mensaje de liberación viene del mismo usuario
@@ -76,14 +76,14 @@ export const useSeatSelections = ({
         // Si los userId base NO coinciden, no eliminar la selección
         // Esto previene que liberaciones de un usuario afecten las selecciones de otro
         if (sourceBaseUserId !== existingBaseUserId) {
-          return prev; // No eliminar, los userId base no coinciden
+          return prev;
         }
       }
 
       // Proceder con la eliminación
       newMap.delete(seatId);
       
-      //  CORRECCIÓN: Comparar userId base para reconocer representantes propios
+      // CORRECCIÓN: Comparar userId base para reconocer representantes propios
       const removedBaseUserId = existingSelection.userId.split('-company-')[0];
       if (removedBaseUserId === userId) {
         setMyActiveSelections(prevMine => {

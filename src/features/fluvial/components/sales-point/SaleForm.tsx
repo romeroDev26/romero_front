@@ -702,10 +702,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
       if (seatId) {
         // Usar las funciones correctas con el seatId y el índice del representante
-      if (releaseSeatForRepresentative) {
-        releaseSeatForRepresentative(seatId, index);
-      }
-      // Remover referencia a releaseSeatWebSocket que ya no existe
+        if (releaseSeatForRepresentative) {
+          releaseSeatForRepresentative(seatId, index);
+        }
       }
     }
 

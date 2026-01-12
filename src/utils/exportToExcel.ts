@@ -17,10 +17,10 @@ export const exportSellerStatsToExcel = (
     ['Período:', `${startDate} - ${endDate}`],
     ['Generado:', new Date().toLocaleString()],
     [],
-    ['Total de Facturas:', data.items.length],
+    ['Total de Facturas:', data.invoices.length],
     [
       'Total de Ingresos:',
-      data.items.reduce((sum, inv) => sum + parseFloat(inv.total_amount || '0'), 0).toFixed(2),
+      data.invoices.reduce((sum: number, inv) => sum + inv.total, 0).toFixed(2),
     ],
     [],
   ];
@@ -29,7 +29,7 @@ export const exportSellerStatsToExcel = (
   XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumen');
 
   // Hoja 2: Facturas
-  const invoicesData = data.items.map((inv) => ({
+  const invoicesData = data.invoices.map((inv) => ({
     'ID Factura': inv.invoice_id,
     'Tipo Documento': inv.document_type,
     Serie: inv.series,
@@ -41,9 +41,9 @@ export const exportSellerStatsToExcel = (
     Sucursal: inv.branch_office_name,
     Moneda: inv.currency,
     'Método Pago': inv.payment_method,
-    Subtotal: parseFloat(inv.total_subtotal || '0').toFixed(2),
-    IGV: parseFloat(inv.total_tax || '0').toFixed(2),
-    Total: parseFloat(inv.total_amount || '0').toFixed(2),
+    Subtotal: inv.subtotal.toFixed(2),
+    IGV: inv.igv.toFixed(2),
+    Total: inv.total.toFixed(2),
     'Estado SUNAT': inv.sunat_status,
   }));
 
@@ -52,7 +52,7 @@ export const exportSellerStatsToExcel = (
 
   // Hoja 3: Detalle de Ítems
   const itemsData: any[] = [];
-  data.items.forEach((inv) => {
+  data.invoices.forEach((inv) => {
     inv.items.forEach((item) => {
       itemsData.push({
         'ID Factura': inv.invoice_id,
@@ -60,17 +60,17 @@ export const exportSellerStatsToExcel = (
         'Producto/Servicio': item.product_name,
         Categoría: item.service_category,
         Cantidad: item.quantity,
-        'Precio Unitario': parseFloat(item.unit_price || '0').toFixed(2),
-        Descuento: parseFloat(item.discount_amount || '0').toFixed(2),
-        Subtotal: parseFloat(item.subtotal || '0').toFixed(2),
-        IGV: parseFloat(item.tax_amount || '0').toFixed(2),
-        Total: parseFloat(item.total_amount || '0').toFixed(2),
-        'Nro Asiento': item.seat_number || '',
-        Embarcación: item.vessel_name || '',
-        Ruta: item.route_name || '',
-        'Puerto Origen': item.origin_port || '',
-        'Puerto Destino': item.destination_port || '',
-        'Fecha Viaje': item.trip_date || '',
+        'Precio Unitario': item.unit_price.toString(),
+        Descuento: item.discount_amount.toString(),
+        Subtotal: item.subtotal.toString(),
+        IGV: item.tax_amount.toString(),
+        Total: item.total_amount.toString(),
+        'Nro Asiento': item.trip_info?.seat_number || '',
+        Embarcación: item.trip_info?.vessel_name || '',
+        Ruta: item.trip_info?.route_name || '',
+        'Puerto Origen': item.trip_info?.origin_port || '',
+        'Puerto Destino': item.trip_info?.destination_port || '',
+        'Fecha Viaje': item.trip_info?.trip_date || '',
       });
     });
   });
@@ -80,7 +80,7 @@ export const exportSellerStatsToExcel = (
 
   // Hoja 4: Representantes (si hay)
   const representativesData: any[] = [];
-  data.items.forEach((inv) => {
+  data.invoices.forEach((inv) => {
     if (inv.representatives && inv.representatives.length > 0) {
       inv.representatives.forEach((rep) => {
         representativesData.push({
@@ -91,9 +91,9 @@ export const exportSellerStatsToExcel = (
           'Nro Doc': rep.doc_number,
           Teléfono: rep.phone || '',
           Email: rep.email || '',
-          'Nro Asiento': rep.seat_number || '',
-          Embarcación: rep.vessel_name || '',
-          'Fecha Viaje': rep.trip_date || '',
+          'Nro Asiento': rep.trip_info?.seat_number || '',
+          Embarcación: rep.trip_info?.vessel_name || '',
+          'Fecha Viaje': rep.trip_info?.trip_date || '',
         });
       });
     }

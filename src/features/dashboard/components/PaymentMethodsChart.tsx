@@ -103,7 +103,7 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
                 paddingAngle={2}
                 stroke="none"
               >
-                {chartData.map((entry, index) => (
+                {chartData.map((_, index) => (
                   <Cell 
                     key={`cell-${index}`} 
                     fill={`url(#paymentGradient-${index % MODERN_COLORS.length})`}

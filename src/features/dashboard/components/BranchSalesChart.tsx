@@ -43,7 +43,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 // Etiqueta personalizada para el pie
-const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, porcentaje, name }: any) => {
+const renderCustomLabel = ({ cx, cy, midAngle, outerRadius, porcentaje }: any) => {
   const RADIAN = Math.PI / 180;
   const radius = outerRadius * 1.3;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -116,7 +116,7 @@ export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoad
             paddingAngle={2}
             stroke="none"
           >
-            {chartData.map((entry, index) => (
+            {chartData.map((_, index) => (
               <Cell 
                 key={`cell-${index}`} 
                 fill={`url(#pieGradient-${index % COLORS.length})`}

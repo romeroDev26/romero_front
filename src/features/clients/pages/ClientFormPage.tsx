@@ -60,7 +60,7 @@ const getDocTypeDisplay = (type: DocType): string => {
 
 // Funciones helper para manejar los cambios de ubicación
 const handleLocationChange = (setValue: any) => ({
-  onCountryChange: (countryCode: string, countryName: string) => {
+  onCountryChange: (countryCode: string) => {
     setValue('country_code', countryCode);
   },
   onDepartmentChange: (department: string) => {

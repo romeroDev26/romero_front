@@ -19,15 +19,18 @@ interface VesselCardProps {
   onDelete: (vessel: Vessel) => void;
 }
 
-const DetailItem: React.FC<{ icon: React.ElementType, label: string, value: string | number }> = ({ icon: Icon, label, value }) => (
+const DetailItem: React.FC<{ icon: React.ElementType, label: string, value: string | number }> = ({ icon: Icon, label, value }) => {
+  const IconComponent = Icon as React.ComponentType<{ className: string }>;
+  return (
   <div className="flex items-center gap-2">
-    <Icon className="h-5 w-5 text-gray-400" />
+    <IconComponent className="h-5 w-5 text-gray-400" />
     <div>
       <span className="text-gray-600 text-xs">{label}</span>
       <p className="font-semibold text-gray-800">{value}</p>
     </div>
   </div>
-);
+  );
+};
 
 export const VesselCard: React.FC<VesselCardProps> = ({ vessel, onEdit, onConfigure, onDelete }) => {
   const totalCapacity = vessel.capacity_passengers || 0;

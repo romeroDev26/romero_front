@@ -59,9 +59,8 @@ export const useSaleBusinessLogic = ({
     representatives: Representative[],
     branchName: string,
     onSuccess: (invoiceData: any) => void,
-    seatMap?: any[], //  NUEVO: Para convertir seat_number a seatId
-    confirmPurchaseCallback?: (seatIds: number[]) => boolean, //  NUEVO: Para confirmar compra
-    // ← NUEVOS PARÁMETROS: Para construir item_config
+    seatMap?: any[],
+    confirmPurchaseCallback?: (seatIds: number[]) => boolean,
     basePrice?: number,
     seatMultiplier?: number,
     extraCost?: number,
@@ -69,11 +68,19 @@ export const useSaleBusinessLogic = ({
     discount?: number,
     isIgvGravado?: boolean,
     series?: string,
-    itemDescription?: string, // ← NUEVO: Descripción opcional
-    selectedSeat?: any, // ← NUEVO: Asiento seleccionado para obtener trip_seat_id y seat_number
-    selectedPaymentMethod?: string, // ← NUEVO: Método de pago seleccionado
-    paymentOperationCode?: string, // ← NUEVO: Código de operación de pago
-    currencyCode?: 'PEN' | 'USD', // ← NUEVO: Código de moneda
+    itemDescription?: string,
+    selectedSeat?: any,
+    selectedPaymentMethod?: string,
+    paymentOperationCode?: string,
+    currencyCode?: 'PEN' | 'USD',
+    // Parametros para pago dividido
+    splitPaymentData?: {
+      isSplitPayment: boolean;
+      paymentAmount1?: number;
+      paymentMethodCode2?: string;
+      paymentOperationCode2?: string;
+      paymentAmount2?: number;
+    },
   ) => {
     // Validación previa
     const validation = saleValidationService.validateBasicSaleData(
@@ -181,13 +188,21 @@ export const useSaleBusinessLogic = ({
       invoiceConfig.detraccion_code = null;
       invoiceConfig.detraccion_percentage = null;
       
-      // ← NUEVO: Método de pago
+      // Metodo de pago
       if (selectedPaymentMethod) {
         invoiceConfig.payment_method_code = selectedPaymentMethod;
-        invoiceConfig.payment_operation_code = paymentOperationCode || selectedPaymentMethod;
+        invoiceConfig.payment_operation_code = paymentOperationCode || undefined;
+      }
+
+      // Datos de pago dividido
+      if (splitPaymentData?.isSplitPayment) {
+        invoiceConfig.payment_amount_1 = splitPaymentData.paymentAmount1;
+        invoiceConfig.payment_method_code_2 = splitPaymentData.paymentMethodCode2;
+        invoiceConfig.payment_operation_code_2 = splitPaymentData.paymentOperationCode2 || undefined;
+        invoiceConfig.payment_amount_2 = splitPaymentData.paymentAmount2;
       }
       
-      // ← CORREGIDO: JSON según especificación exacta del backend
+      // JSON segun especificacion exacta del backend
       const companyInvoiceData = {
         company_data: {
           client_doc_type: passengerData.docType,
@@ -282,11 +297,19 @@ export const useSaleBusinessLogic = ({
     isConfirmingMode: boolean,
     reservationToConfirm: any,
     onSuccess: (invoiceData: any) => void,
-    itemDescription?: string, // ← NUEVO: Descripción opcional
-    confirmPurchaseCallback?: (seatIds: number[]) => boolean, // ← NUEVO: Para confirmar compra
-    selectedPaymentMethod?: string, // ← NUEVO: Método de pago seleccionado
-    paymentOperationCode?: string, // ← NUEVO: Código de operación de pago
-    currencyCode?: 'PEN' | 'USD', // ← NUEVO: Código de moneda
+    itemDescription?: string,
+    confirmPurchaseCallback?: (seatIds: number[]) => boolean,
+    selectedPaymentMethod?: string,
+    paymentOperationCode?: string,
+    currencyCode?: 'PEN' | 'USD',
+    // Parametros para pago dividido
+    splitPaymentData?: {
+      isSplitPayment: boolean;
+      paymentAmount1?: number;
+      paymentMethodCode2?: string;
+      paymentOperationCode2?: string;
+      paymentAmount2?: number;
+    },
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -359,9 +382,10 @@ export const useSaleBusinessLogic = ({
         series,
         branchName,
         invoiceItems,
-        selectedPaymentMethod, // ← NUEVO: Pasar método de pago
-        paymentOperationCode, // ← NUEVO: Pasar código de operación
-        currencyCode // ← NUEVO: Pasar código de moneda
+        selectedPaymentMethod,
+        paymentOperationCode,
+        currencyCode,
+        splitPaymentData // Datos de pago dividido
       );
 
       const createdInvoice = await createInvoice({

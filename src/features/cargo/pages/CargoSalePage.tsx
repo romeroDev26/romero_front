@@ -1,6 +1,6 @@
 ﻿// src/features/cargo/pages/CargoSalePage.tsx
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
@@ -15,6 +15,7 @@ import { useCreateInvoice } from '../../fluvial/hooks/useInvoices';
 import { Spinner } from '../../../components/common/Spinner';
 import { useDocumentSeriesForBranch } from '../../fluvial/hooks/useDocumentSeriesForBranch';
 import { Stepper } from '../../../components/common/Stepper.tsx';
+import { SplitPaymentForm, SplitPaymentData } from '../../../components/common/SplitPaymentForm';
 
 import { CargoItemForm } from '../components/CargoItemForm';
 import { RecipientForm, RecipientData as RecipientFormData } from '../components/RecipientForm';
@@ -70,21 +71,18 @@ export const CargoSalePage: React.FC = () => {
   const [showTicketPreview, setShowTicketPreview] = useState(false);
   const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
 
-  // Estados para mÃ©todo de pago
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("EFE");
-  const [paymentOperationCode, setPaymentOperationCode] = useState("");
+  // Estado para pago dividido
+  const [splitPaymentData, setSplitPaymentData] = useState<SplitPaymentData>({
+    isSplitPayment: false,
+    paymentMethod1: 'EFE',
+    operationCode1: '',
+    amount1: 0,
+    paymentMethod2: 'YAP',
+    operationCode2: '',
+    amount2: 0,
+  });
 
-  // Opciones para mÃ©todo de pago
-  const paymentMethodOptions = [
-    { value: 'EFE', label: 'Efectivo' },
-    { value: 'TRF', label: 'Transferencia Bancaria' },
-    { value: 'YAP', label: 'Yape' },
-    { value: 'PLN', label: 'Plin' },
-    { value: 'DEP', label: 'Depósito en Cuenta' },
-    { value: 'OTR', label: 'Otros' },
-  ];
-
-  // --- INICIO: Lógica de Series Replicada ---
+  // --- INICIO: Logica de Series Replicada ---
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>("");
   const [selectedFacturaSeries, setSelectedFacturaSeries] = useState<string>("");
   
@@ -103,12 +101,10 @@ export const CargoSalePage: React.FC = () => {
   
   const { availableBoletaSeries, availableFacturaSeries, isLoading: isLoadingSeries } = useDocumentSeriesForBranch(selectedBranch?.id || null);
 
-  // Efecto para limpiar cÃ³digo de operaciÃ³n cuando se cambia a efectivo
-  useEffect(() => {
-    if (selectedPaymentMethod === "EFE") {
-      setPaymentOperationCode("");
-    }
-  }, [selectedPaymentMethod]);
+  // Callback para manejar cambios en el pago dividido
+  const handleSplitPaymentChange = useCallback((data: SplitPaymentData) => {
+    setSplitPaymentData(data);
+  }, []);
 
   useEffect(() => {
     const cachedBoleta = localStorage.getItem("lastUsedBoletaSeries");
@@ -218,8 +214,18 @@ export const CargoSalePage: React.FC = () => {
         operation_type_code: '0101',
         currency_code: 'PEN',
         is_credit_sale: isContraentrega,
-        payment_method_code: selectedPaymentMethod,
-        payment_operation_code: paymentOperationCode || undefined,
+        // Metodo de pago: solo enviar si NO es contraentrega
+        ...(!isContraentrega && {
+          payment_method_code: splitPaymentData.paymentMethod1,
+          payment_operation_code: splitPaymentData.operationCode1 || undefined,
+        }),
+        // Campos para pago dividido: solo enviar si NO es contraentrega y es pago dividido
+        ...(!isContraentrega && splitPaymentData.isSplitPayment && {
+          payment_amount_1: splitPaymentData.amount1,
+          payment_method_code_2: splitPaymentData.paymentMethod2,
+          payment_operation_code_2: splitPaymentData.operationCode2 || undefined,
+          payment_amount_2: splitPaymentData.amount2,
+        }),
         notes: `Venta de Encomiendas. Sucursal: ${selectedBranch.name}`,
         items: cargoItems.map(item => ({
           product_id: item.product.id,
@@ -267,16 +273,24 @@ export const CargoSalePage: React.FC = () => {
     setSelectedOriginId(null);
     setSelectedDestinationId(null);
     setCargoItems([]);
-    setIsContraentrega(false); // Asegurar que el switch esté desactivado
-    setSelectedPaymentMethod("EFE"); // Resetear método de pago
-    setPaymentOperationCode(""); // Limpiar código de operación
+    setIsContraentrega(false);
+    // Resetear datos de pago dividido
+    setSplitPaymentData({
+      isSplitPayment: false,
+      paymentMethod1: 'EFE',
+      operationCode1: '',
+      amount1: 0,
+      paymentMethod2: 'YAP',
+      operationCode2: '',
+      amount2: 0,
+    });
     setCurrentView('clientSelection');
     
     // Limpiar datos del ticket
     setShowTicketPreview(false);
     setTicketBackendData(null);
     
-    toast.success('¡Venta de encomienda completada y ticket generado!');
+    toast.success('Venta de encomienda completada y ticket generado!');
   };
 
   // Función para limpiar el formulario cuando se cierre el modal (sin éxito)
@@ -294,9 +308,17 @@ export const CargoSalePage: React.FC = () => {
     setSelectedOriginId(null);
     setSelectedDestinationId(null);
     setCargoItems([]);
-    setIsContraentrega(false); // Asegurar que el switch esté desactivado
-    setSelectedPaymentMethod("EFE"); // Resetear método de pago
-    setPaymentOperationCode(""); // Limpiar código de operación
+    setIsContraentrega(false);
+    // Resetear datos de pago dividido
+    setSplitPaymentData({
+      isSplitPayment: false,
+      paymentMethod1: 'EFE',
+      operationCode1: '',
+      amount1: 0,
+      paymentMethod2: 'YAP',
+      operationCode2: '',
+      amount2: 0,
+    });
     
     // Volver al paso inicial
     setCurrentView('clientSelection');
@@ -569,55 +591,28 @@ export const CargoSalePage: React.FC = () => {
             </div>
             <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Columna Izquierda: Total y Método de Pago */}
+                {/* Columna Izquierda: Total y Metodo de Pago */}
                 <div className="space-y-4">
                   {/* Total a Pagar */}
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
                     <p className="text-sm font-medium text-gray-600 mb-1">Total a Pagar</p>
                     <p className="text-4xl font-bold text-gray-900">S/ {totalSaleAmount.toFixed(2)}</p>
-                  </div>
-
-                  {/* Selector de Método de Pago */}
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Método de Pago
-                    </label>
-                    <select
-                      value={selectedPaymentMethod}
-                      onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                      className="w-full p-2.5 border border-gray-300 rounded-md bg-white"
-                    >
-                      {paymentMethodOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    {/* Campo de código de operación (solo para métodos diferentes a efectivo) */}
-                    {selectedPaymentMethod !== "EFE" && (
-                      <div className="mt-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Código de Operación
-                        </label>
-                        <input
-                          type="text"
-                          value={paymentOperationCode}
-                          onChange={(e) => {
-                            if (e.target.value.length <= 20) {
-                              setPaymentOperationCode(e.target.value);
-                            }
-                          }}
-                          placeholder="Ingrese el código de operación..."
-                          className="w-full p-2.5 border border-gray-300 rounded-md"
-                          maxLength={20}
-                        />
-                        <div className="text-xs text-gray-500 mt-1">
-                          {paymentOperationCode.length}/20 caracteres
-                        </div>
-                      </div>
+                    {isContraentrega && (
+                      <p className="text-sm text-amber-600 mt-2 font-medium">
+                        Pago pendiente - Se cobrara al entregar
+                      </p>
                     )}
                   </div>
+
+                  {/* Formulario de Pago Dividido - Solo visible cuando NO es contraentrega */}
+                  {!isContraentrega && (
+                    <SplitPaymentForm
+                      totalAmount={totalSaleAmount}
+                      currencySymbol="S/"
+                      disabled={isProcessingClient || isCreatingInvoice}
+                      onPaymentDataChange={handleSplitPaymentChange}
+                    />
+                  )}
                 </div>
 
                 {/* Columna Derecha: Opciones y Botón de Acción */}

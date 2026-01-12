@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
-import { Download, Eye, Cloud, MessageCircle, RefreshCw } from 'lucide-react';
+import { Download, Eye, MessageCircle, RefreshCw } from 'lucide-react';
 import { BackendInvoiceData, BackendCompanyInvoiceData } from './tickets/types/backend.types';
 import { WhatsAppSendModal } from './WhatsAppSendModal';
 import { invoicesService } from '../../../../services/invoices.service';
@@ -172,7 +172,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       maxWidth="2xl"
     >
       <div className="p-6">
-        {/* Mostrar número de Encomienda si existe */}
+        {/* Mostrar numero de Encomienda si existe */}
         {invoiceData.items && 
          invoiceData.items.length > 0 && 
          invoiceData.items[0].parcel_number && 
@@ -180,22 +180,10 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           invoiceData.items[0].item_description?.toLowerCase().includes('encomienda')) && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800">
-              Número de Encomienda: <span className="font-bold">
+              Numero de Encomienda: <span className="font-bold">
                 {invoiceData.items[0].parcel_number}
               </span>
             </p>
-          </div>
-        )}
-
-        {/* Indicador de éxito */}
-        {generationSuccess && (
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center text-green-800">
-              <Cloud className="h-4 w-4 mr-2" />
-              <p className="text-sm font-medium">
-                Documentos generados y almacenados correctamente en el backend
-              </p>
-            </div>
           </div>
         )}
 
@@ -204,17 +192,17 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => setActiveFormat('ticket80mm')}
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
                 activeFormat === 'ticket80mm'
                   ? 'border-b-2 border-blue-600 text-blue-600'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Ticket 80mm (Térmico)
+              Ticket 80mm (Termico)
             </button>
             <button
               onClick={() => setActiveFormat('a4')}
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
                 activeFormat === 'a4'
                   ? 'border-b-2 border-blue-600 text-blue-600'
                   : 'text-gray-500 hover:text-gray-700'
@@ -226,8 +214,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         </div>
 
         {/* Vista previa del PDF */}
-        <div className="mb-6">
-          <div className="border rounded-lg overflow-hidden bg-gray-100" style={{ height: '600px' }}>
+        <div className="mb-4">
+          <div className="border rounded-lg overflow-hidden bg-gray-100" style={{ height: '500px' }}>
             {isGenerating ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
@@ -271,10 +259,14 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           </div>
         </div>
 
-        {/* Botones de acción */}
+        {/* Botones de accion */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
           <Button
-            onClick={handleDownloadTicket}
+            onClick={() => {
+              handleDownloadTicket().then(() => {
+                handleClose();
+              });
+            }}
             disabled={isGenerating || isDownloading || !generationSuccess}
             className="bg-green-600 hover:bg-green-700 py-3"
           >
@@ -286,7 +278,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
             ) : (
               <>
                 <Download className="h-4 w-4 mr-2" />
-                Descargar
+                Descargar y Finalizar
               </>
             )}
           </Button>
@@ -297,23 +289,20 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
             className="bg-green-500 hover:bg-green-600 py-3"
           >
             <MessageCircle className="h-4 w-4 mr-2" />
-            WhatsApp
+            Enviar por WhatsApp
           </Button>
 
           <Button
-            onClick={() => {
-              handleDownloadTicket().then(() => {
-                handleClose();
-              });
-            }}
-            disabled={isGenerating || isDownloading || !generationSuccess}
-            className="bg-emerald-600 hover:bg-emerald-700 py-3"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isGenerating || isDownloading}
+            className="py-3"
           >
-            Descargar y Finalizar
+            Cerrar
           </Button>
         </div>
 
-        {/* Botón de regenerar (solo si hay error) */}
+        {/* Boton de regenerar (solo si hay error) */}
         {!generationSuccess && !isGenerating && (
           <div className="mb-4">
             <Button
@@ -326,17 +315,6 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
             </Button>
           </div>
         )}
-
-        {/* Botón de navegación */}
-        <div className="flex justify-start">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isGenerating || isDownloading}
-          >
-            Cerrar
-          </Button>
-        </div>
 
         {/* Modal de WhatsApp */}
         <WhatsAppSendModal

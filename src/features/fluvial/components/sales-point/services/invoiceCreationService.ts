@@ -31,8 +31,14 @@ export interface InvoiceCreationData {
   currency_code: string;
   notes: string;
   items: InvoiceItemData[];
-  payment_method_code?: string; // ← NUEVO: Código del método de pago
-  payment_operation_code?: string; // ← NUEVO: Código de la operación de pago
+  // Campos de pago principal
+  payment_method_code?: string;
+  payment_operation_code?: string;
+  // Campos para pago dividido
+  payment_amount_1?: number;
+  payment_method_code_2?: string;
+  payment_operation_code_2?: string;
+  payment_amount_2?: number;
 }
 
 export const invoiceCreationService = {
@@ -127,26 +133,45 @@ export const invoiceCreationService = {
     items: InvoiceItemData[],
     selectedPaymentMethod?: string,
     paymentOperationCode?: string,
-    currencyCode: 'PEN' | 'USD' = 'PEN' // ← NUEVO: Parámetro para código de moneda
+    currencyCode: 'PEN' | 'USD' = 'PEN',
+    // Parametros para pago dividido
+    splitPaymentData?: {
+      isSplitPayment: boolean;
+      paymentAmount1?: number;
+      paymentMethodCode2?: string;
+      paymentOperationCode2?: string;
+      paymentAmount2?: number;
+    }
   ): InvoiceCreationData => {
     const isRuc = passengerData.docType === "6"; // RUC
     
-    return {
+    const basePayload: InvoiceCreationData = {
       client_id: clientId,
       document_type_code: isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA,
       series: series,
       issue_date: format(new Date(), "yyyy-MM-dd"),
       issue_time: format(new Date(), "HH:mm:ss"),
       operation_type_code: "0101",
-      currency_code: currencyCode, // ← ACTUALIZADO: Usar parámetro dinámico
+      currency_code: currencyCode,
       notes: `Punto de Venta: ${branchName}`,
       items: items,
-      // ← NUEVO: Agregar método de pago si está disponible
-      ...(selectedPaymentMethod && {
-        payment_method_code: selectedPaymentMethod,
-        payment_operation_code: paymentOperationCode || selectedPaymentMethod,
-      }),
     };
+
+    // Agregar metodo de pago principal si esta disponible
+    if (selectedPaymentMethod) {
+      basePayload.payment_method_code = selectedPaymentMethod;
+      basePayload.payment_operation_code = paymentOperationCode || undefined;
+    }
+
+    // Agregar datos de pago dividido si aplica
+    if (splitPaymentData?.isSplitPayment) {
+      basePayload.payment_amount_1 = splitPaymentData.paymentAmount1;
+      basePayload.payment_method_code_2 = splitPaymentData.paymentMethodCode2;
+      basePayload.payment_operation_code_2 = splitPaymentData.paymentOperationCode2 || undefined;
+      basePayload.payment_amount_2 = splitPaymentData.paymentAmount2;
+    }
+
+    return basePayload;
   },
 
   calculateQuantity: (

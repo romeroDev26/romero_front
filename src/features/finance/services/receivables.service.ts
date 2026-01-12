@@ -1,7 +1,6 @@
 // src/features/finance/services/receivables.service.ts
 
 import api from '../../../config/api';
-import { authService } from '../../../services/auth.service';
 import {
   ReceivablesQueryParams,
   ReceivablesResponse,
@@ -15,12 +14,11 @@ export const receivablesService = {
     try {
       const queryParams = new URLSearchParams();
 
-      // Obtener la sucursal del usuario actual si no se especifica
-      const user = authService.getCurrentUser();
-      const branchOfficeId = params.branch_office_id || user?.default_branch_office_id;
-
       // Agregar parámetros de filtrado
-      if (branchOfficeId) queryParams.append('branch_office_id', branchOfficeId.toString());
+      // Si se envía branch_office_id explícitamente, se incluirá; no usar la sucursal por defecto del usuario
+      if (params.branch_office_id) queryParams.append('branch_office_id', params.branch_office_id.toString());
+      // Buscar por documento (DNI o RUC) del remitente o destinatario
+      if (params.doc_number) queryParams.append('doc_number', params.doc_number);
       if (params.payment_status) queryParams.append('payment_status', params.payment_status);
       if (params.start_date) queryParams.append('start_date', params.start_date);
       if (params.end_date) queryParams.append('end_date', params.end_date);

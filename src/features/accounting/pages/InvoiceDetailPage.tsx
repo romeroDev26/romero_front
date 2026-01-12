@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { format } from 'date-fns';
 import { 
@@ -10,7 +10,8 @@ import {
   DocumentTextIcon, 
   PrinterIcon, 
   ArrowDownTrayIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { MessageCircle } from 'lucide-react';
 
@@ -28,9 +29,11 @@ import { getCurrencySymbol } from '../../../utils/currency';
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [showPdfError, setShowPdfError] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4'>('ticket80mm');
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   const { hasPermission } = usePermissions();
 
@@ -118,6 +121,37 @@ export const InvoiceDetailPage: React.FC = () => {
     setShowWhatsAppModal(true);
   };
 
+  /**
+   * Regenera ambos PDFs (80mm y A4) desde el backend
+   * Útil cuando los tickets no se generaron correctamente o se perdió la conexión
+   */
+  const handleRegeneratePdfs = async () => {
+    if (!invoice || isRegenerating) return;
+    
+    setIsRegenerating(true);
+    setShowPdfError(false);
+    
+    try {
+      // Llamar al servicio para regenerar ambos PDFs
+      await invoicesService.generateBothPdfs(invoiceId);
+      
+      // Invalidar y refetch la query para obtener las nuevas URLs
+      await queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      
+      toast.success('Tickets regenerados exitosamente');
+    } catch (error) {
+      console.error('Error regenerando tickets:', error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : 'Error al regenerar los tickets. Por favor, intente nuevamente.'
+      );
+      setShowPdfError(true);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   if (isLoading) return <div className="flex justify-center p-8"><Spinner size="lg" /></div>;
   if (error) return <div className="p-6 text-center text-red-600">Error al cargar la factura: {error instanceof Error ? error.message : 'Error desconocido'}</div>;
   if (!invoice) return <div className="p-6 text-center text-gray-500">No se encontró la factura.</div>;
@@ -185,6 +219,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={handlePrint}
+                    disabled={isRegenerating}
                     className="flex items-center"
                   >
                     <PrinterIcon className="h-4 w-4 mr-2" />
@@ -194,6 +229,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     variant="outline"
                     size="sm"
                     onClick={handleDownload}
+                    disabled={isRegenerating}
                     className="flex items-center"
                   >
                     <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
@@ -345,9 +381,21 @@ export const InvoiceDetailPage: React.FC = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Ticket no disponible
               </h3>
-              <p className="text-gray-500 mb-6">
+              <p className="text-gray-500 mb-4">
                 No se encontró el archivo PDF del ticket para esta factura.
               </p>
+              
+              {/* Botón para regenerar tickets */}
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleRegeneratePdfs}
+                disabled={isRegenerating}
+                className="flex items-center mx-auto mb-6"
+              >
+                <ArrowPathIcon className={`h-5 w-5 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
+                {isRegenerating ? 'Regenerando tickets...' : 'Regenerar Tickets'}
+              </Button>
               
               {/* Mostrar información básica de la factura */}
               <div className="max-w-2xl mx-auto text-left">

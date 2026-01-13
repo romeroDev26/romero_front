@@ -245,23 +245,76 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
         <div className="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg">
           <AlertCircle className="w-5 h-5 text-amber-600 mr-2 flex-shrink-0" />
           <p className="text-sm text-amber-700">
-            Seleccione un viaje con precio valido para configurar el pago
+            Seleccione un viaje con precio válido para configurar el pago
           </p>
+        </div>
+      )}
+
+      {/* Pago Completo (solo visible cuando NO es pago dividido) */}
+      {!isSplitPayment && (
+        <div className="p-4 rounded-lg border bg-gray-50 border-gray-200">
+          <div className="space-y-3">
+            {/* Selector de metodo */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Método de Pago
+              </label>
+              <select
+                value={paymentMethod1}
+                onChange={(e) => setPaymentMethod1(e.target.value)}
+                disabled={disabled || !canEnable}
+                className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
+              >
+                {PAYMENT_METHOD_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Codigo de operacion (si aplica) */}
+            {paymentMethod1 !== 'EFE' && (
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Código de Operación {requiresOperationCode(paymentMethod1) ? '*' : '(opcional)'}
+                </label>
+                <input
+                  type="text"
+                  value={operationCode1}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 20) {
+                      setOperationCode1(e.target.value);
+                    }
+                  }}
+                  placeholder="Ingrese el código..."
+                  disabled={disabled}
+                  className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                  maxLength={20}
+                />
+                <div className="text-xs text-gray-500 mt-1">
+                  {operationCode1.length}/20 caracteres
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Toggle para activar pago dividido */}
       <div className={`flex items-center justify-between p-3 rounded-lg border ${
-        !canEnable ? 'bg-gray-100 border-gray-200 opacity-60' : 'bg-gray-50 border-gray-200'
+        !canEnable ? 'bg-gray-100 border-gray-200 opacity-60' : isSplitPayment ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
       }`}>
         <div className="flex items-center space-x-2">
-          <SplitIcon className="w-5 h-5 text-gray-600" />
+          <SplitIcon className={`w-5 h-5 ${isSplitPayment ? 'text-blue-600' : 'text-gray-600'}`} />
           <div>
-            <p className="text-sm font-medium text-gray-700">Pago Dividido</p>
+            <p className={`text-sm font-medium ${isSplitPayment ? 'text-blue-700' : 'text-gray-700'}`}>
+              Pago Dividido
+            </p>
             <p className="text-xs text-gray-500">
               {canEnable 
-                ? 'Dividir el pago en 2 metodos diferentes' 
-                : 'Requiere un precio valido'}
+                ? (isSplitPayment ? 'Dividiendo el pago en 2 métodos' : 'Dividir el pago en 2 métodos diferentes')
+                : 'Requiere un precio válido'}
             </p>
           </div>
         </div>
@@ -283,34 +336,35 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
         </button>
       </div>
 
-      {/* Pago 1 (Principal) */}
-      <div className={`p-4 rounded-lg border ${isSplitPayment ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-        <h4 className="text-sm font-medium text-gray-700 mb-3">
-          {isSplitPayment ? 'Pago 1 (Principal)' : 'Metodo de Pago'}
-        </h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {/* Selector de metodo */}
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Metodo
-            </label>
-            <select
-              value={paymentMethod1}
-              onChange={(e) => setPaymentMethod1(e.target.value)}
-              disabled={disabled}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
-            >
-              {PAYMENT_METHOD_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* Pago 1 (Principal) - Solo visible en pago dividido */}
+      {isSplitPayment && (
+        <div className="p-4 rounded-lg border bg-blue-50 border-blue-200">
+          <h4 className="text-sm font-medium text-blue-700 mb-3 flex items-center">
+            <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center mr-2">1</span>
+            Primer Pago
+          </h4>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Selector de metodo */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Método
+              </label>
+              <select
+                value={paymentMethod1}
+                onChange={(e) => setPaymentMethod1(e.target.value)}
+                disabled={disabled}
+                className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
+              >
+                {PAYMENT_METHOD_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Monto (solo visible en pago dividido) */}
-          {isSplitPayment && (
+            {/* Monto */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Monto
@@ -334,47 +388,48 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                 />
               </div>
             </div>
+          </div>
+
+          {/* Codigo de operacion (si aplica) */}
+          {paymentMethod1 !== 'EFE' && (
+            <div className="mt-3">
+              <label className="block text-xs font-medium text-gray-600 mb-1">
+                Código de Operación {requiresOperationCode(paymentMethod1) ? '*' : '(opcional)'}
+              </label>
+              <input
+                type="text"
+                value={operationCode1}
+                onChange={(e) => {
+                  if (e.target.value.length <= 20) {
+                    setOperationCode1(e.target.value);
+                  }
+                }}
+                placeholder="Ingrese el código..."
+                disabled={disabled}
+                className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                maxLength={20}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {operationCode1.length}/20 caracteres
+              </div>
+            </div>
           )}
         </div>
-
-        {/* Codigo de operacion (si aplica) */}
-        {paymentMethod1 !== 'EFE' && (
-          <div className="mt-3">
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Codigo de Operacion {requiresOperationCode(paymentMethod1) ? '*' : '(opcional)'}
-            </label>
-            <input
-              type="text"
-              value={operationCode1}
-              onChange={(e) => {
-                if (e.target.value.length <= 20) {
-                  setOperationCode1(e.target.value);
-                }
-              }}
-              placeholder="Ingrese el codigo..."
-              disabled={disabled}
-              className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
-              maxLength={20}
-            />
-            <div className="text-xs text-gray-500 mt-1">
-              {operationCode1.length}/20 caracteres
-            </div>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Pago 2 (Secundario) - Solo visible en pago dividido */}
       {isSplitPayment && (
         <div className="p-4 rounded-lg border bg-green-50 border-green-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">
-            Pago 2 (Secundario)
+          <h4 className="text-sm font-medium text-green-700 mb-3 flex items-center">
+            <span className="w-5 h-5 rounded-full bg-green-600 text-white text-xs flex items-center justify-center mr-2">2</span>
+            Segundo Pago
           </h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Selector de metodo */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Metodo
+                Método
               </label>
               <select
                 value={paymentMethod2}
@@ -420,7 +475,7 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
           {paymentMethod2 !== 'EFE' && (
             <div className="mt-3">
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Codigo de Operacion {requiresOperationCode(paymentMethod2) ? '*' : '(opcional)'}
+                Código de Operación {requiresOperationCode(paymentMethod2) ? '*' : '(opcional)'}
               </label>
               <input
                 type="text"
@@ -430,7 +485,7 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                     setOperationCode2(e.target.value);
                   }
                 }}
-                placeholder="Ingrese el codigo..."
+                placeholder="Ingrese el código..."
                 disabled={disabled}
                 className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
                 maxLength={20}

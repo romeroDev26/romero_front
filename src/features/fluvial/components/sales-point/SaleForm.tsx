@@ -141,6 +141,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     operationCode2: '',
     amount2: 0,
   });
+  
+  // NUEVO: Estado para validación del pago dividido
+  const [isSplitPaymentValid, setIsSplitPaymentValid] = useState(true);
 
   // Estados para modales y confirmación
   const [isReservationModalOpen, setReservationModalOpen] = useState(false);
@@ -492,6 +495,11 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   // Callback para manejar cambios en el pago dividido
   const handleSplitPaymentChange = useCallback((data: SplitPaymentData) => {
     setSplitPaymentData(data);
+  }, []);
+  
+  // NUEVO: Callback para validación del pago dividido
+  const handleSplitPaymentValidationChange = useCallback((isValid: boolean) => {
+    setIsSplitPaymentValid(isValid);
   }, []);
 
   // Efectos para series de documentos
@@ -1013,12 +1021,16 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // CRÍTICO: Validar que el monto final sea mayor a 0 (previene facturas de S/ 0.00)
     const hasFinalPriceGreaterThanZero = finalTicketPrice > 0;
     
+    // NUEVO: Validar que el pago dividido cuadre con el total
+    const isSplitPaymentOk = !splitPaymentData.isSplitPayment || isSplitPaymentValid;
+    
     return !!selectedBoardingStopId &&
       !!selectedDisembarkingStopId &&
       !!passengerData.docNumber.trim() &&
       !!passengerData.name.trim() &&
       hasValidPrice && // NUEVO: Validar que haya precio manual si se requiere
       hasFinalPriceGreaterThanZero && // CRÍTICO: El monto final debe ser > 0
+      isSplitPaymentOk && // NUEVO: El pago dividido debe cuadrar
       (isRuc ? representatives.length > 0 : !showSeatMap || !!selectedSeat);
   }, [
     selectedBoardingStopId,
@@ -1032,6 +1044,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     isManualPriceMode, // NUEVO
     manualPrice, // NUEVO
     finalTicketPrice, // CRÍTICO: Agregar finalTicketPrice como dependencia
+    splitPaymentData.isSplitPayment, // NUEVO: Dependencia del pago dividido
+    isSplitPaymentValid, // NUEVO: Dependencia de validación del pago dividido
   ]);
 
   return (
@@ -1308,16 +1322,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   />
                 </div>
 
-                {/* Formulario de pago dividido */}
-                <div className="mt-4">
-                  <SplitPaymentForm
-                    totalAmount={finalTicketPrice}
-                    currencySymbol={getCurrencySymbol()}
-                    disabled={isProcessingSale}
-                    onPaymentDataChange={handleSplitPaymentChange}
-                  />
-                </div>
-
                 {/* Selector de moneda */}
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <CurrencySelector
@@ -1357,6 +1361,21 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 // NUEVO: Props para moneda
                 currencySymbol={getCurrencySymbol()}
               />
+
+              {/* Sección de Método de Pago - Después del resumen de precios */}
+              <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+                <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-3 flex items-center">
+                  <CreditCard className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
+                  Método de Pago
+                </h3>
+                <SplitPaymentForm
+                  totalAmount={finalTicketPrice}
+                  currencySymbol={getCurrencySymbol()}
+                  disabled={isProcessingSale}
+                  onPaymentDataChange={handleSplitPaymentChange}
+                  onValidationChange={handleSplitPaymentValidationChange}
+                />
+              </div>
 
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-2.5 lg:space-y-3">
                 <h3 className="font-semibold text-sm lg:text-base text-center text-gray-700">
@@ -1444,6 +1463,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">El monto total no puede ser S/ 0.00. Ajuste el precio o el descuento.</span>
+                </div>
+              )}
+              
+              {/* NUEVO: Advertencia cuando el pago dividido no cuadra */}
+              {splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="font-medium">Los montos del pago dividido deben sumar exactamente el total ({getCurrencySymbol()} {finalTicketPrice.toFixed(2)})</span>
                 </div>
               )}
             </div>

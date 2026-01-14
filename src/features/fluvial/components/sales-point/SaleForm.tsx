@@ -1012,6 +1012,11 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     selectedCurrency,
   ]);
 
+  // NUEVO: Verificar si el destino está seleccionado para mostrar la barra lateral
+  const canShowPriceSidebar = useMemo(() => {
+    return !!selectedBoardingStopId && !!selectedDisembarkingStopId;
+  }, [selectedBoardingStopId, selectedDisembarkingStopId]);
+
   // Optimización: Memoizar areActionsEnabled para evitar recálculos
   const areActionsEnabled = useMemo(() => {
     const hasValidPrice = isManualPriceMode 
@@ -1252,6 +1257,86 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
           <div className="lg:col-span-2">
             <div className="lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100vh-1rem)] overflow-y-auto lg:pr-2 space-y-4 lg:space-y-6 pb-4 lg:pb-56 lg:scroll-pb-64">
+              {/* Mostrar mensaje de espera si no hay destino seleccionado */}
+              {!canShowPriceSidebar ? (
+                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
+                      <Ship className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-700 mb-2">
+                        Complete los pasos anteriores
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Para ver el resumen de venta y generar el comprobante, primero:
+                      </p>
+                    </div>
+                    <div className="text-left bg-white p-4 rounded-lg border space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          passengerData.docNumber.trim() && passengerData.name.trim()
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-300 text-gray-600'
+                        }`}>
+                          {passengerData.docNumber.trim() && passengerData.name.trim() ? '✓' : '1'}
+                        </div>
+                        <span className={`text-sm ${
+                          passengerData.docNumber.trim() && passengerData.name.trim()
+                            ? 'text-green-700 font-medium'
+                            : 'text-gray-600'
+                        }`}>
+                          Ingrese los datos del pasajero
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          selectedBoardingStopId
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-300 text-gray-600'
+                        }`}>
+                          {selectedBoardingStopId ? '✓' : '2'}
+                        </div>
+                        <span className={`text-sm ${
+                          selectedBoardingStopId
+                            ? 'text-green-700 font-medium'
+                            : 'text-gray-600'
+                        }`}>
+                          Seleccione el origen (embarque)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          selectedDisembarkingStopId
+                            ? 'bg-green-500 text-white'
+                            : 'bg-blue-500 text-white animate-pulse'
+                        }`}>
+                          {selectedDisembarkingStopId ? '✓' : '3'}
+                        </div>
+                        <span className={`text-sm ${
+                          selectedDisembarkingStopId
+                            ? 'text-green-700 font-medium'
+                            : 'text-blue-700 font-medium'
+                        }`}>
+                          Seleccione el destino (desembarque)
+                        </span>
+                      </div>
+                      {showSeatMap && !isRuc && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-gray-300 text-gray-600">
+                            4
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            Seleccione un asiento
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+              /* Contenido normal de la barra lateral cuando hay destino seleccionado */
+              <>
               <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
                 <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-2 flex items-center">
                   <ClipboardDocumentListIcon className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
@@ -1472,6 +1557,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">Los montos del pago dividido deben sumar exactamente el total ({getCurrencySymbol()} {finalTicketPrice.toFixed(2)})</span>
                 </div>
+              )}
+              </>
               )}
             </div>
           </div>

@@ -11,7 +11,7 @@ import {
 import { RouteMetric } from '../../../types/reports';
 
 // Tooltip personalizado elegante
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">

@@ -8,24 +8,26 @@ import {
 
 /**
  * Servicio dedicado a operaciones de pago de encomiendas
+ * Soporta pagos divididos (hasta 2 metodos de pago)
  */
 export const paymentService = {
   /**
    * Confirma el pago de una encomienda con detalles completos
+   * Soporta pagos divididos con hasta 2 metodos de pago
    * 
-   * @param data - Datos de confirmación del pago
-   * @returns Respuesta con información del pago confirmado
+   * @param data - Datos de confirmacion del pago
+   * @returns Respuesta con informacion del pago confirmado
    */
   async confirmPayment(data: PaymentConfirmationData): Promise<PaymentConfirmationResponse> {
     try {
       const queryParams = new URLSearchParams();
       
-      // Agregar método de pago
+      // Agregar metodo de pago principal
       if (data.payment_method_code) {
         queryParams.append('payment_method_code', data.payment_method_code);
       }
       
-      // Agregar código de operación si existe
+      // Agregar codigo de operacion del pago principal si existe
       if (data.payment_operation_code) {
         queryParams.append('payment_operation_code', data.payment_operation_code);
       }
@@ -33,6 +35,23 @@ export const paymentService = {
       // Agregar fecha de pago
       if (data.payment_date) {
         queryParams.append('payment_date', data.payment_date);
+      }
+
+      // Agregar datos de pago dividido si existen
+      if (data.payment_amount_1 !== undefined && data.payment_amount_1 > 0) {
+        queryParams.append('payment_amount_1', data.payment_amount_1.toString());
+      }
+      
+      if (data.payment_method_code_2) {
+        queryParams.append('payment_method_code_2', data.payment_method_code_2);
+      }
+      
+      if (data.payment_operation_code_2) {
+        queryParams.append('payment_operation_code_2', data.payment_operation_code_2);
+      }
+      
+      if (data.payment_amount_2 !== undefined && data.payment_amount_2 > 0) {
+        queryParams.append('payment_amount_2', data.payment_amount_2.toString());
       }
       
       const url = `/dispatch/manifests/confirm-payment/${data.invoice_item_id}`;
@@ -54,15 +73,15 @@ export const paymentService = {
    * Obtiene el historial de pagos de una encomienda (futuro)
    */
   async getPaymentHistory(_invoiceItemId: number): Promise<any[]> {
-    // Implementación futura
-    throw new Error('No implementado aún');
+    // Implementacion futura
+    throw new Error('No implementado aun');
   },
 
   /**
    * Sube comprobante de pago (futuro)
    */
   async uploadPaymentProof(_invoiceItemId: number, _file: File): Promise<void> {
-    // Implementación futura
-    throw new Error('No implementado aún');
+    // Implementacion futura
+    throw new Error('No implementado aun');
   }
 };

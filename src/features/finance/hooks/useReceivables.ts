@@ -11,6 +11,7 @@ import {
 
 const initialFilters: ReceivablesFilters = {
   branch_office_id: null,
+  doc_number: null,
   payment_status: null,
   start_date: null,
   end_date: null,

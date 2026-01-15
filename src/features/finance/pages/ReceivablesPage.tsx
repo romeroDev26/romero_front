@@ -10,7 +10,6 @@ import {
   TruckIcon
 } from 'lucide-react';
 import { useReceivables } from '../hooks/useReceivables';
-import { useBranchOffices } from '../../../hooks/useBranchOffices';
 import { authService } from '../../../services/auth.service';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
@@ -26,14 +25,8 @@ const ReceivablesPage: React.FC = () => {
     const user = authService.getCurrentUser();
     if (user) {
       setCompanyId(user.company_id);
-      // Si no hay sucursal seleccionada, usar la sucursal por defecto del usuario
-      if (!filters.branch_office_id && user.default_branch_office_id) {
-        updateFilters({ branch_office_id: user.default_branch_office_id });
-      }
     }
   }, []);
-
-  const { data: branchOffices = [], isLoading: loadingBranchOffices } = useBranchOffices(companyId);
 
   const {
     items,
@@ -155,23 +148,14 @@ const ReceivablesPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Sucursal
+                  Buscar por documento (DNI o RUC)
                 </label>
-                <select
-                  value={filters.branch_office_id || ''}
-                  onChange={(e) => updateFilters({
-                    branch_office_id: e.target.value ? Number(e.target.value) : null
-                  })}
-                  className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                  disabled={loadingBranchOffices}
-                >
-                  <option value="">Todas las sucursales</option>
-                  {branchOffices.map((office) => (
-                    <option key={office.id} value={office.id}>
-                      {office.name}
-                    </option>
-                  ))}
-                </select>
+                <Input
+                  type="text"
+                  placeholder="Ingrese DNI o RUC"
+                  value={filters.doc_number || ''}
+                  onChange={(e) => updateFilters({ doc_number: e.target.value || null })}
+                />
               </div>
 
               <div>
@@ -386,7 +370,8 @@ const ReceivablesPage: React.FC = () => {
                       <select
                         value={pagination.page_size}
                         onChange={(e) => changePageSize(Number(e.target.value))}
-                        className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20 pr-8 appearance-none"
+                        aria-label="Filas por página"
                       >
                         <option value={25}>25</option>
                         <option value={50}>50</option>

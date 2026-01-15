@@ -40,6 +40,8 @@ import { useVesselDetection } from "./vessel-detection";
 // NUEVO: Importar sistema de monedas
 import { useCurrencyManager } from './hooks/useCurrencyManager';
 import { CurrencySelector } from './components/CurrencySelector';
+// NUEVO: Importar componente de pago dividido
+import { SplitPaymentForm, SplitPaymentData } from '../../../../components/common/SplitPaymentForm';
 
 // ← NUEVO: Importar módulos refactorizados
 import {
@@ -126,22 +128,22 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState("");
   const [selectedFacturaSeries, setSelectedFacturaSeries] = useState("");
 
-  // Estados para descripción opcional
+  // Estados para descripcion opcional
   const [itemDescription, setItemDescription] = useState("");
-
-  // Estados para método de pago
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("EFE");
-  const [paymentOperationCode, setPaymentOperationCode] = useState("");
-
-  // Opciones para método de pago
-  const paymentMethodOptions = [
-    { value: 'EFE', label: 'Efectivo' },
-    { value: 'TRF', label: 'Transferencia Bancaria' },
-    { value: 'YAP', label: 'Yape' },
-    { value: 'PLN', label: 'Plin' },
-    { value: 'DEP', label: 'Depósito en Cuenta' },
-    { value: 'OTR', label: 'Otros' },
-  ];
+  
+  // Estado para pago dividido
+  const [splitPaymentData, setSplitPaymentData] = useState<SplitPaymentData>({
+    isSplitPayment: false,
+    paymentMethod1: 'EFE',
+    operationCode1: '',
+    amount1: 0,
+    paymentMethod2: 'YAP',
+    operationCode2: '',
+    amount2: 0,
+  });
+  
+  // NUEVO: Estado para validación del pago dividido
+  const [isSplitPaymentValid, setIsSplitPaymentValid] = useState(true);
 
   // Estados para modales y confirmación
   const [isReservationModalOpen, setReservationModalOpen] = useState(false);
@@ -346,12 +348,19 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     setExtraCostDescription("");
     setDiscount(0);
 
-    // Limpiar descripción opcional
+    // Limpiar descripcion opcional
     setItemDescription("");
 
-    // Limpiar método de pago
-    setSelectedPaymentMethod("EFE");
-    setPaymentOperationCode("");
+    // Limpiar datos de pago dividido
+    setSplitPaymentData({
+      isSplitPayment: false,
+      paymentMethod1: 'EFE',
+      operationCode1: '',
+      amount1: 0,
+      paymentMethod2: 'YAP',
+      operationCode2: '',
+      amount2: 0,
+    });
     
     // NUEVO: Limpiar precio manual y editable
     setManualPrice(null);
@@ -381,7 +390,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     setShowAddForm(false);
     setSelectedSeatForRepresentative(null);
 
-    // Limpiar estados de modal y confirmación
+    // Limpiar estados de modal y confirmacion
     setReservationModalOpen(false);
     setIsConfirmingMode(false);
 
@@ -389,22 +398,29 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     setShowTicketPreview(false);
     setTicketBackendData(null);
 
-    // Limpiar series de documentos (forzar re-selección)
+    // Limpiar series de documentos (forzar re-seleccion)
     setSelectedBoletaSeries("");
     setSelectedFacturaSeries("");
 
-    // Limpiar método de pago
-    setSelectedPaymentMethod("EFE");
-    setPaymentOperationCode("");
+    // Limpiar datos de pago dividido
+    setSplitPaymentData({
+      isSplitPayment: false,
+      paymentMethod1: 'EFE',
+      operationCode1: '',
+      amount1: 0,
+      paymentMethod2: 'YAP',
+      operationCode2: '',
+      amount2: 0,
+    });
     
     // NUEVO: Limpiar precio manual y editable
     setManualPrice(null);
     setIsManualPriceMode(false);
     setEditableBasePrice(null);
 
-    // NOTA: No resetear canSellWithoutSeats ni showSeatMap aquí
+    // NOTA: No resetear canSellWithoutSeats ni showSeatMap aqui
     // Estos valores deben ser determinados por la consulta de la API del seat-map
-    // que se ejecuta automáticamente cuando cambia trip.id
+    // que se ejecuta automaticamente cuando cambia trip.id
   };
 
   // Helper functions
@@ -476,12 +492,15 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     setShowRepresentatives(isRuc && hasBasicInfo);
   }, [passengerData.docType, passengerData.docNumber, passengerData.name]); // Ya optimizado
 
-  // Efecto para limpiar código de operación cuando se cambia a efectivo
-  useEffect(() => {
-    if (selectedPaymentMethod === "EFE") {
-      setPaymentOperationCode("");
-    }
-  }, [selectedPaymentMethod]);
+  // Callback para manejar cambios en el pago dividido
+  const handleSplitPaymentChange = useCallback((data: SplitPaymentData) => {
+    setSplitPaymentData(data);
+  }, []);
+  
+  // NUEVO: Callback para validación del pago dividido
+  const handleSplitPaymentValidationChange = useCallback((isValid: boolean) => {
+    setIsSplitPaymentValid(isValid);
+  }, []);
 
   // Efectos para series de documentos
   useEffect(() => {
@@ -886,26 +905,34 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           representatives,
           branch.name,
           (invoiceData) => {
-            // Callback de éxito: mostrar modal de preview de ticket con datos reales
+            // Callback de exito: mostrar modal de preview de ticket con datos reales
             setTicketBackendData(invoiceData);
             setShowTicketPreview(true);
-            // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
+            // Desactivar estado de procesamiento cuando se muestra el modal
             setIsProcessingSale(false);
           },
           seatMap,
           confirmPurchase,
-          effectiveBasePrice, // CAMBIADO: Usar precio efectivo
+          effectiveBasePrice,
           seatMultiplier,
           extraCost,
           extraCostDescription,
           discount,
           isIgvGravado,
-          selectedFacturaSeries, // ← NUEVO: pasar la serie seleccionada para facturas
-          itemDescription, // ← NUEVO: pasar la descripción opcional
-          selectedSeat, // ← NUEVO: pasar asiento seleccionado
-          selectedPaymentMethod, // ← NUEVO: pasar método de pago
-          paymentOperationCode, // ← NUEVO: pasar código de operación
-          selectedCurrency // ← NUEVO: pasar código de moneda
+          selectedFacturaSeries,
+          itemDescription,
+          selectedSeat,
+          splitPaymentData.paymentMethod1,
+          splitPaymentData.operationCode1,
+          selectedCurrency,
+          // Datos de pago dividido
+          splitPaymentData.isSplitPayment ? {
+            isSplitPayment: true,
+            paymentAmount1: splitPaymentData.amount1,
+            paymentMethodCode2: splitPaymentData.paymentMethod2,
+            paymentOperationCode2: splitPaymentData.operationCode2,
+            paymentAmount2: splitPaymentData.amount2,
+          } : undefined
         );
         return;
       }
@@ -920,7 +947,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         showSeatMap,
         isRuc ? selectedFacturaSeries : selectedBoletaSeries,
         branch.name,
-        effectiveBasePrice, // CAMBIADO: Usar precio efectivo
+        effectiveBasePrice,
         seatMultiplier,
         extraCost,
         extraCostDescription,
@@ -931,17 +958,25 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         (invoiceData) => {
           setTicketBackendData(invoiceData);
           setShowTicketPreview(true);
-          // NUEVO: Desactivar estado de procesamiento cuando se muestra el modal
+          // Desactivar estado de procesamiento cuando se muestra el modal
           setIsProcessingSale(false);
         },
-        itemDescription, // ← NUEVO: pasar la descripción opcional
-        confirmPurchase, // ← NUEVO: pasar confirmPurchase para actualizar WebSocket
-        selectedPaymentMethod, // ← NUEVO: pasar método de pago
-        paymentOperationCode, // ← NUEVO: pasar código de operación
-        selectedCurrency // ← NUEVO: pasar código de moneda
+        itemDescription,
+        confirmPurchase,
+        splitPaymentData.paymentMethod1,
+        splitPaymentData.operationCode1,
+        selectedCurrency,
+        // Datos de pago dividido
+        splitPaymentData.isSplitPayment ? {
+          isSplitPayment: true,
+          paymentAmount1: splitPaymentData.amount1,
+          paymentMethodCode2: splitPaymentData.paymentMethod2,
+          paymentOperationCode2: splitPaymentData.operationCode2,
+          paymentAmount2: splitPaymentData.amount2,
+        } : undefined
       );
     } catch (error) {
-      // NUEVO: Desactivar estado de procesamiento en caso de error
+      // Desactivar estado de procesamiento en caso de error
       setIsProcessingSale(false);
       // Los errores ya son manejados por toast en los hooks internos
     }
@@ -953,30 +988,34 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     trip.id,
     selectedBoardingStopId,
     selectedDisembarkingStopId,
-    passengerData.name, // Ya optimizado
+    passengerData.name,
     passengerData.docType,
-    representatives.length, // Ya optimizado
+    representatives.length,
     branch.name,
     confirmPurchase,
-    effectiveBasePrice, // CAMBIADO: Usar effectiveBasePrice en lugar de basePrice
+    effectiveBasePrice,
     seatMultiplier,
     handleRegularSale,
-    selectedSeat?.id, // Ya optimizado
+    selectedSeat?.id,
     itemDescription,
-    seatMap.length, // Ya optimizado
+    seatMap.length,
     showSeatMap,
     selectedFacturaSeries,
     selectedBoletaSeries,
     isIgvGravado,
     discount,
     isConfirmingMode,
-    reservationToConfirm?.id, // Ya optimizado
-    isManualPriceMode, // NUEVO: Agregar para que el callback se actualice cuando cambie el modo
-    manualPrice, // NUEVO: Agregar para que el callback tenga el valor actualizado
-    selectedPaymentMethod, // NUEVO: Faltaba esta dependencia
-    paymentOperationCode, // NUEVO: Faltaba esta dependencia
-    selectedCurrency, // NUEVO: Incluir moneda seleccionada
+    reservationToConfirm?.id,
+    isManualPriceMode,
+    manualPrice,
+    splitPaymentData, // Incluir datos de pago dividido
+    selectedCurrency,
   ]);
+
+  // NUEVO: Verificar si el destino está seleccionado para mostrar la barra lateral
+  const canShowPriceSidebar = useMemo(() => {
+    return !!selectedBoardingStopId && !!selectedDisembarkingStopId;
+  }, [selectedBoardingStopId, selectedDisembarkingStopId]);
 
   // Optimización: Memoizar areActionsEnabled para evitar recálculos
   const areActionsEnabled = useMemo(() => {
@@ -987,12 +1026,16 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // CRÍTICO: Validar que el monto final sea mayor a 0 (previene facturas de S/ 0.00)
     const hasFinalPriceGreaterThanZero = finalTicketPrice > 0;
     
+    // NUEVO: Validar que el pago dividido cuadre con el total
+    const isSplitPaymentOk = !splitPaymentData.isSplitPayment || isSplitPaymentValid;
+    
     return !!selectedBoardingStopId &&
       !!selectedDisembarkingStopId &&
       !!passengerData.docNumber.trim() &&
       !!passengerData.name.trim() &&
       hasValidPrice && // NUEVO: Validar que haya precio manual si se requiere
       hasFinalPriceGreaterThanZero && // CRÍTICO: El monto final debe ser > 0
+      isSplitPaymentOk && // NUEVO: El pago dividido debe cuadrar
       (isRuc ? representatives.length > 0 : !showSeatMap || !!selectedSeat);
   }, [
     selectedBoardingStopId,
@@ -1006,6 +1049,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     isManualPriceMode, // NUEVO
     manualPrice, // NUEVO
     finalTicketPrice, // CRÍTICO: Agregar finalTicketPrice como dependencia
+    splitPaymentData.isSplitPayment, // NUEVO: Dependencia del pago dividido
+    isSplitPaymentValid, // NUEVO: Dependencia de validación del pago dividido
   ]);
 
   return (
@@ -1212,6 +1257,86 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
           <div className="lg:col-span-2">
             <div className="lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100vh-1rem)] overflow-y-auto lg:pr-2 space-y-4 lg:space-y-6 pb-4 lg:pb-56 lg:scroll-pb-64">
+              {/* Mostrar mensaje de espera si no hay destino seleccionado */}
+              {!canShowPriceSidebar ? (
+                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
+                      <Ship className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-700 mb-2">
+                        Complete los pasos anteriores
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Para ver el resumen de venta y generar el comprobante, primero:
+                      </p>
+                    </div>
+                    <div className="text-left bg-white p-4 rounded-lg border space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          passengerData.docNumber.trim() && passengerData.name.trim()
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-300 text-gray-600'
+                        }`}>
+                          {passengerData.docNumber.trim() && passengerData.name.trim() ? '✓' : '1'}
+                        </div>
+                        <span className={`text-sm ${
+                          passengerData.docNumber.trim() && passengerData.name.trim()
+                            ? 'text-green-700 font-medium'
+                            : 'text-gray-600'
+                        }`}>
+                          Ingrese los datos del pasajero
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          selectedBoardingStopId
+                            ? 'bg-green-500 text-white'
+                            : 'bg-gray-300 text-gray-600'
+                        }`}>
+                          {selectedBoardingStopId ? '✓' : '2'}
+                        </div>
+                        <span className={`text-sm ${
+                          selectedBoardingStopId
+                            ? 'text-green-700 font-medium'
+                            : 'text-gray-600'
+                        }`}>
+                          Seleccione el origen (embarque)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          selectedDisembarkingStopId
+                            ? 'bg-green-500 text-white'
+                            : 'bg-blue-500 text-white animate-pulse'
+                        }`}>
+                          {selectedDisembarkingStopId ? '✓' : '3'}
+                        </div>
+                        <span className={`text-sm ${
+                          selectedDisembarkingStopId
+                            ? 'text-green-700 font-medium'
+                            : 'text-blue-700 font-medium'
+                        }`}>
+                          Seleccione el destino (desembarque)
+                        </span>
+                      </div>
+                      {showSeatMap && !isRuc && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-gray-300 text-gray-600">
+                            4
+                          </div>
+                          <span className="text-sm text-gray-600">
+                            Seleccione un asiento
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+              /* Contenido normal de la barra lateral cuando hay destino seleccionado */
+              <>
               <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
                 <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-2 flex items-center">
                   <ClipboardDocumentListIcon className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
@@ -1271,52 +1396,18 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 {/* Campo de descripción opcional */}
                 <div className="mt-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Descripción (opcional)
+                    Descripcion (opcional)
                   </label>
                   <textarea
                     value={itemDescription}
                     onChange={(e) => setItemDescription(e.target.value)}
-                    placeholder="Ingrese una descripción adicional para el comprobante..."
+                    placeholder="Ingrese una descripcion adicional para el comprobante..."
                     className="w-full p-2 border border-gray-300 rounded-md resize-none"
                     rows={3}
                   />
                 </div>
 
-                {/* Campo de método de pago */}
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Método de Pago
-                  </label>
-                  <select
-                    value={selectedPaymentMethod}
-                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                  >
-                    {paymentMethodOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Campo de código de operación (solo para métodos diferentes a efectivo) */}
-                {selectedPaymentMethod !== "EFE" && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Código de Operación (opcional)
-                    </label>
-                    <input
-                      type="text"
-                      value={paymentOperationCode}
-                      onChange={(e) => setPaymentOperationCode(e.target.value)}
-                      placeholder="Ingrese el código de operación..."
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-                )}
-
-                {/* NUEVO: Selector de moneda */}
+                {/* Selector de moneda */}
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <CurrencySelector
                     selectedCurrency={selectedCurrency}
@@ -1355,6 +1446,21 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 // NUEVO: Props para moneda
                 currencySymbol={getCurrencySymbol()}
               />
+
+              {/* Sección de Método de Pago - Después del resumen de precios */}
+              <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+                <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-3 flex items-center">
+                  <CreditCard className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
+                  Método de Pago
+                </h3>
+                <SplitPaymentForm
+                  totalAmount={finalTicketPrice}
+                  currencySymbol={getCurrencySymbol()}
+                  disabled={isProcessingSale}
+                  onPaymentDataChange={handleSplitPaymentChange}
+                  onValidationChange={handleSplitPaymentValidationChange}
+                />
+              </div>
 
               <div className="bg-white p-4 rounded-lg shadow-sm border space-y-2.5 lg:space-y-3">
                 <h3 className="font-semibold text-sm lg:text-base text-center text-gray-700">
@@ -1443,6 +1549,16 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">El monto total no puede ser S/ 0.00. Ajuste el precio o el descuento.</span>
                 </div>
+              )}
+              
+              {/* NUEVO: Advertencia cuando el pago dividido no cuadra */}
+              {splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
+                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="font-medium">Los montos del pago dividido deben sumar exactamente el total ({getCurrencySymbol()} {finalTicketPrice.toFixed(2)})</span>
+                </div>
+              )}
+              </>
               )}
             </div>
           </div>

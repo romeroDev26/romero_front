@@ -15,13 +15,14 @@ interface PaymentConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   receivableItem: ReceivablesItem | null;
-  onConfirm: (paymentData: Omit<PaymentFormData, 'notes'> & { notes?: string }) => Promise<boolean>;
+  onConfirm: (paymentData: PaymentFormData) => Promise<boolean>;
   isLoading?: boolean;
 }
 
 /**
  * Modal para confirmar el pago de una encomienda
  * Muestra detalles de la encomienda y formulario de pago
+ * Soporta pagos divididos (hasta 2 metodos de pago)
  */
 export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
   isOpen,
@@ -34,12 +35,20 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
     payment_method_code: 'EFE',
     payment_operation_code: '',
     payment_date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
-    notes: ''
+    notes: '',
+    is_split_payment: false,
+    payment_amount_1: 0,
+    payment_method_code_2: 'YAP',
+    payment_operation_code_2: '',
+    payment_amount_2: 0,
   });
 
   const [validationError, setValidationError] = useState<string>('');
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
   const [selectedPdfType, setSelectedPdfType] = useState<'80mm' | '58mm' | null>(null);
+
+  // Obtener el monto total
+  const totalAmount = receivableItem ? parseFloat(receivableItem.amount) : 0;
 
   // Seleccionar PDF para preview
   const handleSelectPDF = useCallback((url: string, type: '80mm' | '58mm') => {
@@ -57,7 +66,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
     setValidationError(''); // Limpiar errores al cambiar datos
   }, []);
 
-  // Seleccionar automáticamente el primer PDF disponible cuando se abre el modal
+  // Seleccionar automaticamente el primer PDF disponible cuando se abre el modal
   useEffect(() => {
     if (isOpen && receivableItem && !selectedPdfUrl) {
       if (receivableItem.pdf_ticket_file_path) {
@@ -68,7 +77,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
         setSelectedPdfType('58mm');
       }
     }
-    // Limpiar selección cuando se cierra el modal
+    // Limpiar seleccion cuando se cierra el modal
     if (!isOpen) {
       setSelectedPdfUrl(null);
       setSelectedPdfType(null);
@@ -77,21 +86,42 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
 
   // Validar formulario antes de confirmar
   const validateForm = (): boolean => {
-    // Método de pago es obligatorio (siempre tiene valor por defecto)
+    // Metodo de pago es obligatorio (siempre tiene valor por defecto)
     if (!formData.payment_method_code) {
-      setValidationError('El método de pago es obligatorio');
+      setValidationError('El metodo de pago es obligatorio');
       return false;
     }
 
-    // Código de operación obligatorio para ciertos métodos
+    // Codigo de operacion obligatorio para ciertos metodos (pago 1)
     if (
       (formData.payment_method_code === 'TRF' || 
        formData.payment_method_code === 'YAP' || 
        formData.payment_method_code === 'PLN') &&
       !formData.payment_operation_code.trim()
     ) {
-      setValidationError('El código de operación es obligatorio para este método de pago');
+      setValidationError('El codigo de operacion es obligatorio para este metodo de pago');
       return false;
+    }
+
+    // Validaciones para pago dividido
+    if (formData.is_split_payment) {
+      // Codigo de operacion obligatorio para ciertos metodos (pago 2)
+      if (
+        (formData.payment_method_code_2 === 'TRF' || 
+         formData.payment_method_code_2 === 'YAP' || 
+         formData.payment_method_code_2 === 'PLN') &&
+        !formData.payment_operation_code_2.trim()
+      ) {
+        setValidationError('El codigo de operacion es obligatorio para el segundo metodo de pago');
+        return false;
+      }
+
+      // Validar que la suma de montos sea igual al total
+      const totalPaid = formData.payment_amount_1 + formData.payment_amount_2;
+      if (Math.abs(totalPaid - totalAmount) > 0.01) {
+        setValidationError('La suma de los pagos debe ser igual al monto total');
+        return false;
+      }
     }
 
     // Fecha es obligatoria
@@ -111,18 +141,13 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
     return true;
   };
 
-  // Manejar confirmación
+  // Manejar confirmacion
   const handleConfirm = async () => {
     if (!validateForm()) {
       return;
     }
 
-    const success = await onConfirm({
-      payment_method_code: formData.payment_method_code,
-      payment_operation_code: formData.payment_operation_code,
-      payment_date: formData.payment_date,
-      notes: formData.notes || undefined
-    });
+    const success = await onConfirm(formData);
 
     if (success) {
       // Resetear formulario
@@ -130,7 +155,12 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
         payment_method_code: 'EFE',
         payment_operation_code: '',
         payment_date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
-        notes: ''
+        notes: '',
+        is_split_payment: false,
+        payment_amount_1: 0,
+        payment_method_code_2: 'YAP',
+        payment_operation_code_2: '',
+        payment_amount_2: 0,
       });
       setValidationError('');
     }
@@ -245,11 +275,13 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
         {/* Formulario de pago */}
         <div className="border-t border-gray-200 pt-4">
           <h3 className="text-base font-semibold text-gray-900 mb-3">
-            Información de Pago
+            Informacion de Pago
           </h3>
           <PaymentDetailsForm
             onDataChange={handleFormDataChange}
             disabled={isLoading}
+            totalAmount={totalAmount}
+            currencySymbol="S/"
           />
         </div>
 

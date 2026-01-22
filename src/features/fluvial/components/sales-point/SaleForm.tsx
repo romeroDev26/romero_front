@@ -26,6 +26,8 @@ import { ReservationModal } from "./ReservationModal";
 import { RepresentativesManager } from "./representatives";
 // ACTUALIZADO: Usar nuevo modal de preview de tickets (ahora usa backend)
 import { TicketPreviewModal } from "./TicketPreviewModal";
+// NUEVO: Modal de confirmación de venta
+import { ConfirmSaleModal } from "./ConfirmSaleModal";
 // NUEVO: Importar sistema de confirmación de reservas
 import { 
   ReservationConfirmationHandler, 
@@ -151,6 +153,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   
   // NUEVO: Estado para bloquear la interfaz durante el proceso de venta
   const [isProcessingSale, setIsProcessingSale] = useState(false);
+  
+  // NUEVO: Estado para el modal de confirmación de venta
+  const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
 
   // NUEVO: Hook para manejo de moneda
   const {
@@ -871,27 +876,41 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     return seat ? seat.id : null;
   }, [seatMap.length]); // Ya optimizado con longitud
 
+  // NUEVO: Handler para abrir el modal de confirmación
+  const handleOpenConfirmModal = useCallback(() => {
+    // Validacion: si se agrega un costo adicional, la descripcion debe ser obligatoria
+    if (
+      (extraCost || 0) > 0 &&
+      (!extraCostDescription || !extraCostDescription.trim())
+    ) {
+      toast.error(
+        "Ingrese una descripcion para el costo adicional antes de confirmar la venta."
+      );
+      return;
+    }
+    
+    // Validacion critica para precio manual
+    if (isManualPriceMode && (!manualPrice || manualPrice <= 0)) {
+      toast.error(
+        "Debe ingresar un precio manual válido antes de confirmar la venta."
+      );
+      return;
+    }
+    
+    // Abrir modal de confirmación
+    setIsConfirmSaleModalOpen(true);
+  }, [
+    extraCost,
+    extraCostDescription,
+    isManualPriceMode,
+    manualPrice,
+  ]);
+
   // Handler principal de venta usando el hook de logica de negocio
   const handleConfirmSale = useCallback(async () => {
     try {
-      // Validacion: si se agrega un costo adicional, la descripcion debe ser obligatoria
-      if (
-        (extraCost || 0) > 0 &&
-        (!extraCostDescription || !extraCostDescription.trim())
-      ) {
-        toast.error(
-          "Ingrese una descripcion para el costo adicional antes de confirmar la venta."
-        );
-        return;
-      }
-      
-      // Validacion critica para precio manual
-      if (isManualPriceMode && (!manualPrice || manualPrice <= 0)) {
-        toast.error(
-          "Debe ingresar un precio manual válido antes de confirmar la venta."
-        );
-        return;
-      }
+      // Cerrar modal de confirmación
+      setIsConfirmSaleModalOpen(false);
       
       // NUEVO: Activar estado de procesamiento de venta
       setIsProcessingSale(true);
@@ -981,8 +1000,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
       // Los errores ya son manejados por toast en los hooks internos
     }
   }, [
-    extraCost,
-    extraCostDescription,
     isRuc,
     handleCompanyInvoiceWithRepresentatives,
     trip.id,
@@ -1006,8 +1023,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     discount,
     isConfirmingMode,
     reservationToConfirm?.id,
-    isManualPriceMode,
-    manualPrice,
     splitPaymentData, // Incluir datos de pago dividido
     selectedCurrency,
   ]);
@@ -1468,7 +1483,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 </h3>
 
                 <Button
-                  onClick={handleConfirmSale}
+                  onClick={handleOpenConfirmModal}
                   className={`w-full text-base lg:text-lg py-2.5 lg:py-3 ${
                     areActionsEnabled && !isProcessingSale
                       ? "bg-green-600 hover:bg-green-700"
@@ -1600,6 +1615,20 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           onClearForm={clearFormAfterSale}
         />
       )}
+
+      {/* NUEVO: Modal de confirmación de venta */}
+      <ConfirmSaleModal
+        isOpen={isConfirmSaleModalOpen}
+        onClose={() => setIsConfirmSaleModalOpen(false)}
+        onConfirm={handleConfirmSale}
+        isLoading={isProcessingSale}
+        totalAmount={finalTicketPrice}
+        currencySymbol={getCurrencySymbol()}
+        passengerName={passengerData.name}
+        saleType={isRuc ? "company" : "normal"}
+        tripName={trip.trip_name}
+        representativesCount={representatives.length}
+      />
     </>
   );
 });

@@ -21,6 +21,7 @@ import { CargoItemForm } from '../components/CargoItemForm';
 import { RecipientForm, RecipientData as RecipientFormData } from '../components/RecipientForm';
 import { CargoTripSelector } from '../components/CargoTripSelector';
 import { CargoItemData } from '../types/cargo-ui.types';
+import { ConfirmSaleModal } from '../../fluvial/components/sales-point/ConfirmSaleModal';
 import { BranchOffice } from '../../../types';
 import { SunatDocType, SunatInvoiceType } from '../../fluvial/types/sunat.types';
 import { AvailableTripByPort } from '../../../services/trips.service';
@@ -70,6 +71,10 @@ export const CargoSalePage: React.FC = () => {
   // Estados para el modal de ticket
   const [showTicketPreview, setShowTicketPreview] = useState(false);
   const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
+  
+  // Estado para el modal de confirmación de venta
+  const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
+  const [isProcessingSale, setIsProcessingSale] = useState(false);
 
   // Estado para pago dividido
   const [splitPaymentData, setSplitPaymentData] = useState<SplitPaymentData>({
@@ -174,7 +179,21 @@ export const CargoSalePage: React.FC = () => {
     return cargoItems.reduce((acc, item) => acc + (item.quantity * item.price), 0);
   }, [cargoItems]);
   
+  // Handler para abrir el modal de confirmación
+  const handleOpenConfirmModal = () => {
+    if (cargoItems.length === 0 || !selectedTrip || !selectedBranch) {
+      toast.error('Debe agregar al menos una encomienda para continuar.');
+      return;
+    }
+    
+    setIsConfirmSaleModalOpen(true);
+  };
+  
   const handleFinalizeSale = async () => {
+    // Cerrar modal de confirmación
+    setIsConfirmSaleModalOpen(false);
+    setIsProcessingSale(true);
+    
     if (cargoItems.length === 0 || !selectedTrip || !selectedBranch) return;
 
     if (!tripDetails || !tripDetails.stops || tripDetails.stops.length < 2) {
@@ -252,10 +271,12 @@ export const CargoSalePage: React.FC = () => {
       // Mostrar modal de ticket con los datos de la factura creada
       setTicketBackendData(createdInvoice as unknown as BackendInvoiceData);
       setShowTicketPreview(true);
+      setIsProcessingSale(false);
       
     } catch (error: any) {
       console.error('Error creando venta de encomienda:', error);
       toast.error(error.response?.data?.detail || 'Error al crear la venta');
+      setIsProcessingSale(false);
     }
   };
 
@@ -638,10 +659,10 @@ export const CargoSalePage: React.FC = () => {
 
                   {/* Botón de Generar Venta */}
                   <Button 
-                    onClick={handleFinalizeSale} 
+                    onClick={handleOpenConfirmModal} 
                     size="lg"
-                    isLoading={isProcessingClient || isCreatingInvoice} 
-                    disabled={cargoItems.length === 0}
+                    isLoading={isProcessingClient || isCreatingInvoice || isProcessingSale} 
+                    disabled={cargoItems.length === 0 || isProcessingSale}
                     className="bg-blue-600 hover:bg-blue-700 w-full text-lg py-4"
                   >
                     <CreditCard className="w-5 h-5 mr-2" /> Generar Venta y Comprobante
@@ -658,13 +679,35 @@ export const CargoSalePage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-4xl mx-auto mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Venta de Encomiendas y Carga</h1>
-        <p className="text-center text-gray-500 mb-8">Siga los pasos para registrar un nuevo enví­o.</p>
-        <Stepper steps={steps} currentStep={currentStepIndex} />
+    <>
+      {/* Overlay de carga global durante el procesamiento de venta */}
+      {isProcessingSale && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4">
+            <Spinner />
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">
+                Procesando Venta...
+              </h3>
+              <p className="text-gray-600">
+                Por favor espere mientras se genera el comprobante
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                No cierre esta ventana ni realice otras acciones
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-4xl mx-auto mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Venta de Encomiendas y Carga</h1>
+          <p className="text-center text-gray-500 mb-8">Siga los pasos para registrar un nuevo enví­o.</p>
+          <Stepper steps={steps} currentStep={currentStepIndex} />
+        </div>
+        {renderContent()}
       </div>
-      {renderContent()}
       <Modal 
         isOpen={isItemModalOpen} 
         onClose={() => setIsItemModalOpen(false)} 
@@ -693,6 +736,19 @@ export const CargoSalePage: React.FC = () => {
           onClearForm={clearCargoFormAfterSale}
         />
       )}
-    </div>
+
+      {/* Modal de confirmación de venta */}
+      <ConfirmSaleModal
+        isOpen={isConfirmSaleModalOpen}
+        onClose={() => setIsConfirmSaleModalOpen(false)}
+        onConfirm={handleFinalizeSale}
+        isLoading={isProcessingSale}
+        totalAmount={totalSaleAmount}
+        currencySymbol="S/"
+        passengerName={remitter.name}
+        saleType="cargo"
+        tripName={selectedTrip?.trip_name}
+      />
+    </>
   );
 };

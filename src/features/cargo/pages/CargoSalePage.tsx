@@ -34,6 +34,7 @@ type CargoSaleView = 'clientSelection' | 'tripSelection' | 'tripSegmentSelection
 interface ClientData {
   docType: string; docNumber: string; name: string;
   address: string; phone: string; email: string;
+  countryCode?: string; countryName?: string;
 }
 
 export const CargoSalePage: React.FC = () => {
@@ -42,7 +43,7 @@ export const CargoSalePage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
   
-  const [remitter, setRemitter] = useState<ClientData>({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
+  const [remitter, setRemitter] = useState<ClientData>({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '', countryCode: 'PE', countryName: 'Peru' });
   const [recipient, setRecipient] = useState<RecipientFormData>({
     isSameAsSender: true,
     name: '',
@@ -210,8 +211,14 @@ export const CargoSalePage: React.FC = () => {
 
     try {
       const client = await findOrCreateClient({
-        doc_type: remitter.docType, doc_number: remitter.docNumber, name: remitter.name,
-        address_line: remitter.address, phone: remitter.phone, email: remitter.email,
+        doc_type: remitter.docType,
+        doc_number: remitter.docNumber,
+        name: remitter.name,
+        address_line: remitter.address,
+        phone: remitter.phone,
+        email: remitter.email,
+        country_code: remitter.countryCode || 'PE',
+        country_name: remitter.countryName || 'Peru',
       });
       
       const isRuc = remitter.docType === SunatDocType.RUC;

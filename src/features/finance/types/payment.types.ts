@@ -11,6 +11,7 @@ export interface PaymentConfirmationData {
   payment_date: string;               // Fecha/hora ISO format
   notes?: string;                     // Observaciones adicionales
   // Campos para pago dividido
+  is_split_payment?: boolean;         // Indica si es pago dividido
   payment_amount_1?: number;          // Monto del primer pago
   payment_method_code_2?: string;     // Codigo del segundo metodo de pago
   payment_operation_code_2?: string;  // Codigo de operacion del segundo pago

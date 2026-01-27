@@ -37,21 +37,23 @@ export const paymentService = {
         queryParams.append('payment_date', data.payment_date);
       }
 
-      // Agregar datos de pago dividido si existen
-      if (data.payment_amount_1 !== undefined && data.payment_amount_1 > 0) {
-        queryParams.append('payment_amount_1', data.payment_amount_1.toString());
-      }
-      
-      if (data.payment_method_code_2) {
-        queryParams.append('payment_method_code_2', data.payment_method_code_2);
-      }
-      
-      if (data.payment_operation_code_2) {
-        queryParams.append('payment_operation_code_2', data.payment_operation_code_2);
-      }
-      
-      if (data.payment_amount_2 !== undefined && data.payment_amount_2 > 0) {
-        queryParams.append('payment_amount_2', data.payment_amount_2.toString());
+      // Agregar datos de pago dividido SOLO si is_split_payment es true
+      if (data.is_split_payment) {
+        if (data.payment_amount_1 !== undefined && data.payment_amount_1 > 0) {
+          queryParams.append('payment_amount_1', data.payment_amount_1.toString());
+        }
+        
+        if (data.payment_method_code_2) {
+          queryParams.append('payment_method_code_2', data.payment_method_code_2);
+        }
+        
+        if (data.payment_operation_code_2) {
+          queryParams.append('payment_operation_code_2', data.payment_operation_code_2);
+        }
+        
+        if (data.payment_amount_2 !== undefined && data.payment_amount_2 > 0) {
+          queryParams.append('payment_amount_2', data.payment_amount_2.toString());
+        }
       }
       
       const url = `/dispatch/manifests/confirm-payment/${data.invoice_item_id}`;

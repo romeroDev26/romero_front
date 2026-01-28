@@ -115,8 +115,7 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'Facturas/Boletas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
       { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
-      { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' },
-      { name: 'Anulaciones', path: '/accounting/voids', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
+      { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500' }
     ]
   },
 
@@ -191,7 +190,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
         if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
         if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
         if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);
-        if (item.name === 'Anulaciones') return hasPermission('accounting', 'voids', userRole);
         return true; // Para otros items
       }).map(item => {
         if (item.isSubmenu && item.subitems) {

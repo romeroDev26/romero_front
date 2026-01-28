@@ -64,9 +64,6 @@ const DebitNoteNewPage = React.lazy(() => import('./features/accounting/debit-no
 const DebitNoteFormPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteFormPage').then(module => ({ default: module.DebitNoteFormPage })));
 const DebitNoteAnnulPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteAnnulPage').then(module => ({ default: module.DebitNoteAnnulPage })));
 const DebitNoteDetailPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteDetailPage').then(module => ({ default: module.DebitNoteDetailPage })));
-const VoidDocumentsListPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentsListPage').then(module => ({ default: module.VoidDocumentsListPage })));
-const VoidDocumentFormPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentFormPage').then(module => ({ default: module.VoidDocumentFormPage })));
-const VoidDocumentDetailPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentDetailPage').then(module => ({ default: module.VoidDocumentDetailPage })));
 
 // Páginas de finanzas (lazy)
 const ReceivablesPage = React.lazy(() => import('./features/finance/pages/ReceivablesPage'));
@@ -281,21 +278,7 @@ function AppContent() {
                   <DebitNoteDetailPage />
                 </Suspense>
               } />
-              <Route path="voids" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <VoidDocumentsListPage />
-                </Suspense>
-              } />
-              <Route path="voids/new" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <VoidDocumentFormPage />
-                </Suspense>
-              } />
-              <Route path="voids/:id" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <VoidDocumentDetailPage />
-                </Suspense>
-              } />
+
             </Route>
             
             {/* Guías de Remisión (importante para carga) */}

@@ -1,10 +1,13 @@
 // src/features/dashboard/components/WelcomeContent.tsx
-import React from 'react';
-import { UserGroupIcon, CubeIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
+import { UserGroupIcon, CubeIcon, DocumentTextIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { Ship } from 'lucide-react';
 import { SalesPointSelector } from './SalesPointSelector';
 import { ThreeBackground } from './ThreeBackground';
 import { useCompanyInfo } from '../../../hooks/useCompanyInfo';
+import { useExportReport } from '../../../hooks/useExportReport';
+import { Modal } from '../../../components/common/Modal';
+import { Button } from '../../../components/common/Button';
 
 interface WelcomeContentProps {
   showHeader?: boolean;
@@ -14,6 +17,55 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
   const { data: company } = useCompanyInfo();
   const businessName = company?.business_name || '';
   const tradeName = company?.trade_name || '';
+
+  const [syncExporting, setSyncExporting] = useState(false);
+  const [showFormatModal, setShowFormatModal] = useState(false);
+
+  // Hook para exportaciones
+  const { requestExport } = useExportReport({
+    onSuccess: () => {
+      console.log('Export completed successfully!');
+    },
+    onError: (error) => {
+      console.error('Export failed:', error);
+    },
+  });
+
+  // Calcular rango de fechas (día actual)
+  const today = new Date();
+  const dateRange = {
+    start_date: today.toISOString().split('T')[0],
+    end_date: today.toISOString().split('T')[0],
+  };
+
+  const handleExportClick = () => {
+    setShowFormatModal(true);
+  };
+
+  const handleFormatSelection = async (format: 'excel' | 'pdf') => {
+    setShowFormatModal(false);
+    setSyncExporting(true);
+    
+    try {
+      await requestExport({
+        category: 'branch_global',
+        format: format,
+        start_date: dateRange.start_date,
+        end_date: dateRange.end_date,
+        filters: {
+          include_vessel_data: false
+        },
+        metadata: {
+          report_title: `Reporte Global por Sucursal.${format === 'excel' ? 'xlsx' : 'pdf'}`
+        },
+        sync: true
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+    } finally {
+      setSyncExporting(false);
+    }
+  };
 
   const features = [
     {
@@ -92,6 +144,18 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
                 <SalesPointSelector className="bg-white/95 backdrop-blur-xl shadow-2xl border-white/20" />
               </div>
 
+              {/* Export Button */}
+              <div className="mt-4 flex justify-center animate-slide-up" style={{ animationDelay: '0.4s' }}>
+                <button
+                  onClick={handleExportClick}
+                  disabled={syncExporting}
+                  className="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                >
+                  <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+                  {syncExporting ? 'Exportando...' : 'Exportar Reporte a Excel/PDF'}
+                </button>
+              </div>
+
               {/* Footer */}
               <div className="mt-6 text-center">
                 <p className="text-blue-200/40 text-xs uppercase tracking-wider font-medium">
@@ -116,6 +180,37 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
           </div>
         </div>
       )}
+
+      {/* Modal de selección de formato */}
+      <Modal
+        isOpen={showFormatModal}
+        onClose={() => setShowFormatModal(false)}
+        title="Seleccionar formato de exportación"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Selecciona el formato en el que deseas exportar el reporte:
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              onClick={() => handleFormatSelection('excel')}
+              variant="primary"
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+              Excel (.xlsx)
+            </Button>
+            <Button
+              onClick={() => handleFormatSelection('pdf')}
+              variant="primary"
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
+              PDF (.pdf)
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

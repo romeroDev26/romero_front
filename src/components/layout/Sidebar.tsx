@@ -183,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           return false;
         }
         
-        if (item.name === 'Configuración') return hasPermission('fluvial', 'config', userRole);
+        if (item.name === 'Configuración') return isAdmin; // Solo admin puede ver configuración
         if (item.name === 'Operaciones') return hasPermission('fluvial', 'operations', userRole);
         if (item.name === 'Cotizaciones') return hasPermission('commerce', 'quotations', userRole);
         if (item.name === 'Guías de Remisión') return hasPermission('commerce', 'remission-guides', userRole);
@@ -200,13 +200,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
               // DRIVER solo acceso limitado a manifiestos
               return subitem.name === 'Manifiestos';
             }
-            if (userRole === 'sales' && item.name === 'Configuración') {
-              // SALES solo lectura en config, mostrar todos pero quizás marcar como solo lectura
-              return true;
-            }
-            if (userRole === 'dispatcher' && item.name === 'Configuración') {
-              // DISPATCHER CRUD en config
-              return true;
+            if (item.name === 'Configuración') {
+              // Solo admin tiene acceso a configuración
+              return isAdmin;
             }
             if (userRole === 'sales' && item.name === 'Operaciones') {
               // SALES solo lectura en operaciones

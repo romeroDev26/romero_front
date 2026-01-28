@@ -22,7 +22,7 @@ export const usePermissions = () => {
           case 'dashboard':
             return true;
           case 'config':
-            return ['sales', 'dispatcher'].includes(role); // SALES lectura, DISPATCHER CRUD
+            return role === 'admin'; // Solo administradores pueden acceder a configuración
           case 'operations':
             return ['sales', 'dispatcher', 'driver'].includes(role);
           case 'reports':
@@ -82,7 +82,7 @@ export const usePermissions = () => {
       '/': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Dashboard principal para todos los usuarios
       '/welcome': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Página de bienvenida para todos
       '/clients': ['admin', 'sales', 'dispatcher', 'accountant'],
-      '/fluvial/config': ['admin', 'sales', 'dispatcher'],
+      '/fluvial/config': ['admin'], // Solo admin puede acceder a configuración
       '/fluvial/operations': ['admin', 'sales', 'dispatcher', 'driver'],
       '/sales/quotations': ['admin', 'sales'],
       '/remission-guides': ['admin', 'sales', 'dispatcher'],

@@ -152,7 +152,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
                   className="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-                  {syncExporting ? 'Exportando...' : 'Exportar Reporte a Excel/PDF'}
+                  {syncExporting ? 'Exportando...' : 'Exportar Reporte a Excel'}
                 </button>
               </div>
 
@@ -181,32 +181,30 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
         </div>
       )}
 
-      {/* Modal de selección de formato */}
+      {/* Modal de confirmación de exportación */}
       <Modal
         isOpen={showFormatModal}
         onClose={() => setShowFormatModal(false)}
-        title="Seleccionar formato de exportación"
+        title="Exportar a Excel"
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            Selecciona el formato en el que deseas exportar el reporte:
+            ¿Deseas exportar el reporte a Excel?
           </p>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-end gap-3">
+            <Button
+              onClick={() => setShowFormatModal(false)}
+              variant="secondary"
+            >
+              Cancelar
+            </Button>
             <Button
               onClick={() => handleFormatSelection('excel')}
               variant="primary"
               className="bg-green-600 hover:bg-green-700"
             >
               <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-              Excel (.xlsx)
-            </Button>
-            <Button
-              onClick={() => handleFormatSelection('pdf')}
-              variant="primary"
-              className="bg-red-600 hover:bg-red-700"
-            >
-              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-              PDF (.pdf)
+              Exportar a Excel
             </Button>
           </div>
         </div>

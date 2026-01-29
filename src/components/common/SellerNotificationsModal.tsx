@@ -1,8 +1,9 @@
 // src/components/common/SellerNotificationsModal.tsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { CancellationRequestListItem } from '../../features/accounting/types/cancellationRequests';
+import { Pagination } from './Pagination';
 
 interface SellerNotificationsModalProps {
   isOpen: boolean;
@@ -17,10 +18,29 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
   requests,
   isLoading
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Resetear página cuando se abre el modal
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentPage(1);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  // Filtrar solo las resueltas (aprobadas o rechazadas)
-  const resolvedRequests = requests.filter(r => r.status === 'APPROVED' || r.status === 'REJECTED');
+  // Filtrar solo las resueltas (aprobadas o rechazadas) y ordenar por más recientes
+  const resolvedRequests = requests
+    .filter(r => r.status === 'APPROVED' || r.status === 'REJECTED')
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+
+  // Calcular paginación
+  const totalItems = resolvedRequests.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRequests = resolvedRequests.slice(startIndex, endIndex);
 
   // Obtener IDs de solicitudes ya vistas antes de abrir este modal
   const getViewedIds = (): Set<number> => {
@@ -71,7 +91,7 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
               </div>
             ) : (
               <div className="space-y-4">
-                {resolvedRequests.map((request) => {
+                {paginatedRequests.map((request) => {
                   const isNew = !viewedIds.has(request.id);
                   return (
                   <div
@@ -159,6 +179,20 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
                   </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Paginación */}
+            {!isLoading && resolvedRequests.length > itemsPerPage && (
+              <div className="mt-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  total={totalItems}
+                  limit={itemsPerPage}
+                  onPageChange={setCurrentPage}
+                  loading={false}
+                />
               </div>
             )}
           </div>

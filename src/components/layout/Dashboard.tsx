@@ -182,13 +182,14 @@ export const Dashboard: React.FC = () => {
     enabled: !!currentUser,
     onCancellationRequestCreated: () => {
       if (isSupervisor) {
-        fetchPendingCount();
+        // Incrementar contador cuando se crea una nueva solicitud
+        setPendingCount(prev => prev + 1);
       }
     },
     onCancellationRequestResolved: () => {
       if (isSupervisor) {
-        // Actualizar contador cuando se resuelve una solicitud
-        fetchPendingCount();
+        // Decrementar contador cuando se resuelve una solicitud
+        setPendingCount(prev => Math.max(0, prev - 1));
       } else if (isSeller) {
         // El vendedor recibe una notificación de respuesta
         fetchSellerResponses();
@@ -208,6 +209,23 @@ export const Dashboard: React.FC = () => {
       fetchSellerResponses();
     }
   }, [isSeller, fetchSellerResponses]);
+
+  // Sincronizar contador cuando la ventana recupera el foco (para evitar desincronización)
+  useEffect(() => {
+    if (!isSupervisor) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-sincronizar contador cuando el usuario vuelve a la pestaña
+        fetchPendingCount();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isSupervisor, fetchPendingCount]);
 
   // Usamos useCallback para que estas funciones no se re-creen en cada render,
   // lo que es importante para la optimización con React.memo en el Sidebar.

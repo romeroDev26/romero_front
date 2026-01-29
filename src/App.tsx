@@ -69,6 +69,9 @@ const DebitNoteDetailPage = React.lazy(() => import('./features/accounting/debit
 const ReceivablesPage = React.lazy(() => import('./features/finance/pages/ReceivablesPage'));
 const ExpensesPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Gastos</h1><p>Gestión de gastos operativos</p></div>;
 
+// Páginas de supervisor (lazy)
+const CancellationRequestsPage = React.lazy(() => import('./features/supervisor/pages/CancellationRequestsPage').then(module => ({ default: module.default })));
+
 // Crear cliente para React Query
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -293,6 +296,15 @@ function AppContent() {
             <Route path="finance">
               <Route path="receivables" element={<ReceivablesPage />} />
               <Route path="expenses" element={<ExpensesPage />} />
+            </Route>
+
+            {/* Supervisor */}
+            <Route path="supervisor">
+              <Route path="cancellation-requests" element={
+                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                  <CancellationRequestsPage />
+                </Suspense>
+              } />
             </Route>
             
             {/* Configuración del Sistema */}

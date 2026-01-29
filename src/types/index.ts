@@ -83,6 +83,8 @@ export interface User {
   role_name?: string;
   default_branch_office_id?: number;
   current_city_id?: number;
+  supervisor_id?: string;
+  supervisor?: User;
   is_active: boolean;
   created_at: string;
   updated_at: string;

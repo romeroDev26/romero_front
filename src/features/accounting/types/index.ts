@@ -287,3 +287,6 @@ export type PriceTypeCode = '01' | '02' | '03';
 
 // Alias para compatibilidad con hooks
 export type VoidCreateData = VoidDocumentCreateData;
+
+// Tipos para solicitudes de anulación (supervisor)
+export * from './cancellationRequests';

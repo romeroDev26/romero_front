@@ -3,13 +3,14 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
-import { useCompanyInfo } from '../../hooks/useCompanyInfo';
+
+import { useWebSocketNotifications } from '../../hooks/useWebSocketNotifications';
 import {
   HomeIcon, UserGroupIcon, DocumentTextIcon, CreditCardIcon, TruckIcon,
   CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
   UsersIcon, KeyIcon, MapIcon, BuildingOffice2Icon, CalendarDaysIcon, TicketIcon,
   ClipboardDocumentListIcon, CurrencyDollarIcon, AdjustmentsHorizontalIcon,
-  ChartPieIcon, CubeIcon, ChatBubbleLeftRightIcon
+  ChartPieIcon, CubeIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
@@ -22,7 +23,9 @@ interface NavItem {
   isSubmenu?: boolean;
   expandKey?: string;
   subitems?: NavItem[];
-  adminOnly?: boolean; // Nueva propiedad para items solo para admin
+  adminOnly?: boolean;
+  supervisorOnly?: boolean; // Nueva propiedad para items solo para supervisor
+  showBadge?: boolean; // Mostrar badge con contador
 }
 
 interface NavGroup {
@@ -46,6 +49,19 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'Inicio', path: '/', icon: HomeIcon, iconColor: 'text-green-500' },
       { name: 'Dashboard General', path: '/dashboard', icon: ChartPieIcon, iconColor: 'text-purple-500', adminOnly: true }
+    ]
+  },
+  {
+    title: 'Supervisión',
+    items: [
+      { 
+        name: 'Solicitudes de Anulación', 
+        path: '/supervisor/cancellation-requests', 
+        icon: BellAlertIcon, 
+        iconColor: 'text-red-500',
+        supervisorOnly: true,
+        showBadge: true
+      }
     ]
   },
   {
@@ -145,8 +161,39 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
   const location = useLocation();
   const { scrollRef, handleScroll } = useSidebarScroll();
   const { hasPermission } = usePermissions();
-  const { data: company } = useCompanyInfo();
-  const businessName = company?.business_name || '';
+  
+  // Hook para obtener solicitudes pendientes (solo si es supervisor)
+  const isSupervisor = currentUser?.role?.name?.toLowerCase() === 'supervisor';
+  const [pendingCount, setPendingCount] = useState(0);
+  
+  // Función para obtener el contador de pendientes
+  const fetchPendingCountCallback = useCallback(async () => {
+    if (!isSupervisor) return;
+    
+    try {
+      const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
+      const count = await cancellationRequestsService.getPendingCount();
+      setPendingCount(count);
+    } catch (err) {
+      console.error('Error fetching pending count:', err);
+    }
+  }, [isSupervisor]);
+
+  // WebSocket para actualizar badge en tiempo real (solo para supervisores)
+  useWebSocketNotifications({
+    enabled: isSupervisor,
+    onCancellationRequestCreated: () => {
+      // Actualizar el contador cuando llega una nueva solicitud
+      fetchPendingCountCallback();
+    }
+  });
+
+  // Cargar contador inicial solo una vez
+  useEffect(() => {
+    if (isSupervisor) {
+      fetchPendingCountCallback();
+    }
+  }, [isSupervisor]);
   
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_EXPANDED_MENUS);
@@ -158,14 +205,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
     // Obtener el rol del usuario de manera más robusta
     let userRole = '';
     let isAdmin = false;
+    let isSupervisor = false;
     if (currentUser) {
       userRole = currentUser.role?.name?.toLowerCase() ||
                  currentUser.role_name?.toLowerCase() || '';
       isAdmin = userRole === 'admin';
+      isSupervisor = userRole === 'supervisor';
     }
     
     return navGroups.filter(group => {
       if (group.title === 'Navegación Principal') return true; // Siempre visible para todos los usuarios
+      if (group.title === 'Supervisión') return isSupervisor; // Solo visible para supervisores
       if (group.title === 'Dashboard') return hasPermission('dashboard', undefined, userRole);
       if (group.title === 'Gestión de Clientes') return hasPermission('clients', undefined, userRole);
       if (group.title === 'Sistema de Transporte Fluvial') return hasPermission('fluvial', undefined, userRole);
@@ -179,6 +229,11 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       const filteredItems = group.items.filter(item => {
         // Si el item es solo para admin, verificar que el usuario sea admin
         if (item.adminOnly && !isAdmin) {
+          return false;
+        }
+        
+        // Si el item es solo para supervisor, verificar que el usuario sea supervisor
+        if (item.supervisorOnly && !isSupervisor) {
           return false;
         }
         
@@ -219,7 +274,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       
       return { ...group, items: filteredItems };
     });
-  }, [currentUser, hasPermission]);
+  }, [currentUser, hasPermission, pendingCount]);
 
   useEffect(() => {
     const currentPath = location.pathname;
@@ -336,10 +391,18 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
         <item.icon className={`w-5 h-5 mr-3 flex-shrink-0 ${
           item.iconColor || 'text-gray-500'
         }`} />
-        <span>{item.name}</span>
+        <span className="flex-1">{item.name}</span>
+        {item.showBadge && pendingCount > 0 && (
+          <span className="relative inline-flex">
+            <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 rounded-full">
+              {pendingCount > 99 ? '99+' : pendingCount}
+            </span>
+            <span className="absolute top-0 right-0 inline-flex w-full h-full rounded-full bg-red-400 opacity-75 animate-ping"></span>
+          </span>
+        )}
       </NavLink>
     );
-  }, [expandedMenus]);
+  }, [expandedMenus, pendingCount]);
 
   const renderExpandableGroup = useCallback((group: NavGroup) => {
     const isExpanded = group.expandKey ? expandedMenus[group.expandKey] : false;
@@ -395,7 +458,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
             <ChartPieIcon className="w-5 h-5 text-white" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-800">{businessName}</h2>
+          <h2 className="text-lg font-semibold text-gray-800">Sistema de Gestión</h2>
         </div>
         <button onClick={onCloseMobile} className="lg:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
           <XMarkIcon className="w-6 h-6 text-gray-500" />

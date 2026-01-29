@@ -9,56 +9,66 @@ export const usePermissions = () => {
     // ADMIN tiene acceso total
     if (role === 'admin') return true;
 
+    // SUPERVISOR tiene los mismos permisos que SALES + permisos especiales de supervisión
+    if (role === 'supervisor') {
+      if (groupKey === 'supervisor') return true;
+      // Para cualquier otro caso, el supervisor tiene los mismos permisos que SALES
+      // Continuamos evaluando como si fuera SALES
+    }
+
     switch (groupKey) {
       case 'dashboard':
         return role === 'admin'; // Solo administradores pueden acceder al dashboard analítico
 
+      case 'supervisor':
+        return role === 'supervisor'; // Solo supervisores
+
       case 'clients':
-        return ['sales', 'dispatcher', 'accountant'].includes(role); // SALES CRUD, otros lectura
+        return ['sales', 'supervisor', 'dispatcher', 'accountant'].includes(role); // SALES, SUPERVISOR CRUD, otros lectura
 
       case 'fluvial':
-        if (!itemKey) return ['sales', 'dispatcher', 'driver'].includes(role);
+        if (!itemKey) return ['sales', 'supervisor', 'dispatcher', 'driver'].includes(role);
         switch (itemKey) {
           case 'dashboard':
             return true;
           case 'config':
             return role === 'admin'; // Solo administradores pueden acceder a configuración
           case 'operations':
-            return ['sales', 'dispatcher', 'driver'].includes(role);
+            return ['sales', 'supervisor', 'dispatcher', 'driver'].includes(role);
           case 'reports':
-            return ['sales', 'dispatcher'].includes(role);
+            return ['sales', 'supervisor', 'dispatcher'].includes(role);
           default:
             return false;
         }
 
       case 'commerce':
-        if (!itemKey) return ['sales', 'dispatcher'].includes(role);
+        if (!itemKey) return ['sales', 'supervisor', 'dispatcher'].includes(role);
         switch (itemKey) {
           case 'quotations':
-            return role === 'sales';
+            return ['sales', 'supervisor'].includes(role);
           case 'remission-guides':
-            return ['sales', 'dispatcher'].includes(role);
+            return ['sales', 'supervisor', 'dispatcher'].includes(role);
           default:
             return false;
         }
 
       case 'accounting':
-        if (!itemKey) return ['sales', 'accountant'].includes(role); // SALES tiene acceso completo a facturación
+        if (!itemKey) return ['sales', 'supervisor', 'accountant'].includes(role); // SALES y SUPERVISOR tienen acceso completo a facturación
         switch (itemKey) {
           case 'dashboard':
-            return ['sales', 'accountant'].includes(role);
+            return ['sales', 'supervisor', 'accountant'].includes(role);
           case 'invoices':
-            return ['sales', 'accountant'].includes(role); // SALES puede hacer CRUD completo
+            return ['sales', 'supervisor', 'accountant'].includes(role); // SALES y SUPERVISOR pueden hacer CRUD completo
           case 'credit-notes':
-            return ['sales', 'accountant'].includes(role); // SALES también puede gestionar notas de crédito
+            return ['sales', 'supervisor', 'accountant'].includes(role); // SALES y SUPERVISOR también pueden gestionar notas de crédito
           case 'debit-notes':
-            return ['sales', 'accountant'].includes(role); // SALES también puede gestionar notas de débito
+            return ['sales', 'supervisor', 'accountant'].includes(role); // SALES y SUPERVISOR también pueden gestionar notas de débito
           default:
             return false;
         }
 
       case 'finance':
-        return ['sales', 'accountant'].includes(role);
+        return ['sales', 'supervisor', 'accountant'].includes(role);
 
       case 'administration':
         return role === 'admin';
@@ -77,18 +87,19 @@ export const usePermissions = () => {
 
     // Mapear rutas a permisos
     const routePermissions: { [key: string]: string[] } = {
-      '/': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Dashboard principal para todos los usuarios
-      '/welcome': ['admin', 'sales', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Página de bienvenida para todos
-      '/clients': ['admin', 'sales', 'dispatcher', 'accountant'],
+      '/': ['admin', 'sales', 'supervisor', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Dashboard principal para todos los usuarios
+      '/welcome': ['admin', 'sales', 'supervisor', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Página de bienvenida para todos
+      '/clients': ['admin', 'sales', 'supervisor', 'dispatcher', 'accountant'],
       '/fluvial/config': ['admin'], // Solo admin puede acceder a configuración
-      '/fluvial/operations': ['admin', 'sales', 'dispatcher', 'driver'],
-      '/sales/quotations': ['admin', 'sales'],
-      '/remission-guides': ['admin', 'sales', 'dispatcher'],
-      '/accounting': ['admin', 'sales', 'accountant'], // SALES tiene acceso completo
-      '/accounting/invoices': ['admin', 'sales', 'accountant'], // SALES puede hacer todo
-      '/accounting/credit-notes': ['admin', 'sales', 'accountant'], // SALES también puede gestionar notas
-      '/accounting/debit-notes': ['admin', 'sales', 'accountant'], // SALES también puede gestionar notas
-      '/finance': ['admin', 'sales', 'accountant'],
+      '/fluvial/operations': ['admin', 'sales', 'supervisor', 'dispatcher', 'driver'],
+      '/sales/quotations': ['admin', 'sales', 'supervisor'],
+      '/remission-guides': ['admin', 'sales', 'supervisor', 'dispatcher'],
+      '/accounting': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR tienen acceso completo
+      '/accounting/invoices': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR pueden hacer todo
+      '/accounting/credit-notes': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR también pueden gestionar notas
+      '/accounting/debit-notes': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR también pueden gestionar notas
+      '/finance': ['admin', 'sales', 'supervisor', 'accountant'],
+      '/supervisor': ['admin', 'supervisor'], // Solo supervisor y admin
       '/settings': ['admin']
     };
 

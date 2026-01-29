@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { RoleSelector } from './users/RoleSelector';
+import { SupervisorSelector } from './users/SupervisorSelector';
 import { User } from '../../../types';
 import { usersService, CreateUserData, UpdateUserData } from '../../../services/users.service';
 
@@ -34,6 +35,7 @@ const updateUserSchema = z.object({
     required_error: 'Rol es requerido',
   }).min(1, 'Debe seleccionar un rol válido'),
   is_active: z.boolean().default(true),
+  supervisor_id: z.string().optional().nullable(),
   password: z.string().min(6, 'Contraseña debe tener al menos 6 caracteres').optional().or(z.literal('')),
   confirm_password: z.string().optional().or(z.literal('')),
 }).refine(data => !data.password || data.password === data.confirm_password, {
@@ -54,6 +56,7 @@ type CreateUserFormData = BaseUserFormData & {
 };
 
 type UpdateUserFormData = BaseUserFormData & {
+  supervisor_id?: string | null;
   password?: string;
   confirm_password?: string;
 };
@@ -80,15 +83,21 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
       full_name: initialData?.full_name || '',
       role_id: initialData?.role_id || 0,
       is_active: initialData?.is_active ?? true,
+      supervisor_id: initialData?.supervisor_id || undefined,
       password: '',
       confirm_password: '',
     },
   });
 
   const roleId = watch('role_id');
+  const supervisorId = watch('supervisor_id');
 
   const handleRoleChange = (value: number) => {
     setValue('role_id', value, { shouldValidate: true });
+  };
+
+  const handleSupervisorChange = (value: string | null) => {
+    setValue('supervisor_id', value, { shouldValidate: true });
   };
 
   const onSubmit = async (formData: CreateUserFormData | UpdateUserFormData) => {
@@ -116,6 +125,11 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
           role_id: formData.role_id,
           is_active: formData.is_active,
         };
+        
+        // Incluir supervisor_id (puede ser null para remover supervisor)
+        if ('supervisor_id' in formData) {
+          updateData.supervisor_id = (formData as UpdateUserFormData).supervisor_id || null;
+        }
         
         // Incluir contraseña solo si fue proporcionada
         if (formData.password && formData.password.length > 0) {
@@ -175,6 +189,18 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
             error={errors.role_id?.message}
           />
         </div>
+        
+        {/* Supervisor - Solo en modo edición */}
+        {!isCreate && (
+          <div>
+            <SupervisorSelector
+              value={supervisorId}
+              onChange={handleSupervisorChange}
+              error={errors.supervisor_id?.message}
+              currentUserId={initialData?.id}
+            />
+          </div>
+        )}
         
         {/* Estado */}
         <div className="flex items-center space-x-2">

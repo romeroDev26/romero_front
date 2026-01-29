@@ -102,7 +102,6 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
 
   const connectGlobal = useCallback(() => {
     if (globalWs?.readyState === WebSocket.OPEN || globalWs?.readyState === WebSocket.CONNECTING) {
-      console.log('[WebSocket] Ya existe una conexión activa');
       setIsConnected(true);
       return;
     }
@@ -117,7 +116,6 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
       globalWs = new WebSocket(wsUrl);
 
       globalWs.onopen = () => {
-        console.log('[WebSocket] Conectado');
         setIsConnected(true);
         setReconnectAttempts(0);
         connectionListeners.forEach(listener => listener(true));
@@ -135,7 +133,6 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
       };
 
       globalWs.onclose = (event) => {
-        console.log(`[WebSocket] Desconectado (código: ${event.code})`);
         setIsConnected(false);
         connectionListeners.forEach(listener => listener(false));
 
@@ -154,7 +151,6 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
         // Reconectar con backoff exponencial
         if (reconnectAttempts < 5) {
           const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
-          console.log(`[WebSocket] Reintentando en ${delay}ms (${reconnectAttempts + 1}/5)`);
           
           reconnectTimeoutRef.current = setTimeout(() => {
             setReconnectAttempts(prev => prev + 1);

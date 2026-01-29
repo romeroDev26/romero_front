@@ -7,7 +7,7 @@ import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
 import { toast } from 'react-toastify';
 import UserSalesChart from './UserSalesChart';
 
-export const SalesPointSelector: React.FC<{ className?: string }> = ({ className }) => {
+export const SalesPointSelector: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedBranch, setSelectedBranch] = useState<string>('');
@@ -82,7 +82,7 @@ export const SalesPointSelector: React.FC<{ className?: string }> = ({ className
   const monthSales = currentMonth.data?.total_sales || 0;
 
   return (
-    <div className={`rounded-2xl p-6 ${className || 'bg-white shadow-md border border-gray-200'}`}>
+    <>
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Punto de Venta
@@ -230,6 +230,6 @@ export const SalesPointSelector: React.FC<{ className?: string }> = ({ className
           <UserSalesChart />
         </div>
       </div>
-    </div>
+    </>
   );
 };

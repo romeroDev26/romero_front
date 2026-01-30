@@ -84,6 +84,7 @@ export interface User {
   default_branch_office_id?: number;
   current_city_id?: number;
   supervisor_id?: string;
+  supervisor_name?: string;
   supervisor?: User;
   is_active: boolean;
   created_at: string;

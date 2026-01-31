@@ -161,19 +161,18 @@ export const ExtraBaggageSalePage: React.FC = () => {
   // Determinar si es RUC
   const isRuc = passengerData.docType === SunatDocType.RUC;
   
-  // Validación SUNAT: Para boletas >= 700, requiere datos del cliente
-  const requiresClientData = useMemo(() => {
-    if (isRuc) return true; // Facturas siempre requieren datos
-    return calculatedAmounts.totalAmount >= 700; // Boletas >= 700 requieren DNI
-  }, [isRuc, calculatedAmounts.totalAmount]);
+  // Para equipaje extra, los datos del cliente son opcionales
+  // Si no se proporcionan, se usa el cliente especial ID 1
+  const hasClientData = passengerData.docNumber.trim() !== '' && passengerData.name.trim() !== '';
+  const requiresClientData = isRuc; // Solo facturas requieren datos obligatorios
 
   // Validar formulario
   const isFormValid = useMemo(() => {
     // Validar precio
     if (!price || priceNumber <= 0) return false;
     
-    // Validar cliente si es necesario
-    if (requiresClientData) {
+    // Validar cliente solo si es RUC (factura)
+    if (isRuc) {
       if (!passengerData.docNumber.trim() || !passengerData.name.trim()) {
         return false;
       }
@@ -192,10 +191,9 @@ export const ExtraBaggageSalePage: React.FC = () => {
   }, [
     price,
     priceNumber,
-    requiresClientData,
+    isRuc,
     passengerData.docNumber,
     passengerData.name,
-    isRuc,
     selectedFacturaSeries,
     selectedBoletaSeries,
     splitPaymentData.isSplitPayment,
@@ -237,26 +235,34 @@ export const ExtraBaggageSalePage: React.FC = () => {
     }
 
     try {
-      // 1. Buscar o crear cliente
-      const clientData: CreateClientData = {
-        doc_type: passengerData.docType,
-        doc_number: passengerData.docNumber,
-        name: passengerData.name,
-        email: passengerData.email || undefined,
-        phone: passengerData.phone || undefined,
-        address_line: passengerData.address || undefined,
-        country_code: passengerData.countryCode || 'PE',
-      };
+      let clientId: number;
       
-      const client = await findOrCreateClient(clientData);
+      // Si hay datos de cliente, buscar o crear
+      if (hasClientData) {
+        const clientData: CreateClientData = {
+          doc_type: passengerData.docType,
+          doc_number: passengerData.docNumber,
+          name: passengerData.name,
+          email: passengerData.email || undefined,
+          phone: passengerData.phone || undefined,
+          address_line: passengerData.address || undefined,
+          country_code: passengerData.countryCode || 'PE',
+        };
+        
+        const client = await findOrCreateClient(clientData);
+        clientId = client.id;
+      } else {
+        // Sin datos de cliente, usar cliente especial ID 1
+        clientId = 1;
+      }
 
       // 2. Preparar datos de la factura
       const invoiceData: MobileInvoiceCreateData = {
-        client_id: requiresClientData ? client.id : null,
-        client_doc_type: passengerData.docType,
-        client_doc_number: passengerData.docNumber,
-        client_name: passengerData.name,
-        client_email: passengerData.email || undefined,
+        client_id: clientId,
+        client_doc_type: hasClientData ? passengerData.docType : SunatDocType.DNI,
+        client_doc_number: hasClientData ? passengerData.docNumber : '00000000',
+        client_name: hasClientData ? passengerData.name : 'Cliente General',
+        client_email: hasClientData ? passengerData.email || undefined : undefined,
         
         document_type_code: isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA,
         series: isRuc ? selectedFacturaSeries : selectedBoletaSeries,
@@ -335,6 +341,8 @@ export const ExtraBaggageSalePage: React.FC = () => {
   const handleTicketPreviewClose = () => {
     setShowTicketPreview(false);
     setTicketBackendData(null);
+    // Recargar la página para limpiar todos los datos
+    window.location.reload();
   };
   
   // Handler para cuando el ticket se genera exitosamente
@@ -410,17 +418,25 @@ export const ExtraBaggageSalePage: React.FC = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
               <User className="h-5 w-5 mr-2 text-gray-600" />
-              Datos del Cliente
+              Datos del Cliente (Opcional)
             </h3>
             
-            {requiresClientData && (
+            {isRuc && (
               <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
                 <div className="flex items-center gap-2 text-amber-800 text-sm">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">
-                    {isRuc 
-                      ? 'Los datos del cliente son obligatorios para Facturas' 
-                      : 'Los datos del cliente son obligatorios para montos mayores o iguales a S/ 700'}
+                    Los datos del cliente son obligatorios para Facturas
+                  </span>
+                </div>
+              </div>
+            )}
+            
+            {!isRuc && (
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <div className="flex items-center gap-2 text-blue-800 text-sm">
+                  <span className="text-sm">
+                    Si no completa los datos del cliente, se usará un cliente genérico
                   </span>
                 </div>
               </div>
@@ -681,6 +697,7 @@ export const ExtraBaggageSalePage: React.FC = () => {
           onSuccess={handleTicketSuccess}
           initialPhoneNumber={passengerData.phone || ''}
           onClearForm={resetForm}
+          showOnly80mm={true}
         />
       )}
     </div>

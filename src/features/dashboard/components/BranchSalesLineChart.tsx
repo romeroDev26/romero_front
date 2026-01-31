@@ -11,34 +11,42 @@ import {
 } from 'recharts';
 import { EvolucionVentasSucursales } from '../../../types/dashboard';
 
-// Colores modernos con estilo elegante para cada sucursal
+// Colores modernos estilo Tremor
 const BRANCH_COLORS = {
-  'Sucursal NAUTA': '#6366f1',      // Indigo moderno
-  'Sucursal YURIMAGUAS': '#10b981', // Esmeralda
-  'Sucursal IQUITOS': '#f59e0b',    // Ámbar
-  'Sucursal REQUENA': '#ef4444',    // Rojo coral
-  'Sucursal CONTAMANA': '#06b6d4',  // Cyan
-  'Sin Sucursal': '#8b5cf6'         // Violeta
+  'Sucursal NAUTA': '#3b82f6',
+  'Sucursal YURIMAGUAS': '#10b981',
+  'Sucursal IQUITOS': '#f59e0b',
+  'Sucursal REQUENA': '#ef4444',
+  'Sucursal CONTAMANA': '#06b6d4',
+  'Sin Sucursal': '#8b5cf6'
 };
 
-// Tooltip personalizado elegante
+// Tooltip estilo Tremor
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const total = payload.reduce((acc: number, entry: any) => acc + (entry.value || 0), 0);
     return (
-      <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">
-        <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
-        {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center gap-2 text-sm">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: entry.color }}
-            />
-            <span className="text-gray-600">{entry.name}:</span>
-            <span className="font-semibold text-gray-900">
-              S/ {Number(entry.value).toLocaleString('es-PE')}
-            </span>
-          </div>
-        ))}
+      <div className="bg-white px-3 py-2 shadow-md rounded-lg border border-gray-100">
+        <p className="text-xs font-medium text-gray-500 mb-1.5">{label}</p>
+        <p className="text-sm font-semibold text-gray-900 mb-2">
+          Total: S/ {total.toLocaleString('es-PE')}
+        </p>
+        <div className="space-y-1">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-4 text-xs">
+              <div className="flex items-center gap-1.5">
+                <div 
+                  className="w-2 h-2 rounded-full" 
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-gray-600">{entry.name}</span>
+              </div>
+              <span className="font-medium text-gray-900">
+                S/ {Number(entry.value).toLocaleString('es-PE')}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -75,75 +83,83 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="bg-white p-5 rounded-xl border border-gray-100">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-100 rounded-lg"></div>
+          <div className="h-5 bg-gray-100 rounded w-1/4 mb-4"></div>
+          <div className="h-56 bg-gray-50 rounded-lg"></div>
         </div>
       </div>
     );
   }
 
-  // Transformar datos del backend al formato del gráfico
+  // Transformar datos del backend al formato del grafico
   const chartData = data?.datos.map(item => ({
     date: item.fecha_formateada,
     ...item.sucursales
   })) || [];
 
-  // Obtener nombres de sucursales únicas
+  // Obtener nombres de sucursales unicas
   const branchNames = data?.datos.length ? 
     Object.keys(data.datos[0].sucursales) : [];
 
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold text-gray-800 mb-6">Ventas del Día por Sucursal</h3>
+  // Calcular total del periodo
+  const totalPeriod = chartData.reduce((acc, item) => {
+    return acc + branchNames.reduce((sum, branch) => sum + (item[branch] || 0), 0);
+  }, 0);
 
-      <ResponsiveContainer width="100%" height={320}>
+  return (
+    <div className="bg-white p-5 rounded-xl border border-gray-100">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">Evolucion de Ventas por Sucursal</h3>
+          <p className="text-xl font-semibold text-gray-900 mt-1">
+            S/ {totalPeriod.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </p>
+        </div>
+        <span className="text-xs text-gray-400">{chartData.length} dias</span>
+      </div>
+
+      <ResponsiveContainer width="100%" height={280}>
         <BarChart 
           data={chartData} 
-          barCategoryGap="20%"
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          barCategoryGap="15%"
+          margin={{ top: 5, right: 5, left: -20, bottom: 0 }}
         >
-          <defs>
-            {branchNames.map((branch) => (
-              <linearGradient key={`gradient-${branch}`} id={`gradient-${branch.replace(/\s/g, '')}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={getBranchColor(branch)} stopOpacity={1} />
-                <stop offset="100%" stopColor={getBranchColor(branch)} stopOpacity={0.8} />
-              </linearGradient>
-            ))}
-          </defs>
           <CartesianGrid 
             strokeDasharray="3 3" 
             vertical={false} 
-            stroke="#f0f0f0"
+            stroke="#f3f4f6"
           />
           <XAxis 
             dataKey="date" 
-            tick={{ fontSize: 12, fill: '#6b7280' }}
+            tick={{ fontSize: 11, fill: '#9ca3af' }}
             axisLine={false}
             tickLine={false}
-            dy={10}
+            dy={8}
           />
           <YAxis 
-            tick={{ fontSize: 12, fill: '#6b7280' }}
+            tick={{ fontSize: 11, fill: '#9ca3af' }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}
-            dx={-5}
+            width={40}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.02)' }} />
           <Legend 
-            wrapperStyle={{ paddingTop: 20 }}
-            formatter={(value) => <span className="text-sm text-gray-600">{value}</span>}
+            wrapperStyle={{ paddingTop: 16 }}
+            formatter={(value) => <span className="text-xs text-gray-500">{value}</span>}
+            iconType="circle"
+            iconSize={8}
           />
           {branchNames.map((branch) => (
             <Bar
               key={branch}
               dataKey={branch}
-              fill={`url(#gradient-${branch.replace(/\s/g, '')})`}
+              fill={getBranchColor(branch)}
               name={branch}
-              radius={[6, 6, 0, 0]}
-              maxBarSize={50}
+              radius={[3, 3, 0, 0]}
+              maxBarSize={40}
+              opacity={0.9}
             />
           ))}
         </BarChart>

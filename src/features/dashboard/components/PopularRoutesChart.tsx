@@ -62,11 +62,11 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
 
   if (popularRoutes.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">
-          Rutas Más Populares
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-base font-semibold text-gray-900 mb-6">
+          Destinos Populares
         </h3>
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-12 text-gray-500 text-sm">
           No hay datos de rutas disponibles
         </div>
       </div>
@@ -75,80 +75,61 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
 
   const totalRevenue = popularRoutes.reduce((sum, route) => sum + route.total_amount, 0);
 
-  // Datos para el gráfico
-  const chartData = popularRoutes.map(route => ({
-    name: route.route_name.length > 18 ? route.route_name.substring(0, 18) + '...' : route.route_name,
-    fullName: route.route_name,
-    value: route.total_amount,
-  }));
-
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold text-gray-800 mb-6">
-        Rutas Más Populares
-      </h3>
+    <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-base font-semibold text-gray-900">
+          Destinos Populares
+        </h3>
+        <span className="text-xs text-gray-500">
+          Top {popularRoutes.length}
+        </span>
+      </div>
       
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart 
-          data={chartData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 40 }}
-        >
-          <defs>
-            <linearGradient id="routesGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity={1} />
-              <stop offset="100%" stopColor="#10b981" stopOpacity={0.7} />
-            </linearGradient>
-          </defs>
-          <CartesianGrid 
-            strokeDasharray="3 3" 
-            vertical={false}
-            stroke="#f0f0f0"
-          />
-          <XAxis 
-            dataKey="name"
-            tick={{ fontSize: 10, fill: '#6b7280' }}
-            axisLine={false}
-            tickLine={false}
-            angle={-45}
-            textAnchor="end"
-            height={60}
-          />
-          <YAxis 
-            tick={{ fontSize: 11, fill: '#6b7280' }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
-          <Bar 
-            dataKey="value" 
-            fill="url(#routesGradient)"
-            radius={[6, 6, 0, 0]}
-            maxBarSize={45}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-
-      {/* Estadísticas resumen */}
-      <div className="mt-6 pt-4 border-t border-gray-100">
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-emerald-50 p-4 rounded-lg text-center">
-            <div className="text-xl font-bold text-emerald-600">
-              {popularRoutes.length}
+      {/* Lista de rutas estilo Tremor */}
+      <div className="space-y-4">
+        {popularRoutes.slice(0, 6).map((route, index) => {
+          const percentage = ((route.total_amount / totalRevenue) * 100);
+          return (
+            <div key={index} className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold flex items-center justify-center">
+                    {index + 1}
+                  </span>
+                  <span className="font-medium text-gray-700 truncate">
+                    {route.route_name}
+                  </span>
+                  <span className="text-gray-500 flex-shrink-0">({route.count})</span>
+                </div>
+                <div className="text-right ml-4 flex-shrink-0">
+                  <span className="font-semibold text-gray-900">
+                    S/ {route.total_amount.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
+              {/* Barra de progreso */}
+              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-2 rounded-full transition-all duration-500 ease-out bg-gradient-to-r from-emerald-500 to-emerald-400"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
             </div>
-            <div className="text-xs text-gray-600">Rutas Activas</div>
+          );
+        })}
+        
+        {/* Resumen */}
+        <div className="pt-4 mt-4 border-t border-gray-200 grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-xs text-gray-500 mb-1">Total Rutas</p>
+            <p className="text-lg font-semibold text-gray-900">{popularRoutes.length}</p>
           </div>
-          <div className="bg-blue-50 p-4 rounded-lg text-center">
-            <div className="text-xl font-bold text-blue-600">
-              S/ {totalRevenue.toLocaleString('es-PE', { minimumFractionDigits: 0 })}
-            </div>
-            <div className="text-xs text-gray-600">Total Ingresos</div>
-          </div>
-          <div className="bg-purple-50 p-4 rounded-lg text-center">
-            <div className="text-xl font-bold text-purple-600">
-              S/ {Math.round(totalRevenue / popularRoutes.length).toLocaleString()}
-            </div>
-            <div className="text-xs text-gray-600">Promedio/Ruta</div>
+          <div>
+            <p className="text-xs text-gray-500 mb-1">Total Ingresos</p>
+            <p className="text-lg font-semibold text-gray-900">
+              S/ {totalRevenue.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
           </div>
         </div>
       </div>

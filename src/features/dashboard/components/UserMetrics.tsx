@@ -14,10 +14,9 @@ export const UserMetrics: React.FC<UserMetricsProps> = ({ data, isLoading = fals
   return (
     <MetricCard
       title="Total de Usuarios"
-      value={isLoading ? "..." : totalUsers.toString()}
+      value={isLoading ? "--" : totalUsers.toString()}
       icon={Users}
-      change="+0% desde el mes pasado"
-      changeType="neutral"
+      subtitle="Usuarios registrados en el sistema"
     />
   );
 };

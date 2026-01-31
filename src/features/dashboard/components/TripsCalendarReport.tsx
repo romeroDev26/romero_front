@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   ChevronLeftIcon, 
   ChevronRightIcon,
-  TruckIcon,
   XMarkIcon,
   UserGroupIcon,
   CurrencyDollarIcon,
@@ -205,7 +204,9 @@ export const TripsCalendarReport: React.FC = () => {
       <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <TruckIcon className="w-6 h-6" />
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15l3-9h12l3 9m-9-9v9m-6 0h12m-6 0v3m-6-3l-1 3h14l-1-3" />
+            </svg>
             Reporte de Ventas por Viaje
           </h2>
           <p className="text-indigo-100 text-sm mt-1">
@@ -351,7 +352,9 @@ export const TripsCalendarReport: React.FC = () => {
 
             {!selectedDate && !isLoading && (
               <div className="text-center py-12 text-gray-500">
-                <TruckIcon className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+                <svg className="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15l3-9h12l3 9m-9-9v9m-6 0h12m-6 0v3m-6-3l-1 3h14l-1-3" />
+                </svg>
                 <p>Haz clic en un día con viajes para ver los detalles</p>
               </div>
             )}

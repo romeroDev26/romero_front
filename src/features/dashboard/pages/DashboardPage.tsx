@@ -2,13 +2,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { UserMetrics } from '../components/UserMetrics';
-import { RevenueMetrics } from '../components/RevenueMetrics';
 import { MonthlySalesChart } from '../components/MonthlySalesChart';
 import { BranchSalesChart } from '../components/BranchSalesChart';
 import { BranchSalesLineChart } from '../components/BranchSalesLineChart';
 import { TopSellersByBranch } from '../components/TopSellersByBranch';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3, FileText, Users, Banknote, Receipt, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { dashboardService } from '../../../services/dashboard.service';
 
@@ -16,7 +14,6 @@ export const DashboardPage: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'year'>('today');
   const [topSellersPeriod, setTopSellersPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
-  const [includeSellerDetails, setIncludeSellerDetails] = useState(true);
 
   // Obtener todas las métricas del dashboard en una sola llamada
   const { data: dashboardData, isLoading: isDashboardLoading } = useQuery({
@@ -65,43 +62,103 @@ export const DashboardPage: React.FC = () => {
 
   // Para administradores, mostrar el dashboard analítico completo
   return (
-    <div className="p-4 lg:p-6 space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard de Rendimiento</h1>
+    <div className="p-4 lg:p-6 space-y-6 bg-gray-50/50 min-h-screen">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">Resumen de rendimiento del negocio</p>
+        </div>
         
-        {/* Selector de período global */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <label htmlFor="global-period" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-            Período:
-          </label>
+        {/* Controles del header */}
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <select
             id="global-period"
             value={period}
             onChange={(e) => setPeriod(e.target.value as 'today' | 'week' | 'month' | 'year')}
-            className="flex-1 sm:flex-none px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
           >
             <option value="today">Hoy</option>
             <option value="week">Esta Semana</option>
             <option value="month">Este Mes</option>
             <option value="year">Este Año</option>
           </select>
+          
+          <Link
+            to="/reports"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            <FileText className="w-4 h-4" />
+            <span className="hidden sm:inline">Reportes</span>
+          </Link>
         </div>
       </div>
 
-      {/* Métricas Clave - Reciben datos precalculados */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <UserMetrics 
-          data={dashboardData?.metricas_generales} 
-          isLoading={isDashboardLoading} 
-        />
-        <RevenueMetrics 
-          data={dashboardData?.metricas_generales} 
-          isLoading={isDashboardLoading} 
-        />
+      {/* Metricas Clave - Compactas en una fila */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Usuarios */}
+        <div className="bg-white px-4 py-3 rounded-xl border border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="w-4 h-4 text-gray-400" />
+            <span className="text-xs font-medium text-gray-500">Usuarios</span>
+          </div>
+          <p className="text-xl font-semibold text-gray-900">
+            {isDashboardLoading ? '--' : dashboardData?.metricas_generales?.total_usuarios || 0}
+          </p>
+        </div>
+
+        {/* Ingresos */}
+        <div className="bg-white px-4 py-3 rounded-xl border border-gray-100">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <Banknote className="w-4 h-4 text-gray-400" />
+              <span className="text-xs font-medium text-gray-500">Ingresos</span>
+            </div>
+            {dashboardData?.metricas_generales?.comparacion_mes_anterior && (
+              <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                dashboardData.metricas_generales.comparacion_mes_anterior.tendencia === 'up' 
+                  ? 'bg-emerald-50 text-emerald-600' 
+                  : dashboardData.metricas_generales.comparacion_mes_anterior.tendencia === 'down'
+                    ? 'bg-red-50 text-red-600'
+                    : 'bg-gray-50 text-gray-500'
+              }`}>
+                {dashboardData.metricas_generales.comparacion_mes_anterior.tendencia === 'up' && <TrendingUp className="w-3 h-3" />}
+                {dashboardData.metricas_generales.comparacion_mes_anterior.tendencia === 'down' && <TrendingDown className="w-3 h-3" />}
+                {dashboardData.metricas_generales.comparacion_mes_anterior.tendencia === 'neutral' && <Minus className="w-3 h-3" />}
+                {dashboardData.metricas_generales.comparacion_mes_anterior.porcentaje > 0 ? '+' : ''}
+                {dashboardData.metricas_generales.comparacion_mes_anterior.porcentaje.toFixed(1)}%
+              </div>
+            )}
+          </div>
+          <p className="text-xl font-semibold text-gray-900">
+            {isDashboardLoading ? '--' : dashboardData?.metricas_generales?.ingresos_totales_formateado || 'S/ 0'}
+          </p>
+        </div>
+
+        {/* Total Facturas */}
+        <div className="bg-white px-4 py-3 rounded-xl border border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <Receipt className="w-4 h-4 text-gray-400" />
+            <span className="text-xs font-medium text-gray-500">Facturas</span>
+          </div>
+          <p className="text-xl font-semibold text-gray-900">
+            {isDashboardLoading ? '--' : dashboardData?.top_vendedores_por_sucursal?.resumen_general?.total_facturas || 0}
+          </p>
+        </div>
+
+        {/* Total Ventas del periodo */}
+        <div className="bg-white px-4 py-3 rounded-xl border border-gray-100">
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart3 className="w-4 h-4 text-gray-400" />
+            <span className="text-xs font-medium text-gray-500">Sucursales</span>
+          </div>
+          <p className="text-xl font-semibold text-gray-900">
+            {isDashboardLoading ? '--' : dashboardData?.top_vendedores_por_sucursal?.resumen_general?.total_sucursales || 0}
+          </p>
+        </div>
       </div>
 
-      {/* Gráficos - Reciben datos precalculados */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Graficos - Reciben datos precalculados */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <MonthlySalesChart 
           data={dashboardData?.ventas_mensuales} 
           isLoading={isDashboardLoading} 
@@ -112,36 +169,20 @@ export const DashboardPage: React.FC = () => {
         />
       </div>
 
-      {/* Gráfico de evolución de ventas por sucursal */}
-      <div className="grid grid-cols-1 gap-6">
-        <BranchSalesLineChart 
-          data={dashboardData?.evolucion_ventas_sucursales}
-          isLoading={isDashboardLoading}
-        />
-      </div>
+      {/* Grafico de evolucion de ventas por sucursal */}
+      <BranchSalesLineChart 
+        data={dashboardData?.evolucion_ventas_sucursales}
+        isLoading={isDashboardLoading}
+      />
 
-      {/* Top vendedores por sucursal */}
-      <div className="grid grid-cols-1 gap-6 mt-6">
-        <TopSellersByBranch 
-          data={dashboardData?.top_vendedores_por_sucursal}
-          isLoading={isDashboardLoading}
-          period={topSellersPeriod}
-          includeSellerDetails={includeSellerDetails}
-          onPeriodChange={setTopSellersPeriod}
-          onSellerDetailsChange={setIncludeSellerDetails}
-        />
-      </div>
+      {/* Top vendedores por sucursal - Ahora como tabla compacta */}
+      <TopSellersByBranch 
+        data={dashboardData?.top_vendedores_por_sucursal}
+        isLoading={isDashboardLoading}
+        period={topSellersPeriod}
+        onPeriodChange={setTopSellersPeriod}
+      />
 
-      {/* Enlaces a reportes y estadísticas */}
-      <div className="grid grid-cols-1 gap-4">
-        <Link
-          to="/reports"
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-        >
-          <BarChart3 className="w-5 h-5" />
-          Ver Reportes Detallados
-        </Link>
-      </div>
     </div>
   );
 };

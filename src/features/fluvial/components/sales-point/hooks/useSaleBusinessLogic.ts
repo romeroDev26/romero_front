@@ -150,9 +150,10 @@ export const useSaleBusinessLogic = ({
           extraProductName = '';
         }
 
+        const descriptionText = extraCostDescription?.trim() || 'Equipaje en exceso';
         const composedExtraDescription = extraProductName
-          ? (extraCostDescription?.trim() ? `${extraProductName} - ${extraCostDescription.trim()}` : extraProductName)
-          : (extraCostDescription?.trim() || 'Equipaje en exceso');
+          ? `${extraProductName} - ${descriptionText}`
+          : descriptionText;
 
         const extraItem = {
           product_id: 7, // ← CLAVE: ID del servicio adicional

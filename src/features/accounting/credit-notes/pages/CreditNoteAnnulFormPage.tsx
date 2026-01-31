@@ -13,7 +13,8 @@ import { useCreateCreditNoteByAnnulment } from '../hooks/useCreditNotes';
 import { CreditNoteAnnulData } from '../../types';
 import { Invoice, User } from '../../../../types'; 
 import { useAccountingDocumentSeriesForBranch } from '../../../../hooks/useAccountingDocumentSeries';
-import { authService } from '../../../../services/auth.service'; 
+import { authService } from '../../../../services/auth.service';
+import RequestCancellationModal from '../../components/RequestCancellationModal'; 
 
 // Catálogo 09 de SUNAT para motivos de Nota de Crédito (Solo anulación para esta página)
 const CREDIT_NOTE_REASONS = [
@@ -34,6 +35,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
   const { affectedInvoice, simplifiedAnnul, isDebitNote } = (location.state as { affectedInvoice: Invoice; simplifiedAnnul?: boolean; isDebitNote?: boolean }) || {};
 
   const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>("");
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const { mutate: createCreditNote, isPending } = useCreateCreditNoteByAnnulment();
   const queryClient = useQueryClient();
@@ -110,6 +112,17 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
         navigate('/accounting/credit-notes');
+      },
+      onError: (error: any) => {
+        // Manejar error 403 - Viaje ya partió
+        if (error?.response?.status === 403) {
+          const errorDetail = error?.response?.data?.detail || '';
+          if (errorDetail.includes('Viaje ya salió') || errorDetail.includes('Solicita aprobación')) {
+            setShowRequestModal(true);
+          } else {
+            toast.error(errorDetail || 'No tienes permisos para realizar esta acción');
+          }
+        }
       }
     });
   };
@@ -130,6 +143,17 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
         navigate('/accounting/credit-notes'); 
+      },
+      onError: (error: any) => {
+        // Manejar error 403 - Viaje ya partió
+        if (error?.response?.status === 403) {
+          const errorDetail = error?.response?.data?.detail || '';
+          if (errorDetail.includes('Viaje ya salió') || errorDetail.includes('Solicita aprobación')) {
+            setShowRequestModal(true);
+          } else {
+            toast.error(errorDetail || 'No tienes permisos para realizar esta acción');
+          }
+        }
       }
     });
   };
@@ -367,6 +391,19 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
         </form>
       </div>
       </div>
+
+      {/* Modal de solicitud de anulación (cuando viaje ya partió) */}
+      {showRequestModal && (
+        <RequestCancellationModal
+          invoiceId={affectedInvoice.id}
+          invoiceSeries={affectedInvoice.series}
+          invoiceNumber={affectedInvoice.number}
+          onClose={() => setShowRequestModal(false)}
+          onSuccess={() => {
+            navigate('/accounting/invoices');
+          }}
+        />
+      )}
     </div>
   );
 };

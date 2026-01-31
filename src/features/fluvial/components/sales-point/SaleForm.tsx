@@ -878,17 +878,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
 
   // NUEVO: Handler para abrir el modal de confirmación
   const handleOpenConfirmModal = useCallback(() => {
-    // Validacion: si se agrega un costo adicional, la descripcion debe ser obligatoria
-    if (
-      (extraCost || 0) > 0 &&
-      (!extraCostDescription || !extraCostDescription.trim())
-    ) {
-      toast.error(
-        "Ingrese una descripcion para el costo adicional antes de confirmar la venta."
-      );
-      return;
-    }
-    
     // Validacion critica para precio manual
     if (isManualPriceMode && (!manualPrice || manualPrice <= 0)) {
       toast.error(
@@ -900,8 +889,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // Abrir modal de confirmación
     setIsConfirmSaleModalOpen(true);
   }, [
-    extraCost,
-    extraCostDescription,
     isManualPriceMode,
     manualPrice,
   ]);
@@ -1012,6 +999,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     confirmPurchase,
     effectiveBasePrice,
     seatMultiplier,
+    extraCost,
+    extraCostDescription,
     handleRegularSale,
     selectedSeat?.id,
     itemDescription,
@@ -1023,7 +1012,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     discount,
     isConfirmingMode,
     reservationToConfirm?.id,
-    splitPaymentData, // Incluir datos de pago dividido
+    splitPaymentData,
     selectedCurrency,
   ]);
 

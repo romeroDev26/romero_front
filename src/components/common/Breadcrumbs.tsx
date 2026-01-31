@@ -31,6 +31,8 @@ const routeNameMap: { [key: string]: string } = {
   'schedule-trips': 'Programar Viajes',
   'sales-point': 'Punto de Ventas',
   'reservations': 'Gestionar Reservas',
+  'cargo-sale': 'Encomiendas y Carga',
+  'extra-baggage': 'Venta de Equipaje Extra',
   'manifests': 'Manifiestos',
   
   // Finanzas

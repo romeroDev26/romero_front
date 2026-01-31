@@ -90,7 +90,7 @@ export const invoiceCreationService = {
     });
 
   // Item adicional: Costo adicional (si existe)
-  if (extraCost > 0 && extraCostDescription.trim()) {
+  if (extraCost > 0) {
       const extraCostWithIgv = isIgvGravado ? extraCost * 1.18 : extraCost;
       // Intentar obtener el nombre del producto/servicio con id 7 y componer la descripción
       let extraProductName = '';
@@ -101,9 +101,10 @@ export const invoiceCreationService = {
         extraProductName = '';
       }
 
+      const descriptionText = extraCostDescription?.trim() || 'Equipaje en exceso';
       const composedExtraDescription = extraProductName
-        ? `${extraProductName} - ${extraCostDescription.trim()}`
-        : extraCostDescription.trim();
+        ? `${extraProductName} - ${descriptionText}`
+        : descriptionText;
 
       items.push({
         product_id: 7, // ID específico para exceso de equipaje/costos adicionales

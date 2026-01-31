@@ -7,12 +7,18 @@ import {
   TicketIcon, 
   CubeIcon, 
   ClipboardDocumentListIcon, 
-  DocumentTextIcon 
+  DocumentTextIcon,
+  BellAlertIcon,
+  ChatBubbleLeftRightIcon,
+  BriefcaseIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
 import { User } from '../../types';
 import Sidebar from './Sidebar';
+import { useWebSocketNotifications } from '../../hooks/useWebSocketNotifications';
+import SellerNotificationsModal from '../common/SellerNotificationsModal';
+import { CancellationRequestListItem } from '../../features/accounting/types/cancellationRequests';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -33,6 +39,14 @@ const quickAccessItems = [
     icon: CubeIcon,
     bgColor: 'bg-green-500',
     hoverColor: 'hover:bg-green-600',
+    textColor: 'text-white'
+  },
+  {
+    name: 'Equipaje Extra',
+    path: '/fluvial/operations/extra-baggage',
+    icon: BriefcaseIcon,
+    bgColor: 'bg-purple-500',
+    hoverColor: 'hover:bg-purple-600',
     textColor: 'text-white'
   },
   {
@@ -106,6 +120,122 @@ export const Dashboard: React.FC = () => {
     retry: 1
   });
 
+  // Verificar roles
+  const isSupervisor = currentUser?.role?.name?.toLowerCase() === 'supervisor' || 
+                       currentUser?.role_name?.toLowerCase() === 'supervisor';
+  const isSeller = currentUser?.role?.name?.toLowerCase() === 'sales' || 
+                   currentUser?.role_name?.toLowerCase() === 'sales';
+
+  // Estado para el contador de solicitudes pendientes (solo supervisores)
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // Estado para vendedores: contador de respuestas y modal
+  const [sellerResponsesCount, setSellerResponsesCount] = useState(0);
+  const [sellerRequests, setSellerRequests] = useState<CancellationRequestListItem[]>([]);
+  const [showSellerModal, setShowSellerModal] = useState(false);
+  const [loadingSellerRequests, setLoadingSellerRequests] = useState(false);
+
+  // Función para obtener el contador de pendientes (supervisores)
+  const fetchPendingCount = useCallback(async () => {
+    if (!isSupervisor) return;
+    
+    try {
+      const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
+      const count = await cancellationRequestsService.getPendingCount();
+      setPendingCount(count);
+    } catch (err) {
+      console.error('Error al obtener solicitudes pendientes:', err);
+    }
+  }, [isSupervisor]);
+
+  // Función para obtener las respuestas del vendedor
+  const fetchSellerResponses = useCallback(async () => {
+    if (!isSeller) return;
+    
+    try {
+      const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
+      const count = await cancellationRequestsService.getUnreadResolvedCount();
+      setSellerResponsesCount(count);
+    } catch (err) {
+      console.error('Error al obtener respuestas del vendedor:', err);
+    }
+  }, [isSeller]);
+
+  // Función para cargar las solicitudes del vendedor cuando abre el modal
+  const handleOpenSellerModal = async () => {
+    setShowSellerModal(true);
+    setLoadingSellerRequests(true);
+    
+    try {
+      const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
+      const requests = await cancellationRequestsService.getMyRequests();
+      setSellerRequests(requests);
+      
+      // Marcar todas las respuestas resueltas como vistas
+      cancellationRequestsService.markResolvedAsViewed(requests);
+      
+      // Actualizar el contador a 0 inmediatamente
+      setSellerResponsesCount(0);
+    } catch (err) {
+      console.error('Error al cargar solicitudes del vendedor:', err);
+      toast.error('No se pudieron cargar tus solicitudes');
+    } finally {
+      setLoadingSellerRequests(false);
+    }
+  };
+
+  // WebSocket para notificaciones en tiempo real (para todos los usuarios)
+  // Los vendedores recibirán notificaciones cuando sus solicitudes sean resueltas
+  // Los supervisores recibirán notificaciones y se actualizará el contador
+  const { isConnected } = useWebSocketNotifications({
+    enabled: !!currentUser,
+    onCancellationRequestCreated: () => {
+      if (isSupervisor) {
+        // Incrementar contador cuando se crea una nueva solicitud
+        setPendingCount(prev => prev + 1);
+      }
+    },
+    onCancellationRequestResolved: () => {
+      if (isSupervisor) {
+        // Decrementar contador cuando se resuelve una solicitud
+        setPendingCount(prev => Math.max(0, prev - 1));
+      } else if (isSeller) {
+        // El vendedor recibe una notificación de respuesta
+        fetchSellerResponses();
+      }
+    }
+  });
+
+  // Cargar contadores iniciales
+  useEffect(() => {
+    if (isSupervisor) {
+      fetchPendingCount();
+    }
+  }, [isSupervisor, fetchPendingCount]);
+
+  useEffect(() => {
+    if (isSeller) {
+      fetchSellerResponses();
+    }
+  }, [isSeller, fetchSellerResponses]);
+
+  // Sincronizar contador cuando la ventana recupera el foco (para evitar desincronización)
+  useEffect(() => {
+    if (!isSupervisor) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-sincronizar contador cuando el usuario vuelve a la pestaña
+        fetchPendingCount();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isSupervisor, fetchPendingCount]);
+
   // Usamos useCallback para que estas funciones no se re-creen en cada render,
   // lo que es importante para la optimización con React.memo en el Sidebar.
   const handleLogout = useCallback(() => {
@@ -164,7 +294,7 @@ export const Dashboard: React.FC = () => {
               </button>
               
               {/* Info de usuario en la barra superior */}
-               <div>
+              <div>
                 {isLoading ? (
                   <div className="animate-pulse h-4 bg-gray-200 rounded w-32 lg:w-48"></div>
                 ) : error ? (
@@ -175,6 +305,55 @@ export const Dashboard: React.FC = () => {
                   </span>
                 ) : null}
               </div>
+
+              {/* Separador vertical */}
+              {(isSupervisor || isSeller) && (
+                <div className="h-8 w-px bg-gray-300"></div>
+              )}
+
+              {/* Campanita de notificaciones (solo para supervisores) */}
+              {isSupervisor && (
+                <button
+                  onClick={() => navigate('/supervisor/cancellation-requests')}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Ver solicitudes de anulación pendientes"
+                >
+                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">Solicitudes de Anulación</span>
+                  <div className="relative">
+                    <BellAlertIcon className="w-6 h-6 text-red-500" />
+                    {pendingCount > 0 && (
+                      <>
+                        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                          {pendingCount > 99 ? '99+' : pendingCount}
+                        </span>
+                        <span className="absolute -top-1 -right-1 inline-flex w-5 h-5 rounded-full bg-red-400 opacity-75 animate-ping"></span>
+                      </>
+                    )}
+                  </div>
+                </button>
+              )}
+
+              {/* Ícono de mensajes (solo para vendedores) */}
+              {isSeller && (
+                <button
+                  onClick={handleOpenSellerModal}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  title="Ver respuestas a tus solicitudes de anulación"
+                >
+                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">Mis Respuestas</span>
+                  <div className="relative">
+                    <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-500" />
+                    {sellerResponsesCount > 0 && (
+                      <>
+                        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+                          {sellerResponsesCount > 99 ? '99+' : sellerResponsesCount}
+                        </span>
+                        <span className="absolute -top-1 -right-1 inline-flex w-5 h-5 rounded-full bg-blue-400 opacity-75 animate-ping"></span>
+                      </>
+                    )}
+                  </div>
+                </button>
+              )}
             </div>
 
             {/* Accesos Rápidos */}
@@ -205,6 +384,16 @@ export const Dashboard: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* Modal de respuestas para vendedores */}
+      {isSeller && (
+        <SellerNotificationsModal
+          isOpen={showSellerModal}
+          onClose={() => setShowSellerModal(false)}
+          requests={sellerRequests}
+          isLoading={loadingSellerRequests}
+        />
+      )}
     </div>
   );
 };

@@ -177,6 +177,9 @@ export const UsersPage: React.FC = () => {
                   Rol
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Supervisor
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Estado
                 </th>
                 <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -198,6 +201,15 @@ export const UsersPage: React.FC = () => {
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                         {user.role_name}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {user.supervisor_name ? (
+                        <div className="text-sm text-gray-900">
+                          <div className="font-medium">{user.supervisor_name}</div>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400 italic">Sin supervisor</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -245,7 +257,7 @@ export const UsersPage: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     No se encontraron usuarios
                   </td>
                 </tr>

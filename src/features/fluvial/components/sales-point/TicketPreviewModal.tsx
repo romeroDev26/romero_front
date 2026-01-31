@@ -20,6 +20,8 @@ interface TicketPreviewModalProps {
   initialPhoneNumber?: string;
   // Función para limpiar el formulario cuando se cierre el modal
   onClearForm?: () => void;
+  // Mostrar solo el ticket de 80mm (ocultar A4)
+  showOnly80mm?: boolean;
 }
 
 type TicketFormat = 'ticket80mm' | 'a4';
@@ -31,6 +33,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   onSuccess,
   initialPhoneNumber = '',
   onClearForm,
+  showOnly80mm = false,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -46,10 +49,14 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
 
   // Generar PDFs en el backend cuando se abre el modal
   useEffect(() => {
-    if (isOpen && !previewUrl80mm && !previewUrlA4) {
-      generateBothPdfsFromBackend();
+    if (isOpen && !previewUrl80mm) {
+      if (showOnly80mm) {
+        generateOnly80mmPdfFromBackend();
+      } else {
+        generateBothPdfsFromBackend();
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, showOnly80mm]);
 
   // Limpiar URLs cuando se cierra el modal
   useEffect(() => {
@@ -60,6 +67,44 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       setGenerationSuccess(false);
     }
   }, [isOpen]);
+
+  /**
+   * Genera solo el PDF de 80mm (para equipaje extra)
+   */
+  const generateOnly80mmPdfFromBackend = async () => {
+    try {
+      setIsGenerating(true);
+      setGenerationSuccess(false);
+
+      // Llamar al backend para generar solo el PDF de 80mm
+      await invoicesService.generatePdf(invoiceId, '80mm');
+
+      // Obtener la invoice actualizada para extraer la URL del PDF
+      const updatedInvoice = await invoicesService.getById(invoiceId);
+
+      // Extraer URL directa del CDN
+      const url80mm = updatedInvoice.pdf_ticket_file_path;
+
+      if (!url80mm) {
+        throw new Error('PDF generado pero URL no disponible');
+      }
+
+      // Usar URL directa en el iframe
+      setPreviewUrl80mm(url80mm);
+      setGenerationSuccess(true);
+
+      toast.success('Ticket generado exitosamente');
+    } catch (error) {
+      console.error('Error generando ticket desde el backend:', error);
+      toast.error(
+        error instanceof Error 
+          ? error.message 
+          : 'Error al generar el ticket. Por favor, intente nuevamente.'
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   /**
    * Genera ambos PDFs (80mm y A4) llamando al backend
@@ -106,17 +151,15 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
    */
   const handleRegeneratePdfs = async () => {
     // Limpiar URLs existentes
-    if (previewUrl80mm) {
-      URL.revokeObjectURL(previewUrl80mm);
-      setPreviewUrl80mm('');
-    }
-    if (previewUrlA4) {
-      URL.revokeObjectURL(previewUrlA4);
-      setPreviewUrlA4('');
-    }
+    setPreviewUrl80mm('');
+    setPreviewUrlA4('');
 
-    // Regenerar
-    await generateBothPdfsFromBackend();
+    // Regenerar según configuración
+    if (showOnly80mm) {
+      await generateOnly80mmPdfFromBackend();
+    } else {
+      await generateBothPdfsFromBackend();
+    }
   };
 
   /**
@@ -188,30 +231,32 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         )}
 
         {/* Tabs para seleccionar formato */}
-        <div className="mb-4">
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => setActiveFormat('ticket80mm')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeFormat === 'ticket80mm'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Ticket 80mm (Termico)
-            </button>
-            <button
-              onClick={() => setActiveFormat('a4')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeFormat === 'a4'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Ticket A4 (Corporativo)
-            </button>
+        {!showOnly80mm && (
+          <div className="mb-4">
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setActiveFormat('ticket80mm')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  activeFormat === 'ticket80mm'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Ticket 80mm (Termico)
+              </button>
+              <button
+                onClick={() => setActiveFormat('a4')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  activeFormat === 'a4'
+                    ? 'border-b-2 border-blue-600 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Ticket A4 (Corporativo)
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Vista previa del PDF */}
         <div className="mb-4">

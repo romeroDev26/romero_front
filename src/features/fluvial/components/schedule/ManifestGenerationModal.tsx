@@ -108,7 +108,11 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
       console.error('Error al generar manifiesto:', error);
       
       // Manejo específico para diferentes tipos de error
-      if (error.response?.status === 401) {
+      if (error.response?.status === 403) {
+        // Error 403 - Sin permisos
+        const errorMessage = error.response.data?.detail || 'No tienes permisos para generar manifiestos';
+        toast.error(errorMessage);
+      } else if (error.response?.status === 401) {
         // Error 401 puede indicar falta de datos en lugar de problema de autenticación
         if (selectedType === 'CARGO') {
           toast.error('No se puede generar el manifiesto de carga: no hay carga registrada para este viaje');

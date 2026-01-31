@@ -16,6 +16,7 @@ export interface UpdateUserData {
   role_id?: number;
   is_active?: boolean;
   password?: string;
+  supervisor_id?: string | null;
 }
 
 export const usersService = {

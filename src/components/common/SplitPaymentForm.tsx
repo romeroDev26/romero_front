@@ -190,7 +190,6 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
   // Prevenir cambio de valor con scroll del mouse en inputs numericos
   const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
     e.currentTarget.blur();
-    e.preventDefault();
   };
 
   // Manejar blur en campo de monto (restaurar valor si esta vacio)

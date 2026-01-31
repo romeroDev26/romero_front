@@ -48,6 +48,7 @@ const ScheduleTripsPage = React.lazy(() => import('./features/fluvial/pages/Sche
 const SeriesAndOfficesPage = React.lazy(() => import('./features/fluvial/pages/SeriesAndOfficesPage').then(module => ({ default: module.DocumentSeriesPage })));
 const ReservationsPage = React.lazy(() => import('./features/fluvial/pages/ReservationsPage').then(module => ({ default: module.ReservationsPage })));
 const CargoSalePage = React.lazy(() => import('./features/cargo/pages/CargoSalePage').then(module => ({ default: module.CargoSalePage })));
+const ExtraBaggageSalePage = React.lazy(() => import('./features/fluvial/pages/ExtraBaggageSalePage').then(module => ({ default: module.default })));
 const ManifestsPage = React.lazy(() => import('./features/manifests/pages/ManifestsPage').then(module => ({ default: module.ManifestsPage })));
 const TripManifestsPage = React.lazy(() => import('./features/manifests/pages/TripManifestsPage').then(module => ({ default: module.TripManifestsPage })));
 
@@ -64,13 +65,13 @@ const DebitNoteNewPage = React.lazy(() => import('./features/accounting/debit-no
 const DebitNoteFormPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteFormPage').then(module => ({ default: module.DebitNoteFormPage })));
 const DebitNoteAnnulPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteAnnulPage').then(module => ({ default: module.DebitNoteAnnulPage })));
 const DebitNoteDetailPage = React.lazy(() => import('./features/accounting/debit-notes/pages/DebitNoteDetailPage').then(module => ({ default: module.DebitNoteDetailPage })));
-const VoidDocumentsListPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentsListPage').then(module => ({ default: module.VoidDocumentsListPage })));
-const VoidDocumentFormPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentFormPage').then(module => ({ default: module.VoidDocumentFormPage })));
-const VoidDocumentDetailPage = React.lazy(() => import('./features/accounting/pages/VoidDocumentDetailPage').then(module => ({ default: module.VoidDocumentDetailPage })));
 
 // Páginas de finanzas (lazy)
 const ReceivablesPage = React.lazy(() => import('./features/finance/pages/ReceivablesPage'));
 const ExpensesPage = () => <div className="p-6"><h1 className="text-2xl font-bold">Gastos</h1><p>Gestión de gastos operativos</p></div>;
+
+// Páginas de supervisor (lazy)
+const CancellationRequestsPage = React.lazy(() => import('./features/supervisor/pages/CancellationRequestsPage').then(module => ({ default: module.default })));
 
 // Crear cliente para React Query
 export const queryClient = new QueryClient({
@@ -198,6 +199,11 @@ function AppContent() {
                     <CargoSalePage />
                   </Suspense>
                 } />
+                <Route path="extra-baggage" element={
+                  <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                    <ExtraBaggageSalePage />
+                  </Suspense>
+                } />
                 <Route path="manifests" element={
                   <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
                     <ManifestsPage />
@@ -281,21 +287,7 @@ function AppContent() {
                   <DebitNoteDetailPage />
                 </Suspense>
               } />
-              <Route path="voids" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <VoidDocumentsListPage />
-                </Suspense>
-              } />
-              <Route path="voids/new" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <VoidDocumentFormPage />
-                </Suspense>
-              } />
-              <Route path="voids/:id" element={
-                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                  <VoidDocumentDetailPage />
-                </Suspense>
-              } />
+
             </Route>
             
             {/* Guías de Remisión (importante para carga) */}
@@ -310,6 +302,15 @@ function AppContent() {
             <Route path="finance">
               <Route path="receivables" element={<ReceivablesPage />} />
               <Route path="expenses" element={<ExpensesPage />} />
+            </Route>
+
+            {/* Supervisor */}
+            <Route path="supervisor">
+              <Route path="cancellation-requests" element={
+                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                  <CancellationRequestsPage />
+                </Suspense>
+              } />
             </Route>
             
             {/* Configuración del Sistema */}

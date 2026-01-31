@@ -6,7 +6,7 @@ import { MonthlySalesChart } from '../components/MonthlySalesChart';
 import { BranchSalesChart } from '../components/BranchSalesChart';
 import { BranchSalesLineChart } from '../components/BranchSalesLineChart';
 import { TopSellersByBranch } from '../components/TopSellersByBranch';
-import { BarChart3, FileText, Users, Banknote, Receipt, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { BarChart3, ArrowRight, Users, Banknote, Receipt, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { dashboardService } from '../../../services/dashboard.service';
 
@@ -87,8 +87,8 @@ export const DashboardPage: React.FC = () => {
             to="/reports"
             className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
           >
-            <FileText className="w-4 h-4" />
-            <span className="hidden sm:inline">Reportes</span>
+            <ArrowRight className="w-4 h-4" />
+            <span className="hidden sm:inline">Ver Reportes Detallados</span>
           </Link>
         </div>
       </div>

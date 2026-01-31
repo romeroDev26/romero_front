@@ -9,7 +9,8 @@ import {
   ClipboardDocumentListIcon, 
   DocumentTextIcon,
   BellAlertIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  BriefcaseIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
@@ -38,6 +39,14 @@ const quickAccessItems = [
     icon: CubeIcon,
     bgColor: 'bg-green-500',
     hoverColor: 'hover:bg-green-600',
+    textColor: 'text-white'
+  },
+  {
+    name: 'Equipaje Extra',
+    path: '/fluvial/operations/extra-baggage',
+    icon: BriefcaseIcon,
+    bgColor: 'bg-purple-500',
+    hoverColor: 'hover:bg-purple-600',
     textColor: 'text-white'
   },
   {

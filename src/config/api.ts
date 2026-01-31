@@ -1,9 +1,10 @@
 // src/config/api.ts
 import axios from 'axios';
+import { getApiUrl, API_PREFIX } from './env';
 
 // Definir la URL base de la API
-const baseURL = import.meta.env.VITE_API_URL || 'https://romeroapi-production-5dec.up.railway.app';
-const apiPrefix = '/api/v1'; // Prefijo de la API
+const baseURL = getApiUrl();
+const apiPrefix = API_PREFIX;
 
 // Crear instancia de axios con configuración personalizada
 const api = axios.create({

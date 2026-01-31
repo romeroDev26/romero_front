@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
+import { getWebSocketUrl as getWsBaseUrl, API_PREFIX } from '../config/env';
 
 interface WebSocketMessage {
   type: 'PING' | 'PONG' | 'CANCELLATION_REQUEST_CREATED' | 'CANCELLATION_REQUEST_RESOLVED';
@@ -39,9 +40,8 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
       return null;
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://romeroapi-production-5dec.up.railway.app';
-    let wsUrl = apiUrl.replace('https://', 'wss://').replace('http://', 'ws://');
-    wsUrl = `${wsUrl}/api/v1/ws/notifications`;
+    const wsBaseUrl = getWsBaseUrl();
+    const wsUrl = `${wsBaseUrl}${API_PREFIX}/ws/notifications`;
     
     return `${wsUrl}?token=${encodeURIComponent(token)}`;
   };

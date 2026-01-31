@@ -1,6 +1,7 @@
 // src/features/fluvial/hooks/useWebSocketConnection.ts
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ConnectionStatus, WebSocketConfig, SeatUpdateMessage } from '../types/websocket.types';
+import { getWebSocketUrl, API_PREFIX } from '../../../config/env';
 
 interface UseWebSocketConnectionReturn {
   connectionStatus: ConnectionStatus;
@@ -54,8 +55,8 @@ export const useWebSocketConnection = (
     }
 
     try {
-      const baseUrl = import.meta.env.VITE_WS_URL || 'wss://romeroapi-production-5dec.up.railway.app';
-      const wsUrl = `${baseUrl}/api/v1/ws/seats/${tripId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
+      const baseUrl = getWebSocketUrl();
+      const wsUrl = `${baseUrl}${API_PREFIX}/ws/seats/${tripId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -252,7 +253,8 @@ export const useWebSocketConnection = (
   }, [sendMessage]);
 
   const testConnection = useCallback((testUrl?: string) => {
-    const url = testUrl || `${import.meta.env.VITE_WS_URL || 'wss://romero-api.onrender.com'}/api/v1/ws/seats/${tripId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
+    const baseUrl = getWebSocketUrl();
+    const url = testUrl || `${baseUrl}${API_PREFIX}/ws/seats/${tripId}?user_id=${userId}&user_name=${encodeURIComponent(userName)}`;
     
     const testWs = new WebSocket(url);
     const timeout = setTimeout(() => testWs.close(), 10000);

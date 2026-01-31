@@ -90,19 +90,32 @@ export const ExtraBaggageSalePage: React.FC = () => {
     },
   });
 
-  // Cargar sucursal desde localStorage
+  // Cargar sucursal desde localStorage (mismo cache que SalesPointPage)
   useEffect(() => {
-    const savedBranchId = localStorage.getItem('selectedBranchId');
-    if (savedBranchId && branchOffices) {
-      const branch = branchOffices.find(b => b.id === parseInt(savedBranchId));
-      if (branch) {
-        setSelectedBranch(branch);
-      } else if (branchOffices.length > 0) {
-        setSelectedBranch(branchOffices[0]);
+    // Intentar cargar desde el cache del punto de venta (selectedSalesBranch)
+    const savedBranchJson = localStorage.getItem('selectedSalesBranch');
+    if (savedBranchJson) {
+      try {
+        const savedBranch = JSON.parse(savedBranchJson) as BranchOffice;
+        // Verificar que la sucursal guardada existe en las sucursales disponibles
+        if (branchOffices) {
+          const branchExists = branchOffices.find(b => b.id === savedBranch.id);
+          if (branchExists) {
+            setSelectedBranch(branchExists);
+            return;
+          }
+        } else {
+          // Si aun no se cargaron las sucursales, usar el objeto guardado
+          setSelectedBranch(savedBranch);
+          return;
+        }
+      } catch (e) {
+        console.error("Error parsing saved branch office", e);
       }
-    } else if (branchOffices && branchOffices.length > 0) {
-      setSelectedBranch(branchOffices[0]);
     }
+    
+    // Fallback: Si no hay cache valido y hay sucursales disponibles
+    // no seleccionar automaticamente ninguna para forzar al usuario a ir al punto de venta
   }, [branchOffices]);
 
   // Configurar series de documentos
@@ -531,25 +544,9 @@ export const ExtraBaggageSalePage: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Método de Pago */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-              <DollarSign className="h-5 w-5 mr-2 text-gray-600" />
-              Método de Pago
-            </h3>
-
-            <SplitPaymentForm
-              totalAmount={calculatedAmounts.totalAmount}
-              currencySymbol="S/"
-              disabled={isProcessing}
-              onPaymentDataChange={handleSplitPaymentChange}
-              onValidationChange={handleSplitPaymentValidationChange}
-            />
-          </div>
         </div>
 
-        {/* Columna derecha: Resumen y Acción */}
+        {/* Columna derecha: Resumen y Accion */}
         <div className="lg:col-span-1">
           <div className="bg-white p-6 rounded-lg shadow-sm border sticky top-6">
             <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
@@ -597,6 +594,20 @@ export const ExtraBaggageSalePage: React.FC = () => {
                   ))}
                 </select>
               )}
+            </div>
+
+            {/* Método de Pago */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Método de Pago
+              </label>
+              <SplitPaymentForm
+                totalAmount={calculatedAmounts.totalAmount}
+                currencySymbol="S/"
+                disabled={isProcessing}
+                onPaymentDataChange={handleSplitPaymentChange}
+                onValidationChange={handleSplitPaymentValidationChange}
+              />
             </div>
 
             {/* Desglose de montos */}

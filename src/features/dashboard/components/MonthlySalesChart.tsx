@@ -57,6 +57,32 @@ export const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ data, isLo
   // Calcular el total para mostrar en el header
   const total = chartData.reduce((acc, item) => acc + item.value, 0);
 
+  // Si no hay datos, mostrar mensaje informativo
+  if (!isLoading && chartData.length === 0) {
+    return (
+      <div className="bg-white p-5 rounded-xl border border-gray-100">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-gray-500">Ventas Mensuales</h3>
+            <p className="text-xl font-semibold text-gray-900 mt-1">S/ 0</p>
+          </div>
+          <span className="text-xs text-gray-400">Últimos 6 meses</span>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+            </div>
+            <p className="text-sm text-gray-500 font-medium">No hay datos disponibles</p>
+            <p className="text-xs text-gray-400 mt-1">Aún no se han registrado ventas mensuales</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-5 rounded-xl border border-gray-100">
       <div className="flex items-start justify-between mb-4">
@@ -66,7 +92,7 @@ export const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ data, isLo
             S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </p>
         </div>
-        <span className="text-xs text-gray-400">Ultimos 6 meses</span>
+        <span className="text-xs text-gray-400">Últimos 6 meses</span>
       </div>
       <ResponsiveContainer width="100%" height={220}>
         <AreaChart 
@@ -105,12 +131,12 @@ export const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ data, isLo
           />
           <Tooltip content={<CustomTooltip />} cursor={false} />
           <Area 
-            type="monotone"
+            type="linear"
             dataKey="value" 
             stroke="#3b82f6"
             strokeWidth={2.5}
             fill="url(#areaGradient)"
-            dot={false}
+            dot={{ r: 4, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
             activeDot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
           />
         </AreaChart>

@@ -122,7 +122,9 @@ export const Dashboard: React.FC = () => {
 
   // Verificar roles
   const isSupervisor = currentUser?.role?.name?.toLowerCase() === 'supervisor' || 
-                       currentUser?.role_name?.toLowerCase() === 'supervisor';
+                       currentUser?.role_name?.toLowerCase() === 'supervisor' ||
+                       currentUser?.role?.name?.toLowerCase() === 'admin' ||
+                       currentUser?.role_name?.toLowerCase() === 'admin';
   const isSeller = currentUser?.role?.name?.toLowerCase() === 'sales' || 
                    currentUser?.role_name?.toLowerCase() === 'sales';
 

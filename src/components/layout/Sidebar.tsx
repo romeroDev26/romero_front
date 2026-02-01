@@ -164,8 +164,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
   const { scrollRef, handleScroll } = useSidebarScroll();
   const { hasPermission } = usePermissions();
   
-  // Hook para obtener solicitudes pendientes (solo si es supervisor)
-  const isSupervisor = currentUser?.role?.name?.toLowerCase() === 'supervisor';
+  // Hook para obtener solicitudes pendientes (solo si es supervisor o admin)
+  const isSupervisor = currentUser?.role?.name?.toLowerCase() === 'supervisor' || currentUser?.role?.name?.toLowerCase() === 'admin';
   const [pendingCount, setPendingCount] = useState(0);
   
   // Función para obtener el contador de pendientes
@@ -217,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
     
     return navGroups.filter(group => {
       if (group.title === 'Navegación Principal') return true; // Siempre visible para todos los usuarios
-      if (group.title === 'Supervisión') return isSupervisor; // Solo visible para supervisores
+      if (group.title === 'Supervisión') return isSupervisor || isAdmin; // Visible para supervisores y administradores
       if (group.title === 'Dashboard') return hasPermission('dashboard', undefined, userRole);
       if (group.title === 'Gestión de Clientes') return hasPermission('clients', undefined, userRole);
       if (group.title === 'Sistema de Transporte Fluvial') return hasPermission('fluvial', undefined, userRole);
@@ -234,8 +234,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
           return false;
         }
         
-        // Si el item es solo para supervisor, verificar que el usuario sea supervisor
-        if (item.supervisorOnly && !isSupervisor) {
+        // Si el item es solo para supervisor, verificar que el usuario sea supervisor o admin
+        if (item.supervisorOnly && !isSupervisor && !isAdmin) {
           return false;
         }
         

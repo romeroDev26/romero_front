@@ -21,7 +21,7 @@ export const usePermissions = () => {
         return role === 'admin'; // Solo administradores pueden acceder al dashboard analítico
 
       case 'supervisor':
-        return role === 'supervisor'; // Solo supervisores
+        return role === 'supervisor' || role === 'admin'; // Supervisores y administradores
 
       case 'clients':
         return ['sales', 'supervisor', 'dispatcher', 'accountant'].includes(role); // SALES, SUPERVISOR CRUD, otros lectura

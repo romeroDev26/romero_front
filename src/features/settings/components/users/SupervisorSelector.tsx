@@ -37,13 +37,16 @@ export const SupervisorSelector: React.FC<SupervisorSelectorProps> = ({
     queryFn: () => usersService.getAll(),
   });
 
-  // Filtrar solo usuarios activos con rol "supervisor"
+  // Filtrar solo usuarios activos con rol "supervisor" o "admin"
   // Excluir al usuario actual para evitar auto-asignación
   const availableSupervisors = users?.filter(
     user => 
       user.is_active && 
       user.id !== currentUserId &&
-      (user.role_name?.toLowerCase() === 'supervisor' || user.role?.name?.toLowerCase() === 'supervisor')
+      (user.role_name?.toLowerCase() === 'supervisor' || 
+       user.role_name?.toLowerCase() === 'admin' ||
+       user.role?.name?.toLowerCase() === 'supervisor' ||
+       user.role?.name?.toLowerCase() === 'admin')
   ) || [];
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

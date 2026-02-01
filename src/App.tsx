@@ -48,7 +48,7 @@ const ScheduleTripsPage = React.lazy(() => import('./features/fluvial/pages/Sche
 const SeriesAndOfficesPage = React.lazy(() => import('./features/fluvial/pages/SeriesAndOfficesPage').then(module => ({ default: module.DocumentSeriesPage })));
 const ReservationsPage = React.lazy(() => import('./features/fluvial/pages/ReservationsPage').then(module => ({ default: module.ReservationsPage })));
 const CargoSalePage = React.lazy(() => import('./features/cargo/pages/CargoSalePage').then(module => ({ default: module.CargoSalePage })));
-const ExtraBaggageSalePage = React.lazy(() => import('./features/fluvial/pages/ExtraBaggageSalePage').then(module => ({ default: module.default })));
+const QuickSalePage = React.lazy(() => import('./features/fluvial/quick-sales/pages/QuickSalePage').then(module => ({ default: module.default })));
 const ManifestsPage = React.lazy(() => import('./features/manifests/pages/ManifestsPage').then(module => ({ default: module.ManifestsPage })));
 const TripManifestsPage = React.lazy(() => import('./features/manifests/pages/TripManifestsPage').then(module => ({ default: module.TripManifestsPage })));
 
@@ -199,9 +199,9 @@ function AppContent() {
                     <CargoSalePage />
                   </Suspense>
                 } />
-                <Route path="extra-baggage" element={
+                <Route path="quick-sales" element={
                   <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
-                    <ExtraBaggageSalePage />
+                    <QuickSalePage />
                   </Suspense>
                 } />
                 <Route path="manifests" element={

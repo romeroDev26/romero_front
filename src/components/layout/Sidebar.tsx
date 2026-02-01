@@ -107,7 +107,7 @@ const navGroups: NavGroup[] = [
           { name: 'Punto de Venta (Pasajes)', path: '/fluvial/operations/sales-point', icon: TicketIcon, iconColor: 'text-blue-500' },
           { name: 'Gestionar Reservas', path: '/fluvial/operations/reservations', icon: ClipboardDocumentListIcon, iconColor: 'text-blue-500' },
           { name: 'Encomiendas y Carga', path: '/fluvial/operations/cargo-sale', icon: CubeIcon, iconColor: 'text-blue-500' },
-          { name: 'Venta de Equipaje Extra', path: '/fluvial/operations/extra-baggage', icon: BriefcaseIcon, iconColor: 'text-purple-500' },
+          { name: 'Venta Rápida', path: '/fluvial/operations/quick-sales', icon: BriefcaseIcon, iconColor: 'text-purple-500' },
           { name: 'Manifiestos', path: '/fluvial/operations/manifests', icon: DocumentTextIcon, iconColor: 'text-blue-500' }
         ]
       }

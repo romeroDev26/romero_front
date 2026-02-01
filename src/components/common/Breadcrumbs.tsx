@@ -32,7 +32,7 @@ const routeNameMap: { [key: string]: string } = {
   'sales-point': 'Punto de Ventas',
   'reservations': 'Gestionar Reservas',
   'cargo-sale': 'Encomiendas y Carga',
-  'extra-baggage': 'Venta de Equipaje Extra',
+  'quick-sales': 'Venta Rápida',
   'manifests': 'Manifiestos',
   
   // Finanzas

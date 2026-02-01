@@ -43,7 +43,7 @@ const quickAccessItems = [
   },
   {
     name: 'Equipaje Extra',
-    path: '/fluvial/operations/extra-baggage',
+    path: '/fluvial/operations/quick-sales',
     icon: BriefcaseIcon,
     bgColor: 'bg-purple-500',
     hoverColor: 'hover:bg-purple-600',

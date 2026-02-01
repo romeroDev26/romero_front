@@ -104,7 +104,7 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
 
   // Calcular total del periodo
   const totalPeriod = chartData.reduce((acc, item) => {
-    return acc + branchNames.reduce((sum, branch) => sum + (item[branch] || 0), 0);
+    return acc + branchNames.reduce((sum, branch) => sum + ((item as any)[branch] || 0), 0);
   }, 0);
 
   // Si no hay datos, mostrar mensaje informativo

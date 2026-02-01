@@ -107,6 +107,31 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
     return acc + branchNames.reduce((sum, branch) => sum + (item[branch] || 0), 0);
   }, 0);
 
+  // Si no hay datos, mostrar mensaje informativo
+  if (!isLoading && (chartData.length === 0 || branchNames.length === 0)) {
+    return (
+      <div className="bg-white p-5 rounded-xl border border-gray-100">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-medium text-gray-500">Evolución de Ventas por Sucursal</h3>
+            <p className="text-xl font-semibold text-gray-900 mt-1">S/ 0</p>
+          </div>
+        </div>
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="text-sm text-gray-500 font-medium">No hay datos disponibles</p>
+            <p className="text-xs text-gray-400 mt-1">Aún no se han registrado ventas en el periodo</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white p-5 rounded-xl border border-gray-100">
       <div className="flex items-start justify-between mb-4">

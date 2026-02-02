@@ -88,6 +88,9 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
           if (message.data) {
             const data = message.data as CancellationRequestCreatedData;
             
+            console.log('[WebSocket] CANCELLATION_REQUEST_CREATED recibido:', data);
+            console.log('[WebSocket] Handlers registrados:', messageHandlers.get('CANCELLATION_REQUEST_CREATED')?.size || 0);
+            
             // Construir mensaje más informativo con los nuevos datos
             let toastMessage = data.message || `Nueva solicitud de anulación de ${data.requesterName}`;
             
@@ -108,6 +111,7 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
             
             const handlers = messageHandlers.get('CANCELLATION_REQUEST_CREATED');
             if (handlers) {
+              console.log('[WebSocket] Ejecutando', handlers.size, 'handler(s)');
               handlers.forEach(handler => handler(data));
             }
           }

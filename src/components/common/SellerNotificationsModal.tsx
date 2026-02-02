@@ -10,15 +10,21 @@ interface SellerNotificationsModalProps {
   onClose: () => void;
   requests: CancellationRequestListItem[];
   isLoading: boolean;
+  onMarkAllAsRead: () => Promise<void>;
+  onMarkOneAsRead: (requestId: number) => Promise<void>;
 }
 
 const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
   isOpen,
   onClose,
   requests,
-  isLoading
+  isLoading,
+  onMarkAllAsRead,
+  onMarkOneAsRead
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMarkingAsRead, setIsMarkingAsRead] = useState(false);
+  const [markingRequestId, setMarkingRequestId] = useState<number | null>(null);
   const itemsPerPage = 10;
 
   // Resetear página cuando se abre el modal
@@ -27,6 +33,26 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
       setCurrentPage(1);
     }
   }, [isOpen]);
+
+  // Función para marcar todas como leídas
+  const handleMarkAllAsRead = async () => {
+    setIsMarkingAsRead(true);
+    try {
+      await onMarkAllAsRead();
+    } finally {
+      setIsMarkingAsRead(false);
+    }
+  };
+
+  // Función para marcar una como leída
+  const handleMarkOneAsRead = async (requestId: number) => {
+    setMarkingRequestId(requestId);
+    try {
+      await onMarkOneAsRead(requestId);
+    } finally {
+      setMarkingRequestId(null);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -41,15 +67,6 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedRequests = resolvedRequests.slice(startIndex, endIndex);
-
-  // Obtener IDs de solicitudes ya vistas antes de abrir este modal
-  const getViewedIds = (): Set<number> => {
-    const viewedKey = 'cancellation_requests_viewed';
-    const viewedStr = localStorage.getItem(viewedKey);
-    return viewedStr ? new Set(JSON.parse(viewedStr)) : new Set();
-  };
-
-  const viewedIds = getViewedIds();
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -92,7 +109,8 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
             ) : (
               <div className="space-y-4">
                 {paginatedRequests.map((request) => {
-                  const isNew = !viewedIds.has(request.id);
+                  // Usar requester_read_at del backend para determinar si es nueva
+                  const isNew = !request.requester_read_at;
                   return (
                   <div
                     key={request.id}
@@ -176,6 +194,32 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
                         </p>
                       </div>
                     )}
+
+                    {/* Botón para marcar como leída (solo si no ha sido leída) */}
+                    {isNew && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <button
+                          onClick={() => handleMarkOneAsRead(request.id)}
+                          disabled={markingRequestId === request.id}
+                          className="w-full px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:bg-blue-200 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {markingRequestId === request.id ? (
+                            <>
+                              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              <span>Marcando...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircleIcon className="w-4 h-4" />
+                              <span>Marcar como leída</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
                   </div>
                   );
                 })}
@@ -198,7 +242,31 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-between items-center gap-3 p-6 border-t border-gray-200 bg-gray-50">
+            <div>
+              {resolvedRequests.filter(r => !r.requester_read_at).length > 0 && (
+                <button
+                  onClick={handleMarkAllAsRead}
+                  disabled={isMarkingAsRead}
+                  className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isMarkingAsRead ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Marcando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircleIcon className="w-5 h-5" />
+                      <span>Marcar todas como leídas ({resolvedRequests.filter(r => !r.requester_read_at).length})</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
             <button
               onClick={onClose}
               className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

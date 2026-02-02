@@ -106,23 +106,27 @@ class CancellationRequestsService {
   }
 
   /**
+   * Marcar una solicitud como leída (vendedor)
+   */
+  async markAsRead(id: number): Promise<CancellationRequest> {
+    const response = await api.post<CancellationRequest>(
+      `/operations/cancellation-requests/${id}/mark-read`
+    );
+    return response.data;
+  }
+
+  /**
    * Obtener el conteo de solicitudes resueltas sin leer (vendedor)
    */
   async getUnreadResolvedCount(): Promise<number> {
     try {
       const myRequests = await this.getMyRequests();
-      // Obtener las solicitudes que están resueltas
-      const resolvedRequests = myRequests.filter(r => r.status === 'APPROVED' || r.status === 'REJECTED');
+      // Obtener las solicitudes que están resueltas y no han sido leídas
+      const unreadResolved = myRequests.filter(r => 
+        (r.status === 'APPROVED' || r.status === 'REJECTED') && !r.requester_read_at
+      );
       
-      // Obtener IDs de solicitudes ya vistas desde localStorage
-      const viewedKey = 'cancellation_requests_viewed';
-      const viewedStr = localStorage.getItem(viewedKey);
-      const viewedIds: Set<number> = viewedStr ? new Set(JSON.parse(viewedStr)) : new Set();
-      
-      // Contar solo las que NO han sido vistas
-      const unreadCount = resolvedRequests.filter(r => !viewedIds.has(r.id)).length;
-      
-      return unreadCount;
+      return unreadResolved.length;
     } catch (error) {
       console.error('Error obteniendo conteo de respuestas:', error);
       return 0;
@@ -130,26 +134,23 @@ class CancellationRequestsService {
   }
 
   /**
-   * Marcar solicitudes resueltas como vistas (vendedor)
+   * Marcar múltiples solicitudes como leídas en batch (vendedor)
    */
-  markResolvedAsViewed(requests: CancellationRequestListItem[]): void {
+  async markMultipleAsRead(requests: CancellationRequestListItem[]): Promise<void> {
     try {
-      const resolvedRequests = requests.filter(r => r.status === 'APPROVED' || r.status === 'REJECTED');
-      const resolvedIds = resolvedRequests.map(r => r.id);
+      // Filtrar solicitudes resueltas y no leídas
+      const unreadResolved = requests.filter(
+        r => (r.status === 'APPROVED' || r.status === 'REJECTED') && !r.requester_read_at
+      );
       
-      if (resolvedIds.length === 0) return;
+      if (unreadResolved.length === 0) return;
       
-      const viewedKey = 'cancellation_requests_viewed';
-      const viewedStr = localStorage.getItem(viewedKey);
-      const viewedIds: Set<number> = viewedStr ? new Set(JSON.parse(viewedStr)) : new Set();
-      
-      // Añadir los nuevos IDs
-      resolvedIds.forEach(id => viewedIds.add(id));
-      
-      // Guardar en localStorage
-      localStorage.setItem(viewedKey, JSON.stringify(Array.from(viewedIds)));
+      // Marcar cada solicitud como leída en el backend
+      await Promise.all(
+        unreadResolved.map(request => this.markAsRead(request.id))
+      );
     } catch (error) {
-      console.error('Error al marcar solicitudes como vistas:', error);
+      console.error('Error al marcar solicitudes como leídas:', error);
     }
   }
 }

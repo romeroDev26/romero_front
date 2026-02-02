@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { SalesPointSelector } from './SalesPointSelector';
+import { SellerRanking } from './SellerRanking';
 import { useExportReport } from '../../../hooks/useExportReport';
 import { Modal } from '../../../components/common/Modal';
 import { Button } from '../../../components/common/Button';
@@ -96,6 +97,11 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
                   <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
                   {syncExporting ? 'Exportando...' : 'Exportar Reporte a Excel'}
                 </button>
+              </div>
+
+              {/* Ranking de Vendedores */}
+              <div className="mt-6 animate-slide-up" style={{ animationDelay: '0.6s' }}>
+                <SellerRanking />
               </div>
 
               {/* Footer */}

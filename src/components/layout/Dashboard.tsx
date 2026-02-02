@@ -189,7 +189,6 @@ export const Dashboard: React.FC = () => {
   // Handlers para eventos WebSocket (memoizados con dependencias correctas)
   const handleCancellationRequestCreated = useCallback(() => {
     if (isSupervisor) {
-      console.log('[Dashboard] Notificación CREATED recibida, incrementando contador');
       // Incrementar contador cuando se crea una nueva solicitud
       setPendingCount(prev => prev + 1);
     }
@@ -197,11 +196,9 @@ export const Dashboard: React.FC = () => {
 
   const handleCancellationRequestResolved = useCallback(() => {
     if (isSupervisor) {
-      console.log('[Dashboard] Notificación RESOLVED recibida, decrementando contador');
       // Decrementar contador cuando se resuelve una solicitud
       setPendingCount(prev => Math.max(0, prev - 1));
     } else if (isSeller) {
-      console.log('[Dashboard] Notificación RESOLVED recibida para vendedor');
       // El vendedor recibe una notificación de respuesta
       fetchSellerResponses();
     }

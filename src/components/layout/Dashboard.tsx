@@ -42,8 +42,8 @@ const quickAccessItems = [
     textColor: 'text-white'
   },
   {
-    name: 'Equipaje Extra',
-    path: '/fluvial/operations/extra-baggage',
+    name: 'Ventas Rápidas',
+    path: '/fluvial/operations/quick-sales',
     icon: BriefcaseIcon,
     bgColor: 'bg-purple-500',
     hoverColor: 'hover:bg-purple-600',
@@ -122,7 +122,9 @@ export const Dashboard: React.FC = () => {
 
   // Verificar roles
   const isSupervisor = currentUser?.role?.name?.toLowerCase() === 'supervisor' || 
-                       currentUser?.role_name?.toLowerCase() === 'supervisor';
+                       currentUser?.role_name?.toLowerCase() === 'supervisor' ||
+                       currentUser?.role?.name?.toLowerCase() === 'admin' ||
+                       currentUser?.role_name?.toLowerCase() === 'admin';
   const isSeller = currentUser?.role?.name?.toLowerCase() === 'sales' || 
                    currentUser?.role_name?.toLowerCase() === 'sales';
 
@@ -146,7 +148,7 @@ export const Dashboard: React.FC = () => {
     } catch (err) {
       console.error('Error al obtener solicitudes pendientes:', err);
     }
-  }, [isSupervisor]);
+  }, [isSupervisor, currentUser]);
 
   // Función para obtener las respuestas del vendedor
   const fetchSellerResponses = useCallback(async () => {
@@ -184,26 +186,31 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  // Handlers para eventos WebSocket (memoizados con dependencias correctas)
+  const handleCancellationRequestCreated = useCallback(() => {
+    if (isSupervisor) {
+      // Incrementar contador cuando se crea una nueva solicitud
+      setPendingCount(prev => prev + 1);
+    }
+  }, [isSupervisor]);
+
+  const handleCancellationRequestResolved = useCallback(() => {
+    if (isSupervisor) {
+      // Decrementar contador cuando se resuelve una solicitud
+      setPendingCount(prev => Math.max(0, prev - 1));
+    } else if (isSeller) {
+      // El vendedor recibe una notificación de respuesta
+      fetchSellerResponses();
+    }
+  }, [isSupervisor, isSeller, fetchSellerResponses]);
+
   // WebSocket para notificaciones en tiempo real (para todos los usuarios)
   // Los vendedores recibirán notificaciones cuando sus solicitudes sean resueltas
   // Los supervisores recibirán notificaciones y se actualizará el contador
   const { isConnected } = useWebSocketNotifications({
     enabled: !!currentUser,
-    onCancellationRequestCreated: () => {
-      if (isSupervisor) {
-        // Incrementar contador cuando se crea una nueva solicitud
-        setPendingCount(prev => prev + 1);
-      }
-    },
-    onCancellationRequestResolved: () => {
-      if (isSupervisor) {
-        // Decrementar contador cuando se resuelve una solicitud
-        setPendingCount(prev => Math.max(0, prev - 1));
-      } else if (isSeller) {
-        // El vendedor recibe una notificación de respuesta
-        fetchSellerResponses();
-      }
-    }
+    onCancellationRequestCreated: handleCancellationRequestCreated,
+    onCancellationRequestResolved: handleCancellationRequestResolved
   });
 
   // Cargar contadores iniciales
@@ -218,6 +225,22 @@ export const Dashboard: React.FC = () => {
       fetchSellerResponses();
     }
   }, [isSeller, fetchSellerResponses]);
+
+  // Escuchar evento personalizado cuando se resuelve una solicitud localmente
+  useEffect(() => {
+    if (!isSupervisor) return;
+
+    const handleLocalResolution = () => {
+      // Actualizar contador cuando se resuelve una solicitud localmente
+      fetchPendingCount();
+    };
+
+    window.addEventListener('cancellation-request-resolved', handleLocalResolution);
+
+    return () => {
+      window.removeEventListener('cancellation-request-resolved', handleLocalResolution);
+    };
+  }, [isSupervisor, fetchPendingCount]);
 
   // Sincronizar contador cuando la ventana recupera el foco (para evitar desincronización)
   useEffect(() => {

@@ -1,12 +1,11 @@
-// src/features/fluvial/pages/ExtraBaggageSalePage.tsx
+// src/features/fluvial/quick-sales/pages/QuickSalePage.tsx
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
-  Briefcase, 
-  DollarSign, 
+  Zap, 
   User,
   FileText,
   AlertTriangle,
@@ -14,29 +13,31 @@ import {
   CheckCircle
 } from 'lucide-react';
 
-import { Button } from '../../../components/common/Button';
-import { Spinner } from '../../../components/common/Spinner';
-import { SplitPaymentForm, SplitPaymentData } from '../../../components/common/SplitPaymentForm';
-import { PassengerDataForm } from '../components/sales-point/PassengerDataForm';
-import { ConfirmSaleModal } from '../components/sales-point/ConfirmSaleModal';
-import { TicketPreviewModal } from '../components/sales-point/TicketPreviewModal';
-import { BackendInvoiceData } from '../components/sales-point/tickets/types/backend.types';
+import { Button } from '../../../../components/common/Button';
+import { Spinner } from '../../../../components/common/Spinner';
+import { SplitPaymentForm, SplitPaymentData } from '../../../../components/common/SplitPaymentForm';
+import { PassengerDataForm } from '../../components/sales-point/PassengerDataForm';
+import { ConfirmSaleModal } from '../../components/sales-point/ConfirmSaleModal';
+import { TicketPreviewModal } from '../../components/sales-point/TicketPreviewModal';
+import { BackendInvoiceData } from '../../components/sales-point/tickets/types/backend.types';
 
-import { mobileInvoicesService, MobileInvoiceCreateData } from '../../../services/mobileInvoices.service';
-import { invoicesService } from '../../../services/invoices.service';
-import { useDocumentSeriesForBranch } from '../hooks/useDocumentSeriesForBranch';
-import { useClientManager } from '../hooks/useClientManager';
-import { useBranchOffices } from '../../../hooks/useBranchOffices';
-import { useCompanyInfo } from '../../../hooks/useCompanyInfo';
+import { ServiceSelector, RouteSection, ServiceDetailsForm } from '../components';
+import { useProducts } from '../hooks/useProducts';
+import { useRouteHistory } from '../hooks/useRouteHistory';
+import { initialQuickSaleFormData } from '../types/quickSale.types';
 
-import { PassengerData, initialPassengerData } from '../components/sales-point/core/types';
-import { SunatDocType, SunatInvoiceType } from '../types/sunat.types';
-import { BranchOffice, CreateClientData } from '../../../types';
+import { mobileInvoicesService, MobileInvoiceCreateData } from '../../../../services/mobileInvoices.service';
+import { invoicesService } from '../../../../services/invoices.service';
+import { useDocumentSeriesForBranch } from '../../hooks/useDocumentSeriesForBranch';
+import { useClientManager } from '../../hooks/useClientManager';
+import { useBranchOffices } from '../../../../hooks/useBranchOffices';
+import { useCompanyInfo } from '../../../../hooks/useCompanyInfo';
 
-const EXTRA_BAGGAGE_PRODUCT_ID = 7;
-const DEFAULT_UNIT_CODE = 'NIU';
+import { PassengerData, initialPassengerData } from '../../components/sales-point/core/types';
+import { SunatDocType, SunatInvoiceType } from '../../types/sunat.types';
+import { BranchOffice, CreateClientData } from '../../../../types';
 
-export const ExtraBaggageSalePage: React.FC = () => {
+export const QuickSalePage: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -48,10 +49,8 @@ export const ExtraBaggageSalePage: React.FC = () => {
   // Estado del cliente
   const [passengerData, setPassengerData] = useState<PassengerData>(initialPassengerData);
   
-  // Estado del formulario
-  const [price, setPrice] = useState<string>('');
-  const [description, setDescription] = useState<string>('');
-  const [isIgvGravado, setIsIgvGravado] = useState<boolean>(false); // Por defecto Exonerado (20)
+  // Estado del formulario de venta rápida
+  const [formData, setFormData] = useState(initialQuickSaleFormData);
   
   // Estado de comprobante
   const [selectedBoletaSeries, setSelectedBoletaSeries] = useState<string>('');
@@ -69,18 +68,23 @@ export const ExtraBaggageSalePage: React.FC = () => {
   });
   const [isSplitPaymentValid, setIsSplitPaymentValid] = useState(true);
   
+  // Estado de contraentrega
+  const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
+  
   // Estados para modales
   const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
   const [showTicketPreview, setShowTicketPreview] = useState(false);
   const [ticketBackendData, setTicketBackendData] = useState<BackendInvoiceData | null>(null);
 
   // Hooks de datos
+  const { data: products, isLoading: isLoadingProducts } = useProducts();
   const { findOrCreateClient, isProcessingClient } = useClientManager();
   const {
     availableBoletaSeries,
     availableFacturaSeries,
     isLoading: isLoadingSeries,
   } = useDocumentSeriesForBranch(selectedBranch?.id || null);
+  const { saveRoute, getOriginSuggestions, getDestinationSuggestions } = useRouteHistory();
 
   // Mutación para crear factura
   const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useMutation({
@@ -90,14 +94,12 @@ export const ExtraBaggageSalePage: React.FC = () => {
     },
   });
 
-  // Cargar sucursal desde localStorage (mismo cache que SalesPointPage)
+  // Cargar sucursal desde localStorage
   useEffect(() => {
-    // Intentar cargar desde el cache del punto de venta (selectedSalesBranch)
     const savedBranchJson = localStorage.getItem('selectedSalesBranch');
     if (savedBranchJson) {
       try {
         const savedBranch = JSON.parse(savedBranchJson) as BranchOffice;
-        // Verificar que la sucursal guardada existe en las sucursales disponibles
         if (branchOffices) {
           const branchExists = branchOffices.find(b => b.id === savedBranch.id);
           if (branchExists) {
@@ -105,7 +107,6 @@ export const ExtraBaggageSalePage: React.FC = () => {
             return;
           }
         } else {
-          // Si aun no se cargaron las sucursales, usar el objeto guardado
           setSelectedBranch(savedBranch);
           return;
         }
@@ -113,9 +114,6 @@ export const ExtraBaggageSalePage: React.FC = () => {
         console.error("Error parsing saved branch office", e);
       }
     }
-    
-    // Fallback: Si no hay cache valido y hay sucursales disponibles
-    // no seleccionar automaticamente ninguna para forzar al usuario a ir al punto de venta
   }, [branchOffices]);
 
   // Configurar series de documentos
@@ -151,38 +149,42 @@ export const ExtraBaggageSalePage: React.FC = () => {
   };
 
   // Calcular montos
-  const priceNumber = useMemo(() => parseFloat(price) || 0, [price]);
-  
   const calculatedAmounts = useMemo(() => {
-    const baseAmount = priceNumber;
+    if (!formData.selectedProduct) {
+      return { baseAmount: 0, igvAmount: 0, totalAmount: 0 };
+    }
+
+    // El precio ahora es obligatorio, no hay precio base por defecto
+    const unitPrice = formData.customPrice ? parseFloat(formData.customPrice) : 0;
+    
+    const baseAmount = unitPrice * formData.quantity;
     let igvAmount = 0;
     let totalAmount = baseAmount;
 
-    if (isIgvGravado) {
-      // IGV 18%
+    if (formData.isIgvGravado) {
       igvAmount = baseAmount * 0.18;
       totalAmount = baseAmount + igvAmount;
     }
 
-    return {
-      baseAmount,
-      igvAmount,
-      totalAmount,
-    };
-  }, [priceNumber, isIgvGravado]);
+    return { baseAmount, igvAmount, totalAmount };
+  }, [formData.selectedProduct, formData.customPrice, formData.quantity, formData.isIgvGravado]);
 
   // Determinar si es RUC
   const isRuc = passengerData.docType === SunatDocType.RUC;
-  
-  // Para equipaje extra, los datos del cliente son opcionales
-  // Si no se proporcionan, se usa el cliente especial ID 1
   const hasClientData = passengerData.docNumber.trim() !== '' && passengerData.name.trim() !== '';
-  const requiresClientData = isRuc; // Solo facturas requieren datos obligatorios
+  const requiresClientData = isRuc;
 
   // Validar formulario
   const isFormValid = useMemo(() => {
-    // Validar precio
-    if (!price || priceNumber <= 0) return false;
+    // Validar producto seleccionado
+    if (!formData.selectedProduct) return false;
+    
+    // Validar cantidad
+    if (formData.quantity <= 0) return false;
+    
+    // Validar precio ingresado manualmente
+    const priceValue = parseFloat(formData.customPrice);
+    if (!formData.customPrice || isNaN(priceValue) || priceValue <= 0) return false;
     
     // Validar cliente solo si es RUC (factura)
     if (isRuc) {
@@ -195,20 +197,22 @@ export const ExtraBaggageSalePage: React.FC = () => {
     const selectedSeries = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
     if (!selectedSeries) return false;
     
-    // Validar pago dividido si está activo
-    if (splitPaymentData.isSplitPayment && !isSplitPaymentValid) {
+    // Validar pago dividido solo si está activo y NO es contraentrega
+    if (!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid) {
       return false;
     }
     
     return true;
   }, [
-    price,
-    priceNumber,
+    formData.selectedProduct,
+    formData.quantity,
+    formData.customPrice,
     isRuc,
     passengerData.docNumber,
     passengerData.name,
     selectedFacturaSeries,
     selectedBoletaSeries,
+    isContraentrega,
     splitPaymentData.isSplitPayment,
     isSplitPaymentValid,
   ]);
@@ -237,13 +241,12 @@ export const ExtraBaggageSalePage: React.FC = () => {
     setIsConfirmSaleModalOpen(true);
   };
   
-  // Handler para confirmar venta (después de confirmación en modal)
+  // Handler para confirmar venta
   const handleConfirmSale = async () => {
-    // Cerrar modal de confirmación
     setIsConfirmSaleModalOpen(false);
 
-    if (!selectedBranch) {
-      toast.error('Seleccione una sucursal');
+    if (!selectedBranch || !formData.selectedProduct) {
+      toast.error('Faltan datos necesarios para completar la venta');
       return;
     }
 
@@ -265,11 +268,20 @@ export const ExtraBaggageSalePage: React.FC = () => {
         const client = await findOrCreateClient(clientData);
         clientId = client.id;
       } else {
-        // Sin datos de cliente, usar cliente especial ID 1
-        clientId = 1;
+        clientId = 1; // Cliente genérico
       }
 
-      // 2. Preparar datos de la factura
+      // Construir el campo notes
+      let notesContent = `Venta Rápida - ${formData.selectedProduct.name}`;
+      if (formData.origin.trim() && formData.destination.trim()) {
+        notesContent = `${formData.origin.trim()} > ${formData.destination.trim()}`;
+        saveRoute(formData.origin, formData.destination);
+      }
+
+      // Calcular precio unitario (obligatorio, ingresado manualmente)
+      const unitPrice = parseFloat(formData.customPrice);
+      
+      // Preparar datos de la factura
       const invoiceData: MobileInvoiceCreateData = {
         client_id: clientId,
         client_doc_type: hasClientData ? passengerData.docType : SunatDocType.DNI,
@@ -280,49 +292,51 @@ export const ExtraBaggageSalePage: React.FC = () => {
         document_type_code: isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA,
         series: isRuc ? selectedFacturaSeries : selectedBoletaSeries,
         
-        is_credit_sale: false,
+        is_credit_sale: isContraentrega,
         total_discount: 0,
-        notes: `Venta de Equipaje Extra - Sucursal: ${selectedBranch.name}`,
+        notes: notesContent,
         
-        // Método de pago principal
-        payment_method_code: splitPaymentData.paymentMethod1,
-        payment_operation_code: splitPaymentData.operationCode1 || undefined,
+        // Método de pago: solo enviar si NO es contraentrega
+        ...(!isContraentrega && {
+          payment_method_code: splitPaymentData.paymentMethod1,
+          payment_operation_code: splitPaymentData.operationCode1 || undefined,
+        }),
         
         items: [
           {
-            product_id: EXTRA_BAGGAGE_PRODUCT_ID,
-            quantity: 1,
-            unit_price: priceNumber,
-            unit_code: DEFAULT_UNIT_CODE,
-            tax_category_code: isIgvGravado ? '10' : '20',
+            product_id: formData.selectedProduct.id,
+            quantity: formData.quantity,
+            unit_price: unitPrice,
+            unit_code: formData.selectedProduct.unit_code,
+            tax_category_code: formData.isIgvGravado ? '10' : '20',
             discount: 0,
-            item_description: description 
-              ? `Equipaje Extra - ${description}` 
-              : 'Equipaje Extra',
+            item_description: formData.description 
+              ? `${formData.selectedProduct.name} - ${formData.description}` 
+              : formData.selectedProduct.name,
           },
         ],
       };
 
-      // Agregar datos de pago dividido si está activo
-      if (splitPaymentData.isSplitPayment) {
+      // Agregar datos de pago dividido si está activo y NO es contraentrega
+      if (!isContraentrega && splitPaymentData.isSplitPayment) {
         invoiceData.payment_amount_1 = splitPaymentData.amount1;
         invoiceData.payment_method_code_2 = splitPaymentData.paymentMethod2;
         invoiceData.payment_operation_code_2 = splitPaymentData.operationCode2 || undefined;
         invoiceData.payment_amount_2 = splitPaymentData.amount2;
       }
 
-      // 3. Crear factura
+      // Crear factura
       const response = await createInvoice(invoiceData);
       
-      // 4. Obtener los datos completos de la factura usando el invoice_id
+      // Obtener datos completos de la factura
       const fullInvoiceData = await invoicesService.getById(response.invoice_id);
       
-      // 5. Mostrar modal de preview de ticket con los datos completos
+      // Mostrar modal de preview
       setTicketBackendData(fullInvoiceData as unknown as BackendInvoiceData);
       setShowTicketPreview(true);
       
     } catch (error: any) {
-      console.error('Error al crear factura de equipaje:', error);
+      console.error('Error al crear factura:', error);
       toast.error(
         error.response?.data?.detail || 
         error.message || 
@@ -334,9 +348,7 @@ export const ExtraBaggageSalePage: React.FC = () => {
   // Resetear formulario
   const resetForm = () => {
     setPassengerData(initialPassengerData);
-    setPrice('');
-    setDescription('');
-    setIsIgvGravado(false);
+    setFormData(initialQuickSaleFormData);
     setSplitPaymentData({
       isSplitPayment: false,
       paymentMethod1: 'EFE',
@@ -346,19 +358,17 @@ export const ExtraBaggageSalePage: React.FC = () => {
       operationCode2: '',
       amount2: 0,
     });
+    setIsContraentrega(false);
     setTicketBackendData(null);
     setShowTicketPreview(false);
   };
   
-  // Handler para cuando se cierra el modal de ticket
   const handleTicketPreviewClose = () => {
     setShowTicketPreview(false);
     setTicketBackendData(null);
-    // Recargar la página para limpiar todos los datos
     window.location.reload();
   };
   
-  // Handler para cuando el ticket se genera exitosamente
   const handleTicketSuccess = () => {
     toast.success('Venta registrada exitosamente');
     resetForm();
@@ -406,12 +416,12 @@ export const ExtraBaggageSalePage: React.FC = () => {
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-purple-100 rounded-lg">
-            <Briefcase className="h-6 w-6 text-purple-600" />
+            <Zap className="h-6 w-6 text-purple-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Venta de Equipaje Extra</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Venta Rápida</h1>
             <p className="text-sm text-gray-600">
-              Registre ventas de exceso de equipaje sin asociar a un viaje específico
+              Registre ventas de servicios y productos sin asociar a un viaje específico
             </p>
           </div>
         </div>
@@ -427,6 +437,15 @@ export const ExtraBaggageSalePage: React.FC = () => {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Columna izquierda: Formularios */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Selector de Servicio/Producto */}
+          <ServiceSelector
+            products={products || []}
+            selectedProduct={formData.selectedProduct}
+            onSelectProduct={(product) => setFormData({ ...formData, selectedProduct: product })}
+            disabled={isProcessing}
+            isLoading={isLoadingProducts}
+          />
+
           {/* Datos del Cliente */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
@@ -462,91 +481,33 @@ export const ExtraBaggageSalePage: React.FC = () => {
             />
           </div>
 
-          {/* Detalles del Equipaje */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-              <DollarSign className="h-5 w-5 mr-2 text-gray-600" />
-              Detalles del Equipaje
-            </h3>
+          {/* Ruta */}
+          <RouteSection
+            origin={formData.origin}
+            destination={formData.destination}
+            onOriginChange={(value) => setFormData({ ...formData, origin: value })}
+            onDestinationChange={(value) => setFormData({ ...formData, destination: value })}
+            originSuggestions={getOriginSuggestions(formData.origin)}
+            destinationSuggestions={getDestinationSuggestions(formData.destination)}
+            disabled={isProcessing}
+          />
 
-            <div className="space-y-4">
-              {/* Precio */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Precio (Monto a Cobrar) *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                    S/
-                  </span>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
-                    disabled={isProcessing}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
-                  />
-                </div>
-              </div>
-
-              {/* Descripción opcional */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción (Opcional)
-                </label>
-                <input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Ej: Maleta adicional, Bicicleta, Caja grande..."
-                  maxLength={100}
-                  disabled={isProcessing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  {description.length}/100 caracteres
-                </p>
-              </div>
-
-              {/* Switch IGV */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">
-                      Aplicar IGV (18%)
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {isIgvGravado 
-                        ? 'Gravado - Se aplicará IGV al monto ingresado' 
-                        : 'Exonerado - Sin IGV'}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isIgvGravado}
-                    onClick={() => setIsIgvGravado(!isIgvGravado)}
-                    disabled={isProcessing}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isIgvGravado ? 'bg-purple-600' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
-                        isIgvGravado ? 'translate-x-5' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Detalles del Servicio */}
+          <ServiceDetailsForm
+            selectedProduct={formData.selectedProduct}
+            quantity={formData.quantity}
+            customPrice={formData.customPrice}
+            description={formData.description}
+            isIgvGravado={formData.isIgvGravado}
+            onQuantityChange={(value) => setFormData({ ...formData, quantity: value })}
+            onCustomPriceChange={(value) => setFormData({ ...formData, customPrice: value })}
+            onDescriptionChange={(value) => setFormData({ ...formData, description: value })}
+            onIgvGravadoChange={(value) => setFormData({ ...formData, isIgvGravado: value })}
+            disabled={isProcessing}
+          />
         </div>
 
-        {/* Columna derecha: Resumen y Accion */}
+        {/* Columna derecha: Resumen y Acción */}
         <div className="lg:col-span-1">
           <div className="bg-white p-6 rounded-lg shadow-sm border sticky top-6">
             <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
@@ -596,19 +557,51 @@ export const ExtraBaggageSalePage: React.FC = () => {
               )}
             </div>
 
-            {/* Método de Pago */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Método de Pago
-              </label>
-              <SplitPaymentForm
-                totalAmount={calculatedAmounts.totalAmount}
-                currencySymbol="S/"
-                disabled={isProcessing}
-                onPaymentDataChange={handleSplitPaymentChange}
-                onValidationChange={handleSplitPaymentValidationChange}
-              />
-            </div>
+            {/* Alerta de contraentrega */}
+            {isContraentrega && (
+              <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800 font-medium">
+                  Pago pendiente - Se cobrará al entregar
+                </p>
+              </div>
+            )}
+
+            {/* Método de Pago - Solo visible cuando NO es contraentrega */}
+            {!isContraentrega && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Método de Pago
+                </label>
+                <SplitPaymentForm
+                  totalAmount={calculatedAmounts.totalAmount}
+                  currencySymbol="S/"
+                  disabled={isProcessing}
+                  onPaymentDataChange={handleSplitPaymentChange}
+                  onValidationChange={handleSplitPaymentValidationChange}
+                />
+              </div>
+            )}
+
+            {/* Switch de Contraentrega - Solo visible para Encomienda Fluvial */}
+            {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
+              <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-700 mb-1">Contraentrega</p>
+                    <p className="text-xs text-gray-500">El pago se realizará al entregar</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isContraentrega}
+                    onClick={() => setIsContraentrega(!isContraentrega)}
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isContraentrega ? 'bg-purple-600' : 'bg-gray-300'}`}
+                  >
+                    <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Desglose de montos */}
             <div className="border-t border-gray-200 pt-4 mb-4 space-y-2">
@@ -617,7 +610,7 @@ export const ExtraBaggageSalePage: React.FC = () => {
                 <span className="font-medium">S/ {calculatedAmounts.baseAmount.toFixed(2)}</span>
               </div>
               
-              {isIgvGravado && (
+              {formData.isIgvGravado && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">IGV (18%):</span>
                   <span className="font-medium">S/ {calculatedAmounts.igvAmount.toFixed(2)}</span>
@@ -640,13 +633,19 @@ export const ExtraBaggageSalePage: React.FC = () => {
                   <div>
                     <p className="font-medium">Complete los campos requeridos:</p>
                     <ul className="list-disc list-inside mt-1 text-xs space-y-1">
-                      {(!price || priceNumber <= 0) && (
-                        <li>Ingrese un precio válido</li>
+                      {!formData.selectedProduct && (
+                        <li>Seleccione un servicio o producto</li>
+                      )}
+                      {formData.quantity <= 0 && (
+                        <li>Ingrese una cantidad válida</li>
+                      )}
+                      {(!formData.customPrice || parseFloat(formData.customPrice) <= 0) && (
+                        <li>Ingrese el precio de venta</li>
                       )}
                       {requiresClientData && (!passengerData.docNumber.trim() || !passengerData.name.trim()) && (
                         <li>Complete los datos del cliente</li>
                       )}
-                      {splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
+                      {!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
                         <li>Verifique los montos del pago dividido</li>
                       )}
                     </ul>
@@ -715,4 +714,4 @@ export const ExtraBaggageSalePage: React.FC = () => {
   );
 };
 
-export default ExtraBaggageSalePage;
+export default QuickSalePage;

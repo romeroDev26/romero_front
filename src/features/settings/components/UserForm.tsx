@@ -76,8 +76,9 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
     formState: { errors }, 
     setValue, 
     watch 
-  } = useForm<CreateUserFormData | UpdateUserFormData>({
-    resolver: zodResolver(isCreate ? createUserSchema : updateUserSchema) as any,
+  } = useForm<any>({
+    // @ts-ignore - Resolver dinámico entre create y update schemas
+    resolver: zodResolver(isCreate ? createUserSchema : updateUserSchema),
     defaultValues: {
       email: initialData?.email || '',
       full_name: initialData?.full_name || '',
@@ -97,10 +98,10 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
   };
 
   const handleSupervisorChange = (value: string | null) => {
-    setValue('supervisor_id', value, { shouldValidate: true });
+    setValue('supervisor_id', value || undefined, { shouldValidate: true });
   };
 
-  const onSubmit = async (formData: CreateUserFormData | UpdateUserFormData) => {
+  const onSubmit = async (formData: any) => {
     setIsSubmitting(true);
     
     try {
@@ -111,7 +112,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
           full_name: formData.full_name,
           role_id: formData.role_id,
           is_active: formData.is_active,
-          password: formData.password as string,
+          password: formData.password,
         };
         
         await usersService.create(createData);
@@ -127,8 +128,8 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         };
         
         // Incluir supervisor_id (puede ser null para remover supervisor)
-        if ('supervisor_id' in formData) {
-          updateData.supervisor_id = (formData as UpdateUserFormData).supervisor_id || null;
+        if (formData.supervisor_id !== undefined) {
+          updateData.supervisor_id = formData.supervisor_id || null;
         }
         
         // Incluir contraseña solo si fue proporcionada
@@ -164,85 +165,123 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
   
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Email */}
-        <Input
-          label="Email *"
-          type="email"
-          error={errors.email?.message}
-          {...register('email')}
-        />
-        
-        {/* Nombre Completo */}
-        <Input
-          label="Nombre Completo *"
-          type="text"
-          error={errors.full_name?.message}
-          {...register('full_name')}
-        />
-        
-        {/* Rol */}
-        <div>
-          <RoleSelector
-            value={roleId}
-            onChange={handleRoleChange}
-            error={errors.role_id?.message}
+      {/* Información Básica */}
+      <div className="mb-6">
+        <h3 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+          Información Básica
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Nombre Completo */}
+          <Input
+            label="Nombre Completo *"
+            type="text"
+            error={errors.full_name?.message as string | undefined}
+            {...register('full_name')}
+          />
+          
+          {/* Email */}
+          <Input
+            label="Email *"
+            type="email"
+            error={errors.email?.message as string | undefined}
+            {...register('email')}
           />
         </div>
-        
-        {/* Supervisor - Solo en modo edición */}
-        {!isCreate && (
+      </div>
+
+      {/* Asignaciones y Permisos */}
+      <div className="mb-6">
+        <h3 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+          Asignaciones y Permisos
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Rol */}
           <div>
-            <SupervisorSelector
-              value={supervisorId}
-              onChange={handleSupervisorChange}
-              error={errors.supervisor_id?.message}
-              currentUserId={initialData?.id}
+            <RoleSelector
+              value={roleId}
+              onChange={handleRoleChange}
+              error={errors.role_id?.message as string | undefined}
             />
           </div>
-        )}
-        
-        {/* Estado */}
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="is_active"
-            className="rounded border-gray-300 text-primary focus:ring-primary"
-            {...register('is_active')}
-          />
-          <label htmlFor="is_active" className="text-sm text-gray-700">
-            Usuario Activo
-          </label>
+          
+          {/* Supervisor - Solo en modo edición */}
+          {!isCreate && (
+            <div>
+              <SupervisorSelector
+                value={supervisorId || undefined}
+                onChange={handleSupervisorChange}
+                error={errors.supervisor_id?.message as string | undefined}
+                currentUserId={initialData?.id}
+              />
+            </div>
+          )}
+          
+          {/* Estado - Ocupa toda la fila si es creación */}
+          <div className={`flex items-center ${isCreate ? 'md:col-span-2' : ''}`}>
+            <div className="flex items-center h-11 space-x-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+              <input
+                type="checkbox"
+                id="is_active"
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                {...register('is_active')}
+              />
+              <label htmlFor="is_active" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+                Usuario Activo
+              </label>
+            </div>
+          </div>
         </div>
-        
-        {/* Contraseña */}
-        <Input
-          label={isCreate ? "Contraseña *" : "Contraseña (dejar en blanco para mantener actual)"}
-          type="password"
-          error={errors.password?.message}
-          {...register('password')}
-        />
-        
-        {/* Confirmar Contraseña */}
-        <Input
-          label={isCreate ? "Confirmar Contraseña *" : "Confirmar Contraseña"}
-          type="password"
-          error={errors.confirm_password?.message}
-          {...register('confirm_password')}
-        />
       </div>
+
+      {/* Seguridad */}
+      {(isCreate || true) && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+            Seguridad
+          </h3>
+          {!isCreate && (
+            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-700">
+                Deje los campos en blanco para mantener la contraseña actual
+              </p>
+            </div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Contraseña */}
+            <Input
+              label={isCreate ? "Contraseña *" : "Nueva Contraseña"}
+              type="password"
+              placeholder={isCreate ? "Mínimo 6 caracteres" : "Dejar en blanco si no desea cambiar"}
+              error={errors.password?.message as string | undefined}
+              {...register('password')}
+            />
+            
+            {/* Confirmar Contraseña */}
+            <Input
+              label={isCreate ? "Confirmar Contraseña *" : "Confirmar Nueva Contraseña"}
+              type="password"
+              placeholder={isCreate ? "Repita la contraseña" : "Confirme la nueva contraseña"}
+              error={errors.confirm_password?.message as string | undefined}
+              {...register('confirm_password')}
+            />
+          </div>
+        </div>
+      )}
       
-      <div className="mt-8 flex justify-end space-x-3">
+      {/* Botones de Acción */}
+      <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end space-x-3">
         <Button
           type="button"
           variant="outline"
           onClick={() => onClose()}
+          disabled={isSubmitting}
         >
           Cancelar
         </Button>
         <Button
           type="submit"
           isLoading={isSubmitting}
+          disabled={isSubmitting}
         >
           {isCreate ? 'Crear Usuario' : 'Actualizar Usuario'}
         </Button>

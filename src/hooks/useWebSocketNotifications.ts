@@ -4,15 +4,38 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { toast } from 'react-toastify';
 import { getWebSocketUrl as getWsBaseUrl, API_PREFIX } from '../config/env';
 
+// Datos del evento cuando se crea una solicitud
+interface CancellationRequestCreatedData {
+  id: number;
+  requesterName: string;
+  invoice: string;
+  message: string;
+  requester_id?: string;
+  request_reason?: string;
+  passenger_name?: string;
+  trip_info?: string;
+  created_at?: string;
+}
+
+// Datos del evento cuando se resuelve una solicitud
+interface CancellationRequestResolvedData {
+  id: number;
+  status: 'APPROVED' | 'REJECTED';
+  message: string;
+  rejection_reason?: string;
+  credit_note_series?: string;
+  credit_note_number?: number;
+}
+
 interface WebSocketMessage {
   type: 'PING' | 'PONG' | 'CANCELLATION_REQUEST_CREATED' | 'CANCELLATION_REQUEST_RESOLVED';
-  data?: any;
+  data?: CancellationRequestCreatedData | CancellationRequestResolvedData | any;
   timestamp?: string;
 }
 
 interface UseWebSocketNotificationsOptions {
-  onCancellationRequestCreated?: (data: any) => void;
-  onCancellationRequestResolved?: (data: any) => void;
+  onCancellationRequestCreated?: (data: CancellationRequestCreatedData) => void;
+  onCancellationRequestResolved?: (data: CancellationRequestResolvedData) => void;
   enabled?: boolean;
 }
 
@@ -63,31 +86,57 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
 
         case 'CANCELLATION_REQUEST_CREATED':
           if (message.data) {
-            toast.info(message.data.message || 'Nueva solicitud de anulación', {
+            const data = message.data as CancellationRequestCreatedData;
+            
+            // Construir mensaje más informativo con los nuevos datos
+            let toastMessage = data.message || `Nueva solicitud de anulación de ${data.requesterName}`;
+            
+            // Agregar información adicional si está disponible
+            const details: string[] = [];
+            if (data.invoice) details.push(`Comprobante: ${data.invoice}`);
+            if (data.passenger_name) details.push(`Pasajero: ${data.passenger_name}`);
+            if (data.trip_info) details.push(`Viaje: ${data.trip_info}`);
+            
+            if (details.length > 0) {
+              toastMessage += '\n' + details.join(' | ');
+            }
+            
+            toast.info(toastMessage, {
               position: 'top-right',
-              autoClose: 5000,
+              autoClose: 6000,
             });
             
             const handlers = messageHandlers.get('CANCELLATION_REQUEST_CREATED');
             if (handlers) {
-              handlers.forEach(handler => handler(message.data));
+              handlers.forEach(handler => handler(data));
             }
           }
           break;
 
         case 'CANCELLATION_REQUEST_RESOLVED':
           if (message.data) {
-            const isApproved = message.data.status === 'APPROVED';
+            const data = message.data as CancellationRequestResolvedData;
+            const isApproved = data.status === 'APPROVED';
             const toastFn = isApproved ? toast.success : toast.warning;
             
-            toastFn(message.data.message || `Solicitud ${message.data.status}`, {
+            // Construir mensaje más informativo
+            let toastMessage = data.message || `Solicitud ${data.status}`;
+            
+            // Agregar información adicional
+            if (isApproved && data.credit_note_series && data.credit_note_number) {
+              toastMessage += `\nNota de Crédito: ${data.credit_note_series}-${data.credit_note_number}`;
+            } else if (!isApproved && data.rejection_reason) {
+              toastMessage += `\nMotivo: ${data.rejection_reason}`;
+            }
+            
+            toastFn(toastMessage, {
               position: 'top-right',
-              autoClose: isApproved ? 5000 : 8000,
+              autoClose: isApproved ? 6000 : 8000,
             });
 
             const handlers = messageHandlers.get('CANCELLATION_REQUEST_RESOLVED');
             if (handlers) {
-              handlers.forEach(handler => handler(message.data));
+              handlers.forEach(handler => handler(data));
             }
           }
           break;

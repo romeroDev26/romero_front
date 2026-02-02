@@ -12,6 +12,22 @@ interface RoleSelectorProps {
   disabled?: boolean;
 }
 
+// Traducciones de roles
+const ROLE_TRANSLATIONS: Record<string, string> = {
+  'admin': 'Administrador',
+  'sales': 'Ventas',
+  'warehouse': 'Almacén',
+  'supervisor': 'Supervisor',
+  'accountant': 'Contador',
+  'dispatcher': 'Despachador',
+  'driver': 'Conductor',
+};
+
+// Función para obtener el nombre traducido del rol
+const getRoleDisplayName = (roleName: string): string => {
+  return ROLE_TRANSLATIONS[roleName.toLowerCase()] || roleName.charAt(0).toUpperCase() + roleName.slice(1);
+};
+
 // Roles por defecto que se usarán en caso de error
 const DEFAULT_ROLES: Role[] = [
   {
@@ -105,14 +121,14 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         value={value || ''}
         onChange={(e) => onChange(Number(e.target.value))}
         disabled={disabled}
-        className={`mt-1 block w-full rounded-md shadow-sm p-2 border ${
+        className={`mt-1 block w-full rounded-md shadow-sm p-2 pr-8 border ${
           error ? 'border-red-500' : 'border-gray-300'
-        } ${disabled ? 'bg-gray-100' : ''}`}
+        } ${disabled ? 'bg-gray-100' : ''} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
       >
         <option value="">Seleccione un rol</option>
         {roles.map((role) => (
           <option key={role.id} value={role.id}>
-            {role.description || role.name}
+            {getRoleDisplayName(role.name)}
           </option>
         ))}
       </select>

@@ -7,22 +7,48 @@ import {
   ArrowPathIcon,
   DocumentArrowDownIcon,
   EyeIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { SunatStatusBadge } from '../../components/SunatStatusBadge';
 import { useCreditNotes, useRefreshPendingStatuses } from '../hooks/useCreditNotes';
 import { CreditNotesListParams } from '../../types';
 import { CreditNote } from '../../../../types';
+import { useDebounce } from '../../../../hooks/useDebounce';
 
 export const CreditNotesListPage: React.FC = () => {
+  const [series, setSeries] = useState('');
+  const [sunatStatus, setSunatStatus] = useState('');
+  const [issueDate, setIssueDate] = useState('');
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 20;
+
+  const debouncedSeries = useDebounce(series, 300);
+
   const [filters, setFilters] = useState<CreditNotesListParams>({
     company_id: 1, // TODO: Obtener de contexto de usuario
     skip: 0,
-    limit: 50,
+    limit: itemsPerPage,
   });
 
   const { data: creditNotes, isLoading, refetch } = useCreditNotes(filters);
   const { mutate: refreshStatuses, isPending: isRefreshing } = useRefreshPendingStatuses();
+
+  // Actualizar filtros cuando cambian los campos o la paginación
+  useEffect(() => {
+    const newFilters: CreditNotesListParams = {
+      company_id: 1,
+      skip: currentPage * itemsPerPage,
+      limit: itemsPerPage,
+    };
+
+    if (debouncedSeries) newFilters.series = debouncedSeries;
+    if (sunatStatus) newFilters.sunat_status = sunatStatus as any;
+    if (issueDate) newFilters.issue_date = issueDate;
+
+    setFilters(newFilters);
+  }, [currentPage, debouncedSeries, sunatStatus, issueDate, itemsPerPage]);
 
   // Polling automático cada 2 minutos para documentos pendientes
   useEffect(() => {
@@ -38,8 +64,63 @@ export const CreditNotesListPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [creditNotes, refetch]);
 
-  const handleFilterChange = (field: keyof CreditNotesListParams, value: any) => {
-    setFilters(prev => ({ ...prev, [field]: value, skip: 0 }));
+  // Manejadores de cambios en filtros (resetean la paginación)
+  const handleSeriesChange = (value: string) => {
+    setSeries(value);
+    setCurrentPage(0);
+  };
+
+  const handleSunatStatusChange = (value: string) => {
+    setSunatStatus(value);
+    setCurrentPage(0);
+  };
+
+  const handleIssueDateChange = (value: string) => {
+    setIssueDate(value);
+    setCurrentPage(0);
+  };
+
+  // Función para navegar entre páginas
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Componente de paginación
+  const PaginationControls = () => {
+    const hasNextPage = creditNotes && creditNotes.length === itemsPerPage;
+    const hasPrevPage = currentPage > 0;
+
+    return (
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
+        <div className="flex items-center text-sm text-gray-700">
+          <span>
+            Página {currentPage + 1} • Mostrando {creditNotes?.length || 0} registros
+          </span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={!hasPrevPage}
+            className="flex items-center"
+          >
+            <ChevronLeftIcon className="h-4 w-4 mr-1" />
+            Anterior
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={!hasNextPage}
+            className="flex items-center"
+          >
+            Siguiente
+            <ChevronRightIcon className="h-4 w-4 ml-1" />
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   const formatCurrency = (amount: number) => {
@@ -102,8 +183,9 @@ export const CreditNotesListPage: React.FC = () => {
             <input
               type="text"
               placeholder="FC01, BC01..."
+              value={series}
               className="w-full p-2 border border-gray-300 rounded-md"
-              onChange={(e) => handleFilterChange('series', e.target.value || undefined)}
+              onChange={(e) => handleSeriesChange(e.target.value)}
             />
           </div>
           <div>
@@ -111,8 +193,9 @@ export const CreditNotesListPage: React.FC = () => {
               Estado SUNAT
             </label>
             <select
+              value={sunatStatus}
               className="w-full p-2 border border-gray-300 rounded-md"
-              onChange={(e) => handleFilterChange('sunat_status', e.target.value || undefined)}
+              onChange={(e) => handleSunatStatusChange(e.target.value)}
             >
               <option value="">Todos los estados</option>
               <option value="PENDING">Pendiente</option>
@@ -127,8 +210,9 @@ export const CreditNotesListPage: React.FC = () => {
             </label>
             <input
               type="date"
+              value={issueDate}
               className="w-full p-2 border border-gray-300 rounded-md"
-              onChange={(e) => handleFilterChange('issue_date', e.target.value || undefined)}
+              onChange={(e) => handleIssueDateChange(e.target.value)}
             />
           </div>
           <div className="flex items-end">
@@ -251,6 +335,11 @@ export const CreditNotesListPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+        )}
+
+        {/* Controles de paginación */}
+        {!isLoading && creditNotes && creditNotes.length > 0 && (
+          <PaginationControls />
         )}
       </div>
 

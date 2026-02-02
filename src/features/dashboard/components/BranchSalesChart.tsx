@@ -77,7 +77,7 @@ export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoad
       </div>
       
       <div className="space-y-3">
-        {sortedData.map((item, index) => (
+        {sortedData.map((item) => (
           <div key={item.name} className="group">
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">

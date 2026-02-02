@@ -20,7 +20,8 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
   period = 'daily',
   onPeriodChange,
 }) => {
-  const [expandedBranch, setExpandedBranch] = useState<number | null>(null);
+  // Usar 'all' para expandir todas las sucursales por defecto, o un ID específico para expandir solo una
+  const [expandedBranches, setExpandedBranches] = useState<'all' | Set<number>>('all');
 
   const getComponentTitle = () => {
     switch (period) {
@@ -49,6 +50,34 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
 
   const branchData = data?.sucursales || [];
   const maxSales = Math.max(...branchData.map(b => b.total_ventas), 1);
+
+  // Función para verificar si una sucursal está expandida
+  const isBranchExpanded = (branchId: number): boolean => {
+    if (expandedBranches === 'all') return true;
+    return expandedBranches.has(branchId);
+  };
+
+  // Función para alternar el estado de una sucursal
+  const toggleBranch = (branchId: number) => {
+    if (expandedBranches === 'all') {
+      // Si todas están expandidas, crear un Set con todas menos la que se clickeó
+      const newSet = new Set(branchData.map(b => b.sucursal_id).filter(id => id !== branchId));
+      setExpandedBranches(newSet);
+    } else {
+      const newSet = new Set(expandedBranches);
+      if (newSet.has(branchId)) {
+        newSet.delete(branchId);
+      } else {
+        newSet.add(branchId);
+      }
+      // Si todas están expandidas nuevamente, volver a 'all'
+      if (newSet.size === branchData.length) {
+        setExpandedBranches('all');
+      } else {
+        setExpandedBranches(newSet);
+      }
+    }
+  };
 
   if (!isLoading && (!branchData || branchData.length === 0)) {
     return (
@@ -102,14 +131,14 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
 
         <div className="space-y-1">
           {branchData.map((branch, index) => {
-            const isExpanded = expandedBranch === branch.sucursal_id;
+            const isExpanded = isBranchExpanded(branch.sucursal_id);
             const percentage = (branch.total_ventas / maxSales) * 100;
             const color = BRANCH_COLORS[index % BRANCH_COLORS.length];
 
             return (
               <div key={branch.sucursal_id}>
                 <button
-                  onClick={() => setExpandedBranch(isExpanded ? null : branch.sucursal_id)}
+                  onClick={() => toggleBranch(branch.sucursal_id)}
                   className="w-full text-left"
                 >
                   <div className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-gray-50 transition-colors">

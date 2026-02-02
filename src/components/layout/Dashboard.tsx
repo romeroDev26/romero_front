@@ -42,7 +42,7 @@ const quickAccessItems = [
     textColor: 'text-white'
   },
   {
-    name: 'Ventas Rápidas',
+    name: 'Venta Rápidas',
     path: '/fluvial/operations/quick-sales',
     icon: BriefcaseIcon,
     bgColor: 'bg-purple-500',
@@ -172,17 +172,57 @@ export const Dashboard: React.FC = () => {
       const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
       const requests = await cancellationRequestsService.getMyRequests();
       setSellerRequests(requests);
-      
-      // Marcar todas las respuestas resueltas como vistas
-      cancellationRequestsService.markResolvedAsViewed(requests);
-      
-      // Actualizar el contador a 0 inmediatamente
-      setSellerResponsesCount(0);
     } catch (err) {
       console.error('Error al cargar solicitudes del vendedor:', err);
       toast.error('No se pudieron cargar tus solicitudes');
     } finally {
       setLoadingSellerRequests(false);
+    }
+  };
+
+  // Función para marcar todas las solicitudes como leídas
+  const handleMarkAllAsRead = async () => {
+    try {
+      const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
+      await cancellationRequestsService.markMultipleAsRead(sellerRequests);
+      
+      // Recargar las solicitudes para reflejar el cambio
+      const updatedRequests = await cancellationRequestsService.getMyRequests();
+      setSellerRequests(updatedRequests);
+      
+      // Actualizar el contador
+      const count = await cancellationRequestsService.getUnreadResolvedCount();
+      setSellerResponsesCount(count);
+      
+      toast.success('Todas las respuestas han sido marcadas como leídas');
+    } catch (err) {
+      console.error('Error al marcar como leídas:', err);
+      toast.error('No se pudieron marcar las solicitudes como leídas');
+    }
+  };
+
+  // Función para marcar una sola solicitud como leída
+  const handleMarkOneAsRead = async (requestId: number) => {
+    try {
+      const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
+      await cancellationRequestsService.markAsRead(requestId);
+      
+      // Actualizar la solicitud en el estado local
+      setSellerRequests(prevRequests => 
+        prevRequests.map(req => 
+          req.id === requestId 
+            ? { ...req, requester_read_at: new Date().toISOString() }
+            : req
+        )
+      );
+      
+      // Actualizar el contador
+      setSellerResponsesCount(prev => Math.max(0, prev - 1));
+      
+      toast.success('Mensaje marcado como leído');
+    } catch (err) {
+      console.error('Error al marcar como leída:', err);
+      toast.error('No se pudo marcar el mensaje como leído');
     }
   };
 
@@ -415,6 +455,8 @@ export const Dashboard: React.FC = () => {
           onClose={() => setShowSellerModal(false)}
           requests={sellerRequests}
           isLoading={loadingSellerRequests}
+          onMarkAllAsRead={handleMarkAllAsRead}
+          onMarkOneAsRead={handleMarkOneAsRead}
         />
       )}
     </div>

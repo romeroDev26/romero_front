@@ -40,6 +40,7 @@ export interface CancellationRequest {
   rejection_reason?: string | null;
   created_at: string;
   updated_at: string;
+  requester_read_at?: string | null;
 }
 
 /**

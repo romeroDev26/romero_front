@@ -62,7 +62,7 @@ export const DashboardPage: React.FC = () => {
 
   // Para administradores, mostrar el dashboard analítico completo
   return (
-    <div className="p-4 lg:p-6 space-y-6 bg-gray-50/50 min-h-screen">
+    <div className="p-4 lg:p-6 space-y-6 bg-gray-50 min-h-screen">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>

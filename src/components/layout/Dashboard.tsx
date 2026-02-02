@@ -42,7 +42,7 @@ const quickAccessItems = [
     textColor: 'text-white'
   },
   {
-    name: 'Venta Rápidas',
+    name: 'Venta Rápida',
     path: '/fluvial/operations/quick-sales',
     icon: BriefcaseIcon,
     bgColor: 'bg-purple-500',

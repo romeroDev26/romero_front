@@ -148,7 +148,7 @@ export const Dashboard: React.FC = () => {
     } catch (err) {
       console.error('Error al obtener solicitudes pendientes:', err);
     }
-  }, [isSupervisor]);
+  }, [isSupervisor, currentUser]);
 
   // Función para obtener las respuestas del vendedor
   const fetchSellerResponses = useCallback(async () => {
@@ -220,6 +220,22 @@ export const Dashboard: React.FC = () => {
       fetchSellerResponses();
     }
   }, [isSeller, fetchSellerResponses]);
+
+  // Escuchar evento personalizado cuando se resuelve una solicitud localmente
+  useEffect(() => {
+    if (!isSupervisor) return;
+
+    const handleLocalResolution = () => {
+      // Actualizar contador cuando se resuelve una solicitud localmente
+      fetchPendingCount();
+    };
+
+    window.addEventListener('cancellation-request-resolved', handleLocalResolution);
+
+    return () => {
+      window.removeEventListener('cancellation-request-resolved', handleLocalResolution);
+    };
+  }, [isSupervisor, fetchPendingCount]);
 
   // Sincronizar contador cuando la ventana recupera el foco (para evitar desincronización)
   useEffect(() => {

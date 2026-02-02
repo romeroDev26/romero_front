@@ -84,6 +84,9 @@ const CancellationRequestsPage: React.FC = () => {
         fetchPendingRequests(),
         fetchAllRequests()
       ]);
+      
+      // Emitir evento personalizado para actualizar contador en navbar
+      window.dispatchEvent(new CustomEvent('cancellation-request-resolved'));
     } catch (err: any) {
       const errorMessage = err?.response?.data?.detail || err?.message || 'Error al aprobar solicitud';
       toast.error(errorMessage);
@@ -108,6 +111,9 @@ const CancellationRequestsPage: React.FC = () => {
         fetchPendingRequests(),
         fetchAllRequests()
       ]);
+      
+      // Emitir evento personalizado para actualizar contador en navbar
+      window.dispatchEvent(new CustomEvent('cancellation-request-resolved'));
     } catch (err: any) {
       const errorMessage = err?.response?.data?.detail || err?.message || 'Error al rechazar solicitud';
       toast.error(errorMessage);

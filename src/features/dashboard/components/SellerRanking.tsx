@@ -90,39 +90,75 @@ export const SellerRanking: React.FC = () => {
               {sucursal.vendedores.length === 0 ? (
                 <p className="text-sm text-gray-500 italic">Sin ventas en este período</p>
               ) : (
-                sucursal.vendedores.map((vendedor) => (
-                  <div key={vendedor.vendedor_id} className="space-y-1.5">
-                    {/* Información del vendedor */}
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs">
-                          {vendedor.posicion_ranking}
-                        </span>
-                        <span className="font-medium text-gray-800">
-                          {vendedor.vendedor_nombre}
-                        </span>
-                      </div>
-                      <div className="text-gray-600 text-xs">
-                        {vendedor.total_facturas} facturas · {vendedor.total_pasajeros} pasajeros
-                      </div>
-                    </div>
+                sucursal.vendedores.map((vendedor) => {
+                  // Definir colores según la posición
+                  const getBadgeColors = (position: number) => {
+                    if (position === 1) {
+                      return 'bg-yellow-100 text-yellow-700 border border-yellow-300';
+                    } else if (position === 2) {
+                      return 'bg-slate-100 text-slate-700 border border-slate-300';
+                    } else if (position === 3) {
+                      return 'bg-orange-100 text-orange-700 border border-orange-300';
+                    }
+                    return 'bg-blue-100 text-blue-700';
+                  };
 
-                    {/* Barra de progreso */}
-                    <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
-                        style={{ width: `${vendedor.porcentaje_relativo}%` }}
-                      />
+                  const getProgressBarColors = (position: number) => {
+                    if (position === 1) {
+                      return 'bg-gradient-to-r from-yellow-400 to-yellow-500';
+                    } else if (position === 2) {
+                      return 'bg-gradient-to-r from-slate-400 to-slate-500';
+                    } else if (position === 3) {
+                      return 'bg-gradient-to-r from-orange-400 to-orange-500';
+                    }
+                    return 'bg-gradient-to-r from-blue-500 to-blue-600';
+                  };
+
+                  const getPercentageColor = (position: number) => {
+                    if (position === 1) {
+                      return 'text-yellow-600';
+                    } else if (position === 2) {
+                      return 'text-slate-600';
+                    } else if (position === 3) {
+                      return 'text-orange-600';
+                    }
+                    return 'text-blue-600';
+                  };
+
+                  return (
+                    <div key={vendedor.vendedor_id} className="space-y-1.5">
+                      {/* Información del vendedor */}
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className={`flex items-center justify-center w-6 h-6 rounded-full font-semibold text-xs ${getBadgeColors(vendedor.posicion_ranking)}`}>
+                            {vendedor.posicion_ranking}
+                          </span>
+                          <span className="font-medium text-gray-800">
+                            {vendedor.vendedor_nombre}
+                          </span>
+                        </div>
+                        <div className="text-gray-600 text-xs">
+                          {vendedor.total_facturas} facturas · {vendedor.total_pasajeros} pasajeros
+                        </div>
+                      </div>
+
+                      {/* Barra de progreso */}
+                      <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`absolute top-0 left-0 h-full rounded-full transition-all duration-500 ${getProgressBarColors(vendedor.posicion_ranking)}`}
+                          style={{ width: `${vendedor.porcentaje_relativo}%` }}
+                        />
+                      </div>
+                      
+                      {/* Porcentaje */}
+                      <div className="text-right">
+                        <span className={`text-xs font-medium ${getPercentageColor(vendedor.posicion_ranking)}`}>
+                          {vendedor.porcentaje_relativo.toFixed(1)}%
+                        </span>
+                      </div>
                     </div>
-                    
-                    {/* Porcentaje */}
-                    <div className="text-right">
-                      <span className="text-xs font-medium text-blue-600">
-                        {vendedor.porcentaje_relativo.toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

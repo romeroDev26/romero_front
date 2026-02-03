@@ -43,7 +43,8 @@ export const useReceivables = () => {
   } = useQuery({
     queryKey: ['receivables', filters, pagination],
     queryFn: () => receivablesService.getReceivables({ ...filters, ...pagination }),
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: 0, // No cachear datos, siempre obtener frescos
+    refetchOnWindowFocus: true, // Refrescar al volver a la ventana
   });
 
   // Estado computado

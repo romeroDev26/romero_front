@@ -16,6 +16,7 @@ import { Input } from '../../../components/common/Input';
 import { Spinner } from '../../../components/common/Spinner';
 import { usePaymentConfirmation } from '../hooks/usePaymentConfirmation';
 import { PaymentConfirmationModal } from '../components/payment/PaymentConfirmationModal';
+import { PaidTicketModal } from '../components/payment/PaidTicketModal';
 
 const ReceivablesPage: React.FC = () => {
   const [companyId, setCompanyId] = useState<number | undefined>();
@@ -414,6 +415,13 @@ const ReceivablesPage: React.FC = () => {
         receivableItem={payment.selectedItem}
         onConfirm={payment.confirmPayment}
         isLoading={payment.isConfirming}
+      />
+
+      {/* Modal de ticket pagado */}
+      <PaidTicketModal
+        isOpen={payment.isTicketModalOpen}
+        onClose={payment.closeTicketModal}
+        paymentData={payment.paymentTicketData}
       />
     </div>
   );

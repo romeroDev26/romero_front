@@ -39,18 +39,47 @@ export interface PaymentFormData {
  * Respuesta del backend al confirmar un pago
  */
 export interface PaymentConfirmationResponse {
+  success: boolean;
   message: string;
+  data: {
+    invoice_item_id: number;
+    invoice_id: number;
+    payment_confirmed: boolean;
+    confirmed_by: string;
+    confirmed_at: string;
+    payment_method_code: string;
+    payment_operation_code: string | null;
+    payment_received_by: string;
+    payment_amount_1: string;
+    payment_method_code_2: string | null;
+    payment_operation_code_2: string | null;
+    payment_amount_2: string;
+    series: string;
+    number: number;
+    total_payable: string;
+    pdf_ticket_file_path: string | null;
+    pdf_ticket58_file_path: string | null;
+  };
+}
+
+/**
+ * Datos del ticket de pago (extraído de la respuesta)
+ */
+export interface PaymentTicketData {
   invoice_item_id: number;
-  payment_status: 'PAGADO';
-  confirmed_by: string;
+  invoice_id: number;
+  series: string;
+  number: number;
+  total_payable: string;
+  payment_method_code: string;
+  payment_operation_code: string | null;
+  payment_amount_1: string;
+  payment_method_code_2: string | null;
+  payment_operation_code_2: string | null;
+  payment_amount_2: string;
   confirmed_at: string;
-  payment_method?: string;
-  payment_operation_code?: string;
-  // Campos adicionales para pago dividido
-  payment_amount_1?: number;
-  payment_method_code_2?: string;
-  payment_operation_code_2?: string;
-  payment_amount_2?: number;
+  pdf_ticket_file_path: string | null;
+  pdf_ticket58_file_path: string | null;
 }
 
 /**

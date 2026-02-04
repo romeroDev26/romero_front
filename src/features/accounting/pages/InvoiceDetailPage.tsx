@@ -40,10 +40,12 @@ export const InvoiceDetailPage: React.FC = () => {
   const invoiceId = Number(id);
 
   // Usamos el servicio real para obtener los datos
-  const { data: invoice, isLoading, error } = useQuery({
+  const { data: invoice, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: ['invoice', invoiceId],
     queryFn: () => invoicesService.getById(invoiceId),
     enabled: !isNaN(invoiceId), // Solo ejecuta si el ID es un número válido
+    staleTime: 0, // No cachear, siempre obtener datos frescos
+    refetchOnWindowFocus: true, // Refrescar al volver a la ventana
   });
 
   const handleAnular = () => {
@@ -76,7 +78,10 @@ export const InvoiceDetailPage: React.FC = () => {
         console.warn('Error al imprimir desde iframe:', error);
         // Fallback: abrir en nueva ventana
         try {
-          const pdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+          const basePdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+          const backendTimestamp = invoice?.updated_at ? new Date(invoice.updated_at).getTime() : 0;
+          const cacheBuster = `${backendTimestamp}_${Date.now()}`;
+          const pdfUrl = basePdfUrl ? `${basePdfUrl}?v=${cacheBuster}` : basePdfUrl;
           const printWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');
           if (printWindow) {
             printWindow.onload = () => {
@@ -99,7 +104,10 @@ export const InvoiceDetailPage: React.FC = () => {
   };
 
   const handleDownload = () => {
-    const pdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+    const basePdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+    const backendTimestamp = invoice?.updated_at ? new Date(invoice.updated_at).getTime() : 0;
+    const cacheBuster = `${backendTimestamp}_${Date.now()}`;
+    const pdfUrl = basePdfUrl ? `${basePdfUrl}?v=${cacheBuster}` : basePdfUrl;
     const fileName = activeTab === 'ticket80mm' 
       ? `ticket-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`
       : `ticket-a4-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`;
@@ -161,8 +169,15 @@ export const InvoiceDetailPage: React.FC = () => {
   const hasAnyPdf = hasTicketPdf || hasA4Pdf ||
                     (invoice.pdf_file_path && invoice.pdf_file_path.trim() !== '');
   
+  // Usar invoice.updated_at del backend como cache buster principal
+  // Este campo cambia cuando el backend actualiza la factura (ej: cuando se marca como pagada)
+  // Combinar con timestamp de la query para garantizar que siempre sea único
+  const backendTimestamp = invoice.updated_at ? new Date(invoice.updated_at).getTime() : 0;
+  const cacheBuster = `${backendTimestamp}_${dataUpdatedAt}`;
+  
   // Determinar el PDF actual según el tab activo
-  const currentPdfUrl = activeTab === 'ticket80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+  const basePdfUrl = activeTab === 'ticket80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+  const currentPdfUrl = basePdfUrl ? `${basePdfUrl}?v=${cacheBuster}` : basePdfUrl;
   const hasCurrentPdf = activeTab === 'ticket80mm' ? hasTicketPdf : hasA4Pdf;
 
   // Formatea la fecha de emisión tal como viene del backend (YYYY-MM-DD)
@@ -329,7 +344,7 @@ export const InvoiceDetailPage: React.FC = () => {
                 {!showPdfError && hasCurrentPdf ? (
                   <iframe
                     ref={pdfIframeRef}
-                    key={activeTab}
+                    key={`${activeTab}-${cacheBuster}`}
                     src={`${currentPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
                     className="w-full h-full border-0"
                     style={{ minHeight: '600px' }}

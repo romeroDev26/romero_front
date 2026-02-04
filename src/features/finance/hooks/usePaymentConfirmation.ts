@@ -64,8 +64,14 @@ export const usePaymentConfirmation = () => {
       // Mostrar mensaje de éxito
       toast.success(response.message || 'Pago confirmado exitosamente');
       
-      // Invalidar queries para refrescar los datos
-      queryClient.invalidateQueries({ queryKey: ['receivables'] });
+      // Pequeño delay antes de invalidar para dar tiempo al backend/CDN
+      setTimeout(() => {
+        // Invalidar queries para refrescar los datos
+        queryClient.invalidateQueries({ queryKey: ['receivables'] });
+        // Invalidar cache de facturas para que se actualicen los estados de pago
+        queryClient.invalidateQueries({ queryKey: ['invoices'] });
+        queryClient.invalidateQueries({ queryKey: ['invoice'] });
+      }, 1000); // 1 segundo de delay
     },
     onError: (error: any) => {
       // Mostrar mensaje de error

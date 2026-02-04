@@ -30,11 +30,6 @@ export const PaidTicketModal: React.FC<PaidTicketModalProps> = ({
   // Agregar timestamp para evitar caché del navegador
   const cacheBuster = new Date().getTime();
   const pdfUrl = basePdfUrl ? `${basePdfUrl}?v=${cacheBuster}` : null;
-  
-  console.log('PaidTicketModal - paymentData:', paymentData);
-  console.log('PaidTicketModal - basePdfUrl:', basePdfUrl);
-  console.log('PaidTicketModal - pdfUrl con cache buster:', pdfUrl);
-  console.log('PaidTicketModal - ticketType:', ticketType);
 
   const handlePrint = () => {
     if (!basePdfUrl) return;
@@ -168,7 +163,6 @@ export const PaidTicketModal: React.FC<PaidTicketModalProps> = ({
                   src={pdfUrl || ''}
                   className="w-full h-full border-0"
                   title="Ticket de Pago"
-                  onLoad={() => console.log('PDF cargado correctamente')}
                   onError={(e) => console.error('Error al cargar PDF:', e)}
                 />
               </div>

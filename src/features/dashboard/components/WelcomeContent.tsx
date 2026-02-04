@@ -26,10 +26,21 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
   });
 
   // Calcular rango de fechas (día actual)
-  const today = new Date();
+  // Calcular rango de fechas (día actual) en zona horaria de Perú (America/Lima)
+  const getPeruDateString = (): string => {
+    try {
+      // 'en-CA' produce el formato YYYY-MM-DD en la mayoría de entornos
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Lima' }).format(new Date());
+    } catch (e) {
+      // Fallback: usar ISO local si Intl no está disponible
+      return new Date().toISOString().split('T')[0];
+    }
+  };
+
+  const peruDate = getPeruDateString();
   const dateRange = {
-    start_date: today.toISOString().split('T')[0],
-    end_date: today.toISOString().split('T')[0],
+    start_date: peruDate,
+    end_date: peruDate,
   };
 
   const handleExportClick = () => {

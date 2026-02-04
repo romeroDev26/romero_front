@@ -28,8 +28,6 @@ export const usePaymentConfirmation = () => {
   const confirmPaymentMutation = useMutation({
     mutationFn: (data: PaymentConfirmationData) => paymentService.confirmPayment(data),
     onSuccess: (response) => {
-      console.log('Respuesta del backend:', response);
-      
       // Cerrar modal de confirmación
       closeModal();
       
@@ -51,9 +49,6 @@ export const usePaymentConfirmation = () => {
           pdf_ticket_file_path: response.data.pdf_ticket_file_path,
           pdf_ticket58_file_path: response.data.pdf_ticket58_file_path,
         };
-        
-        console.log('Datos del ticket a mostrar:', ticketData);
-        console.log('URL del PDF:', ticketData.pdf_ticket_file_path);
         
         setPaymentTicketData(ticketData);
         

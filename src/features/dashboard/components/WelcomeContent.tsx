@@ -73,16 +73,16 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
   };
 
   return (
-    <div className={showHeader ? "relative min-h-screen bg-white overflow-hidden font-sans" : ""}>
+    <div className={showHeader ? "relative w-full bg-white font-sans" : ""}>
       
       {showHeader && (
         <>
           {/* Banner Section */}
-          <div className="relative py-12 w-full bg-white">
+          <div className="relative py-6 md:py-12 w-full bg-white">
             {/* Title Section */}
             <div className="flex items-center justify-center">
               <div className="text-center">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+                <h1 className="text-xl md:text-3xl lg:text-4xl font-bold text-gray-800">
                   <span className="text-blue-600">Sistema de Transportes</span>
                 </h1>
                 <p className="text-gray-500 mt-2 text-sm">Sistema de Gestión Fluvial</p>
@@ -91,7 +91,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
           </div>
 
           {/* Content Section */}
-          <div className="relative bg-white px-6 pb-6">
+          <div className="relative bg-white px-0 sm:px-4 md:px-6 pb-6">
             <div className="w-full max-w-7xl mx-auto">
               {/* Sales Point Selector - Full Width */}
               <div className="w-full animate-slide-up" style={{ animationDelay: '0.2s' }}>
@@ -103,7 +103,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
                 <button
                   onClick={handleExportClick}
                   disabled={syncExporting}
-                  className="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                  className="w-full md:w-auto justify-center inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
                   {syncExporting ? 'Exportando...' : 'Exportar Reporte a Excel'}

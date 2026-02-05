@@ -159,28 +159,20 @@ const CancellationRequestsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <BellAlertIcon className="w-10 h-10 text-red-500" />
+          <BellAlertIcon className="w-10 h-10 text-red-500 flex-shrink-0" />
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Solicitudes de Anulación</h1>
-            <p className="text-gray-600 mt-1 flex items-center gap-2">
-              Gestiona las solicitudes de anulación de comprobantes
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Solicitudes de Anulación</h1>
+            <div className="text-gray-600 mt-1 flex flex-col sm:flex-row sm:items-center gap-2">
+              <span>Gestiona las solicitudes de anulación de comprobantes</span>
               {isConnected && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
+                <span className="inline-flex items-center w-fit gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                   Conectado en tiempo real
                 </span>
               )}
-            </p>
+            </div>
           </div>
         </div>
-        <button
-          onClick={refresh}
-          className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-          disabled={isLoading}
-        >
-          <ArrowPathIcon className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>Actualizar</span>
-        </button>
       </div>
 
       {/* Stats */}
@@ -222,15 +214,17 @@ const CancellationRequestsPage: React.FC = () => {
 
       {/* Filtros */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex items-center gap-4">
-          <FunnelIcon className="w-5 h-5 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filtrar por estado:</span>
-          <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex items-center gap-2">
+            <FunnelIcon className="w-5 h-5 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filtrar por estado:</span>
+          </div>
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
             {(['PENDING', 'APPROVED', 'REJECTED', 'ALL'] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center whitespace-nowrap ${
                   statusFilter === status
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

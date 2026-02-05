@@ -180,7 +180,7 @@ const UserSalesChart: React.FC = () => {
       </div>
 
       {/* Métricas resumen compactas */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="text-center p-3 bg-indigo-50 rounded-lg">
           <div className="text-lg font-bold text-indigo-600">{totalSales}</div>
           <div className="text-xs text-gray-500">Ventas</div>

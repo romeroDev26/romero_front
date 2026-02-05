@@ -357,8 +357,8 @@ export const RoutesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Rutas Fluviales</h1>
-          <p className="text-gray-600">Crea, edita y gestiona las rutas y sus paradas.</p>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Gestión de Rutas Fluviales</h1>
+          <p className="text-sm md:text-base text-gray-600">Crea, edita y gestiona las rutas y sus paradas.</p>
         </div>
         <Button onClick={handleOpenNewRouteModal} className="w-full sm:w-auto justify-center">
           <PlusIcon className="h-5 w-5 mr-2" />
@@ -392,16 +392,16 @@ export const RoutesPage: React.FC = () => {
       <div className="block lg:hidden space-y-4">
         {filteredRoutes.map((route) => (
           <div key={route.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex justify-between items-start mb-3">
+            <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
               <div>
-                <h3 className="text-base font-semibold text-gray-900">{route.name}</h3>
-                <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
+                <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{route.name}</h3>
+                <div className="flex items-center gap-2 mt-1 text-sm text-gray-600 flex-wrap">
                   <span className="font-medium">
                     {route.origin_port?.name || 'N/A'} → {route.destination_port?.name || 'N/A'}
                   </span>
                 </div>
               </div>
-              <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${ 
+              <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ${ 
                 route.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' 
               }`}>
                 {route.is_active ? 'Activo' : 'Inactivo'}
@@ -410,21 +410,21 @@ export const RoutesPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
               <div className="flex items-center">
-                <ClockIcon className="h-4 w-4 mr-1.5 text-gray-400" />
+                <ClockIcon className="h-4 w-4 mr-1.5 text-gray-400 flex-shrink-0" />
                 <span>{routeHelpers.isoStringToHours(route.estimated_duration).toFixed(1)}h</span>
               </div>
               <div className="flex items-center">
-                <MapIcon className="h-4 w-4 mr-1.5 text-gray-400" />
+                <MapIcon className="h-4 w-4 mr-1.5 text-gray-400 flex-shrink-0" />
                 <span>{route.stops?.length || 0} paradas</span>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+            <div className="flex flex-wrap justify-end gap-3 pt-3 border-t border-gray-100">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={() => handleConfigureStops(route)} 
-                className="text-blue-700 border-blue-200 bg-blue-50 hover:bg-blue-100"
+                className="text-blue-700 border-blue-200 bg-blue-50 hover:bg-blue-100 flex-1 sm:flex-none justify-center"
               >
                 <MapIcon className="h-4 w-4 mr-1" />
                 Mapa
@@ -434,7 +434,7 @@ export const RoutesPage: React.FC = () => {
                 size="sm"
                 onClick={() => handleSyncTripStops(route)}
                 disabled={syncingRouteId === route.id}
-                className="text-purple-700 border-purple-200 bg-purple-50 hover:bg-purple-100 disabled:opacity-50"
+                className="text-purple-700 border-purple-200 bg-purple-50 hover:bg-purple-100 disabled:opacity-50 flex-1 sm:flex-none justify-center"
                 title="Sincronizar paradas de viajes con la ruta"
               >
                 <ArrowPathIcon className={`h-4 w-4 mr-1 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} />
@@ -442,14 +442,14 @@ export const RoutesPage: React.FC = () => {
               </Button>
               <button
                 onClick={() => handleEditRoute(route)}
-                className="flex items-center text-primary hover:text-primary/80 text-sm font-medium px-2"
+                className="flex items-center justify-center text-primary hover:text-primary/80 text-sm font-medium px-4 py-2 sm:px-2 sm:py-0 border border-transparent rounded sm:border-0 flex-1 sm:flex-none bg-gray-50 sm:bg-transparent"
               >
                 <PencilIcon className="h-4 w-4 mr-1" />
                 Editar
               </button>
               <button
                 onClick={() => handleDelete(route)}
-                className="flex items-center text-red-600 hover:text-red-900 text-sm font-medium px-2"
+                className="flex items-center justify-center text-red-600 hover:text-red-900 text-sm font-medium px-4 py-2 sm:px-2 sm:py-0 border border-transparent rounded sm:border-0 flex-1 sm:flex-none bg-red-50 sm:bg-transparent"
               >
                 <TrashIcon className="h-4 w-4 mr-1" />
                 Eliminar

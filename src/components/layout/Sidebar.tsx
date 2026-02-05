@@ -382,6 +382,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
         key={item.path}
         to={item.path}
         end
+        onClick={() => {
+          if (onCloseMobile) onCloseMobile();
+        }}
         className={({ isActive }) =>
           `${baseClasses} ${paddingClasses} mb-1 ${
             isActive

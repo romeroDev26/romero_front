@@ -71,6 +71,9 @@ export const QuickSalePage: React.FC = () => {
   
   // Estado de contraentrega
   const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
+  
+  // Estado para controlar si se agrega destinatario
+  const [showRecipientForm, setShowRecipientForm] = useState<boolean>(false);
   const [recipient, setRecipient] = useState<RecipientFormData>({
     isSameAsSender: true,
     name: '',
@@ -325,8 +328,8 @@ export const QuickSalePage: React.FC = () => {
                 : formData.selectedProduct.name,
             };
 
-            // Si es una encomienda, adjuntar datos del destinatario al ítem (solo si están completos)
-            if (formData.selectedProduct.name.toLowerCase().includes('encomienda')) {
+            // Si es una encomienda Y se activó agregar destinatario, adjuntar datos del destinatario
+            if (formData.selectedProduct.name.toLowerCase().includes('encomienda') && showRecipientForm) {
               // Verificar si hay datos del destinatario
               const hasRecipientData = recipient.isSameAsSender
                 ? (passengerData.docNumber.trim() && passengerData.name.trim())
@@ -378,6 +381,7 @@ export const QuickSalePage: React.FC = () => {
   const resetForm = () => {
     setPassengerData(initialPassengerData);
     setFormData(initialQuickSaleFormData);
+    setShowRecipientForm(false);
     setRecipient({
       isSameAsSender: true,
       name: '',
@@ -517,29 +521,57 @@ export const QuickSalePage: React.FC = () => {
             />
           </div>
 
-          {/* Datos del Destinatario - solo para Encomienda Fluvial (Opcional) */}
+          {/* Agregar Destinatario - solo para Encomienda Fluvial */}
           {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-lg text-gray-800 flex items-center">
-                  <User className="h-5 w-5 mr-2 text-gray-600" />
-                  Datos del Destinatario
-                </h3>
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  Opcional
-                </span>
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center">
+                    <User className="h-5 w-5 mr-2 text-gray-600" />
+                    Agregar Destinatario
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Opcional - Active para registrar datos del destinatario
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showRecipientForm}
+                  onClick={() => setShowRecipientForm(!showRecipientForm)}
+                  disabled={isProcessing}
+                  className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    showRecipientForm ? 'bg-purple-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
+                      showRecipientForm ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
               </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-                <p className="text-sm text-blue-800">
-                  Si no completa los datos del destinatario, solo aparecerá el remitente en la boleta
-                </p>
-              </div>
-              <RecipientForm
-                recipient={recipient}
-                setRecipient={setRecipient}
-                remitter={{ name: passengerData.name, docType: passengerData.docType, docNumber: passengerData.docNumber, phone: passengerData.phone }}
-                disabled={isProcessing}
-              />
+
+              {showRecipientForm && (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <p className="text-sm text-blue-800">
+                      Complete los datos del destinatario o marque si es el mismo que envía
+                    </p>
+                  </div>
+                  <RecipientForm
+                    recipient={recipient}
+                    setRecipient={setRecipient}
+                    remitter={{
+                      name: passengerData.name,
+                      docType: passengerData.docType,
+                      docNumber: passengerData.docNumber,
+                      phone: passengerData.phone,
+                    }}
+                    disabled={isProcessing}
+                  />
+                </div>
+              )}
             </div>
           )}
 

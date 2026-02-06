@@ -34,6 +34,7 @@ import { useBranchOffices } from '../../../../hooks/useBranchOffices';
 import { useCompanyInfo } from '../../../../hooks/useCompanyInfo';
 
 import { PassengerData, initialPassengerData } from '../../components/sales-point/core/types';
+import { RecipientForm, RecipientData as RecipientFormData } from '../../../cargo/components/RecipientForm';
 import { SunatDocType, SunatInvoiceType } from '../../types/sunat.types';
 import { BranchOffice, CreateClientData } from '../../../../types';
 
@@ -70,6 +71,13 @@ export const QuickSalePage: React.FC = () => {
   
   // Estado de contraentrega
   const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
+  const [recipient, setRecipient] = useState<RecipientFormData>({
+    isSameAsSender: true,
+    name: '',
+    docType: '1',
+    docNumber: '',
+    phone: '',
+  });
   
   // Estados para modales
   const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
@@ -201,6 +209,15 @@ export const QuickSalePage: React.FC = () => {
     if (!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid) {
       return false;
     }
+
+    // Si es una encomienda, validar datos del destinatario
+    if (formData.selectedProduct?.name.toLowerCase().includes('encomienda')) {
+      if (recipient.isSameAsSender) {
+        if (!passengerData.docNumber.trim() || !passengerData.name.trim()) return false;
+      } else {
+        if (!recipient.docNumber.trim() || !recipient.name.trim()) return false;
+      }
+    }
     
     return true;
   }, [
@@ -215,6 +232,7 @@ export const QuickSalePage: React.FC = () => {
     isContraentrega,
     splitPaymentData.isSplitPayment,
     isSplitPaymentValid,
+    recipient,
   ]);
 
   // Handler para pago dividido
@@ -303,17 +321,29 @@ export const QuickSalePage: React.FC = () => {
         }),
         
         items: [
-          {
-            product_id: formData.selectedProduct.id,
-            quantity: formData.quantity,
-            unit_price: unitPrice,
-            unit_code: formData.selectedProduct.unit_code,
-            tax_category_code: formData.isIgvGravado ? '10' : '20',
-            discount: 0,
-            item_description: formData.description 
-              ? `${formData.selectedProduct.name} - ${formData.description}` 
-              : formData.selectedProduct.name,
-          },
+          (() => {
+            const baseItem: any = {
+              product_id: formData.selectedProduct.id,
+              quantity: formData.quantity,
+              unit_price: unitPrice,
+              unit_code: formData.selectedProduct.unit_code,
+              tax_category_code: formData.isIgvGravado ? '10' : '20',
+              discount: 0,
+              item_description: formData.description
+                ? `${formData.selectedProduct.name} - ${formData.description}`
+                : formData.selectedProduct.name,
+            };
+
+            // Si es una encomienda, adjuntar datos del destinatario al ítem
+            if (formData.selectedProduct.name.toLowerCase().includes('encomienda')) {
+              baseItem.recipient_name = recipient.isSameAsSender ? (passengerData.name || '') : recipient.name;
+              baseItem.recipient_doc_type = recipient.isSameAsSender ? (passengerData.docType || '') : recipient.docType;
+              baseItem.recipient_doc_number = recipient.isSameAsSender ? (passengerData.docNumber || '') : recipient.docNumber;
+              baseItem.recipient_phone = recipient.isSameAsSender ? (passengerData.phone || '') : recipient.phone;
+            }
+
+            return baseItem;
+          })(),
         ],
       };
 
@@ -349,6 +379,13 @@ export const QuickSalePage: React.FC = () => {
   const resetForm = () => {
     setPassengerData(initialPassengerData);
     setFormData(initialQuickSaleFormData);
+    setRecipient({
+      isSameAsSender: true,
+      name: '',
+      docType: '1',
+      docNumber: '',
+      phone: '',
+    });
     setSplitPaymentData({
       isSplitPayment: false,
       paymentMethod1: 'EFE',
@@ -480,6 +517,16 @@ export const QuickSalePage: React.FC = () => {
               disabled={isProcessing}
             />
           </div>
+
+          {/* Datos del Destinatario - solo para Encomienda Fluvial */}
+          {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
+            <RecipientForm
+              recipient={recipient}
+              setRecipient={setRecipient}
+              remitter={{ name: passengerData.name, docType: passengerData.docType, docNumber: passengerData.docNumber, phone: passengerData.phone }}
+              disabled={isProcessing}
+            />
+          )}
 
           {/* Ruta */}
           <RouteSection
@@ -644,6 +691,17 @@ export const QuickSalePage: React.FC = () => {
                       )}
                       {requiresClientData && (!passengerData.docNumber.trim() || !passengerData.name.trim()) && (
                         <li>Complete los datos del cliente</li>
+                      )}
+                      {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
+                        recipient.isSameAsSender ? (
+                          (!passengerData.docNumber.trim() || !passengerData.name.trim()) && (
+                            <li>Complete los datos del destinatario</li>
+                          )
+                        ) : (
+                          (!recipient.docNumber.trim() || !recipient.name.trim()) && (
+                            <li>Complete los datos del destinatario</li>
+                          )
+                        )
                       )}
                       {!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
                         <li>Verifique los montos del pago dividido</li>

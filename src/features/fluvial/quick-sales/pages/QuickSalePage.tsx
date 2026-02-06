@@ -209,15 +209,6 @@ export const QuickSalePage: React.FC = () => {
     if (!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid) {
       return false;
     }
-
-    // Si es una encomienda, validar datos del destinatario
-    if (formData.selectedProduct?.name.toLowerCase().includes('encomienda')) {
-      if (recipient.isSameAsSender) {
-        if (!passengerData.docNumber.trim() || !passengerData.name.trim()) return false;
-      } else {
-        if (!recipient.docNumber.trim() || !recipient.name.trim()) return false;
-      }
-    }
     
     return true;
   }, [
@@ -334,12 +325,20 @@ export const QuickSalePage: React.FC = () => {
                 : formData.selectedProduct.name,
             };
 
-            // Si es una encomienda, adjuntar datos del destinatario al ítem
+            // Si es una encomienda, adjuntar datos del destinatario al ítem (solo si están completos)
             if (formData.selectedProduct.name.toLowerCase().includes('encomienda')) {
-              baseItem.recipient_name = recipient.isSameAsSender ? (passengerData.name || '') : recipient.name;
-              baseItem.recipient_doc_type = recipient.isSameAsSender ? (passengerData.docType || '') : recipient.docType;
-              baseItem.recipient_doc_number = recipient.isSameAsSender ? (passengerData.docNumber || '') : recipient.docNumber;
-              baseItem.recipient_phone = recipient.isSameAsSender ? (passengerData.phone || '') : recipient.phone;
+              // Verificar si hay datos del destinatario
+              const hasRecipientData = recipient.isSameAsSender
+                ? (passengerData.docNumber.trim() && passengerData.name.trim())
+                : (recipient.docNumber.trim() && recipient.name.trim());
+              
+              // Solo enviar datos si están completos
+              if (hasRecipientData) {
+                baseItem.recipient_name = recipient.isSameAsSender ? passengerData.name : recipient.name;
+                baseItem.recipient_doc_type = recipient.isSameAsSender ? passengerData.docType : recipient.docType;
+                baseItem.recipient_doc_number = recipient.isSameAsSender ? passengerData.docNumber : recipient.docNumber;
+                baseItem.recipient_phone = recipient.isSameAsSender ? (passengerData.phone || '') : recipient.phone;
+              }
             }
 
             return baseItem;
@@ -518,14 +517,30 @@ export const QuickSalePage: React.FC = () => {
             />
           </div>
 
-          {/* Datos del Destinatario - solo para Encomienda Fluvial */}
+          {/* Datos del Destinatario - solo para Encomienda Fluvial (Opcional) */}
           {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
-            <RecipientForm
-              recipient={recipient}
-              setRecipient={setRecipient}
-              remitter={{ name: passengerData.name, docType: passengerData.docType, docNumber: passengerData.docNumber, phone: passengerData.phone }}
-              disabled={isProcessing}
-            />
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-lg text-gray-800 flex items-center">
+                  <User className="h-5 w-5 mr-2 text-gray-600" />
+                  Datos del Destinatario
+                </h3>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  Opcional
+                </span>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <p className="text-sm text-blue-800">
+                  Si no completa los datos del destinatario, solo aparecerá el remitente en la boleta
+                </p>
+              </div>
+              <RecipientForm
+                recipient={recipient}
+                setRecipient={setRecipient}
+                remitter={{ name: passengerData.name, docType: passengerData.docType, docNumber: passengerData.docNumber, phone: passengerData.phone }}
+                disabled={isProcessing}
+              />
+            </div>
           )}
 
           {/* Ruta */}
@@ -691,17 +706,6 @@ export const QuickSalePage: React.FC = () => {
                       )}
                       {requiresClientData && (!passengerData.docNumber.trim() || !passengerData.name.trim()) && (
                         <li>Complete los datos del cliente</li>
-                      )}
-                      {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
-                        recipient.isSameAsSender ? (
-                          (!passengerData.docNumber.trim() || !passengerData.name.trim()) && (
-                            <li>Complete los datos del destinatario</li>
-                          )
-                        ) : (
-                          (!recipient.docNumber.trim() || !recipient.name.trim()) && (
-                            <li>Complete los datos del destinatario</li>
-                          )
-                        )
                       )}
                       {!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
                         <li>Verifique los montos del pago dividido</li>

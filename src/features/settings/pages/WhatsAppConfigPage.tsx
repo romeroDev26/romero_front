@@ -326,38 +326,38 @@ export const WhatsAppConfigPage: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg">
+            <div className="p-3 bg-blue-100 rounded-lg flex-shrink-0">
               <BuildingOffice2Icon className="w-6 h-6 text-blue-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total Sucursales</p>
-              <p className="text-2xl font-bold text-gray-900">{branchOffices.length}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{branchOffices.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg">
+            <div className="p-3 bg-purple-100 rounded-lg flex-shrink-0">
               <PhoneIcon className="w-6 h-6 text-purple-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Con WhatsApp</p>
-              <p className="text-2xl font-bold text-gray-900">{branchesWithInstance.length}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{branchesWithInstance.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg">
+            <div className="p-3 bg-green-100 rounded-lg flex-shrink-0">
               <CheckCircleIcon className="w-6 h-6 text-green-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Conectadas</p>
-              <p className="text-2xl font-bold text-gray-900">{connectedCount}</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900">{connectedCount}</p>
             </div>
           </div>
         </div>
@@ -365,8 +365,8 @@ export const WhatsAppConfigPage: React.FC = () => {
 
       {/* Branch Offices List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
             <h2 className="text-lg font-semibold text-gray-900">Sucursales</h2>
             <Button
               variant="outline"
@@ -375,7 +375,7 @@ export const WhatsAppConfigPage: React.FC = () => {
                 checkConnectionStates();
               }}
               disabled={isCheckingAll}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 w-full sm:w-auto justify-center"
             >
               <ArrowPathIcon className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
               <span>{isCheckingAll ? 'Verificando...' : 'Actualizar'}</span>
@@ -392,27 +392,27 @@ export const WhatsAppConfigPage: React.FC = () => {
             return (
               <div
                 key={branch.id}
-                className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                className="px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg ${instanceName ? 'bg-green-100' : 'bg-gray-100'}`}>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="flex items-center space-x-4 w-full sm:w-auto">
+                    <div className={`p-3 rounded-lg flex-shrink-0 ${instanceName ? 'bg-green-100' : 'bg-gray-100'}`}>
                       <BuildingOffice2Icon className={`w-6 h-6 ${instanceName ? 'text-green-600' : 'text-gray-400'}`} />
                     </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-900">{branch.name}</h3>
-                      <p className="text-sm text-gray-500">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-lg font-medium text-gray-900 truncate pr-2">{branch.name}</h3>
+                      <p className="text-sm text-gray-500 truncate pr-2">
                         {branch.port_name || branch.address_line || 'Sin dirección'}
                       </p>
                       {instanceName && (
-                        <p className="text-xs text-blue-600 font-mono mt-1">
+                        <p className="text-xs text-blue-600 font-mono mt-1 truncate">
                          {instanceName}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-4">
+                  <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ml-4">
                     {instanceName ? (
                       <>
                         {/* Badge de estado con indicador de verificación */}
@@ -422,10 +422,12 @@ export const WhatsAppConfigPage: React.FC = () => {
                             Verificando...
                           </span>
                         ) : (
-                          getStatusBadge(connectionState)
+                          <div className="flex-shrink-0">
+                            {getStatusBadge(connectionState)}
+                          </div>
                         )}
                         
-                        <div className="flex items-center space-x-2">
+                        <div className="flex flex-wrap justify-end gap-2">
                           {/* Botón verificar estado */}
                           <Button
                             variant="outline"
@@ -433,6 +435,7 @@ export const WhatsAppConfigPage: React.FC = () => {
                             onClick={() => checkSingleInstanceStatus(instanceName)}
                             disabled={isCheckingThis}
                             title="Verificar estado de conexión"
+                            className="bg-white"
                           >
                             <SignalIcon className={`w-4 h-4 ${isCheckingThis ? 'animate-pulse' : ''}`} />
                           </Button>
@@ -446,9 +449,10 @@ export const WhatsAppConfigPage: React.FC = () => {
                                 handleGetQR(instanceName);
                               }}
                               disabled={getQRCodeMutation.isPending}
+                              className="whitespace-nowrap bg-white"
                             >
                               <QrCodeIcon className="w-4 h-4 mr-1" />
-                              Conectar
+                              <span className="hidden sm:inline">Conectar</span>
                             </Button>
                           )}
                           
@@ -462,18 +466,20 @@ export const WhatsAppConfigPage: React.FC = () => {
                                   setShowChangePhoneModal(true);
                                 }}
                                 title="Cambiar de teléfono"
+                                className="whitespace-nowrap bg-white"
                               >
                                 <DevicePhoneMobileIcon className="w-4 h-4 mr-1" />
-                                Cambiar
+                                <span className="hidden sm:inline">Cambiar</span>
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleLogout(instanceName)}
                                 disabled={logoutMutation.isPending}
+                                className="whitespace-nowrap bg-white text-red-600 hover:text-red-700 hover:bg-red-50"
                               >
                                 <XCircleIcon className="w-4 h-4 mr-1" />
-                                Desconectar
+                                <span className="hidden sm:inline">Desconectar</span>
                               </Button>
                             </>
                           )}
@@ -484,6 +490,7 @@ export const WhatsAppConfigPage: React.FC = () => {
                             onClick={() => handleRestart(instanceName)}
                             disabled={restartMutation.isPending}
                             title="Reiniciar instancia"
+                            className="bg-white"
                           >
                             <ArrowPathIcon className={`w-4 h-4 ${restartMutation.isPending ? 'animate-spin' : ''}`} />
                           </Button>
@@ -498,6 +505,8 @@ export const WhatsAppConfigPage: React.FC = () => {
                           );
                           setShowCreateModal(true);
                         }}
+                        className="whitespace-nowrap"
+                        size="sm"
                       >
                         <PlusIcon className="w-4 h-4 mr-2" />
                         Crear Instancia

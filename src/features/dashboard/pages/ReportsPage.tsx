@@ -33,6 +33,7 @@ export const ReportsPage: React.FC = () => {
 
   const [syncExporting, setSyncExporting] = useState(false);
   const [showFormatModal, setShowFormatModal] = useState(false);
+  const [showAccountantFormatModal, setShowAccountantFormatModal] = useState(false);
 
   // Hook para exportaciones
   const {
@@ -88,24 +89,30 @@ export const ReportsPage: React.FC = () => {
   };
 
   const handleExportAccountant = async () => {
+    // Abrir modal para elegir formato (igual que Detallado)
+    setShowAccountantFormatModal(true);
+  };
+
+  const handleAccountantFormatSelection = async (format: 'excel' | 'pdf') => {
+    setShowAccountantFormatModal(false);
     setSyncExporting(true);
-    
+
     try {
       const monthNames = [
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
       ];
-      
+
       const month = monthNames[startDate.getMonth()];
       const year = startDate.getFullYear();
-      
+
       await requestExport({
         category: 'accountant_series',
-        format: 'excel',
+        format: format,
         start_date: dateRange.start_date,
         end_date: dateRange.end_date,
         metadata: {
-          report_title: `Reporte Contable - ${month} ${year}.xlsx`
+          report_title: `Reporte Contable - ${month} ${year}.${format === 'excel' ? 'xlsx' : 'pdf'}`
         },
         sync: true
       });
@@ -300,6 +307,55 @@ export const ReportsPage: React.FC = () => {
           <div className="flex justify-end pt-4 border-t border-gray-200">
             <button
               onClick={() => setShowFormatModal(false)}
+              className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal de selección de formato para Contable */}
+      <Modal
+        isOpen={showAccountantFormatModal}
+        onClose={() => setShowAccountantFormatModal(false)}
+        title="Seleccionar formato - Reporte Contable"
+        maxWidth="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 mb-6">
+            Elige el formato en el que deseas descargar el reporte contable.
+          </p>
+
+          <div className="grid grid-cols-1 gap-3">
+            <button
+              onClick={() => handleAccountantFormatSelection('excel')}
+              disabled={syncExporting}
+              className="flex items-center justify-center px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+            >
+              <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+              <div className="text-left">
+                <div className="font-semibold">Excel (.xlsx)</div>
+                <div className="text-sm opacity-75">Archivo Excel con series contables</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => handleAccountantFormatSelection('pdf')}
+              disabled={syncExporting}
+              className="flex items-center justify-center px-6 py-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 hover:border-red-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+            >
+              <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+              <div className="text-left">
+                <div className="font-semibold">PDF (.pdf)</div>
+                <div className="text-sm opacity-75">Documento PDF del reporte contable</div>
+              </div>
+            </button>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-gray-200">
+            <button
+              onClick={() => setShowAccountantFormatModal(false)}
               className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
             >
               Cancelar

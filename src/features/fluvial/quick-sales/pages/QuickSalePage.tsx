@@ -34,6 +34,7 @@ import { useBranchOffices } from '../../../../hooks/useBranchOffices';
 import { useCompanyInfo } from '../../../../hooks/useCompanyInfo';
 
 import { PassengerData, initialPassengerData } from '../../components/sales-point/core/types';
+import { RecipientForm, RecipientData as RecipientFormData } from '../../../cargo/components/RecipientForm';
 import { SunatDocType, SunatInvoiceType } from '../../types/sunat.types';
 import { BranchOffice, CreateClientData } from '../../../../types';
 
@@ -70,6 +71,16 @@ export const QuickSalePage: React.FC = () => {
   
   // Estado de contraentrega
   const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
+  
+  // Estado para controlar si se agrega destinatario
+  const [showRecipientForm, setShowRecipientForm] = useState<boolean>(false);
+  const [recipient, setRecipient] = useState<RecipientFormData>({
+    isSameAsSender: true,
+    name: '',
+    docType: '1',
+    docNumber: '',
+    phone: '',
+  });
   
   // Estados para modales
   const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
@@ -215,6 +226,7 @@ export const QuickSalePage: React.FC = () => {
     isContraentrega,
     splitPaymentData.isSplitPayment,
     isSplitPaymentValid,
+    recipient,
   ]);
 
   // Handler para pago dividido
@@ -303,17 +315,37 @@ export const QuickSalePage: React.FC = () => {
         }),
         
         items: [
-          {
-            product_id: formData.selectedProduct.id,
-            quantity: formData.quantity,
-            unit_price: unitPrice,
-            unit_code: formData.selectedProduct.unit_code,
-            tax_category_code: formData.isIgvGravado ? '10' : '20',
-            discount: 0,
-            item_description: formData.description 
-              ? `${formData.selectedProduct.name} - ${formData.description}` 
-              : formData.selectedProduct.name,
-          },
+          (() => {
+            const baseItem: any = {
+              product_id: formData.selectedProduct.id,
+              quantity: formData.quantity,
+              unit_price: unitPrice,
+              unit_code: formData.selectedProduct.unit_code,
+              tax_category_code: formData.isIgvGravado ? '10' : '20',
+              discount: 0,
+              item_description: formData.description
+                ? `${formData.selectedProduct.name} - ${formData.description}`
+                : formData.selectedProduct.name,
+            };
+
+            // Si es una encomienda Y se activó agregar destinatario, adjuntar datos del destinatario
+            if (formData.selectedProduct.name.toLowerCase().includes('encomienda') && showRecipientForm) {
+              // Verificar si hay datos del destinatario
+              const hasRecipientData = recipient.isSameAsSender
+                ? (passengerData.docNumber.trim() && passengerData.name.trim())
+                : (recipient.docNumber.trim() && recipient.name.trim());
+              
+              // Solo enviar datos si están completos
+              if (hasRecipientData) {
+                baseItem.recipient_name = recipient.isSameAsSender ? passengerData.name : recipient.name;
+                baseItem.recipient_doc_type = recipient.isSameAsSender ? passengerData.docType : recipient.docType;
+                baseItem.recipient_doc_number = recipient.isSameAsSender ? passengerData.docNumber : recipient.docNumber;
+                baseItem.recipient_phone = recipient.isSameAsSender ? (passengerData.phone || '') : recipient.phone;
+              }
+            }
+
+            return baseItem;
+          })(),
         ],
       };
 
@@ -349,6 +381,14 @@ export const QuickSalePage: React.FC = () => {
   const resetForm = () => {
     setPassengerData(initialPassengerData);
     setFormData(initialQuickSaleFormData);
+    setShowRecipientForm(false);
+    setRecipient({
+      isSameAsSender: true,
+      name: '',
+      docType: '1',
+      docNumber: '',
+      phone: '',
+    });
     setSplitPaymentData({
       isSplitPayment: false,
       paymentMethod1: 'EFE',
@@ -480,6 +520,60 @@ export const QuickSalePage: React.FC = () => {
               disabled={isProcessing}
             />
           </div>
+
+          {/* Agregar Destinatario - solo para Encomienda Fluvial */}
+          {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
+            <div className="bg-white p-6 rounded-lg shadow-sm border">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-semibold text-lg text-gray-800 flex items-center">
+                    <User className="h-5 w-5 mr-2 text-gray-600" />
+                    Agregar Destinatario
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Opcional - Active para registrar datos del destinatario
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={showRecipientForm}
+                  onClick={() => setShowRecipientForm(!showRecipientForm)}
+                  disabled={isProcessing}
+                  className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    showRecipientForm ? 'bg-purple-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
+                      showRecipientForm ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {showRecipientForm && (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <p className="text-sm text-blue-800">
+                      Complete los datos del destinatario o marque si es el mismo que envía
+                    </p>
+                  </div>
+                  <RecipientForm
+                    recipient={recipient}
+                    setRecipient={setRecipient}
+                    remitter={{
+                      name: passengerData.name,
+                      docType: passengerData.docType,
+                      docNumber: passengerData.docNumber,
+                      phone: passengerData.phone,
+                    }}
+                    disabled={isProcessing}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Ruta */}
           <RouteSection

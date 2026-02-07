@@ -41,7 +41,6 @@ export const ReportsPage: React.FC = () => {
   } = useExportReport({
     onSuccess: () => {
       // Opcional: mostrar notificación de éxito
-      console.log('Export completed successfully!');
     },
     onError: (error) => {
       console.error('Export failed:', error);

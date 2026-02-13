@@ -21,6 +21,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
   const navigate = useNavigate()
 
   const {
@@ -32,6 +33,7 @@ export const LoginPage: React.FC = () => {
   })
 
   const onSubmit = async (data: LoginFormData) => {
+    setLoginError(null)
     setIsLoading(true)
     try {
       // Tu lógica de login no cambia
@@ -41,14 +43,22 @@ export const LoginPage: React.FC = () => {
     } catch (err: any) {
       if (err.response) {
         if (err.response.status === 401) {
-          toast.error('Credenciales incorrectas. Verifique su email y contraseña.')
+          const msg = 'Credenciales incorrectas. Verifique su email y contraseña.'
+          setLoginError(msg)
+          toast.error(msg)
         } else {
-          toast.error(`Error ${err.response.status}: ${err.response?.data?.detail || 'Error en el servidor'}`)
+          const msg = `Error ${err.response.status}: ${err.response?.data?.detail || 'Error en el servidor'}`
+          setLoginError(msg)
+          toast.error(msg)
         }
       } else if (err.request) {
-        toast.error('No se pudo conectar con el servidor. Verifique su conexión a internet.')
+        const msg = 'No se pudo conectar con el servidor. Verifique su conexión a internet.'
+        setLoginError(msg)
+        toast.error(msg)
       } else {
-        toast.error(`Error al iniciar sesión: ${err.message}`)
+        const msg = `Error al iniciar sesión: ${err.message}`
+        setLoginError(msg)
+        toast.error(msg)
       }
     } finally {
       setIsLoading(false)
@@ -57,10 +67,10 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex justify-center items-center">
-      <div className="max-w-screen-xl m-0 sm:m-10 bg-white shadow-xl sm:rounded-lg flex justify-center flex-1">
+      <div className="max-w-screen-xl m-0 sm:m-10 lg:bg-white lg:shadow-xl lg:rounded-lg flex justify-center flex-1">
         
         {/* Sección Izquierda: Formulario de Login */}
-        <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12 flex flex-col justify-center">
+        <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12 flex flex-col justify-center w-full">
           <div className="flex justify-center mb-6">
             <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
               <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,14 +80,31 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
           <div className="w-full flex-1">
-            <div className="mx-auto max-w-xs text-center">
-              <h1 className="text-3xl font-semibold" style={{ fontFamily: "Montserrat, sans-serif" }}>Bienvenido</h1>
-              <p className="text-gray-600 mt-2">
-                Ingrese sus credenciales para continuar
-              </p>
+            {/* Mobile gradient header */}
+            <div className="lg:hidden">
+              <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-b-3xl text-white py-8 px-6 text-center">
+                <h2 className="text-2xl font-semibold">Transportes Romero</h2>
+                <p className="text-indigo-200 mt-1 text-sm">Plataforma integrada de gestión</p>
+              </div>
             </div>
-            
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-8 max-w-xs mx-auto space-y-5">
+
+            {/* Card wrapper to create the white rounded card on mobile */}
+            <div className="px-4 -mt-8 lg:mt-0 lg:px-0">
+              <div className="bg-white rounded-3xl shadow-lg p-6 sm:p-8 lg:shadow-none lg:rounded-none lg:p-0">
+                <div className="mx-auto max-w-xs text-center">
+                  <h1 className="text-3xl font-semibold" style={{ fontFamily: "Montserrat, sans-serif" }}>Bienvenido</h1>
+                  <p className="text-gray-600 mt-2">
+                    Ingrese sus credenciales para continuar
+                  </p>
+                </div>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="mt-6 w-full sm:max-w-xs mx-auto space-y-5">
+              {loginError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-2 flex items-start justify-between" role="alert">
+                  <div className="mr-4">{loginError}</div>
+                  <button type="button" className="text-red-500 hover:text-red-700" onClick={() => setLoginError(null)} aria-label="Cerrar mensaje de error">✕</button>
+                </div>
+              )}
               {/* Campo de Email con tu label y placeholder */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -89,7 +116,7 @@ export const LoginPage: React.FC = () => {
                   type="email"
                   placeholder="Correo Electrónico"
                   error={errors.email?.message}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:border-indigo-500 focus:bg-white focus:ring-0 pl-10"
+                  className="w-full px-4 py-4 sm:py-3 rounded-lg bg-gray-100 border border-gray-200 focus:border-indigo-500 focus:bg-white focus:ring-0 pl-10 text-sm sm:text-base"
                   {...register('email')}
                 />
               </div>
@@ -105,7 +132,7 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Contraseña"
                   error={errors.password?.message}
-                  className="w-full px-4 py-3 rounded-lg bg-gray-100 border border-gray-200 focus:border-indigo-500 focus:bg-white focus:ring-0 pl-10 pr-10"
+                  className="w-full px-4 py-4 sm:py-3 rounded-lg bg-gray-100 border border-gray-200 focus:border-indigo-500 focus:bg-white focus:ring-0 pl-10 pr-10 text-sm sm:text-base"
                   {...register('password')}
                 />
                 <button
@@ -126,8 +153,8 @@ export const LoginPage: React.FC = () => {
                 <label htmlFor="rememberMe" className="flex items-center cursor-pointer">
                   <div className="relative">
                     <input id="rememberMe" type="checkbox" aria-label="Recordarme" className="sr-only" {...register('rememberMe')} />
-                    <div className="block bg-gray-200 w-10 h-6 rounded-full"></div>
-                    <div className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform"></div>
+                    <div className="block bg-gray-200 w-12 h-7 rounded-full"></div>
+                    <div className="dot absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform"></div>
                   </div>
                   <div className="ml-3 text-gray-700 font-medium">Recordarme</div>
                 </label>
@@ -138,11 +165,13 @@ export const LoginPage: React.FC = () => {
                 type="submit"
                 variant="primary"
                 isLoading={isLoading}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all duration-300 ease-in-out"
+                className="w-full py-4 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all duration-300 ease-in-out text-lg sm:text-base"
               >
                 {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
               </Button>
-            </form>
+                </form>
+              </div>
+            </div>
 
             {/* Enlace de registro eliminado intencionalmente */}
           </div>

@@ -24,7 +24,8 @@ export const authService = {
       
       const response = await api.post<LoginResponse>('/auth/token', formData, {
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Skip-Auth-Redirect': '1'
         }
       });
       

@@ -10,13 +10,16 @@ import { Spinner } from '../../../../components/common/Spinner';
 import { MessageCircle, Send, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
 import { whatsappService, WhatsAppSendResponse } from '../../../../services/whatsapp.service';
 import { BackendInvoiceData } from './tickets/types/backend.types';
+import { Invoice } from '../../../../types';
 import { useWhatsAppInstanceWithFallback } from '../../../../hooks/useWhatsAppInstance';
 import { useCompanyInfo } from '../../../../hooks/useCompanyInfo';
+
+type WhatsAppSendModalInvoice = BackendInvoiceData | Invoice;
 
 interface WhatsAppSendModalProps {
   isOpen: boolean;
   onClose: () => void;
-  backendData: BackendInvoiceData;
+  backendData: WhatsAppSendModalInvoice;
   initialPhoneNumber?: string;
   onClearForm?: () => void;
   // Nueva prop para identificar el contexto

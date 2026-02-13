@@ -1,10 +1,14 @@
 // src/features/finance/components/payment/PaidTicketModal.tsx
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
-import { CheckCircleIcon, PrinterIcon, XIcon, FileTextIcon } from 'lucide-react';
+import { Spinner } from '../../../../components/common/Spinner';
+import { CheckCircleIcon, MessageCircle, XIcon, FileTextIcon } from 'lucide-react';
 import { PaymentTicketData } from '../../types/payment.types';
+import { invoicesService } from '../../../../services/invoices.service';
+import { WhatsAppSendModal } from '../../../fluvial/components/sales-point/WhatsAppSendModal';
+import { Invoice } from '../../../../types';
 
 interface PaidTicketModalProps {
   isOpen: boolean;
@@ -21,6 +25,20 @@ export const PaidTicketModal: React.FC<PaidTicketModalProps> = ({
   onClose,
   paymentData,
 }) => {
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<Invoice | null>(null);
+  const [isLoadingInvoice, setIsLoadingInvoice] = useState(false);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowWhatsAppModal(false);
+      setInvoiceData(null);
+      setInvoiceError(null);
+      setIsLoadingInvoice(false);
+    }
+  }, [isOpen]);
+
   if (!paymentData) return null;
 
   // Determinar qué PDF mostrar (preferir ticket de 80mm)
@@ -55,6 +73,28 @@ export const PaidTicketModal: React.FC<PaidTicketModalProps> = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleOpenWhatsApp = async () => {
+    if (isLoadingInvoice) return;
+
+    setInvoiceError(null);
+
+    if (invoiceData) {
+      setShowWhatsAppModal(true);
+      return;
+    }
+
+    try {
+      setIsLoadingInvoice(true);
+      const invoice = await invoicesService.getById(paymentData.invoice_id);
+      setInvoiceData(invoice);
+      setShowWhatsAppModal(true);
+    } catch (error: any) {
+      setInvoiceError(error?.message || 'No se pudo cargar la factura para enviar por WhatsApp');
+    } finally {
+      setIsLoadingInvoice(false);
+    }
   };
 
   return (
@@ -139,13 +179,39 @@ export const PaidTicketModal: React.FC<PaidTicketModalProps> = ({
             </div>
           </div>
 
-          {/* Botón de cerrar */}
-          <Button
-            onClick={onClose}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 mt-auto"
-          >
-            Cerrar
-          </Button>
+          {/* Acciones */}
+          <div className="mt-auto space-y-2">
+            <Button
+              onClick={handleOpenWhatsApp}
+              disabled={isLoadingInvoice}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5"
+            >
+              {isLoadingInvoice ? (
+                <>
+                  <Spinner size="sm" className="mr-2" />
+                  Cargando...
+                </>
+              ) : (
+                <>
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Enviar por WhatsApp
+                </>
+              )}
+            </Button>
+
+            {invoiceError && (
+              <p className="text-xs text-red-600 text-center">
+                {invoiceError}
+              </p>
+            )}
+
+            <Button
+              onClick={onClose}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5"
+            >
+              Cerrar
+            </Button>
+          </div>
         </div>
 
         {/* Panel Derecho - Ticket PDF */}
@@ -182,6 +248,17 @@ export const PaidTicketModal: React.FC<PaidTicketModalProps> = ({
           )}
         </div>
       </div>
+
+      {invoiceData && (
+        <WhatsAppSendModal
+          isOpen={showWhatsAppModal}
+          onClose={() => setShowWhatsAppModal(false)}
+          backendData={invoiceData}
+          initialPhoneNumber={invoiceData.client?.phone || invoiceData.items?.[0]?.recipient_phone || ''}
+          isFromInvoiceList={true}
+          preferredPdfType="ticket"
+        />
+      )}
     </Modal>
   );
 };

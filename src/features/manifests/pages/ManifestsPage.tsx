@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -36,6 +36,9 @@ export const ManifestsPage: React.FC = () => {
   const navigate = useNavigate();
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [showBranchSelector, setShowBranchSelector] = useState(false);
+  const branchSelectorRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
 
   // Hook para obtener sucursales
   const { data: branches, isLoading: isLoadingBranches } = useBranchOfficesData();
@@ -56,8 +59,12 @@ export const ManifestsPage: React.FC = () => {
 
   // Cerrar dropdown al hacer click fuera
   useEffect(() => {
-    const handleClickOutside = () => {
-      if (showBranchSelector) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!showBranchSelector) {
+        return;
+      }
+
+      if (branchSelectorRef.current && !branchSelectorRef.current.contains(event.target as Node)) {
         setShowBranchSelector(false);
       }
     };
@@ -91,6 +98,7 @@ export const ManifestsPage: React.FC = () => {
     setSelectedBranch(branch);
     localStorage.setItem('selectedSalesBranch', JSON.stringify(branch));
     setShowBranchSelector(false);
+    setCurrentPage(1);
   };
 
   const handleViewDetails = (trip: GroupedTrip) => {
@@ -134,6 +142,16 @@ export const ManifestsPage: React.FC = () => {
 
   // Agrupar los manifiestos por viaje
   const groupedTrips = manifests ? groupManifestsByTrip(manifests) : [];
+  const totalPages = Math.max(1, Math.ceil(groupedTrips.length / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * pageSize;
+  const paginatedTrips = groupedTrips.slice(startIndex, startIndex + pageSize);
+
+  useEffect(() => {
+    if (currentPage !== safePage) {
+      setCurrentPage(safePage);
+    }
+  }, [currentPage, safePage]);
 
   // Columnas para viajes agrupados
   const columns = [
@@ -317,7 +335,7 @@ export const ManifestsPage: React.FC = () => {
           
           <div className="flex items-center space-x-4">
             {/* Selector de Sucursal */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2" ref={branchSelectorRef}>
               <BuildingOfficeIcon className="w-5 h-5 text-gray-500" />
               <div className="relative">
                 <button
@@ -375,16 +393,43 @@ export const ManifestsPage: React.FC = () => {
             </div>
             
             {selectedBranch && (
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <BuildingOfficeIcon className="w-4 h-4" />
-                <span>Sucursal activa: {selectedBranch.name}</span>
+              <div className="flex flex-col items-start md:items-end gap-2 text-sm text-gray-500">
+                <div className="flex items-center space-x-2">
+                  <BuildingOfficeIcon className="w-4 h-4" />
+                  <span>Sucursal activa: {selectedBranch.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span>
+                    Mostrando {groupedTrips.length === 0 ? 0 : startIndex + 1}-
+                    {Math.min(startIndex + pageSize, groupedTrips.length)} de {groupedTrips.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={safePage === 1}
+                      className="px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Anterior
+                    </button>
+                    <span className="px-2 text-gray-700">
+                      {safePage}/{totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={safePage === totalPages}
+                      className="px-2 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         </div>
 
         <DataTable<GroupedTrip>
-          data={groupedTrips}
+          data={paginatedTrips}
           columns={columns}
           keyExtractor={(trip) => trip.trip_id.toString()}
           isLoading={isLoading}

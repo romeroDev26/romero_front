@@ -8,9 +8,9 @@ import "react-datepicker/dist/react-datepicker.css";
 export type DateFilterOption = 'today' | 'last7days' | 'lastMonth' | 'custom';
 
 interface DateRangeFilterProps {
-  startDate: Date;
-  endDate: Date;
-  onDateChange: (startDate: Date, endDate: Date) => void;
+  startDate: Date | null;
+  endDate: Date | null;
+  onDateChange: (startDate: Date | null, endDate: Date | null) => void;
   selectedOption: DateFilterOption;
   onOptionChange: (option: DateFilterOption) => void;
 }
@@ -78,6 +78,9 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         break;
       }
       case 'custom':
+        setTempStartDate(null);
+        setTempEndDate(null);
+        onDateChange(null, null);
         setShowCalendar(true);
         break;
     }
@@ -103,6 +106,10 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         year: 'numeric' 
       });
     };
+
+    if (!startDate || !endDate) {
+      return 'Selecciona un rango de fechas';
+    }
 
     if (selectedOption === 'today') {
       return formatDate(startDate);
@@ -151,7 +158,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
       {/* Calendario desplegable */}
       {showCalendar && (
-        <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 p-4">
+        <div className="mt-4 w-full bg-white rounded-xl shadow-2xl border border-gray-200 p-4 overflow-x-auto">
           <div className="custom-datepicker-wrapper">
             <DatePicker
               selected={tempStartDate}

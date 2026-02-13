@@ -68,7 +68,7 @@ export const Modal: React.FC<ModalProps> = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className={`w-full ${maxWidthClasses[maxWidth]} transform overflow-hidden rounded-lg bg-white text-left align-middle shadow-xl transition-all`}
+                className={`w-full ${maxWidthClasses[maxWidth]} transform max-h-[95vh] overflow-y-auto rounded-lg bg-white text-left align-middle shadow-xl transition-all`}
               >
                 {title && (
                   <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">

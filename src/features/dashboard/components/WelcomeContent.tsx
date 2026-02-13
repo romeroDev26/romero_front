@@ -6,6 +6,8 @@ import { SellerRanking } from './SellerRanking';
 import { useExportReport } from '../../../hooks/useExportReport';
 import { Modal } from '../../../components/common/Modal';
 import { Button } from '../../../components/common/Button';
+import { DateRangeFilter, DateFilterOption } from './DateRangeFilter';
+import type { ExportRequest } from '../../../types/exports';
 
 interface WelcomeContentProps {
   showHeader?: boolean;
@@ -17,12 +19,8 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
 
   // Hook para exportaciones
   const { requestExport } = useExportReport({
-    onSuccess: () => {
-      console.log('Export completed successfully!');
-    },
-    onError: (error) => {
-      console.error('Export failed:', error);
-    },
+    onSuccess: () => {},
+    onError: () => {},
   });
 
   // Calcular rango de fechas (día actual)
@@ -38,35 +36,48 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
   };
 
   const peruDate = getPeruDateString();
-  const dateRange = {
-    start_date: peruDate,
-    end_date: peruDate,
+  // Inicializar fechas como objetos Date en zona de Perú (00:00)
+  const getPeruTodayDate = () => {
+    const parts = peruDate.split('-').map((p) => parseInt(p, 10));
+    // parts: [YYYY, MM, DD]
+    return new Date(parts[0], parts[1] - 1, parts[2]);
   };
+
+  const [startDate, setStartDate] = React.useState<Date | null>(getPeruTodayDate());
+  const [endDate, setEndDate] = React.useState<Date | null>(getPeruTodayDate());
+  const [filterOption, setFilterOption] = React.useState<DateFilterOption>('today');
+
+  const canExportDates = filterOption !== 'custom' || (startDate && endDate);
 
   const handleExportClick = () => {
     setShowFormatModal(true);
   };
 
   const handleFormatSelection = async (format: 'excel' | 'pdf') => {
+    if (!startDate || !endDate) {
+      return;
+    }
+
     setShowFormatModal(false);
     setSyncExporting(true);
     
     try {
-      await requestExport({
+      const payload: ExportRequest = {
         category: 'branch_global',
         format: format,
-        start_date: dateRange.start_date,
-        end_date: dateRange.end_date,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
         filters: {
-          include_vessel_data: false
+          include_vessel_data: false,
         },
         metadata: {
-          report_title: `Reporte Global por Sucursal.${format === 'excel' ? 'xlsx' : 'pdf'}`
+          report_title: `Reporte Global por Sucursal.${format === 'excel' ? 'xlsx' : 'pdf'}`,
         },
-        sync: true
-      });
+        sync: true,
+      };
+
+      await requestExport(payload);
     } catch (error) {
-      console.error('Export failed:', error);
     } finally {
       setSyncExporting(false);
     }
@@ -144,27 +155,57 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
       <Modal
         isOpen={showFormatModal}
         onClose={() => setShowFormatModal(false)}
-        title="Exportar a Excel"
+        title="Exportar Reporte"
+        maxWidth="6xl"
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            ¿Deseas exportar el reporte a Excel?
+            Selecciona el rango de fechas y el formato para exportar el reporte.
           </p>
-          <div className="flex justify-end gap-3">
-            <Button
-              onClick={() => setShowFormatModal(false)}
-              variant="secondary"
-            >
-              Cancelar
-            </Button>
-            <Button
+
+          <DateRangeFilter
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
+            selectedOption={filterOption}
+            onOptionChange={(opt) => setFilterOption(opt)}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
               onClick={() => handleFormatSelection('excel')}
-              variant="primary"
-              className="bg-green-600 hover:bg-green-700"
+              disabled={syncExporting || !canExportDates}
+              className="flex items-center justify-center px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
             >
-              <DocumentArrowDownIcon className="w-5 h-5 mr-2" />
-              Exportar a Excel
-            </Button>
+              <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+              <div className="text-left">
+                <div className="font-semibold">Excel (.xlsx)</div>
+                <div className="text-sm opacity-75">
+                  Desde {startDate ? startDate.toISOString().split('T')[0] : '--'} hasta {endDate ? endDate.toISOString().split('T')[0] : '--'}
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => handleFormatSelection('pdf')}
+              disabled={syncExporting || !canExportDates}
+              className="flex items-center justify-center px-6 py-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 hover:border-red-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+            >
+              <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
+              <div className="text-left">
+                <div className="font-semibold">PDF (.pdf)</div>
+                <div className="text-sm opacity-75">
+                  Desde {startDate ? startDate.toISOString().split('T')[0] : '--'} hasta {endDate ? endDate.toISOString().split('T')[0] : '--'}
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-gray-200">
+            <Button onClick={() => setShowFormatModal(false)} variant="secondary">Cancelar</Button>
           </div>
         </div>
       </Modal>

@@ -53,9 +53,9 @@ export const ReportsPage: React.FC = () => {
     enabled: true,
   });
 
-  const handleDateChange = (newStartDate: Date, newEndDate: Date) => {
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
+  const handleDateChange = (newStartDate: Date | null, newEndDate: Date | null) => {
+    if (newStartDate) setStartDate(newStartDate);
+    if (newEndDate) setEndDate(newEndDate);
   };
 
   const handleExportExcel = async () => {

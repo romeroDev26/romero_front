@@ -158,7 +158,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
       {/* Calendario desplegable */}
       {showCalendar && (
-        <div className="mt-4 w-full bg-white rounded-xl shadow-2xl border border-gray-200 p-4 overflow-x-auto">
+        <div className="mt-4 w-full max-w-3xl mx-auto bg-white rounded-xl shadow-2xl border border-gray-200 p-4 overflow-x-auto">
           <div className="custom-datepicker-wrapper">
             <DatePicker
               selected={tempStartDate}

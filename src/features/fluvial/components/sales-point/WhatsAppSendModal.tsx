@@ -12,7 +12,6 @@ import { whatsappService, WhatsAppSendResponse } from '../../../../services/what
 import { BackendInvoiceData } from './tickets/types/backend.types';
 import { Invoice } from '../../../../types';
 import { useWhatsAppInstanceWithFallback } from '../../../../hooks/useWhatsAppInstance';
-import { useCompanyInfo } from '../../../../hooks/useCompanyInfo';
 
 type WhatsAppSendModalInvoice = BackendInvoiceData | Invoice;
 
@@ -43,9 +42,8 @@ export const WhatsAppSendModal: React.FC<WhatsAppSendModalProps> = ({
   const [sendResult, setSendResult] = useState<WhatsAppSendResponse | null>(null);
 
   // Obtener la instancia de WhatsApp con verificación de conexión y fallback automático
-  const whatsAppInstance = useWhatsAppInstanceWithFallback(backendData.branch_office_name);
-  const { data: company } = useCompanyInfo();
-  const businessName = company?.business_name || 'Nuestra Empresa';
+  const whatsAppInstance = useWhatsAppInstanceWithFallback(backendData.branch_office_name || null);
+  const businessName = backendData.branch_office_name || 'Nuestra Empresa';
 
   const defaultMessage = `¡Hola!
 

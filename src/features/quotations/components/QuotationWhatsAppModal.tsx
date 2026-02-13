@@ -10,7 +10,6 @@ import { MessageCircle, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { whatsappService, WhatsAppSendResponse } from '../../../services/whatsapp.service';
 import { Quotation } from '../types';
 import { useWhatsAppInstanceByName } from '../../../hooks/useWhatsAppInstance';
-import { useCompanyInfo } from '../../../hooks/useCompanyInfo';
 
 interface QuotationWhatsAppModalProps {
   isOpen: boolean;
@@ -29,9 +28,7 @@ export const QuotationWhatsAppModal: React.FC<QuotationWhatsAppModalProps> = ({
   const [isSending, setIsSending] = useState(false);
   const [sendResult, setSendResult] = useState<WhatsAppSendResponse | null>(null);
 
-  // Obtener información de la empresa
-  const { data: company } = useCompanyInfo();
-  const businessName = company?.business_name || 'Nuestra Empresa';
+  const businessName = quotation.branch_office_name || 'Nuestra Empresa';
 
   // Obtener la instancia de WhatsApp de la sucursal de la cotización
   const whatsAppInstance = useWhatsAppInstanceByName(quotation.branch_office_name);

@@ -156,7 +156,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
         isOpen={showFormatModal}
         onClose={() => setShowFormatModal(false)}
         title="Exportar Reporte"
-        maxWidth="6xl"
+        maxWidth="4xl"
       >
         <div className="space-y-4">
           <p className="text-gray-600">

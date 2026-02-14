@@ -53,7 +53,7 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
     setShowFormatModal(true);
   };
 
-  const handleFormatSelection = async (format: 'excel' | 'pdf') => {
+  const handleFormatSelection = async (format: 'excel') => {
     if (!startDate || !endDate) {
       return;
     }
@@ -174,29 +174,15 @@ export const WelcomeContent: React.FC<WelcomeContentProps> = ({ showHeader = fal
             onOptionChange={(opt) => setFilterOption(opt)}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="flex justify-center">
             <button
               onClick={() => handleFormatSelection('excel')}
               disabled={syncExporting || !canExportDates}
-              className="flex items-center justify-center px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center w-full max-w-md px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
                 <div className="font-semibold">Excel (.xlsx)</div>
-                <div className="text-sm opacity-75">
-                  Desde {startDate ? startDate.toISOString().split('T')[0] : '--'} hasta {endDate ? endDate.toISOString().split('T')[0] : '--'}
-                </div>
-              </div>
-            </button>
-
-            <button
-              onClick={() => handleFormatSelection('pdf')}
-              disabled={syncExporting || !canExportDates}
-              className="flex items-center justify-center px-6 py-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 hover:border-red-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
-            >
-              <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
-              <div className="text-left">
-                <div className="font-semibold">PDF (.pdf)</div>
                 <div className="text-sm opacity-75">
                   Desde {startDate ? startDate.toISOString().split('T')[0] : '--'} hasta {endDate ? endDate.toISOString().split('T')[0] : '--'}
                 </div>

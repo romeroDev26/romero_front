@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
@@ -22,6 +22,7 @@ import { CancellationRequestListItem } from '../../features/accounting/types/can
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
+const PENDING_SYNC_TTL_MS = 30000;
 
 // Accesos rápidos para las funciones más comerciales
 const quickAccessItems = [
@@ -130,6 +131,7 @@ export const Dashboard: React.FC = () => {
 
   // Estado para el contador de solicitudes pendientes (solo supervisores)
   const [pendingCount, setPendingCount] = useState(0);
+  const lastPendingSyncRef = useRef(0);
 
   // Estado para vendedores: contador de respuestas y modal
   const [sellerResponsesCount, setSellerResponsesCount] = useState(0);
@@ -140,6 +142,9 @@ export const Dashboard: React.FC = () => {
   // Función para obtener el contador de pendientes (supervisores)
   const fetchPendingCount = useCallback(async () => {
     if (!isSupervisor) return;
+    const now = Date.now();
+    if (now - lastPendingSyncRef.current < PENDING_SYNC_TTL_MS) return;
+    lastPendingSyncRef.current = now;
     
     try {
       const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
@@ -148,7 +153,7 @@ export const Dashboard: React.FC = () => {
     } catch (err) {
       console.error('Error al obtener solicitudes pendientes:', err);
     }
-  }, [isSupervisor, currentUser]);
+  }, [isSupervisor]);
 
   // Función para obtener las respuestas del vendedor
   const fetchSellerResponses = useCallback(async () => {
@@ -256,6 +261,7 @@ export const Dashboard: React.FC = () => {
   // Cargar contadores iniciales
   useEffect(() => {
     if (isSupervisor) {
+      lastPendingSyncRef.current = 0;
       fetchPendingCount();
     }
   }, [isSupervisor, fetchPendingCount]);
@@ -272,6 +278,7 @@ export const Dashboard: React.FC = () => {
 
     const handleLocalResolution = () => {
       // Actualizar contador cuando se resuelve una solicitud localmente
+      lastPendingSyncRef.current = 0;
       fetchPendingCount();
     };
 
@@ -323,9 +330,10 @@ export const Dashboard: React.FC = () => {
             <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)}></div>
             <div className="fixed inset-y-0 left-0 flex flex-col w-80 max-w-xs m-5">
                 <Sidebar 
-                    currentUser={currentUser} 
-                    onLogout={handleLogout} 
-                    onCloseMobile={() => setSidebarOpen(false)}
+                  currentUser={currentUser} 
+                  onLogout={handleLogout} 
+                  onCloseMobile={() => setSidebarOpen(false)}
+                  pendingCount={pendingCount}
                 />
             </div>
         </div>
@@ -338,6 +346,7 @@ export const Dashboard: React.FC = () => {
             currentUser={currentUser} 
             onLogout={handleLogout}
             onCloseMobile={() => {}} // No necesita hacer nada en desktop
+            pendingCount={pendingCount}
           />
         </div>
       </div>

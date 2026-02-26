@@ -11,7 +11,6 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { useCancellationRequests } from '../../../hooks/useCancellationRequests';
-import { useWebSocketNotifications } from '../../../hooks/useWebSocketNotifications';
 import { cancellationRequestsService } from '../../accounting/services/cancellationRequests.service';
 import { CancellationRequestListItem, CancellationRequestStatus } from '../../accounting/types/cancellationRequests';
 import ApprovalModal from '../components/ApprovalModal';
@@ -35,18 +34,19 @@ const CancellationRequestsPage: React.FC = () => {
     refresh
   } = useCancellationRequests();
 
-  // WebSocket para notificaciones en tiempo real
-  const { isConnected } = useWebSocketNotifications({
-    enabled: true,
-    onCancellationRequestCreated: () => {
-      // Cuando llega una nueva solicitud, actualizar la lista
-      refresh();
-    },
-    onCancellationRequestResolved: () => {
-      // Cuando se resuelve una solicitud (desde otro supervisor), actualizar
-      refresh();
-    }
-  });
+  // Escuchar eventos globales del WebSocket (gestionado en el layout)
+  useEffect(() => {
+    const handleCreated = () => refresh();
+    const handleResolved = () => refresh();
+
+    window.addEventListener('cancellation-request-created', handleCreated as EventListener);
+    window.addEventListener('cancellation-request-resolved', handleResolved as EventListener);
+
+    return () => {
+      window.removeEventListener('cancellation-request-created', handleCreated as EventListener);
+      window.removeEventListener('cancellation-request-resolved', handleResolved as EventListener);
+    };
+  }, [refresh]);
 
   // Cargar datos iniciales solo una vez al montar el componente
   useEffect(() => {

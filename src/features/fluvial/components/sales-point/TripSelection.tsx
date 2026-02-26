@@ -1,12 +1,12 @@
 // src/features/fluvial/components/sales-point/TripSelection.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Ship } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { BranchOffice } from '../../../../types';
 import { AvailableTripByPort } from '../../../../services/trips.service';
-import { useAvailableTrips } from '../../hooks/useAvailableTrips';
+import { useAvailableTripsCalendar } from '../../hooks/useAvailableTripsCalendar';
 import { TripCalendar } from './TripCalendar';
 
 interface TripSelectionProps {
@@ -38,12 +38,17 @@ const TripCard: React.FC<{ trip: AvailableTripByPort, onSelect: () => void }> = 
 export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSelect, onChangeBranch, className = '' }) => {
   // Estado para manejar la fecha seleccionada, inicia con el día de hoy
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   
-  // Usamos el hook que creamos para obtener los viajes
-  const { data: trips = [], isLoading, error } = useAvailableTrips({
+  // Usamos el hook de calendario para evitar peticiones duplicadas
+  const { data: tripsByDate = {}, isLoading, error } = useAvailableTripsCalendar({
     portId: branch.port_id,
-    onDate: selectedDate,
+    currentMonth,
   });
+
+  const trips = useMemo(() => {
+    return tripsByDate[selectedDate] || [];
+  }, [tripsByDate, selectedDate]);
 
   const handleDateSelect = (date: string) => {
     setSelectedDate(date);
@@ -70,9 +75,12 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
         <div>
           <h2 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">Seleccionar Fecha</h2>
           <TripCalendar
-            portId={branch.port_id}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
             selectedDate={selectedDate}
             onDateSelect={handleDateSelect}
+            tripsByDate={tripsByDate}
+            isLoading={isLoading}
           />
         </div>
 

@@ -110,6 +110,8 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
             if (handlers) {
               handlers.forEach(handler => handler(data));
             }
+
+            window.dispatchEvent(new CustomEvent('cancellation-request-created', { detail: data }));
           }
           break;
 
@@ -138,6 +140,8 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
             if (handlers) {
               handlers.forEach(handler => handler(data));
             }
+
+            window.dispatchEvent(new CustomEvent('cancellation-request-resolved', { detail: data }));
           }
           break;
 

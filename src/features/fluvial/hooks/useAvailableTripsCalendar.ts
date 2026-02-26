@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { tripsService, AvailableTripByPort } from '../../../services/trips.service'; 
 import { routeHelpers } from '../../../services/routes.service';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isAfter, startOfDay } from 'date-fns';
+import { format, startOfMonth, endOfMonth, isAfter, startOfDay } from 'date-fns';
 
 interface UseAvailableTripsCalendarParams {
   portId: number | null;
@@ -23,28 +23,35 @@ export const useAvailableTripsCalendar = ({ portId, currentMonth }: UseAvailable
       const monthEnd = endOfMonth(currentMonth);
       const today = startOfDay(new Date());
       
-      // Obtener todos los días del mes a partir de hoy
-      const daysToQuery = eachDayOfInterval({ start: monthStart, end: monthEnd })
-        .filter(date => isAfter(date, today) || format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd'));
-
-      // Hacer una consulta por cada día válido
-      const tripsByDate: Record<string, AvailableTripByPort[]> = {};
+      // Calcular el rango de fechas (desde hoy hasta fin de mes)
+      const startDate = isAfter(monthStart, today) ? monthStart : today;
+      const endDate = monthEnd;
       
-      await Promise.all(
-        daysToQuery.map(async (date) => {
-          const dateKey = format(date, 'yyyy-MM-dd');
-          try {
-            const trips = await tripsService.getTripsByBoardingPort(companyId, portId, dateKey);
-            if (trips.length > 0) {
-              tripsByDate[dateKey] = trips;
-            }
-          } catch (error) {
-            console.warn(`Error fetching trips for ${dateKey}:`, error);
+      const onDate = format(startDate, 'yyyy-MM-dd');
+      const endDateStr = format(endDate, 'yyyy-MM-dd');
+      
+      // OPTIMIZADO: Una sola petición para todo el mes usando el nuevo endpoint
+      try {
+        const trips = await tripsService.getTripsByBoardingPort(companyId, portId, onDate, endDateStr);
+        
+        // Organizar los viajes por fecha
+        const tripsByDate: Record<string, AvailableTripByPort[]> = {};
+        
+        trips.forEach(trip => {
+          // Usar boarding_date o departure_date si está disponible, sino usar onDate como fallback
+          const tripDate = trip.boarding_date || trip.departure_date || onDate;
+          
+          if (!tripsByDate[tripDate]) {
+            tripsByDate[tripDate] = [];
           }
-        })
-      );
-
-      return tripsByDate;
+          tripsByDate[tripDate].push(trip);
+        });
+        
+        return tripsByDate;
+      } catch (error) {
+        console.error('Error fetching trips for month:', error);
+        return {};
+      }
     },
     enabled: !!portId,
     staleTime: 5 * 60 * 1000, // 5 minutos

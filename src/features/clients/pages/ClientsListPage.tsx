@@ -1,5 +1,5 @@
 // src/features/clients/pages/ClientsListPage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
@@ -116,31 +116,49 @@ export const ClientsListPage: React.FC = () => {
       .filter(Boolean)
   )).sort() : [];
   
-  // Filtrar clientes según criterios
-  const filteredClients = clients ? clients.filter(client => {
-    // Filtro por tipo de documento
-    const matchesDocType = filterDocType === 'ALL' || client.doc_type === filterDocType;
+  // Filtrar clientes según criterios (optimizado con useMemo)
+  const filteredClients = useMemo(() => {
+    if (!clients) return [];
     
-    // Filtro por estado
-    const matchesActive = filterActive === 'ALL' || 
-      (filterActive === 'ACTIVE' ? client.is_active : !client.is_active);
+    const searchLower = searchTerm.toLowerCase();
     
-    // Filtro por país
-    const matchesCountry = filterCountry === 'ALL' || client.country_code === filterCountry;
-    
-    // Filtro por búsqueda
-    const matchesSearch = searchTerm === '' || 
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.doc_number.includes(searchTerm) ||
-      (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.phone && client.phone.includes(searchTerm)) ||
-      (client.address_line && client.address_line.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.department && client.department.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.province && client.province.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (client.district && client.district.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesDocType && matchesActive && matchesCountry && matchesSearch;
-  }) : [];
+    return clients.filter(client => {
+      // Filtro por tipo de documento
+      if (filterDocType !== 'ALL' && client.doc_type !== filterDocType) return false;
+      
+      // Filtro por estado
+      if (filterActive === 'ACTIVE' && !client.is_active) return false;
+      if (filterActive === 'INACTIVE' && client.is_active) return false;
+      
+      // Filtro por país
+      if (filterCountry !== 'ALL' && client.country_code !== filterCountry) return false;
+      
+      // Filtro por búsqueda (optimizado)
+      if (searchTerm !== '') {
+        const nameLower = client.name.toLowerCase();
+        const emailLower = client.email?.toLowerCase() || '';
+        const addressLower = client.address_line?.toLowerCase() || '';
+        const departmentLower = client.department?.toLowerCase() || '';
+        const provinceLower = client.province?.toLowerCase() || '';
+        const districtLower = client.district?.toLowerCase() || '';
+        
+        if (
+          !nameLower.includes(searchLower) &&
+          !client.doc_number.includes(searchTerm) &&
+          !emailLower.includes(searchLower) &&
+          !(client.phone && client.phone.includes(searchTerm)) &&
+          !addressLower.includes(searchLower) &&
+          !departmentLower.includes(searchLower) &&
+          !provinceLower.includes(searchLower) &&
+          !districtLower.includes(searchLower)
+        ) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  }, [clients, searchTerm, filterDocType, filterActive, filterCountry]);
 
   // Ajustar la página actual si cambia la cantidad de elementos filtrados
   const totalPages = Math.max(1, Math.ceil(filteredClients.length / itemsPerPage));

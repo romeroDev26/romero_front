@@ -5,14 +5,14 @@ import { toast } from 'react-toastify';
 import Breadcrumbs from '../../../components/common/Breadcrumbs';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
-import { useQuotations } from '../hooks/useQuotations';
+import { useCreateQuotation } from '../hooks/useQuotations';
 import { QuotationCreate, QuotationItemCreate } from '../types';
 
 export const QuotationFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
-  const { createQuotation, loading } = useQuotations();
+  const createQuotationMutation = useCreateQuotation();
 
   const [formData, setFormData] = useState<QuotationCreate>({
     client_id: 0,
@@ -60,11 +60,11 @@ export const QuotationFormPage: React.FC = () => {
       }))
     };
 
-    const result = await createQuotation(formattedData);
-    if (result) {
-      toast.success('Cotización creada exitosamente');
-      navigate('/sales/quotations');
-    }
+    createQuotationMutation.mutate(formattedData, {
+      onSuccess: () => {
+        navigate('/sales/quotations');
+      }
+    });
   };
 
   const addItem = () => {
@@ -271,8 +271,8 @@ export const QuotationFormPage: React.FC = () => {
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={loading}>
-            {loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear')} Cotización
+          <Button type="submit" disabled={createQuotationMutation.isPending}>
+            {createQuotationMutation.isPending ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear')} Cotización
           </Button>
         </div>
       </form>

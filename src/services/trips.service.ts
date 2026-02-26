@@ -49,6 +49,8 @@ export interface AvailableTripByPort {
   vessel_name: string;
   estimated_arrival_time: string;
   estimated_departure_time: string;
+  boarding_date?: string; // OPCIONAL: Incluido cuando se usa end_date en la query
+  departure_date?: string; // OPCIONAL: Incluido cuando se usa end_date en la query
 }
 
 export interface TripDetailsResponse extends Trip {
@@ -115,13 +117,25 @@ class TripsService {
     return response.data;
   }
 
-  async getTripsByBoardingPort(companyId: number, portId: number, onDate: string): Promise<AvailableTripByPort[]> {
+  async getTripsByBoardingPort(
+    companyId: number, 
+    portId: number, 
+    onDate: string,
+    endDate?: string
+  ): Promise<AvailableTripByPort[]> {
+    const params: any = {
+      company_id: companyId,
+      port_id: portId,
+      on_date: onDate,
+    };
+    
+    // Usar el parámetro end_date si se proporciona (optimización para rangos)
+    if (endDate) {
+      params.end_date = endDate;
+    }
+    
     const response = await api.get<AvailableTripByPort[]>('/operations/trips/by-boarding-port', {
-      params: {
-        company_id: companyId,
-        port_id: portId,
-        on_date: onDate,
-      },
+      params,
     });
     return response.data;
   }

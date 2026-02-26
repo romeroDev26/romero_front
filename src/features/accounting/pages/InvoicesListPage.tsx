@@ -68,8 +68,7 @@ export const InvoicesListPage: React.FC = () => {
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['invoices', filters],
     queryFn: () => invoicesService.getInvoices(filters),
-    staleTime: 0, // No cachear, siempre obtener datos frescos
-    refetchOnWindowFocus: true, // Refrescar al volver a la ventana
+    staleTime: 1000 * 60, // Cache por 1 minuto - se invalida automaticamente al cambiar filtros
   });
 
   // Limpiar filtros mutuamente excluyentes y resetear paginación

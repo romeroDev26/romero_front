@@ -76,9 +76,7 @@ export const TripsCalendarReport: React.FC = () => {
     queryKey: ['trips-list', dateRange.start_date, dateRange.end_date],
     queryFn: () => reportsService.getTripsList(dateRange),
     enabled: true,
-    staleTime: 0, // Los datos siempre se consideran obsoletos
-    refetchOnMount: 'always' as const, // Siempre refrescar al montar el componente
-    refetchOnWindowFocus: true, // Refrescar cuando el usuario vuelve a la ventana
+    staleTime: 1000 * 60 * 2, // Cache por 2 minutos
     gcTime: 1000 * 60 * 5, // Mantener en caché por 5 minutos (antes cacheTime)
   });
 

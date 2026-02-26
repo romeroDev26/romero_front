@@ -28,6 +28,7 @@ export const useWebSocketConnection = (
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef<number>(0); // Usar ref para evitar dependencias
+  const initialStateRequestedRef = useRef<boolean>(false); // Evitar doble REQUEST_INITIAL_STATE
   
   // Sistema de heartbeat optimizado
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -66,6 +67,7 @@ export const useWebSocketConnection = (
       ws.onopen = () => {
         setConnectionStatus('connected');
         setReconnectAttempts(0);
+        initialStateRequestedRef.current = false; // Reset flag
         
         // Iniciar heartbeat usando la referencia directa
         if (heartbeatIntervalRef.current) {
@@ -98,9 +100,10 @@ export const useWebSocketConnection = (
         const connectMessage = { type: 'CONNECT' };
         ws.send(JSON.stringify(connectMessage));
         
-        // Solicitar estado inicial
+        // Solicitar estado inicial (OPTIMIZADO: Evitar duplicados con flag de control)
         setTimeout(() => {
-          if (wsRef.current?.readyState === WebSocket.OPEN) {
+          if (wsRef.current?.readyState === WebSocket.OPEN && !initialStateRequestedRef.current) {
+            initialStateRequestedRef.current = true;
             const initialStateMessage = { type: 'REQUEST_INITIAL_STATE' };
             ws.send(JSON.stringify(initialStateMessage));
           }

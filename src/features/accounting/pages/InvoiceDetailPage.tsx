@@ -44,8 +44,7 @@ export const InvoiceDetailPage: React.FC = () => {
     queryKey: ['invoice', invoiceId],
     queryFn: () => invoicesService.getById(invoiceId),
     enabled: !isNaN(invoiceId), // Solo ejecuta si el ID es un número válido
-    staleTime: 0, // No cachear, siempre obtener datos frescos
-    refetchOnWindowFocus: true, // Refrescar al volver a la ventana
+    staleTime: 1000 * 30, // Cache por 30 segundos
   });
 
   const handleAnular = () => {

@@ -11,7 +11,8 @@ import {
   PrinterIcon, 
   ArrowDownTrayIcon,
   ExclamationTriangleIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import { MessageCircle } from 'lucide-react';
 
@@ -25,6 +26,7 @@ import { WhatsAppSendModal } from '../../fluvial/components/sales-point/WhatsApp
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { getCurrencySymbol } from '../../../utils/currency';
+import { EditSeatModal } from '../components/EditSeatModal';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +34,7 @@ export const InvoiceDetailPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [showPdfError, setShowPdfError] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [showEditSeatModal, setShowEditSeatModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4'>('ticket80mm');
   const [isRegenerating, setIsRegenerating] = useState(false);
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
@@ -265,6 +268,19 @@ export const InvoiceDetailPage: React.FC = () => {
                   WhatsApp
                 </Button>
               )}
+
+              {/* Botón Editar asiento - solo para facturas/boletas con asignaciones */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowEditSeatModal(true)}
+                className="flex items-center text-blue-600 border-blue-300 hover:bg-blue-50"
+                title="Editar asiento del pasajero"
+                disabled={!hasPermission('accounting', 'invoices', 'sales')}
+              >
+                <PencilIcon className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
               
               <Button
                 variant="danger"
@@ -441,6 +457,21 @@ export const InvoiceDetailPage: React.FC = () => {
           initialPhoneNumber={invoice.client?.phone || ''}
           isFromInvoiceList={true}
           preferredPdfType={activeTab === 'a4' ? 'a4' : 'ticket'}
+        />
+      )}
+
+      {/* Modal de Editar Asiento */}
+      {showEditSeatModal && invoice && (
+        <EditSeatModal
+          isOpen={showEditSeatModal}
+          onClose={() => setShowEditSeatModal(false)}
+          onSuccess={() => {
+            // Refrescar la factura después de editar
+            queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+          }}
+          invoiceSeries={invoice.series}
+          invoiceNumber={invoice.number}
+          invoiceId={invoiceId}
         />
       )}
     </div>

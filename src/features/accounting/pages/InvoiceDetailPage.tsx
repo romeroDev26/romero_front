@@ -14,7 +14,7 @@ import {
   ArrowPathIcon,
   PencilIcon
 } from '@heroicons/react/24/outline';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Tag } from 'lucide-react';
 
 // Importamos los servicios reales
 import { invoicesService } from '../../../services/invoices.service';
@@ -39,8 +39,9 @@ export const InvoiceDetailPage: React.FC = () => {
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showEditSeatModal, setShowEditSeatModal] = useState(false);
   const [showRequestCancellationModal, setShowRequestCancellationModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4'>('ticket80mm');
+  const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4' | 'sticker100x100'>('ticket80mm');
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [isGeneratingSticker, setIsGeneratingSticker] = useState(false);
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   const { hasPermission } = usePermissions();
   const currentUser = authService.getCurrentUser();
@@ -120,11 +121,13 @@ export const InvoiceDetailPage: React.FC = () => {
         console.warn('Error al imprimir desde iframe:', error);
         // Fallback: abrir en nueva ventana
         try {
-          const basePdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+          const basePdfUrl = activeTab === 'sticker100x100'
+            ? invoice?.pdf_sticker_100x100_file_path
+            : activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
           const backendTimestamp = invoice?.updated_at ? new Date(invoice.updated_at).getTime() : 0;
           const cacheBuster = `${backendTimestamp}_${Date.now()}`;
           const pdfUrl = basePdfUrl ? `${basePdfUrl}?v=${cacheBuster}` : basePdfUrl;
-          const printWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');
+          const printWindow = window.open(pdfUrl ?? undefined, '_blank', 'width=800,height=600');
           if (printWindow) {
             printWindow.onload = () => {
               try {
@@ -146,13 +149,22 @@ export const InvoiceDetailPage: React.FC = () => {
   };
 
   const handleDownload = () => {
-    const basePdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+    let basePdfUrl: string | null | undefined;
+    let fileName: string;
+
+    if (activeTab === 'sticker100x100') {
+      basePdfUrl = invoice?.pdf_sticker_100x100_file_path;
+      fileName = `sticker-100x100-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`;
+    } else {
+      basePdfUrl = activeTab === 'ticket80mm' ? invoice?.pdf_ticket_file_path : invoice?.pdf_a4_file_path;
+      fileName = activeTab === 'ticket80mm'
+        ? `ticket-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`
+        : `ticket-a4-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`;
+    }
+
     const backendTimestamp = invoice?.updated_at ? new Date(invoice.updated_at).getTime() : 0;
     const cacheBuster = `${backendTimestamp}_${Date.now()}`;
     const pdfUrl = basePdfUrl ? `${basePdfUrl}?v=${cacheBuster}` : basePdfUrl;
-    const fileName = activeTab === 'ticket80mm' 
-      ? `ticket-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`
-      : `ticket-a4-${invoice?.series}-${String(invoice?.number).padStart(8, '0')}.pdf`;
     
     if (pdfUrl) {
       // Crear enlace de descarga
@@ -163,7 +175,29 @@ export const InvoiceDetailPage: React.FC = () => {
       link.click();
       document.body.removeChild(link);
     } else {
-      toast.error(`No hay ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} disponible para descargar`);
+      const label = activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : '100x100';
+      toast.error(`No hay ticket ${label} disponible para descargar`);
+    }
+  };
+
+  /**
+   * Genera o regenera el sticker de encomienda 100x100mm
+   */
+  const handleGenerateSticker100x100 = async () => {
+    if (!invoice || isGeneratingSticker) return;
+
+    setIsGeneratingSticker(true);
+    try {
+      await invoicesService.generateSticker100x100(invoiceId);
+      await queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      toast.success('Sticker 100x100 generado exitosamente');
+    } catch (error) {
+      console.error('Error generando sticker 100x100:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Error al generar el sticker.'
+      );
+    } finally {
+      setIsGeneratingSticker(false);
     }
   };
 
@@ -208,19 +242,34 @@ export const InvoiceDetailPage: React.FC = () => {
 
   const hasTicketPdf = invoice.pdf_ticket_file_path && invoice.pdf_ticket_file_path.trim() !== '';
   const hasA4Pdf = invoice.pdf_a4_file_path && invoice.pdf_a4_file_path.trim() !== '';
+  const hasStickerPdf = Boolean(invoice.pdf_sticker_100x100_file_path && invoice.pdf_sticker_100x100_file_path.trim() !== '');
   const hasAnyPdf = hasTicketPdf || hasA4Pdf ||
                     (invoice.pdf_file_path && invoice.pdf_file_path.trim() !== '');
+
+  // Detectar si es una encomienda/cargo
+  const isCargoInvoice = Boolean(
+    invoice.items?.some((item: any) =>
+      item.parcel_number != null ||
+      item.product_name?.toLowerCase().includes('encomienda') ||
+      item.item_description?.toLowerCase().includes('encomienda')
+    ) || hasStickerPdf
+  );
   
   // Usar invoice.updated_at del backend como cache buster principal
-  // Este campo cambia cuando el backend actualiza la factura (ej: cuando se marca como pagada)
-  // Combinar con timestamp de la query para garantizar que siempre sea único
   const backendTimestamp = invoice.updated_at ? new Date(invoice.updated_at).getTime() : 0;
   const cacheBuster = `${backendTimestamp}_${dataUpdatedAt}`;
   
   // Determinar el PDF actual según el tab activo
-  const basePdfUrl = activeTab === 'ticket80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+  let basePdfUrl: string | null | undefined;
+  if (activeTab === 'sticker100x100') {
+    basePdfUrl = invoice.pdf_sticker_100x100_file_path;
+  } else {
+    basePdfUrl = activeTab === 'ticket80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+  }
   const currentPdfUrl = basePdfUrl ? `${basePdfUrl}?v=${cacheBuster}` : basePdfUrl;
-  const hasCurrentPdf = activeTab === 'ticket80mm' ? hasTicketPdf : hasA4Pdf;
+  const hasCurrentPdf = activeTab === 'ticket80mm' ? hasTicketPdf
+    : activeTab === 'a4' ? hasA4Pdf
+    : hasStickerPdf;
 
   // Formatea la fecha de emisión tal como viene del backend (YYYY-MM-DD)
   const formatIssueDate = (dateStr?: string): string => {
@@ -309,6 +358,21 @@ export const InvoiceDetailPage: React.FC = () => {
                 </Button>
               )}
 
+              {/* Botón Sticker 100x100 - solo para encomiendas */}
+              {isCargoInvoice && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGenerateSticker100x100}
+                  disabled={isGeneratingSticker}
+                  className="flex items-center text-orange-600 border-orange-300 hover:bg-orange-50"
+                  title={hasStickerPdf ? 'Regenerar sticker de encomienda' : 'Generar sticker de encomienda 100x100'}
+                >
+                  <Tag className="h-4 w-4 mr-2" />
+                  {isGeneratingSticker ? 'Generando...' : hasStickerPdf ? 'Sticker 100x100' : 'Generar Sticker'}
+                </Button>
+              )}
+
               {/* Botón Editar asiento - solo para facturas/boletas con asignaciones */}
               <Button
                 variant="outline"
@@ -365,7 +429,7 @@ export const InvoiceDetailPage: React.FC = () => {
 
       {/* Contenido principal */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {(hasTicketPdf || hasA4Pdf) ? (
+        {(hasTicketPdf || hasA4Pdf || hasStickerPdf) ? (
           <div className="bg-white rounded-lg shadow-sm border">
             {/* Header del visor PDF */}
             <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
@@ -381,35 +445,55 @@ export const InvoiceDetailPage: React.FC = () => {
             </div>
 
             {/* Tabs para seleccionar formato */}
-            {hasTicketPdf && hasA4Pdf && (
+            {(hasTicketPdf || hasA4Pdf) && (
               <div className="px-6 pt-4">
                 <div className="flex border-b border-gray-200">
-                  <button
-                    onClick={() => {
-                      setActiveTab('ticket80mm');
-                      setShowPdfError(false);
-                    }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
-                      activeTab === 'ticket80mm'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Ticket 80mm (Térmico)
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab('a4');
-                      setShowPdfError(false);
-                    }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
-                      activeTab === 'a4'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Ticket A4 (Corporativo)
-                  </button>
+                  {hasTicketPdf && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('ticket80mm');
+                        setShowPdfError(false);
+                      }}
+                      className={`px-6 py-3 text-sm font-medium transition-colors ${
+                        activeTab === 'ticket80mm'
+                          ? 'border-b-2 border-blue-600 text-blue-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Ticket 80mm (Térmico)
+                    </button>
+                  )}
+                  {hasA4Pdf && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('a4');
+                        setShowPdfError(false);
+                      }}
+                      className={`px-6 py-3 text-sm font-medium transition-colors ${
+                        activeTab === 'a4'
+                          ? 'border-b-2 border-blue-600 text-blue-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Ticket A4 (Corporativo)
+                    </button>
+                  )}
+                  {isCargoInvoice && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('sticker100x100');
+                        setShowPdfError(false);
+                      }}
+                      className={`px-6 py-3 text-sm font-medium transition-colors flex items-center gap-1 ${
+                        activeTab === 'sticker100x100'
+                          ? 'border-b-2 border-orange-500 text-orange-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      <Tag className="h-3.5 w-3.5" />
+                      Sticker 100x100
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -424,7 +508,9 @@ export const InvoiceDetailPage: React.FC = () => {
                     src={`${currentPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
                     className="w-full h-full border-0"
                     style={{ minHeight: '600px' }}
-                    title={`Ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
+                    title={`Ticket ${
+                    activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : 'Sticker 100x100'
+                  } ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
                     onError={() => setShowPdfError(true)}
                     onLoad={(e) => {
                       // Verificar si el iframe se cargó correctamente
@@ -442,17 +528,32 @@ export const InvoiceDetailPage: React.FC = () => {
                   <div className="flex flex-col items-center justify-center h-96 text-gray-500">
                     <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-gray-400" />
                     <h3 className="text-lg font-medium mb-2">
-                      No se pudo cargar el ticket {activeTab === 'ticket80mm' ? '80mm' : 'A4'}
+                      {activeTab === 'sticker100x100'
+                        ? 'Sticker 100x100 no generado'
+                        : `No se pudo cargar el ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'}`}
                     </h3>
                     <p className="text-sm text-center mb-4">
-                      El PDF no se puede mostrar en el navegador. 
-                      Puedes descargarlo usando el botón de arriba.
+                      {activeTab === 'sticker100x100'
+                        ? 'Haz clic en el botón para generar el sticker de encomienda.'
+                        : 'El PDF no se puede mostrar en el navegador. Puedes descargarlo usando el botón de arriba.'}
                     </p>
+                    {activeTab === 'sticker100x100' && (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleGenerateSticker100x100}
+                        disabled={isGeneratingSticker}
+                        className="flex items-center mb-3"
+                      >
+                        <Tag className="h-4 w-4 mr-2" />
+                        {isGeneratingSticker ? 'Generando...' : 'Generar Sticker 100x100'}
+                      </Button>
+                    )}
                     {hasCurrentPdf && (
                       <Button
                         variant="primary"
                         size="sm"
-                        onClick={() => window.open(currentPdfUrl, '_blank')}
+                        onClick={() => window.open(currentPdfUrl ?? undefined, '_blank')}
                         className="flex items-center"
                       >
                         <ArrowDownTrayIcon className="h-4 w-4 mr-2" />

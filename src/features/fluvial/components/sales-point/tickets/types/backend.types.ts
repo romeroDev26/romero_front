@@ -59,6 +59,7 @@ export interface BackendInvoiceData {
   pdf_file_path: string | null;
   pdf_a4_file_path: string | null;
   pdf_ticket_file_path: string | null;
+  pdf_sticker_100x100_file_path?: string | null;
   
   // Items del documento
   items: BackendInvoiceItem[];

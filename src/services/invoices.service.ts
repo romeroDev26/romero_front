@@ -150,15 +150,31 @@ class InvoicesService {
    * @param size - Tamaño del PDF: '80mm', '58mm' o 'a4'
    * @returns URL del PDF generado (almacenado en el backend)
    */
-  async generatePdf(invoiceId: number, size: '80mm' | '58mm' | 'a4' = '80mm'): Promise<string> {
+  async generatePdf(invoiceId: number, size: '80mm' | '58mm' | 'a4' | '100x100' = '80mm'): Promise<string> {
     const response = await api.post<string>(
       `${this.basePath}${invoiceId}/generate-pdf`,
       null,
       {
-        params: { size }
+        params: { size, ...(size === '100x100' ? { force: true } : {}) }
       }
     );
     return response.data;
+  }
+
+  /**
+   * Genera el sticker de encomienda 100x100mm y retorna la URL del PDF
+   * @param invoiceId - ID de la factura de encomienda
+   * @returns URL del PDF sticker almacenado en el CDN
+   */
+  async generateSticker100x100(invoiceId: number): Promise<string> {
+    const response = await api.post<{ invoice_id: number; size: string; stored_in_field: string; url: string }>(
+      `${this.basePath}${invoiceId}/generate-pdf`,
+      null,
+      {
+        params: { size: '100x100', force: true }
+      }
+    );
+    return response.data.url;
   }
 
   /**
@@ -169,7 +185,7 @@ class InvoicesService {
    * @param size - Tamaño del PDF para determinar qué PDF obtener
    * @returns Blob del PDF para mostrar/descargar
    */
-  async getPdfBlob(invoiceId: number, size: '80mm' | '58mm' | 'a4' = '80mm'): Promise<Blob> {
+  async getPdfBlob(invoiceId: number, size: '80mm' | '58mm' | 'a4' | '100x100' = '80mm'): Promise<Blob> {
     // 1. Obtener la invoice actualizada (que debería tener la URL del PDF)
     const invoice = await this.getById(invoiceId);
     
@@ -185,6 +201,9 @@ class InvoicesService {
         break;
       case 'a4':
         pdfUrl = invoice.pdf_a4_file_path;
+        break;
+      case '100x100':
+        pdfUrl = invoice.pdf_sticker_100x100_file_path;
         break;
     }
     

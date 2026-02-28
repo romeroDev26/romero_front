@@ -7,7 +7,7 @@ export * from './types';
 export { quotationsService } from './services/quotations.service';
 
 // Exportar hooks
-export { useQuotations } from './hooks/useQuotations';
+export { useQuotationsList } from './hooks/useQuotations';
 export { useQuotationSeries } from './hooks/useQuotationSeries';
 export { useQuotationSeriesByBranch } from './hooks/useQuotationSeriesByBranch';
 

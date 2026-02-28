@@ -16,8 +16,9 @@ import {
 } from '@heroicons/react/24/outline';
 import { MessageCircle } from 'lucide-react';
 
-// Importamos el servicio real
+// Importamos los servicios reales
 import { invoicesService } from '../../../services/invoices.service';
+import { cancellationRequestsService } from '../services/cancellationRequests.service';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
@@ -27,6 +28,8 @@ import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets
 import { usePermissions } from '../../../hooks/usePermissions';
 import { getCurrencySymbol } from '../../../utils/currency';
 import { EditSeatModal } from '../components/EditSeatModal';
+import SellerCancellationRequestModal from '../components/SellerCancellationRequestModal';
+import { authService } from '../../../services/auth.service';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,10 +38,12 @@ export const InvoiceDetailPage: React.FC = () => {
   const [showPdfError, setShowPdfError] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showEditSeatModal, setShowEditSeatModal] = useState(false);
+  const [showRequestCancellationModal, setShowRequestCancellationModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4'>('ticket80mm');
   const [isRegenerating, setIsRegenerating] = useState(false);
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   const { hasPermission } = usePermissions();
+  const currentUser = authService.getCurrentUser();
 
   const invoiceId = Number(id);
 
@@ -49,6 +54,41 @@ export const InvoiceDetailPage: React.FC = () => {
     enabled: !isNaN(invoiceId), // Solo ejecuta si el ID es un número válido
     staleTime: 1000 * 30, // Cache por 30 segundos
   });
+
+  // Obtener las solicitudes del vendedor para esta factura
+  const { data: vendorRequests = [] } = useQuery({
+    queryKey: ['my-cancellation-requests'],
+    queryFn: () => cancellationRequestsService.getMyRequests({ limit: 200 }),
+    enabled: currentUser?.role_name?.toLowerCase() === 'sales',
+    staleTime: 1000 * 30,
+  });
+
+  // Encontrar la solicitud más reciente para esta factura
+  const requestForThisInvoice = vendorRequests.find(req => req.invoice_id === invoiceId);
+  
+  // Determinar si el botón debe estar habilitado
+  const canRequestCancellation = invoice && 
+    currentUser?.role_name?.toLowerCase() === 'sales' &&
+    invoice.sunat_status === 'ACCEPTED' &&
+    currentUser?.supervisor_id &&
+    (!requestForThisInvoice || requestForThisInvoice.status === 'REJECTED');
+
+  // Determinar el mensaje de tooltip
+  const getRequestCancellationTooltip = (): string => {
+    if (invoice?.sunat_status !== 'ACCEPTED') {
+      return 'Solo se pueden solicitar anulaciones de facturas ACEPTADAS';
+    }
+    if (!currentUser?.supervisor_id) {
+      return 'No tienes supervisor asignado';
+    }
+    if (requestForThisInvoice?.status === 'PENDING') {
+      return 'Ya existe una solicitud pendiente para este comprobante';
+    }
+    if (requestForThisInvoice?.status === 'APPROVED') {
+      return 'Este comprobante ya fue anulado satisfactoriamente';
+    }
+    return 'Solicitar anulación al supervisor';
+  };
 
   const handleAnular = () => {
     if (!invoice) return;
@@ -282,16 +322,37 @@ export const InvoiceDetailPage: React.FC = () => {
                 Editar
               </Button>
               
+              {currentUser?.role_name?.toLowerCase() === 'sales' && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setShowRequestCancellationModal(true)}
+                  disabled={!canRequestCancellation}
+                  title={getRequestCancellationTooltip()}
+                >
+                  Solicitar Anulación
+                </Button>
+              )}
+              
               <Button
                 variant="danger"
                 size="sm"
                 onClick={handleAnular}
-                disabled={invoice.sunat_status !== 'ACCEPTED' || !hasPermission('accounting', 'invoices', 'sales')}
+                disabled={
+                  invoice.sunat_status !== 'ACCEPTED' ||
+                  !hasPermission('accounting', 'invoices', 'sales') ||
+                  (currentUser?.role_name?.toLowerCase() === 'sales' &&
+                    (requestForThisInvoice?.status === 'PENDING' || requestForThisInvoice?.status === 'APPROVED'))
+                }
                 title={
-                  invoice.sunat_status !== 'ACCEPTED' 
-                    ? 'Solo se pueden anular facturas ACEPTADAS' 
+                  invoice.sunat_status !== 'ACCEPTED'
+                    ? 'Solo se pueden anular facturas ACEPTADAS'
                     : !hasPermission('accounting', 'invoices', 'sales')
                     ? 'No tienes permisos para anular facturas'
+                    : requestForThisInvoice?.status === 'PENDING'
+                    ? 'Ya tienes una solicitud pendiente — usa el botón "Solicitar Anulación"'
+                    : requestForThisInvoice?.status === 'APPROVED'
+                    ? 'Este comprobante ya fue aprobado para anulación'
                     : 'Anular este comprobante'
                 }
               >
@@ -457,6 +518,20 @@ export const InvoiceDetailPage: React.FC = () => {
           initialPhoneNumber={invoice.client?.phone || ''}
           isFromInvoiceList={true}
           preferredPdfType={activeTab === 'a4' ? 'a4' : 'ticket'}
+        />
+      )}
+
+      {/* Modal de solicitud de anulación al supervisor */}
+      {showRequestCancellationModal && invoice && (
+        <SellerCancellationRequestModal
+          invoiceId={invoice.id}
+          invoiceSeries={invoice.series}
+          invoiceNumber={invoice.number}
+          onClose={() => setShowRequestCancellationModal(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+            queryClient.invalidateQueries({ queryKey: ['my-cancellation-requests'] });
+          }}
         />
       )}
 

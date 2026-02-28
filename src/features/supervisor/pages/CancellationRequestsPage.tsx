@@ -162,14 +162,8 @@ const CancellationRequestsPage: React.FC = () => {
           <BellAlertIcon className="w-10 h-10 text-red-500 flex-shrink-0" />
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Solicitudes de Anulación</h1>
-            <div className="text-gray-600 mt-1 flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="text-gray-600 mt-1">
               <span>Gestiona las solicitudes de anulación de comprobantes</span>
-              {isConnected && (
-                <span className="inline-flex items-center w-fit gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  Conectado en tiempo real
-                </span>
-              )}
             </div>
           </div>
         </div>

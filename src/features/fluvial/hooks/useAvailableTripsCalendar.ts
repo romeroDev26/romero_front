@@ -38,8 +38,10 @@ export const useAvailableTripsCalendar = ({ portId, currentMonth }: UseAvailable
         const tripsByDate: Record<string, AvailableTripByPort[]> = {};
         
         trips.forEach(trip => {
-          // Usar boarding_date o departure_date si está disponible, sino usar onDate como fallback
-          const tripDate = trip.boarding_date || trip.departure_date || onDate;
+          // Extraer la fecha del campo departure_datetime o estimated_departure_time
+          // (ambos vienen como ISO datetime, por ejemplo "2026-03-05T21:50:00")
+          const datetimeStr = trip.departure_datetime || trip.estimated_departure_time || trip.boarding_date || trip.departure_date;
+          const tripDate = datetimeStr ? datetimeStr.substring(0, 10) : onDate;
           
           if (!tripsByDate[tripDate]) {
             tripsByDate[tripDate] = [];

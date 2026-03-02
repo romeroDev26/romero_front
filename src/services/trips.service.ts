@@ -47,8 +47,14 @@ export interface AvailableTripByPort {
   trip_name: string;
   status: string;
   vessel_name: string;
-  estimated_arrival_time: string;
+  estimated_arrival_time?: string;
   estimated_departure_time: string;
+  departure_datetime?: string; // Campo principal de fecha/hora de salida
+  route_name?: string;
+  origin_port_name?: string;
+  destination_port_name?: string;
+  total_seats?: number;
+  available_seats?: number;
   boarding_date?: string; // OPCIONAL: Incluido cuando se usa end_date en la query
   departure_date?: string; // OPCIONAL: Incluido cuando se usa end_date en la query
 }

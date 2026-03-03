@@ -12,7 +12,9 @@ interface SeatMapProps {
   vesselName: string;
   selectedSeats: Set<number>;
   onSeatToggle: (seat: SeatMapItem) => void;
-  isLocked?: boolean; // Nueva propiedad
+  isLocked?: boolean;
+  // IDs de trip_seat ya elegidos como destino pendiente en otra asignación de la misma sesión
+  blockedSeats?: Set<number>;
 }
 
 type SeatRow = SeatMapItem[];
@@ -31,7 +33,7 @@ const getZoneTitle = (seatTypeName: string): string => {
   return 'ZONA DE ASIENTOS';
 };
 
-export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSeats, onSeatToggle, isLocked = false }) => {
+export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSeats, onSeatToggle, isLocked = false, blockedSeats }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const vesselId = tripDetails?.vessel?.id;
   const { data: vesselDetails, isLoading: isLoadingVessel } = useVessel(vesselId || null);
@@ -125,6 +127,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                                     isSelected={selectedSeats.has(seat.id)}
                                     onClick={onSeatToggle}
                                     isLocked={isLocked}
+                                    isPendingBlocked={blockedSeats?.has(seat.id) ?? false}
                                   />
                                 ))}
                               </div>
@@ -141,6 +144,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                                     isSelected={selectedSeats.has(seat.id)}
                                     onClick={onSeatToggle}
                                     isLocked={isLocked}
+                                    isPendingBlocked={blockedSeats?.has(seat.id) ?? false}
                                   />
                                 ))}
                               </div>

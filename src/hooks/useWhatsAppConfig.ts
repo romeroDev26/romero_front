@@ -59,7 +59,8 @@ export const useConnectionStatus = (instanceName: string | undefined, enabled: b
     queryKey: [QUERY_KEY, 'status', instanceName],
     queryFn: () => whatsappConfigService.getConnectionStatus(instanceName!),
     enabled: !!instanceName && enabled,
-    refetchInterval: 5000, // Verificar cada 5 segundos
+    refetchInterval: enabled ? 10000 : false, // Verificar cada 10 segundos cuando enabled
+    refetchIntervalInBackground: false,
     retry: 1,
   });
 };

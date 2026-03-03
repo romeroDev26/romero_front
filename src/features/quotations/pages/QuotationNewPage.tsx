@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
-import { useQuotations } from '../hooks/useQuotations';
+import { useCreateQuotation } from '../hooks/useQuotations';
 import { useProductServices } from '../hooks/useProductServices';
 import { QuotationCreate, QuotationItemCreate } from '../types';
 import { ProductService } from '../../../types';
@@ -25,8 +25,8 @@ const QUOTATION_DOCUMENT_TYPE_CODE = 'COT';
 export const QuotationNewPage: React.FC = () => {
   const navigate = useNavigate();
   
-  // Hook para cotizaciones (incluye createQuotation)
-  const { createQuotation } = useQuotations();
+  // Hook para crear cotización con React Query
+  const createQuotationMutation = useCreateQuotation();
   
   // Hook para cargar servicios reales desde la API
   const { services, loading: servicesLoading, error: servicesError } = useProductServices();
@@ -121,16 +121,21 @@ export const QuotationNewPage: React.FC = () => {
         items: quotationItems
       };
 
-      const quotation = await createQuotation(quotationData);
-      if (quotation) {
-        setCreatedQuotation(quotation);
-        setShowPreviewModal(true);
-        // No navegamos, solo abrimos el modal
-      }
+      createQuotationMutation.mutate(quotationData, {
+        onSuccess: (quotation) => {
+          setCreatedQuotation(quotation);
+          setShowPreviewModal(true);
+          setLoading(false);
+          // No navegamos, solo abrimos el modal
+        },
+        onError: (error) => {
+          console.error('Error creating quotation:', error);
+          setLoading(false);
+        }
+      });
     } catch (error) {
       console.error('Error creating quotation:', error);
       toast.error('Error al crear la cotización');
-    } finally {
       setLoading(false);
     }
   };

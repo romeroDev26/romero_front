@@ -4,7 +4,6 @@ import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
 
-import { useWebSocketNotifications } from '../../hooks/useWebSocketNotifications';
 import {
   HomeIcon, UserGroupIcon, DocumentTextIcon, CreditCardIcon, TruckIcon,
   CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
@@ -42,6 +41,7 @@ interface SidebarProps {
   currentUser?: User;
   onLogout: () => void;
   onCloseMobile: () => void;
+  pendingCount?: number;
 }
 
 const navGroups: NavGroup[] = [
@@ -159,43 +159,10 @@ const navGroups: NavGroup[] = [
   }
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile, pendingCount = 0 }) => {
   const location = useLocation();
   const { scrollRef, handleScroll } = useSidebarScroll();
   const { hasPermission } = usePermissions();
-  
-  // Hook para obtener solicitudes pendientes (solo si es supervisor o admin)
-  const isSupervisor = currentUser?.role?.name?.toLowerCase() === 'supervisor' || currentUser?.role?.name?.toLowerCase() === 'admin';
-  const [pendingCount, setPendingCount] = useState(0);
-  
-  // Función para obtener el contador de pendientes
-  const fetchPendingCountCallback = useCallback(async () => {
-    if (!isSupervisor) return;
-    
-    try {
-      const { cancellationRequestsService } = await import('../../features/accounting/services/cancellationRequests.service');
-      const count = await cancellationRequestsService.getPendingCount();
-      setPendingCount(count);
-    } catch (err) {
-      console.error('Error fetching pending count:', err);
-    }
-  }, [isSupervisor]);
-
-  // WebSocket para actualizar badge en tiempo real (solo para supervisores)
-  useWebSocketNotifications({
-    enabled: isSupervisor,
-    onCancellationRequestCreated: () => {
-      // Actualizar el contador cuando llega una nueva solicitud
-      fetchPendingCountCallback();
-    }
-  });
-
-  // Cargar contador inicial solo una vez
-  useEffect(() => {
-    if (isSupervisor) {
-      fetchPendingCountCallback();
-    }
-  }, [isSupervisor]);
   
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_EXPANDED_MENUS);
@@ -276,7 +243,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile 
       
       return { ...group, items: filteredItems };
     });
-  }, [currentUser, hasPermission, pendingCount]);
+  }, [currentUser, hasPermission]);
 
   useEffect(() => {
     const currentPath = location.pathname;

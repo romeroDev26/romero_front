@@ -1,6 +1,6 @@
 // src/services/userStatistics.service.ts
 import api from '../config/api';
-import { getLocalDateString, addDays, addMonths, getDaysAgo, getMonthsAgo } from '../utils/dateUtils';
+import { getLocalDateString, getDaysAgo, getMonthsAgo } from '../utils/dateUtils';
 
 export interface UserStatisticsFilters {
   user_id: string;
@@ -97,6 +97,7 @@ export const userStatisticsService = {
 
   /**
    * Obtiene estadísticas de múltiples períodos para crear gráficos de tendencias
+   * OPTIMIZADO: Usa el endpoint de rango del backend para evitar N+1 queries
    */
   getStatisticsTrends: async (
     userId: string,
@@ -105,32 +106,17 @@ export const userStatisticsService = {
     endDate: string
   ): Promise<UserStatisticsResponse[]> => {
     try {
-      const results: UserStatisticsResponse[] = [];
-      let currentDate = startDate;
+      // Usar el nuevo endpoint optimizado del backend
+      const params = new URLSearchParams();
+      params.append('period', period);
+      params.append('start_date', startDate);
+      params.append('end_date', endDate);
+
+      const response = await api.get<UserStatisticsResponse[]>(
+        `/users/${userId}/sales-stats-range?${params.toString()}`
+      );
       
-      // Iterar por cada día/mes según el período usando strings de fecha
-      while (currentDate <= endDate) {
-        try {
-          const stats = await userStatisticsService.getUserStatistics({
-            user_id: userId,
-            period,
-            date: currentDate
-          });
-          results.push(stats);
-        } catch (error) {
-          // Si no hay datos para un día específico, continuamos sin hacer ruido
-          // Este es comportamiento normal cuando no hay ventas en ciertos días
-        }
-
-        // Incrementar según el período
-        if (period === 'day') {
-          currentDate = addDays(currentDate, 1);
-        } else {
-          currentDate = addMonths(currentDate, 1);
-        }
-      }
-
-      return results;
+      return response.data;
     } catch (error) {
       throw error;
     }

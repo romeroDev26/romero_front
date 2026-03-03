@@ -1,5 +1,5 @@
 // src/features/quotations/pages/QuotationsListPage.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
@@ -7,7 +7,11 @@ import { DataTable, Column } from '../../../components/common/DataTable';
 import { Pagination } from '../../../components/common/Pagination';
 import { Spinner } from '../../../components/common/Spinner';
 import { Input } from '../../../components/common/Input';
-import { useQuotations } from '../hooks/useQuotations';
+import { 
+  useQuotationsList, 
+  useUpdateQuotationStatus, 
+  useDeleteQuotation 
+} from '../hooks/useQuotations';
 import { Quotation, QuotationStatus } from '../types';
 
 const statusLabels: Record<QuotationStatus, string> = {
@@ -30,7 +34,6 @@ const statusColors: Record<QuotationStatus, string> = {
 
 export const QuotationsListPage: React.FC = () => {
   const navigate = useNavigate();
-  const { quotations, pagination, loading, error, fetchQuotations, updateQuotationStatus, deleteQuotation } = useQuotations();
   
   const [filters, setFilters] = useState({
     series: '',
@@ -41,28 +44,41 @@ export const QuotationsListPage: React.FC = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    handleSearch(1);
-  }, []);
+  // Construir params para el query - useMemo evita recrear el objeto en cada render
+  const queryParams = useMemo(() => {
+    const params: any = {
+      skip: (currentPage - 1) * 15,
+      limit: 15,
+      company_id: 1
+    };
+    
+    // Agregar filtros solo si tienen valor
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params[key] = value;
+    });
+    
+    return params;
+  }, [filters, currentPage]);
 
-  const handleSearch = (page: number = currentPage) => {
-    const params = Object.entries(filters).reduce((acc, [key, value]) => {
-      if (value) acc[key] = value;
-      return acc;
-    }, {} as any);
-    
-    // Agregar parámetros de paginación
-    params.skip = (page - 1) * 15;
-    params.limit = 15;
-    // Agregar company_id fijo
-    params.company_id = 1;
-    
-    setCurrentPage(page);
-    fetchQuotations(params);
+  // Obtener datos con React Query - se actualiza automáticamente cuando cambian los params
+  const { data, isLoading, error } = useQuotationsList(queryParams);
+  const updateStatusMutation = useUpdateQuotationStatus();
+  const deleteMutation = useDeleteQuotation();
+
+  const quotations = data?.data || [];
+  const pagination = {
+    total: data?.total || 0,
+    page: data?.page || 1,
+    limit: data?.limit || 15,
+    total_pages: data?.total_pages || 0
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(1); // Reset to first page on new search
   };
 
   const handlePageChange = (page: number) => {
-    handleSearch(page);
+    setCurrentPage(page);
   };
 
   const handleFilterChange = (field: string, value: string) => {
@@ -70,24 +86,35 @@ export const QuotationsListPage: React.FC = () => {
   };
 
   const handleStatusChange = async (quotationId: number, status: QuotationStatus) => {
-    const success = await updateQuotationStatus(quotationId, { status });
-    if (success) {
-      handleSearch(currentPage);
-    }
+    updateStatusMutation.mutate({ id: quotationId, data: { status } });
   };
 
   const handleDelete = async (quotationId: number) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta cotización?')) {
-      const success = await deleteQuotation(quotationId);
-      if (success) {
-        // Si estamos en la última página y se elimina el último registro, ir a la página anterior
-        const shouldGoToPreviousPage = 
-          currentPage > 1 && 
-          quotations.length === 1;
-        
-        handleSearch(shouldGoToPreviousPage ? currentPage - 1 : currentPage);
-      }
+      deleteMutation.mutate(quotationId, {
+        onSuccess: () => {
+          // Si estamos en la última página y se elimina el último registro, ir a la página anterior
+          const shouldGoToPreviousPage = 
+            currentPage > 1 && 
+            quotations.length === 1;
+          
+          if (shouldGoToPreviousPage) {
+            setCurrentPage(currentPage - 1);
+          }
+        }
+      });
     }
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      series: '',
+      client_search: '',
+      status: '',
+      start_date: '',
+      end_date: ''
+    });
+    setCurrentPage(1);
   };
 
   const columns: Column<Quotation>[] = [
@@ -142,7 +169,7 @@ export const QuotationsListPage: React.FC = () => {
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="text-red-800">Error: {error}</div>
+          <div className="text-red-800">Error: {error.message}</div>
         </div>
       </div>
     );
@@ -207,23 +234,13 @@ export const QuotationsListPage: React.FC = () => {
           />
         </div>
         <div className="mt-4 flex space-x-2">
-          <Button onClick={() => handleSearch(1)} disabled={loading}>
+          <Button onClick={handleSearch} disabled={isLoading}>
             <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
             Buscar
           </Button>
           <Button
             variant="outline"
-            onClick={() => {
-              setFilters({
-                series: '',
-                client_search: '',
-                status: '',
-                start_date: '',
-                end_date: ''
-              });
-              setCurrentPage(1);
-              fetchQuotations({ skip: 0, limit: 15 });
-            }}
+            onClick={handleClearFilters}
           >
             Limpiar
           </Button>
@@ -232,7 +249,7 @@ export const QuotationsListPage: React.FC = () => {
 
       {/* Tabla de cotizaciones */}
       <div className="bg-white rounded-lg shadow">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center items-center p-8">
             <Spinner />
           </div>
@@ -281,7 +298,7 @@ export const QuotationsListPage: React.FC = () => {
       </div>
         
       {/* Paginación */}
-      {!loading && quotations.length > 0 && (
+      {!isLoading && quotations.length > 0 && (
         <div className="bg-white rounded-lg shadow mt-4">
           <Pagination
             currentPage={pagination.page}
@@ -289,7 +306,7 @@ export const QuotationsListPage: React.FC = () => {
             total={pagination.total}
             limit={pagination.limit}
             onPageChange={handlePageChange}
-            loading={loading}
+            loading={isLoading}
           />
         </div>
       )}

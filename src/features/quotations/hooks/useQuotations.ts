@@ -1,5 +1,6 @@
 // src/features/quotations/hooks/useQuotations.ts
-import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { quotationsService } from '../services/quotations.service';
 import { 
   Quotation, 
@@ -10,135 +11,107 @@ import {
   PaginationMeta
 } from '../types';
 
-export const useQuotations = () => {
-  const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [pagination, setPagination] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 15,
-    total_pages: 0
+// Tipos para las respuestas
+interface QuotationsListResponse {
+  data: Quotation[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
+const QUOTATIONS_QUERY_KEY = 'quotations';
+
+// Hook para obtener lista de cotizaciones con paginacion y filtros
+export const useQuotationsList = (params: QuotationsListParams = {}) => {
+  return useQuery<QuotationsListResponse, Error>({
+    queryKey: [QUOTATIONS_QUERY_KEY, 'list', params],
+    queryFn: () => quotationsService.getList(params),
+    staleTime: 1000 * 60 * 2, // Cache por 2 minutos
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+};
 
-  const fetchQuotations = async (params: QuotationsListParams = {}) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await quotationsService.getList(params);
-      setQuotations(response.data);
-      setPagination({
-        total: response.total,
-        page: response.page,
-        limit: response.limit,
-        total_pages: response.total_pages
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar cotizaciones');
-    } finally {
-      setLoading(false);
-    }
-  };
+// Hook para crear cotizacion
+export const useCreateQuotation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<Quotation, Error, QuotationCreate>({
+    mutationFn: (data: QuotationCreate) => quotationsService.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
+      toast.success('Cotización creada exitosamente');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Error al crear cotización';
+      toast.error(message);
+    },
+  });
+};
 
-  const createQuotation = async (quotationData: QuotationCreate): Promise<Quotation | null> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const newQuotation = await quotationsService.create(quotationData);
-      setQuotations(prev => [newQuotation, ...prev]);
-      return newQuotation;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al crear cotización');
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+// Hook para actualizar estado de cotizacion
+export const useUpdateQuotationStatus = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<Quotation, Error, { id: number; data: QuotationStatusUpdate }>({
+    mutationFn: ({ id, data }) => quotationsService.updateStatus(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
+      toast.success('Estado actualizado exitosamente');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Error al actualizar estado';
+      toast.error(message);
+    },
+  });
+};
 
-  const updateQuotationStatus = async (
-    quotationId: number, 
-    statusData: QuotationStatusUpdate
-  ): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      const updatedQuotation = await quotationsService.updateStatus(quotationId, statusData);
-      setQuotations(prev => 
-        prev.map(q => q.id === quotationId ? updatedQuotation : q)
-      );
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al actualizar estado');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+// Hook para eliminar cotizacion
+export const useDeleteQuotation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<void, Error, number>({
+    mutationFn: (id: number) => quotationsService.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
+      toast.success('Cotización eliminada exitosamente');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Error al eliminar cotización';
+      toast.error(message);
+    },
+  });
+};
 
-  const deleteQuotation = async (quotationId: number): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      await quotationsService.delete(quotationId);
-      setQuotations(prev => prev.filter(q => q.id !== quotationId));
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al eliminar cotización');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
+// Hook para enviar cotizacion por email
+export const useSendQuotationByEmail = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<string, Error, { id: number; emailData?: any }>({
+    mutationFn: ({ id, emailData }) => quotationsService.sendByEmail(id, emailData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
+      toast.success('Cotización enviada por email exitosamente');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Error al enviar por email';
+      toast.error(message);
+    },
+  });
+};
 
-  const sendByEmail = async (quotationId: number, emailData: any = {}): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      await quotationsService.sendByEmail(quotationId, emailData);
-      // Actualizar estado local a SENT
-      setQuotations(prev => 
-        prev.map(q => q.id === quotationId ? { ...q, status: 'SENT' as const } : q)
-      );
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al enviar por email');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const convertToInvoice = async (
-    quotationId: number, 
-    invoiceData: ConvertToInvoiceData
-  ): Promise<boolean> => {
-    setLoading(true);
-    setError(null);
-    try {
-      await quotationsService.convertToInvoice(quotationId, invoiceData);
-      // Actualizar estado local a CONVERTED
-      setQuotations(prev => 
-        prev.map(q => q.id === quotationId ? { ...q, status: 'CONVERTED' } : q)
-      );
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al convertir a factura');
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return {
-    quotations,
-    pagination,
-    loading,
-    error,
-    fetchQuotations,
-    createQuotation,
-    updateQuotationStatus,
-    deleteQuotation,
-    sendByEmail,
-    convertToInvoice
-  };
+// Hook para convertir cotizacion a factura
+export const useConvertQuotationToInvoice = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<string, Error, { id: number; data: ConvertToInvoiceData }>({
+    mutationFn: ({ id, data }) => quotationsService.convertToInvoice(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
+      toast.success('Cotización convertida a factura exitosamente');
+    },
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || error.message || 'Error al convertir a factura';
+      toast.error(message);
+    },
+  });
 };

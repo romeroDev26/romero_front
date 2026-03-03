@@ -11,7 +11,6 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { useCancellationRequests } from '../../../hooks/useCancellationRequests';
-import { useWebSocketNotifications } from '../../../hooks/useWebSocketNotifications';
 import { cancellationRequestsService } from '../../accounting/services/cancellationRequests.service';
 import { CancellationRequestListItem, CancellationRequestStatus } from '../../accounting/types/cancellationRequests';
 import ApprovalModal from '../components/ApprovalModal';
@@ -35,18 +34,19 @@ const CancellationRequestsPage: React.FC = () => {
     refresh
   } = useCancellationRequests();
 
-  // WebSocket para notificaciones en tiempo real
-  const { isConnected } = useWebSocketNotifications({
-    enabled: true,
-    onCancellationRequestCreated: () => {
-      // Cuando llega una nueva solicitud, actualizar la lista
-      refresh();
-    },
-    onCancellationRequestResolved: () => {
-      // Cuando se resuelve una solicitud (desde otro supervisor), actualizar
-      refresh();
-    }
-  });
+  // Escuchar eventos globales del WebSocket (gestionado en el layout)
+  useEffect(() => {
+    const handleCreated = () => refresh();
+    const handleResolved = () => refresh();
+
+    window.addEventListener('cancellation-request-created', handleCreated as EventListener);
+    window.addEventListener('cancellation-request-resolved', handleResolved as EventListener);
+
+    return () => {
+      window.removeEventListener('cancellation-request-created', handleCreated as EventListener);
+      window.removeEventListener('cancellation-request-resolved', handleResolved as EventListener);
+    };
+  }, [refresh]);
 
   // Cargar datos iniciales solo una vez al montar el componente
   useEffect(() => {
@@ -162,14 +162,8 @@ const CancellationRequestsPage: React.FC = () => {
           <BellAlertIcon className="w-10 h-10 text-red-500 flex-shrink-0" />
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Solicitudes de Anulación</h1>
-            <div className="text-gray-600 mt-1 flex flex-col sm:flex-row sm:items-center gap-2">
+            <div className="text-gray-600 mt-1">
               <span>Gestiona las solicitudes de anulación de comprobantes</span>
-              {isConnected && (
-                <span className="inline-flex items-center w-fit gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                  Conectado en tiempo real
-                </span>
-              )}
             </div>
           </div>
         </div>

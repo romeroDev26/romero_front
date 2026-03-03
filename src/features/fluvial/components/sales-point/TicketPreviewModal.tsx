@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
-import { Download, Eye, MessageCircle, RefreshCw } from 'lucide-react';
+import { Download, Eye, MessageCircle, RefreshCw, Tag } from 'lucide-react';
 import { BackendInvoiceData, BackendCompanyInvoiceData } from './tickets/types/backend.types';
 import { WhatsAppSendModal } from './WhatsAppSendModal';
 import { invoicesService } from '../../../../services/invoices.service';
@@ -24,7 +24,7 @@ interface TicketPreviewModalProps {
   showOnly80mm?: boolean;
 }
 
-type TicketFormat = 'ticket80mm' | 'a4';
+type TicketFormat = 'ticket80mm' | 'a4' | 'sticker100x100';
 
 export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   isOpen,
@@ -36,16 +36,28 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   showOnly80mm = false,
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingSticker, setIsGeneratingSticker] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [activeFormat, setActiveFormat] = useState<TicketFormat>('ticket80mm');
   const [previewUrl80mm, setPreviewUrl80mm] = useState<string>('');
   const [previewUrlA4, setPreviewUrlA4] = useState<string>('');
+  const [previewUrlSticker100x100, setPreviewUrlSticker100x100] = useState<string>('');
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [generationSuccess, setGenerationSuccess] = useState(false);
 
   // Extraer invoice ID
   const invoiceId = 'invoice' in backendData ? backendData.invoice.id : backendData.id;
   const invoiceData = 'invoice' in backendData ? backendData.invoice : backendData;
+
+  // Detectar si es una factura de encomienda (cargo)
+  const isCargoInvoice = Boolean(
+    invoiceData.items?.some(item =>
+      item.parcel_number != null ||
+      item.product_name?.toLowerCase().includes('encomienda') ||
+      item.item_description?.toLowerCase().includes('encomienda')
+    ) ||
+    (invoiceData as any).pdf_sticker_100x100_file_path
+  );
 
   // Generar PDFs en el backend cuando se abre el modal
   useEffect(() => {
@@ -64,6 +76,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       // Solo limpiar los estados, no hay que revocar URLs porque son URLs remotas
       setPreviewUrl80mm('');
       setPreviewUrlA4('');
+      setPreviewUrlSticker100x100('');
       setGenerationSuccess(false);
     }
   }, [isOpen]);
@@ -147,7 +160,54 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   };
 
   /**
-   * Regenerar PDFs (útil si hubo error o se quiere actualizar)
+   * Genera el sticker de 100x100mm (solo para encomiendas)
+   * Se ejecuta de forma lazy cuando el usuario selecciona el tab
+   */
+  const generateSticker100x100FromBackend = async () => {
+    if (previewUrlSticker100x100) return; // Ya generado
+    try {
+      setIsGeneratingSticker(true);
+
+      // Primero verificar si ya existe la URL en la invoice actual
+      const existingUrl = (invoiceData as any).pdf_sticker_100x100_file_path;
+      if (existingUrl) {
+        setPreviewUrlSticker100x100(existingUrl);
+        return;
+      }
+
+      // Generar el sticker via backend
+      const url = await invoicesService.generateSticker100x100(invoiceId);
+
+      if (!url) {
+        throw new Error('Sticker generado pero URL no disponible');
+      }
+
+      setPreviewUrlSticker100x100(url);
+      toast.success('Sticker 100x100 generado exitosamente');
+    } catch (error) {
+      console.error('Error generando sticker 100x100:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Error al generar el sticker. Por favor, intente nuevamente.'
+      );
+    } finally {
+      setIsGeneratingSticker(false);
+    }
+  };
+
+  /**
+   * Manejar el cambio de tab — si es el sticker y no está generado, generarlo
+   */
+  const handleFormatChange = (format: TicketFormat) => {
+    setActiveFormat(format);
+    if (format === 'sticker100x100' && !previewUrlSticker100x100) {
+      generateSticker100x100FromBackend();
+    }
+  };
+
+  /**
+   * Regenerar PDFs (util si hubo error o se quiere actualizar)
    */
   const handleRegeneratePdfs = async () => {
     // Limpiar URLs existentes
@@ -169,11 +229,19 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
     try {
       setIsDownloading(true);
 
-      const size = activeFormat === 'ticket80mm' ? '80mm' : 'a4';
-      
-      // Obtener la URL directa del PDF desde la invoice
-      const invoice = await invoicesService.getById(invoiceId);
-      const pdfUrl = size === '80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+      let pdfUrl: string | null | undefined;
+      let fileName: string;
+
+      if (activeFormat === 'sticker100x100') {
+        pdfUrl = previewUrlSticker100x100;
+        fileName = `sticker_100x100_${invoiceData.series}-${invoiceData.number}.pdf`;
+      } else {
+        const size = activeFormat === 'ticket80mm' ? '80mm' : 'a4';
+        // Obtener la URL directa del PDF desde la invoice
+        const invoice = await invoicesService.getById(invoiceId);
+        pdfUrl = size === '80mm' ? invoice.pdf_ticket_file_path : invoice.pdf_a4_file_path;
+        fileName = `ticket_${size}_${invoiceData.series}-${invoiceData.number}.pdf`;
+      }
       
       if (!pdfUrl) {
         throw new Error('PDF no disponible');
@@ -182,7 +250,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       // Descargar usando un enlace temporal
       const a = document.createElement('a');
       a.href = pdfUrl;
-      a.download = `ticket_${size}_${invoiceData.series}-${invoiceData.number}.pdf`;
+      a.download = fileName;
       a.target = '_blank'; // Abrir en nueva pestaña si la descarga falla
       document.body.appendChild(a);
       a.click();
@@ -198,7 +266,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   };
 
   const handleClose = () => {
-    if (!isGenerating) {
+    if (!isGenerating && !isGeneratingSticker) {
       onClose();
       onSuccess(); // Forzar recarga del viaje para actualizar estado de asientos
       if (onClearForm) {
@@ -231,11 +299,11 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         )}
 
         {/* Tabs para seleccionar formato */}
-        {!showOnly80mm && (
+        {(!showOnly80mm || isCargoInvoice) && (
           <div className="mb-4">
             <div className="flex border-b border-gray-200">
               <button
-                onClick={() => setActiveFormat('ticket80mm')}
+                onClick={() => handleFormatChange('ticket80mm')}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   activeFormat === 'ticket80mm'
                     ? 'border-b-2 border-blue-600 text-blue-600'
@@ -244,16 +312,31 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
               >
                 Ticket 80mm (Termico)
               </button>
-              <button
-                onClick={() => setActiveFormat('a4')}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
-                  activeFormat === 'a4'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Ticket A4 (Corporativo)
-              </button>
+              {!showOnly80mm && (
+                <button
+                  onClick={() => handleFormatChange('a4')}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    activeFormat === 'a4'
+                      ? 'border-b-2 border-blue-600 text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Ticket A4 (Corporativo)
+                </button>
+              )}
+              {isCargoInvoice && (
+                <button
+                  onClick={() => handleFormatChange('sticker100x100')}
+                  className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
+                    activeFormat === 'sticker100x100'
+                      ? 'border-b-2 border-orange-500 text-orange-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  <Tag className="h-3.5 w-3.5" />
+                  Sticker 100x100
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -261,15 +344,19 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         {/* Vista previa del PDF */}
         <div className="mb-4">
           <div className="border rounded-lg overflow-hidden bg-gray-100" style={{ height: '500px' }}>
-            {isGenerating ? (
+            {(isGenerating || (activeFormat === 'sticker100x100' && isGeneratingSticker)) ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <Spinner size="lg" className="mb-4" />
                   <p className="text-gray-600">
-                    Generando tickets en el backend...
+                    {activeFormat === 'sticker100x100'
+                      ? 'Generando sticker 100x100...'
+                      : 'Generando tickets en el backend...'}
                   </p>
                   <p className="text-sm text-gray-500">
-                    El backend está creando los PDFs (80mm y A4) y almacenándolos en la nube
+                    {activeFormat === 'sticker100x100'
+                      ? 'El backend está creando el sticker y almacenándolo en la nube'
+                      : 'El backend está creando los PDFs (80mm y A4) y almacenándolos en la nube'}
                   </p>
                 </div>
               </div>
@@ -285,13 +372,19 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                 className="w-full h-full"
                 title="Vista previa del ticket A4"
               />
+            ) : (activeFormat === 'sticker100x100' && previewUrlSticker100x100) ? (
+              <iframe
+                src={previewUrlSticker100x100}
+                className="w-full h-full"
+                title="Vista previa del sticker 100x100mm"
+              />
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center text-gray-500">
                   <Eye className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>No se pudo cargar la vista previa</p>
                   <Button
-                    onClick={handleRegeneratePdfs}
+                    onClick={activeFormat === 'sticker100x100' ? generateSticker100x100FromBackend : handleRegeneratePdfs}
                     variant="outline"
                     className="mt-4"
                   >
@@ -312,7 +405,12 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                 handleClose();
               });
             }}
-            disabled={isGenerating || isDownloading || !generationSuccess}
+            disabled={
+              isGenerating ||
+              isDownloading ||
+              (activeFormat !== 'sticker100x100' && !generationSuccess) ||
+              (activeFormat === 'sticker100x100' && !previewUrlSticker100x100)
+            }
             className="bg-green-600 hover:bg-green-700 py-3"
           >
             {isDownloading ? (
@@ -348,15 +446,17 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         </div>
 
         {/* Boton de regenerar (solo si hay error) */}
-        {!generationSuccess && !isGenerating && (
+        {((!generationSuccess && !isGenerating) ||
+          (activeFormat === 'sticker100x100' && !previewUrlSticker100x100 && !isGeneratingSticker)) && (
           <div className="mb-4">
             <Button
-              onClick={handleRegeneratePdfs}
+              onClick={activeFormat === 'sticker100x100' ? generateSticker100x100FromBackend : handleRegeneratePdfs}
               variant="outline"
               className="w-full"
+              disabled={isGeneratingSticker}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
-              Regenerar Tickets
+              {activeFormat === 'sticker100x100' ? 'Generar Sticker 100x100' : 'Regenerar Tickets'}
             </Button>
           </div>
         )}

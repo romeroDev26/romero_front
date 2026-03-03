@@ -1,20 +1,28 @@
 // src/features/fluvial/components/sales-point/TripCalendar.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isToday, isBefore, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { useAvailableTripsCalendar } from '../../hooks/useAvailableTripsCalendar';
 import { Spinner } from '../../../../components/common/Spinner';
+import { AvailableTripByPort } from '../../../../services/trips.service';
 
 interface TripCalendarProps {
-  portId: number;
   selectedDate: string;
+  currentMonth: Date;
+  onMonthChange: (date: Date) => void;
   onDateSelect: (date: string) => void;
+  tripsByDate: Record<string, AvailableTripByPort[]>;
+  isLoading: boolean;
 }
 
-export const TripCalendar: React.FC<TripCalendarProps> = ({ portId, selectedDate, onDateSelect }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const { data: tripsByDate = {}, isLoading } = useAvailableTripsCalendar({ portId, currentMonth });
+export const TripCalendar: React.FC<TripCalendarProps> = ({
+  selectedDate,
+  currentMonth,
+  onMonthChange,
+  onDateSelect,
+  tripsByDate,
+  isLoading
+}) => {
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -31,11 +39,11 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({ portId, selectedDate
   ];
 
   const handlePrevMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1));
+    onMonthChange(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1));
   };
 
   const handleNextMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1));
+    onMonthChange(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1));
   };
 
   const handleDateClick = (day: Date) => {

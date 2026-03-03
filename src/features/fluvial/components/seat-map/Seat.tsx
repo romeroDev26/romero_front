@@ -8,17 +8,27 @@ interface SeatProps {
   seat: SeatMapItem;
   isSelected: boolean;
   onClick: (seat: SeatMapItem) => void;
-  isLocked?: boolean; // <-- CORRECCIÓN: Añadir la prop isLocked
+  isLocked?: boolean;
+  // Asiento ya elegido como cambio pendiente por OTRA asignación en la misma sesión
+  isPendingBlocked?: boolean;
 }
 
-const getSeatStyles = (status: SeatStatus, isSelected: boolean, isLocked: boolean): string => {
+const getSeatStyles = (
+  status: SeatStatus,
+  isSelected: boolean,
+  isLocked: boolean,
+  isPendingBlocked: boolean,
+): string => {
   if (isSelected) {
-    // Si está seleccionado, siempre se verá como seleccionado, pero el cursor cambiará si está bloqueado
     const cursorStyle = isLocked ? 'cursor-not-allowed' : '';
     return `bg-blue-500 border-blue-600 text-white shadow-lg transform scale-105 ${cursorStyle}`;
   }
-  
-  // Si está bloqueado pero no es el seleccionado, se ve gris y deshabilitado
+
+  // Ocupado como destino pendiente de otra asignación: naranja, no clickable
+  if (isPendingBlocked) {
+    return 'bg-orange-400 border-orange-500 text-white cursor-not-allowed opacity-90';
+  }
+
   if (isLocked) {
     return 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed';
   }
@@ -37,23 +47,21 @@ const getSeatStyles = (status: SeatStatus, isSelected: boolean, isLocked: boolea
   }
 };
 
-export const Seat: React.FC<SeatProps> = ({ seat, isSelected, onClick, isLocked = false }) => {
-  // <-- CORRECCIÓN: Recibir y usar isLocked
-
-  // Un asiento no es clickeable si está bloqueado o su estado no es 'AVAILABLE'
-  const isClickable = !isLocked && seat.status === 'AVAILABLE';
+export const Seat: React.FC<SeatProps> = ({ seat, isSelected, onClick, isLocked = false, isPendingBlocked = false }) => {
+  const isClickable = !isLocked && !isPendingBlocked && seat.status === 'AVAILABLE';
 
   return (
     <button
       onClick={() => isClickable && onClick(seat)}
-      // Deshabilitamos el botón si no es clickeable, para temas de accesibilidad.
       disabled={!isClickable}
       className={`
         w-14 h-14 rounded-lg border-2 transition-all duration-200
         flex items-center justify-center text-sm font-bold
-        ${getSeatStyles(seat.status, isSelected, isLocked)}
+        ${getSeatStyles(seat.status, isSelected, isLocked, isPendingBlocked)}
       `}
-      title={`Asiento: ${seat.seat_number} - Tipo: ${getSeatTypeName(seat.seat_type?.name)} - Estado: ${seat.status}`}
+      title={`Asiento: ${seat.seat_number} - Tipo: ${getSeatTypeName(seat.seat_type?.name)} - Estado: ${
+        isPendingBlocked ? 'PENDIENTE (otra asignación)' : seat.status
+      }`}
     >
       {seat.seat_number}
     </button>

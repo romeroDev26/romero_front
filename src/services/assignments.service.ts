@@ -27,16 +27,32 @@ export interface SeatAssignmentDetail extends SeatAssignment {
   product_name?: string;
 }
 
-// Datos para reasignar un asiento
+// Datos para reasignar un asiento (individual)
 export interface ReassignSeatData {
   assignment_id: number;
   new_trip_seat_id: number;
+}
+
+// Datos para reasignar varios asientos de una factura en una sola llamada
+export interface ReassignBulkData {
+  changes: ReassignSeatData[];
 }
 
 // Respuesta del backend al reasignar (incluye el PDF regenerado)
 export interface ReassignResponse {
   message: string;
   assignment: SeatAssignmentDetail;
+  invoice?: {
+    id: number;
+    pdf_ticket_file_path?: string;
+    pdf_a4_file_path?: string;
+  };
+}
+
+// Respuesta del backend al reasignar en bulk
+export interface ReassignBulkResponse {
+  message: string;
+  assignments: SeatAssignmentDetail[];
   invoice?: {
     id: number;
     pdf_ticket_file_path?: string;
@@ -90,6 +106,23 @@ class AssignmentsService {
       return response.data;
     } catch (error) {
       console.error('Error al reasignar asiento:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reasigna múltiples asientos de una misma factura en una sola llamada.
+   * El backend aplica todos los cambios en una transacción y regenera el PDF una única vez.
+   */
+  async reassignBulk(data: ReassignBulkData): Promise<ReassignBulkResponse> {
+    try {
+      const response = await api.post<ReassignBulkResponse>(
+        `${this.basePath}reassign-bulk`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error al reasignar asientos en bulk:', error);
       throw error;
     }
   }

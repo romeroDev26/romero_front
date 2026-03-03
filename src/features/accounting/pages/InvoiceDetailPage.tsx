@@ -358,33 +358,20 @@ export const InvoiceDetailPage: React.FC = () => {
                 </Button>
               )}
 
-              {/* Botón Sticker 100x100 - solo para encomiendas */}
-              {isCargoInvoice && (
+              {/* Botón Editar asiento - solo para boletas/facturas de pasajeros, no encomiendas */}
+              {!isCargoInvoice && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleGenerateSticker100x100}
-                  disabled={isGeneratingSticker}
-                  className="flex items-center text-orange-600 border-orange-300 hover:bg-orange-50"
-                  title={hasStickerPdf ? 'Regenerar sticker de encomienda' : 'Generar sticker de encomienda 100x100'}
+                  onClick={() => setShowEditSeatModal(true)}
+                  className="flex items-center text-blue-600 border-blue-300 hover:bg-blue-50"
+                  title="Editar asiento del pasajero"
+                  disabled={!hasPermission('accounting', 'invoices', 'sales')}
                 >
-                  <Tag className="h-4 w-4 mr-2" />
-                  {isGeneratingSticker ? 'Generando...' : hasStickerPdf ? 'Sticker 100x100' : 'Generar Sticker'}
+                  <PencilIcon className="h-4 w-4 mr-2" />
+                  Editar
                 </Button>
               )}
-
-              {/* Botón Editar asiento - solo para facturas/boletas con asignaciones */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowEditSeatModal(true)}
-                className="flex items-center text-blue-600 border-blue-300 hover:bg-blue-50"
-                title="Editar asiento del pasajero"
-                disabled={!hasPermission('accounting', 'invoices', 'sales')}
-              >
-                <PencilIcon className="h-4 w-4 mr-2" />
-                Editar
-              </Button>
               
               {currentUser?.role_name?.toLowerCase() === 'sales' && (
                 <Button

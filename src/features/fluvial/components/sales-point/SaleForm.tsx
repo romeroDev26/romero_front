@@ -6,6 +6,7 @@ import {
   Clock,
   AlertTriangle,
   CreditCard,
+  Baby,
 } from "lucide-react";
 import {
   ClipboardDocumentListIcon,
@@ -51,7 +52,9 @@ import {
   Representative,
   SaleFormProps,
   initialPassengerData,
+  Infant,
 } from "./core/types";
+import { InfantManager } from './infants';
 import {
   calculatePriceDetails,
   validateDiscount,
@@ -102,6 +105,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   const [representatives, setRepresentatives] = useState<Representative[]>([]);
   const [showRepresentatives, setShowRepresentatives] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  // Infantes del pasajero principal (boleta)
+  const [boletaInfants, setBoletaInfants] = useState<Infant[]>([]);
   const [selectedSeatForRepresentative, setSelectedSeatForRepresentative] =
     useState<any>(null);
 
@@ -371,6 +376,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     setManualPrice(null);
     setIsManualPriceMode(false);
     setEditableBasePrice(null);
+    // Limpiar infantes del pasajero (boleta)
+    setBoletaInfants([]);
   };
   const clearStateForVesselChange = () => {
     // Limpiar datos del pasajero (mantener solo datos básicos)
@@ -426,6 +433,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     // NOTA: No resetear canSellWithoutSeats ni showSeatMap aqui
     // Estos valores deben ser determinados por la consulta de la API del seat-map
     // que se ejecuta automaticamente cuando cambia trip.id
+    // Limpiar infantes del pasajero (boleta)
+    setBoletaInfants([]);
   };
 
   // Helper functions
@@ -697,6 +706,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
   };
 
   // Funciones para gestionar representantes
+  /** Actualiza la lista de infantes de un representante por índice */
+  const handleUpdateRepresentativeInfants = (repIndex: number, infants: Infant[]) => {
+    setRepresentatives((prev) =>
+      prev.map((rep, i) => (i === repIndex ? { ...rep, infants } : rep))
+    );
+  };
+
   const handleAddRepresentative = async (representative: Representative) => {
     // Primero, reservar el asiento vía WebSocket si hay uno seleccionado
     if (selectedSeatForRepresentative && isWebSocketConnected && selectSeatForRepresentative) {
@@ -1141,6 +1157,23 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                 setPassengerData={setPassengerData}
                 disabled={isConfirmingMode || isProcessingSale}
               />
+
+              {/* Infantes del pasajero principal — solo boleta */}
+              {!isRuc && passengerData.name.trim() && (
+                <InfantManager
+                  infants={boletaInfants}
+                  responsibleName={passengerData.name}
+                  onAdd={(infant) =>
+                    setBoletaInfants((prev) => [...prev, infant])
+                  }
+                  onRemove={(idx) =>
+                    setBoletaInfants((prev) =>
+                      prev.filter((_, i) => i !== idx)
+                    )
+                  }
+                  collapsible
+                />
+              )}
             </div>
 
             {/* Sección de Representantes para RUC */}
@@ -1163,6 +1196,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
                   onSeatReserve={reserveSeat}
                   onSeatRelease={releaseSeat}
                   getReservedSeatNumbers={getReservedSeatNumbers}
+                  onUpdateRepresentativeInfants={handleUpdateRepresentativeInfants}
                 />
               </>
             )}

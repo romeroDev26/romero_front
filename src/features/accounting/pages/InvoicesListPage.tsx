@@ -189,12 +189,16 @@ export const InvoicesListPage: React.FC = () => {
     {
       key: 'client',
       header: 'Cliente',
+      className: 'max-w-[160px] xl:max-w-[220px]',
       accessor: (invoice: Invoice) => (
-        <div>
-          <div className="font-medium text-gray-900">
+        <div className="max-w-[160px] xl:max-w-[220px]">
+          <div
+            className="font-medium text-gray-900 truncate"
+            title={invoice.client?.name || 'Cliente no disponible'}
+          >
             {invoice.client?.name || 'Cliente no disponible'}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 truncate" title={invoice.client?.doc_number}>
             {invoice.client?.doc_number}
           </div>
         </div>

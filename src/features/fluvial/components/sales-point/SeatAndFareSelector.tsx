@@ -160,18 +160,27 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     }
   }, [isCompanyMode, representativeSelectedSeatIds.length, selectedSeat?.id]); // Ya optimizado
 
+  // Paradas ordenadas por stop_order para garantizar coherencia
+  // independientemente del orden en que el backend las devuelva.
+  // Esto es crítico cuando se agregan paradas intermedias a una ruta,
+  // ya que pueden aparecer al final del arreglo aunque su stop_order sea menor.
+  const sortedStops = useMemo((): TripStop[] => {
+    if (!tripDetails?.stops) return [];
+    return [...tripDetails.stops].sort((a, b) => a.stop_order - b.stop_order);
+  }, [tripDetails?.id, tripDetails?.stops?.length]);
+
   // Calcular stops disponibles para destino basado en el stop de embarque seleccionado
   const { availableStops } = useMemo(() => {
-    if (!tripDetails || !selectedBoardingStopId) {
+    if (!selectedBoardingStopId || sortedStops.length === 0) {
       return { availableStops: [] };
     }
-    const boardingStop = tripDetails.stops.find(s => s.id === selectedBoardingStopId);
+    const boardingStop = sortedStops.find(s => s.id === selectedBoardingStopId);
     const boardingStopOrder = boardingStop?.stop_order ?? -1;
-    const stops = tripDetails.stops.filter(s => s.stop_order > boardingStopOrder);
+    const stops = sortedStops.filter(s => s.stop_order > boardingStopOrder);
     return {
-      availableStops: stops as TripStop[],
+      availableStops: stops,
     };
-  }, [tripDetails?.id, selectedBoardingStopId]); // Ya optimizado
+  }, [sortedStops, selectedBoardingStopId]);
 
   const handleSeatToggleFromMap = useCallback((toggledSeat: SeatMapItem) => {
     // Si estamos en modo de confirmación, no se permite ninguna interacción con el mapa.
@@ -247,10 +256,10 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
           label="Origen (Embarque)"
           value={selectedBoardingStopId}
           onChange={(value) => onBoardingStopChange(value ? Number(value) : null)}
-          options={tripDetails?.stops?.slice(0, -1).map(stop => ({
+          options={sortedStops.slice(0, -1).map(stop => ({
             value: stop.id,
             label: stop.port?.name || 'Sin nombre'
-          })) || []}
+          }))}
           placeholder="Seleccione embarque..."
           disabled={isConfirmingMode}
         />

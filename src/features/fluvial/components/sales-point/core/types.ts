@@ -15,6 +15,41 @@ export interface PassengerData {
   countryName?: string;
 }
 
+// ---------- Infantes ----------
+export type InfantRelationship =
+  | 'padre'
+  | 'madre'
+  | 'abuelo'
+  | 'abuela'
+  | 'tio'
+  | 'tia'
+  | 'hermano'
+  | 'hermana'
+  | 'tutor_legal'
+  | 'otro';
+
+export const INFANT_RELATIONSHIP_LABELS: Record<InfantRelationship, string> = {
+  padre: 'Padre',
+  madre: 'Madre',
+  abuelo: 'Abuelo',
+  abuela: 'Abuela',
+  tio: 'Tío',
+  tia: 'Tía',
+  hermano: 'Hermano',
+  hermana: 'Hermana',
+  tutor_legal: 'Tutor Legal',
+  otro: 'Otro',
+};
+
+export interface Infant {
+  full_name: string;
+  birth_date: string; // YYYY-MM-DD
+  gender: 'M' | 'F';
+  relationship: InfantRelationship;
+  document_number?: string; // DNI opcional
+}
+// ----------------------------------
+
 export interface Representative {
   document_type: string;
   document_number: string;
@@ -24,6 +59,7 @@ export interface Representative {
   seat_number?: string;
   special_notes?: string; // ← NUEVO: Campo notas especiales
   trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
+  infants?: Infant[]; // ← Infantes a cargo del representante
 }
 
 export interface SaleFormProps {

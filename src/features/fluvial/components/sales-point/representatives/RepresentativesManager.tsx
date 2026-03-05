@@ -3,6 +3,8 @@ import React from 'react';
 import { Users, Plus, Trash2, UserCheck, FileText } from 'lucide-react';
 import { Button } from '../../../../../components/common/Button';
 import { AddRepresentativeForm } from './AddRepresentativeForm';
+import { InfantManager } from '../infants';
+import { Infant } from '../core/types';
 
 interface Representative {
   document_type: string;
@@ -12,6 +14,7 @@ interface Representative {
   email?: string; // ← NUEVO: Campo email
   seat_number?: string;
   special_notes?: string; // ← NUEVO: Campo notas especiales
+  infants?: Infant[]; // ← Infantes a cargo
 }
 
 interface RepresentativesManagerProps {
@@ -29,6 +32,8 @@ interface RepresentativesManagerProps {
   onSeatReserve: (seatNumber: string, representativeIndex: number) => Promise<boolean>;
   onSeatRelease: (representativeIndex: number) => void;
   getReservedSeatNumbers: () => string[];
+  /** Actualiza la lista de infantes de un representante por índice */
+  onUpdateRepresentativeInfants: (repIndex: number, infants: Infant[]) => void;
 }
 
 export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
@@ -46,6 +51,7 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
   onSeatReserve,
   onSeatRelease,
   getReservedSeatNumbers,
+  onUpdateRepresentativeInfants,
 }) => {
   const handleAddRepresentative = (representative: Representative) => {
     onAddRepresentative(representative);
@@ -192,6 +198,24 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+
+                  {/* Infantes a cargo del representante */}
+                  <InfantManager
+                    infants={rep.infants || []}
+                    responsibleName={rep.name}
+                    onAdd={(infant) =>
+                      onUpdateRepresentativeInfants(index, [
+                        ...(rep.infants || []),
+                        infant,
+                      ])
+                    }
+                    onRemove={(infantIdx) =>
+                      onUpdateRepresentativeInfants(
+                        index,
+                        (rep.infants || []).filter((_infant: Infant, i: number) => i !== infantIdx)
+                      )
+                    }
+                  />
                 </div>
               ))}
             </div>

@@ -1,7 +1,7 @@
 // src/features/fluvial/components/sales-point/services/invoiceCreationService.ts
 
 import { format } from "date-fns";
-import { PassengerData, Representative } from "../core/types";
+import { PassengerData, Representative, Infant } from "../core/types";
 import { SunatInvoiceType, SunatTaxCategory } from "../../../types/sunat.types";
 import { productsServicesService } from '../../../../../services/products-services.service';
 
@@ -31,6 +31,8 @@ export interface InvoiceCreationData {
   currency_code: string;
   notes: string;
   items: InvoiceItemData[];
+  // Infantes acompañantes (solo para boletas)
+  infants?: Infant[];
   // Campos de pago principal
   payment_method_code?: string;
   payment_operation_code?: string;
@@ -142,7 +144,8 @@ export const invoiceCreationService = {
       paymentMethodCode2?: string;
       paymentOperationCode2?: string;
       paymentAmount2?: number;
-    }
+    },
+    infants?: Infant[]
   ): InvoiceCreationData => {
     const isRuc = passengerData.docType === "6"; // RUC
     
@@ -170,6 +173,11 @@ export const invoiceCreationService = {
       basePayload.payment_method_code_2 = splitPaymentData.paymentMethodCode2;
       basePayload.payment_operation_code_2 = splitPaymentData.paymentOperationCode2 || undefined;
       basePayload.payment_amount_2 = splitPaymentData.paymentAmount2;
+    }
+
+    // Agregar infantes si existen (solo aplica para boletas)
+    if (infants && infants.length > 0) {
+      basePayload.infants = infants;
     }
 
     return basePayload;

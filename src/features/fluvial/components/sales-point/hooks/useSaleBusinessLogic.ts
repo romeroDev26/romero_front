@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { toast } from "react-toastify";
-import { PassengerData, Representative } from "../core/types";
+import { PassengerData, Representative, Infant } from "../core/types";
 import { saleValidationService } from "../services/saleValidationService";
 import { invoiceCreationService } from "../services/invoiceCreationService";
 import { SeatMapItem } from "../../../../../types";
@@ -203,8 +203,9 @@ export const useSaleBusinessLogic = ({
         invoiceConfig.payment_amount_2 = splitPaymentData.paymentAmount2;
       }
       
+      // Recopilar todos los infantes de todos los representantes
       // JSON segun especificacion exacta del backend
-      const companyInvoiceData = {
+      const companyInvoiceData: any = {
         company_data: {
           client_doc_type: passengerData.docType,
           client_doc_number: passengerData.docNumber,
@@ -226,16 +227,23 @@ export const useSaleBusinessLogic = ({
             }
           }
           
-          return {
+          const repPayload: any = {
             passenger_name: rep.name,
             passenger_doc_type: rep.document_type,
             passenger_doc_number: rep.document_number,
             passenger_phone: rep.phone || "",
-            passenger_email: rep.email || "", // ← NUEVO: Campo email
+            passenger_email: rep.email || "",
             seat_number: rep.seat_number || "Elección libre",
-            special_notes: rep.special_notes || "", // ← NUEVO: Campo notas especiales
-            trip_seat_id: tripSeatId, // ← NUEVO: ID del asiento en la embarcación
+            special_notes: rep.special_notes || "",
+            trip_seat_id: tripSeatId,
           };
+
+          // Infantes anidados dentro del representante correspondiente
+          if (rep.infants && rep.infants.length > 0) {
+            repPayload.infants = rep.infants;
+          }
+
+          return repPayload;
         }),
   // ← NUEVO: Incluir la serie si fue proporcionada (requerida para Facturas)
   ...(series ? { series } : {}),
@@ -311,6 +319,7 @@ export const useSaleBusinessLogic = ({
       paymentOperationCode2?: string;
       paymentAmount2?: number;
     },
+    infants?: Infant[],
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -386,7 +395,8 @@ export const useSaleBusinessLogic = ({
         selectedPaymentMethod,
         paymentOperationCode,
         currencyCode,
-        splitPaymentData // Datos de pago dividido
+        splitPaymentData, // Datos de pago dividido
+        infants // Infantes acompañantes
       );
 
       const createdInvoice = await createInvoice({

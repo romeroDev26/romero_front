@@ -715,6 +715,91 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           tableWidth: "auto",
           theme: "grid",
         });
+
+        // SECCION DE INFANTES — solo si hay al menos un pasajero con infantes
+        const relationshipLabels: Record<string, string> = {
+          padre: "Padre", madre: "Madre", abuelo: "Abuelo", abuela: "Abuela",
+          tio: "Tío", tia: "Tía", hermano: "Hermano", hermana: "Hermana",
+          tutor_legal: "Tutor Legal", otro: "Otro",
+        };
+
+        const infantRows: any[] = [];
+        ((manifestData as any).data as any[]).forEach((passenger: any) => {
+          if (Array.isArray(passenger.infants) && passenger.infants.length > 0) {
+            passenger.infants.forEach((infant: any) => {
+              // Formatear fecha de nacimiento YYYY-MM-DD → DD/MM/YYYY
+              let fNac = "N/A";
+              if (infant.birth_date) {
+                const parts = String(infant.birth_date).split("-");
+                if (parts.length === 3) fNac = `${parts[2]}/${parts[1]}/${parts[0]}`;
+              }
+              const genero = infant.gender === "M" ? "Masculino" : infant.gender === "F" ? "Femenino" : "N/A";
+              const parentesco = relationshipLabels[infant.relationship] || infant.relationship || "N/A";
+              const dni = infant.document_number ? String(infant.document_number) : "N/A";
+              const responsable = passenger.seat_number
+                ? `${passenger.full_name || "N/A"} (Asiento ${passenger.seat_number})`
+                : passenger.full_name || "N/A";
+              infantRows.push([
+                infantRows.length + 1,
+                infant.full_name || "N/A",
+                fNac,
+                genero,
+                parentesco,
+                dni,
+                responsable,
+              ]);
+            });
+          }
+        });
+
+        if (infantRows.length > 0) {
+          const infantsStartY = ((pdf as any).lastAutoTable?.finalY || currentY) + 10;
+          const pageHeight = pdf.internal.pageSize.height;
+          const bottomMargin = 25;
+          // Si no hay espacio suficiente para el encabezado + 1 fila, nueva página
+          const minSpaceNeeded = 30;
+          const startInfantY = infantsStartY + minSpaceNeeded > pageHeight - bottomMargin
+            ? (pdf.addPage(), 20)
+            : infantsStartY;
+
+          pdf.setFont("helvetica", "bold");
+          pdf.setFontSize(10);
+          pdf.text("INFANTES ACOMPAÑANTES", margin, startInfantY);
+
+          // Anchos de columna para la tabla de infantes (A4 horizontal ~285mm usable)
+          const infantColWidths = [10, 58, 24, 20, 22, 25, 80];
+          const infantAvailableWidth = pageWidth - margin * 2;
+          const infantTotalWidth = infantColWidths.reduce((s, w) => s + w, 0);
+          const infantLeftMargin = Math.max(margin, (pageWidth - Math.min(infantTotalWidth, infantAvailableWidth)) / 2);
+
+          autoTable(pdf, {
+            startY: startInfantY + 4,
+            head: [["N°", "NOMBRE INFANTE", "FECHA NAC.", "GÉNERO", "PARENTESCO", "DNI", "RESPONSABLE"]],
+            body: infantRows,
+            styles: { fontSize: 9, cellPadding: 2.5, valign: "middle" },
+            headStyles: {
+              fillColor: [80, 80, 160],
+              textColor: [255, 255, 255],
+              fontStyle: "bold",
+              fontSize: 9,
+              halign: "center",
+              valign: "middle",
+            },
+            columnStyles: {
+              0: { halign: "center", cellWidth: infantColWidths[0] },
+              1: { halign: "left",   cellWidth: infantColWidths[1] },
+              2: { halign: "center", cellWidth: infantColWidths[2] },
+              3: { halign: "center", cellWidth: infantColWidths[3] },
+              4: { halign: "center", cellWidth: infantColWidths[4] },
+              5: { halign: "center", cellWidth: infantColWidths[5] },
+              6: { halign: "left",   cellWidth: infantColWidths[6] },
+            },
+            margin: { left: infantLeftMargin, right: infantLeftMargin },
+            tableWidth: "auto",
+            theme: "grid",
+          });
+        }
+
       } else {
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(9);

@@ -1011,7 +1011,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     selectedDisembarkingStopId,
     passengerData.name,
     passengerData.docType,
-    representatives.length,
+    representatives, // ← Dependencia completa: los infantes viven dentro de cada representante
     branch.name,
     confirmPurchase,
     effectiveBasePrice,

@@ -28,6 +28,13 @@ export interface CompanyInvoiceWithRepresentatives {
     seat_number?: string; // "Elección libre" o número específico
     special_notes?: string; // ← AGREGADO: Campo notas especiales
     trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
+    infants?: Array<{
+      full_name: string;
+      birth_date: string; // YYYY-MM-DD
+      gender: 'M' | 'F';
+      relationship: string;
+      document_number?: string;
+    }>;
   }>;
   
   // ← NUEVO: Configuración opcional de factura

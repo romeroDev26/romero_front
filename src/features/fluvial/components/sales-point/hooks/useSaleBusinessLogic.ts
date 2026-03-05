@@ -203,8 +203,12 @@ export const useSaleBusinessLogic = ({
         invoiceConfig.payment_amount_2 = splitPaymentData.paymentAmount2;
       }
       
+      // Recopilar todos los infantes de todos los representantes
+      const allRepresentativeInfants: Infant[] =
+        representatives.flatMap(rep => rep.infants ?? []);
+
       // JSON segun especificacion exacta del backend
-      const companyInvoiceData = {
+      const companyInvoiceData: any = {
         company_data: {
           client_doc_type: passengerData.docType,
           client_doc_number: passengerData.docNumber,
@@ -243,6 +247,8 @@ export const useSaleBusinessLogic = ({
         ...(itemsConfig.length > 0 && { items_config: itemsConfig }),
         // ← NUEVO: Incluir invoice_config
         invoice_config: invoiceConfig,
+        // Infantes de todos los representantes (si los hay)
+        ...(allRepresentativeInfants.length > 0 && { infants: allRepresentativeInfants }),
         special_notes: `Punto de Venta: ${branchName} - Factura Empresarial${extraCost && extraCost > 0 ? ` - Costo adicional: S/. ${extraCost.toFixed(2)}` : ''}`
       };
 

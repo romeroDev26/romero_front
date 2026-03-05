@@ -204,9 +204,6 @@ export const useSaleBusinessLogic = ({
       }
       
       // Recopilar todos los infantes de todos los representantes
-      const allRepresentativeInfants: Infant[] =
-        representatives.flatMap(rep => rep.infants ?? []);
-
       // JSON segun especificacion exacta del backend
       const companyInvoiceData: any = {
         company_data: {
@@ -230,16 +227,23 @@ export const useSaleBusinessLogic = ({
             }
           }
           
-          return {
+          const repPayload: any = {
             passenger_name: rep.name,
             passenger_doc_type: rep.document_type,
             passenger_doc_number: rep.document_number,
             passenger_phone: rep.phone || "",
-            passenger_email: rep.email || "", // ← NUEVO: Campo email
+            passenger_email: rep.email || "",
             seat_number: rep.seat_number || "Elección libre",
-            special_notes: rep.special_notes || "", // ← NUEVO: Campo notas especiales
-            trip_seat_id: tripSeatId, // ← NUEVO: ID del asiento en la embarcación
+            special_notes: rep.special_notes || "",
+            trip_seat_id: tripSeatId,
           };
+
+          // Infantes anidados dentro del representante correspondiente
+          if (rep.infants && rep.infants.length > 0) {
+            repPayload.infants = rep.infants;
+          }
+
+          return repPayload;
         }),
   // ← NUEVO: Incluir la serie si fue proporcionada (requerida para Facturas)
   ...(series ? { series } : {}),
@@ -247,8 +251,6 @@ export const useSaleBusinessLogic = ({
         ...(itemsConfig.length > 0 && { items_config: itemsConfig }),
         // ← NUEVO: Incluir invoice_config
         invoice_config: invoiceConfig,
-        // Infantes de todos los representantes (si los hay)
-        ...(allRepresentativeInfants.length > 0 && { infants: allRepresentativeInfants }),
         special_notes: `Punto de Venta: ${branchName} - Factura Empresarial${extraCost && extraCost > 0 ? ` - Costo adicional: S/. ${extraCost.toFixed(2)}` : ''}`
       };
 

@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { toast } from "react-toastify";
-import { PassengerData, Representative } from "../core/types";
+import { PassengerData, Representative, Infant } from "../core/types";
 import { saleValidationService } from "../services/saleValidationService";
 import { invoiceCreationService } from "../services/invoiceCreationService";
 import { SeatMapItem } from "../../../../../types";
@@ -311,6 +311,7 @@ export const useSaleBusinessLogic = ({
       paymentOperationCode2?: string;
       paymentAmount2?: number;
     },
+    infants?: Infant[],
   ) => {
     // Validación completa
     const validation = saleValidationService.validateCompleteSale(
@@ -386,7 +387,8 @@ export const useSaleBusinessLogic = ({
         selectedPaymentMethod,
         paymentOperationCode,
         currencyCode,
-        splitPaymentData // Datos de pago dividido
+        splitPaymentData, // Datos de pago dividido
+        infants // Infantes acompañantes
       );
 
       const createdInvoice = await createInvoice({

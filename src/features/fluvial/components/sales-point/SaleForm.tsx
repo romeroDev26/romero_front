@@ -995,7 +995,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
           paymentMethodCode2: splitPaymentData.paymentMethod2,
           paymentOperationCode2: splitPaymentData.operationCode2,
           paymentAmount2: splitPaymentData.amount2,
-        } : undefined
+        } : undefined,
+        boletaInfants.length > 0 ? boletaInfants : undefined
       );
     } catch (error) {
       // Desactivar estado de procesamiento en caso de error
@@ -1030,6 +1031,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
     reservationToConfirm?.id,
     splitPaymentData,
     selectedCurrency,
+    boletaInfants,
   ]);
 
   // NUEVO: Verificar si el destino está seleccionado para mostrar la barra lateral

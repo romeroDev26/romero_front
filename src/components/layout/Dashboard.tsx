@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
 import { 
@@ -30,47 +30,63 @@ const quickAccessItems = [
     name: 'Punto de Venta',
     path: '/fluvial/operations/sales-point',
     icon: TicketIcon,
-    bgColor: 'bg-blue-500',
-    hoverColor: 'hover:bg-blue-600',
-    textColor: 'text-white'
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+    activeBorder: 'border-blue-500',
+    activeText: 'text-blue-700',
+    activeBg: 'bg-blue-50',
+    dot: 'bg-blue-500',
   },
   {
     name: 'Encomiendas',
     path: '/fluvial/operations/cargo-sale',
     icon: CubeIcon,
-    bgColor: 'bg-green-500',
-    hoverColor: 'hover:bg-green-600',
-    textColor: 'text-white'
+    iconBg: 'bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    activeBorder: 'border-emerald-500',
+    activeText: 'text-emerald-700',
+    activeBg: 'bg-emerald-50',
+    dot: 'bg-emerald-500',
   },
   {
     name: 'Venta Rápida',
     path: '/fluvial/operations/quick-sales',
     icon: BriefcaseIcon,
-    bgColor: 'bg-purple-500',
-    hoverColor: 'hover:bg-purple-600',
-    textColor: 'text-white'
+    iconBg: 'bg-violet-100',
+    iconColor: 'text-violet-600',
+    activeBorder: 'border-violet-500',
+    activeText: 'text-violet-700',
+    activeBg: 'bg-violet-50',
+    dot: 'bg-violet-500',
   },
   {
     name: 'Reservas',
     path: '/fluvial/operations/reservations',
     icon: ClipboardDocumentListIcon,
-    bgColor: 'bg-purple-500',
-    hoverColor: 'hover:bg-purple-600',
-    textColor: 'text-white'
+    iconBg: 'bg-indigo-100',
+    iconColor: 'text-indigo-600',
+    activeBorder: 'border-indigo-500',
+    activeText: 'text-indigo-700',
+    activeBg: 'bg-indigo-50',
+    dot: 'bg-indigo-500',
   },
   {
     name: 'Manifiestos',
     path: '/fluvial/operations/manifests',
     icon: DocumentTextIcon,
-    bgColor: 'bg-orange-500',
-    hoverColor: 'hover:bg-orange-600',
-    textColor: 'text-white'
-  }
+    iconBg: 'bg-orange-100',
+    iconColor: 'text-orange-600',
+    activeBorder: 'border-orange-500',
+    activeText: 'text-orange-700',
+    activeBg: 'bg-orange-50',
+    dot: 'bg-orange-500',
+  },
 ];
 
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Estado para el sidebar móvil
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -354,96 +370,114 @@ export const Dashboard: React.FC = () => {
       {/* Contenido principal */}
       <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${!sidebarHidden && 'lg:ml-5'}`}>
         {/* Barra superior */}
-        <header className="bg-white shadow-sm rounded-xl mb-4 lg:mb-5">
-          <div className="flex items-center justify-between h-16 px-4 lg:px-6">
-            <div className="flex items-center space-x-3 lg:space-x-4">
+        <header className="bg-white rounded-xl mb-4 lg:mb-5 border border-slate-200 shadow-sm overflow-hidden">
+          {/* Fila superior: saludo + banner notificaciones + seller */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between px-4 lg:px-6 py-4 gap-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={toggleSidebar}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0"
                 title={sidebarHidden ? "Mostrar menú" : "Ocultar menú"}
               >
-                <Bars3Icon className="w-6 h-6 text-gray-700" />
+                <Bars3Icon className="w-6 h-6 text-slate-600" />
               </button>
-              
-              {/* Info de usuario en la barra superior */}
+
               <div>
                 {isLoading ? (
-                  <div className="animate-pulse h-4 bg-gray-200 rounded w-32 lg:w-48"></div>
-                ) : error ? (
-                  <span className="text-sm text-red-500">Error</span>
+                  <div className="space-y-1.5">
+                    <div className="animate-pulse h-4 bg-slate-200 rounded w-36"></div>
+                    <div className="animate-pulse h-3 bg-slate-100 rounded w-48"></div>
+                  </div>
                 ) : currentUser ? (
-                  <span className="text-sm text-gray-600">
-                    <span className="hidden sm:inline">Bienvenido, </span><strong>{currentUser.first_name || currentUser.full_name}</strong>
-                  </span>
+                  <>
+                    <h2 className="text-base font-bold text-slate-900 leading-tight">
+                      ¡Hola, {currentUser.first_name || currentUser.full_name}!
+                    </h2>
+                    <p className="text-xs text-slate-500">Bienvenido al panel de control de transporte.</p>
+                  </>
                 ) : null}
               </div>
+            </div>
 
-              {/* Separador vertical */}
-              {(isSupervisor || isSeller) && (
-                <div className="h-8 w-px bg-gray-300"></div>
-              )}
-
-              {/* Campanita de notificaciones (solo para supervisores) */}
-              {isSupervisor && (
-                <button
-                  onClick={() => navigate('/supervisor/cancellation-requests')}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  title="Ver solicitudes de anulación pendientes"
-                >
-                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">Solicitudes de Anulación</span>
-                  <div className="relative">
-                    <BellAlertIcon className="w-6 h-6 text-red-500" />
+            {/* Banner de solicitudes de anulación (supervisores) */}
+            {isSupervisor && (
+              <div className="flex-1 max-w-md">
+                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-9 h-9 bg-primary text-white rounded-lg flex items-center justify-center shadow-md shadow-primary/20">
+                      <BellAlertIcon className="w-5 h-5" />
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wider">Solicitudes de Anulación</p>
+                      <p className="text-sm text-slate-700 font-medium truncate">
+                        {pendingCount > 0
+                          ? `${pendingCount} revisión${pendingCount > 1 ? 'es' : ''} pendiente${pendingCount > 1 ? 's' : ''} hoy`
+                          : 'Sin pendientes por el momento'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate('/supervisor/cancellation-requests')}
+                    className="flex-shrink-0 bg-primary hover:bg-primary/90 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-1.5"
+                  >
+                    Ver
                     {pendingCount > 0 && (
-                      <>
-                        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
-                          {pendingCount > 99 ? '99+' : pendingCount}
-                        </span>
-                        <span className="absolute -top-1 -right-1 inline-flex w-5 h-5 rounded-full bg-red-400 opacity-75 animate-ping"></span>
-                      </>
+                      <span className="bg-white text-primary text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
+                        {pendingCount > 99 ? '99+' : pendingCount}
+                      </span>
                     )}
-                  </div>
-                </button>
-              )}
+                  </button>
+                </div>
+              </div>
+            )}
 
-              {/* Ícono de mensajes (solo para vendedores) */}
-              {isSeller && (
-                <button
-                  onClick={handleOpenSellerModal}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-                  title="Ver respuestas a tus solicitudes de anulación"
-                >
-                  <span className="text-sm font-medium text-gray-700 hidden sm:inline">Mis Respuestas</span>
-                  <div className="relative">
-                    <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-500" />
-                    {sellerResponsesCount > 0 && (
-                      <>
-                        <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
-                          {sellerResponsesCount > 99 ? '99+' : sellerResponsesCount}
-                        </span>
-                        <span className="absolute -top-1 -right-1 inline-flex w-5 h-5 rounded-full bg-blue-400 opacity-75 animate-ping"></span>
-                      </>
-                    )}
-                  </div>
-                </button>
-              )}
-            </div>
-
-            {/* Accesos Rápidos */}
-            <div className="hidden md:flex items-center space-x-3">
-              <span className="text-sm text-gray-500 font-medium mr-2">Accesos Rápidos:</span>
-              {quickAccessItems.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={`flex items-center px-3 py-2 rounded-lg text-xs font-medium transition-colors ${item.bgColor} ${item.hoverColor} ${item.textColor} shadow-sm hover:shadow-md`}
-                  title={`Ir a ${item.name}`}
-                >
-                  <item.icon className="w-4 h-4 mr-1.5" />
-                  <span>{item.name}</span>
-                </button>
-              ))}
-            </div>
+            {/* Respuestas del vendedor */}
+            {isSeller && (
+              <button
+                onClick={handleOpenSellerModal}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+                title="Ver respuestas a tus solicitudes de anulación"
+              >
+                <span className="text-sm font-medium text-slate-700 hidden sm:inline">Mis Respuestas</span>
+                <div className="relative">
+                  <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-500" />
+                  {sellerResponsesCount > 0 && (
+                    <>
+                      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+                        {sellerResponsesCount > 99 ? '99+' : sellerResponsesCount}
+                      </span>
+                      <span className="absolute -top-1 -right-1 inline-flex w-5 h-5 rounded-full bg-blue-400 opacity-75 animate-ping"></span>
+                    </>
+                  )}
+                </div>
+              </button>
+            )}
           </div>
+
+          {/* Navegación de accesos rápidos (tabs estilo log.md) */}
+          <nav className="border-t border-slate-200 bg-slate-50/50 px-4 lg:px-6">
+            <div className="flex items-center overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              {quickAccessItems.map((item) => {
+                const isActive = location.pathname.startsWith(item.path);
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => navigate(item.path)}
+                    className={`flex items-center gap-2 px-4 py-3 border-b-2 text-sm font-medium transition-all whitespace-nowrap ${
+                      isActive
+                        ? `${item.activeBorder} ${item.activeText} ${item.activeBg}`
+                        : 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-100/70'
+                    }`}
+                  >
+                    <span className={`flex items-center justify-center w-6 h-6 rounded-md flex-shrink-0 ${item.iconBg}`}>
+                      <item.icon className={`w-3.5 h-3.5 ${item.iconColor}`} />
+                    </span>
+                    {item.name}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
         </header>
 
         {/* Área de contenido */}

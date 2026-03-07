@@ -10,7 +10,8 @@ import {
   DocumentTextIcon,
   BellAlertIcon,
   ChatBubbleLeftRightIcon,
-  BriefcaseIcon
+  BriefcaseIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
 import { toast } from 'react-toastify';
@@ -19,6 +20,8 @@ import Sidebar from './Sidebar';
 import { useWebSocketNotifications } from '../../hooks/useWebSocketNotifications';
 import SellerNotificationsModal from '../common/SellerNotificationsModal';
 import { CancellationRequestListItem } from '../../features/accounting/types/cancellationRequests';
+import { useSystemUpdates } from '../../features/updates/hooks/useSystemUpdates';
+import SystemUpdatesModal from '../../features/updates/components/SystemUpdatesModal';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -148,6 +151,24 @@ export const Dashboard: React.FC = () => {
   // Estado para el contador de solicitudes pendientes (solo supervisores)
   const [pendingCount, setPendingCount] = useState(0);
   const lastPendingSyncRef = useRef(0);
+
+  // Novedades del sistema
+  const { updates, hasNew, markAsSeen } = useSystemUpdates();
+  const [showUpdatesModal, setShowUpdatesModal] = useState(false);
+
+  // Auto-abrir modal de novedades si hay actualizaciones no vistas
+  const autoOpenedRef = React.useRef(false);
+  useEffect(() => {
+    if (!autoOpenedRef.current && hasNew && updates.length > 0) {
+      autoOpenedRef.current = true;
+      setShowUpdatesModal(true);
+    }
+  }, [hasNew, updates]);
+
+  const handleCloseUpdates = () => {
+    setShowUpdatesModal(false);
+    markAsSeen();
+  };
 
   // Estado para vendedores: contador de respuestas y modal
   const [sellerResponsesCount, setSellerResponsesCount] = useState(0);
@@ -431,6 +452,24 @@ export const Dashboard: React.FC = () => {
               </div>
             )}
 
+            {/* Botón de Novedades (visible para todos) */}
+            <button
+              onClick={() => { setShowUpdatesModal(true); }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors relative"
+              title="Ver novedades del sistema"
+            >
+              <span className="text-sm font-medium text-slate-700 hidden sm:inline">Novedades</span>
+              <div className="relative">
+                <SparklesIcon className="w-5 h-5 text-amber-500" />
+                {hasNew && (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white animate-pulse" />
+                )}
+              </div>
+            </button>
+
+            {/* Separador */}
+            <div className="w-px h-6 bg-slate-200 mx-1" />
+
             {/* Respuestas del vendedor */}
             {isSeller && (
               <button
@@ -490,6 +529,13 @@ export const Dashboard: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* Modal de novedades del sistema */}
+      <SystemUpdatesModal
+        isOpen={showUpdatesModal}
+        onClose={handleCloseUpdates}
+        updates={updates}
+      />
 
       {/* Modal de respuestas para vendedores */}
       {isSeller && (

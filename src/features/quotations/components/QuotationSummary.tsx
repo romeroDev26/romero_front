@@ -1,74 +1,100 @@
 import React from 'react';
+import { ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
+import { Spinner } from '../../../components/common/Spinner';
 import { SimpleItem } from './QuotationItemsManager';
 
 interface QuotationSummaryProps {
   items: SimpleItem[];
-  observations: string;
-  onObservationsChange: (observations: string) => void;
+  includeIGV: boolean;
+  isLoading: boolean;
+  isDisabled: boolean;
+  onSubmit: () => void;
+  onCancel: () => void;
 }
 
 export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
   items,
-  observations,
-  onObservationsChange
+  includeIGV,
+  isLoading,
+  isDisabled,
+  onSubmit,
+  onCancel,
 }) => {
-  // Calcular total general
-  const calculateTotal = (): number => {
-    return items.reduce((sum, item) => sum + item.importe_total, 0);
-  };
+  const subtotal = items.reduce((sum, item) => sum + item.cantidad * item.precio_unitario, 0);
+  const totalDiscount = items.reduce((sum, item) => sum + item.descuento, 0);
+  const net = subtotal - totalDiscount;
+  const igv = includeIGV ? net * 0.18 : 0;
+  const total = net + igv;
 
-  const calculateSubtotal = (): number => {
-    return items.reduce((sum, item) => sum + (item.cantidad * item.precio_unitario), 0);
-  };
-
-  const calculateTotalDiscount = (): number => {
-    return items.reduce((sum, item) => sum + item.descuento, 0);
-  };
+  const fmt = (n: number) =>
+    `S/ ${n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <>
-      {/* Observaciones */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Observaciones</h3>
-        <textarea
-          value={observations}
-          onChange={(e) => onObservationsChange(e.target.value)}
-          rows={3}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Condiciones especiales, términos, horarios, etc..."
-        />
-      </div>
+    <div className="space-y-6">
+      {/* Tarjeta principal resumen */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-6">Resumen</h3>
 
-      {/* Total */}
-      {items.length > 0 && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Resumen</h3>
-              <p className="text-sm text-gray-600">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+        {/* Números */}
+        <div className="space-y-4 text-sm">
+          <div className="flex justify-between text-slate-500">
+            <span>Subtotal</span>
+            <span className="text-slate-900 font-medium">{fmt(subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-slate-500">
+            <span>Descuentos</span>
+            <span className="text-slate-900 font-medium">-{fmt(totalDiscount)}</span>
+          </div>
+          {includeIGV && (
+            <div className="flex justify-between text-slate-500">
+              <span>Impuestos (18%)</span>
+              <span className="text-slate-900 font-medium">{fmt(igv)}</span>
             </div>
-            <div className="text-right">
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm gap-8">
-                  <span>Subtotal:</span>
-                  <span>S/ {calculateSubtotal().toFixed(2)}</span>
-                </div>
-                {calculateTotalDiscount() > 0 && (
-                  <div className="flex justify-between text-sm text-red-600 gap-8">
-                    <span>Descuentos:</span>
-                    <span>- S/ {calculateTotalDiscount().toFixed(2)}</span>
-                  </div>
-                )}
-                <hr className="border-gray-300" />
-                <div className="flex justify-between text-xl font-bold text-gray-900 gap-8">
-                  <span>Total:</span>
-                  <span>S/ {calculateTotal().toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
+          )}
+          <div className="pt-4 border-t border-slate-100 flex justify-between items-end">
+            <span className="font-bold text-slate-900">Total Neto</span>
+            <span className="text-2xl font-black text-primary">{fmt(total)}</span>
           </div>
         </div>
-      )}
-    </>
+
+        {/* Botones */}
+        <div className="mt-8 space-y-3">
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={isDisabled || isLoading}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {isLoading ? (
+              <Spinner size="sm" color="text-white" />
+            ) : (
+              <PaperAirplaneIcon className="h-4 w-4" />
+            )}
+            {isLoading ? 'Creando...' : 'Crear Cotización'}
+          </button>
+
+          <button
+            type="button"
+            onClick={onCancel}
+            className="w-full py-3 px-4 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
+          >
+            Cancelar Operación
+          </button>
+        </div>
+
+        {/* Seguridad */}
+        <div className="mt-8 flex items-start gap-3 bg-primary/5 border border-primary/10 rounded-lg p-4">
+          <ShieldCheckIcon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+          <div>
+            <p className="text-xs font-bold text-primary uppercase tracking-wide">Seguridad</p>
+            <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
+              Esta cotización cumple con los estándares fiscales vigentes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
   );
 };

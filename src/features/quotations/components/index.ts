@@ -8,3 +8,5 @@ export { QuotationPreviewModal } from './QuotationPreviewModal';
 export { QuotationWhatsAppModal } from './QuotationWhatsAppModal';
 export type { LocalClient } from './ClientSelector';
 export type { SimpleItem } from './QuotationItemsManager';
+export { QuotationBranchStep } from './QuotationBranchStep';
+export { QuotationTripStep } from './QuotationTripStep';

@@ -60,6 +60,19 @@ export const WhatsAppConfigPage: React.FC = () => {
   const restartMutation = useRestartInstance();
   const checkStatusMutation = useCheckConnectionStatus();
 
+  const handleOpenCreateFromHeader = useCallback(() => {
+    const branchWithoutInstance = branchOffices.find((branch) => !branch.whatsapp_instance_name);
+
+    if (!branchWithoutInstance) {
+      toast.info('Todas las sucursales ya tienen instancia de WhatsApp');
+      return;
+    }
+
+    setSelectedBranch(branchWithoutInstance);
+    setNewInstanceName(whatsappConfigService.generateInstanceName(branchWithoutInstance.name));
+    setShowCreateModal(true);
+  }, [branchOffices]);
+
   // Verificar estados de conexión para sucursales con instancia
   const checkConnectionStates = useCallback(async () => {
     const branchesWithInstance = branchOffices.filter(b => b.whatsapp_instance_name);
@@ -130,7 +143,6 @@ export const WhatsAppConfigPage: React.FC = () => {
     },
     onDisconnected: () => {
       // Solo informar si estamos esperando
-      console.log('Instancia desconectada');
     },
     onQRCodeUpdated: (newQR: string) => {
       // Actualizar el QR cuando el webhook notifique un nuevo código
@@ -138,7 +150,7 @@ export const WhatsAppConfigPage: React.FC = () => {
       toast.info('El código QR se ha actualizado');
     },
     onError: (error: Error) => {
-      console.error('Error en polling de eventos:', error);
+      void error;
     }
   }), [refetchBranches, checkConnectionStates]);
 
@@ -199,7 +211,7 @@ export const WhatsAppConfigPage: React.FC = () => {
         // El polling se inicia automáticamente al abrir el modal (via useEffect)
       }
     } catch (error) {
-      console.error('Error creando instancia:', error);
+      void error;
     }
   };
 
@@ -210,7 +222,7 @@ export const WhatsAppConfigPage: React.FC = () => {
       setShowQRModal(true);
       // El polling se inicia automáticamente al abrir el modal (via useEffect)
     } catch (error) {
-      console.error('Error obteniendo QR:', error);
+      void error;
     }
   };
 
@@ -219,7 +231,7 @@ export const WhatsAppConfigPage: React.FC = () => {
       await logoutMutation.mutateAsync(instanceName);
       checkConnectionStates();
     } catch (error) {
-      console.error('Error cerrando sesión:', error);
+      void error;
     }
   };
 
@@ -228,7 +240,7 @@ export const WhatsAppConfigPage: React.FC = () => {
       await restartMutation.mutateAsync(instanceName);
       checkConnectionStates();
     } catch (error) {
-      console.error('Error reiniciando instancia:', error);
+      void error;
     }
   };
 
@@ -257,7 +269,7 @@ export const WhatsAppConfigPage: React.FC = () => {
       
       toast.info('Escanea el nuevo código QR con el teléfono que deseas vincular');
     } catch (error) {
-      console.error('Error cambiando teléfono:', error);
+      void error;
       toast.error('Error al cambiar de teléfono. Intenta nuevamente.');
     } finally {
       setIsChangingPhone(false);
@@ -301,6 +313,52 @@ export const WhatsAppConfigPage: React.FC = () => {
   const branchesWithInstance = branchOffices.filter(b => b.whatsapp_instance_name);
   const connectedCount = Object.values(connectionStates).filter(s => s === 'open').length;
 
+  const getBranchStatusMeta = (branch: BranchOffice, isChecking: boolean) => {
+    if (!branch.whatsapp_instance_name) {
+      return {
+        label: 'Sin instancia',
+        badgeClass: 'bg-slate-100 text-slate-700',
+        dotClass: 'bg-slate-400',
+      };
+    }
+
+    if (isChecking) {
+      return {
+        label: 'Verificando',
+        badgeClass: 'bg-blue-100 text-blue-700',
+        dotClass: 'bg-blue-500',
+      };
+    }
+
+    const state = connectionStates[branch.whatsapp_instance_name];
+    switch (state) {
+      case 'open':
+        return {
+          label: 'Conectado',
+          badgeClass: 'bg-green-100 text-green-800',
+          dotClass: 'bg-green-500',
+        };
+      case 'connecting':
+        return {
+          label: 'Conectando',
+          badgeClass: 'bg-yellow-100 text-yellow-800',
+          dotClass: 'bg-yellow-500',
+        };
+      case 'close':
+        return {
+          label: 'Desconectado',
+          badgeClass: 'bg-slate-100 text-slate-700',
+          dotClass: 'bg-slate-500',
+        };
+      default:
+        return {
+          label: 'Sin verificar',
+          badgeClass: 'bg-red-100 text-red-700',
+          dotClass: 'bg-red-500',
+        };
+    }
+  };
+
   if (loadingBranches) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -310,221 +368,208 @@ export const WhatsAppConfigPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-green-100 rounded-xl">
-            <ChatBubbleLeftRightIcon className="w-8 h-8 text-green-600" />
+    <div className="p-6 max-w-7xl mx-auto bg-slate-50 min-h-screen">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div className="flex-1">
+          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
+            Configuración de WhatsApp
+          </h1>
+          <p className="text-slate-500 text-lg max-w-2xl leading-relaxed">
+            Gestiona las conexiones de WhatsApp para todas tus sucursales de forma centralizada. Vincula nuevas instancias y monitorea el estado de conexión en tiempo real.
+          </p>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              refetchBranches();
+              checkConnectionStates();
+            }}
+            disabled={isCheckingAll}
+            className="flex items-center gap-2"
+          >
+            <ArrowPathIcon className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
+            <span>{isCheckingAll ? 'Verificando...' : 'Actualizar'}</span>
+          </Button>
+          <Button onClick={handleOpenCreateFromHeader} className="flex items-center gap-2">
+            <PlusIcon className="w-4 h-4" />
+            <span>Crear Instancia</span>
+          </Button>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-5">
+          <div className="bg-primary/10 text-primary p-3 rounded-lg">
+            <BuildingOffice2Icon className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Configuración de WhatsApp</h1>
-            <p className="text-gray-600 mt-1">Gestiona las instancias de WhatsApp para cada sucursal</p>
+            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Sucursales</p>
+            <p className="text-3xl font-bold text-slate-900">{branchOffices.length}</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-5">
+          <div className="bg-green-100 text-green-600 p-3 rounded-lg">
+            <PhoneIcon className="w-7 h-7" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Con WhatsApp</p>
+            <p className="text-3xl font-bold text-slate-900">{branchesWithInstance.length}</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-5">
+          <div className="bg-blue-100 text-blue-600 p-3 rounded-lg">
+            <CheckCircleIcon className="w-7 h-7" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Conectadas</p>
+            <p className="text-3xl font-bold text-slate-900">{connectedCount}</p>
           </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-blue-100 rounded-lg flex-shrink-0">
-              <BuildingOffice2Icon className="w-6 h-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Total Sucursales</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">{branchOffices.length}</p>
-            </div>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-2xl font-bold text-slate-900">Listado de Sucursales</h2>
+          <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <SignalIcon className="w-4 h-4" />
+            Estado de conexión
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-purple-100 rounded-lg flex-shrink-0">
-              <PhoneIcon className="w-6 h-6 text-purple-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Con WhatsApp</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">{branchesWithInstance.length}</p>
-            </div>
-          </div>
-        </div>
+        {branchOffices.map((branch) => {
+          const instanceName = branch.whatsapp_instance_name;
+          const connectionState = instanceName ? connectionStates[instanceName] : undefined;
+          const isCheckingThis = instanceName ? checkingInstances.has(instanceName) : false;
+          const statusMeta = getBranchStatusMeta(branch, isCheckingThis);
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
-          <div className="flex items-center">
-            <div className="p-3 bg-green-100 rounded-lg flex-shrink-0">
-              <CheckCircleIcon className="w-6 h-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-500">Conectadas</p>
-              <p className="text-xl sm:text-2xl font-bold text-gray-900">{connectedCount}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Branch Offices List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
-            <h2 className="text-lg font-semibold text-gray-900">Sucursales</h2>
-            <Button
-              variant="outline"
-              onClick={() => {
-                refetchBranches();
-                checkConnectionStates();
-              }}
-              disabled={isCheckingAll}
-              className="flex items-center space-x-2 w-full sm:w-auto justify-center"
+          return (
+            <div
+              key={branch.id}
+              className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md"
             >
-              <ArrowPathIcon className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
-              <span>{isCheckingAll ? 'Verificando...' : 'Actualizar'}</span>
-            </Button>
-          </div>
-        </div>
-
-        <div className="divide-y divide-gray-200">
-          {branchOffices.map((branch) => {
-            const instanceName = branch.whatsapp_instance_name;
-            const connectionState = instanceName ? connectionStates[instanceName] : undefined;
-            const isCheckingThis = instanceName ? checkingInstances.has(instanceName) : false;
-            
-            return (
-              <div
-                key={branch.id}
-                className="px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center space-x-4 w-full sm:w-auto">
-                    <div className={`p-3 rounded-lg flex-shrink-0 ${instanceName ? 'bg-green-100' : 'bg-gray-100'}`}>
-                      <BuildingOffice2Icon className={`w-6 h-6 ${instanceName ? 'text-green-600' : 'text-gray-400'}`} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-lg font-medium text-gray-900 truncate pr-2">{branch.name}</h3>
-                      <p className="text-sm text-gray-500 truncate pr-2">
-                        {branch.port_name || branch.address_line || 'Sin dirección'}
-                      </p>
-                      {instanceName && (
-                        <p className="text-xs text-blue-600 font-mono mt-1 truncate">
-                         {instanceName}
-                        </p>
-                      )}
-                    </div>
+              <div className="p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="h-14 w-14 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 shrink-0">
+                    <BuildingOffice2Icon className="w-8 h-8" />
                   </div>
-
-                  <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 ml-4">
-                    {instanceName ? (
-                      <>
-                        {/* Badge de estado con indicador de verificación */}
-                        {isCheckingThis ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <ArrowPathIcon className="w-3 h-3 mr-1 animate-spin" />
-                            Verificando...
-                          </span>
-                        ) : (
-                          <div className="flex-shrink-0">
-                            {getStatusBadge(connectionState)}
-                          </div>
-                        )}
-                        
-                        <div className="flex flex-wrap justify-end gap-2">
-                          {/* Botón verificar estado */}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => checkSingleInstanceStatus(instanceName)}
-                            disabled={isCheckingThis}
-                            title="Verificar estado de conexión"
-                            className="bg-white"
-                          >
-                            <SignalIcon className={`w-4 h-4 ${isCheckingThis ? 'animate-pulse' : ''}`} />
-                          </Button>
-                          
-                          {connectionState !== 'open' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedBranch({ ...branch, connectionState });
-                                handleGetQR(instanceName);
-                              }}
-                              disabled={getQRCodeMutation.isPending}
-                              className="whitespace-nowrap bg-white"
-                            >
-                              <QrCodeIcon className="w-4 h-4 mr-1" />
-                              <span className="hidden sm:inline">Conectar</span>
-                            </Button>
-                          )}
-                          
-                          {connectionState === 'open' && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setSelectedBranch({ ...branch, connectionState });
-                                  setShowChangePhoneModal(true);
-                                }}
-                                title="Cambiar de teléfono"
-                                className="whitespace-nowrap bg-white"
-                              >
-                                <DevicePhoneMobileIcon className="w-4 h-4 mr-1" />
-                                <span className="hidden sm:inline">Cambiar</span>
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleLogout(instanceName)}
-                                disabled={logoutMutation.isPending}
-                                className="whitespace-nowrap bg-white text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <XCircleIcon className="w-4 h-4 mr-1" />
-                                <span className="hidden sm:inline">Desconectar</span>
-                              </Button>
-                            </>
-                          )}
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRestart(instanceName)}
-                            disabled={restartMutation.isPending}
-                            title="Reiniciar instancia"
-                            className="bg-white"
-                          >
-                            <ArrowPathIcon className={`w-4 h-4 ${restartMutation.isPending ? 'animate-spin' : ''}`} />
-                          </Button>
-                        </div>
-                      </>
-                    ) : (
-                      <Button
-                        onClick={() => {
-                          setSelectedBranch(branch);
-                          setNewInstanceName(
-                            whatsappConfigService.generateInstanceName(branch.name)
-                          );
-                          setShowCreateModal(true);
-                        }}
-                        className="whitespace-nowrap"
-                        size="sm"
-                      >
-                        <PlusIcon className="w-4 h-4 mr-2" />
-                        Crear Instancia
-                      </Button>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="text-lg font-bold text-slate-900 truncate">{branch.name}</h3>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMeta.badgeClass}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dotClass} mr-1.5`} />
+                        {statusMeta.label}
+                      </span>
+                    </div>
+                    <p className="text-slate-500 text-sm flex items-center gap-1 mt-1 truncate">
+                      <BuildingOffice2Icon className="w-4 h-4" />
+                      {branch.port_name || branch.address_line || 'Sin dirección'}
+                    </p>
+                    {instanceName && (
+                      <p className="text-xs text-blue-600 font-mono mt-1 truncate">{instanceName}</p>
                     )}
                   </div>
                 </div>
-              </div>
-            );
-          })}
 
-          {branchOffices.length === 0 && (
-            <div className="px-6 py-12 text-center">
-              <BuildingOffice2Icon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No hay sucursales configuradas</p>
+                <div className="flex items-center gap-3 sm:gap-6 border-t lg:border-t-0 pt-4 lg:pt-0 w-full lg:w-auto justify-end">
+                  {instanceName ? (
+                    <>
+                      <button
+                        onClick={() => checkSingleInstanceStatus(instanceName)}
+                        disabled={isCheckingThis}
+                        className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors group disabled:opacity-60"
+                        title="Verificar"
+                      >
+                        <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10">
+                          <SignalIcon className={`w-5 h-5 ${isCheckingThis ? 'animate-pulse' : ''}`} />
+                        </div>
+                        <span className="text-xs font-semibold">Verificar</span>
+                      </button>
+
+                      {connectionState !== 'open' && (
+                        <button
+                          onClick={() => {
+                            setSelectedBranch({ ...branch, connectionState });
+                            handleGetQR(instanceName);
+                          }}
+                          disabled={getQRCodeMutation.isPending}
+                          className="flex flex-col items-center gap-1 text-primary hover:text-primary/80 transition-colors group disabled:opacity-60"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20">
+                            <QrCodeIcon className="w-5 h-5" />
+                          </div>
+                          <span className="text-xs font-semibold">Conectar</span>
+                        </button>
+                      )}
+
+                      {connectionState === 'open' && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setSelectedBranch({ ...branch, connectionState });
+                              setShowChangePhoneModal(true);
+                            }}
+                            className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors group"
+                          >
+                            <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10">
+                              <DevicePhoneMobileIcon className="w-5 h-5" />
+                            </div>
+                            <span className="text-xs font-semibold">Cambiar</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleLogout(instanceName)}
+                            disabled={logoutMutation.isPending}
+                            className="flex flex-col items-center gap-1 text-slate-600 hover:text-orange-500 transition-colors group disabled:opacity-60"
+                          >
+                            <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-orange-100">
+                              <XCircleIcon className="w-5 h-5" />
+                            </div>
+                            <span className="text-xs font-semibold">Desconectar</span>
+                          </button>
+                        </>
+                      )}
+
+                      <button
+                        onClick={() => handleRestart(instanceName)}
+                        disabled={restartMutation.isPending}
+                        className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors group disabled:opacity-60"
+                        title="Reiniciar"
+                      >
+                        <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10">
+                          <ArrowPathIcon className={`w-5 h-5 ${restartMutation.isPending ? 'animate-spin' : ''}`} />
+                        </div>
+                        <span className="text-xs font-semibold">Reiniciar</span>
+                      </button>
+                    </>
+                  ) : (
+                    <Button
+                      onClick={() => {
+                        setSelectedBranch(branch);
+                        setNewInstanceName(whatsappConfigService.generateInstanceName(branch.name));
+                        setShowCreateModal(true);
+                      }}
+                      className="whitespace-nowrap"
+                      size="sm"
+                    >
+                      <PlusIcon className="w-4 h-4 mr-2" />
+                      Crear Instancia
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
-          )}
-        </div>
+          );
+        })}
+
+        {branchOffices.length === 0 && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 py-14 text-center">
+            <BuildingOffice2Icon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">No hay sucursales configuradas</p>
+          </div>
+        )}
       </div>
 
       {/* Create Instance Modal */}

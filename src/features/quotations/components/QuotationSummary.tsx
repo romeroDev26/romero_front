@@ -11,6 +11,9 @@ interface QuotationSummaryProps {
   isDisabled: boolean;
   onSubmit: () => void;
   onCancel: () => void;
+  className?: string;
+  compact?: boolean;
+  showSecurity?: boolean;
 }
 
 export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
@@ -20,6 +23,9 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
   isDisabled,
   onSubmit,
   onCancel,
+  className,
+  compact = false,
+  showSecurity = true,
 }) => {
   const subtotal = items.reduce((sum, item) => sum + item.cantidad * item.precio_unitario, 0);
   const totalDiscount = items.reduce((sum, item) => sum + item.descuento, 0);
@@ -31,13 +37,13 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
     `S/ ${n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="space-y-6">
+    <div className={className || 'space-y-6'}>
       {/* Tarjeta principal resumen */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-6">Resumen</h3>
+      <div className={`bg-white rounded-xl border border-slate-200 shadow-sm ${compact ? 'p-4' : 'p-6'}`}>
+        <h3 className={`font-bold text-gray-900 ${compact ? 'text-base mb-4' : 'text-lg mb-6'}`}>Resumen</h3>
 
         {/* Números */}
-        <div className="space-y-4 text-sm">
+        <div className={`text-sm ${compact ? 'space-y-2.5' : 'space-y-4'}`}>
           <div className="flex justify-between text-slate-500">
             <span>Subtotal</span>
             <span className="text-slate-900 font-medium">{fmt(subtotal)}</span>
@@ -48,23 +54,23 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
           </div>
           {includeIGV && (
             <div className="flex justify-between text-slate-500">
-              <span>Impuestos (18%)</span>
+              <span>IGV (18%)</span>
               <span className="text-slate-900 font-medium">{fmt(igv)}</span>
             </div>
           )}
-          <div className="pt-4 border-t border-slate-100 flex justify-between items-end">
+          <div className={`border-t border-slate-100 flex justify-between items-end ${compact ? 'pt-2' : 'pt-4'}`}>
             <span className="font-bold text-slate-900">Total Neto</span>
             <span className="text-2xl font-black text-primary">{fmt(total)}</span>
           </div>
         </div>
 
         {/* Botones */}
-        <div className="mt-8 space-y-3">
+        <div className={`${compact ? 'mt-4' : 'mt-8'} space-y-3`}>
           <button
             type="button"
             onClick={onSubmit}
             disabled={isDisabled || isLoading}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            className={`w-full flex items-center justify-center gap-2 px-4 text-sm font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all ${compact ? 'py-3.5' : 'py-3'}`}
           >
             {isLoading ? (
               <Spinner size="sm" color="text-white" />
@@ -77,22 +83,24 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="w-full py-3 px-4 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
+            className={`w-full px-4 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all ${compact ? 'py-3' : 'py-3'}`}
           >
             Cancelar Operación
           </button>
         </div>
 
         {/* Seguridad */}
-        <div className="mt-8 flex items-start gap-3 bg-primary/5 border border-primary/10 rounded-lg p-4">
-          <ShieldCheckIcon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs font-bold text-primary uppercase tracking-wide">Seguridad</p>
-            <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
-              Esta cotización cumple con los estándares fiscales vigentes.
-            </p>
+        {showSecurity && (
+          <div className="mt-8 flex items-start gap-3 bg-primary/5 border border-primary/10 rounded-lg p-4">
+            <ShieldCheckIcon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs font-bold text-primary uppercase tracking-wide">Seguridad</p>
+              <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                Esta cotización cumple con los estándares fiscales vigentes.
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
     </div>

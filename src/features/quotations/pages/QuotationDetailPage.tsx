@@ -1,6 +1,17 @@
 // src/features/quotations/pages/QuotationDetailPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import {
+  ArrowLeftIcon,
+  DocumentTextIcon,
+  CalendarDaysIcon,
+  ClockIcon,
+  UserIcon,
+  EyeIcon,
+  DocumentArrowDownIcon,
+  ClipboardDocumentListIcon,
+  CurrencyDollarIcon,
+} from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
 import { useQuotationPDFGeneration } from '../hooks/useQuotationPDFGeneration';
@@ -19,12 +30,12 @@ const statusLabels: Record<QuotationStatus, string> = {
 };
 
 const statusColors: Record<QuotationStatus, string> = {
-  DRAFT: 'bg-gray-100 text-gray-800',
-  SENT: 'bg-blue-100 text-blue-800',
-  ACCEPTED: 'bg-green-100 text-green-800',
-  REJECTED: 'bg-red-100 text-red-800',
-  EXPIRED: 'bg-yellow-100 text-yellow-800',
-  CONVERTED: 'bg-purple-100 text-purple-800'
+  DRAFT: 'bg-gray-100 text-gray-700 border-gray-200',
+  SENT: 'bg-blue-100 text-blue-700 border-blue-200',
+  ACCEPTED: 'bg-green-100 text-green-700 border-green-200',
+  REJECTED: 'bg-red-100 text-red-700 border-red-200',
+  EXPIRED: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  CONVERTED: 'bg-purple-100 text-purple-700 border-purple-200'
 };
 
 export const QuotationDetailPage: React.FC = () => {
@@ -37,6 +48,11 @@ export const QuotationDetailPage: React.FC = () => {
   const [pdfExists, setPdfExists] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [activeView, setActiveView] = useState<'details' | 'preview'>('preview');
+
+  const getAuthToken = (): string | undefined => {
+    return localStorage.getItem('authToken') || localStorage.getItem('token') || undefined;
+  };
   
   // Hook para manejo de PDFs
   const {
@@ -60,7 +76,6 @@ export const QuotationDetailPage: React.FC = () => {
     const fromCreation = urlParams.get('from') === 'creation';
     
     if (fromCreation && quotation && !pdfExists) {
-      console.log('🔄 Iniciando polling para PDF automático...');
       
       // Hacer polling para verificar si el PDF se generó automáticamente
       const pollForPDF = async () => {
@@ -69,13 +84,11 @@ export const QuotationDetailPage: React.FC = () => {
         
         const poll = async () => {
           try {
-            console.log(`🔍 Polling intento ${attempts + 1}/${maxAttempts}`);
             
             // Refrescar los datos de la cotización primero
             const refreshedQuotation = await quotationsService.getById(quotation.id);
             
             if (refreshedQuotation.pdf_file_path && refreshedQuotation.pdf_file_path.trim() !== '') {
-              console.log('✅ PDF detectado en cotización refrescada:', refreshedQuotation.pdf_file_path);
               setQuotation(refreshedQuotation);
               setPdfExists(true);
               setPdfUrl(refreshedQuotation.pdf_file_path);
@@ -83,11 +96,10 @@ export const QuotationDetailPage: React.FC = () => {
             }
             
             // Fallback: usar el servicio
-            const token = localStorage.getItem('token') || '';
+            const token = getAuthToken();
             const exists = await checkPDFExists(quotation.id, token);
             
             if (exists) {
-              console.log('✅ PDF detectado vía servicio');
               const url = await getPDFUrl(quotation.id, token);
               setPdfExists(true);
               setPdfUrl(url);
@@ -99,7 +111,6 @@ export const QuotationDetailPage: React.FC = () => {
             
             return false;
           } catch (error) {
-            console.error('❌ Error en polling:', error);
             return false;
           }
         };
@@ -116,7 +127,7 @@ export const QuotationDetailPage: React.FC = () => {
         }
         
         if (attempts >= maxAttempts) {
-          console.log('⏰ Polling terminado sin encontrar PDF');
+          // No-op: se agotaron los intentos de polling.
         }
       };
       
@@ -138,7 +149,7 @@ export const QuotationDetailPage: React.FC = () => {
           }
           
           // Si no tiene pdf_file_path, usar el servicio para verificar
-          const token = localStorage.getItem('token') || '';
+          const token = getAuthToken();
           const exists = await checkPDFExists(quotation.id, token);
           setPdfExists(exists);
           
@@ -148,7 +159,6 @@ export const QuotationDetailPage: React.FC = () => {
             setPdfUrl(url);
           }
         } catch (error) {
-          console.error('Error checking PDF:', error);
         }
       }
     };
@@ -184,7 +194,7 @@ export const QuotationDetailPage: React.FC = () => {
     if (!quotation) return;
     
     try {
-      const token = localStorage.getItem('token') || '';
+      const token = getAuthToken();
       const result = await generateAndUploadPDF(quotation, token);
       
       if (result.success) {
@@ -206,19 +216,15 @@ export const QuotationDetailPage: React.FC = () => {
     if (!quotation) return;
     
     try {
-      console.log('🔄 Refrescando estado del PDF...');
       const updatedQuotation = await quotationsService.getById(quotation.id);
       setQuotation(updatedQuotation);
       
       if (updatedQuotation.pdf_file_path && updatedQuotation.pdf_file_path.trim() !== '') {
         setPdfExists(true);
         setPdfUrl(updatedQuotation.pdf_file_path);
-        console.log('✅ PDF encontrado después de refrescar');
       } else {
-        console.log('❌ PDF aún no disponible después de refrescar');
       }
     } catch (error) {
-      console.error('Error al refrescar:', error);
     }
   };
 
@@ -265,137 +271,292 @@ export const QuotationDetailPage: React.FC = () => {
   }
 
   const isExpired = new Date(quotation.valid_until) < new Date();
+  const issueDatetime = new Date(`${quotation.issue_date}T${quotation.issue_time || '00:00:00'}`);
+  const formatCurrency = (value: string | number) => `${quotation.currency_code} ${parseFloat(String(value || 0)).toFixed(2)}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Cotización {quotation.series}-{quotation.number.toString().padStart(6, '0')}
-          </h1>
-        </div>
-        <div className="flex space-x-2">
-          {/* Botones de PDF - Solo mostrar "Generar PDF" si no existe */}
-          {!pdfExists && (
-            <>
-              <Button 
-                onClick={handleGenerateAndUploadPDF} 
-                disabled={isProcessing}
-                variant="outline"
+    <div className="-mx-6 -mt-6">
+      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <nav className="flex text-sm font-medium text-slate-500 mb-2">
+              <button
+                onClick={() => navigate('/sales/quotations')}
+                className="hover:text-primary transition-colors"
               >
-                {isGenerating && <Spinner />}
-                {isGenerating ? 'Generando...' : isUploading ? 'Subiendo...' : 'Generar PDF'}
-              </Button>
-              
-              {/* Botón de refrescar para verificar si el PDF ya está listo */}
-              <Button 
-                onClick={handleRefreshPDF}
-                variant="outline"
-                size="sm"
-                className="text-xs"
-              >
-                🔄 Refrescar
-              </Button>
-            </>
-          )}
-          
-          {/* Botón de WhatsApp - Solo si hay PDF */}
-          {pdfExists && pdfUrl && (
-            <Button onClick={handleSendWhatsApp}>
-              Enviar por WhatsApp
-            </Button>
-          )}
-          
-          {quotation.status === 'ACCEPTED' && (
-            <Button onClick={handleConvertToInvoice}>
-              Convertir a Factura
-            </Button>
-          )}
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/sales/quotations')}
-          >
-            Volver
-          </Button>
-        </div>
-      </div>
+                Cotizaciones
+              </button>
+              <span className="mx-2">/</span>
+              <span className="text-slate-900">Detalle de Cotizacion</span>
+            </nav>
 
-      {/* Información resumida de la cotización */}
-      <div className="bg-gray-50 rounded-lg p-6">
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center space-x-4">
-              <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${statusColors[quotation.status]}`}>
-                {statusLabels[quotation.status]}
-              </span>
-              {isExpired && quotation.status !== 'CONVERTED' && (
-                <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-red-100 text-red-800">
-                  Expirada
-                </span>
+            <div className="flex items-center gap-3">
+              <div className="bg-primary p-2 rounded-lg text-white">
+                <DocumentTextIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-black tracking-tight text-slate-900">
+                  Cotizacion #{quotation.series}{quotation.number.toString().padStart(6, '0')}
+                </h1>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-600 mt-0.5">
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <UserIcon className="h-3.5 w-3.5" />
+                    <span className="font-medium">{quotation.client.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <CalendarDaysIcon className="h-3.5 w-3.5" />
+                    <span>
+                      {issueDatetime.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {' '}
+                      <ClockIcon className="h-3 w-3 inline -mt-0.5" />
+                      {' '}
+                      {issueDatetime.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 shrink-0">
+            <button
+              onClick={() => navigate('/sales/quotations')}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              Volver
+            </button>
+            <button
+              onClick={handleGenerateAndUploadPDF}
+              disabled={isProcessing}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-bold bg-primary text-white rounded-lg hover:opacity-90 transition-all shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              <DocumentArrowDownIcon className="h-4 w-4" />
+              {isGenerating
+                ? 'Generando...'
+                : isUploading
+                ? 'Subiendo...'
+                : pdfExists
+                ? 'Regenerar PDF'
+                : 'Generar PDF'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div className="px-6 pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <aside className="lg:col-span-4 space-y-6">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-6">
+                Detalles del Documento
+              </h3>
+              <div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                  <span className="text-sm text-slate-500">Nro de Cotizacion</span>
+                  <span className="text-sm font-bold text-slate-900">{quotation.series}-{quotation.number.toString().padStart(6, '0')}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                  <span className="text-sm text-slate-500">Fecha Emision</span>
+                  <span className="text-sm font-semibold text-slate-900">{new Date(quotation.issue_date).toLocaleDateString('es-PE')}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                  <span className="text-sm text-slate-500">Valida hasta</span>
+                  <span className="text-sm font-semibold text-slate-900">{new Date(quotation.valid_until).toLocaleDateString('es-PE')}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                  <span className="text-sm text-slate-500">Cliente</span>
+                  <span className="text-sm font-semibold text-slate-900 text-right max-w-[55%] truncate">{quotation.client.doc_number}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                  <span className="text-sm text-slate-500">Vendedor</span>
+                  <span className="text-sm font-semibold text-slate-900 text-right max-w-[55%] truncate">{quotation.seller.full_name}</span>
+                </div>
+                <div className="flex justify-between items-center py-3 border-b border-slate-100">
+                  <span className="text-sm text-slate-500">Total</span>
+                  <span className="text-sm font-bold text-slate-900">{formatCurrency(quotation.total_payable)}</span>
+                </div>
+                <div className="flex justify-between items-center py-3">
+                  <span className="text-sm text-slate-500">Estado</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${statusColors[quotation.status]}`}>
+                      {statusLabels[quotation.status]}
+                    </span>
+                    {isExpired && quotation.status !== 'CONVERTED' && (
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                        Expirada
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {(quotation.notes || quotation.internal_notes) && (
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Observaciones</p>
+                  {quotation.notes && <p className="text-sm text-slate-600 leading-relaxed">{quotation.notes}</p>}
+                  {quotation.internal_notes && <p className="text-sm text-slate-500 leading-relaxed mt-1">{quotation.internal_notes}</p>}
+                </div>
               )}
             </div>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p><span className="font-medium">Cliente:</span> {quotation.client.name}</p>
-              <p><span className="font-medium">Documento:</span> {quotation.client.doc_number}</p>
-              <p><span className="font-medium">Fecha de emisión:</span> {new Date(quotation.issue_date).toLocaleDateString('es-ES')}</p>
-              <p><span className="font-medium">Válida hasta:</span> {new Date(quotation.valid_until).toLocaleDateString('es-ES')}</p>
-              <p><span className="font-medium">Vendedor:</span> {quotation.seller.full_name}</p>
+
+            <div className="bg-primary/5 p-6 rounded-xl border border-primary/10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <EyeIcon className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-bold text-primary">Previsualizacion</h3>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                Revise la cotizacion antes de compartirla. Puede abrir el PDF completo, refrescar el estado o enviarlo por WhatsApp.
+              </p>
+              <div className="space-y-2">
+                <button
+                  onClick={handleRefreshPDF}
+                  className="w-full py-2.5 text-sm font-bold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
+                >
+                  Refrescar estado PDF
+                </button>
+                {pdfExists && pdfUrl ? (
+                  <>
+                    <button
+                      onClick={() => window.open(pdfUrl, '_blank')}
+                      className="w-full py-2.5 text-sm font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all"
+                    >
+                      Ver pantalla completa
+                    </button>
+                    <button
+                      onClick={handleSendWhatsApp}
+                      className="w-full py-2.5 text-sm font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all"
+                    >
+                      Enviar por WhatsApp
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-xs text-slate-500">Aun no hay PDF disponible.</p>
+                )}
+
+                {quotation.status === 'ACCEPTED' && (
+                  <Button onClick={handleConvertToInvoice} className="w-full">
+                    Convertir a Factura
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-          
-          <div className="text-right">
-            <p className="text-2xl font-bold text-gray-900">
-              {quotation.currency_code} {parseFloat(quotation.total_payable).toFixed(2)}
-            </p>
-            <p className="text-sm text-gray-600 max-w-xs">
-              {quotation.total_in_words}
-            </p>
+          </aside>
+
+          <div className="lg:col-span-8 flex flex-col gap-6">
+            <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+              <button
+                onClick={() => setActiveView('preview')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-bold rounded-lg transition-all ${
+                  activeView === 'preview'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                <EyeIcon className="h-4 w-4" />
+                Previsualizacion PDF
+              </button>
+              <button
+                onClick={() => setActiveView('details')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-bold rounded-lg transition-all ${
+                  activeView === 'details'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'text-slate-500 hover:bg-slate-50'
+                }`}
+              >
+                <ClipboardDocumentListIcon className="h-4 w-4" />
+                Detalle de Items
+                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  activeView === 'details' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {quotation.items?.length ?? 0}
+                </span>
+              </button>
+            </div>
+
+            {activeView === 'preview' ? (
+              pdfExists && pdfUrl ? (
+                <div
+                  className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden flex-1"
+                  style={{ minHeight: '700px' }}
+                >
+                  <iframe
+                    src={pdfUrl}
+                    className="w-full"
+                    style={{ height: '80vh', minHeight: '700px' }}
+                    title="PDF de la cotizacion"
+                  />
+                </div>
+              ) : (
+                <div
+                  className="bg-white rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center"
+                  style={{ minHeight: '500px' }}
+                >
+                  <div className="text-center p-8">
+                    <DocumentTextIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="text-base font-semibold text-slate-600 mb-1">PDF no disponible</h3>
+                    <p className="text-sm text-slate-400">Use "Generar PDF" para crear la previsualizacion.</p>
+                  </div>
+                </div>
+              )
+            ) : (
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+                  <ClipboardDocumentListIcon className="h-4 w-4" />
+                  Items de la Cotizacion
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">N</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Descripcion</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Cantidad</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">P. Unitario</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Descuento</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-slate-100">
+                      {quotation.items?.map((item, index) => {
+                        const subtotal = Number(item.quantity) * Number(item.unit_price) - Number(item.discount || 0);
+                        return (
+                          <tr key={`${quotation.id}-${index}`}>
+                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">{index + 1}</td>
+                            <td className="px-4 py-3 text-sm text-slate-700">{item.item_description}</td>
+                            <td className="px-4 py-3 text-sm text-slate-700">{item.quantity}</td>
+                            <td className="px-4 py-3 text-sm text-slate-700">{formatCurrency(item.unit_price)}</td>
+                            <td className="px-4 py-3 text-sm text-slate-700">{formatCurrency(item.discount || 0)}</td>
+                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">{formatCurrency(subtotal)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
+                    <CurrencyDollarIcon className="h-4 w-4" />
+                    Resumen de Totales
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                    <p className="text-slate-600">Subtotal gravado: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_taxable)}</span></p>
+                    <p className="text-slate-600">Exonerado: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_exonerated)}</span></p>
+                    <p className="text-slate-600">IGV: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_igv)}</span></p>
+                    <p className="text-slate-600">Descuento: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_discount)}</span></p>
+                    <p className="md:col-span-2 text-base text-slate-700">Total a pagar: <span className="font-bold text-slate-900">{formatCurrency(quotation.total_payable)}</span></p>
+                    <p className="md:col-span-2 text-xs text-slate-500">{quotation.total_in_words}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Visor de PDF - Solo si existe PDF en el servidor */}
-      {pdfExists && pdfUrl && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Vista Previa del PDF</h3>
-              <Button
-                variant="outline"
-                onClick={() => window.open(pdfUrl, '_blank')}
-              >
-                Abrir en Nueva Pestaña
-              </Button>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="border rounded-lg overflow-hidden" style={{ height: '800px' }}>
-              <iframe
-                src={pdfUrl}
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                title="Vista previa del PDF de la cotización"
-                className="w-full h-full"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Mensaje si no hay PDF */}
-      {!pdfExists && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6">
-          <div className="text-yellow-800">
-            <h3 className="font-medium mb-2">PDF no disponible</h3>
-            <p className="text-sm">
-              El PDF de esta cotización aún no está disponible. Haz clic en "Generar PDF" para crear el documento.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de WhatsApp */}
       <QuotationWhatsAppModal
         isOpen={showWhatsAppModal}
         onClose={() => setShowWhatsAppModal(false)}

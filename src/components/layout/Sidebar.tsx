@@ -10,7 +10,7 @@ import {
   UsersIcon, KeyIcon, MapIcon, BuildingOffice2Icon, CalendarDaysIcon, TicketIcon,
   ClipboardDocumentListIcon, CurrencyDollarIcon, AdjustmentsHorizontalIcon,
   ChartPieIcon, CubeIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ShieldCheckIcon,
-  BriefcaseIcon
+  BriefcaseIcon, SparklesIcon
 } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
@@ -154,7 +154,8 @@ const navGroups: NavGroup[] = [
       { name: 'Usuarios', path: '/settings/users', icon: UsersIcon, iconColor: 'text-gray-500' },
       { name: 'Roles', path: '/settings/roles', icon: KeyIcon, iconColor: 'text-gray-500' },
       { name: 'Configuración Empresa', path: '/settings/company', icon: CogIcon, iconColor: 'text-gray-500' },
-      { name: 'WhatsApp', path: '/settings/whatsapp', icon: ChatBubbleLeftRightIcon, iconColor: 'text-green-500' }
+      { name: 'WhatsApp', path: '/settings/whatsapp', icon: ChatBubbleLeftRightIcon, iconColor: 'text-green-500' },
+      { name: 'Novedades', path: '/settings/updates', icon: SparklesIcon, iconColor: 'text-amber-500' }
     ]
   }
 ];

@@ -66,7 +66,6 @@ const generateQuotationPDFWithLogo = async (quotationData: Quotation): Promise<{
         currentY += Math.max(logoHeight, infoLines.length * 4 + 8);
         
       } catch (logoError) {
-        console.warn('No se pudo cargar el logo, continuando sin logo:', logoError);
         // Fallback sin logo
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(12);
@@ -131,7 +130,46 @@ const generateQuotationPDFWithLogo = async (quotationData: Quotation): Promise<{
   pdf.setFont('helvetica', 'normal');
   const clientDoc = quotationData.client.doc_type === '1' ? 'DNI' : quotationData.client.doc_type === '6' ? 'RUC' : 'Documento';
   pdf.text(`${clientDoc}: ${quotationData.client.doc_number}`, margin + 80, currentY);
-  currentY += 10;
+  currentY += 7;
+
+  // ============ INFORMACIÓN DEL VIAJE (si existe en internal_notes) ============
+  if (quotationData.internal_notes) {
+    // Parsear "Viaje: xxx | Embarcacion: yyy" desde internal_notes
+    const noteParts: Record<string, string> = {};
+    quotationData.internal_notes.split('|').forEach(part => {
+      const colonIdx = part.indexOf(':');
+      if (colonIdx !== -1) {
+        const key = part.slice(0, colonIdx).trim();
+        const value = part.slice(colonIdx + 1).trim();
+        noteParts[key] = value;
+      }
+    });
+
+    const tripName = noteParts['Viaje'];
+    const vesselName = noteParts['Embarcacion'];
+
+    if (tripName || vesselName) {
+      // Fondo gris claro como banda informativa
+      const bandHeight = 8;
+      pdf.setFillColor(240, 240, 240);
+      pdf.rect(margin, currentY, pageWidth - margin * 2, bandHeight, 'F');
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(8);
+      pdf.setTextColor(50, 50, 50);
+      let tripLine = '';
+      if (tripName) tripLine += `Viaje: ${tripName}`;
+      if (vesselName) tripLine += `${tripName ? '   |   ' : ''}Embarcación: ${vesselName}`;
+      pdf.text(tripLine, margin + 2, currentY + 5.5);
+      pdf.setTextColor(0, 0, 0); // Restaurar color negro
+
+      currentY += bandHeight + 4;
+    } else {
+      currentY += 3;
+    }
+  } else {
+    currentY += 3;
+  }
 
   // ============ TABLA DE SERVICIOS OPTIMIZADA (ESTILO MANIFIESTO) ============
   if (quotationData.items && quotationData.items.length > 0) {
@@ -428,7 +466,6 @@ export const useQuotationPDFGeneration = () => {
       }
     } catch (error: any) {
       toast.error('Error al generar vista previa');
-      console.error('Error generating PDF preview:', error);
     }
   };
 
@@ -455,7 +492,6 @@ export const useQuotationPDFGeneration = () => {
       
     } catch (error: any) {
       toast.error('Error al descargar el PDF');
-      console.error('Error downloading PDF:', error);
     }
   };
 
@@ -464,12 +500,11 @@ export const useQuotationPDFGeneration = () => {
    */
   const checkPDFExists = async (
     quotationId: number, 
-    authToken: string
+    authToken?: string
   ): Promise<boolean> => {
     try {
       return await quotationPdfUploadService.verifyPDFUpload(quotationId, authToken);
     } catch (error) {
-      console.error('Error checking PDF existence:', error);
       return false;
     }
   };
@@ -479,12 +514,11 @@ export const useQuotationPDFGeneration = () => {
    */
   const getPDFUrl = async (
     quotationId: number,
-    authToken: string
+    authToken?: string
   ): Promise<string | null> => {
     try {
       return await quotationPdfUploadService.getQuotationPDFUrl(quotationId, authToken);
     } catch (error) {
-      console.error('Error getting PDF URL:', error);
       return null;
     }
   };

@@ -25,6 +25,7 @@ const UsersPage = React.lazy(() => import('./features/settings/pages/UsersPage')
 const RolesPage = React.lazy(() => import('./features/settings/pages/RolesPage').then(module => ({ default: module.RolesPage })));
 const SettingsIndexPage = React.lazy(() => import('./features/settings/pages/SettingslndexPage'));
 const WhatsAppConfigPage = React.lazy(() => import('./features/settings/pages/WhatsAppConfigPage'));
+const UpdatesAdminPage = React.lazy(() => import('./features/updates/pages/UpdatesAdminPage'));
 
 // Páginas de ventas (lazy)
 const QuotationsListPage = React.lazy(() => import('./features/sales/pages/QuotationsListPage').then(module => ({ default: module.QuotationsListPage })));
@@ -322,6 +323,11 @@ function AppContent() {
               <Route path="whatsapp" element={
                 <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
                   <WhatsAppConfigPage />
+                </Suspense>
+              } />
+              <Route path="updates" element={
+                <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                  <UpdatesAdminPage />
                 </Suspense>
               } />
             </Route>

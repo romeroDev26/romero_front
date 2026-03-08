@@ -205,6 +205,36 @@ export const ReportsPage: React.FC = () => {
       {/* Contenido principal */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
+        {/* Skeleton de carga */}
+        {isLoading && (
+          <div className="space-y-6 animate-pulse">
+            {/* Skeleton: tarjetas de resumen */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+                  <div className="h-3 bg-slate-200 rounded w-2/3"></div>
+                  <div className="h-7 bg-slate-200 rounded w-1/2"></div>
+                  <div className="h-2 bg-slate-100 rounded w-full"></div>
+                </div>
+              ))}
+            </div>
+            {/* Skeleton: gráficos principales */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+                  <div className="h-4 bg-slate-200 rounded w-1/3"></div>
+                  <div className="h-48 bg-slate-100 rounded-lg"></div>
+                </div>
+              ))}
+            </div>
+            {/* Skeleton: gráfico ancho */}
+            <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+              <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+              <div className="h-40 bg-slate-100 rounded-lg"></div>
+            </div>
+          </div>
+        )}
+
         {/* Resumen de ventas - Prioridad Alta */}
         {report && report.resumenEjecutivo && report.categorias && (
           <SalesSummary summary={report.resumenEjecutivo} metrics={report.categorias} isLoading={isLoading} />

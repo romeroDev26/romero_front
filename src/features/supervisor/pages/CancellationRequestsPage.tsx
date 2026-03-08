@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { 
-  BellAlertIcon, 
-  CheckCircleIcon, 
-  XCircleIcon, 
+import {
+  BellAlertIcon,
+  CheckCircleIcon,
+  XCircleIcon,
   ClockIcon,
-  FunnelIcon,
-  ArrowPathIcon
+  MagnifyingGlassIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { useCancellationRequests } from '../../../hooks/useCancellationRequests';
 import { cancellationRequestsService } from '../../accounting/services/cancellationRequests.service';
@@ -18,6 +18,7 @@ import RejectionModal from '../components/RejectionModal';
 
 const CancellationRequestsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<CancellationRequestStatus | 'ALL'>('PENDING');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<CancellationRequestListItem | null>(null);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showRejectionModal, setShowRejectionModal] = useState(false);
@@ -57,13 +58,22 @@ const CancellationRequestsPage: React.FC = () => {
 
   // Obtener lista filtrada
   const getFilteredRequests = (): CancellationRequestListItem[] => {
+    let base: CancellationRequestListItem[];
     if (statusFilter === 'PENDING') {
-      return pendingRequests;
+      base = pendingRequests;
+    } else if (statusFilter === 'ALL') {
+      base = allRequests;
+    } else {
+      base = allRequests.filter(req => req.status === statusFilter);
     }
-    if (statusFilter === 'ALL') {
-      return allRequests;
-    }
-    return allRequests.filter(req => req.status === statusFilter);
+    if (!searchQuery.trim()) return base;
+    const q = searchQuery.toLowerCase();
+    return base.filter(
+      r =>
+        r.requester_name.toLowerCase().includes(q) ||
+        `${r.series}-${r.number}`.toLowerCase().includes(q) ||
+        (r.passenger_name || '').toLowerCase().includes(q),
+    );
   };
 
   const filteredRequests = getFilteredRequests();
@@ -146,196 +156,203 @@ const CancellationRequestsPage: React.FC = () => {
   const getStatusBadge = (status: CancellationRequestStatus) => {
     switch (status) {
       case 'PENDING':
-        return <span className="px-3 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">Pendiente</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">Pendiente</span>;
       case 'APPROVED':
-        return <span className="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">Aprobada</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">Aprobada</span>;
       case 'REJECTED':
-        return <span className="px-3 py-1 text-xs font-semibold text-red-800 bg-red-100 rounded-full">Rechazada</span>;
+        return <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 border border-rose-200">Rechazada</span>;
     }
   };
 
+  // Iniciales del nombre del solicitante
+  const getInitials = (name: string) =>
+    name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+
+  const approvedCount = allRequests.filter(r => r.status === 'APPROVED').length;
+  const rejectedCount = allRequests.filter(r => r.status === 'REJECTED').length;
+
+  const FILTERS = [
+    { value: 'PENDING' as const, label: 'Pendientes' },
+    { value: 'APPROVED' as const, label: 'Aprobadas' },
+    { value: 'REJECTED' as const, label: 'Rechazadas' },
+    { value: 'ALL' as const, label: 'Todas' },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <BellAlertIcon className="w-10 h-10 text-red-500 flex-shrink-0" />
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Solicitudes de Anulación</h1>
-            <div className="text-gray-600 mt-1">
-              <span>Gestiona las solicitudes de anulación de comprobantes</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <header className="flex flex-col gap-2">
+        <h1 className="text-4xl font-black tracking-tight text-slate-900">
+          Solicitudes de Anulación
+        </h1>
+        <p className="text-slate-600 text-lg">
+          Bienvenido de nuevo. Aquí puedes gestionar y revisar el estado de las solicitudes con total transparencia.
+        </p>
+      </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-yellow-800">Pendientes</p>
-              <p className="text-3xl font-bold text-yellow-900">{pendingCount}</p>
-            </div>
-            <ClockIcon className="w-12 h-12 text-yellow-400" />
+            <span className="text-slate-500 font-medium">Pendientes</span>
+            <ClockIcon className="w-5 h-5 text-amber-500" />
           </div>
-        </div>
-        
-        <div className="bg-green-50 border-l-4 border-green-400 p-6 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-800">Aprobadas</p>
-              <p className="text-3xl font-bold text-green-900">
-                {allRequests.filter(r => r.status === 'APPROVED').length}
-              </p>
-            </div>
-            <CheckCircleIcon className="w-12 h-12 text-green-400" />
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-slate-900">{pendingCount}</span>
+            {pendingCount > 0 && (
+              <span className="text-amber-600 text-sm font-semibold">requieren atención</span>
+            )}
           </div>
         </div>
 
-        <div className="bg-red-50 border-l-4 border-red-400 p-6 rounded-lg">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-red-800">Rechazadas</p>
-              <p className="text-3xl font-bold text-red-900">
-                {allRequests.filter(r => r.status === 'REJECTED').length}
-              </p>
-            </div>
-            <XCircleIcon className="w-12 h-12 text-red-400" />
+            <span className="text-slate-500 font-medium">Aprobadas</span>
+            <CheckCircleIcon className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-slate-900">{approvedCount}</span>
+            <span className="text-slate-400 text-sm">total</span>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-500 font-medium">Rechazadas</span>
+            <XCircleIcon className="w-5 h-5 text-rose-500" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-bold text-slate-900">{rejectedCount}</span>
+            <span className="text-slate-400 text-sm">total</span>
           </div>
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-          <div className="flex items-center gap-2">
-            <FunnelIcon className="w-5 h-5 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filtrar por estado:</span>
-          </div>
-          <div className="flex flex-wrap gap-2 w-full md:w-auto">
-            {(['PENDING', 'APPROVED', 'REJECTED', 'ALL'] as const).map((status) => (
+      {/* Filtros y búsqueda */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {FILTERS.map(({ value, label }) => (
               <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-sm font-medium transition-colors text-center whitespace-nowrap ${
-                  statusFilter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                key={value}
+                onClick={() => setStatusFilter(value)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === value
+                    ? 'bg-primary text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
-                {status === 'PENDING' && 'Pendientes'}
-                {status === 'APPROVED' && 'Aprobadas'}
-                {status === 'REJECTED' && 'Rechazadas'}
-                {status === 'ALL' && 'Todas'}
+                {label}
               </button>
             ))}
+            <button
+              onClick={refresh}
+              disabled={isLoading}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-50 transition-colors ml-1"
+              title="Actualizar"
+            >
+              <ArrowPathIcon className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
+
+          <div className="relative w-full md:w-80">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Buscar por vendedor o comprobante..."
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all text-sm"
+            />
           </div>
         </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6 rounded-lg">
-          <p className="text-red-700">{error}</p>
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
+          <p className="text-rose-700 text-sm">{error}</p>
         </div>
       )}
 
-      {/* Loading */}
-      {isLoading && filteredRequests.length === 0 && (
-        <div className="flex justify-center items-center py-12">
-          <svg className="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        </div>
-      )}
-
-      {/* Lista de solicitudes */}
-      {!isLoading && filteredRequests.length === 0 && (
-        <div className="bg-white rounded-lg shadow-md p-12 text-center">
-          <BellAlertIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No hay solicitudes {statusFilter !== 'ALL' ? statusFilter.toLowerCase() : ''}</p>
-        </div>
-      )}
-
-      {filteredRequests.length > 0 && (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Tabla */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        {isLoading && filteredRequests.length === 0 ? (
+          <div className="flex justify-center items-center py-16">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
+          </div>
+        ) : filteredRequests.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+            <BellAlertIcon className="w-14 h-14 mb-3" />
+            <p className="text-base font-medium">No hay solicitudes para mostrar</p>
+          </div>
+        ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Vendedor
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Comprobante
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Pasajero
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Motivo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Vendedor</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Comprobante</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Pasajero</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Motivo</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Fecha</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="divide-y divide-slate-100">
                 {filteredRequests.map((request) => (
-                  <tr key={request.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{request.requester_name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{request.series}-{request.number}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{request.passenger_name || '-'}</div>
+                  <tr key={request.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs flex-shrink-0">
+                          {getInitials(request.requester_name)}
+                        </div>
+                        <span className="text-sm font-medium text-slate-900">{request.requester_name}</span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate" title={request.request_reason}>
+                      <span className="font-mono text-sm text-primary font-medium">
+                        {request.series}-{request.number}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-600">
+                      {request.passenger_name || <span className="text-slate-300">—</span>}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-slate-600 max-w-xs truncate" title={request.request_reason}>
                         {request.request_reason}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-500 whitespace-nowrap">
+                      {new Date(request.created_at).toLocaleDateString('es-PE')}
+                      <div className="text-xs text-slate-400">
+                        {new Date(request.created_at).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">
-                        {new Date(request.created_at).toLocaleDateString('es-PE')}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        {new Date(request.created_at).toLocaleTimeString('es-PE')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       {getStatusBadge(request.status)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-6 py-4 text-right">
                       {request.status === 'PENDING' ? (
-                        <div className="flex gap-2">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => openApprovalModal(request)}
-                            className="text-green-600 hover:text-green-900 font-medium"
-                            title="Aprobar"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
                           >
-                            <CheckCircleIcon className="w-6 h-6" />
+                            <CheckCircleIcon className="w-4 h-4" />
+                            Aprobar
                           </button>
                           <button
                             onClick={() => openRejectionModal(request)}
-                            className="text-red-600 hover:text-red-900 font-medium"
-                            title="Rechazar"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors"
                           >
-                            <XCircleIcon className="w-6 h-6" />
+                            <XCircleIcon className="w-4 h-4" />
+                            Rechazar
                           </button>
                         </div>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-slate-300 text-sm">—</span>
                       )}
                     </td>
                   </tr>
@@ -343,8 +360,18 @@ const CancellationRequestsPage: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Footer de tabla */}
+        {filteredRequests.length > 0 && (
+          <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+            <p className="text-sm text-slate-500">
+              Mostrando {filteredRequests.length} resultado{filteredRequests.length !== 1 ? 's' : ''}
+              {searchQuery && ` para "${searchQuery}"`}
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Modales */}
       {showApprovalModal && (

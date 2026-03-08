@@ -1,6 +1,6 @@
 // src/features/fluvial/quick-sales/components/ServiceDetailsForm.tsx
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Settings, AlertTriangle } from 'lucide-react';
 import { ProductService } from '../../../../types';
 
@@ -29,6 +29,24 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
   onIgvGravadoChange,
   disabled = false,
 }) => {
+  const [quantityDisplay, setQuantityDisplay] = useState<string>(String(quantity));
+
+  useEffect(() => {
+    setQuantityDisplay(quantity > 0 ? String(quantity) : '');
+  }, [quantity]);
+
+  const handleQuantityChange = (value: string) => {
+    setQuantityDisplay(value);
+
+    if (value.trim() === '') {
+      onQuantityChange(0);
+      return;
+    }
+
+    const parsedValue = Number.parseInt(value, 10);
+    onQuantityChange(Number.isNaN(parsedValue) ? 0 : parsedValue);
+  };
+
   if (!selectedProduct) {
     return (
       <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -60,8 +78,8 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
           </label>
           <input
             type="number"
-            value={quantity}
-            onChange={(e) => onQuantityChange(parseInt(e.target.value) || 1)}
+            value={quantityDisplay}
+            onChange={(e) => handleQuantityChange(e.target.value)}
             onWheel={(e) => e.currentTarget.blur()}
             min="1"
             step="1"

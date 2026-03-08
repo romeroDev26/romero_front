@@ -146,8 +146,8 @@ export const TripManifestsPage: React.FC = () => {
   return (
     <div className="-mx-6 -mt-6">
 
-      {/* ── Header sticky ── */}
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 mb-8">
+      {/* ── Header ── */}
+      <header className="bg-white border-b border-slate-200 px-6 py-4 mb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             {/* Breadcrumb */}

@@ -6,6 +6,7 @@ import {
   EyeIcon,
   UsersIcon,
   CubeIcon,
+  ChevronRightIcon,
   CalendarDaysIcon,
   ClockIcon,
   MapPinIcon,
@@ -37,6 +38,7 @@ export const ManifestsPage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [showBranchSelector, setShowBranchSelector] = useState(false);
   const branchSelectorRef = useRef<HTMLDivElement>(null);
+  const [mobileTab, setMobileTab] = useState<'all' | 'passenger' | 'cargo'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 20;
 
@@ -142,16 +144,50 @@ export const ManifestsPage: React.FC = () => {
 
   // Agrupar los manifiestos por viaje
   const groupedTrips = manifests ? groupManifestsByTrip(manifests) : [];
-  const totalPages = Math.max(1, Math.ceil(groupedTrips.length / pageSize));
+  const filteredTrips = groupedTrips.filter((trip) => {
+    if (mobileTab === 'passenger') return !!trip.passenger_manifest;
+    if (mobileTab === 'cargo') return !!trip.cargo_manifest;
+    return true;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredTrips.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
   const startIndex = (safePage - 1) * pageSize;
-  const paginatedTrips = groupedTrips.slice(startIndex, startIndex + pageSize);
+  const paginatedTrips = filteredTrips.slice(startIndex, startIndex + pageSize);
 
   useEffect(() => {
     if (currentPage !== safePage) {
       setCurrentPage(safePage);
     }
   }, [currentPage, safePage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [mobileTab]);
+
+  const getTripStatus = (trip: GroupedTrip) => {
+    const hasPassenger = !!trip.passenger_manifest;
+    const hasCargo = !!trip.cargo_manifest;
+
+    if (hasPassenger && hasCargo) {
+      return {
+        label: 'Completo',
+        className: 'bg-emerald-100 text-emerald-700',
+      };
+    }
+
+    if (hasPassenger || hasCargo) {
+      return {
+        label: 'Parcial',
+        className: 'bg-amber-100 text-amber-700',
+      };
+    }
+
+    return {
+      label: 'Sin gen.',
+      className: 'bg-slate-100 text-slate-600',
+    };
+  };
 
   // Columnas para viajes agrupados
   const columns = [
@@ -319,17 +355,17 @@ export const ManifestsPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 md:p-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <DocumentTextIcon className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Manifiestos</h1>
-              <p className="text-gray-600">Gestión de manifiestos de pasajeros y carga</p>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">Manifiestos</h1>
+              <p className="text-sm md:text-base text-gray-600">Gestión de manifiestos de pasajeros y carga</p>
             </div>
           </div>
           
@@ -379,6 +415,36 @@ export const ManifestsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Tabs móviles */}
+      <div className="md:hidden bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+        <nav className="flex items-center gap-1">
+          <button
+            onClick={() => setMobileTab('all')}
+            className={`flex-1 py-2 rounded-md text-xs font-semibold transition-colors ${
+              mobileTab === 'all' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            Todos
+          </button>
+          <button
+            onClick={() => setMobileTab('passenger')}
+            className={`flex-1 py-2 rounded-md text-xs font-semibold transition-colors ${
+              mobileTab === 'passenger' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            Pasajeros
+          </button>
+          <button
+            onClick={() => setMobileTab('cargo')}
+            className={`flex-1 py-2 rounded-md text-xs font-semibold transition-colors ${
+              mobileTab === 'cargo' ? 'bg-primary text-white' : 'text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            Carga
+          </button>
+        </nav>
+      </div>
+
       {/* Lista de Manifiestos */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
@@ -388,7 +454,7 @@ export const ManifestsPage: React.FC = () => {
                 Manifiestos - {selectedBranch?.name}
               </h2>
               <p className="text-sm text-gray-600 mt-1">
-                {manifests.length} manifiestos encontrados
+                {filteredTrips.length} viajes con manifiestos encontrados
               </p>
             </div>
             
@@ -400,8 +466,8 @@ export const ManifestsPage: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span>
-                    Mostrando {groupedTrips.length === 0 ? 0 : startIndex + 1}-
-                    {Math.min(startIndex + pageSize, groupedTrips.length)} de {groupedTrips.length}
+                    Mostrando {filteredTrips.length === 0 ? 0 : startIndex + 1}-
+                    {Math.min(startIndex + pageSize, filteredTrips.length)} de {filteredTrips.length}
                   </span>
                   <div className="flex items-center gap-1">
                     <button
@@ -428,22 +494,130 @@ export const ManifestsPage: React.FC = () => {
           </div>
         </div>
 
-        <DataTable<GroupedTrip>
-          data={paginatedTrips}
-          columns={columns}
-          keyExtractor={(trip) => trip.trip_id.toString()}
-          isLoading={isLoading}
-          emptyMessage="No hay manifiestos generados"
-          customActions={(trip) => (
-            <button
-              onClick={() => handleViewDetails(trip)}
-              className="flex items-center px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
-            >
-              <EyeIcon className="w-4 h-4 mr-1" />
-              Ver Detalles
-            </button>
+        {/* Vista móvil: tarjetas */}
+        <div className="md:hidden p-4 space-y-3">
+          {isLoading ? (
+            <div className="py-10 text-center text-sm text-slate-500">Cargando manifiestos...</div>
+          ) : paginatedTrips.length === 0 ? (
+            <div className="py-10 text-center text-sm text-slate-500">No hay manifiestos generados</div>
+          ) : (
+            paginatedTrips.map((trip) => {
+              const status = getTripStatus(trip);
+
+              return (
+                <div
+                  key={trip.trip_id}
+                  className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm"
+                >
+                  <div className="flex justify-between items-start mb-3 gap-3">
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        ID VIAJE: #{trip.trip_id}
+                      </span>
+                      <h3 className="font-bold text-slate-800 truncate">{trip.route_name}</h3>
+                      <div className="flex items-center gap-1 text-xs text-slate-500 mt-1 min-w-0">
+                        <Ship className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{trip.vessel_name}</span>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase shrink-0 ${status.className}`}>
+                      {status.label}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 py-3 border-y border-slate-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-8 rounded-lg bg-blue-50 flex items-center justify-center text-primary shrink-0">
+                        <UsersIcon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Pasajeros</span>
+                        <p className="text-sm font-semibold text-slate-800">
+                          {trip.passenger_manifest ? trip.passenger_manifest.total_passengers : 'Sin gen.'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                      <div className="size-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600 shrink-0">
+                        <CubeIcon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-slate-500">Carga</span>
+                        <p className="text-sm font-semibold text-slate-800">
+                          {trip.cargo_manifest ? trip.cargo_manifest.total_cargo_weight_kg : 'Sin gen.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 text-slate-500 min-w-0">
+                      <ClockIcon className="w-3.5 h-3.5 shrink-0" />
+                      <span className="text-xs truncate">
+                        Salida: {new Date(trip.departure_datetime).toLocaleDateString('es-ES')} {new Date(trip.departure_datetime).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleViewDetails(trip)}
+                      className="text-primary text-sm font-bold inline-flex items-center gap-1 shrink-0"
+                    >
+                      Ver
+                      <ChevronRightIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
           )}
-        />
+        </div>
+
+        {/* Vista desktop: tabla */}
+        <div className="hidden md:block">
+          <DataTable<GroupedTrip>
+            data={paginatedTrips}
+            columns={columns}
+            keyExtractor={(trip) => trip.trip_id.toString()}
+            isLoading={isLoading}
+            emptyMessage="No hay manifiestos generados"
+            customActions={(trip) => (
+              <button
+                onClick={() => handleViewDetails(trip)}
+                className="flex items-center px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+              >
+                <EyeIcon className="w-4 h-4 mr-1" />
+                Ver Detalles
+              </button>
+            )}
+          />
+        </div>
+
+        {/* Paginación móvil */}
+        {!isLoading && filteredTrips.length > 0 && (
+          <div className="md:hidden px-4 pb-4">
+            <div className="border border-slate-200 rounded-lg p-3 flex items-center justify-between text-xs text-slate-600">
+              <span>
+                {safePage}/{totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={safePage === 1}
+                  className="px-2.5 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={safePage === totalPages}
+                  className="px-2.5 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

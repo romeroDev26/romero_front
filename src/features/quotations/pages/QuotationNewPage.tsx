@@ -12,7 +12,7 @@ import {
   DocumentTextIcon,
   CalendarDaysIcon,
   ChevronDownIcon,
-  MapPinIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { Spinner } from '../../../components/common/Spinner';
 import { useCreateQuotation } from '../hooks/useQuotations';
@@ -269,30 +269,30 @@ export const QuotationNewPage: React.FC = () => {
   return (
     <div className="-mx-6 -mt-6">
       {/* Page header — sticky */}
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary p-2 rounded-lg text-white">
-              <DocumentTextIcon className="h-5 w-5" />
+      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-2.5 md:py-4 mb-4 md:mb-8">
+        <div className="flex items-start md:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
+            <div className="bg-primary p-1.5 md:p-2 rounded-lg text-white shrink-0">
+              <DocumentTextIcon className="h-4 w-4 md:h-5 md:w-5" />
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight text-gray-900">Nueva Cotización</h1>
+            <div className="min-w-0">
+              <h1 className="text-base md:text-xl font-bold tracking-tight text-gray-900">Nueva Cotización</h1>
               {selectedTrip && (
-                <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-0.5">
+                <p className="text-xs md:text-sm text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
                   <span className="text-slate-400">Paso 3 de 3 —</span>
-                  <span className="text-primary font-medium">
+                  <span className="text-primary font-medium truncate hidden sm:inline">
                     {selectedTrip.trip_name} · {selectedTrip.vessel_name}
                   </span>
                 </p>
               )}
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3 shrink-0">
             {selectedTrip && (
               <button
                 type="button"
                 onClick={handleChangeTrip}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
               >
                 Cambiar viaje
               </button>
@@ -300,7 +300,7 @@ export const QuotationNewPage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/sales/quotations')}
-              className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="px-2.5 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
             >
               Cancelar
             </button>
@@ -308,7 +308,7 @@ export const QuotationNewPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="px-6 pb-8 space-y-6">
+      <div className="px-4 md:px-6 pb-64 lg:pb-8 space-y-6">
         {/* Alert de error */}
         {servicesError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
@@ -323,17 +323,20 @@ export const QuotationNewPage: React.FC = () => {
         )}
 
         <form onSubmit={handleFormSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start">
 
             {/* ── Columna izquierda ── */}
             <div className="space-y-8">
 
               {/* Información Básica */}
-              <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-6">
-                  <InformationCircleIcon className="h-5 w-5 text-primary" />
-                  Información Básica
-                </h3>
+              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-4 md:px-6 py-3 border-b border-slate-100">
+                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-900">
+                    <InformationCircleIcon className="h-5 w-5 text-primary" />
+                    Información Básica
+                  </h3>
+                </div>
+                <div className="p-4 md:p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <QuotationSeriesSelector
                     selectedSeries={selectedSeries}
@@ -417,18 +420,34 @@ export const QuotationNewPage: React.FC = () => {
                     </button>
                   </div>
                 </div>
+                </div>
               </section>
 
               {/* Datos del Cliente */}
-              <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-6">
-                  <UserGroupIcon className="h-5 w-5 text-primary" />
-                  Datos del Cliente
-                </h3>
-                <ClientSelector
-                  selectedClient={selectedClient}
-                  onClientSelect={setSelectedClient}
-                />
+              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-4 md:px-6 py-3 border-b border-slate-100">
+                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-900">
+                    <UserGroupIcon className="h-5 w-5 text-primary" />
+                    Datos del Cliente
+                  </h3>
+                </div>
+                <div className="p-4 md:p-6">
+                  <ClientSelector
+                    selectedClient={selectedClient}
+                    onClientSelect={setSelectedClient}
+                  />
+                </div>
+              </section>
+
+              {/* Aviso de seguridad en mobile */}
+              <section className="lg:hidden bg-primary/5 border border-primary/10 rounded-xl p-4 flex items-start gap-3">
+                <ShieldCheckIcon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-primary uppercase tracking-wide">Seguridad</p>
+                  <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                    Esta cotización cumple con los estándares fiscales vigentes.
+                  </p>
+                </div>
               </section>
 
               {/* Ítems */}
@@ -439,24 +458,28 @@ export const QuotationNewPage: React.FC = () => {
               />
 
               {/* Observaciones */}
-              <section className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
-                  <Bars3BottomLeftIcon className="h-5 w-5 text-primary" />
-                  Observaciones
-                </h3>
-                <textarea
-                  value={observations}
-                  onChange={(e) => setObservations(e.target.value)}
-                  rows={4}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 placeholder-slate-400 bg-gray-50 focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                  placeholder="Escriba aquí notas adicionales, términos o condiciones..."
-                />
+              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50 px-4 md:px-6 py-3 border-b border-slate-100">
+                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-900">
+                    <Bars3BottomLeftIcon className="h-5 w-5 text-primary" />
+                    Observaciones
+                  </h3>
+                </div>
+                <div className="p-4 md:p-6">
+                  <textarea
+                    value={observations}
+                    onChange={(e) => setObservations(e.target.value)}
+                    rows={4}
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 placeholder-slate-400 bg-gray-50 focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                    placeholder="Escriba aquí notas adicionales, términos o condiciones..."
+                  />
+                </div>
               </section>
 
             </div>
 
             {/* ── Sidebar derecha (sticky top-28 = header del app + page header) ── */}
-            <div className="sticky top-28">
+            <div className="hidden lg:block sticky top-28">
               <QuotationSummary
                 items={items}
                 includeIGV={includeIGV}
@@ -464,11 +487,26 @@ export const QuotationNewPage: React.FC = () => {
                 isDisabled={!selectedSeries || !selectedClient || items.length === 0}
                 onSubmit={handleCreate}
                 onCancel={() => navigate('/sales/quotations')}
+                showSecurity
               />
             </div>
 
           </div>
         </form>
+
+        {/* Resumen fijo para mobile */}
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-sm px-4 pb-6 pt-3 shadow-[0_-12px_24px_rgba(15,23,42,0.08)]">
+          <QuotationSummary
+            items={items}
+            includeIGV={includeIGV}
+            isLoading={loading || seriesLoading}
+            isDisabled={!selectedSeries || !selectedClient || items.length === 0}
+            onSubmit={handleCreate}
+            onCancel={() => navigate('/sales/quotations')}
+            compact
+            showSecurity={false}
+          />
+        </div>
       </div>
 
       {/* Modal de Previsualización */}

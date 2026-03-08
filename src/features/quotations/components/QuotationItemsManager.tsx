@@ -27,6 +27,15 @@ export interface SimpleItem {
   service_id?: number;
 }
 
+interface SimpleItemFormState {
+  cantidad: string;
+  unidad: string;
+  descripcion: string;
+  precio_unitario: string;
+  descuento: string;
+  importe_total: number;
+}
+
 interface QuotationItemsManagerProps {
   items: SimpleItem[];
   onItemsChange: (items: SimpleItem[]) => void;
@@ -42,14 +51,24 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
   const [showAddForm, setShowAddForm] = useState(true);
 
   // Estados para el formulario de nuevo item
-  const [newItem, setNewItem] = useState<SimpleItem>({
-    cantidad: 1,
+  const [newItem, setNewItem] = useState<SimpleItemFormState>({
+    cantidad: '1',
     unidad: 'NIU',
     descripcion: '',
-    precio_unitario: 0,
-    descuento: 0, // monto en soles
+    precio_unitario: '',
+    descuento: '', // monto en soles
     importe_total: 0
   });
+
+  const parseNumber = (value: string): number => {
+    if (value.trim() === '') return 0;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  };
+
+  const cantidadValue = parseNumber(newItem.cantidad);
+  const precioUnitarioValue = parseNumber(newItem.precio_unitario);
+  const descuentoValue = parseNumber(newItem.descuento);
 
     // Prellenar campos del ítem cuando cambia el servicio
     useEffect(() => {
@@ -58,18 +77,18 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
           ...prev,
           descripcion: selectedService.name, // Solo el nombre, no la descripción larga
           unidad: selectedService.unit_code,
-          precio_unitario: 0 // Siempre en 0 para que el usuario lo ingrese manualmente
+          precio_unitario: '' // Queda vacío para que el usuario lo ingrese manualmente
         }));
       }
     }, [selectedService]);
 
   // Calcular el importe total del nuevo item
   useEffect(() => {
-    const baseAmount = newItem.cantidad * newItem.precio_unitario;
+    const baseAmount = cantidadValue * precioUnitarioValue;
     // El descuento ahora es monto en soles, no porcentaje
-    const total = baseAmount - newItem.descuento;
+    const total = baseAmount - descuentoValue;
     setNewItem(prev => ({ ...prev, importe_total: total }));
-  }, [newItem.cantidad, newItem.precio_unitario, newItem.descuento]);
+  }, [cantidadValue, precioUnitarioValue, descuentoValue]);
 
   // Función para agregar item
   const handleAddItem = () => {
@@ -77,27 +96,36 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
       toast.error('Ingrese una descripción para el item');
       return;
     }
-    if (newItem.precio_unitario <= 0) {
+    if (precioUnitarioValue <= 0) {
       toast.error('El precio unitario debe ser mayor a 0');
       return;
     }
-    if (newItem.descuento < 0) {
+    if (descuentoValue < 0) {
       toast.error('El descuento no puede ser negativo');
       return;
     }
-    if (newItem.descuento > newItem.cantidad * newItem.precio_unitario) {
+    if (descuentoValue > cantidadValue * precioUnitarioValue) {
       toast.error('El descuento no puede ser mayor al importe total');
       return;
     }
     // Agregar el id del servicio al ítem
-    onItemsChange([...items, { ...newItem, service_id: selectedService?.id }]);
+    onItemsChange([
+      ...items,
+      {
+        ...newItem,
+        cantidad: cantidadValue,
+        precio_unitario: precioUnitarioValue,
+        descuento: descuentoValue,
+        service_id: selectedService?.id,
+      },
+    ]);
     // Reset form - mantener el servicio seleccionado pero resetear precio a 0
     setNewItem({
-      cantidad: 1,
+      cantidad: '1',
       unidad: selectedService?.unit_code || 'NIU',
       descripcion: selectedService?.name || '', // Solo el nombre del servicio
-      precio_unitario: 0, // Siempre en 0 para que el usuario lo ingrese
-      descuento: 0,
+      precio_unitario: '', // Queda vacío para que el usuario lo ingrese
+      descuento: '',
       importe_total: 0
     });
     setShowAddForm(false);
@@ -141,8 +169,7 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
                 min="1"
                 step="1"
                 value={newItem.cantidad}
-                onChange={(e) => setNewItem(prev => ({ ...prev, cantidad: parseFloat(e.target.value) || 1 }))}
-                onFocus={(e) => { if (e.target.value === '1') e.target.value = ''; }}
+                onChange={(e) => setNewItem(prev => ({ ...prev, cantidad: e.target.value }))}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
@@ -165,8 +192,7 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
                 min="0"
                 step="0.01"
                 value={newItem.precio_unitario}
-                onChange={(e) => setNewItem(prev => ({ ...prev, precio_unitario: parseFloat(e.target.value) || 0 }))}
-                onFocus={(e) => { if (e.target.value === '0') e.target.value = ''; }}
+                onChange={(e) => setNewItem(prev => ({ ...prev, precio_unitario: e.target.value }))}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="0.00"
               />
@@ -178,8 +204,7 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
                 min="0"
                 step="0.01"
                 value={newItem.descuento}
-                onChange={(e) => setNewItem(prev => ({ ...prev, descuento: parseFloat(e.target.value) || 0 }))}
-                onFocus={(e) => { if (e.target.value === '0') e.target.value = ''; }}
+                onChange={(e) => setNewItem(prev => ({ ...prev, descuento: e.target.value }))}
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="0.00"
               />
@@ -214,7 +239,7 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
                 <Button
                   type="button"
                   onClick={handleAddItem}
-                  disabled={!newItem.descripcion.trim() || newItem.precio_unitario <= 0}
+                  disabled={!newItem.descripcion.trim() || precioUnitarioValue <= 0}
                   size="sm"
                   className="flex-1"
                 >

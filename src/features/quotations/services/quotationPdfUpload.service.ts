@@ -30,7 +30,6 @@ export const quotationPdfUploadService = {
         pdf_url: pdfURL
       };
     } catch (error: any) {
-      console.error('Error uploading quotation PDF:', error);
       return {
         success: false,
         error: error.message || 'Error desconocido al subir PDF'
@@ -48,7 +47,7 @@ export const quotationPdfUploadService = {
   }: {
     file: Blob;
     quotationId: number;
-    authToken: string;
+    authToken?: string;
   }): Promise<string> => {
     try {
       // Convertir el blob a base64
@@ -64,11 +63,16 @@ export const quotationPdfUploadService = {
         filename: fileName
       };
 
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+
+      if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+      }
+
       const response = await api.post('/quotations/upload-pdf-base64', payload, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        }
+        headers,
       });
 
       if (response.data && response.data.pdf_file_path) {
@@ -77,7 +81,6 @@ export const quotationPdfUploadService = {
         throw new Error('La respuesta del servidor no contiene la URL del PDF');
       }
     } catch (error: any) {
-      console.error('Error uploading PDF:', error);
       throw error;
     }
   },
@@ -105,18 +108,20 @@ export const quotationPdfUploadService = {
   /**
    * Verifica si un PDF se ha subido correctamente consultando la cotización
    */
-  verifyPDFUpload: async (quotationId: number, authToken: string): Promise<boolean> => {
+  verifyPDFUpload: async (quotationId: number, authToken?: string): Promise<boolean> => {
     try {
+      const headers: Record<string, string> = {};
+      if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+      }
+
       const response = await api.get(`/quotations/${quotationId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+        headers,
       });
 
       // Verificar si la cotización tiene una URL de PDF
       return !!(response.data && response.data.pdf_file_path);
     } catch (error) {
-      console.error('Error verifying PDF upload:', error);
       return false;
     }
   },
@@ -124,17 +129,19 @@ export const quotationPdfUploadService = {
   /**
    * Obtiene la URL del PDF de una cotización si existe
    */
-  getQuotationPDFUrl: async (quotationId: number, authToken: string): Promise<string | null> => {
+  getQuotationPDFUrl: async (quotationId: number, authToken?: string): Promise<string | null> => {
     try {
+      const headers: Record<string, string> = {};
+      if (authToken) {
+        headers.Authorization = `Bearer ${authToken}`;
+      }
+
       const response = await api.get(`/quotations/${quotationId}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
+        headers,
       });
 
       return response.data?.pdf_file_path || null;
     } catch (error) {
-      console.error('Error getting quotation PDF URL:', error);
       return null;
     }
   }

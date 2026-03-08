@@ -142,6 +142,11 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                   {/* Fecha */}
                   <p className="text-xs text-slate-400 mb-4">{current.release_date}</p>
 
+                  {/* Estado del carrusel para dejar claro cuantas novedades hay */}
+                  <p className="text-xs text-slate-500 mb-4 font-medium">
+                    Novedad {currentIndex + 1} de {total}
+                  </p>
+
                   {/* Descripción */}
                   <p className="text-slate-600 text-base leading-relaxed mb-8">
                     {current.description}

@@ -276,7 +276,7 @@ export const QuotationDetailPage: React.FC = () => {
 
   return (
     <div className="-mx-6 -mt-6">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 mb-8">
+      <header className="bg-white border-b border-slate-200 px-6 py-4 mb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <nav className="flex text-sm font-medium text-slate-500 mb-2">

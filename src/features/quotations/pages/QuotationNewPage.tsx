@@ -308,7 +308,7 @@ export const QuotationNewPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="px-4 md:px-6 pb-64 lg:pb-8 space-y-6">
+      <div className="px-4 md:px-6 pb-8 space-y-6">
         {/* Alert de error */}
         {servicesError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
@@ -323,7 +323,7 @@ export const QuotationNewPage: React.FC = () => {
         )}
 
         <form onSubmit={handleFormSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 lg:gap-8 items-start">
+          <div className="grid grid-cols-1 gap-6 lg:gap-8 items-start">
 
             {/* ── Columna izquierda ── */}
             <div className="space-y-8">
@@ -476,10 +476,7 @@ export const QuotationNewPage: React.FC = () => {
                 </div>
               </section>
 
-            </div>
-
-            {/* ── Sidebar derecha (sticky top-28 = header del app + page header) ── */}
-            <div className="hidden lg:block sticky top-28">
+              {/* Resumen al final (sin posición fija) */}
               <QuotationSummary
                 items={items}
                 includeIGV={includeIGV}
@@ -489,24 +486,11 @@ export const QuotationNewPage: React.FC = () => {
                 onCancel={() => navigate('/sales/quotations')}
                 showSecurity
               />
+
             </div>
 
           </div>
         </form>
-
-        {/* Resumen fijo para mobile */}
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 backdrop-blur-sm px-4 pb-6 pt-3 shadow-[0_-12px_24px_rgba(15,23,42,0.08)]">
-          <QuotationSummary
-            items={items}
-            includeIGV={includeIGV}
-            isLoading={loading || seriesLoading}
-            isDisabled={!selectedSeries || !selectedClient || items.length === 0}
-            onSubmit={handleCreate}
-            onCancel={() => navigate('/sales/quotations')}
-            compact
-            showSecurity={false}
-          />
-        </div>
       </div>
 
       {/* Modal de Previsualización */}

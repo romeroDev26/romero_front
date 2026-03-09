@@ -14,6 +14,7 @@ interface QuotationSummaryProps {
   className?: string;
   compact?: boolean;
   showSecurity?: boolean;
+  stickySidebar?: boolean;
 }
 
 export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
@@ -26,6 +27,7 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
   className,
   compact = false,
   showSecurity = true,
+  stickySidebar = false,
 }) => {
   const subtotal = items.reduce((sum, item) => sum + item.cantidad * item.precio_unitario, 0);
   const totalDiscount = items.reduce((sum, item) => sum + item.descuento, 0);
@@ -39,7 +41,7 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
   return (
     <div className={className || 'space-y-6'}>
       {/* Tarjeta principal resumen */}
-      <div className={`bg-white rounded-xl border border-slate-200 shadow-sm ${compact ? 'p-4' : 'p-6'}`}>
+      <div className={`bg-white rounded-xl border border-slate-200 shadow-sm ${stickySidebar ? 'sticky top-28 max-h-[calc(100vh-120px)] overflow-y-auto' : ''} ${compact ? 'p-4' : 'p-6'}`}>
         <h3 className={`font-bold text-gray-900 ${compact ? 'text-base mb-4' : 'text-lg mb-6'}`}>Resumen</h3>
 
         {/* Números */}

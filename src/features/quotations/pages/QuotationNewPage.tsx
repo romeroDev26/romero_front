@@ -267,9 +267,10 @@ export const QuotationNewPage: React.FC = () => {
 
   // ── Paso 3: Formulario de cotización ────────────────────────────────────────
   return (
-    <div className="-mx-6 -mt-6">
-      {/* Page header — sticky */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-2.5 md:py-4 mb-4 md:mb-8">
+    <div className="max-w-[1200px] mx-auto">
+      <div className="-mx-4 md:-mx-6 -mt-6">
+        {/* Page header — sticky */}
+        <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-2.5 md:py-4 mb-4 md:mb-8">
         <div className="flex items-start md:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
             <div className="bg-primary p-1.5 md:p-2 rounded-lg text-white shrink-0">
@@ -308,7 +309,7 @@ export const QuotationNewPage: React.FC = () => {
         </div>
       </header>
 
-      <div className="px-4 md:px-6 pb-8 space-y-6">
+      <div className="px-4 lg:px-8 pb-8 space-y-6">
         {/* Alert de error */}
         {servicesError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
@@ -323,13 +324,13 @@ export const QuotationNewPage: React.FC = () => {
         )}
 
         <form onSubmit={handleFormSubmit}>
-          <div className="grid grid-cols-1 gap-6 lg:gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-8 items-start">
 
             {/* ── Columna izquierda ── */}
             <div className="space-y-8">
 
               {/* Información Básica */}
-              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <section className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 <div className="bg-slate-50 px-4 md:px-6 py-3 border-b border-slate-100">
                   <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-900">
                     <InformationCircleIcon className="h-5 w-5 text-primary" />
@@ -476,7 +477,24 @@ export const QuotationNewPage: React.FC = () => {
                 </div>
               </section>
 
-              {/* Resumen al final (sin posición fija) */}
+            </div>
+
+            {/* ── Columna derecha: Resumen (sticky en desktop) ── */}
+            <div className="hidden lg:block">
+              <QuotationSummary
+                items={items}
+                includeIGV={includeIGV}
+                isLoading={loading || seriesLoading}
+                isDisabled={!selectedSeries || !selectedClient || items.length === 0}
+                onSubmit={handleCreate}
+                onCancel={() => navigate('/sales/quotations')}
+                showSecurity
+                stickySidebar
+              />
+            </div>
+
+            {/* Resumen en mobile (al final del flujo) */}
+            <div className="lg:hidden col-span-1">
               <QuotationSummary
                 items={items}
                 includeIGV={includeIGV}
@@ -486,7 +504,6 @@ export const QuotationNewPage: React.FC = () => {
                 onCancel={() => navigate('/sales/quotations')}
                 showSecurity
               />
-
             </div>
 
           </div>
@@ -502,6 +519,7 @@ export const QuotationNewPage: React.FC = () => {
           quotation={createdQuotation}
         />
       )}
+      </div>
     </div>
   );
 };

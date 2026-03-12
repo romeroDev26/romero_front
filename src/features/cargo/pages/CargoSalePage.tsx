@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-import { CreditCard, PlusIcon, PencilIcon, TrashIcon, ClipboardListIcon, HashIcon } from 'lucide-react';
+import { CreditCard, PlusIcon, PencilIcon, TrashIcon, ClipboardListIcon, HashIcon, ArrowRightIcon, PackageIcon, UserIcon, MapPinIcon, ReceiptTextIcon } from 'lucide-react';
 
 import { PassengerDataForm } from '../../fluvial/components/sales-point/PassengerDataForm';
 import { TripSelection } from '../../fluvial/components/sales-point/TripSelection';
@@ -385,6 +385,12 @@ export const CargoSalePage: React.FC = () => {
 
   const isNextDisabled = !remitter.docNumber || !remitter.name || (!recipient.isSameAsSender && (!recipient.docNumber || !recipient.name));
 
+  const selectedOriginName = tripDetails?.stops?.find(s => s.port_id === selectedOriginId)?.port?.name || 'Origen pendiente';
+  const selectedDestinationName = tripDetails?.stops?.find(s => s.port_id === selectedDestinationId)?.port?.name || 'Destino pendiente';
+  const documentLabel = isRuc ? 'Factura' : 'Boleta';
+  const selectedSeriesValue = isRuc ? selectedFacturaSeries : selectedBoletaSeries;
+  const availableSeries = isRuc ? availableFacturaSeries : availableBoletaSeries;
+
   const renderContent = () => {
     if (!selectedBranch) return <div className="p-6 text-center text-gray-500">Cargando...</div>;
     
@@ -457,225 +463,289 @@ export const CargoSalePage: React.FC = () => {
       case 'itemsDefinition':
         return (
           <div className="max-w-7xl mx-auto space-y-6">
-            {/* Header con información del paso */}
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border">
-              <div className="flex flex-col md:flex-row justify-between items-start mb-4 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full md:w-auto"
-                  onClick={() => { setSelectedDestinationId(null); setCurrentView('tripSegmentSelection'); }}
-                >
-                  Volver a Seleccionar Tramo
-                </Button>
-                <div className="bg-gray-50 p-4 rounded-lg border flex-1 w-full md:max-w-md">
-                  <h3 className="font-semibold text-sm text-gray-800 mb-3 flex items-center">
-                    <ClipboardListIcon className="h-4 w-4 mr-2 text-gray-500" />
-                    Comprobante
-                  </h3>
-                  {isLoadingSeries ? (
-                    <Spinner />
-                  ) : (
-                    <div className="flex gap-4">
-                      <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          {isRuc ? "Serie de Factura" : "Serie de Boleta"}
-                        </label>
-                        <select
-                          value={isRuc ? selectedFacturaSeries : selectedBoletaSeries}
-                          onChange={(e) => isRuc ? handleFacturaSeriesChange(e.target.value) : handleBoletaSeriesChange(e.target.value)}
-                          className="w-full p-2 border border-gray-300 rounded-md bg-white text-sm"
-                          disabled={(isRuc ? availableFacturaSeries.length : availableBoletaSeries.length) <= 1}
-                        >
-                          {(isRuc ? availableFacturaSeries : availableBoletaSeries).map((s) => (
-                            <option key={s.id} value={s.series_code}>
-                              {s.series_code}
-                            </option>
-                          ))}
-                        </select>
+            <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+              <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-5 py-6 md:px-8">
+                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
+                      Paso 4 de 4
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Definir encomienda y cierre de venta</h2>
+                      <p className="mt-2 max-w-2xl text-sm text-slate-300">
+                        Revise los datos del envío, agregue la encomienda y deje listo el cobro sin alterar el flujo actual del sistema.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur xl:max-w-md">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">Comprobante</p>
+                        <p className="mt-1 text-sm font-semibold text-white">Configuración de serie activa</p>
                       </div>
-                      <div className="w-20">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Siguiente N°
-                        </label>
-                        <div className="relative">
-                          <HashIcon className="h-4 w-4 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" />
-                          <input 
-                            type="text" 
-                            value={currentSeriesNumber || '...'} 
-                            disabled 
-                            className="w-full p-2 pl-7 border-gray-200 bg-gray-100 rounded-md text-xs text-center" 
-                          />
+                      <ReceiptTextIcon className="h-5 w-5 text-slate-300" />
+                    </div>
+                    {isLoadingSeries ? (
+                      <Spinner />
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_104px]">
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-slate-300">
+                            Serie de {documentLabel}
+                          </label>
+                          <select
+                            value={selectedSeriesValue}
+                            onChange={(e) => isRuc ? handleFacturaSeriesChange(e.target.value) : handleBoletaSeriesChange(e.target.value)}
+                            className="w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            disabled={availableSeries.length <= 1}
+                          >
+                            {availableSeries.map((s) => (
+                              <option key={s.id} value={s.series_code}>
+                                {s.series_code}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium text-slate-300">
+                            Siguiente N°
+                          </label>
+                          <div className="relative">
+                            <HashIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="text"
+                              value={currentSeriesNumber || '...'}
+                              disabled
+                              className="w-full rounded-xl border border-white/10 bg-slate-100 py-2 pl-9 pr-3 text-center text-sm font-semibold text-slate-600"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 w-full">
-                  {/* Remitente */}
-                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                    <p className="text-xs font-medium text-blue-600 uppercase tracking-wide mb-1">Remitente</p>
-                    <p className="font-semibold text-gray-900 text-sm">{remitter.name}</p>
-                    <p className="text-xs text-gray-600">{remitter.docType}: {remitter.docNumber}</p>
-                  </div>
-                  
-                  {/* Destinatario */}
-                  <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                    <p className="text-xs font-medium text-green-600 uppercase tracking-wide mb-1">Destinatario</p>
-                    <p className="font-semibold text-gray-900 text-sm">
-                      {recipient.isSameAsSender ? 'Mismo Remitente' : recipient.name}
-                    </p>
-                    {!recipient.isSameAsSender && (
-                      <p className="text-xs text-gray-600">{recipient.docType}: {recipient.docNumber}</p>
                     )}
                   </div>
-                  
-                  {/* Viaje */}
-                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                    <p className="text-xs font-medium text-purple-600 uppercase tracking-wide mb-1">Viaje</p>
-                    <p className="font-semibold text-gray-900 text-sm">{selectedTrip?.trip_name}</p>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 bg-slate-50/80 px-5 py-5 md:px-8">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-blue-700">
+                      <UserIcon className="h-4 w-4" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em]">Remitente</p>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-900">{remitter.name}</p>
+                    <p className="mt-1 text-xs text-slate-600">{remitter.docType}: {remitter.docNumber}</p>
                   </div>
-                  
-                  {/* Tramo */}
-                  <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                    <p className="text-xs font-medium text-orange-600 uppercase tracking-wide mb-1">Tramo</p>
-                    <p className="font-semibold text-gray-900 text-sm">
-                      {tripDetails?.stops?.find(s => s.port_id === selectedOriginId)?.port?.name} → {tripDetails?.stops?.find(s => s.port_id === selectedDestinationId)?.port?.name}
+
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-emerald-700">
+                      <UserIcon className="h-4 w-4" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em]">Destinatario</p>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-900">{recipient.isSameAsSender ? 'Mismo remitente' : recipient.name}</p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      {recipient.isSameAsSender ? remitter.docType : recipient.docType}: {recipient.isSameAsSender ? remitter.docNumber : recipient.docNumber}
                     </p>
                   </div>
+
+                  <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-violet-700">
+                      <PackageIcon className="h-4 w-4" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em]">Viaje</p>
+                    </div>
+                    <p className="text-sm font-semibold text-slate-900">{selectedTrip?.trip_name}</p>
+                    <p className="mt-1 text-xs text-slate-600">Sucursal: {selectedBranch.name}</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-amber-700">
+                      <MapPinIcon className="h-4 w-4" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em]">Tramo</p>
+                    </div>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                      <span>{selectedOriginName}</span>
+                      <ArrowRightIcon className="h-4 w-4 text-amber-600" />
+                      <span>{selectedDestinationName}</span>
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">Viaje listo para asignar encomienda</p>
+                  </div>
                 </div>
-                <Button 
-                  onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }} 
-                  size="md"
-                  className="bg-blue-600 hover:bg-blue-700 w-full md:w-auto md:ml-6"
-                  disabled={cargoItems.length >= 1}
-                  title={cargoItems.length >= 1 ? "Solo se permite una encomienda por venta" : "Añadir encomienda"}
-                >
-                  <PlusIcon className="w-5 h-5 mr-2" /> Añadir Encomienda
-                </Button>
               </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border overflow-hidden overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Servicio/Descripción
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Subtotal
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+            </section>
+
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+              <section className="space-y-6">
+                <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Gestión de encomienda</p>
+                      <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Detalle del envío</h3>
+                      <p className="mt-2 text-sm text-slate-500">Agregue una encomienda, revise su información y edítela desde esta misma vista.</p>
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-center rounded-xl border-slate-300 px-4 py-3 text-slate-700 hover:bg-slate-50 sm:w-auto"
+                        onClick={() => { setSelectedDestinationId(null); setCurrentView('tripSegmentSelection'); }}
+                      >
+                        Volver a Seleccionar Tramo
+                      </Button>
+                      <Button
+                        onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }}
+                        size="md"
+                        className="w-full justify-center rounded-xl px-5 py-3 shadow-sm sm:w-auto"
+                        disabled={cargoItems.length >= 1}
+                        title={cargoItems.length >= 1 ? 'Solo se permite una encomienda por venta' : 'Añadir encomienda'}
+                      >
+                        <PlusIcon className="mr-2 h-5 w-5" /> Añadir Encomienda
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
                   {cargoItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="text-center py-12 text-gray-500">
-                        <div className="flex flex-col items-center">
-                          <ClipboardListIcon className="h-12 w-12 text-gray-300 mb-2" />
-                          <p>Añada una encomienda para empezar</p>
-                        </div>
-                      </td>
-                    </tr>
+                    <div className="rounded-[28px] border-2 border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                        <ClipboardListIcon className="h-8 w-8" />
+                      </div>
+                      <h4 className="mt-5 text-lg font-semibold text-slate-900">Todavía no hay encomiendas cargadas</h4>
+                      <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">Use el botón principal para registrar la encomienda. La venta conserva la restricción actual de una encomienda por operación.</p>
+                    </div>
                   ) : (
-                    cargoItems.map(item => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div>
-                            <div className="font-semibold text-gray-900">{item.product.name}</div>
-                            <div className="text-sm text-gray-600">{item.description}</div>
+                    cargoItems.map((item, index) => (
+                      <article key={item.id} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-primary/40 md:p-6">
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="flex min-w-0 gap-4">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+                              <PackageIcon className="h-7 w-7" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
+                                  Encomienda {index + 1}
+                                </span>
+                                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
+                                  {item.product.name}
+                                </span>
+                              </div>
+                              <h4 className="mt-3 text-lg font-semibold text-slate-900">{item.description}</h4>
+                              <p className="mt-1 text-sm text-slate-500">Unidad: {item.unitOfMeasure} · Cantidad: {item.quantity} · Precio unitario: S/ {item.price.toFixed(2)}</p>
+                            </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-right font-semibold text-gray-900">
-                          S/ {(item.quantity * item.price).toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-center space-x-2">
+
+                          <div className="flex items-center gap-2 self-start lg:ml-4">
                             <button
                               onClick={() => { setEditingItem(item); setIsItemModalOpen(true); }}
-                              className="text-blue-600 hover:text-blue-800 p-1"
+                              className="rounded-xl border border-slate-200 p-2.5 text-slate-500 transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
                               title="Editar"
                             >
-                              <PencilIcon className="w-4 h-4" />
+                              <PencilIcon className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => setCargoItems(items => items.filter(i => i.id !== item.id))}
-                              className="text-red-600 hover:text-red-800 p-1"
+                              className="rounded-xl border border-slate-200 p-2.5 text-slate-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600"
                               title="Eliminar"
                             >
-                              <TrashIcon className="w-4 h-4" />
+                              <TrashIcon className="h-4 w-4" />
                             </button>
                           </div>
-                        </td>
-                      </tr>
+                        </div>
+
+                        <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+                          <div className="rounded-2xl bg-slate-50 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Destinatario aplicado</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-900">{item.recipient.isSameAsSender ? remitter.name : item.recipient.name}</p>
+                            <p className="mt-1 text-xs text-slate-500">{item.recipient.isSameAsSender ? remitter.docType : item.recipient.docType}: {item.recipient.isSameAsSender ? remitter.docNumber : item.recipient.docNumber}</p>
+                          </div>
+                          <div className="rounded-2xl bg-slate-50 p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Tramo operativo</p>
+                            <p className="mt-2 text-sm font-semibold text-slate-900">{selectedOriginName} → {selectedDestinationName}</p>
+                            <p className="mt-1 text-xs text-slate-500">Viaje: {selectedTrip?.trip_name}</p>
+                          </div>
+                          <div className="rounded-2xl bg-primary/5 p-4 ring-1 ring-primary/10">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Subtotal</p>
+                            <p className="mt-2 text-2xl font-bold text-slate-900">S/ {(item.quantity * item.price).toFixed(2)}</p>
+                            <p className="mt-1 text-xs text-slate-500">Se mantiene la lógica actual de cálculo</p>
+                          </div>
+                        </div>
+                      </article>
                     ))
                   )}
-                </tbody>
-              </table>
-            </div>
-            <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm border">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Columna Izquierda: Total y Metodo de Pago */}
-                <div className="space-y-4">
-                  {/* Total a Pagar */}
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-                    <p className="text-sm font-medium text-gray-600 mb-1">Total a Pagar</p>
-                    <p className="text-4xl font-bold text-gray-900">S/ {totalSaleAmount.toFixed(2)}</p>
+                </div>
+              </section>
+
+              <aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
+                <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+                  <div className="border-b border-slate-200 bg-gradient-to-br from-primary/10 via-amber-50 to-white px-6 py-6">
+                    <p className="text-sm font-semibold text-slate-500">Total a Pagar</p>
+                    <p className="mt-2 text-4xl font-black tracking-tight text-slate-900">S/ {totalSaleAmount.toFixed(2)}</p>
+                    <p className="mt-2 text-sm text-slate-500">
+                      {cargoItems.length} {cargoItems.length === 1 ? 'encomienda registrada' : 'encomiendas registradas'}
+                    </p>
                     {isContraentrega && (
-                      <p className="text-sm text-amber-600 mt-2 font-medium">
-                        Pago pendiente - Se cobrara al entregar
+                      <p className="mt-3 rounded-xl bg-amber-100 px-3 py-2 text-sm font-medium text-amber-700">
+                        Pago pendiente. Se cobrará al entregar la encomienda.
                       </p>
                     )}
                   </div>
 
-                  {/* Formulario de Pago Dividido - Solo visible cuando NO es contraentrega */}
-                  {!isContraentrega && (
-                    <SplitPaymentForm
-                      totalAmount={totalSaleAmount}
-                      currencySymbol="S/"
-                      disabled={isProcessingClient || isCreatingInvoice}
-                      onPaymentDataChange={handleSplitPaymentChange}
-                    />
-                  )}
-                </div>
-
-                {/* Columna Derecha: Opciones y Botón de Acción */}
-                <div className="flex flex-col justify-end space-y-4">
-                  {/* Switch de Contraentrega */}
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Contraentrega</p>
-                        <p className="text-xs text-gray-500">El pago se realizará al recibir la encomienda</p>
+                  <div className="space-y-5 px-6 py-6">
+                    <div className="rounded-2xl bg-slate-50 p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">Contraentrega</p>
+                          <p className="mt-1 text-xs text-slate-500">Actívelo si el pago se realizará en destino.</p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={isContraentrega}
+                          onClick={() => setIsContraentrega(!isContraentrega)}
+                          className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isContraentrega ? 'bg-primary' : 'bg-slate-300'}`}
+                        >
+                          <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={isContraentrega}
-                        onClick={() => setIsContraentrega(!isContraentrega)}
-                        className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isContraentrega ? 'bg-blue-600' : 'bg-gray-300'}`}
-                      >
-                        <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
-                      </button>
                     </div>
-                  </div>
 
-                  {/* Botón de Generar Venta */}
-                  <Button 
-                    onClick={handleOpenConfirmModal} 
-                    size="lg"
-                    isLoading={isProcessingClient || isCreatingInvoice || isProcessingSale} 
-                    disabled={cargoItems.length === 0 || isProcessingSale}
-                    className="bg-blue-600 hover:bg-blue-700 w-full text-lg py-4"
-                  >
-                    <CreditCard className="w-5 h-5 mr-2" /> Generar Venta y Comprobante
-                  </Button>
-                </div>
-              </div>
+                    {!isContraentrega && (
+                      <SplitPaymentForm
+                        totalAmount={totalSaleAmount}
+                        currencySymbol="S/"
+                        disabled={isProcessingClient || isCreatingInvoice}
+                        onPaymentDataChange={handleSplitPaymentChange}
+                      />
+                    )}
+
+                    <div className="space-y-3 rounded-2xl border border-slate-200 p-4">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Documento</span>
+                        <span className="font-semibold text-slate-900">{documentLabel}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Serie</span>
+                        <span className="font-semibold text-slate-900">{selectedSeriesValue || 'Sin serie'}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-500">Siguiente correlativo</span>
+                        <span className="font-semibold text-slate-900">{currentSeriesNumber || '...'}</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleOpenConfirmModal}
+                      size="lg"
+                      isLoading={isProcessingClient || isCreatingInvoice || isProcessingSale}
+                      disabled={cargoItems.length === 0 || isProcessingSale}
+                      className="w-full rounded-2xl py-4 text-base font-semibold shadow-sm"
+                    >
+                      <CreditCard className="mr-2 h-5 w-5" /> Generar Venta y Comprobante
+                    </Button>
+                  </div>
+                </section>
+              </aside>
             </div>
           </div>
         );

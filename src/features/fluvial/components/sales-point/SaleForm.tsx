@@ -930,8 +930,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
             // Callback de exito: mostrar modal de preview de ticket con datos reales
             setTicketBackendData(invoiceData);
             setShowTicketPreview(true);
-            // Desactivar estado de procesamiento cuando se muestra el modal
-            setIsProcessingSale(false);
           },
           seatMap,
           confirmPurchase,
@@ -980,8 +978,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         (invoiceData) => {
           setTicketBackendData(invoiceData);
           setShowTicketPreview(true);
-          // Desactivar estado de procesamiento cuando se muestra el modal
-          setIsProcessingSale(false);
         },
         itemDescription,
         confirmPurchase,
@@ -999,9 +995,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(({
         boletaInfants.length > 0 ? boletaInfants : undefined
       );
     } catch (error) {
-      // Desactivar estado de procesamiento en caso de error
-      setIsProcessingSale(false);
       // Los errores ya son manejados por toast en los hooks internos
+    } finally {
+      // Asegura cerrar el overlay incluso si los hooks internos capturan errores sin relanzarlos
+      setIsProcessingSale(false);
     }
   }, [
     isRuc,

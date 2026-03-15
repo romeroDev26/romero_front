@@ -8,7 +8,7 @@
     @apply antialiased;
   }
   body {
-    @apply bg-neutral;
+    @apply bg-neutral font-sans;
   }
   #root {
     @apply min-h-screen w-full;

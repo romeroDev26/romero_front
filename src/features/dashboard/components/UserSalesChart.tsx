@@ -217,10 +217,15 @@ const UserSalesChart: React.FC = () => {
               <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
               <stop offset="100%" stopColor="#6366f1" stopOpacity={0.05} />
             </linearGradient>
-            {/* Gradiente para Pasajes */}
+            {/* Gradiente para Ventas por Pasajes */}
             <linearGradient id="gradientTickets" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.25} />
               <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05} />
+            </linearGradient>
+            {/* Gradiente para Encomiendas */}
+            <linearGradient id="gradientCargo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid 
@@ -255,30 +260,46 @@ const UserSalesChart: React.FC = () => {
             dot={false}
             activeDot={{ r: 6, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }}
           />
-          
-          {/* Área de Pasajes */}
+
+          {/* Área de Ventas por Pasajes */}
           <Area
             type="monotone"
             dataKey="tickets_revenue"
-            name="Pasajes"
+            name="Ventas por Pasajes"
             stroke="#3b82f6"
             strokeWidth={2}
             fill="url(#gradientTickets)"
             dot={false}
             activeDot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
           />
+
+          {/* Área de Encomiendas */}
+          <Area
+            type="monotone"
+            dataKey="cargo_revenue"
+            name="Encomiendas"
+            stroke="#f59e0b"
+            strokeWidth={2}
+            fill="url(#gradientCargo)"
+            dot={false}
+            activeDot={{ r: 5, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
+          />
         </AreaChart>
       </ResponsiveContainer>
 
       {/* Leyenda personalizada */}
-      <div className="flex justify-center gap-6 mt-4">
+      <div className="flex flex-wrap justify-center gap-6 mt-4">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
           <span className="text-sm text-gray-600">Ingresos Totales</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span className="text-sm text-gray-600">Pasajes</span>
+          <span className="text-sm text-gray-600">Ventas por Pasajes</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+          <span className="text-sm text-gray-600">Encomiendas</span>
         </div>
       </div>
     </div>

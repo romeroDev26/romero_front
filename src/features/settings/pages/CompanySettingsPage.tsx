@@ -5,13 +5,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'react-toastify';
 import { Spinner } from '../../../components/common/Spinner';
-import { Button } from '../../../components/common/Button';
-import { Input } from '../../../components/common/Input';
 import { companiesService } from '../../../services/companies.service';
 import { CompanyUpdate } from '../../../types';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  InformationCircleIcon,
+  KeyIcon,
+  FolderOpenIcon,
+  UserIcon,
+  LockClosedIcon,
+  ShieldCheckIcon,
+  PhotoIcon,
+  ArrowDownTrayIcon,
+} from '@heroicons/react/24/outline';
 
-// Asumimos que la empresa activa para la configuración tiene un ID conocido (ej. 1)
 const COMPANY_ID = 1;
 
 const companySchema = z.object({
@@ -30,6 +38,11 @@ const companySchema = z.object({
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
+
+const fieldClass =
+  'w-full rounded-lg border border-slate-200 bg-slate-50 text-sm px-3 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors';
+
+const labelClass = 'text-xs font-bold text-slate-500 uppercase tracking-wider';
 
 export const CompanySettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -67,11 +80,11 @@ export const CompanySettingsPage: React.FC = () => {
       certificate_password: '',
     }
   });
-  // Handler para subir certificado digital (restaurado para evitar error en input de certificado)
+
   const handleFileUpload = async (
     file: File | undefined,
     uploadService: (id: number, file: File, password?: string) => Promise<any>,
-    options: { password?: string, maxSizeMB?: number, successMsg: string, errorMsg: string }
+    options: { password?: string; maxSizeMB?: number; successMsg: string; errorMsg: string }
   ) => {
     if (!file) return;
     if (options.maxSizeMB && file.size > options.maxSizeMB * 1024 * 1024) {
@@ -125,15 +138,8 @@ export const CompanySettingsPage: React.FC = () => {
 
   const onSubmit = (data: CompanyFormData) => {
     const updateData: CompanyUpdate = { ...data };
-
-    if (!updateData.sunat_password_sol) {
-      delete updateData.sunat_password_sol;
-    }
-
-    if (!updateData.certificate_password) {
-      delete updateData.certificate_password;
-    }
-
+    if (!updateData.sunat_password_sol) delete updateData.sunat_password_sol;
+    if (!updateData.certificate_password) delete updateData.certificate_password;
     if (Object.keys(updateData).length > 0) {
       updateMutation.mutate(updateData);
     } else {
@@ -141,24 +147,19 @@ export const CompanySettingsPage: React.FC = () => {
     }
   };
 
-  // Handler especial para subir el logo con validación de tipo/tamaño y solo si es archivo válido
   const handleLogoUpload = async (file: File | undefined) => {
     if (!file) return;
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
-    const maxSize = 2 * 1024 * 1024;
     if (!allowedTypes.includes(file.type)) {
       toast.error('Solo se permiten archivos JPG, PNG o SVG');
       return;
     }
-    if (file.size > maxSize) {
+    if (file.size > 2 * 1024 * 1024) {
       toast.error('El archivo no puede ser mayor a 2MB');
       return;
     }
     try {
-      const formValues = getValues();
-      const result = await companiesService.uploadLogo(COMPANY_ID, file, {
-        ...formValues,
-      });
+      const result = await companiesService.uploadLogo(COMPANY_ID, file, { ...getValues() });
       setCompany((prev: any) => prev ? { ...prev, logo_url: result.logo_url } : prev);
       toast.success('Logo actualizado');
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
@@ -167,142 +168,243 @@ export const CompanySettingsPage: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div className="flex justify-center items-center h-screen"><Spinner size="lg" /></div>;
-  if (error) return <div className="p-4 text-center text-red-600 bg-red-100 rounded-md">Error al cargar la información de la empresa. Por favor, intente de nuevo.</div>;
+  if (isLoading) return <div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>;
+  if (error) return <div className="p-4 text-center text-red-600 bg-red-100 rounded-md">Error al cargar la información de la empresa.</div>;
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8">
+      {/* Page header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Configuración de Empresa</h1>
-        <p className="mt-1 text-sm text-gray-600">Administra los datos fiscales y credenciales de tu compañía.</p>
+        <h1 className="text-2xl font-bold text-slate-900">Configuración de Empresa</h1>
+        <p className="text-xs text-slate-500 mt-1">Administre la identidad y credenciales de su organización</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-4 lg:px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Datos Generales</h2></div>
-          <div className="border-t border-gray-200 p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input label="RUC *" {...register('ruc')} error={errors.ruc?.message} />
-            <Input label="Razón Social *" {...register('business_name')} error={errors.business_name?.message} />
-            <Input label="Nombre Comercial" {...register('trade_name')} error={errors.trade_name?.message} />
-            <Input label="Dirección Fiscal *" {...register('address')} error={errors.address?.message} />
-            <Input label="Ubigeo *" {...register('ubigeo')} error={errors.ubigeo?.message} />
-            <Input label="Teléfono" {...register('phone')} error={errors.phone?.message} />
-            <Input label="Email" type="email" {...register('email')} error={errors.email?.message} />
-            <Input label="Cuenta de Detracción" {...register('detraccion_account')} error={errors.detraccion_account?.message} />
+        {/* ── Datos Generales ── */}
+        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-slate-100 flex items-center gap-2">
+            <InformationCircleIcon className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-bold">Datos Generales</h2>
           </div>
-        </div>
-
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-4 lg:px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Configuración SUNAT</h2></div>
-          <div className="border-t border-gray-200 p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input label="Usuario SOL *" {...register('sunat_username')} error={errors.sunat_username?.message} />
-            <div className="relative">
-              <Input label="Contraseña SOL (si desea cambiar)" type={showSunatPassword ? 'text' : 'password'} {...register('sunat_password_sol')} error={errors.sunat_password_sol?.message} />
-              <button
-                type="button"
-                onClick={() => setShowSunatPassword(!showSunatPassword)}
-                className="absolute right-3 top-8 text-gray-500"
-                tabIndex={-1}
-              >
-                {showSunatPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-              </button>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="space-y-1">
+              <label className={labelClass}>RUC *</label>
+              <input className={fieldClass} {...register('ruc')} />
+              {errors.ruc && <p className="text-xs text-red-500">{errors.ruc.message}</p>}
             </div>
-            <div className="md:col-span-2 flex items-start space-x-3 pt-2">
-              <Controller
-                name="beta_mode"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    type="checkbox"
-                    id="beta_mode"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    ref={field.ref}
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mt-1"
-                  />
-                )}
-              />
-              <div><label htmlFor="beta_mode" className="font-medium text-gray-900">Modo Beta</label><p className="text-sm text-gray-500">Enviar comprobantes al ambiente de pruebas de SUNAT.</p></div>
+            <div className="space-y-1 lg:col-span-2">
+              <label className={labelClass}>Razón Social *</label>
+              <input className={fieldClass} {...register('business_name')} />
+              {errors.business_name && <p className="text-xs text-red-500">{errors.business_name.message}</p>}
+            </div>
+            <div className="space-y-1 lg:col-span-2">
+              <label className={labelClass}>Nombre Comercial</label>
+              <input className={fieldClass} {...register('trade_name')} />
+            </div>
+            <div className="space-y-1">
+              <label className={labelClass}>Teléfono</label>
+              <input className={fieldClass} {...register('phone')} />
+            </div>
+            <div className="space-y-1 lg:col-span-2">
+              <label className={labelClass}>Dirección Fiscal *</label>
+              <input className={fieldClass} {...register('address')} />
+              {errors.address && <p className="text-xs text-red-500">{errors.address.message}</p>}
+            </div>
+            <div className="space-y-1">
+              <label className={labelClass}>Ubigeo *</label>
+              <input className={fieldClass} {...register('ubigeo')} />
+              {errors.ubigeo && <p className="text-xs text-red-500">{errors.ubigeo.message}</p>}
+            </div>
+            <div className="space-y-1">
+              <label className={labelClass}>Email</label>
+              <input type="email" className={fieldClass} {...register('email')} />
+              {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
+            </div>
+            <div className="space-y-1 lg:col-span-2">
+              <label className={labelClass}>Cuenta de Detracción</label>
+              <input className={fieldClass} {...register('detraccion_account')} />
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="px-4 lg:px-6 py-4"><h2 className="text-lg font-semibold text-gray-900">Archivos Digitales</h2></div>
-          <div className="border-t border-gray-200 p-4 lg:p-6 space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center min-w-[120px] max-w-[320px] h-32 bg-gray-100 rounded-md justify-center">
-                <img
-                  src={company?.logo_url || 'https://via.placeholder.com/213x128'}
-                  alt="Logo"
-                  className="h-32 w-auto max-w-full object-contain bg-gray-200 rounded-md"
-                  style={{ display: 'block' }}
-                />
+        {/* ── Two-column row ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Configuración SUNAT */}
+          <section className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <KeyIcon className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-bold">Configuración SUNAT</h2>
               </div>
-              <div>
-                <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()}>Cambiar Logo</Button>
-                <p className="mt-1 text-sm text-gray-500">PNG, JPG, máx 2MB.</p>
-                <input
-                  type="file"
-                  ref={logoInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={e => {
-                    const file = e.target.files && e.target.files[0];
-                    if (file) {
-                      handleLogoUpload(file);
-                    }
-                  }}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Certificado Digital (.pfx)</label>
-                <Button type="button" variant="outline" className="mt-1" onClick={() => certificateInputRef.current?.click()}>{company?.certificate_path ? 'Reemplazar' : 'Seleccionar'}</Button>
-                <p className="mt-1 text-sm text-gray-500">{company?.certificate_path ? `Certificado cargado.` : 'No se ha cargado un certificado.'}</p>
-                <input
-                  type="file"
-                  ref={certificateInputRef}
-                  className="hidden"
-                  accept=".pfx,.p12"
-                  onChange={(e) => handleFileUpload(
-                    e.target.files?.[0],
-                    companiesService.uploadCertificate,
-                    {
-                      password: certificatePasswordForUpload,
-                      successMsg: 'Certificado actualizado',
-                      errorMsg: 'Error al subir certificado'
-                    }
+              {/* Toggle switch for beta_mode */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-slate-500">Modo Beta</span>
+                <Controller
+                  name="beta_mode"
+                  control={control}
+                  render={({ field }) => (
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                      />
+                      <div className="w-9 h-5 bg-slate-200 rounded-full peer relative peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white" />
+                    </label>
                   )}
                 />
               </div>
-              <div>
+            </div>
+            <div className="p-6 space-y-4 flex-1">
+              <div className="space-y-1">
+                <label className={labelClass}>Usuario SOL *</label>
                 <div className="relative">
-                  <Input
-                    label="Contraseña del Certificado"
-                    type={showCertPassword ? 'text' : 'password'}
-                    {...register('certificate_password')}
-                    error={errors.certificate_password?.message}
-                    placeholder="Ingrese para cambiar o para subir nuevo"
+                  <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <input className={`${fieldClass} pl-9`} {...register('sunat_username')} />
+                </div>
+                {errors.sunat_username && <p className="text-xs text-red-500">{errors.sunat_username.message}</p>}
+              </div>
+              <div className="space-y-1">
+                <label className={labelClass}>Contraseña SOL (dejar en blanco para no cambiar)</label>
+                <div className="relative">
+                  <LockClosedIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <input
+                    type={showSunatPassword ? 'text' : 'password'}
+                    className={`${fieldClass} pl-9 pr-9`}
+                    {...register('sunat_password_sol')}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowCertPassword(!showCertPassword)}
-                    className="absolute right-3 top-8 text-gray-500"
+                    onClick={() => setShowSunatPassword(!showSunatPassword)}
+                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
                     tabIndex={-1}
                   >
-                    {showCertPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                    {showSunatPassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
+              <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
+                <p className="text-[10px] leading-relaxed text-slate-600">
+                  <span className="font-bold text-primary uppercase">Importante:</span> Estas credenciales son necesarias para la emisión de comprobantes electrónicos a través del sistema OSE/PSE.
+                </p>
+              </div>
             </div>
-          </div>
+          </section>
+
+          {/* Archivos Digitales */}
+          <section className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex items-center gap-2">
+              <FolderOpenIcon className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-bold">Archivos Digitales</h2>
+            </div>
+            <div className="p-6 space-y-6 flex-1">
+              {/* Logo */}
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
+                  {company?.logo_url ? (
+                    <img src={company.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <div className="bg-primary/20 p-2 rounded-full">
+                      <PhotoIcon className="h-8 w-8 text-primary" />
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-bold">Logo de la Empresa</p>
+                  <p className="text-xs text-slate-500">Recomendado: SVG o PNG (400×400 px)</p>
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="text-xs bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-50 transition-colors"
+                  >
+                    Cambiar Logo
+                  </button>
+                  <input
+                    type="file"
+                    ref={logoInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={e => handleLogoUpload(e.target.files?.[0])}
+                  />
+                </div>
+              </div>
+
+              <hr className="border-slate-100" />
+
+              {/* Certificate */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <ShieldCheckIcon className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">Certificado Digital</p>
+                      <p className="text-[10px] text-slate-500">
+                        {company?.certificate_path ? 'Certificado cargado' : 'No se ha cargado un certificado'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => certificateInputRef.current?.click()}
+                    className="text-xs font-bold text-primary hover:underline"
+                  >
+                    {company?.certificate_path ? 'Reemplazar' : 'Seleccionar'}
+                  </button>
+                  <input
+                    type="file"
+                    ref={certificateInputRef}
+                    className="hidden"
+                    accept=".pfx,.p12"
+                    onChange={e => handleFileUpload(
+                      e.target.files?.[0],
+                      companiesService.uploadCertificate,
+                      { password: certificatePasswordForUpload, successMsg: 'Certificado actualizado', errorMsg: 'Error al subir certificado' }
+                    )}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className={labelClass}>Password del Certificado</label>
+                  <div className="relative">
+                    <input
+                      type={showCertPassword ? 'text' : 'password'}
+                      className={`${fieldClass} pr-9`}
+                      placeholder="Ingrese para cambiar o para subir nuevo"
+                      {...register('certificate_password')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCertPassword(!showCertPassword)}
+                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+                      tabIndex={-1}
+                    >
+                      {showCertPassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
 
+        {/* ── Save button ── */}
         <div className="flex justify-end pt-4">
-          <Button type="submit" isLoading={updateMutation.isPending}>Guardar Cambios</Button>
+          <button
+            type="submit"
+            disabled={updateMutation.isPending}
+            className="flex items-center gap-2 bg-primary text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg hover:opacity-90 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100"
+          >
+            {updateMutation.isPending ? (
+              <Spinner size="sm" />
+            ) : (
+              <ArrowDownTrayIcon className="h-5 w-5" />
+            )}
+            Guardar Cambios
+          </button>
         </div>
       </form>
     </div>

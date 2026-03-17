@@ -9,6 +9,8 @@ import {
   CalendarDaysIcon,
   ArrowPathIcon,
   ChartBarIcon,
+  BoltIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
@@ -38,29 +40,47 @@ const ACTION_CARDS = [
   {
     action: 'sales-point',
     label: 'Punto de Ventas',
-    description: 'Emisión de pasajes, cambios de fecha y gestión de pasajeros en tiempo real.',
+    description: 'Emisión de pasajes, cambios de fecha y gestión de pasajeros.',
     Icon: ShoppingCartIcon,
-    borderColor: 'border-t-primary',
+    accentColor: 'bg-primary',
     iconBg: 'bg-primary/10 group-hover:bg-primary',
     iconColor: 'text-primary group-hover:text-white',
   },
   {
     action: 'cargo',
     label: 'Encomiendas',
-    description: 'Control de envíos, manifiestos de carga y seguimiento de paquetería fluvial.',
+    description: 'Control de envíos y seguimiento de paquetería fluvial.',
     Icon: ArchiveBoxIcon,
-    borderColor: 'border-t-cyan-500',
+    accentColor: 'bg-cyan-500',
     iconBg: 'bg-cyan-500/10 group-hover:bg-cyan-500',
     iconColor: 'text-cyan-600 group-hover:text-white',
   },
   {
+    action: 'quick-sale',
+    label: 'Venta Rápida',
+    description: 'Registro ágil de servicios sin proceso de reserva previo.',
+    Icon: BoltIcon,
+    accentColor: 'bg-amber-500',
+    iconBg: 'bg-amber-500/10 group-hover:bg-amber-500',
+    iconColor: 'text-amber-600 group-hover:text-white',
+  },
+  {
     action: 'reservations',
     label: 'Reservas',
-    description: 'Administración de cupos preventa y gestión de convenios corporativos.',
+    description: 'Administración de cupos preventa y convenios corporativos.',
     Icon: CalendarDaysIcon,
-    borderColor: 'border-t-indigo-500',
+    accentColor: 'bg-indigo-500',
     iconBg: 'bg-indigo-500/10 group-hover:bg-indigo-500',
     iconColor: 'text-indigo-600 group-hover:text-white',
+  },
+  {
+    action: 'manifests',
+    label: 'Manifiestos',
+    description: 'Generación y control de manifiestos de pasajeros y carga.',
+    Icon: ClipboardDocumentListIcon,
+    accentColor: 'bg-emerald-500',
+    iconBg: 'bg-emerald-500/10 group-hover:bg-emerald-500',
+    iconColor: 'text-emerald-600 group-hover:text-white',
   },
 ];
 
@@ -115,7 +135,9 @@ export const WelcomeContent: React.FC = () => {
     switch (action) {
       case 'sales-point': navigate('/fluvial/operations/sales-point'); break;
       case 'cargo': navigate('/fluvial/operations/cargo-sale'); break;
+      case 'quick-sale': navigate('/fluvial/operations/quick-sales'); break;
       case 'reservations': navigate('/fluvial/operations/reservations'); break;
+      case 'manifests': navigate('/fluvial/operations/manifests'); break;
     }
   };
 
@@ -183,23 +205,24 @@ export const WelcomeContent: React.FC = () => {
       </header>
 
       {/* ── Action Cards ── */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {ACTION_CARDS.map(({ action, label, description, Icon, borderColor, iconBg, iconColor }) => (
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {ACTION_CARDS.map(({ action, label, description, Icon, accentColor, iconBg, iconColor }) => (
           <button
             key={action}
             onClick={() => handleQuickAction(action)}
             disabled={!selectedBranch}
-            className={`group bg-white/70 backdrop-blur-sm border border-white/30 p-8 rounded-xl shadow-sm hover:shadow-md transition-all text-left border-t-4 ${borderColor} ${
-              !selectedBranch ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+            className={`group relative overflow-hidden bg-white border border-slate-200 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow text-left ${
+              !selectedBranch ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-slate-300'
             }`}
           >
+            <div className={`absolute top-0 left-0 w-full h-1 ${accentColor}`} />
             <div
-              className={`w-14 h-14 rounded-lg flex items-center justify-center mb-6 transition-colors ${iconBg}`}
+              className={`w-11 h-11 rounded-lg flex items-center justify-center mb-4 transition-colors ${iconBg}`}
             >
-              <Icon className={`w-7 h-7 transition-colors ${iconColor}`} />
+              <Icon className={`w-6 h-6 transition-colors ${iconColor}`} />
             </div>
-            <h3 className="text-xl font-bold mb-2 text-slate-900">{label}</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">{description}</p>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{label}</h3>
+            <p className="text-slate-500 text-xs leading-relaxed">{description}</p>
           </button>
         ))}
       </section>
@@ -282,11 +305,11 @@ export const WelcomeContent: React.FC = () => {
       </section>
 
       {/* ── Chart + Ranking grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
           <UserSalesChart />
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 h-[calc(100vh-200px)] min-h-[600px] flex flex-col">
           <SellerRanking />
         </div>
       </div>

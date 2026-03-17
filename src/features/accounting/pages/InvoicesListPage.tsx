@@ -13,12 +13,14 @@ import {
   MinusIcon,
   CodeBracketIcon,
   ArrowDownTrayIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { Input } from '../../../components/common/Input';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { InvoiceStatusBadge } from '../components/InvoiceStatusBadge';
+import { DateRangeFilter, DateFilterOption } from '../../dashboard/components/DateRangeFilter';
 import { invoicesService, InvoiceFilters } from '../../../services/invoices.service';
 import { Invoice } from '../../../types';
 import { getCurrencySymbol } from '../../../utils/currency';
@@ -29,9 +31,12 @@ export const InvoicesListPage: React.FC = () => {
   // Estados para los filtros
   const [clientSearch, setClientSearch] = useState('');
   const [sunatStatusFilter, setSunatStatusFilter] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [period, setPeriod] = useState('');
+  
+  // Filtros de fecha (usando DateRangeFilter)
+  const [dateOption, setDateOption] = useState<DateFilterOption>('custom');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
   const [series, setSeries] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
   
@@ -56,14 +61,15 @@ export const InvoicesListPage: React.FC = () => {
 
     if (debouncedClientSearch) baseFilters.client_search = debouncedClientSearch;
     if (sunatStatusFilter) baseFilters.sunat_status = sunatStatusFilter as any;
-    if (startDate) baseFilters.start_date = startDate;
-    if (endDate) baseFilters.end_date = endDate;
-    if (period) baseFilters.period = period as any;
+    
+    if (startDate) baseFilters.start_date = format(startDate, 'yyyy-MM-dd');
+    if (endDate) baseFilters.end_date = format(endDate, 'yyyy-MM-dd');
+    
     if (debouncedSeries) baseFilters.series = debouncedSeries;
     if (debouncedDocumentNumber) baseFilters.number = parseInt(debouncedDocumentNumber) || undefined;
 
     return baseFilters;
-  }, [companyId, currentPage, itemsPerPage, debouncedClientSearch, sunatStatusFilter, startDate, endDate, period, debouncedSeries, debouncedDocumentNumber]);
+  }, [companyId, currentPage, itemsPerPage, debouncedClientSearch, sunatStatusFilter, startDate, endDate, debouncedSeries, debouncedDocumentNumber]);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['invoices', filters],
@@ -71,30 +77,16 @@ export const InvoicesListPage: React.FC = () => {
     staleTime: 1000 * 60, // Cache por 1 minuto - se invalida automaticamente al cambiar filtros
   });
 
-  // Limpiar filtros mutuamente excluyentes y resetear paginación
-  const handlePeriodChange = (value: string) => {
-    setPeriod(value);
-    setCurrentPage(0); // Resetear a la primera página
-    if (value) {
-      setStartDate('');
-      setEndDate('');
-    }
+  // Limpiar filtros y resetear paginación cuando cambia la fecha
+  const handleDateChange = (newStart: Date | null, newEnd: Date | null) => {
+    setStartDate(newStart);
+    setEndDate(newEnd);
+    setCurrentPage(0);
   };
 
-  const handleStartDateChange = (value: string) => {
-    setStartDate(value);
-    setCurrentPage(0); // Resetear a la primera página
-    if (value) {
-      setPeriod('');
-    }
-  };
-
-  const handleEndDateChange = (value: string) => {
-    setEndDate(value);
-    setCurrentPage(0); // Resetear a la primera página
-    if (value) {
-      setPeriod('');
-    }
+  const handleOptionChange = (option: DateFilterOption) => {
+    setDateOption(option);
+    setCurrentPage(0);
   };
 
   // Funciones para manejar cambios en filtros que deben resetear la paginación
@@ -115,6 +107,17 @@ export const InvoicesListPage: React.FC = () => {
 
   const handleDocumentNumberChange = (value: string) => {
     setDocumentNumber(value);
+    setCurrentPage(0);
+  };
+
+  const handleClearFilters = () => {
+    setClientSearch('');
+    setSunatStatusFilter('');
+    setSeries('');
+    setDocumentNumber('');
+    setDateOption('custom');
+    setStartDate(null);
+    setEndDate(null);
     setCurrentPage(0);
   };
 
@@ -246,11 +249,40 @@ export const InvoicesListPage: React.FC = () => {
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="w-full md:w-auto">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Rango de Fechas
+            </label>
+            <DateRangeFilter
+              startDate={startDate}
+              endDate={endDate}
+              onDateChange={handleDateChange}
+              selectedOption={dateOption}
+              onOptionChange={handleOptionChange}
+            />
+          </div>
+          
+          {(clientSearch || sunatStatusFilter || series || documentNumber || startDate || endDate) && (
+            <div className="flex justify-end self-end md:self-auto mb-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearFilters}
+                className="text-gray-500 bg-white hover:bg-gray-50 border-gray-200 shadow-sm flex items-center mb-0 md:mt-6"
+              >
+                <XMarkIcon className="w-4 h-4 mr-2" />
+                Limpiar Filtros
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-4 border-t border-gray-100">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Buscar Cliente
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              Cliente
             </label>
             <div className="relative">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
@@ -259,13 +291,13 @@ export const InvoicesListPage: React.FC = () => {
                 placeholder="DNI, RUC o nombre..."
                 value={clientSearch}
                 onChange={(e) => handleClientSearchChange(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Serie
             </label>
             <Input
@@ -273,11 +305,12 @@ export const InvoicesListPage: React.FC = () => {
               placeholder="Ej: F001, B001..."
               value={series}
               onChange={(e) => handleSeriesChange(e.target.value)}
+              className="bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Número
             </label>
             <Input
@@ -285,19 +318,20 @@ export const InvoicesListPage: React.FC = () => {
               placeholder="Número correlativo"
               value={documentNumber}
               onChange={(e) => handleDocumentNumberChange(e.target.value)}
+              className="bg-gray-50 border-gray-200 focus:bg-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
               Estado SUNAT
             </label>
             <select
               value={sunatStatusFilter}
               onChange={(e) => handleSunatStatusChange(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm text-gray-700"
             >
-              <option value="">Todos</option>
+              <option value="">Todos los estados</option>
               <option value="PENDING">Pendiente</option>
               <option value="GENERATED">Generado</option>
               <option value="SIGNED">Firmado</option>
@@ -307,47 +341,6 @@ export const InvoicesListPage: React.FC = () => {
               <option value="OBSERVED">Observado</option>
               <option value="VOIDED">Anulado</option>
               <option value="ERROR">Error</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Desde
-            </label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => handleStartDateChange(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Hasta
-            </label>
-            <Input
-              type="date"
-              value={endDate}
-              onChange={(e) => handleEndDateChange(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Período Predefinido
-            </label>
-            <select
-              value={period}
-              onChange={(e) => handlePeriodChange(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white"
-            >
-              <option value="">Seleccionar período</option>
-              <option value="LAST_WEEK">Última semana</option>
-              <option value="LAST_MONTH">Último mes</option>
-              <option value="LAST_3_MONTHS">Últimos 3 meses</option>
-              <option value="LAST_YEAR">Último año</option>
             </select>
           </div>
         </div>
@@ -423,7 +416,7 @@ export const InvoicesListPage: React.FC = () => {
             </div>
           )}
           emptyMessage={
-            clientSearch || series || documentNumber || sunatStatusFilter || startDate || endDate || period
+            clientSearch || series || documentNumber || sunatStatusFilter || startDate || endDate || dateOption !== 'custom'
               ? 'No se encontraron facturas con los filtros aplicados'
               : 'No se encontraron facturas'
           }

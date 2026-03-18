@@ -1,6 +1,7 @@
 import React from 'react';
 import { ReportSummary, ReportMetrics } from '../../../types/reports';
 import { TrendingUp, FileText, Tag, Receipt } from 'lucide-react';
+import { AnimatedCounter } from '../../../components/common/AnimatedCounter';
 
 interface SalesSummaryProps {
   summary: ReportSummary;
@@ -28,35 +29,46 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
   const metrics = [
     {
       label: 'Total Documentos',
-      value: summary.totalDocumentos.toLocaleString('es-PE'),
+      value: summary.totalDocumentos,
       icon: FileText,
       iconColor: 'text-blue-600',
       iconBg: 'bg-blue-50',
       subtext: 'documentos emitidos',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     },
     {
       label: 'Ventas Totales',
-      value: `S/ ${summary.totalVentas.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: summary.totalVentas,
       icon: TrendingUp,
       iconColor: 'text-emerald-600',
       iconBg: 'bg-emerald-50',
       subtext: 'ingresos generados',
+      prefix: 'S/ ',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     },
     {
       label: 'Descuentos',
-      value: `S/ ${summary.totalDescuentos.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: summary.totalDescuentos,
       icon: Tag,
       iconColor: 'text-orange-600',
       iconBg: 'bg-orange-50',
       subtext: 'total descuentos',
+      prefix: 'S/ ',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     },
     {
       label: 'IGV',
-      value: `S/ ${summary.totalIGV.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: summary.totalIGV,
       icon: Receipt,
       iconColor: 'text-purple-600',
       iconBg: 'bg-purple-50',
       subtext: 'impuestos',
+      prefix: 'S/ ',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     },
   ];
 
@@ -79,7 +91,12 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
             </div>
             <div className="mt-2">
               <p className="text-2xl font-semibold text-gray-900">
-                {metric.value}
+                <AnimatedCounter
+                  value={metric.value}
+                  prefix={metric.prefix}
+                  minimumFractionDigits={metric.minimumFractionDigits}
+                  maximumFractionDigits={metric.maximumFractionDigits}
+                />
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 {metric.subtext}

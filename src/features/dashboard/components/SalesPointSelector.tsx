@@ -6,6 +6,7 @@ import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
 import { toast } from 'react-toastify';
 import UserSalesChart from './UserSalesChart';
+import { AnimatedCounter } from '../../../components/common/AnimatedCounter';
 
 export const SalesPointSelector: React.FC = () => {
   const navigate = useNavigate();
@@ -172,7 +173,13 @@ export const SalesPointSelector: React.FC = () => {
               {statisticsLoading ? (
                 <div className="animate-pulse h-8 bg-blue-200 rounded"></div>
               ) : (
-                todaySales
+                <AnimatedCounter
+                  value={todaySales}
+                  minimumFractionDigits={0}
+                  maximumFractionDigits={0}
+                  durationMs={900}
+                  easing="easeOutCubic"
+                />
               )}
             </div>
             <div className="text-sm text-gray-600">Ventas Hoy</div>
@@ -182,7 +189,14 @@ export const SalesPointSelector: React.FC = () => {
               {statisticsLoading ? (
                 <div className="animate-pulse h-8 bg-green-200 rounded"></div>
               ) : (
-                `S/ ${todayRevenue.toLocaleString('es-PE')}`
+                <AnimatedCounter
+                  value={todayRevenue}
+                  prefix="S/ "
+                  minimumFractionDigits={0}
+                  maximumFractionDigits={0}
+                  durationMs={1100}
+                  easing="easeOutExpo"
+                />
               )}
             </div>
             <div className="text-sm text-gray-600">
@@ -209,7 +223,13 @@ export const SalesPointSelector: React.FC = () => {
               {statisticsLoading ? (
                 <div className="animate-pulse h-8 bg-purple-200 rounded"></div>
               ) : (
-                monthSales
+                <AnimatedCounter
+                  value={monthSales}
+                  minimumFractionDigits={0}
+                  maximumFractionDigits={0}
+                  durationMs={1000}
+                  easing="easeOutCubic"
+                />
               )}
             </div>
             <div className="text-sm text-gray-600">Ventas Este Mes</div>

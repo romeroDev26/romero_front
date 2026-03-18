@@ -7,6 +7,7 @@ import {
   ClipboardDocumentListIcon,
   ShoppingCartIcon,
 } from '@heroicons/react/24/outline';
+import { AnimatedCounter } from '../../../components/common/AnimatedCounter';
 
 export type QuickActionKey =
   | 'sales-point'
@@ -189,7 +190,7 @@ export function OperationSummaryCards({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4 auto-rows-fr">
         <PrimaryKpiCard
           loading={statisticsLoading}
-          value={`S/ ${todayRevenue.toLocaleString('es-PE')}`}
+          value={todayRevenue}
           secondary={`${todaySales.toLocaleString('es-PE')} tickets hoy`}
         />
         <MetricCard
@@ -197,14 +198,14 @@ export function OperationSummaryCards({
           footer="Transacciones activas"
           loading={statisticsLoading}
           accent="bg-primary"
-          value={todaySales.toLocaleString('es-PE')}
+          value={todaySales}
         />
         <MetricCard
           title="Ventas del Mes"
           footer="Acumulado mensual"
           loading={statisticsLoading}
           accent="bg-indigo-500"
-          value={monthSales.toLocaleString('es-PE')}
+          value={monthSales}
         />
       </div>
     </section>
@@ -212,7 +213,7 @@ export function OperationSummaryCards({
 }
 
 type PrimaryKpiCardProps = {
-  value: string;
+  value: number;
   secondary: string;
   loading: boolean;
 };
@@ -225,7 +226,14 @@ function PrimaryKpiCard({ value, secondary, loading }: PrimaryKpiCardProps) {
       {loading ? (
         <div className="mt-4 h-10 w-44 animate-pulse rounded bg-white/20" />
       ) : (
-        <h3 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">{value}</h3>
+        <h3 className="mt-3 text-3xl font-black tracking-tight md:text-5xl">
+          <AnimatedCounter
+            value={value}
+            prefix="S/ "
+            minimumFractionDigits={0}
+            maximumFractionDigits={0}
+          />
+        </h3>
       )}
       <div className="mt-6 inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
         {secondary}
@@ -236,7 +244,7 @@ function PrimaryKpiCard({ value, secondary, loading }: PrimaryKpiCardProps) {
 
 type MetricCardProps = {
   title: string;
-  value: string;
+  value: number;
   footer: string;
   accent: string;
   loading: boolean;
@@ -250,7 +258,9 @@ function MetricCard({ title, value, footer, accent, loading }: MetricCardProps) 
       {loading ? (
         <div className="mt-3 h-10 w-36 animate-pulse rounded bg-slate-100" />
       ) : (
-        <h3 className="mt-2 text-2xl md:text-3xl font-black tracking-tight text-slate-900">{value}</h3>
+        <h3 className="mt-2 text-2xl md:text-3xl font-black tracking-tight text-slate-900">
+          <AnimatedCounter value={value} minimumFractionDigits={0} maximumFractionDigits={0} />
+        </h3>
       )}
       <p className="mt-3 text-xs font-medium uppercase tracking-wide text-slate-400">{footer}</p>
     </div>

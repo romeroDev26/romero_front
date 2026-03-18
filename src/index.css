@@ -219,17 +219,24 @@
    ================================================ */
 
 /* Wrapper para forzar layout horizontal */
+.custom-datepicker-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
 .custom-datepicker-wrapper .react-datepicker {
   display: flex !important;
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   border: none !important;
   background: transparent !important;
+  margin: 0 auto;
 }
 
 .custom-datepicker-wrapper .react-datepicker__month-container {
   float: none !important;
   flex-shrink: 0;
+  padding: 0 !important;
 }
 
 /* Aplicar también directamente a la clase del calendario */

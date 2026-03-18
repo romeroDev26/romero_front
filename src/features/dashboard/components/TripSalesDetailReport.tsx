@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { reportsService } from '../../../services/reports.service';
 import { TripSalesReportResponse, ComparativeTrip } from '../../../types/tripSalesReport';
+import { AnimatedCounter } from '../../../components/common/AnimatedCounter';
 
 type ComparativeRange = 'last_month' | 'last_3_months' | 'last_6_months' | 'custom';
 
@@ -348,7 +349,14 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                   </span>
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mt-3">
-                  {report.sales.occupancy_percentage.toFixed(1)}%
+                  <AnimatedCounter
+                    value={report.sales.occupancy_percentage}
+                    suffix="%"
+                    minimumFractionDigits={1}
+                    maximumFractionDigits={1}
+                    durationMs={1100}
+                    easing="easeOutExpo"
+                  />
                 </p>
                 <p className="text-sm text-gray-500">Ocupación</p>
                 <p className="text-xs text-gray-400 mt-1">
@@ -363,7 +371,14 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                   <CheckCircleIcon className="w-5 h-5 text-green-500" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mt-3">
-                  {formatCurrency(report.sales.total_revenue)}
+                  <AnimatedCounter
+                    value={report.sales.total_revenue}
+                    prefix="S/ "
+                    minimumFractionDigits={2}
+                    maximumFractionDigits={2}
+                    durationMs={1200}
+                    easing="easeOutExpo"
+                  />
                 </p>
                 <p className="text-sm text-gray-500">Ingresos Totales</p>
               </div>
@@ -374,7 +389,13 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                   <ChartBarIcon className="w-8 h-8 text-blue-500" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mt-3">
-                  {report.sales.sold_seats}
+                  <AnimatedCounter
+                    value={report.sales.sold_seats}
+                    minimumFractionDigits={0}
+                    maximumFractionDigits={0}
+                    durationMs={950}
+                    easing="easeOutCubic"
+                  />
                 </p>
                 <p className="text-sm text-gray-500">Asientos Vendidos</p>
                 <p className="text-xs text-gray-400 mt-1">
@@ -388,7 +409,14 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                   <CurrencyDollarIcon className="w-8 h-8 text-purple-500" />
                 </div>
                 <p className="text-2xl font-bold text-gray-900 mt-3">
-                  {formatCurrency(report.sales.average_ticket)}
+                  <AnimatedCounter
+                    value={report.sales.average_ticket}
+                    prefix="S/ "
+                    minimumFractionDigits={2}
+                    maximumFractionDigits={2}
+                    durationMs={1100}
+                    easing="easeOutExpo"
+                  />
                 </p>
                 <p className="text-sm text-gray-500">Ticket Promedio</p>
               </div>

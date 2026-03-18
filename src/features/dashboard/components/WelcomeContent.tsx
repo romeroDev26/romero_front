@@ -1,16 +1,8 @@
 // src/features/dashboard/components/WelcomeContent.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import {
   DocumentArrowDownIcon,
-  ShoppingCartIcon,
-  ArchiveBoxIcon,
-  CalendarDaysIcon,
-  ArrowPathIcon,
-  ChartBarIcon,
-  BoltIcon,
-  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
@@ -22,6 +14,14 @@ import { Button } from '../../../components/common/Button';
 import { DateRangeFilter, DateFilterOption } from './DateRangeFilter';
 import { toast } from 'react-toastify';
 import type { ExportRequest } from '../../../types/exports';
+import {
+  MainAnalyticsGrid,
+  OperationSummaryCards,
+  QuickActionsGrid,
+  WelcomeFooter,
+  WelcomeHeroSection,
+  type QuickActionKey,
+} from './WelcomeDashboardUI';
 
 const getPeruDateString = (): string => {
   try {
@@ -36,57 +36,8 @@ const getPeruTodayDate = (): Date => {
   return new Date(parts[0], parts[1] - 1, parts[2]);
 };
 
-const ACTION_CARDS = [
-  {
-    action: 'sales-point',
-    label: 'Punto de Ventas',
-    description: 'Emisión de pasajes, cambios de fecha y gestión de pasajeros.',
-    Icon: ShoppingCartIcon,
-    accentColor: 'bg-primary',
-    iconBg: 'bg-primary/10 group-hover:bg-primary',
-    iconColor: 'text-primary group-hover:text-white',
-  },
-  {
-    action: 'cargo',
-    label: 'Encomiendas',
-    description: 'Control de envíos y seguimiento de paquetería fluvial.',
-    Icon: ArchiveBoxIcon,
-    accentColor: 'bg-cyan-500',
-    iconBg: 'bg-cyan-500/10 group-hover:bg-cyan-500',
-    iconColor: 'text-cyan-600 group-hover:text-white',
-  },
-  {
-    action: 'quick-sale',
-    label: 'Venta Rápida',
-    description: 'Registro ágil de servicios sin proceso de reserva previo.',
-    Icon: BoltIcon,
-    accentColor: 'bg-amber-500',
-    iconBg: 'bg-amber-500/10 group-hover:bg-amber-500',
-    iconColor: 'text-amber-600 group-hover:text-white',
-  },
-  {
-    action: 'reservations',
-    label: 'Reservas',
-    description: 'Administración de cupos preventa y convenios corporativos.',
-    Icon: CalendarDaysIcon,
-    accentColor: 'bg-indigo-500',
-    iconBg: 'bg-indigo-500/10 group-hover:bg-indigo-500',
-    iconColor: 'text-indigo-600 group-hover:text-white',
-  },
-  {
-    action: 'manifests',
-    label: 'Manifiestos',
-    description: 'Generación y control de manifiestos de pasajeros y carga.',
-    Icon: ClipboardDocumentListIcon,
-    accentColor: 'bg-emerald-500',
-    iconBg: 'bg-emerald-500/10 group-hover:bg-emerald-500',
-    iconColor: 'text-emerald-600 group-hover:text-white',
-  },
-];
-
 export const WelcomeContent: React.FC = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [syncExporting, setSyncExporting] = useState(false);
@@ -127,7 +78,7 @@ export const WelcomeContent: React.FC = () => {
     }
   };
 
-  const handleQuickAction = (action: string) => {
+  const handleQuickAction = (action: QuickActionKey) => {
     if (!selectedBranch) {
       toast.warning('Por favor selecciona una sucursal primero');
       return;
@@ -139,11 +90,6 @@ export const WelcomeContent: React.FC = () => {
       case 'reservations': navigate('/fluvial/operations/reservations'); break;
       case 'manifests': navigate('/fluvial/operations/manifests'); break;
     }
-  };
-
-  const handleRefreshStatistics = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['userStatistics'] });
-    toast.success('Estadísticas actualizadas');
   };
 
   const canExportDates = filterOption !== 'custom' || (startDate && endDate);
@@ -169,157 +115,49 @@ export const WelcomeContent: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10">
-      {/* ── Header ── */}
-      <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-900">
-            Bienvenido al{' '}
-            <span className="text-primary">Centro de Control Fluvial</span>
-          </h1>
-          <p className="text-slate-500 text-base lg:text-lg">
-            Optimizando cada trayecto • Gestión centralizada de transporte fluvial
-          </p>
-        </div>
+    <div className="mx-auto max-w-[1440px] space-y-8 px-1 md:px-2">
+      <WelcomeHeroSection
+        branchesLoading={branchesLoading}
+        branches={branches}
+        selectedBranch={selectedBranch}
+        onBranchChange={handleBranchChange}
+      />
 
-        {/* Branch selector */}
-        <div className="w-full md:w-72 flex-shrink-0">
-          <label className="block text-sm font-semibold text-slate-700 mb-2">Sucursal</label>
-          {branchesLoading ? (
-            <div className="h-12 w-full rounded-xl bg-slate-100 animate-pulse" />
-          ) : (
-            <select
-              value={selectedBranch}
-              onChange={(e) => handleBranchChange(e.target.value)}
-              className="w-full appearance-none bg-white border border-slate-200 rounded-xl px-4 py-3 pr-10 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all shadow-sm text-sm"
-            >
-              <option value="">Seleccionar Sucursal</option>
-              {branches?.map((b) => (
-                <option key={b.id} value={b.id.toString()}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      </header>
+      <QuickActionsGrid
+        selectedBranch={selectedBranch}
+        onActionClick={handleQuickAction}
+      />
 
-      {/* ── Action Cards ── */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {ACTION_CARDS.map(({ action, label, description, Icon, accentColor, iconBg, iconColor }) => (
-          <button
-            key={action}
-            onClick={() => handleQuickAction(action)}
-            disabled={!selectedBranch}
-            className={`group relative overflow-hidden bg-white border border-slate-200 p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow text-left ${
-              !selectedBranch ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-slate-300'
-            }`}
-          >
-            <div className={`absolute top-0 left-0 w-full h-1 ${accentColor}`} />
-            <div
-              className={`w-11 h-11 rounded-lg flex items-center justify-center mb-4 transition-colors ${iconBg}`}
-            >
-              <Icon className={`w-6 h-6 transition-colors ${iconColor}`} />
-            </div>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{label}</h3>
-            <p className="text-slate-500 text-xs leading-relaxed">{description}</p>
-          </button>
-        ))}
-      </section>
+      <OperationSummaryCards
+        statisticsLoading={statisticsLoading}
+        todaySales={todaySales}
+        todayRevenue={todayRevenue}
+        monthSales={monthSales}
+      />
 
-      {/* ── Stats section ── */}
-      <section className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-1 gap-4">
-          <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900">
-            <ChartBarIcon className="w-5 h-5 text-primary" />
-            Resumen de Operaciones
-          </h2>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleRefreshStatistics}
-              disabled={statisticsLoading}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors"
-            >
-              <ArrowPathIcon className={`w-4 h-4 ${statisticsLoading ? 'animate-spin' : ''}`} />
-              Actualizar
-            </button>
-            <button
-              onClick={() => setShowFormatModal(true)}
-              disabled={syncExporting}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm disabled:opacity-50 text-sm"
-            >
-              <DocumentArrowDownIcon className="w-4 h-4" />
-              {syncExporting ? 'Exportando...' : 'Exportar a Excel'}
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Ventas Hoy */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-slate-500 font-medium mb-4">Ventas Hoy</p>
-            <div className="flex items-end gap-2">
-              {statisticsLoading ? (
-                <div className="animate-pulse h-9 bg-slate-100 rounded w-24" />
-              ) : (
-                <>
-                  <span className="text-3xl font-black text-slate-900">{todaySales}</span>
-                  <span className="text-slate-400 mb-1">Tickets</span>
-                </>
-              )}
+      <MainAnalyticsGrid
+        chart={(
+          <div className="space-y-3">
+            <UserSalesChart />
+            <div className="mt-10 mx-auto w-full max-w-xl flex flex-col items-center gap-3 text-center px-2">
+              <p className="text-sm text-slate-500 max-w-lg">
+                Exporta tu rendimiento de ventas en formato Excel para seguimiento y analisis.
+              </p>
+              <button
+                onClick={() => setShowFormatModal(true)}
+                disabled={syncExporting}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+              >
+                <DocumentArrowDownIcon className="h-4 w-4" />
+                {syncExporting ? 'Exportando...' : 'Exportar a Excel'}
+              </button>
             </div>
           </div>
+        )}
+        ranking={<SellerRanking />}
+      />
 
-          {/* Ingresos Hoy */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-slate-500 font-medium mb-4">Ingresos Hoy</p>
-            <div className="flex items-end gap-2">
-              {statisticsLoading ? (
-                <div className="animate-pulse h-9 bg-slate-100 rounded w-36" />
-              ) : (
-                <>
-                  <span className="text-3xl font-black text-slate-900">
-                    S/ {todayRevenue.toLocaleString('es-PE')}
-                  </span>
-                  <span className="text-slate-400 mb-1">Total</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Ventas del Mes */}
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-            <p className="text-slate-500 font-medium mb-4">Ventas del Mes</p>
-            <div className="flex items-end gap-2">
-              {statisticsLoading ? (
-                <div className="animate-pulse h-9 bg-slate-100 rounded w-24" />
-              ) : (
-                <>
-                  <span className="text-3xl font-black text-slate-900">{monthSales}</span>
-                  <span className="text-slate-400 mb-1">Tickets</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Chart + Ranking grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2">
-          <UserSalesChart />
-        </div>
-        <div className="lg:col-span-1 h-[calc(100vh-200px)] min-h-[600px] flex flex-col">
-          <SellerRanking />
-        </div>
-      </div>
-
-      {/* ── Footer ── */}
-      <footer className="border-t border-slate-200 pt-6 text-center">
-        <p className="text-slate-400 text-xs uppercase tracking-wider font-medium">
-          Sistema de Transportes &copy; {new Date().getFullYear()} • BUGBUSTERS
-        </p>
-      </footer>
+      <WelcomeFooter />
 
       {/* ── Export Modal ── */}
       <Modal

@@ -9,6 +9,7 @@ import { TopSellersByBranch } from '../components/TopSellersByBranch';
 import { BarChart3, ArrowRight, Users, Banknote, Receipt, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useAuth } from '../../auth/hooks/useAuth';
 import { dashboardService } from '../../../services/dashboard.service';
+import { AnimatedCounter } from '../../../components/common/AnimatedCounter';
 
 export const DashboardPage: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -102,7 +103,13 @@ export const DashboardPage: React.FC = () => {
             <span className="text-xs font-medium text-gray-500">Usuarios</span>
           </div>
           <p className="text-xl font-semibold text-gray-900">
-            {isDashboardLoading ? '--' : dashboardData?.metricas_generales?.total_usuarios || 0}
+            {isDashboardLoading ? '--' : (
+              <AnimatedCounter
+                value={dashboardData?.metricas_generales?.total_usuarios || 0}
+                minimumFractionDigits={0}
+                maximumFractionDigits={0}
+              />
+            )}
           </p>
         </div>
 
@@ -130,7 +137,14 @@ export const DashboardPage: React.FC = () => {
             )}
           </div>
           <p className="text-xl font-semibold text-gray-900">
-            {isDashboardLoading ? '--' : dashboardData?.metricas_generales?.ingresos_totales_formateado || 'S/ 0'}
+            {isDashboardLoading ? '--' : (
+              <AnimatedCounter
+                value={dashboardData?.metricas_generales?.ingresos_totales || 0}
+                prefix="S/ "
+                minimumFractionDigits={2}
+                maximumFractionDigits={2}
+              />
+            )}
           </p>
         </div>
 
@@ -141,7 +155,13 @@ export const DashboardPage: React.FC = () => {
             <span className="text-xs font-medium text-gray-500">Facturas</span>
           </div>
           <p className="text-xl font-semibold text-gray-900">
-            {isDashboardLoading ? '--' : dashboardData?.top_vendedores_por_sucursal?.resumen_general?.total_facturas || 0}
+            {isDashboardLoading ? '--' : (
+              <AnimatedCounter
+                value={dashboardData?.top_vendedores_por_sucursal?.resumen_general?.total_facturas || 0}
+                minimumFractionDigits={0}
+                maximumFractionDigits={0}
+              />
+            )}
           </p>
         </div>
 
@@ -152,7 +172,13 @@ export const DashboardPage: React.FC = () => {
             <span className="text-xs font-medium text-gray-500">Sucursales</span>
           </div>
           <p className="text-xl font-semibold text-gray-900">
-            {isDashboardLoading ? '--' : dashboardData?.top_vendedores_por_sucursal?.resumen_general?.total_sucursales || 0}
+            {isDashboardLoading ? '--' : (
+              <AnimatedCounter
+                value={dashboardData?.top_vendedores_por_sucursal?.resumen_general?.total_sucursales || 0}
+                minimumFractionDigits={0}
+                maximumFractionDigits={0}
+              />
+            )}
           </p>
         </div>
       </div>

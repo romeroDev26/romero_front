@@ -30,16 +30,16 @@ interface ChartData {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">
-        <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+      <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
+        <p className="mb-2 text-sm font-semibold text-slate-900">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-sm">
-            <div 
-              className="w-3 h-3 rounded-full" 
+            <div
+              className="h-3 w-3 rounded-full"
               style={{ backgroundColor: entry.stroke || entry.color }}
             />
-            <span className="text-gray-600">{entry.name}:</span>
-            <span className="font-semibold text-gray-900">
+            <span className="text-slate-600">{entry.name}:</span>
+            <span className="font-semibold text-slate-900">
               S/ {Number(entry.value).toLocaleString('es-PE')}
             </span>
           </div>
@@ -101,10 +101,10 @@ const UserSalesChart: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3 mb-4"></div>
-          <div className="h-64 bg-gray-100 rounded-lg"></div>
+          <div className="mb-4 h-6 w-1/3 rounded bg-slate-200" />
+          <div className="h-64 rounded-xl bg-slate-100" />
         </div>
       </div>
     );
@@ -112,8 +112,8 @@ const UserSalesChart: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <div className="text-red-500 text-center py-8">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="py-8 text-center text-red-500">
           <div className="mb-2">Error al cargar estadísticas</div>
           <div className="text-sm text-red-400">
             {error.message || 'No se pudieron obtener los datos'}
@@ -125,11 +125,11 @@ const UserSalesChart: React.FC = () => {
 
   if (!chartData || chartData.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-        <div className="text-gray-500 text-center py-8">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="py-8 text-center text-slate-500">
           <div className="mb-2">No hay datos de ventas disponibles</div>
           <div className="text-sm">
-            {period === '7days' 
+            {period === '7days'
               ? 'No se encontraron ventas en los últimos 7 días'
               : 'No se encontraron ventas en los últimos 12 meses'
             }
@@ -146,22 +146,22 @@ const UserSalesChart: React.FC = () => {
   const totalCargo = chartData.reduce((sum, item) => sum + item.cargo_revenue, 0);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <section className="flex h-full flex-col rounded-xl bg-white p-8 shadow-sm">
       {/* Header con título y controles */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4">
+      <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">Mi Rendimiento de Ventas</h3>
-          <p className="text-sm text-gray-500">Evolución de ingresos por período</p>
+          <h2 className="text-xl font-bold text-slate-900">Mi Rendimiento de Ventas</h2>
+          <p className="text-sm text-slate-500">Evolución histórica de métricas clave</p>
         </div>
 
         {/* Period Toggle Buttons */}
-        <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className="flex gap-2">
           <button
             onClick={() => setPeriod('7days')}
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               period === '7days'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-primary text-white shadow-sm'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             7 Días
@@ -170,8 +170,8 @@ const UserSalesChart: React.FC = () => {
             onClick={() => setPeriod('12months')}
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               period === '12months'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-primary text-white shadow-sm'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
             12 Meses
@@ -179,37 +179,12 @@ const UserSalesChart: React.FC = () => {
         </div>
       </div>
 
-      {/* Métricas resumen compactas */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="text-center p-3 bg-indigo-50 rounded-lg">
-          <div className="text-lg font-bold text-indigo-600">{totalSales}</div>
-          <div className="text-xs text-gray-500">Ventas</div>
-        </div>
-        <div className="text-center p-3 bg-emerald-50 rounded-lg">
-          <div className="text-lg font-bold text-emerald-600">
-            S/ {totalRevenue >= 1000 ? `${(totalRevenue/1000).toFixed(1)}k` : totalRevenue.toLocaleString('es-PE')}
-          </div>
-          <div className="text-xs text-gray-500">Ingresos</div>
-        </div>
-        <div className="text-center p-3 bg-blue-50 rounded-lg">
-          <div className="text-lg font-bold text-blue-600">
-            S/ {totalTickets >= 1000 ? `${(totalTickets/1000).toFixed(1)}k` : totalTickets.toLocaleString('es-PE')}
-          </div>
-          <div className="text-xs text-gray-500">Pasajes</div>
-        </div>
-        <div className="text-center p-3 bg-amber-50 rounded-lg">
-          <div className="text-lg font-bold text-amber-600">
-            S/ {totalCargo >= 1000 ? `${(totalCargo/1000).toFixed(1)}k` : totalCargo.toLocaleString('es-PE')}
-          </div>
-          <div className="text-xs text-gray-500">Encomiendas</div>
-        </div>
-      </div>
-
       {/* Gráfico de Área Elegante */}
-      <ResponsiveContainer width="100%" height={280}>
-        <AreaChart 
+      <div className="relative h-[300px] w-full overflow-hidden rounded-lg border border-slate-100 bg-slate-50 p-4">
+        <ResponsiveContainer width="100%" height={240}>
+        <AreaChart
           data={chartData}
-          margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
         >
           <defs>
             {/* Gradiente para Ingresos Totales */}
@@ -228,20 +203,16 @@ const UserSalesChart: React.FC = () => {
               <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05} />
             </linearGradient>
           </defs>
-          <CartesianGrid 
-            strokeDasharray="3 3" 
-            vertical={false} 
-            stroke="#f0f0f0"
-          />
-          <XAxis 
-            dataKey="date" 
-            tick={{ fontSize: 12, fill: '#9ca3af' }}
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 12, fill: '#64748b' }}
             axisLine={false}
             tickLine={false}
             dy={10}
           />
-          <YAxis 
-            tick={{ fontSize: 12, fill: '#9ca3af' }}
+          <YAxis
+            tick={{ fontSize: 12, fill: '#64748b' }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}
@@ -254,11 +225,11 @@ const UserSalesChart: React.FC = () => {
             type="monotone"
             dataKey="total_revenue"
             name="Ingresos Totales"
-            stroke="#6366f1"
-            strokeWidth={2}
+            stroke="#4f46e5"
+            strokeWidth={2.2}
             fill="url(#gradientRevenue)"
             dot={false}
-            activeDot={{ r: 6, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: '#4f46e5', stroke: '#fff', strokeWidth: 2 }}
           />
 
           {/* Área de Ventas por Pasajes */}
@@ -267,7 +238,7 @@ const UserSalesChart: React.FC = () => {
             dataKey="tickets_revenue"
             name="Ventas por Pasajes"
             stroke="#3b82f6"
-            strokeWidth={2}
+            strokeWidth={2.2}
             fill="url(#gradientTickets)"
             dot={false}
             activeDot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
@@ -279,7 +250,7 @@ const UserSalesChart: React.FC = () => {
             dataKey="cargo_revenue"
             name="Encomiendas"
             stroke="#f59e0b"
-            strokeWidth={2}
+            strokeWidth={2.2}
             fill="url(#gradientCargo)"
             dot={false}
             activeDot={{ r: 5, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
@@ -287,22 +258,30 @@ const UserSalesChart: React.FC = () => {
         </AreaChart>
       </ResponsiveContainer>
 
-      {/* Leyenda personalizada */}
-      <div className="flex flex-wrap justify-center gap-6 mt-4">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-indigo-500"></div>
-          <span className="text-sm text-gray-600">Ingresos Totales</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span className="text-sm text-gray-600">Ventas por Pasajes</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-          <span className="text-sm text-gray-600">Encomiendas</span>
+        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-4">
+          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Ventas: {totalSales.toLocaleString('es-PE')}</div>
+          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Ingresos: S/ {totalRevenue.toLocaleString('es-PE')}</div>
+          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Pasajes: S/ {totalTickets.toLocaleString('es-PE')}</div>
+          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Encomiendas: S/ {totalCargo.toLocaleString('es-PE')}</div>
         </div>
       </div>
-    </div>
+
+      {/* Leyenda personalizada */}
+      <div className="mt-6 flex flex-wrap gap-6 border-t border-slate-100 pt-4">
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full bg-indigo-500" />
+          <span className="text-xs font-medium text-slate-600">Ingresos Totales</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full bg-blue-500" />
+          <span className="text-xs font-medium text-slate-600">Ventas por Pasajes</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 rounded-full bg-amber-500" />
+          <span className="text-xs font-medium text-slate-600">Encomiendas</span>
+        </div>
+      </div>
+    </section>
   );
 };
 

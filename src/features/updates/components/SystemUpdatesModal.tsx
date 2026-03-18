@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
   XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  SparklesIcon,
+  ShieldCheckIcon,
+  CalendarDaysIcon,
 } from '@heroicons/react/24/outline';
 import { SystemUpdate } from '../services/updates.service';
 
@@ -22,16 +25,40 @@ const getYouTubeEmbedUrl = (url: string): string | null => {
   return null;
 };
 
+const getVimeoEmbedUrl = (url: string): string | null => {
+  const playerMatch = url.match(/player\.vimeo\.com\/video\/(\d+)/);
+  if (playerMatch) return `https://player.vimeo.com/video/${playerMatch[1]}`;
+
+  const vimeoMatch = url.match(/vimeo\.com\/(?:.*\/)?(\d+)(?:$|\?)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+  return null;
+};
+
 const isYouTubeUrl = (url: string): boolean =>
   url.includes('youtube.com') || url.includes('youtu.be');
+
+const isVimeoUrl = (url: string): boolean =>
+  url.includes('vimeo.com') || url.includes('player.vimeo.com');
 
 const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  if (!updates.length) return null;
+  const videoUpdates = useMemo(
+    () => updates.filter((update) => !!update.video_url?.trim()),
+    [updates]
+  );
+  const total = videoUpdates.length;
 
-  const current = updates[currentIndex];
-  const total = updates.length;
+  useEffect(() => {
+    if (!total) return;
+    if (!isOpen) return;
+    setCurrentIndex((prev) => Math.min(prev, total - 1));
+  }, [isOpen, total]);
+
+  if (!total) return null;
+
+  const current = videoUpdates[currentIndex];
 
   const goPrev = () => setCurrentIndex((i) => Math.max(0, i - 1));
   const goNext = () => setCurrentIndex((i) => Math.min(total - 1, i + 1));
@@ -43,7 +70,10 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
 
   const renderVideo = (videoUrl: string) => {
     if (isYouTubeUrl(videoUrl)) {
-      const embedUrl = getYouTubeEmbedUrl(videoUrl);
+      const baseEmbedUrl = getYouTubeEmbedUrl(videoUrl);
+      if (!baseEmbedUrl) return null;
+      const separator = baseEmbedUrl.includes('?') ? '&' : '?';
+      const embedUrl = `${baseEmbedUrl}${separator}rel=0&modestbranding=1&playsinline=1&vq=hd1080`;
       if (!embedUrl) return null;
       return (
         <iframe
@@ -55,10 +85,28 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
         />
       );
     }
+
+    if (isVimeoUrl(videoUrl)) {
+      const baseEmbedUrl = getVimeoEmbedUrl(videoUrl);
+      if (!baseEmbedUrl) return null;
+      const separator = baseEmbedUrl.includes('?') ? '&' : '?';
+      const embedUrl = `${baseEmbedUrl}${separator}title=0&byline=0&portrait=0`;
+      return (
+        <iframe
+          src={embedUrl}
+          title={current.title}
+          className="w-full aspect-video rounded-lg"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+          allowFullScreen
+        />
+      );
+    }
+
     return (
       <video
         src={videoUrl}
         controls
+        preload="metadata"
         className="w-full aspect-video rounded-lg bg-black"
       />
     );
@@ -91,116 +139,130 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="relative w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200">
-                {/* Botón cerrar — fuera del video, en el borde superior del panel */}
-                <div className="flex justify-end px-3 pt-3 pb-0">
+              <Dialog.Panel className="relative w-full max-w-7xl bg-slate-50 rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+                <div className="absolute right-4 top-4 z-20">
                   <button
                     onClick={handleClose}
-                    className="p-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-colors"
+                    className="p-2 rounded-full bg-white/90 hover:bg-white text-slate-500 hover:text-slate-700 transition-colors shadow-sm"
+                    aria-label="Cerrar"
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Navegación multi-slide — flechas sobre el video */}
-                {total > 1 && currentIndex > 0 && (
-                  <button
-                    onClick={goPrev}
-                    className="absolute left-3 top-[calc(50%-60px)] z-10 p-1.5 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
-                  >
-                    <ChevronLeftIcon className="w-5 h-5" />
-                  </button>
-                )}
-                {total > 1 && currentIndex < total - 1 && (
-                  <button
-                    onClick={goNext}
-                    className="absolute right-3 top-[calc(50%-60px)] z-10 p-1.5 rounded-full bg-black/30 hover:bg-black/50 text-white transition-colors"
-                  >
-                    <ChevronRightIcon className="w-5 h-5" />
-                  </button>
-                )}
+                <div className="flex flex-col md:flex-row min-h-[620px]">
+                  <div className="relative md:w-4/12 bg-gradient-to-br from-primary/15 via-sky-100 to-indigo-100 border-b md:border-b-0 md:border-r border-slate-200 p-8">
+                    <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-primary/10" />
+                    <div className="absolute -bottom-16 -left-10 w-56 h-56 rounded-full bg-sky-200/40" />
 
-                {/* Área de video */}
-                {current.video_url && (
-                  <div className="p-4 pb-0">
-                    {renderVideo(current.video_url)}
-                  </div>
-                )}
+                    <div className="relative z-10 h-full flex flex-col justify-between">
+                      <div>
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-primary/20 text-primary text-xs font-bold tracking-wide uppercase">
+                          <SparklesIcon className="w-4 h-4" />
+                          Actualizacion
+                        </span>
 
-                {/* Área de contenido */}
-                <div className="p-6 md:p-8">
-                  {/* Título + badge */}
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <Dialog.Title className="text-slate-900 tracking-tight text-2xl font-bold leading-tight">
-                      {current.title}
-                    </Dialog.Title>
-                    <span className="shrink-0 px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded">
-                      {current.version}
-                    </span>
-                  </div>
+                        <div className="mt-8 w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center">
+                          <ShieldCheckIcon className="w-10 h-10 text-primary" />
+                        </div>
 
-                  {/* Fecha */}
-                  <p className="text-xs text-slate-400 mb-4">{current.release_date}</p>
+                        <Dialog.Title className="mt-6 text-2xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                          {current.title}
+                        </Dialog.Title>
 
-                  {/* Estado del carrusel para dejar claro cuantas novedades hay */}
-                  <p className="text-xs text-slate-500 mb-4 font-medium">
-                    Novedad {currentIndex + 1} de {total}
-                  </p>
+                        <p className="mt-4 text-sm text-slate-700 leading-relaxed">
+                          {current.description}
+                        </p>
+                      </div>
 
-                  {/* Descripción */}
-                  <p className="text-slate-600 text-base leading-relaxed mb-8">
-                    {current.description}
-                  </p>
-
-                  {/* Botones de acción */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    {currentIndex < total - 1 ? (
-                      <button
-                        onClick={goNext}
-                        className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-base font-semibold transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
-                      >
-                        Siguiente
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleClose}
-                        className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-primary text-white text-base font-semibold transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
-                      >
-                        Entendido
-                      </button>
-                    )}
-                    {current.learn_more_url && (
-                      <a
-                        href={current.learn_more_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-12 px-6 bg-slate-100 text-slate-700 text-base font-semibold transition-all hover:bg-slate-200"
-                      >
-                        Más detalles
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Dots de progreso — solo si hay más de 1 slide */}
-                  {total > 1 && (
-                    <div className="flex items-center gap-2 mt-6">
-                      {updates.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentIndex(idx)}
-                          aria-label={`Ir al slide ${idx + 1}`}
-                          className={`rounded-full transition-all duration-200 focus:outline-none ${
-                            idx === currentIndex
-                              ? 'w-6 h-2.5 bg-primary'
-                              : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
-                          }`}
-                        />
-                      ))}
-                      <span className="text-xs text-slate-400 ml-1">
-                        {currentIndex + 1} / {total}
-                      </span>
+                      <div className="mt-8 p-4 rounded-xl bg-white/80 border border-slate-200">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Progreso</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                          Novedad {currentIndex + 1} de {total}
+                        </p>
+                        <div className="mt-3 flex items-center gap-2">
+                          {videoUpdates.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setCurrentIndex(idx)}
+                              aria-label={`Ir a la novedad ${idx + 1}`}
+                              className={`rounded-full transition-all duration-200 focus:outline-none ${
+                                idx === currentIndex
+                                  ? 'w-7 h-2.5 bg-primary'
+                                  : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  <div className="md:w-8/12 p-6 md:p-10 flex flex-col">
+                    <div className="flex items-start justify-between gap-3 mb-3 pr-8">
+                      <span className="inline-flex shrink-0 rounded-full px-3 py-1 bg-primary/10 text-primary text-[11px] font-extrabold uppercase tracking-wider">
+                        {current.version}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                          <CalendarDaysIcon className="w-4 h-4" />
+                          {current.release_date}
+                        </span>
+                        {total > 1 && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={goPrev}
+                              disabled={currentIndex === 0}
+                              className="p-1.5 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              aria-label="Anterior"
+                            >
+                              <ChevronLeftIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={goNext}
+                              disabled={currentIndex === total - 1}
+                              className="p-1.5 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              aria-label="Siguiente"
+                            >
+                              <ChevronRightIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-5 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-black">
+                      {renderVideo(current.video_url as string)}
+                    </div>
+
+                    <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">
+                      {currentIndex < total - 1 ? (
+                        <button
+                          onClick={goNext}
+                          className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary text-white text-base font-semibold transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
+                        >
+                          Siguiente
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleClose}
+                          className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary text-white text-base font-semibold transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
+                        >
+                          Entendido
+                        </button>
+                      )}
+                      {current.learn_more_url && (
+                        <a
+                          href={current.learn_more_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 border border-slate-300 bg-white text-slate-700 text-base font-semibold transition-all hover:bg-slate-100"
+                        >
+                          Mas detalles
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

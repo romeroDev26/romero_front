@@ -65,9 +65,9 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
   const config = getStatusConfig();
 
   return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
+    <div className={`inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm border max-w-full ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
       {config.icon}
-      <span className="font-medium">{config.text}</span>
+      <span className="font-medium text-center sm:text-left leading-tight">{config.text}</span>
     </div>
   );
 };
@@ -256,53 +256,53 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
   const totalActiveSelections = uniqueSellers.size;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-      <div className="max-w-lg mx-auto">
+    <div className="w-full min-h-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-2 sm:p-4">
+      <div className="w-full max-w-full mx-auto">
         
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Selección de Asientos</h1>
-          <p className="text-gray-600 text-sm mb-3">Sistema de reserva empresarial</p>
+        <div className="text-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">Selección de Asientos</h2>
+          <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 px-1">Sistema de reserva empresarial</p>
           
           {/* Indicadores de estado */}
-          <div className="flex justify-center gap-4 mb-4">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
             <ConnectionStatusIndicator status={connectionStatus} />
             {canUseRealtime && totalActiveSelections > 0 && (
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border bg-orange-100 text-orange-800 border-orange-200">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">{totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}</span>
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm border bg-orange-100 text-orange-800 border-orange-200 max-w-full">
+                <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="font-medium leading-tight">{totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}</span>
               </div>
             )}
             {connectionStatus === 'failed' && (
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border bg-blue-100 text-blue-800 border-blue-200">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">Venta normal habilitada</span>
+              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm border bg-blue-100 text-blue-800 border-blue-200 max-w-full">
+                <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="font-medium leading-tight">Venta normal habilitada</span>
               </div>
             )}
           </div>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4">
-          <div className="relative">
-            <div className="border border-dashed border-gray-400 rounded-2xl px-2 py-4 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="w-auto px-4 h-8 border border-dashed border-gray-400 rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
-                  <span className="text-xs font-bold text-gray-700 uppercase">{vesselName}</span>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl border border-gray-200 p-2 sm:p-4">
+          <div className="relative w-full min-w-0">
+            <div className="border border-dashed border-gray-400 rounded-xl sm:rounded-2xl px-1 sm:px-2 py-3 sm:py-4 relative overflow-x-auto overflow-y-visible touch-pan-x">
+              <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 z-10">
+                <div className="w-auto max-w-[calc(100vw-3rem)] sm:max-w-none px-2 sm:px-4 min-h-7 sm:h-8 border border-dashed border-gray-400 rounded-t-xl sm:rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
+                  <span className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase truncate">{vesselName}</span>
                 </div>
               </div>
-              <div className="mt-2">
-                <div className="space-y-2">
+              <div className="mt-6 sm:mt-2 min-w-min mx-auto">
+                <div className="space-y-2 sm:space-y-3">
                   {seatLayout.map(section => (
-                    <div key={section.id} className={`${section.bgColor} rounded-xl p-4 mb-4`}>
-                      <div className="text-center mb-4">
-                        <h3 className="text-sm font-bold text-gray-700 bg-white px-3 py-1 rounded-full shadow-sm border inline-block">
+                    <div key={section.id} className={`${section.bgColor} rounded-lg sm:rounded-xl p-2 sm:p-4 mb-3 sm:mb-4`}>
+                      <div className="text-center mb-2 sm:mb-4">
+                        <h3 className="text-xs sm:text-sm font-bold text-gray-700 bg-white px-2 sm:px-3 py-1 rounded-full shadow-sm border inline-block max-w-[95%]">
                           {section.title}
                         </h3>
                       </div>
-                      <div className="space-y-3">
+                      <div className="space-y-2 sm:space-y-3">
                         {section.rows.map((row, rowIndex) => (
-                          <div key={`${section.id}-row-${rowIndex}`} className="bg-white/40 rounded-lg p-3">
-                            <div className="flex justify-center gap-6">
-                              <div className="flex gap-3">
+                          <div key={`${section.id}-row-${rowIndex}`} className="bg-white/40 rounded-lg p-1.5 sm:p-3">
+                            <div className="flex justify-center items-center gap-2 sm:gap-4 md:gap-6 min-w-0">
+                              <div className="flex gap-1.5 sm:gap-2 md:gap-3 shrink-0">
                                 {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => {
                                   const isSelected = selectedSeats.has(seat.id);
                                   
@@ -322,11 +322,11 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
                                 })}
                               </div>
                               {section.totalColumns > 2 && (
-                                <div className="w-16 flex items-center justify-center">
-                                  <div className="w-0.5 h-8 bg-gray-300 rounded-full"></div>
+                                <div className="w-6 sm:w-10 md:w-16 shrink-0 flex items-center justify-center px-0.5">
+                                  <div className="w-0.5 h-6 sm:h-8 bg-gray-300 rounded-full"></div>
                                 </div>
                               )}
-                              <div className="flex gap-3">
+                              <div className="flex gap-1.5 sm:gap-2 md:gap-3 shrink-0">
                                 {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => {
                                   const isSelected = selectedSeats.has(seat.id);
                                   
@@ -353,8 +353,8 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
                   ))}
                 </div>
               </div>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-white border border-dashed border-gray-400 rounded-b-xl flex items-center justify-center">
-                <span className="text-xs font-bold text-gray-600">TRASERA</span>
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-20 sm:w-24 h-3.5 sm:h-4 bg-white border border-dashed border-gray-400 rounded-b-lg sm:rounded-b-xl flex items-center justify-center">
+                <span className="text-[10px] sm:text-xs font-bold text-gray-600">TRASERA</span>
               </div>
             </div>
           </div>

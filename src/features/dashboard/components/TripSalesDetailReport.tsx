@@ -355,7 +355,6 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                     minimumFractionDigits={1}
                     maximumFractionDigits={1}
                     durationMs={1100}
-                    easing="easeOutExpo"
                   />
                 </p>
                 <p className="text-sm text-gray-500">Ocupación</p>
@@ -377,7 +376,6 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                     minimumFractionDigits={2}
                     maximumFractionDigits={2}
                     durationMs={1200}
-                    easing="easeOutExpo"
                   />
                 </p>
                 <p className="text-sm text-gray-500">Ingresos Totales</p>
@@ -394,7 +392,6 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                     minimumFractionDigits={0}
                     maximumFractionDigits={0}
                     durationMs={950}
-                    easing="easeOutCubic"
                   />
                 </p>
                 <p className="text-sm text-gray-500">Asientos Vendidos</p>
@@ -415,7 +412,6 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                     minimumFractionDigits={2}
                     maximumFractionDigits={2}
                     durationMs={1100}
-                    easing="easeOutExpo"
                   />
                 </p>
                 <p className="text-sm text-gray-500">Ticket Promedio</p>

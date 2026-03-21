@@ -7,7 +7,7 @@ import { SeatRealtime } from './SeatRealtime';
 import { SeatMapItem } from '../../../../types';
 import { useVessel } from '../../hooks/useVesselsData';
 import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
-import { getZoneColor, getZoneTitle } from '../../utils/seatUtils';
+import { getZoneTitle } from '../../utils/seatUtils';
 
 interface SeatMapRealtimeProps {
   tripId: number;
@@ -229,7 +229,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
           level: config.deck_level,
           rows: rows,
           totalColumns: totalColumns,
-          bgColor: getZoneColor(config.seat_type?.name || ''),
         };
       })
       .sort((a, b) => a.level - b.level);
@@ -256,107 +255,105 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
   const totalActiveSelections = uniqueSellers.size;
 
   return (
-    <div className="w-full min-h-0 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-2 sm:p-4">
-      <div className="w-full max-w-full mx-auto">
-        
-        <div className="text-center mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">Selección de Asientos</h2>
-          <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 px-1">Sistema de reserva empresarial</p>
-          
-          {/* Indicadores de estado */}
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-3 sm:mb-4 px-1">
-            <ConnectionStatusIndicator status={connectionStatus} />
-            {canUseRealtime && totalActiveSelections > 0 && (
-              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm border bg-orange-100 text-orange-800 border-orange-200 max-w-full">
-                <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                <span className="font-medium leading-tight">{totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}</span>
-              </div>
-            )}
-            {connectionStatus === 'failed' && (
-              <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm border bg-blue-100 text-blue-800 border-blue-200 max-w-full">
-                <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
-                <span className="font-medium leading-tight">Venta normal habilitada</span>
-              </div>
-            )}
-          </div>
+    <div className="w-full min-h-0">
+      <div className="mb-3 sm:mb-4">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-center sm:text-left">
+          Mapa de asientos
+        </h2>
+        <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
+          <ConnectionStatusIndicator status={connectionStatus} />
+          {canUseRealtime && totalActiveSelections > 0 && (
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-orange-50 text-orange-800 border-orange-200/80">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span className="font-medium leading-tight">
+                {totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+          {connectionStatus === 'failed' && (
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-slate-50 text-slate-700 border-slate-200">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span className="font-medium leading-tight">Venta normal habilitada</span>
+            </div>
+          )}
         </div>
-        
-        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl border border-gray-200 p-2 sm:p-4">
-          <div className="relative w-full min-w-0">
-            <div className="border border-dashed border-gray-400 rounded-xl sm:rounded-2xl px-1 sm:px-2 py-3 sm:py-4 relative overflow-x-auto overflow-y-visible touch-pan-x">
-              <div className="absolute -top-3 sm:-top-4 left-1/2 transform -translate-x-1/2 z-10">
-                <div className="w-auto max-w-[calc(100vw-3rem)] sm:max-w-none px-2 sm:px-4 min-h-7 sm:h-8 border border-dashed border-gray-400 rounded-t-xl sm:rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
-                  <span className="text-[10px] sm:text-xs font-bold text-gray-700 uppercase truncate">{vesselName}</span>
-                </div>
-              </div>
-              <div className="mt-6 sm:mt-2 min-w-min mx-auto">
-                <div className="space-y-2 sm:space-y-3">
-                  {seatLayout.map(section => (
-                    <div key={section.id} className={`${section.bgColor} rounded-lg sm:rounded-xl p-2 sm:p-4 mb-3 sm:mb-4`}>
-                      <div className="text-center mb-2 sm:mb-4">
-                        <h3 className="text-xs sm:text-sm font-bold text-gray-700 bg-white px-2 sm:px-3 py-1 rounded-full shadow-sm border inline-block max-w-[95%]">
-                          {section.title}
-                        </h3>
+      </div>
+
+      {/* Un solo marco tipo casco, ancho ajustado al bloque de asientos */}
+      <div className="w-full flex justify-center overflow-x-auto overflow-y-visible touch-pan-x pb-1">
+        <div className="w-max max-w-full mx-auto min-w-0 rounded-lg border border-dashed border-gray-300 bg-slate-50/70 px-2 py-2 sm:px-3 sm:py-3">
+          <div className="text-center pb-2 mb-1 border-b border-dashed border-gray-300/80">
+            <span className="text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-wide line-clamp-2">
+              {vesselName}
+            </span>
+            <span className="block text-[9px] text-gray-400 mt-0.5">Proa</span>
+          </div>
+
+          <div className="space-y-3 sm:space-y-4">
+            {seatLayout.map((section, sectionIndex) => (
+              <div
+                key={section.id}
+                className={sectionIndex > 0 ? 'pt-3 border-t border-gray-200/90' : ''}
+              >
+                <p className="text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  {section.title}
+                </p>
+                <div className="space-y-1.5 sm:space-y-2">
+                  {section.rows.map((row, rowIndex) => (
+                    <div
+                      key={`${section.id}-row-${rowIndex}`}
+                      className="flex justify-center items-center gap-1.5 sm:gap-2 md:gap-3"
+                    >
+                      <div className="flex gap-1 sm:gap-1.5 md:gap-2 shrink-0">
+                        {row.slice(Math.ceil(row.length / 2)).reverse().map((seat) => {
+                          const isSelected = selectedSeats.has(seat.id);
+                          return (
+                            <SeatRealtime
+                              key={seat.id}
+                              seat={seat}
+                              isSelected={isSelected}
+                              onClick={handleSeatToggle}
+                              isLocked={isLocked}
+                              activeSelection={activeSeatSelections.get(seat.id)}
+                              connectionStatus={connectionStatus}
+                              isWebSocketAvailable={isWebSocketAvailable}
+                              isOccupiedByRepresentative={false}
+                            />
+                          );
+                        })}
                       </div>
-                      <div className="space-y-2 sm:space-y-3">
-                        {section.rows.map((row, rowIndex) => (
-                          <div key={`${section.id}-row-${rowIndex}`} className="bg-white/40 rounded-lg p-1.5 sm:p-3">
-                            <div className="flex justify-center items-center gap-2 sm:gap-4 md:gap-6 min-w-0">
-                              <div className="flex gap-1.5 sm:gap-2 md:gap-3 shrink-0">
-                                {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => {
-                                  const isSelected = selectedSeats.has(seat.id);
-                                  
-                                  return (
-                                    <SeatRealtime
-                                      key={seat.id}
-                                      seat={seat}
-                                      isSelected={isSelected}
-                                      onClick={handleSeatToggle}
-                                      isLocked={isLocked}
-                                      activeSelection={activeSeatSelections.get(seat.id)}
-                                      connectionStatus={connectionStatus}
-                                      isWebSocketAvailable={isWebSocketAvailable}
-                                      isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
-                                    />
-                                  );
-                                })}
-                              </div>
-                              {section.totalColumns > 2 && (
-                                <div className="w-6 sm:w-10 md:w-16 shrink-0 flex items-center justify-center px-0.5">
-                                  <div className="w-0.5 h-6 sm:h-8 bg-gray-300 rounded-full"></div>
-                                </div>
-                              )}
-                              <div className="flex gap-1.5 sm:gap-2 md:gap-3 shrink-0">
-                                {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => {
-                                  const isSelected = selectedSeats.has(seat.id);
-                                  
-                                  return (
-                                    <SeatRealtime
-                                      key={seat.id}
-                                      seat={seat}
-                                      isSelected={isSelected}
-                                      onClick={handleSeatToggle}
-                                      isLocked={isLocked}
-                                      activeSelection={activeSeatSelections.get(seat.id)}
-                                      connectionStatus={connectionStatus}
-                                      isWebSocketAvailable={isWebSocketAvailable}
-                                      isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
-                                    />
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                      {section.totalColumns > 2 && (
+                        <div className="w-4 sm:w-6 md:w-8 shrink-0 flex items-center justify-center">
+                          <div className="w-px h-5 sm:h-6 md:h-7 bg-gray-300" aria-hidden />
+                        </div>
+                      )}
+                      <div className="flex gap-1 sm:gap-1.5 md:gap-2 shrink-0">
+                        {row.slice(0, Math.ceil(row.length / 2)).reverse().map((seat) => {
+                          const isSelected = selectedSeats.has(seat.id);
+                          return (
+                            <SeatRealtime
+                              key={seat.id}
+                              seat={seat}
+                              isSelected={isSelected}
+                              onClick={handleSeatToggle}
+                              isLocked={isLocked}
+                              activeSelection={activeSeatSelections.get(seat.id)}
+                              connectionStatus={connectionStatus}
+                              isWebSocketAvailable={isWebSocketAvailable}
+                              isOccupiedByRepresentative={false}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-20 sm:w-24 h-3.5 sm:h-4 bg-white border border-dashed border-gray-400 rounded-b-lg sm:rounded-b-xl flex items-center justify-center">
-                <span className="text-[10px] sm:text-xs font-bold text-gray-600">TRASERA</span>
-              </div>
-            </div>
+            ))}
+          </div>
+
+          <div className="text-center pt-2 mt-2 border-t border-dashed border-gray-300/80">
+            <span className="text-[9px] text-gray-400">Trasera</span>
           </div>
         </div>
       </div>

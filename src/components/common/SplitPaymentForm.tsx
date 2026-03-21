@@ -1,7 +1,7 @@
 // src/components/common/SplitPaymentForm.tsx
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { SplitIcon, AlertCircle } from 'lucide-react';
+import { SplitIcon, AlertCircle, CreditCard } from 'lucide-react';
 import { 
   validateSplitPayment, 
   canEnableSplitPayment,
@@ -44,6 +44,8 @@ interface SplitPaymentFormProps {
   onValidationChange?: (isValid: boolean) => void;
   // Props para modo controlado (opcional)
   initialData?: Partial<SplitPaymentData>;
+  /** UI alineada al mock de billing (POS fluvial) */
+  variant?: 'default' | 'billing';
 }
 
 /**
@@ -56,8 +58,33 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
   disabled = false,
   onPaymentDataChange,
   onValidationChange,
-  initialData
+  initialData,
+  variant = 'default',
 }) => {
+  const isBilling = variant === 'billing';
+
+  const selectBillingClass =
+    'w-full min-w-0 bg-gray-100 border-0 rounded-lg py-3 pl-4 pr-11 text-sm text-gray-900 appearance-none focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed';
+  const selectDefaultClass =
+    'w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm';
+  const selectClass = isBilling ? selectBillingClass : selectDefaultClass;
+
+  const opInputBillingClass =
+    'w-full py-2.5 px-4 bg-gray-100 border-0 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60';
+  const opInputDefaultClass =
+    'w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm';
+  const opInputClass = isBilling ? opInputBillingClass : opInputDefaultClass;
+
+  const amountNumClass = isBilling
+    ? 'w-full py-2.5 pl-8 pr-4 bg-gray-100 border-0 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60'
+    : 'w-full p-2 pl-8 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm';
+
+  const splitPanel1Class = isBilling
+    ? 'p-4 rounded-xl border border-sky-100 bg-sky-50/40'
+    : 'p-4 rounded-lg border bg-blue-50 border-blue-200';
+  const splitPanel2Class = isBilling
+    ? 'p-4 rounded-xl border border-emerald-100 bg-emerald-50/40'
+    : 'p-4 rounded-lg border bg-green-50 border-green-200';
   // Estado para activar/desactivar pago dividido
   const [isSplitPayment, setIsSplitPayment] = useState(initialData?.isSplitPayment ?? false);
   
@@ -241,9 +268,15 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
     <div className="space-y-4">
       {/* Alerta si no hay precio valido */}
       {!canEnable && (
-        <div className="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-amber-600 mr-2 flex-shrink-0" />
-          <p className="text-sm text-amber-700">
+        <div
+          className={`flex items-center bg-amber-50 border border-amber-200 rounded-lg ${
+            isBilling ? 'p-2.5' : 'p-3'
+          }`}
+        >
+          <AlertCircle
+            className={`text-amber-600 mr-2 flex-shrink-0 ${isBilling ? 'w-4 h-4' : 'w-5 h-5'}`}
+          />
+          <p className={isBilling ? 'text-xs text-amber-800' : 'text-sm text-amber-700'}>
             Seleccione un viaje con precio válido para configurar el pago
           </p>
         </div>
@@ -251,32 +284,48 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
 
       {/* Pago Completo (solo visible cuando NO es pago dividido) */}
       {!isSplitPayment && (
-        <div className="p-4 rounded-lg border bg-gray-50 border-gray-200">
-          <div className="space-y-3">
+        <div
+          className={
+            isBilling ? 'space-y-3' : 'p-4 rounded-lg border bg-gray-50 border-gray-200'
+          }
+        >
+          <div className={isBilling ? 'space-y-3' : 'space-y-3'}>
             {/* Selector de metodo */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
-                Método de Pago
-              </label>
-              <select
-                value={paymentMethod1}
-                onChange={(e) => setPaymentMethod1(e.target.value)}
-                disabled={disabled || !canEnable}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
-              >
-                {PAYMENT_METHOD_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              {!isBilling && (
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Método de Pago
+                </label>
+              )}
+              <div className="relative isolate">
+                <select
+                  value={paymentMethod1}
+                  onChange={(e) => setPaymentMethod1(e.target.value)}
+                  disabled={disabled || !canEnable}
+                  className={selectClass}
+                >
+                  {PAYMENT_METHOD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {isBilling && (
+                  <span
+                    className="pointer-events-none absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg border-l border-gray-200/60 bg-gray-100/95"
+                    aria-hidden
+                  >
+                    <CreditCard className="h-4 w-4 shrink-0 text-gray-500" />
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Codigo de operacion (si aplica) */}
             {paymentMethod1 !== 'EFE' && (
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Código de Operación {requiresOperationCode(paymentMethod1) ? '*' : '(opcional)'}
+                <label className="block text-[11px] font-medium uppercase tracking-wider text-gray-500 mb-1 ml-0.5">
+                  Código de operación {requiresOperationCode(paymentMethod1) ? '*' : '(opc.)'}
                 </label>
                 <input
                   type="text"
@@ -288,10 +337,10 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                   }}
                   placeholder="Ingrese el código..."
                   disabled={disabled}
-                  className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                  className={opInputClass}
                   maxLength={20}
                 />
-                <div className="text-xs text-gray-500 mt-1">
+                <div className="text-[10px] text-gray-500 mt-1">
                   {operationCode1.length}/20 caracteres
                 </div>
               </div>
@@ -301,18 +350,42 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
       )}
 
       {/* Toggle para activar pago dividido */}
-      <div className={`flex items-center justify-between p-3 rounded-lg border ${
-        !canEnable ? 'bg-gray-100 border-gray-200 opacity-60' : isSplitPayment ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200'
-      }`}>
-        <div className="flex items-center space-x-2">
-          <SplitIcon className={`w-5 h-5 ${isSplitPayment ? 'text-blue-600' : 'text-gray-600'}`} />
-          <div>
-            <p className={`text-sm font-medium ${isSplitPayment ? 'text-blue-700' : 'text-gray-700'}`}>
+      <div
+        className={`flex items-center justify-between p-3 rounded-lg ${
+          isBilling
+            ? !canEnable
+              ? 'bg-gray-100/80 opacity-60'
+              : isSplitPayment
+                ? 'bg-blue-50/80'
+                : 'bg-gray-100'
+            : `border ${
+                !canEnable
+                  ? 'bg-gray-100 border-gray-200 opacity-60'
+                  : isSplitPayment
+                    ? 'bg-blue-50 border-blue-300'
+                    : 'bg-gray-50 border-gray-200'
+              }`
+        }`}
+      >
+        <div className={`flex items-center ${isBilling ? 'gap-0' : 'space-x-2'}`}>
+          {!isBilling && (
+            <SplitIcon className={`w-5 h-5 ${isSplitPayment ? 'text-blue-600' : 'text-gray-600'}`} />
+          )}
+          <div className="flex flex-col">
+            <p
+              className={`${isBilling ? 'text-sm font-semibold text-gray-900' : `text-sm font-medium ${isSplitPayment ? 'text-blue-700' : 'text-gray-700'}`}`}
+            >
               Pago Dividido
             </p>
-            <p className="text-xs text-gray-500">
-              {canEnable 
-                ? (isSplitPayment ? 'Dividiendo el pago en 2 métodos' : 'Dividir el pago en 2 métodos diferentes')
+            <p
+              className={
+                isBilling ? 'text-[10px] text-gray-500' : 'text-xs text-gray-500'
+              }
+            >
+              {canEnable
+                ? isSplitPayment
+                  ? 'Dividiendo el pago en 2 métodos'
+                  : 'Permitir múltiples métodos'
                 : 'Requiere un precio válido'}
             </p>
           </div>
@@ -323,23 +396,47 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
           aria-checked={isSplitPayment}
           onClick={handleToggleSplitPayment}
           disabled={disabled || !canEnable}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-            isSplitPayment ? 'bg-blue-600' : 'bg-gray-300'
-          }`}
+          className={
+            isBilling
+              ? `relative shrink-0 h-5 w-10 cursor-pointer rounded-full border-0 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isSplitPayment ? 'bg-primary' : 'bg-gray-300'
+                }`
+              : `relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  isSplitPayment ? 'bg-blue-600' : 'bg-gray-300'
+                }`
+          }
         >
-          <span
-            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
-              isSplitPayment ? 'translate-x-5' : 'translate-x-0'
-            }`}
-          />
+          {isBilling ? (
+            <span
+              className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out ${
+                isSplitPayment ? 'translate-x-[18px]' : 'translate-x-0'
+              }`}
+            />
+          ) : (
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
+                isSplitPayment ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          )}
         </button>
       </div>
 
       {/* Pago 1 (Principal) - Solo visible en pago dividido */}
       {isSplitPayment && (
-        <div className="p-4 rounded-lg border bg-blue-50 border-blue-200">
-          <h4 className="text-sm font-medium text-blue-700 mb-3 flex items-center">
-            <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center mr-2">1</span>
+        <div className={splitPanel1Class}>
+          <h4
+            className={`mb-3 flex items-center text-sm font-medium ${
+              isBilling ? 'text-sky-900' : 'text-blue-700'
+            }`}
+          >
+            <span
+              className={`mr-2 flex h-5 w-5 items-center justify-center rounded-full text-xs text-white ${
+                isBilling ? 'bg-sky-600' : 'bg-blue-600'
+              }`}
+            >
+              1
+            </span>
             Primer Pago
           </h4>
           
@@ -349,18 +446,28 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Método
               </label>
-              <select
-                value={paymentMethod1}
-                onChange={(e) => setPaymentMethod1(e.target.value)}
-                disabled={disabled}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
-              >
-                {PAYMENT_METHOD_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative isolate">
+                <select
+                  value={paymentMethod1}
+                  onChange={(e) => setPaymentMethod1(e.target.value)}
+                  disabled={disabled}
+                  className={selectClass}
+                >
+                  {PAYMENT_METHOD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {isBilling && (
+                  <span
+                    className="pointer-events-none absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg border-l border-gray-200/60 bg-gray-100/95"
+                    aria-hidden
+                  >
+                    <CreditCard className="h-4 w-4 shrink-0 text-gray-500" />
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Monto */}
@@ -368,8 +475,8 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Monto
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+              <div className="relative isolate">
+                <span className="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-sm text-gray-500">
                   {currencySymbol}
                 </span>
                 <input
@@ -383,7 +490,7 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                   onBlur={handleAmount1Blur}
                   onWheel={handleWheel}
                   disabled={disabled}
-                  className="w-full p-2 pl-8 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                  className={amountNumClass}
                 />
               </div>
             </div>
@@ -405,7 +512,7 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                 }}
                 placeholder="Ingrese el código..."
                 disabled={disabled}
-                className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                className={isBilling ? opInputClass : 'w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm'}
                 maxLength={20}
               />
               <div className="text-xs text-gray-500 mt-1">
@@ -418,9 +525,19 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
 
       {/* Pago 2 (Secundario) - Solo visible en pago dividido */}
       {isSplitPayment && (
-        <div className="p-4 rounded-lg border bg-green-50 border-green-200">
-          <h4 className="text-sm font-medium text-green-700 mb-3 flex items-center">
-            <span className="w-5 h-5 rounded-full bg-green-600 text-white text-xs flex items-center justify-center mr-2">2</span>
+        <div className={splitPanel2Class}>
+          <h4
+            className={`mb-3 flex items-center text-sm font-medium ${
+              isBilling ? 'text-emerald-900' : 'text-green-700'
+            }`}
+          >
+            <span
+              className={`mr-2 flex h-5 w-5 items-center justify-center rounded-full text-xs text-white ${
+                isBilling ? 'bg-emerald-600' : 'bg-green-600'
+              }`}
+            >
+              2
+            </span>
             Segundo Pago
           </h4>
           
@@ -430,18 +547,28 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Método
               </label>
-              <select
-                value={paymentMethod2}
-                onChange={(e) => setPaymentMethod2(e.target.value)}
-                disabled={disabled}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
-              >
-                {PAYMENT_METHOD_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative isolate">
+                <select
+                  value={paymentMethod2}
+                  onChange={(e) => setPaymentMethod2(e.target.value)}
+                  disabled={disabled}
+                  className={selectClass}
+                >
+                  {PAYMENT_METHOD_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {isBilling && (
+                  <span
+                    className="pointer-events-none absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg border-l border-gray-200/60 bg-gray-100/95"
+                    aria-hidden
+                  >
+                    <CreditCard className="h-4 w-4 shrink-0 text-gray-500" />
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Monto */}
@@ -449,8 +576,8 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
               <label className="block text-xs font-medium text-gray-600 mb-1">
                 Monto
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+              <div className="relative isolate">
+                <span className="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-sm text-gray-500">
                   {currencySymbol}
                 </span>
                 <input
@@ -464,7 +591,7 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                   onBlur={handleAmount2Blur}
                   onWheel={handleWheel}
                   disabled={disabled}
-                  className="w-full p-2 pl-8 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                  className={amountNumClass}
                 />
               </div>
             </div>
@@ -486,7 +613,7 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                 }}
                 placeholder="Ingrese el código..."
                 disabled={disabled}
-                className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                className={isBilling ? opInputClass : 'w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm'}
                 maxLength={20}
               />
               <div className="text-xs text-gray-500 mt-1">
@@ -499,7 +626,15 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
 
       {/* Resumen de totales (solo en pago dividido) */}
       {isSplitPayment && (
-        <div className={`p-3 rounded-lg border ${validation.isValid ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-200'}`}>
+        <div
+          className={`rounded-lg border p-3 ${
+            validation.isValid
+              ? isBilling
+                ? 'border-gray-200/80 bg-gray-50/80'
+                : 'border-gray-200 bg-gray-50'
+              : 'border-red-200 bg-red-50'
+          }`}
+        >
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">Total a pagar:</span>
             <span className="font-semibold">{currencySymbol} {totalAmount.toFixed(2)}</span>

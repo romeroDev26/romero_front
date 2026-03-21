@@ -13,6 +13,7 @@ export * from './services/invoiceCreationService';
 // Custom hooks
 export * from './hooks/useSaleFormState';
 export * from './hooks/useSaleBusinessLogic';
+export * from './hooks/useSaleForm';
 
 // Components (re-export existing ones)
 export { SaleForm } from './SaleForm';

@@ -36,7 +36,13 @@ const SeatMapAuroraBackdrop: React.FC = () => (
     className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none"
     aria-hidden
   >
-    <div className="absolute inset-0 bg-gradient-to-b from-white from-0% via-white/90 via-[10%] via-slate-100/35 via-[32%] via-sky-50/45 via-[58%] to-slate-100/80 to-100%" />
+    <div
+      className="absolute inset-0"
+      style={{
+        background:
+          'linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0.9) 10%, rgba(241, 245, 249, 0.35) 32%, rgba(240, 249, 255, 0.45) 58%, rgba(241, 245, 249, 0.8) 100%)',
+      }}
+    />
 
     <div
       className="absolute -left-[38%] top-[-12%] h-[min(40rem,95vh)] w-[min(34rem,100vw)] rounded-full blur-3xl"
@@ -359,7 +365,11 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
       <div className="relative isolate -mt-4 w-full min-h-0">
         <SeatMapAuroraBackdrop />
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 bg-gradient-to-b from-white from-0% via-white/75 via-[22%] via-white/35 via-[48%] to-transparent to-[100%] sm:h-40"
+          className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 sm:h-40"
+          style={{
+            background:
+              'linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0.75) 22%, rgba(255, 255, 255, 0.35) 48%, transparent 100%)',
+          }}
           aria-hidden
         />
         <div className="relative z-10 flex w-full justify-center overflow-x-auto overflow-y-visible touch-pan-x pb-1 pt-4">

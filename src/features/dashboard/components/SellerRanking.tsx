@@ -90,13 +90,13 @@ const getTopCardStyles = (position: number) => {
 const TopRankBackground: React.FC<{ position: number }> = ({ position }) => {
   if (position === 1) {
     const stars = [
-      { left: '10%', top: '18%', size: 'h-1 w-1', delay: 0 },
-      { left: '22%', top: '42%', size: 'h-1.5 w-1.5', delay: 0.2 },
-      { left: '34%', top: '24%', size: 'h-1 w-1', delay: 0.45 },
-      { left: '48%', top: '55%', size: 'h-1.5 w-1.5', delay: 0.7 },
-      { left: '61%', top: '30%', size: 'h-1 w-1', delay: 1 },
-      { left: '74%', top: '50%', size: 'h-1.5 w-1.5', delay: 1.25 },
-      { left: '86%', top: '22%', size: 'h-1 w-1', delay: 1.4 },
+      { left: '10%', top: '18%', size: 9, delay: 0, color: 'text-white/90' },
+      { left: '22%', top: '42%', size: 11, delay: 0.2, color: 'text-cyan-200/85' },
+      { left: '34%', top: '24%', size: 9, delay: 0.45, color: 'text-white/90' },
+      { left: '48%', top: '55%', size: 11, delay: 0.7, color: 'text-violet-200/85' },
+      { left: '61%', top: '30%', size: 9, delay: 1, color: 'text-white/90' },
+      { left: '74%', top: '50%', size: 11, delay: 1.25, color: 'text-cyan-200/80' },
+      { left: '86%', top: '22%', size: 9, delay: 1.4, color: 'text-violet-200/80' },
     ];
 
     return (
@@ -117,9 +117,13 @@ const TopRankBackground: React.FC<{ position: number }> = ({ position }) => {
           transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
         />
         {stars.map((star, idx) => (
-          <motion.span
+          <motion.svg
             key={idx}
-            className={`absolute block rounded-full bg-white/85 shadow-[0_0_8px_rgba(255,255,255,0.7)] ${star.size}`}
+            viewBox="0 0 24 24"
+            fill="none"
+            className={`absolute ${star.color} drop-shadow-[0_0_6px_rgba(255,255,255,0.75)]`}
+            width={star.size}
+            height={star.size}
             style={{ left: star.left, top: star.top }}
             animate={{ opacity: [0.25, 1, 0.35], scale: [0.8, 1.3, 0.9] }}
             transition={{
@@ -128,7 +132,12 @@ const TopRankBackground: React.FC<{ position: number }> = ({ position }) => {
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-          />
+          >
+            <path
+              d="M12 3L14.6 9.4L21 12L14.6 14.6L12 21L9.4 14.6L3 12L9.4 9.4L12 3Z"
+              fill="currentColor"
+            />
+          </motion.svg>
         ))}
       </div>
     );
@@ -357,6 +366,39 @@ export const SellerRanking: React.FC = () => {
                       transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
                     />
                   </div>
+
+                  {vendedor.posicion_ranking === 1 && (
+                    <div className="pointer-events-none absolute inset-x-4 top-[62px] z-10 h-6">
+                      {[
+                        { left: '7%', top: '8%', size: 7, delay: 0.1, color: 'text-cyan-200/75' },
+                        { left: '31%', top: '76%', size: 8, delay: 0.45, color: 'text-violet-200/80' },
+                        { left: '63%', top: '16%', size: 7, delay: 0.2, color: 'text-white/80' },
+                        { left: '92%', top: '70%', size: 8, delay: 0.65, color: 'text-cyan-200/70' },
+                      ].map((star, idx) => (
+                        <motion.svg
+                          key={idx}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          width={star.size}
+                          height={star.size}
+                          className={`absolute ${star.color} drop-shadow-[0_0_5px_rgba(255,255,255,0.6)]`}
+                          style={{ left: star.left, top: star.top }}
+                          animate={{ opacity: [0.22, 0.9, 0.3], scale: [0.86, 1.14, 0.92] }}
+                          transition={{
+                            duration: 2.2,
+                            delay: star.delay,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }}
+                        >
+                          <path
+                            d="M12 3L14.6 9.4L21 12L14.6 14.6L12 21L9.4 14.6L3 12L9.4 9.4L12 3Z"
+                            fill="currentColor"
+                          />
+                        </motion.svg>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="relative z-10 mt-2 text-right">
                     <p

@@ -7,7 +7,7 @@ import { SeatRealtime } from './SeatRealtime';
 import { SeatMapItem } from '../../../../types';
 import { useVessel } from '../../hooks/useVesselsData';
 import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
-import { getZoneColor, getZoneTitle } from '../../utils/seatUtils';
+import { getZoneTitle } from '../../utils/seatUtils';
 
 interface SeatMapRealtimeProps {
   tripId: number;
@@ -23,6 +23,83 @@ interface SeatMapRealtimeProps {
 }
 
 type SeatRow = SeatMapItem[];
+
+const NOISE_TILE =
+  "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
+/**
+ * Fondo tipo mesh / aurora: azul corporativo y teal un poco más presentes,
+ * más cobertura en márgenes y zonas blancas (z-0, detrás del mapa).
+ */
+const SeatMapAuroraBackdrop: React.FC = () => (
+  <div
+    className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none"
+    aria-hidden
+  >
+    <div
+      className="absolute inset-0"
+      style={{
+        background:
+          'linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0.9) 10%, rgba(241, 245, 249, 0.35) 32%, rgba(240, 249, 255, 0.45) 58%, rgba(241, 245, 249, 0.8) 100%)',
+      }}
+    />
+
+    <div
+      className="absolute -left-[38%] top-[-12%] h-[min(40rem,95vh)] w-[min(34rem,100vw)] rounded-full blur-3xl"
+      style={{
+        background:
+          'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(56, 189, 248, 0.38) 0%, rgba(186, 230, 253, 0.55) 28%, rgba(0, 68, 113, 0.2) 55%, rgba(0, 68, 113, 0.06) 72%, transparent 88%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 100%)',
+        maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 100%)',
+      }}
+    />
+    <div
+      className="absolute -right-[32%] top-[8%] h-[min(34rem,82vh)] w-[min(30rem,90vw)] rounded-full blur-3xl"
+      style={{
+        background:
+          'radial-gradient(ellipse 64% 54% at 40% 50%, rgba(34, 211, 238, 0.32) 0%, rgba(207, 250, 254, 0.5) 30%, rgba(0, 106, 104, 0.16) 52%, rgba(0, 106, 104, 0.05) 70%, transparent 86%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 100%)',
+        maskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 100%)',
+      }}
+    />
+    <div
+      className="absolute left-[5%] -bottom-[26%] h-[min(36rem,72vh)] w-[min(40rem,96vw)] rounded-full blur-3xl"
+      style={{
+        background:
+          'radial-gradient(ellipse 74% 52% at 48% 36%, rgba(226, 232, 240, 0.95) 0%, rgba(148, 163, 184, 0.28) 42%, rgba(0, 68, 113, 0.12) 58%, transparent 84%)',
+      }}
+    />
+
+    <div
+      className="absolute left-1/2 top-[28%] h-[min(28rem,55vh)] w-[min(88%,42rem)] -translate-x-1/2 rounded-full blur-3xl opacity-80"
+      style={{
+        background:
+          'radial-gradient(ellipse 55% 70% at 50% 50%, rgba(241, 245, 249, 0.55) 0%, rgba(125, 211, 252, 0.22) 45%, rgba(0, 68, 113, 0.07) 65%, transparent 82%)',
+      }}
+    />
+
+    <div
+      className="absolute inset-[-50%] opacity-[0.62]"
+      style={{
+        background:
+          'linear-gradient(118deg, transparent 0%, transparent 32%, rgba(255, 255, 255, 0.75) 44%, rgba(186, 230, 253, 0.55) 50%, rgba(224, 242, 254, 0.4) 54%, transparent 64%, transparent 100%)',
+        transform: 'rotate(32deg)',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 12%, black 100%)',
+        maskImage: 'linear-gradient(to bottom, transparent 0%, black 12%, black 100%)',
+      }}
+    />
+
+    <div
+      className="absolute inset-0 opacity-[0.14] mix-blend-soft-light"
+      style={{
+        backgroundImage: NOISE_TILE,
+        backgroundSize: '100px 100px',
+        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
+        maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
+      }}
+    />
+  </div>
+);
 
 const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' | 'disconnected' | 'failed' }> = ({ status }) => {
   const getStatusConfig = () => {
@@ -65,9 +142,9 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
   const config = getStatusConfig();
 
   return (
-    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
+    <div className={`inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-full text-xs sm:text-sm border max-w-full ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
       {config.icon}
-      <span className="font-medium">{config.text}</span>
+      <span className="font-medium text-center leading-tight">{config.text}</span>
     </div>
   );
 };
@@ -229,7 +306,6 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
           level: config.deck_level,
           rows: rows,
           totalColumns: totalColumns,
-          bgColor: getZoneColor(config.seat_type?.name || ''),
         };
       })
       .sort((a, b) => a.level - b.level);
@@ -256,108 +332,126 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
   const totalActiveSelections = uniqueSellers.size;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-      <div className="max-w-lg mx-auto">
-        
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Selección de Asientos</h1>
-          <p className="text-gray-600 text-sm mb-3">Sistema de reserva empresarial</p>
-          
-          {/* Indicadores de estado */}
-          <div className="flex justify-center gap-4 mb-4">
+    <div className="w-full min-h-0">
+      <div className="relative z-10 mb-3 sm:mb-4 overflow-hidden rounded-md bg-white text-center">
+        <div
+          className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-gradient-to-bl from-sky-200/30 via-sky-100/15 to-transparent blur-2xl"
+          aria-hidden
+        />
+        <div className="relative">
+          <h2 className="text-base sm:text-lg font-bold text-primary-dark tracking-tight">
+            Mapa de asientos
+          </h2>
+          <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2">
             <ConnectionStatusIndicator status={connectionStatus} />
             {canUseRealtime && totalActiveSelections > 0 && (
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border bg-orange-100 text-orange-800 border-orange-200">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">{totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}</span>
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-orange-50 text-orange-800 border-orange-200/80">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span className="font-medium leading-tight">
+                  {totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}
+                </span>
               </div>
             )}
             {connectionStatus === 'failed' && (
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border bg-blue-100 text-blue-800 border-blue-200">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="font-medium">Venta normal habilitada</span>
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-slate-50 text-slate-700 border-slate-200">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span className="font-medium leading-tight">Venta normal habilitada</span>
               </div>
             )}
           </div>
         </div>
-        
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4">
-          <div className="relative">
-            <div className="border border-dashed border-gray-400 rounded-2xl px-2 py-4 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="w-auto px-4 h-8 border border-dashed border-gray-400 rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
-                  <span className="text-xs font-bold text-gray-700 uppercase">{vesselName}</span>
-                </div>
+      </div>
+
+      <div className="relative isolate -mt-4 w-full min-h-0">
+        <SeatMapAuroraBackdrop />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 sm:h-40"
+          style={{
+            background:
+              'linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0.75) 22%, rgba(255, 255, 255, 0.35) 48%, transparent 100%)',
+          }}
+          aria-hidden
+        />
+        <div className="relative z-10 flex w-full justify-center overflow-x-auto overflow-y-visible touch-pan-x pb-1 pt-4">
+        <div className="relative w-max max-w-full mx-auto min-w-0">
+          <div className="overflow-hidden rounded-lg border border-dashed border-gray-300 bg-white shadow-sm ring-1 ring-slate-200/40">
+            <div className="relative px-2 py-2 sm:px-3 sm:py-3 bg-slate-50">
+              <div className="text-center pb-2 mb-1 border-b border-dashed border-gray-300/80">
+              <span className="text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-wide line-clamp-2">
+                {vesselName}
+              </span>
+              <span className="block text-[9px] text-gray-400 mt-0.5">Proa</span>
               </div>
-              <div className="mt-2">
-                <div className="space-y-2">
-                  {seatLayout.map(section => (
-                    <div key={section.id} className={`${section.bgColor} rounded-xl p-4 mb-4`}>
-                      <div className="text-center mb-4">
-                        <h3 className="text-sm font-bold text-gray-700 bg-white px-3 py-1 rounded-full shadow-sm border inline-block">
-                          {section.title}
-                        </h3>
-                      </div>
-                      <div className="space-y-3">
-                        {section.rows.map((row, rowIndex) => (
-                          <div key={`${section.id}-row-${rowIndex}`} className="bg-white/40 rounded-lg p-3">
-                            <div className="flex justify-center gap-6">
-                              <div className="flex gap-3">
-                                {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => {
-                                  const isSelected = selectedSeats.has(seat.id);
-                                  
-                                  return (
-                                    <SeatRealtime
-                                      key={seat.id}
-                                      seat={seat}
-                                      isSelected={isSelected}
-                                      onClick={handleSeatToggle}
-                                      isLocked={isLocked}
-                                      activeSelection={activeSeatSelections.get(seat.id)}
-                                      connectionStatus={connectionStatus}
-                                      isWebSocketAvailable={isWebSocketAvailable}
-                                      isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
-                                    />
-                                  );
-                                })}
-                              </div>
-                              {section.totalColumns > 2 && (
-                                <div className="w-16 flex items-center justify-center">
-                                  <div className="w-0.5 h-8 bg-gray-300 rounded-full"></div>
-                                </div>
-                              )}
-                              <div className="flex gap-3">
-                                {row.slice(0, Math.ceil(row.length / 2)).reverse().map(seat => {
-                                  const isSelected = selectedSeats.has(seat.id);
-                                  
-                                  return (
-                                    <SeatRealtime
-                                      key={seat.id}
-                                      seat={seat}
-                                      isSelected={isSelected}
-                                      onClick={handleSeatToggle}
-                                      isLocked={isLocked}
-                                      activeSelection={activeSeatSelections.get(seat.id)}
-                                      connectionStatus={connectionStatus}
-                                      isWebSocketAvailable={isWebSocketAvailable}
-                                      isOccupiedByRepresentative={false} // Ya no necesario, se maneja con activeSelection
-                                    />
-                                  );
-                                })}
-                              </div>
-                            </div>
+
+              <div className="space-y-3 sm:space-y-4">
+              {seatLayout.map((section, sectionIndex) => (
+                <div
+                  key={section.id}
+                  className={sectionIndex > 0 ? 'pt-3 border-t border-gray-200/90' : ''}
+                >
+                  <p className="text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    {section.title}
+                  </p>
+                  <div className="space-y-1.5 sm:space-y-2">
+                    {section.rows.map((row, rowIndex) => (
+                      <div
+                        key={`${section.id}-row-${rowIndex}`}
+                        className="flex justify-center items-center gap-1.5 sm:gap-2 md:gap-3"
+                      >
+                        <div className="flex gap-1 sm:gap-1.5 md:gap-2 shrink-0">
+                          {row.slice(Math.ceil(row.length / 2)).reverse().map((seat) => {
+                            const isSelected = selectedSeats.has(seat.id);
+                            return (
+                              <SeatRealtime
+                                key={seat.id}
+                                seat={seat}
+                                isSelected={isSelected}
+                                onClick={handleSeatToggle}
+                                isLocked={isLocked}
+                                activeSelection={activeSeatSelections.get(seat.id)}
+                                connectionStatus={connectionStatus}
+                                isWebSocketAvailable={isWebSocketAvailable}
+                                isOccupiedByRepresentative={false}
+                              />
+                            );
+                          })}
+                        </div>
+                        {section.totalColumns > 2 && (
+                          <div className="w-4 sm:w-6 md:w-8 shrink-0 flex items-center justify-center">
+                            <div className="w-px h-5 sm:h-6 md:h-7 bg-gray-300" aria-hidden />
                           </div>
-                        ))}
+                        )}
+                        <div className="flex gap-1 sm:gap-1.5 md:gap-2 shrink-0">
+                          {row.slice(0, Math.ceil(row.length / 2)).reverse().map((seat) => {
+                            const isSelected = selectedSeats.has(seat.id);
+                            return (
+                              <SeatRealtime
+                                key={seat.id}
+                                seat={seat}
+                                isSelected={isSelected}
+                                onClick={handleSeatToggle}
+                                isLocked={isLocked}
+                                activeSelection={activeSeatSelections.get(seat.id)}
+                                connectionStatus={connectionStatus}
+                                isWebSocketAvailable={isWebSocketAvailable}
+                                isOccupiedByRepresentative={false}
+                              />
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
+              ))}
               </div>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-white border border-dashed border-gray-400 rounded-b-xl flex items-center justify-center">
-                <span className="text-xs font-bold text-gray-600">TRASERA</span>
+
+              <div className="text-center pt-2 mt-2 border-t border-dashed border-gray-300/80">
+                <span className="text-[9px] text-gray-400">Trasera</span>
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

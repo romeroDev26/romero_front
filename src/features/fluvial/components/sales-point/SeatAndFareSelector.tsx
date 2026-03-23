@@ -251,7 +251,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     <div className="space-y-6">
       <h2 className="text-lg font-semibold text-gray-800">Tramo y Asiento</h2>
       
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <SearchableSelect
           label="Origen (Embarque)"
           value={selectedBoardingStopId}
@@ -279,7 +279,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       {selectedSeat && (
         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
           <p className="text-sm text-gray-600 text-center mb-3">Asiento Seleccionado</p>
-          <div className="flex items-center justify-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
             <div className="text-center">
               <p className="font-bold text-2xl text-blue-700">
                 N° {selectedSeat.seat_number}

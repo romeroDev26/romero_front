@@ -178,7 +178,6 @@ export const SalesPointSelector: React.FC = () => {
                   minimumFractionDigits={0}
                   maximumFractionDigits={0}
                   durationMs={900}
-                  easing="easeOutCubic"
                 />
               )}
             </div>
@@ -195,7 +194,6 @@ export const SalesPointSelector: React.FC = () => {
                   minimumFractionDigits={0}
                   maximumFractionDigits={0}
                   durationMs={1100}
-                  easing="easeOutExpo"
                 />
               )}
             </div>
@@ -228,7 +226,6 @@ export const SalesPointSelector: React.FC = () => {
                   minimumFractionDigits={0}
                   maximumFractionDigits={0}
                   durationMs={1000}
-                  easing="easeOutCubic"
                 />
               )}
             </div>

@@ -168,8 +168,8 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
         onClick={() => isClickable && onClick(seat)}
         disabled={!isClickable}
         className={`
-          w-14 h-14 rounded-lg border-2 transition-all duration-200
-          flex items-center justify-center text-sm font-bold relative
+          w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-md sm:rounded-lg border-2 transition-all duration-200
+          flex items-center justify-center text-xs sm:text-sm font-bold relative
           ${getSeatStyles(seat.status, isSelected, isLocked, activeSelection, connectionStatus, isWebSocketAvailable, isOccupiedByRepresentative)}
         `}
         title={getTooltipText(seat, activeSelection, isOccupiedByRepresentative)}

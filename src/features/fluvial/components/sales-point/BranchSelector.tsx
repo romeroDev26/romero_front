@@ -25,8 +25,8 @@ export const BranchSelector: React.FC<BranchSelectorProps> = ({ onBranchSelect }
   }
 
   return (
-    <div className="min-h-screen p-4 lg:p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="w-full px-4 py-8 lg:px-6 lg:py-10">
+      <div className="mx-auto w-full max-w-6xl">
         <div className="text-center mb-6 lg:mb-8">
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Punto de Venta Fluvial</h1>
           <p className="text-sm lg:text-base text-gray-600">Seleccione la sucursal para iniciar las operaciones</p>

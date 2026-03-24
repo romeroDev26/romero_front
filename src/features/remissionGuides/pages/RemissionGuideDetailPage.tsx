@@ -51,7 +51,7 @@ export const RemissionGuideDetailPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="-mx-4 flex min-h-[calc(100vh-10rem)] w-full items-center justify-center lg:-mx-6">
         <div className="text-center">
           <Spinner size="lg" />
           <p className="mt-4 text-gray-600">Cargando guía de remisión...</p>
@@ -62,7 +62,7 @@ export const RemissionGuideDetailPage: React.FC = () => {
 
   if (error || !guide) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="-mx-4 flex min-h-[calc(100vh-10rem)] w-full items-center justify-center lg:-mx-6">
         <div className="text-center">
           <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -80,8 +80,8 @@ export const RemissionGuideDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="-mx-4 w-full min-h-[calc(100vh-10rem)] lg:-mx-6">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 pb-10">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">

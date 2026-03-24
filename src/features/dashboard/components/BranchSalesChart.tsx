@@ -1,107 +1,101 @@
 import React from 'react';
 import { VentasPorSucursal } from '../../../types/dashboard';
+import { Building2 } from 'lucide-react';
 
-// Colores modernos estilo Tremor
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
+const COLORS = ['#4f46e5', '#059669', '#d97706', '#dc2626', '#0891b2', '#7c3aed', '#db2777', '#65a30d'];
 
 interface BranchSalesChartProps {
   data?: VentasPorSucursal;
   isLoading?: boolean;
 }
 
+function shortName(n: string) {
+  return n.replace(/^Sucursal\s+/i, '').trim() || n;
+}
+
 export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoading = false }) => {
   if (isLoading) {
     return (
-      <div className="bg-white p-5 rounded-xl border border-gray-100">
-        <div className="animate-pulse">
-          <div className="h-5 bg-gray-100 rounded w-1/4 mb-4"></div>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-10 bg-gray-50 rounded-lg"></div>
-            ))}
-          </div>
+      <div className="flex h-full w-full min-h-[280px] flex-col rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0px_10px_30px_rgba(52,71,103,0.08)]">
+        <div className="animate-pulse space-y-3">
+          <div className="h-6 w-1/2 rounded bg-slate-100" />
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-10 rounded-lg bg-slate-50" />
+          ))}
         </div>
       </div>
     );
   }
 
-  // Transformar los datos del backend
-  const chartData = data?.resumen.map((item, index) => ({
-    name: item.sucursal_nombre,
-    value: item.total_ventas,
-    color: COLORS[index % COLORS.length],
-    porcentaje: item.porcentaje_total,
-  })) || [];
+  const chartData =
+    data?.resumen.map((item, index) => ({
+      name: item.sucursal_nombre,
+      value: item.total_ventas,
+      color: COLORS[index % COLORS.length],
+      porcentaje: item.porcentaje_total,
+      facturas: item.cantidad_facturas,
+    })) ?? [];
 
-  // Calcular el total
   const total = chartData.reduce((acc, item) => acc + item.value, 0);
-
-  // Ordenar por valor descendente
   const sortedData = [...chartData].sort((a, b) => b.value - a.value);
 
-  // Si no hay datos, mostrar mensaje informativo
-  if (!isLoading && sortedData.length === 0) {
+  if (sortedData.length === 0) {
     return (
-      <div className="bg-white p-5 rounded-xl border border-gray-100">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Ventas por Sucursal</h3>
-            <p className="text-xl font-semibold text-gray-900 mt-1">S/ 0</p>
-          </div>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
-            <p className="text-sm text-gray-500 font-medium">No hay datos disponibles</p>
-            <p className="text-xs text-gray-400 mt-1">Aún no se han registrado ventas por sucursal</p>
-          </div>
+      <div className="flex h-full w-full min-h-[280px] flex-col rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0px_10px_30px_rgba(52,71,103,0.08)]">
+        <h3 className="mb-1 flex items-center gap-2 text-lg font-bold tracking-tight text-slate-800">
+          <Building2 className="h-5 w-5 text-indigo-600" aria-hidden />
+          Ventas por sucursal
+        </h3>
+        <p className="mb-4 text-xs font-medium text-slate-500">Montos del período filtrado globalmente</p>
+        <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
+          <p className="text-sm text-slate-500">Sin datos por sucursal</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-5 rounded-xl border border-gray-100">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-sm font-medium text-gray-500">Ventas por Sucursal</h3>
-          <p className="text-xl font-semibold text-gray-900 mt-1">
-            S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-          </p>
-        </div>
-        <span className="text-xs text-gray-400">{sortedData.length} sucursales</span>
+    <div className="flex h-full w-full min-h-[280px] flex-col rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0px_10px_30px_rgba(52,71,103,0.08)]">
+      <div className="mb-4 shrink-0">
+        <h3 className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-800">
+          <Building2 className="h-5 w-5 shrink-0 text-indigo-600" aria-hidden />
+          Ventas por sucursal
+        </h3>
+        <p className="mt-0.5 text-xs font-medium text-slate-500">
+          Lista con scroll si crece el número de sucursales
+        </p>
+        <p className="mt-2 text-xl font-bold tabular-nums text-slate-900">
+          S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </p>
+        <p className="mt-1 text-[11px] text-slate-400">{sortedData.length} sucursales · desplazá para ver todas</p>
       </div>
-      
-      <div className="space-y-3">
+
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1">
         {sortedData.map((item) => (
           <div key={item.name} className="group">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="text-sm text-gray-700">{item.name}</span>
+            <div className="mb-1.5 flex items-center justify-between gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
+                <span className="truncate text-sm font-medium text-slate-700" title={item.name}>
+                  {shortName(item.name)}
+                </span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-gray-900">
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="text-xs tabular-nums text-slate-400">{item.facturas} fac.</span>
+                <span className="text-sm font-semibold tabular-nums text-slate-900">
                   S/ {item.value.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>
-                <span className="text-xs text-gray-400 w-12 text-right">
+                <span className="w-11 text-right text-xs tabular-nums text-slate-500">
                   {item.porcentaje.toFixed(1)}%
                 </span>
               </div>
             </div>
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full rounded-full transition-all duration-500 group-hover:opacity-80"
-                style={{ 
-                  width: `${item.porcentaje}%`,
-                  backgroundColor: item.color
+            <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full transition-all duration-500 group-hover:opacity-90"
+                style={{
+                  width: `${Math.min(100, Math.max(0, item.porcentaje))}%`,
+                  backgroundColor: item.color,
                 }}
               />
             </div>

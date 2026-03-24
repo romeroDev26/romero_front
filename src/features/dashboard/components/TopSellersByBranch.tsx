@@ -97,7 +97,8 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
     .filter(b => b.vendedores && b.vendedores.length > 0)
     .map(b => ({
       ...b.vendedores[0],
-      sucursal_nombre: b.sucursal_nombre
+      sucursal_nombre: b.sucursal_nombre,
+      sucursal_id: b.sucursal_id,
     }))
     .sort((a, b) => b.total_ventas - a.total_ventas)
     .slice(0, 5);
@@ -180,7 +181,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
                   <div className="ml-8 pl-3 border-l border-gray-100 py-1 space-y-0.5">
                     {branch.vendedores.slice(0, 5).map((seller, sIndex) => (
                       <div 
-                        key={seller.vendedor_id}
+                        key={`${branch.sucursal_id}-${seller.vendedor_id}-${sIndex}`}
                         className="flex items-center justify-between py-1.5 px-2 text-xs"
                       >
                         <div className="flex items-center gap-2">
@@ -227,7 +228,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
               const isTop = index === 0;
               
               return (
-                <div key={seller.vendedor_id} className="group">
+                <div key={`${seller.vendedor_id}-${seller.sucursal_id}`} className="group">
                   <div className="flex items-center gap-3">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium ${
                       isTop ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'

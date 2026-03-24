@@ -55,7 +55,7 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
   };
   
   return (
-    <div className={`p-4 lg:p-6 max-w-7xl mx-auto ${className}`}>
+    <div className={`w-full px-4 pb-8 pt-4 lg:px-6 lg:pb-10 ${className}`}>
       {/* Header de la sección */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 lg:mb-6 pb-4 border-b">
         <div className="flex-1">

@@ -1,4 +1,4 @@
-﻿// src/features/cargo/pages/CargoSalePage.tsx
+// src/features/cargo/pages/CargoSalePage.tsx
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -777,13 +777,13 @@ export const CargoSalePage: React.FC = () => {
         </div>
       )}
       
-      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
-        <div className="max-w-4xl mx-auto mb-8">
+      <div className="-mx-4 w-full min-h-[calc(100vh-10rem)] pb-8 md:pb-10 lg:-mx-6">
+        <div className="mx-auto mb-8 max-w-7xl px-4 pt-4 md:px-6">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Venta de Encomiendas y Carga</h1>
           <p className="text-center text-gray-500 mb-8">Siga los pasos para registrar un nuevo enví­o.</p>
           <Stepper steps={steps} currentStep={currentStepIndex} />
         </div>
-        {renderContent()}
+        <div className="px-4 md:px-6">{renderContent()}</div>
       </div>
       <Modal 
         isOpen={isItemModalOpen} 

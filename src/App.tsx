@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { Dashboard } from './components/layout/Dashboard';
+import Dashboard from './components/layout/Dashboard';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Spinner } from './components/common/Spinner';

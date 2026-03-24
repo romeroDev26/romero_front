@@ -253,8 +253,8 @@ export const RemissionGuidesListPage: React.FC = () => {
   }, [remitenteGuides]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-full xl:max-w-8xl 2xl:max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="-mx-4 w-full min-h-[calc(100vh-10rem)] lg:-mx-6">
+      <div className="mx-auto max-w-full px-4 py-8 sm:px-6 lg:px-8 xl:max-w-8xl 2xl:max-w-9xl pb-10">
         {/* Header */}
         <div className="mb-8">
           <div className="md:flex md:items-center md:justify-between">

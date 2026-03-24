@@ -158,7 +158,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
           </div>
         )}
 
-        <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+        <div className="w-full p-4 pb-8 lg:p-6 lg:pb-10">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-4 lg:mb-6 pb-4 border-b">
             <div className="flex-1">
               <h1 className="text-xl lg:text-2xl font-bold text-gray-800">

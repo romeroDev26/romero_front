@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Breadcrumbs from '../common/Breadcrumbs';
@@ -87,12 +88,14 @@ const quickAccessItems = [
 ];
 
 
-export const Dashboard: React.FC = () => {
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Estado para el sidebar móvil
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const mobileBackdropRef = useRef<HTMLDivElement | null>(null);
+  const mobilePanelRef = useRef<HTMLDivElement | null>(null);
   
   // Estado para el sidebar en desktop (persistente)
   const [sidebarHidden, setSidebarHidden] = useState(() => {
@@ -107,18 +110,6 @@ export const Dashboard: React.FC = () => {
       localStorage.setItem(STORAGE_KEY_SIDEBAR_HIDDEN, JSON.stringify(sidebarHidden));
     }
   }, [sidebarHidden]);
-  
-  // Efecto para manejar el cambio de tamaño de la ventana
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setSidebarHidden(true);
-        setSidebarOpen(false); // Asegúrate de que el overlay móvil se cierre
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const { data: currentUser, isLoading, error } = useQuery<User>({
     queryKey: ['currentUser'],
@@ -351,30 +342,89 @@ export const Dashboard: React.FC = () => {
     navigate('/login');
   }, [navigate]);
 
+  const closeMobileSidebar = useCallback(() => {
+    mobileBackdropRef.current?.style.setProperty('pointer-events', 'none');
+    mobilePanelRef.current?.style.setProperty('pointer-events', 'none');
+    setSidebarOpen(false);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!sidebarOpen) return;
+    mobileBackdropRef.current?.style.removeProperty('pointer-events');
+    mobilePanelRef.current?.style.removeProperty('pointer-events');
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        setSidebarHidden(true);
+        closeMobileSidebar();
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [closeMobileSidebar]);
+
   const toggleSidebar = () => {
     if (window.innerWidth < 1024) {
-      setSidebarOpen(!sidebarOpen);
+      if (sidebarOpen) {
+        closeMobileSidebar();
+      } else {
+        setSidebarOpen(true);
+      }
     } else {
       setSidebarHidden(!sidebarHidden);
     }
   };
 
+  const isDashboardOrReports = /^\/(dashboard|reports)$/.test(location.pathname);
+  const isSalesPointRoute = /^\/fluvial\/operations\/sales-point$/.test(location.pathname);
+  const isCargoSaleRoute = /^\/fluvial\/operations\/cargo-sale$/.test(location.pathname);
+  const isRemissionGuidesRoute = /^\/remission-guides/.test(location.pathname);
+  const isGrayFullBleedRoute =
+    isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute;
+  const isContentWithoutTopGap = isDashboardOrReports || isGrayFullBleedRoute;
+
   return (
     <div className="flex h-screen bg-gray-100 p-5">
-      {/* Sidebar para móvil (overlay) */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)}></div>
-            <div className="fixed inset-y-0 left-0 flex flex-col w-80 max-w-xs m-5">
-                <Sidebar 
-                  currentUser={currentUser} 
-                  onLogout={handleLogout} 
-                  onCloseMobile={() => setSidebarOpen(false)}
+      {/* Sidebar móvil: array (no Fragment) para AnimatePresence; closeMobileSidebar desactiva pointer-events antes del exit */}
+      <AnimatePresence>
+        {sidebarOpen
+          ? [
+              <motion.div
+                key="mobile-sidebar-backdrop"
+                ref={mobileBackdropRef}
+                className="fixed inset-0 z-40 lg:hidden bg-gray-600/75"
+                role="presentation"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                onClick={closeMobileSidebar}
+              />,
+              <motion.div
+                key="mobile-sidebar-panel"
+                ref={mobilePanelRef}
+                className="fixed inset-y-0 left-0 z-50 flex flex-col w-80 max-w-xs m-5 lg:hidden"
+                initial={{ x: '-108%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-108%' }}
+                transition={{
+                  type: 'tween',
+                  duration: 0.26,
+                  ease: [0.4, 0, 0.2, 1],
+                }}
+              >
+                <Sidebar
+                  currentUser={currentUser}
+                  onLogout={handleLogout}
+                  onCloseMobile={closeMobileSidebar}
                   pendingCount={pendingCount}
                 />
-            </div>
-        </div>
-      )}
+              </motion.div>,
+            ]
+          : null}
+      </AnimatePresence>
 
       {/* Sidebar para escritorio */}
       <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${sidebarHidden ? 'w-0' : 'w-80'}`}>
@@ -520,10 +570,15 @@ export const Dashboard: React.FC = () => {
         </header>
 
         {/* Área de contenido */}
-        <main className="flex-1 overflow-y-auto bg-white rounded-xl shadow-sm">
+        <main
+          className={`flex-1 overflow-y-auto rounded-xl shadow-sm ${
+            isGrayFullBleedRoute ? 'bg-gray-50' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
+          }`}
+        >
           <div className="p-4 lg:p-6">
             <Breadcrumbs />
-            <div className="mt-4">
+            {/* Dashboard, reportes, PV, encomiendas y guías remisión: sin mt-4 bajo migas */}
+            <div className={isContentWithoutTopGap ? '' : 'mt-4'}>
               <Outlet />
             </div>
           </div>
@@ -551,3 +606,6 @@ export const Dashboard: React.FC = () => {
     </div>
   );
 };
+
+export default Dashboard;
+export { Dashboard };

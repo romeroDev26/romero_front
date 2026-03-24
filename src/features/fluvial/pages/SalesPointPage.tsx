@@ -151,7 +151,7 @@ const SalesPointPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-full">
+    <div className="-mx-4 w-full min-h-[calc(100vh-10rem)] lg:-mx-6">
       {renderCurrentView()}
     </div>
   );

@@ -238,10 +238,6 @@ export const InvoicesListPage: React.FC = () => {
     void downloadSignedXmlToDisk(invoice);
   };
 
-  const handleDownloadSignedXml = async (invoice: Invoice) => {
-    await downloadSignedXmlToDisk(invoice);
-  };
-
   const columns: Column<Invoice>[] = [
     {
       key: 'document',
@@ -433,24 +429,14 @@ export const InvoicesListPage: React.FC = () => {
               </Button>
               
               {invoice.signed_xml_file_path && (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handlePreviewSignedXml(invoice)}
-                    title="Previsualizar XML y descargar archivo"
-                  >
-                    <CodeBracketIcon className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => void handleDownloadSignedXml(invoice)}
-                    title="Descargar XML"
-                  >
-                    <ArrowDownTrayIcon className="h-4 w-4" />
-                  </Button>
-                </>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handlePreviewSignedXml(invoice)}
+                  title="Previsualizar XML y descargar archivo"
+                >
+                  <CodeBracketIcon className="h-4 w-4" />
+                </Button>
               )}
               
               {invoice.cdr_file_path && (

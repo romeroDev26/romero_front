@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { format, parseISO } from 'date-fns';
 import { 
   MagnifyingGlassIcon, 
@@ -172,6 +173,73 @@ export const InvoicesListPage: React.FC = () => {
       '08': 'Nota de Débito'
     };
     return types[code] || code;
+  };
+
+  /** Nombre de archivo SUNAT si viene en la URL (p. ej. .../20478966653-03-B0D1-00000584.xml). */
+  const getSignedXmlDownloadFileName = (invoice: Invoice): string => {
+    const url = invoice.signed_xml_file_path;
+    if (!url) return `${invoice.series}-${String(invoice.number).padStart(8, '0')}.xml`;
+    try {
+      const last = new URL(url).pathname.split('/').filter(Boolean).pop();
+      if (last?.toLowerCase().endsWith('.xml')) return last;
+    } catch {
+      /* URL inválida: usar respaldo */
+    }
+    return `${invoice.series}-${String(invoice.number).padStart(8, '0')}.xml`;
+  };
+
+  /**
+   * Descarga el XML al disco: primero el backend (mismo origen, sin CORS); si falla, intento directo al CDN
+   * (solo funciona si el CDN expone CORS al origen del panel).
+   */
+  const downloadSignedXmlToDisk = async (invoice: Invoice) => {
+    const url = invoice.signed_xml_file_path;
+    const fallbackName = getSignedXmlDownloadFileName(invoice);
+    try {
+      let blob: Blob;
+      let fileName = fallbackName;
+
+      try {
+        const r = await invoicesService.fetchSignedXmlBlob(invoice.id);
+        blob = r.blob;
+        if (r.fileNameFromHeader) fileName = r.fileNameFromHeader;
+      } catch {
+        if (!url) throw new Error('NO_XML_SOURCE');
+        blob = await invoicesService.getPublicCdnFileBlob(url);
+      }
+
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      toast.warning(
+        'No se pudo descargar el XML. El almacenamiento en CDN no permite leer el archivo desde el panel (CORS). Hace falta el endpoint GET /sunat/invoices/{id}/signed-xml en el backend o habilitar CORS en Bunny. Mientras tanto use Ctrl+S en la previsualización.'
+      );
+    }
+  };
+
+  /**
+   * Ventana emergente para leer el XML. No usar noopener en la cadena de features: en Chromium
+   * window.open devuelve null aunque la ventana se haya abierto, y el toast de “bloqueada” es un falso positivo.
+   * En paralelo intenta la descarga automática al disco.
+   */
+  const handlePreviewSignedXml = (invoice: Invoice) => {
+    const url = invoice.signed_xml_file_path;
+    if (!url) return;
+    const preview = window.open(url, '_blank', 'width=960,height=720');
+    if (!preview) {
+      toast.error('El navegador bloqueó la ventana emergente. Permite ventanas emergentes para este sitio.');
+    }
+    void downloadSignedXmlToDisk(invoice);
+  };
+
+  const handleDownloadSignedXml = async (invoice: Invoice) => {
+    await downloadSignedXmlToDisk(invoice);
   };
 
   const columns: Column<Invoice>[] = [
@@ -365,14 +433,24 @@ export const InvoicesListPage: React.FC = () => {
               </Button>
               
               {invoice.signed_xml_file_path && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => window.open(invoice.signed_xml_file_path!, '_blank')}
-                  title="Ver XML"
-                >
-                  <CodeBracketIcon className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handlePreviewSignedXml(invoice)}
+                    title="Previsualizar XML y descargar archivo"
+                  >
+                    <CodeBracketIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => void handleDownloadSignedXml(invoice)}
+                    title="Descargar XML"
+                  >
+                    <ArrowDownTrayIcon className="h-4 w-4" />
+                  </Button>
+                </>
               )}
               
               {invoice.cdr_file_path && (

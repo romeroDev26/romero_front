@@ -1,7 +1,27 @@
 // src/services/invoices.service.ts
 
+import axios from 'axios';
 import api from '../config/api';
 import { Invoice } from '../types';
+
+/** GET a URLs públicas (CDN) sin cabecera Authorization: evita preflight/CORS innecesarios del cliente `api`. */
+const publicCdnClient = axios.create({
+  timeout: 120_000,
+});
+
+function parseContentDispositionFilename(header: string | undefined): string | undefined {
+  if (!header || typeof header !== 'string') return undefined;
+  const utf8 = /filename\*=UTF-8''([^;\s]+)/i.exec(header);
+  if (utf8?.[1]) {
+    try {
+      return decodeURIComponent(utf8[1].replace(/^["']|["']$/g, ''));
+    } catch {
+      return utf8[1];
+    }
+  }
+  const plain = /filename\s*=\s*("?)([^";\r\n]+)\1/i.exec(header);
+  return plain?.[2]?.trim();
+}
 
 // Esta interfaz define los datos para CREAR un ítem de factura.
 // La hacemos precisa para que coincida con lo que el backend espera.
@@ -223,6 +243,44 @@ class InvoicesService {
     });
     
     return response.data;
+  }
+
+  /**
+   * Descarga el contenido de un archivo expuesto en CDN (p. ej. XML firmado) como Blob.
+   * No usa el cliente `api` para no enviar Bearer al dominio del CDN.
+   */
+  async getPublicCdnFileBlob(fileUrl: string): Promise<Blob> {
+    const response = await publicCdnClient.get<Blob>(fileUrl, {
+      responseType: 'blob',
+      headers: {
+        Accept: 'application/xml, text/xml, application/octet-stream, */*',
+      },
+    });
+    if (response.status >= 400) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    return response.data;
+  }
+
+  /**
+   * XML firmado vía API (mismo origen que el panel): evita CORS del CDN en el navegador.
+   *
+   * Contrato esperado del backend:
+   * `GET /sunat/invoices/{invoice_id}/signed-xml` con Bearer → cuerpo XML, idealmente
+   * `Content-Type: application/xml` y opcional `Content-Disposition: attachment; filename="....xml"`.
+   */
+  async fetchSignedXmlBlob(invoiceId: number): Promise<{ blob: Blob; fileNameFromHeader?: string }> {
+    const response = await api.get<Blob>(`${this.basePath}${invoiceId}/signed-xml`, {
+      responseType: 'blob',
+      headers: {
+        Accept: 'application/xml, text/xml, */*',
+      },
+    });
+    const cd =
+      (response.headers['content-disposition'] as string | undefined) ??
+      (response.headers['Content-Disposition'] as string | undefined);
+    const fileNameFromHeader = parseContentDispositionFilename(cd);
+    return { blob: response.data, fileNameFromHeader };
   }
 
   /**

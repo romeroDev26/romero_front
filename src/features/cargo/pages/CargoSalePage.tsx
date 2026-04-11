@@ -4,7 +4,8 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-import { CreditCard, PlusIcon, PencilIcon, TrashIcon, ClipboardListIcon, HashIcon, ArrowRightIcon, PackageIcon, UserIcon, MapPinIcon, ReceiptTextIcon } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { CreditCard, PlusIcon, PencilIcon, TrashIcon, ClipboardListIcon, HashIcon, ArrowRightIcon, PackageIcon, UserIcon, MapPinIcon, ReceiptTextIcon, UsersRound } from 'lucide-react';
 
 import { PassengerDataForm } from '../../fluvial/components/sales-point/PassengerDataForm';
 import { TripSelection } from '../../fluvial/components/sales-point/TripSelection';
@@ -29,7 +30,11 @@ import { useTripDetails } from '../../fluvial/hooks/useTripDetails';
 import { TicketPreviewModal } from '../../fluvial/components/sales-point/TicketPreviewModal';
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 
+const CARGO_SALE_DRAFT_KEY = 'cargoSaleWizardDraft_v1';
+
 type CargoSaleView = 'clientSelection' | 'tripSelection' | 'tripSegmentSelection' | 'itemsDefinition';
+
+const STEP_VIEWS: CargoSaleView[] = ['clientSelection', 'tripSelection', 'tripSegmentSelection', 'itemsDefinition'];
 
 interface ClientData {
   docType: string; docNumber: string; name: string;
@@ -39,6 +44,8 @@ interface ClientData {
 
 export const CargoSalePage: React.FC = () => {
   const navigate = useNavigate();
+  const [draftReady, setDraftReady] = useState(false);
+  const [isClientEditModalOpen, setIsClientEditModalOpen] = useState(false);
   const [currentView, setCurrentView] = useState<CargoSaleView>('clientSelection');
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
@@ -98,12 +105,78 @@ export const CargoSalePage: React.FC = () => {
   useEffect(() => {
     const savedBranchJson = localStorage.getItem('selectedSalesBranch');
     if (savedBranchJson) {
-      setSelectedBranch(JSON.parse(savedBranchJson));
+      const branch = JSON.parse(savedBranchJson) as BranchOffice;
+      setSelectedBranch(branch);
+      try {
+        const raw = sessionStorage.getItem(CARGO_SALE_DRAFT_KEY);
+        if (raw) {
+          const d = JSON.parse(raw) as Record<string, unknown>;
+          if (d.v === 1 && d.branchId === branch.id) {
+            if (d.remitter && typeof d.remitter === 'object') setRemitter(d.remitter as ClientData);
+            if (d.recipient && typeof d.recipient === 'object') setRecipient(d.recipient as RecipientFormData);
+            if ('selectedTrip' in d) setSelectedTrip((d.selectedTrip as AvailableTripByPort | null) ?? null);
+            if (typeof d.selectedOriginId === 'number' || d.selectedOriginId === null)
+              setSelectedOriginId(d.selectedOriginId as number | null);
+            if (typeof d.selectedDestinationId === 'number' || d.selectedDestinationId === null)
+              setSelectedDestinationId(d.selectedDestinationId as number | null);
+            if (Array.isArray(d.cargoItems)) setCargoItems(d.cargoItems as CargoItemData[]);
+            if (typeof d.isContraentrega === 'boolean') setIsContraentrega(d.isContraentrega);
+            if (d.splitPaymentData && typeof d.splitPaymentData === 'object')
+              setSplitPaymentData(d.splitPaymentData as SplitPaymentData);
+            let view = d.currentView as CargoSaleView;
+            if (view === 'tripSegmentSelection' && !d.selectedTrip) view = 'tripSelection';
+            if (view === 'itemsDefinition' && !d.selectedTrip) view = 'tripSelection';
+            if (STEP_VIEWS.includes(view)) setCurrentView(view);
+          }
+        }
+      } catch {
+        sessionStorage.removeItem(CARGO_SALE_DRAFT_KEY);
+      }
+      setDraftReady(true);
     } else {
       toast.warn("Seleccione una sucursal en 'Punto de Venta (Pasajes)' para empezar.");
       navigate('/fluvial/operations/sales-point');
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (!draftReady || !selectedBranch) return;
+    const handle = window.setTimeout(() => {
+      try {
+        sessionStorage.setItem(
+          CARGO_SALE_DRAFT_KEY,
+          JSON.stringify({
+            v: 1,
+            branchId: selectedBranch.id,
+            currentView,
+            remitter,
+            recipient,
+            selectedTrip,
+            selectedOriginId,
+            selectedDestinationId,
+            cargoItems,
+            isContraentrega,
+            splitPaymentData,
+          }),
+        );
+      } catch (e) {
+        console.warn('No se pudo guardar el borrador de venta de encomienda', e);
+      }
+    }, 450);
+    return () => window.clearTimeout(handle);
+  }, [
+    draftReady,
+    selectedBranch,
+    currentView,
+    remitter,
+    recipient,
+    selectedTrip,
+    selectedOriginId,
+    selectedDestinationId,
+    cargoItems,
+    isContraentrega,
+    splitPaymentData,
+  ]);
   
   const { availableBoletaSeries, availableFacturaSeries, isLoading: isLoadingSeries } = useDocumentSeriesForBranch(selectedBranch?.id || null);
 
@@ -161,6 +234,42 @@ export const CargoSalePage: React.FC = () => {
     }
     setCurrentView(nextView);
   };
+
+  const clearCargoSaleDraft = useCallback(() => {
+    try {
+      sessionStorage.removeItem(CARGO_SALE_DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const handleStepperStepClick = useCallback((index: number) => {
+    const idx = STEP_VIEWS.indexOf(currentView);
+    if (index === idx) return;
+    if (index > idx) {
+      toast.info('Avance con el botón «Siguiente» en cada paso.');
+      return;
+    }
+    setCurrentView(STEP_VIEWS[index]);
+  }, [currentView]);
+
+  const closeClientEditModal = useCallback(() => {
+    if (!remitter.docNumber || !remitter.name) {
+      toast.error('Complete los datos del remitente antes de continuar.');
+      return;
+    }
+    if (!recipient.isSameAsSender && (!recipient.docNumber || !recipient.name)) {
+      toast.error('Complete DNI y nombre del destinatario, o indique que es el mismo remitente.');
+      return;
+    }
+    if (cargoItems.length > 0) {
+      toast.info(
+        'Si cambió el destinatario general, use Editar en cada encomienda para alinear el destinatario del envío con el comprobante.',
+        { autoClose: 7000 },
+      );
+    }
+    setIsClientEditModalOpen(false);
+  }, [remitter.docNumber, remitter.name, recipient, cargoItems.length]);
   
   const handleItemSubmit = (item: CargoItemData) => {
     setCargoItems(currentItems => {
@@ -288,6 +397,7 @@ export const CargoSalePage: React.FC = () => {
   };
 
   const handleTicketSuccess = () => {
+    clearCargoSaleDraft();
     // Resetear completamente para una nueva venta despuÃ©s del ticket
     setRemitter({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
     setRecipient({
@@ -323,6 +433,7 @@ export const CargoSalePage: React.FC = () => {
 
   // Función para limpiar el formulario cuando se cierre el modal (sin éxito)
   const clearCargoFormAfterSale = () => {
+    clearCargoSaleDraft();
     // Resetear todos los estados al inicial
     setRemitter({ docType: SunatDocType.DNI, docNumber: '', name: '', address: '', phone: '', email: '' });
     setRecipient({
@@ -422,6 +533,11 @@ export const CargoSalePage: React.FC = () => {
             <TripSelection 
               branch={selectedBranch}
               onTripSelect={(trip) => { 
+                if (selectedTrip && trip.id !== selectedTrip.id && cargoItems.length > 0) {
+                  toast.info('Cambió el viaje: confirme el tramo y revise la encomienda antes de emitir el comprobante.', {
+                    autoClose: 6000,
+                  });
+                }
                 setSelectedTrip(trip); 
                 // ===================================================================
                 // CAMBIO: Mover la navegación al siguiente paso después de que el estado se actualice
@@ -450,7 +566,7 @@ export const CargoSalePage: React.FC = () => {
               />
             )}
             <div className="mt-6 flex flex-col-reverse md:flex-row justify-between gap-4">
-              <Button variant="outline" className="w-full md:w-auto" onClick={() => { setSelectedTrip(null); setCurrentView('tripSelection'); }}>
+              <Button variant="outline" className="w-full md:w-auto" onClick={() => setCurrentView('tripSelection')}>
                 Volver a Seleccionar Viaje
               </Button>
               <Button className="w-full md:w-auto" onClick={() => handleNextStep('itemsDefinition')}>
@@ -570,6 +686,22 @@ export const CargoSalePage: React.FC = () => {
                     </p>
                     <p className="mt-1 text-xs text-slate-600">Viaje listo para asignar encomienda</p>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-200/80 bg-slate-50/80 px-5 py-3 md:px-8">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl border-slate-300 text-slate-700 hover:bg-white"
+                    onClick={() => setIsClientEditModalOpen(true)}
+                  >
+                    <UsersRound className="mr-2 h-4 w-4 shrink-0" />
+                    Editar remitente o destinatario
+                  </Button>
+                  <span className="text-xs text-slate-500">
+                    Sin salir del paso 4; las encomiendas añadidas se conservan
+                  </span>
                 </div>
               </div>
             </section>
@@ -779,12 +911,55 @@ export const CargoSalePage: React.FC = () => {
       
       <div className="-mx-4 w-full min-h-[calc(100vh-10rem)] pb-8 md:pb-10 lg:-mx-6">
         <div className="mx-auto mb-8 max-w-7xl px-4 pt-4 md:px-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Venta de Encomiendas y Carga</h1>
-          <p className="text-center text-gray-500 mb-8">Siga los pasos para registrar un nuevo enví­o.</p>
-          <Stepper steps={steps} currentStep={currentStepIndex} />
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 text-center mb-2">
+            Venta de Encomiendas y Carga
+          </h1>
+          <p className="text-center text-slate-600 mb-2 max-w-xl mx-auto">
+            El borrador se guarda automáticamente en esta sesión: puede volver atrás o recargar la página sin perder la encomienda en curso.
+          </p>
+          <p className="text-center text-slate-500 text-sm mb-6">Siga los pasos para registrar un nuevo envío.</p>
+          <Stepper steps={steps} currentStep={currentStepIndex} onStepClick={handleStepperStepClick} />
         </div>
-        <div className="px-4 md:px-6">{renderContent()}</div>
+        <div className="px-4 md:px-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
+      <Modal
+        isOpen={isClientEditModalOpen}
+        onClose={() => setIsClientEditModalOpen(false)}
+        title="Editar remitente y destinatario"
+        maxWidth="4xl"
+      >
+        <p className="mb-4 text-sm text-slate-600">
+          Los datos se actualizan al instante. Cada línea de encomienda puede tener su propio destinatario hasta que la edite desde la lista.
+        </p>
+        <div className="space-y-6 max-h-[min(70vh,640px)] overflow-y-auto pr-1">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700">Remitente</h3>
+            <PassengerDataForm passengerData={remitter} setPassengerData={setRemitter} />
+          </div>
+          <RecipientForm recipient={recipient} setRecipient={setRecipient} remitter={remitter} />
+        </div>
+        <div className="mt-6 flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsClientEditModalOpen(false)}>
+            Cancelar
+          </Button>
+          <Button className="w-full sm:w-auto" onClick={closeClientEditModal}>
+            Listo
+          </Button>
+        </div>
+      </Modal>
+
       <Modal 
         isOpen={isItemModalOpen} 
         onClose={() => setIsItemModalOpen(false)} 

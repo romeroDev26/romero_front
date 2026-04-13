@@ -21,10 +21,10 @@ const BRANCH_COLORS: Record<string, string> = {
 };
 
 const PERIODO_LABEL: Record<EvolucionVentasSucursales['periodo'], string> = {
-  daily: 'agrupado por día',
-  weekly: 'agrupado por semana',
-  monthly: 'agrupado por mes',
-  yearly: 'agrupado por año',
+  daily: 'por día',
+  weekly: 'por semana',
+  monthly: 'por mes',
+  yearly: 'por año',
 };
 
 const UNIDAD_PUNTO: Record<EvolucionVentasSucursales['periodo'], string> = {
@@ -63,9 +63,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (total <= 0) return null;
 
   return (
-    <div className="max-w-[260px] rounded-xl border border-slate-200 bg-white px-3 py-2.5 shadow-lg">
-      <p className="mb-2 border-b border-slate-100 pb-1.5 text-xs font-semibold text-slate-500">{label}</p>
-      <p className="mb-2 text-sm font-bold text-slate-900">
+    <div className="max-w-[260px] rounded-lg border border-gray-200 bg-white px-3 py-2.5 shadow-sm">
+      <p className="mb-2 border-b border-gray-100 pb-1.5 text-xs font-semibold text-gray-500">{label}</p>
+      <p className="mb-2 text-sm font-semibold text-gray-900">
         Total: S/ {total.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
       </p>
       <div className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
@@ -76,11 +76,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-white"
                 style={{ backgroundColor: entry.color }}
               />
-              <span className="truncate text-slate-600" title={entry.name}>
+              <span className="truncate text-gray-600" title={entry.name}>
                 {shortBranchLabel(String(entry.name))}
               </span>
             </div>
-            <span className="shrink-0 font-semibold tabular-nums text-slate-900">
+            <span className="shrink-0 font-semibold tabular-nums text-gray-900">
               S/ {Number(entry.value).toLocaleString('es-PE', { maximumFractionDigits: 0 })}
             </span>
           </div>
@@ -93,17 +93,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 interface BranchSalesLineChartProps {
   data?: EvolucionVentasSucursales;
   isLoading?: boolean;
-  /** En columnas del grid: altura controlada, leyenda con scroll para muchas sucursales */
   variant?: 'page' | 'embedded';
 }
-
-const cardShell =
-  'rounded-xl border border-slate-200/80 bg-white shadow-[0px_10px_30px_rgba(52,71,103,0.08)]';
 
 export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
   data,
   isLoading = false,
-  variant = 'page',
+  variant = 'embedded',
 }) => {
   const chartData = data?.datos.map((item) => ({
     date: item.fecha_formateada,
@@ -131,17 +127,14 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
 
   const periodo = data?.periodo ?? 'daily';
   const unidad = UNIDAD_PUNTO[periodo];
-
   const embedded = variant === 'embedded';
 
   if (isLoading) {
     return (
-      <div
-        className={`${cardShell} p-6 ${embedded ? 'flex h-full min-h-[280px] flex-col' : ''}`}
-      >
-        <div className="animate-pulse flex-1 space-y-4">
-          <div className="h-6 w-1/3 rounded bg-slate-100" />
-          <div className={`rounded-xl bg-slate-50 ${embedded ? 'min-h-[200px] flex-1' : 'h-56'}`} />
+      <div className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm ${embedded ? 'flex h-full min-h-[260px] flex-col' : ''}`}>
+        <div className="animate-pulse flex-1 space-y-3">
+          <div className="h-5 w-1/3 rounded bg-gray-100" />
+          <div className={`rounded-lg bg-gray-50 ${embedded ? 'min-h-[200px] flex-1' : 'h-56'}`} />
         </div>
       </div>
     );
@@ -149,168 +142,100 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
 
   if (chartData.length === 0 || branchNamesRaw.length === 0) {
     return (
-      <div
-        className={`${cardShell} p-6 ${embedded ? 'flex h-full min-h-[280px] flex-col' : ''}`}
-      >
-        <div className="mb-4 shrink-0">
-          <div>
-            <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <BarChart3 className="h-5 w-5 text-indigo-600" aria-hidden />
-              Panorama de ventas
-            </h3>
-            <p className="mt-0.5 text-xs font-medium text-slate-500">Por sucursal en el tiempo</p>
-            <p className="mt-1 text-xl font-semibold text-slate-900">S/ 0</p>
+      <div className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm ${embedded ? 'flex h-full min-h-[260px] flex-col' : ''}`}>
+        <div className="mb-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-indigo-600" aria-hidden />
+            <h3 className="text-base font-semibold text-gray-800">Panorama de ventas</h3>
           </div>
+          <p className="text-xs text-gray-500">Por sucursal en el tiempo</p>
         </div>
-        <div className={`flex flex-col items-center justify-center ${embedded ? 'flex-1 py-8' : 'py-14'}`}>
-          <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-            <BarChart3 className="h-8 w-8 text-slate-400" />
+        <div className={`flex flex-col items-center justify-center ${embedded ? 'flex-1 py-8' : 'py-12'}`}>
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+            <BarChart3 className="h-7 w-7 text-gray-400" />
           </div>
-          <p className="text-sm font-medium text-slate-600">No hay datos en este período</p>
-          <p className="mt-1 max-w-sm text-center text-xs text-slate-400">
-            Cuando existan ventas por fecha, verás cada sucursal como un color distinto en la barra.
-          </p>
+          <p className="text-sm font-medium text-gray-500">Sin datos en este período</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div
-      className={`${cardShell} p-6 ${embedded ? 'flex h-full w-full min-h-0 flex-col overflow-hidden' : 'w-full'}`}
-    >
-      <div className="mb-3 flex shrink-0 flex-col gap-3 sm:mb-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm ${embedded ? 'flex h-full w-full min-h-0 flex-col overflow-hidden' : 'w-full'}`}>
+      {/* Header compacto */}
+      <div className="mb-3 flex shrink-0 items-start justify-between">
         <div>
-          <h3 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-            <BarChart3 className="h-5 w-5 shrink-0 text-indigo-600" aria-hidden />
-            Panorama de ventas
-          </h3>
-          <p className="mt-0.5 text-xs font-medium text-slate-500">
-            Cada color es una sucursal · {PERIODO_LABEL[periodo]}
-          </p>
-          <p className="mt-2 text-xl font-bold tabular-nums text-slate-900">
-            S/{' '}
-            {totalPeriod.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 shrink-0 text-indigo-600" aria-hidden />
+            <h3 className="text-base font-semibold text-gray-800">Panorama de ventas</h3>
+          </div>
+          <p className="text-xs text-gray-500">Cada color es una sucursal · {PERIODO_LABEL[periodo]}</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-gray-900">
+            S/ {totalPeriod.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
-          <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-600 sm:text-right">
-            {chartData.length} {unidad}
-          </span>
-          <p className="hidden text-[11px] text-slate-400 sm:block">Pasá el cursor para desglosar</p>
-        </div>
+        <span className="shrink-0 rounded-lg bg-gray-100 px-2.5 py-1 text-center text-[11px] font-semibold text-gray-500">
+          {chartData.length} {unidad}
+        </span>
       </div>
 
-      <div
-        className={`mb-3 flex flex-wrap gap-2 sm:mb-4 ${
-          embedded ? 'max-h-[5.5rem] shrink-0 overflow-y-auto overscroll-contain pr-1 sm:max-h-[6rem]' : ''
-        }`}
-      >
+      {/* Leyenda con scroll */}
+      <div className={`mb-3 flex flex-wrap gap-2 ${embedded ? 'max-h-[5rem] shrink-0 overflow-y-auto overscroll-contain pr-1' : ''}`}>
         {[...branchNamesSorted].reverse().map((branch) => (
           <div
             key={branch}
-            className="flex max-w-full items-center gap-1.5 rounded-full border border-slate-200/90 bg-slate-50/90 px-2.5 py-1"
+            className="flex max-w-full items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1"
             title={branch}
           >
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: getBranchColor(branch) }}
             />
-            <span className="truncate text-[11px] font-semibold text-slate-700">
+            <span className="truncate text-[11px] font-semibold text-gray-700">
               {shortBranchLabel(branch)}
             </span>
-            <span className="text-[10px] tabular-nums text-slate-400">
+            <span className="text-[10px] tabular-nums text-gray-400">
               S/ {(totalsByBranch[branch] ?? 0).toLocaleString('es-PE', { maximumFractionDigits: 0 })}
             </span>
           </div>
         ))}
       </div>
 
-      {embedded ? (
-        <div className="h-[248px] w-full min-w-0 shrink-0 lg:h-auto lg:min-h-[200px] lg:flex-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 4, right: 4, left: -12, bottom: 0 }}
-              barCategoryGap="18%"
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 9, fill: '#64748b' }}
-                axisLine={false}
-                tickLine={false}
-                dy={8}
-                interval="preserveStartEnd"
-                minTickGap={20}
-              />
-              <YAxis
-                tick={{ fontSize: 9, fill: '#64748b' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `${v}`)}
-                width={32}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }} />
-              {branchNamesSorted.map((branch) => (
-                <Bar
-                  key={branch}
-                  dataKey={branch}
-                  stackId="sucursales"
-                  fill={getBranchColor(branch)}
-                  name={branch}
-                  radius={[0, 0, 0, 0]}
-                  maxBarSize={48}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      ) : (
-      <ResponsiveContainer width="100%" height={288}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 4, right: 4, left: -12, bottom: 0 }}
-          barCategoryGap="18%"
-        >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-          <XAxis
-            dataKey="date"
-            tick={{ fontSize: 10, fill: '#64748b' }}
-            axisLine={false}
-            tickLine={false}
-            dy={8}
-            interval="preserveStartEnd"
-            minTickGap={24}
-          />
-          <YAxis
-            tick={{ fontSize: 10, fill: '#64748b' }}
-            axisLine={false}
-            tickLine={false}
-            tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `${v}`)}
-            width={36}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }} />
-          {branchNamesSorted.map((branch) => (
-            <Bar
-              key={branch}
-              dataKey={branch}
-              stackId="sucursales"
-              fill={getBranchColor(branch)}
-              name={branch}
-              radius={[0, 0, 0, 0]}
-              maxBarSize={56}
+      {/* Gráfico */}
+      <div className={embedded ? 'h-[220px] w-full min-w-0 shrink-0 lg:h-auto lg:min-h-[180px] lg:flex-1' : ''}>
+        <ResponsiveContainer width="100%" height={embedded ? '100%' : 288}>
+          <BarChart data={chartData} margin={{ top: 4, right: 4, left: -12, bottom: 0 }} barCategoryGap="18%">
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 10, fill: '#6b7280' }}
+              axisLine={false}
+              tickLine={false}
+              dy={8}
+              interval="preserveStartEnd"
+              minTickGap={20}
             />
-          ))}
-        </BarChart>
-      </ResponsiveContainer>
-      )}
-
-      {!embedded ? (
-        <p className="mt-3 text-center text-[11px] text-slate-400 sm:hidden">Toca el gráfico para ver el desglose</p>
-      ) : (
-        <p className="mt-2 shrink-0 text-center text-[10px] text-slate-400">Leyenda con scroll si hay muchas sucursales</p>
-      )}
+            <YAxis
+              tick={{ fontSize: 10, fill: '#6b7280' }}
+              axisLine={false}
+              tickLine={false}
+              tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `${v}`)}
+              width={32}
+            />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }} />
+            {branchNamesSorted.map((branch) => (
+              <Bar
+                key={branch}
+                dataKey={branch}
+                stackId="sucursales"
+                fill={getBranchColor(branch)}
+                name={branch}
+                maxBarSize={48}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

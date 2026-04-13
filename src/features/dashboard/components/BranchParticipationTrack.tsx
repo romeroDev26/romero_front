@@ -14,8 +14,7 @@ interface BranchParticipationTrackProps {
 }
 
 /**
- * Bloque estilo "Progress Track" del mock editorial: solo participación %,
- * con scroll interno si hay muchas sucursales (no empuja el resto del grid).
+ * Bloque estilo TailAdmin: participación % con progress tracks limpios
  */
 export const BranchParticipationTrack: React.FC<BranchParticipationTrackProps> = ({
   data,
@@ -31,11 +30,11 @@ export const BranchParticipationTrack: React.FC<BranchParticipationTrackProps> =
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full min-h-[280px] flex-col rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0px_10px_30px_rgba(52,71,103,0.08)]">
+      <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 w-2/3 rounded bg-slate-100" />
+          <div className="h-5 w-2/3 rounded bg-gray-100" />
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-8 rounded-lg bg-slate-50" />
+            <div key={i} className="h-8 rounded-lg bg-gray-50" />
           ))}
         </div>
       </div>
@@ -44,13 +43,13 @@ export const BranchParticipationTrack: React.FC<BranchParticipationTrackProps> =
 
   if (rows.length === 0) {
     return (
-      <div className="flex h-full w-full min-h-[280px] flex-col rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0px_10px_30px_rgba(52,71,103,0.08)]">
-        <h3 className="mb-1 flex items-center gap-2 text-lg font-bold tracking-tight text-slate-800">
-          <PieChart className="h-5 w-5 text-indigo-600" aria-hidden />
-          Participación
-        </h3>
-        <p className="mb-4 text-xs font-medium text-slate-500">Cuota sobre el total del período</p>
-        <div className="flex flex-1 flex-col items-center justify-center py-8 text-center text-sm text-slate-400">
+      <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="mb-3 flex items-center gap-2">
+          <PieChart className="h-4 w-4 text-indigo-600" aria-hidden />
+          <h3 className="text-base font-semibold text-gray-800">Participación</h3>
+        </div>
+        <p className="text-xs text-gray-500">Cuota sobre el total del período</p>
+        <div className="flex flex-1 flex-col items-center justify-center py-8 text-center text-sm text-gray-400">
           Sin datos de sucursales
         </div>
       </div>
@@ -58,31 +57,37 @@ export const BranchParticipationTrack: React.FC<BranchParticipationTrackProps> =
   }
 
   return (
-    <div className="flex h-full w-full min-h-[280px] flex-col rounded-xl border border-slate-200/80 bg-white p-6 shadow-[0px_10px_30px_rgba(52,71,103,0.08)]">
-      <h3 className="mb-1 flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight text-slate-800">
-        <PieChart className="h-5 w-5 text-indigo-600" aria-hidden />
-        Participación
-      </h3>
-      <p className="mb-4 shrink-0 text-xs font-medium text-slate-500">
-        Cuota % sobre ventas totales · {rows.length} sucursales
-      </p>
-      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pr-1">
+    <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      {/* Header */}
+      <div className="mb-4 shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <PieChart className="h-4 w-4 text-indigo-600" aria-hidden />
+            <h3 className="text-base font-semibold text-gray-800">Participación</h3>
+          </div>
+          <span className="text-xs font-medium text-gray-400">{rows.length} sucursales</span>
+        </div>
+        <p className="text-xs text-gray-500">Cuota % sobre ventas totales</p>
+      </div>
+
+      {/* Progress tracks */}
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain pr-1">
         {rows.map((item) => (
           <div key={item.sucursal_id}>
-            <div className="mb-2 flex items-center justify-between gap-2">
+            <div className="mb-1.5 flex items-center justify-between gap-2">
               <span
-                className="min-w-0 truncate text-[11px] font-bold uppercase tracking-wide text-slate-500"
+                className="min-w-0 truncate text-xs font-medium text-gray-600"
                 title={item.sucursal_nombre}
               >
                 {shortName(item.sucursal_nombre)}
               </span>
-              <span className="shrink-0 text-xs font-bold tabular-nums text-slate-800">
+              <span className="shrink-0 text-xs font-semibold tabular-nums text-gray-800">
                 {item.porcentaje_total.toFixed(1)}%
               </span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
               <div
-                className="h-full rounded-full transition-all duration-500"
+                className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${Math.min(100, Math.max(0, item.porcentaje_total))}%`,
                   backgroundColor: item.color,

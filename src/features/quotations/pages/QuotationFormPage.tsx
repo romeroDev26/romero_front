@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import Breadcrumbs from '../../../components/common/Breadcrumbs';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { useCreateQuotation } from '../hooks/useQuotations';
@@ -99,12 +98,9 @@ export const QuotationFormPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Breadcrumbs />
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">
-          {isEditing ? 'Editar Cotización' : 'Nueva Cotización'}
-        </h1>
-      </div>
+      <h1 className="text-2xl font-bold text-gray-900">
+        {isEditing ? 'Editar Cotización' : 'Nueva Cotización'}
+      </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Información básica */}

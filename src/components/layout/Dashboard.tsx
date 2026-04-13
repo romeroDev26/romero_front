@@ -2,7 +2,6 @@ import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from
 import { AnimatePresence, motion } from 'motion/react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import Breadcrumbs from '../common/Breadcrumbs';
 import { 
   Bars3Icon, 
   TicketIcon, 
@@ -383,7 +382,6 @@ const Dashboard: React.FC = () => {
   const isRemissionGuidesRoute = /^\/remission-guides/.test(location.pathname);
   const isGrayFullBleedRoute =
     isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute;
-  const isContentWithoutTopGap = isDashboardOrReports || isGrayFullBleedRoute;
 
   return (
     <div className="flex h-screen bg-gray-100 p-5">
@@ -576,11 +574,7 @@ const Dashboard: React.FC = () => {
           }`}
         >
           <div className="p-4 lg:p-6">
-            <Breadcrumbs />
-            {/* Dashboard, reportes, PV, encomiendas y guías remisión: sin mt-4 bajo migas */}
-            <div className={isContentWithoutTopGap ? '' : 'mt-4'}>
-              <Outlet />
-            </div>
+            <Outlet />
           </div>
         </main>
       </div>

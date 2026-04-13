@@ -14,7 +14,7 @@ interface TopSellersByBranchProps {
 // Colores para las barras de progreso por sucursal
 const BRANCH_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
-export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({ 
+export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
   data,
   isLoading = false,
   period = 'daily',
@@ -25,7 +25,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
 
   const getComponentTitle = () => {
     switch (period) {
-      case 'daily': return 'Rendimiento del Dia';
+      case 'daily': return 'Rendimiento del Día';
       case 'weekly': return 'Rendimiento Semanal';
       case 'monthly': return 'Rendimiento Mensual';
       case 'yearly': return 'Rendimiento Anual';
@@ -35,12 +35,12 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white p-5 rounded-xl border border-gray-100">
-        <div className="animate-pulse">
-          <div className="h-5 bg-gray-100 rounded w-1/4 mb-4"></div>
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="animate-pulse space-y-3">
+          <div className="h-5 w-1/4 rounded bg-gray-100" />
           <div className="space-y-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-12 bg-gray-50 rounded-lg"></div>
+              <div key={i} className="h-10 rounded-lg bg-gray-50" />
             ))}
           </div>
         </div>
@@ -81,11 +81,11 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
 
   if (!isLoading && (!branchData || branchData.length === 0)) {
     return (
-      <div className="bg-white p-5 rounded-xl border border-gray-100">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-sm font-medium text-gray-500">{getComponentTitle()}</h3>
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-gray-800">{getComponentTitle()}</h3>
         </div>
-        <div className="text-center py-8">
+        <div className="flex items-center justify-center py-8">
           <p className="text-sm text-gray-400">No hay datos disponibles</p>
         </div>
       </div>
@@ -106,13 +106,13 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
   const maxSellerSales = Math.max(...allTopSellers.map(s => s.total_ventas), 1);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {/* Tabla de Sucursales */}
-      <div className="bg-white p-5 rounded-xl border border-gray-100">
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Ventas por Sucursal</h3>
-            <p className="text-lg font-semibold text-gray-900 mt-0.5">
+            <h3 className="text-base font-semibold text-gray-800">{getComponentTitle()}</h3>
+            <p className="text-lg font-bold tabular-nums text-gray-900">
               S/ {data?.resumen_general?.total_ventas.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || '0'}
             </p>
           </div>
@@ -120,7 +120,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
             <select
               value={period}
               onChange={(e) => onPeriodChange(e.target.value as 'daily' | 'weekly' | 'monthly' | 'yearly')}
-              className="px-2 py-1 bg-white border border-gray-200 rounded-lg text-xs text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             >
               <option value="daily">Hoy</option>
               <option value="weekly">Semana</option>
@@ -142,34 +142,34 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
                   onClick={() => toggleBranch(branch.sucursal_id)}
                   className="w-full text-left"
                 >
-                  <div className="flex items-center gap-3 py-2 px-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center gap-3 rounded-lg py-2 px-2 hover:bg-gray-50 transition-colors">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                       {branch.vendedores && branch.vendedores.length > 0 ? (
                         isExpanded ? (
-                          <ChevronDownIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                          <ChevronDownIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         ) : (
-                          <ChevronRightIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                          <ChevronRightIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         )
                       ) : (
-                        <div className="w-3.5" />
+                        <div className="w-4" />
                       )}
-                      <div 
+                      <div
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: color }}
                       />
-                      <span className="text-sm text-gray-700 truncate">{branch.sucursal_nombre}</span>
+                      <span className="text-sm font-medium text-gray-700 truncate">{branch.sucursal_nombre}</span>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <div className="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
-                        <div 
+                      <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden hidden sm:block">
+                        <div
                           className="h-full rounded-full transition-all duration-300"
                           style={{ width: `${percentage}%`, backgroundColor: color }}
                         />
                       </div>
-                      <span className="text-sm font-medium text-gray-900 w-24 text-right">
+                      <span className="text-sm font-semibold tabular-nums text-gray-900 w-20 text-right">
                         S/ {branch.total_ventas.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </span>
-                      <span className="text-xs text-gray-400 w-10 text-right hidden sm:block">
+                      <span className="text-xs tabular-nums text-gray-400 w-8 text-right hidden sm:block">
                         {branch.total_facturas}
                       </span>
                     </div>
@@ -178,9 +178,9 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
 
                 {/* Vendedores expandidos */}
                 {isExpanded && branch.vendedores && branch.vendedores.length > 0 && (
-                  <div className="ml-8 pl-3 border-l border-gray-100 py-1 space-y-0.5">
+                  <div className="ml-8 pl-3 border-l border-gray-200 py-1 space-y-0.5">
                     {branch.vendedores.slice(0, 5).map((seller, sIndex) => (
-                      <div 
+                      <div
                         key={`${branch.sucursal_id}-${seller.vendedor_id}-${sIndex}`}
                         className="flex items-center justify-between py-1.5 px-2 text-xs"
                       >
@@ -191,10 +191,10 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
                           <span className="text-gray-600">{seller.vendedor_nombre}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-700">
+                          <span className="font-medium tabular-nums text-gray-700">
                             S/ {seller.total_ventas.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                           </span>
-                          <span className="text-gray-400 w-8 text-right">
+                          <span className="tabular-nums text-gray-400 w-8 text-right">
                             {seller.porcentaje_ventas_sucursal.toFixed(0)}%
                           </span>
                         </div>
@@ -215,22 +215,22 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
       </div>
 
       {/* Top Vendedores Global */}
-      <div className="bg-white p-5 rounded-xl border border-gray-100">
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-500">Top Vendedores</h3>
-          <p className="text-lg font-semibold text-gray-900 mt-0.5">Ranking General</p>
+          <h3 className="text-base font-semibold text-gray-800">Top Vendedores</h3>
+          <p className="text-sm text-gray-500">Ranking general</p>
         </div>
 
         {allTopSellers.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {allTopSellers.map((seller, index) => {
               const percentage = (seller.total_ventas / maxSellerSales) * 100;
               const isTop = index === 0;
-              
+
               return (
                 <div key={`${seller.vendedor_id}-${seller.sucursal_id}`} className="group">
                   <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-medium ${
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold ${
                       isTop ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'
                     }`}>
                       {index + 1}
@@ -238,18 +238,18 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-sm font-medium text-gray-900 truncate">{seller.vendedor_nombre}</span>
-                        <span className="text-sm font-semibold text-gray-900 flex-shrink-0 ml-2">
+                        <span className="text-sm font-semibold tabular-nums text-gray-900 flex-shrink-0 ml-2">
                           S/ {seller.total_ventas.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div 
-                            className={`h-full rounded-full transition-all duration-300 ${isTop ? 'bg-amber-400' : 'bg-blue-400'}`}
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${isTop ? 'bg-amber-400' : 'bg-indigo-400'}`}
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-400 flex-shrink-0 w-20 truncate">
+                        <span className="text-xs tabular-nums text-gray-400 flex-shrink-0 w-20 truncate">
                           {seller.sucursal_nombre.replace('Sucursal ', '')}
                         </span>
                       </div>
@@ -260,7 +260,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
             })}
           </div>
         ) : (
-          <div className="text-center py-8">
+          <div className="flex items-center justify-center py-8">
             <p className="text-sm text-gray-400">Sin datos de vendedores</p>
           </div>
         )}
@@ -268,12 +268,12 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
         {/* Top sucursal destacada */}
         {data?.resumen_general && (
           <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center justify-between bg-blue-50/50 p-3 rounded-lg">
+            <div className="flex items-center justify-between rounded-lg bg-indigo-50/50 p-3">
               <div>
-                <p className="text-xs text-gray-500">Sucursal lider</p>
-                <p className="text-sm font-medium text-gray-900">{data.resumen_general.top_sucursal_nombre}</p>
+                <p className="text-xs text-gray-500">Sucursal líder</p>
+                <p className="text-sm font-semibold text-gray-900">{data.resumen_general.top_sucursal_nombre}</p>
               </div>
-              <p className="text-sm font-semibold text-blue-600">
+              <p className="text-sm font-bold tabular-nums text-indigo-600">
                 S/ {data.resumen_general.top_sucursal_ventas.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             </div>

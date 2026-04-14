@@ -1,12 +1,11 @@
 // src/features/quotations/pages/QuotationsListPage.tsx
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import DatePicker from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useNavigate } from 'react-router-dom';
 import {
   PlusIcon,
-  ArrowDownTrayIcon,
   AdjustmentsHorizontalIcon,
   HashtagIcon,
   UserCircleIcon,
@@ -41,9 +40,9 @@ const statusLabels: Record<QuotationStatus, string> = {
 const statusColors: Record<QuotationStatus, string> = {
   DRAFT: 'bg-gray-100 text-gray-700',
   SENT: 'bg-blue-100 text-blue-700',
-  ACCEPTED: 'bg-green-100 text-green-700',
+  ACCEPTED: 'bg-emerald-100 text-emerald-700',
   REJECTED: 'bg-red-100 text-red-700',
-  EXPIRED: 'bg-yellow-100 text-yellow-700',
+  EXPIRED: 'bg-amber-100 text-amber-700',
   CONVERTED: 'bg-purple-100 text-purple-700',
 };
 
@@ -71,28 +70,36 @@ export const QuotationsListPage: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [showRangePicker, setShowRangePicker] = useState(false);
-  const rangePickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (rangePickerRef.current && !rangePickerRef.current.contains(e.target as Node)) {
-        setShowRangePicker(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const handleDateSelect = (dates: [Date | null, Date | null]) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
-    setFilters(prev => ({
-      ...prev,
-      start_date: start ? start.toISOString().split('T')[0] : '',
-      end_date: end ? end.toISOString().split('T')[0] : '',
-    }));
-    if (start && end) setShowRangePicker(false);
+
+    // Actualizar filtros siempre (incluso con solo fecha inicio)
+    if (start) {
+      setFilters(prev => ({
+        ...prev,
+        start_date: start.toISOString().split('T')[0],
+        end_date: end ? end.toISOString().split('T')[0] : '',
+      }));
+    }
+
+    // Cerrar cuando ambas fechas están seleccionadas
+    if (start && end) {
+      setShowRangePicker(false);
+    }
+  };
+
+  const handleClearDates = () => {
+    setStartDate(null);
+    setEndDate(null);
+    setFilters(prev => ({ ...prev, start_date: '', end_date: '' }));
+    setShowRangePicker(false);
+  };
+
+  const handleApplyDates = () => {
+    setShowRangePicker(false);
   };
 
   const formatRange = () => {
@@ -302,9 +309,9 @@ export const QuotationsListPage: React.FC = () => {
         </div>
       )}
 
-      {/* Picker de fechas dropdown */}
+      {/* Picker de fechas dropdown mobile */}
       {showRangePicker && (
-        <div ref={rangePickerRef} className="absolute top-full left-4 right-4 z-50 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4">
+        <div className="absolute top-full left-4 right-4 z-50 mt-2 rounded-xl border border-gray-200 bg-white p-4 shadow-2xl">
           <DatePicker
             selected={startDate}
             onChange={handleDateSelect}
@@ -317,165 +324,174 @@ export const QuotationsListPage: React.FC = () => {
             maxDate={new Date()}
             calendarClassName="custom-datepicker"
           />
+          <div className="mt-3 flex justify-between border-t border-gray-200 pt-3">
+            <button
+              type="button"
+              onClick={handleClearDates}
+              className="text-xs font-medium text-gray-500 hover:text-gray-700"
+            >
+              Limpiar
+            </button>
+            <button
+              onClick={handleApplyDates}
+              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+            >
+              Aplicar
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Desktop Header */}
-      <div className="hidden lg:flex justify-between items-center mb-6 p-6">
-        <h1 className="text-2xl font-bold text-gray-900">Lista de Cotizaciones</h1>
-        <div className="flex items-center gap-2">
+      {/* Desktop Header compacto */}
+      <div className="hidden lg:flex flex-col gap-4 mb-6">
+        {/* Título + Acciones */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800">Cotizaciones</h1>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {pagination.total} cotizaciones registradas
+            </p>
+          </div>
           <button
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            onClick={() => {}}
-          >
-            <ArrowDownTrayIcon className="h-4 w-4" />
-            Exportar
-          </button>
-          <button
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
             onClick={() => navigate('/sales/quotations/new')}
           >
             <PlusIcon className="h-4 w-4" />
             Nueva Cotización
           </button>
         </div>
-      </div>
 
-      {/* Desktop Filtros Avanzados */}
-      <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-        <div className="flex items-center gap-2 mb-5">
-          <AdjustmentsHorizontalIcon className="h-5 w-5 text-gray-500" />
-          <h2 className="text-sm font-semibold text-gray-700">Filtros Avanzados</h2>
-        </div>
+        {/* Filtros en una fila */}
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Serie */}
+            <div className="min-w-[120px]">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Serie</label>
+              <input
+                type="text"
+                value={filters.series}
+                onChange={(e) => handleFilterChange('series', e.target.value)}
+                placeholder="Todas"
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {/* Serie */}
-          <div>
-            <label className="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
-              <HashtagIcon className="h-3.5 w-3.5" />
-              Serie
-            </label>
-            <input
-              type="text"
-              value={filters.series}
-              onChange={(e) => handleFilterChange('series', e.target.value)}
-              placeholder="Todas las series"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-            />
-          </div>
+            {/* Cliente */}
+            <div className="min-w-[180px] flex-1">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cliente</label>
+              <input
+                type="text"
+                value={filters.client_search}
+                onChange={(e) => handleFilterChange('client_search', e.target.value)}
+                placeholder="Nombre o RUC..."
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </div>
 
-          {/* Cliente */}
-          <div>
-            <label className="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
-              <UserCircleIcon className="h-3.5 w-3.5" />
-              Cliente
-            </label>
-            <input
-              type="text"
-              value={filters.client_search}
-              onChange={(e) => handleFilterChange('client_search', e.target.value)}
-              placeholder="Nombre o RUC..."
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-            />
-          </div>
+            {/* Estado */}
+            <div className="min-w-[140px]">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Estado</label>
+              <select
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              >
+                <option value="">Todos</option>
+                {Object.entries(statusLabels).map(([status, label]) => (
+                  <option key={status} value={status}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Estado */}
-          <div>
-            <label className="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
-              <DocumentTextIcon className="h-3.5 w-3.5" />
-              Estado
-            </label>
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white transition-colors"
-            >
-              <option value="">Todos los estados</option>
-              {Object.entries(statusLabels).map(([status, label]) => (
-                <option key={status} value={status}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Rango de Fechas */}
-        <div className="relative" ref={rangePickerRef}>
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-500 mb-1.5">
-            <CalendarDaysIcon className="h-3.5 w-3.5" />
-            Rango de Fechas
-          </label>
-          <button
-            type="button"
-            onClick={() => setShowRangePicker(!showRangePicker)}
-            className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
-          >
-            <CalendarDaysIcon className="w-5 h-5 mr-2 text-primary shrink-0" />
-            <span>{formatRange()}</span>
-            <ChevronDownIcon className={`w-4 h-4 ml-2 transition-transform ${showRangePicker ? 'rotate-180' : ''}`} />
-          </button>
-          {showRangePicker && (
-            <div className="absolute top-full left-0 z-50 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 overflow-x-auto">
-              <div className="custom-datepicker-wrapper">
-                <DatePicker
-                  selected={startDate}
-                  onChange={handleDateSelect}
-                  startDate={startDate}
-                  endDate={endDate}
-                  selectsRange
-                  inline
-                  monthsShown={2}
-                  locale={es}
-                  maxDate={new Date()}
-                  calendarClassName="custom-datepicker"
-                  dayClassName={(date) => {
-                    const isSelected =
-                      (startDate && date.toDateString() === startDate.toDateString()) ||
-                      (endDate && date.toDateString() === endDate.toDateString());
-                    const isInRange =
-                      startDate && endDate && date > startDate && date < endDate;
-                    if (isSelected) return 'bg-primary text-white rounded-full';
-                    if (isInRange) return 'bg-primary/10 text-primary';
-                    return '';
-                  }}
-                />
-              </div>
-              <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+            {/* Fechas */}
+            <div className="min-w-[160px]">
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Fechas</label>
+              <div className="relative">
                 <button
                   type="button"
-                  onClick={() => { setStartDate(null); setEndDate(null); setFilters(prev => ({ ...prev, start_date: '', end_date: '' })); setShowRangePicker(false); }}
-                  className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                  onClick={() => setShowRangePicker(!showRangePicker)}
+                  className="inline-flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
                 >
-                  Limpiar
+                  <span className="truncate">{formatRange()}</span>
+                  <ChevronDownIcon className={`ml-2 h-4 w-4 shrink-0 transition-transform ${showRangePicker ? 'rotate-180' : ''}`} />
                 </button>
-                <span className="text-sm text-gray-500">
-                  {startDate && endDate ? (
-                    <span className="text-primary font-medium">
-                      {Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1} días seleccionados
-                    </span>
-                  ) : 'Selecciona un rango'}
-                </span>
+                {showRangePicker && (
+                  <div className="absolute left-0 top-full z-50 mt-2 rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
+                    <DatePicker
+                      selected={startDate}
+                      onChange={handleDateSelect}
+                      startDate={startDate}
+                      endDate={endDate}
+                      selectsRange
+                      inline
+                      monthsShown={1}
+                      locale={es}
+                      maxDate={new Date()}
+                      calendarClassName="custom-datepicker"
+                      dayClassName={(date) => {
+                        const isSelected =
+                          (startDate && date.toDateString() === startDate.toDateString()) ||
+                          (endDate && date.toDateString() === endDate.toDateString());
+                        const isInRange = startDate && endDate && date > startDate && date < endDate;
+                        if (isSelected) return 'bg-indigo-600 text-white rounded-full';
+                        if (isInRange) return 'bg-indigo-100 text-indigo-800';
+                        return '';
+                      }}
+                    />
+                    <div className="mt-3 flex justify-between border-t border-gray-200 pt-3">
+                      <button
+                        type="button"
+                        onClick={handleClearDates}
+                        className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                      >
+                        Limpiar
+                      </button>
+                      <button
+                        onClick={handleApplyDates}
+                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                      >
+                        Aplicar
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Botones */}
-        <div className="mt-5 flex justify-end gap-3">
-          <button
-            onClick={handleClearFilters}
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Limpiar Filtros
-          </button>
-          <button
-            onClick={handleSearch}
-            disabled={isLoading}
-            className="px-5 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
-          >
-            Buscar Resultados
-          </button>
+            {/* Botones */}
+            {(() => {
+              const hasActiveFilters =
+                filters.series ||
+                filters.client_search ||
+                filters.status ||
+                filters.start_date ||
+                filters.end_date;
+              return (
+                <div className="ml-auto flex items-center gap-2 self-end">
+                  <button
+                    onClick={handleClearFilters}
+                    disabled={!hasActiveFilters}
+                    className={`rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm transition-all ${
+                      hasActiveFilters
+                        ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    Limpiar
+                  </button>
+                  <button
+                    onClick={handleSearch}
+                    disabled={isLoading}
+                    className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-gray-800 disabled:opacity-50"
+                  >
+                    Buscar
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
         </div>
       </div>
 
@@ -634,7 +650,7 @@ export const QuotationsListPage: React.FC = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => navigate(`/sales/quotations/${quotation.id}`)}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
                             title="Ver detalle"
                           >
                             <EyeIcon className="h-4 w-4" />
@@ -642,7 +658,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status !== 'CONVERTED' && (
                             <button
                               onClick={() => navigate(`/sales/quotations/${quotation.id}/edit`)}
-                              className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
+                              className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-amber-50 hover:text-amber-600"
                               title="Editar"
                             >
                               <PencilSquareIcon className="h-4 w-4" />
@@ -651,7 +667,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status === 'DRAFT' && (
                             <button
                               onClick={() => handleDelete(quotation.id)}
-                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                              className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />

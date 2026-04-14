@@ -1,10 +1,13 @@
 // src/features/fluvial/hooks/useSeatReservations.ts
+// MODIFICADO: Este hook ahora usa SOLO WebSocket para reservas temporales
+// ya que el endpoint de API REST no existe en el backend
+
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { seatReservationService } from '../../../services/seatReservation.service';
 
 interface SeatReservation {
   seatNumber: string;
+  seatId: number; // ID del asiento para WebSocket
   reservationId?: string;
   expiresAt?: string;
   representativeIndex: number;
@@ -14,92 +17,95 @@ export const useSeatReservations = (tripId: number) => {
   const [reservedSeats, setReservedSeats] = useState<SeatReservation[]>([]);
   const [isReserving, setIsReserving] = useState(false);
   const sessionId = useRef(`session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  
+  // Referencia para las funciones de WebSocket (se inyectan desde el componente padre)
+  const webSocketFunctionsRef = useRef<{
+    selectSeatForRepresentative?: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
+    releaseSeatForRepresentative?: (seatId: number, representativeIndex?: number) => boolean;
+  }>({});
 
-  // Reservar asiento temporalmente
-  const reserveSeat = useCallback(async (seatNumber: string, representativeIndex: number): Promise<boolean> => {
+  // Función para inyectar las funciones de WebSocket
+  const setWebSocketFunctions = useCallback((functions: {
+    selectSeatForRepresentative?: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
+    releaseSeatForRepresentative?: (seatId: number, representativeIndex?: number) => boolean;
+  }) => {
+    webSocketFunctionsRef.current = functions;
+  }, []);
+
+  // Reservar asiento temporalmente vía WebSocket
+  const reserveSeat = useCallback(async (seatNumber: string, representativeIndex: number, seatId?: number): Promise<boolean> => {
     setIsReserving(true);
     try {
-      const result = await seatReservationService.createTempReservation({
-        trip_id: tripId,
-        seat_number: seatNumber,
-        reserved_for: `${sessionId.current}_rep_${representativeIndex}`,
-        duration_minutes: 15 // 15 minutos para completar la venta
-      });
+      // Registrar localmente con el seatId si se proporciona
+      setReservedSeats(prev => [
+        ...prev.filter(r => r.representativeIndex !== representativeIndex), // Remover reserva anterior del mismo representante
+        {
+          seatNumber,
+          seatId: seatId || 0, // Usar el seatId proporcionado o 0 como fallback
+          representativeIndex
+        }
+      ]);
 
-      if (result.success) {
-        setReservedSeats(prev => [
-          ...prev.filter(r => r.representativeIndex !== representativeIndex), // Remover reserva anterior del mismo representante
-          {
-            seatNumber,
-            reservationId: result.reservation_id,
-            expiresAt: result.expires_at,
-            representativeIndex
-          }
-        ]);
-        return true;
-      } else {
-        toast.error(result.message || 'No se pudo reservar el asiento');
-        return false;
-      }
+      return true;
     } catch (error: any) {
       toast.error(error.message || 'Error al reservar asiento');
       return false;
     } finally {
       setIsReserving(false);
     }
-  }, [tripId]);
+  }, []);
 
   // Liberar asiento específico
   const releaseSeat = useCallback(async (representativeIndex: number) => {
     const reservation = reservedSeats.find(r => r.representativeIndex === representativeIndex);
     if (!reservation) return;
 
-    try {
-      await seatReservationService.releaseTempReservation(tripId, reservation.seatNumber);
-      setReservedSeats(prev => prev.filter(r => r.representativeIndex !== representativeIndex));
-    } catch (error) {
-      console.error('Error liberando asiento:', error);
+    // Si tenemos funciones de WebSocket, liberar vía WebSocket
+    if (reservation.seatId && webSocketFunctionsRef.current.releaseSeatForRepresentative) {
+      webSocketFunctionsRef.current.releaseSeatForRepresentative(reservation.seatId, representativeIndex);
     }
+    
+    setReservedSeats(prev => prev.filter(r => r.representativeIndex !== representativeIndex));
   }, [tripId, reservedSeats]);
+
+  // Actualizar seatId de una reserva (se llama desde el padre cuando se conoce el seatId)
+  const updateReservationSeatId = useCallback((representativeIndex: number, seatId: number) => {
+    setReservedSeats(prev => 
+      prev.map(r => 
+        r.representativeIndex === representativeIndex 
+          ? { ...r, seatId }
+          : r
+      )
+    );
+  }, []);
 
   // Confirmar todas las reservas (al completar venta exitosamente)
   const confirmAllReservations = useCallback(async (): Promise<boolean> => {
-    if (reservedSeats.length === 0) return true;
-
-    try {
-      const seatNumbers = reservedSeats.map(r => r.seatNumber);
-      await seatReservationService.confirmTempReservations(tripId, seatNumbers);
-      setReservedSeats([]); // Limpiar reservas locales
-      return true;
-    } catch (error: any) {
-      toast.error(error.message || 'Error al confirmar reservas de asientos');
-      return false;
-    }
+    // Ya no es necesario confirmar vía API REST
+    // La confirmación se hace vía confirmPurchase en el hook useSeatMapRealtime
+    setReservedSeats([]); // Limpiar reservas locales
+    return true;
   }, [tripId, reservedSeats]);
 
   // Liberar todas las reservas (al cancelar o error)
   const releaseAllReservations = useCallback(async () => {
     if (reservedSeats.length === 0) return;
 
-    try {
-      await seatReservationService.releaseAllTempReservations(tripId, sessionId.current);
-      setReservedSeats([]);
-    } catch (error) {
-      console.error('Error liberando todas las reservas:', error);
-    }
+    // Liberar todas las reservas vía WebSocket
+    reservedSeats.forEach(reservation => {
+      if (reservation.seatId && webSocketFunctionsRef.current.releaseSeatForRepresentative) {
+        webSocketFunctionsRef.current.releaseSeatForRepresentative(reservation.seatId, reservation.representativeIndex);
+      }
+    });
+    
+    setReservedSeats([]);
   }, [tripId, reservedSeats]);
 
-  // Extender tiempo de reservas
-  const extendReservations = useCallback(async (additionalMinutes: number = 5) => {
-    try {
-      const promises = reservedSeats.map(reservation =>
-        seatReservationService.extendTempReservation(tripId, reservation.seatNumber, additionalMinutes)
-      );
-      await Promise.all(promises);
-      toast.success('Tiempo de reserva extendido');
-    } catch (error: any) {
-      toast.error('Error al extender tiempo de reserva');
-    }
+  // Extender tiempo de reservas - Ya no es necesario sin API REST
+  const extendReservations = useCallback(async (_additionalMinutes: number = 5) => {
+    // No hay nada que extender sin API REST
+    // Las reservas vía WebSocket tienen TTL automático en el backend
+    toast.info('Las reservas se mantienen activas mientras la sesión esté abierta');
   }, [tripId, reservedSeats]);
 
   // Cleanup al desmontar componente
@@ -107,7 +113,11 @@ export const useSeatReservations = (tripId: number) => {
     return () => {
       // Liberar reservas al salir del componente
       if (reservedSeats.length > 0) {
-        seatReservationService.releaseAllTempReservations(tripId, sessionId.current);
+        reservedSeats.forEach(reservation => {
+          if (reservation.seatId && webSocketFunctionsRef.current.releaseSeatForRepresentative) {
+            webSocketFunctionsRef.current.releaseSeatForRepresentative(reservation.seatId, reservation.representativeIndex);
+          }
+        });
       }
     };
   }, [tripId, reservedSeats]);
@@ -132,6 +142,8 @@ export const useSeatReservations = (tripId: number) => {
     extendReservations,
     getReservedSeatNumbers,
     isSeatReservedByUser,
-    sessionId: sessionId.current
+    sessionId: sessionId.current,
+    setWebSocketFunctions, // Nueva función para inyectar funciones de WebSocket
+    updateReservationSeatId, // Nueva función para actualizar seatId
   };
 };

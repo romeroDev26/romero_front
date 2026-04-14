@@ -40,6 +40,12 @@ interface SeatAndFareSelectorProps {
     seatMap: SeatMapItem[];
     isWebSocketConnected: boolean;
   }) => void;
+  // NUEVO: Función para reservar asiento inmediatamente cuando se selecciona en modo representante
+  onSeatReserveForRepresentative?: (seatNumber: string, representativeIndex: number) => Promise<boolean>;
+  // NUEVO: Función para liberar asiento de representante
+  onSeatReleaseForRepresentative?: (representativeIndex: number) => Promise<void>;
+  // NUEVO: Índice del representante actual (cuántos representantes ya existen)
+  currentRepresentativeIndex?: number;
 }
 
 export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
@@ -58,6 +64,9 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   isCompanyMode = false,
   representativeSelectedSeatIds = [],
   onWebSocketReady,
+  onSeatReserveForRepresentative,
+  onSeatReleaseForRepresentative,
+  currentRepresentativeIndex = 0,
 }) => {
   const { data: tripDetails, isLoading: isLoadingTrip } = useTripDetails(tripId);
   const { isLoading: isLoadingSeatTypes } = useSeatTypesData();
@@ -182,7 +191,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     };
   }, [sortedStops, selectedBoardingStopId]);
 
-  const handleSeatToggleFromMap = useCallback((toggledSeat: SeatMapItem) => {
+  const handleSeatToggleFromMap = useCallback(async (toggledSeat: SeatMapItem) => {
     // Si estamos en modo de confirmación, no se permite ninguna interacción con el mapa.
     if (isConfirmingMode) return;
 
@@ -198,11 +207,37 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
     }
 
     if (selectedSeat && selectedSeat.id === enrichedSeat.id) {
+      // Deseleccionando asiento
       onSeatSelect(null);
+
+      // Si hay función de liberación para representantes, llamarla
+      if (onSeatReleaseForRepresentative) {
+        await onSeatReleaseForRepresentative(currentRepresentativeIndex);
+      }
     } else {
+      // NUEVO: Si hay un asiento previamente seleccionado y estamos cambiando de asiento,
+      // liberar el asiento anterior antes de reservar el nuevo
+      if (selectedSeat && onSeatReleaseForRepresentative) {
+        await onSeatReleaseForRepresentative(currentRepresentativeIndex);
+      }
+
+      // Si hay función de reserva para representantes, llamarla inmediatamente
+      if (onSeatReserveForRepresentative) {
+        const reserved = await onSeatReserveForRepresentative(
+          enrichedSeat.seat_number,
+          currentRepresentativeIndex
+        );
+
+        if (!reserved) {
+          // No se pudo reservar, no seleccionar el asiento
+          return;
+        }
+      }
+
+      // Seleccionar asiento
       onSeatSelect(enrichedSeat);
     }
-  }, [isConfirmingMode, enrichSeatWithType, selectedSeat?.id, onSeatSelect, activeSeatSelections, userId]); // Dependencias estables
+  }, [isConfirmingMode, enrichSeatWithType, selectedSeat?.id, selectedSeat, onSeatSelect, activeSeatSelections, userId, onSeatReserveForRepresentative, onSeatReleaseForRepresentative, currentRepresentativeIndex]);
 
   // Función para obtener información de zona del asiento seleccionado - Memoizada
   const getSeatZoneInfo = useMemo(() => {

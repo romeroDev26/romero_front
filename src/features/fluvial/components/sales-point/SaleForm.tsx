@@ -95,6 +95,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
       reserveSeat,
       releaseSeat,
       getReservedSeatNumbers,
+      handleSeatReserveForRepresentative,
+      handleSeatReleaseForRepresentative,
       currentUser,
       tripDetails,
       passengerService,
@@ -257,8 +259,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                     onSeatSelectForRepresentative={
                       setSelectedSeatForRepresentative
                     }
-                    onSeatReserve={reserveSeat}
-                    onSeatRelease={releaseSeat}
+                    onSeatReserve={handleSeatReserveForRepresentative}
+                    onSeatRelease={handleSeatReleaseForRepresentative}
                     getReservedSeatNumbers={getReservedSeatNumbers}
                     onUpdateRepresentativeInfants={
                       handleUpdateRepresentativeInfants
@@ -308,6 +310,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       representativeSelectedSeatIds
                     }
                     onWebSocketReady={handleWebSocketReady}
+                    onSeatReserveForRepresentative={handleSeatReserveForRepresentative}
+                    onSeatReleaseForRepresentative={handleSeatReleaseForRepresentative}
+                    currentRepresentativeIndex={representatives.length}
                   />
                 ) : (
                   <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">

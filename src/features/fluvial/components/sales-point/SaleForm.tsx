@@ -310,8 +310,12 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       representativeSelectedSeatIds
                     }
                     onWebSocketReady={handleWebSocketReady}
-                    onSeatReserveForRepresentative={handleSeatReserveForRepresentative}
-                    onSeatReleaseForRepresentative={handleSeatReleaseForRepresentative}
+                    onSeatReserveForRepresentative={
+                      isRuc ? handleSeatReserveForRepresentative : undefined
+                    }
+                    onSeatReleaseForRepresentative={
+                      isRuc ? handleSeatReleaseForRepresentative : undefined
+                    }
                     currentRepresentativeIndex={representatives.length}
                   />
                 ) : (

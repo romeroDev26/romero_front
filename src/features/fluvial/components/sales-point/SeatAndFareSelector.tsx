@@ -206,23 +206,24 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       return;
     }
 
+    const shouldUseRepresentativeFlow = isCompanyMode;
+
     if (selectedSeat && selectedSeat.id === enrichedSeat.id) {
       // Deseleccionando asiento
       onSeatSelect(null);
 
-      // Si hay función de liberación para representantes, llamarla
-      if (onSeatReleaseForRepresentative) {
+      // Solo en modo empresa liberar reserva temporal de representante
+      if (shouldUseRepresentativeFlow && onSeatReleaseForRepresentative) {
         await onSeatReleaseForRepresentative(currentRepresentativeIndex);
       }
     } else {
-      // NUEVO: Si hay un asiento previamente seleccionado y estamos cambiando de asiento,
-      // liberar el asiento anterior antes de reservar el nuevo
-      if (selectedSeat && onSeatReleaseForRepresentative) {
+      // Solo en modo empresa, al cambiar asiento, liberar la reserva anterior
+      if (shouldUseRepresentativeFlow && selectedSeat && onSeatReleaseForRepresentative) {
         await onSeatReleaseForRepresentative(currentRepresentativeIndex);
       }
 
-      // Si hay función de reserva para representantes, llamarla inmediatamente
-      if (onSeatReserveForRepresentative) {
+      // Solo en modo empresa reservar inmediatamente para representantes
+      if (shouldUseRepresentativeFlow && onSeatReserveForRepresentative) {
         const reserved = await onSeatReserveForRepresentative(
           enrichedSeat.seat_number,
           currentRepresentativeIndex

@@ -124,7 +124,7 @@ export const useSaleBusinessLogic = ({
           unit_price: parseFloat(baseUnitPriceWithIgv.toFixed(10)),
           discount: discount ? parseFloat(discount.toFixed(10)) : 0,
           tax_category_code: isIgvGravado ? "10" : "20", // 10=Gravado, 20=Exonerado
-          item_description: "Servicio de Transporte de Pasajeros",
+          item_description: "Servicio de Transporte Fluvial de Pasajeros",
           unit_code: "ZZ", // ZZ = Servicio (CORREGIDO de NIU)
           // Agregar información del asiento si está disponible
           trip_seat_id: selectedSeat?.id || null,

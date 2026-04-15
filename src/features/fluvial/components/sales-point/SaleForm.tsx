@@ -219,7 +219,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
           <div className="grid lg:grid-cols-5 gap-4 lg:gap-8">
             <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-              <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+              <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4 lg:p-5">
                 <PassengerDataForm
                   passengerData={passengerData}
                   setPassengerData={setPassengerData}

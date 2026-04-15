@@ -15,7 +15,6 @@ interface Representative {
   email?: string; // ← NUEVO: Campo email
   seat_number?: string;
   item_description?: string; // ← NUEVO: Descripción opcional por representante
-  special_notes?: string; // ← NUEVO: Campo notas especiales
 }
 
 interface SeatMapItem {
@@ -59,7 +58,6 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     email: '', // ← NUEVO: Campo email
     seat_number: '',
     item_description: '', // ← NUEVO: Descripción por ítem/representante
-    special_notes: '', // ← NUEVO: Campo notas especiales
   });
   
   const [isLoadingDni, setIsLoadingDni] = useState(false);
@@ -217,7 +215,6 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       email: formData.email.trim() || undefined, // ← NUEVO: Campo email
       seat_number: seatNumber,
       item_description: formData.item_description.trim() || undefined,
-      special_notes: formData.special_notes.trim() || undefined, // ← NUEVO: Campo notas especiales
     });
 
     // Limpiar formulario y asiento seleccionado
@@ -229,7 +226,6 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       email: '', // ← NUEVO: Campo email
       seat_number: '',
       item_description: '', // ← NUEVO: Descripción por ítem/representante
-      special_notes: '', // ← NUEVO: Campo notas especiales
     });
     
     // Limpiar selección de asiento
@@ -237,19 +233,24 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
   };
 
   return (
-    <div className="border border-blue-200 rounded-lg p-4 bg-white">
-      <h4 className="font-medium text-gray-800 mb-3">Agregar Representante</h4>
+    <div className="rounded-lg border border-[#e5e5e0] bg-white p-3 sm:p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h4 className="text-sm font-semibold text-[#211922] sm:text-base">Agregar Representante</h4>
+        <span className="rounded-full bg-[#f6f6f3] px-2.5 py-1 text-[11px] font-medium text-[#62625b]">
+          Paso {representativeIndex + 1}
+        </span>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
               Tipo de Documento
             </label>
             <select
               value={formData.document_type}
               onChange={(e) => setFormData(prev => ({ ...prev, document_type: e.target.value as SunatDocType }))}
-              className="w-full p-2 border border-gray-300 rounded-md text-sm"
+              className="w-full rounded-lg border border-[#d6d6d1] bg-white px-3 py-2 text-sm text-[#211922] focus:border-[#435ee5] focus:outline-none focus:ring-2 focus:ring-[#435ee5]/20"
             >
               <option value={SunatDocType.DNI}>DNI</option>
               <option value={SunatDocType.CARNET_EXTRANJERIA}>Carné de Extranjería</option>
@@ -258,7 +259,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
               N° de Documento
             </label>
             <div className="relative">
@@ -281,7 +282,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
               <div className="text-xs text-red-500 mt-1">{dniError}</div>
             )}
             {formData.document_type === SunatDocType.DNI && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="mt-1 text-xs text-[#62625b]">
                 Al ingresar 8 dígitos se consultará automáticamente
               </div>
             )}
@@ -289,7 +290,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
             Nombre Completo
           </label>
           <Input
@@ -301,82 +302,66 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
             Teléfono <span className="text-gray-400">(opcional)</span>
-          </label>
-          <Input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-            placeholder="Número de teléfono del representante"
-            className="text-sm"
-          />
-        </div>
+            </label>
+            <Input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+              placeholder="Número de teléfono del representante"
+              className="text-sm"
+            />
+          </div>
 
-        {/* ← NUEVO: Campo Email */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          {/* ← NUEVO: Campo Email */}
+          <div>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
             Email <span className="text-gray-400">(opcional)</span>
-          </label>
-          <Input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="Correo electrónico del representante"
-            className="text-sm"
-          />
+            </label>
+            <Input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              placeholder="Correo electrónico del representante"
+              className="text-sm"
+            />
+          </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
             Descripción por ítem <span className="text-gray-400">(opcional)</span>
           </label>
           <textarea
             value={formData.item_description}
             onChange={(e) => setFormData(prev => ({ ...prev, item_description: e.target.value }))}
             placeholder="Ej. Pasaje Iquitos-Nauta - PASAJERO: NOMBRE"
-            className="w-full p-2 border border-gray-300 rounded-md text-sm resize-none"
+            className="w-full resize-none rounded-lg border border-[#d6d6d1] bg-white p-2 text-sm text-[#211922] focus:border-[#435ee5] focus:outline-none focus:ring-2 focus:ring-[#435ee5]/20"
             rows={2}
             maxLength={500}
           />
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="mt-1 text-xs text-[#62625b]">
             {formData.item_description.length}/500 caracteres
           </div>
         </div>
 
-        {/* ← NUEVO: Campo Notas Especiales */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Notas Especiales <span className="text-gray-400">(opcional)</span>
-          </label>
-          <textarea
-            value={formData.special_notes}
-            onChange={(e) => setFormData(prev => ({ ...prev, special_notes: e.target.value }))}
-            placeholder="Observaciones especiales para este representante..."
-            className="w-full p-2 border border-gray-300 rounded-md text-sm resize-none"
-            rows={2}
-            maxLength={200}
-          />
-          <div className="text-xs text-gray-500 mt-1">
-            {formData.special_notes.length}/200 caracteres
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
             Asiento
           </label>
           {hasSeats ? (
             <div className="space-y-2">
-              <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
+              <div className="rounded-md border border-[#e5e5e0] bg-[#f9f9f7] p-3">
                 {selectedSeat ? (
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-medium text-green-700">
+                      <div className="font-medium text-[#1f5f3d]">
                         Asiento Seleccionado: {selectedSeat.seat_number}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-[#62625b]">
                         Tipo: {selectedSeat.seat_type_name}
                       </div>
                     </div>
@@ -392,7 +377,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-center text-gray-600">
+                  <div className="text-center text-[#62625b]">
                     <div className="font-medium">Seleccione un asiento</div>
                     <div className="text-sm">Use el mapa de asientos de abajo</div>
                     <div className="text-xs text-red-500 mt-1">
@@ -401,21 +386,21 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
                   </div>
                 )}
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-[#62625b]">
                 {availableSeats.length} asientos disponibles en el mapa
               </div>
             </div>
           ) : (
-            <div className="p-2 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-600">
+            <div className="rounded-md border border-[#e5e5e0] bg-[#f9f9f7] p-2 text-sm text-[#62625b]">
               Esta embarcación no tiene asientos configurados
             </div>
           )}
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-col gap-2 pt-2 sm:flex-row">
           <Button
             type="submit"
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-sm py-2"
+            className="flex-1 bg-[#211922] py-2 text-sm text-white hover:bg-[#33332e]"
             disabled={Boolean((hasSeats && !selectedSeat) || isReservingSeat)}
           >
             {isReservingSeat 
@@ -429,7 +414,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="px-4 text-sm py-2"
+            className="px-4 py-2 text-sm"
             disabled={isReservingSeat}
           >
             Cancelar

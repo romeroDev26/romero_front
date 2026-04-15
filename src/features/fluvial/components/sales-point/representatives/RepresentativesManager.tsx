@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/representatives/RepresentativesManager.tsx
 import React from 'react';
-import { Users, Plus, Trash2, UserCheck, FileText } from 'lucide-react';
+import { Users, Plus, Trash2, UserCheck } from 'lucide-react';
 import { Button } from '../../../../../components/common/Button';
 import { AddRepresentativeForm } from './AddRepresentativeForm';
 import { InfantManager } from '../infants';
@@ -14,7 +14,6 @@ interface Representative {
   email?: string; // ← NUEVO: Campo email
   seat_number?: string;
   item_description?: string; // ← NUEVO: Descripción opcional por representante
-  special_notes?: string; // ← NUEVO: Campo notas especiales
   infants?: Infant[]; // ← Infantes a cargo
 }
 
@@ -64,77 +63,49 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Users className="h-5 w-5 text-blue-600" />
+      <div className="border-b border-gray-200 px-4 py-3 sm:px-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-blue-100 p-2">
+              <Users className="h-5 w-5 text-blue-700" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-base font-semibold text-[#211922] sm:text-lg">
                 Gestión de Representantes
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-[#62625b] sm:text-sm">
                 Administre los representantes empresariales para esta factura
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2 text-sm">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
-              {representatives.length} representantes registrados
+          <div className="flex items-center text-sm">
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 sm:text-sm">
+              {representatives.length} registrados
             </span>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6 space-y-6">
-        {/* Instructions Card */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <div className="p-1 bg-blue-100 rounded">
-              <FileText className="h-4 w-4 text-blue-600" />
-            </div>
-            <div className="flex-1">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">
-                Sistema de Facturación Empresarial
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-blue-800">
-                <div className="flex items-start space-x-2">
-                  <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                  <span>Agregue los datos de cada representante manualmente</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                  <span>Asigne asientos si es necesario</span>
-                </div>
-                <div className="flex items-start space-x-2">
-                  <span className="flex-shrink-0 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                  <span>Proceda con la facturación empresarial</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div className="space-y-3 p-4 sm:p-5">
         {/* Representatives List */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <UserCheck className="h-5 w-5 text-gray-600" />
-              <h4 className="text-sm font-medium text-gray-900">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-[#62625b]" />
+              <h4 className="text-sm font-semibold text-[#211922]">
                 Representantes Registrados
               </h4>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-[#62625b]">
                 ({representatives.length} registrados)
               </span>
             </div>
             <Button
               onClick={() => onShowAddFormChange(true)}
               size="sm"
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-primary text-white hover:bg-primary-dark"
               disabled={isReserving || showAddForm}
             >
               <Plus className="h-4 w-4 mr-1" />
@@ -146,33 +117,33 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
           {representatives.length > 0 ? (
             <div className="grid gap-3">
               {representatives.map((rep, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                <div key={index} className="rounded-lg border border-[#e5e5e0] bg-white p-3 transition-shadow hover:shadow-sm">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-600">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                          <span className="text-sm font-semibold text-blue-700">
                             {index + 1}
                           </span>
                         </div>
                         <div>
-                          <h5 className="text-sm font-medium text-gray-900">
+                          <h5 className="text-sm font-semibold text-[#211922]">
                             {rep.name}
                           </h5>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-[#62625b]">
                             {rep.document_type}: {rep.document_number}
                           </p>
                         </div>
                       </div>
                       
-                      <div className="flex items-center space-x-4 text-xs text-gray-600">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#4b4550]">
                         {rep.phone && (
                           <span>Teléfono: {rep.phone}</span>
                         )}
                         {rep.email && (
                           <span>Email: {rep.email}</span>
                         )}
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center rounded-full bg-[#fff1f5] px-2 py-1 text-xs font-medium text-[#e60023]">
                           {rep.seat_number === "Elección libre" ? (
                             "Elección libre"
                           ) : (
@@ -183,16 +154,9 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       
                       {/* ← NUEVO: Mostrar notas especiales si existen */}
                       {rep.item_description && (
-                        <div className="mt-2 p-2 bg-blue-50 rounded-md">
-                          <div className="text-xs text-blue-700 font-medium mb-1">Descripción del ítem:</div>
-                          <div className="text-xs text-blue-900">{rep.item_description}</div>
-                        </div>
-                      )}
-
-                      {rep.special_notes && (
-                        <div className="mt-2 p-2 bg-gray-50 rounded-md">
-                          <div className="text-xs text-gray-500 font-medium mb-1">Notas especiales:</div>
-                          <div className="text-xs text-gray-700">{rep.special_notes}</div>
+                        <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 p-2">
+                          <div className="mb-1 text-xs font-medium text-blue-700">Descripción del ítem:</div>
+                          <div className="text-xs text-[#211922]">{rep.item_description}</div>
                         </div>
                       )}
                     </div>
@@ -201,7 +165,7 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       onClick={() => onRemoveRepresentative(index)}
                       variant="outline"
                       size="sm"
-                      className="text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+                      className="border-red-300 text-red-600 hover:border-red-400 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -228,12 +192,12 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg">
-              <Users className="h-8 w-8 text-gray-400 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">
+            <div className="rounded-lg border-2 border-dashed border-[#d9d9d3] bg-[#f9f9f7] py-7 text-center">
+              <Users className="mx-auto mb-3 h-8 w-8 text-[#9a9a93]" />
+              <p className="text-sm text-[#62625b]">
                 No hay representantes registrados
               </p>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="mt-2 text-xs text-[#8b8b85]">
                 Use el botón "Agregar Representante" para comenzar
               </p>
             </div>
@@ -242,13 +206,13 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
 
         {/* Add Representative Form */}
         {showAddForm && (
-          <div className="border-t border-gray-200 pt-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <div className="flex items-center space-x-2 text-sm text-blue-800">
+          <div className="border-t border-gray-200 pt-4">
+            <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
+              <div className="flex items-center gap-2 text-sm text-blue-800">
                 <Plus className="h-4 w-4" />
                 <span className="font-medium">Agregando nuevo representante</span>
               </div>
-              <p className="text-xs text-blue-600 mt-1">
+              <p className="mt-1 text-xs text-blue-600">
                 Complete los datos del representante y seleccione su asiento en el mapa
               </p>
             </div>

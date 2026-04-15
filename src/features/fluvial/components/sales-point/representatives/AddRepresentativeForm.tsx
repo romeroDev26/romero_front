@@ -6,6 +6,7 @@ import { Button } from '../../../../../components/common/Button';
 import { Input } from '../../../../../components/common/Input';
 import { SunatDocType } from '../../../types/sunat.types';
 import api from '../../../../../config/api';
+import { REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS } from '../core/types';
 
 interface Representative {
   document_type: string;
@@ -341,10 +342,10 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
             placeholder="Ej. Pasaje Iquitos-Nauta - PASAJERO: NOMBRE"
             className="w-full resize-none rounded-lg border border-[#d6d6d1] bg-white p-2 text-sm text-[#211922] focus:border-[#435ee5] focus:outline-none focus:ring-2 focus:ring-[#435ee5]/20"
             rows={2}
-            maxLength={500}
+            maxLength={REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS}
           />
           <div className="mt-1 text-xs text-[#62625b]">
-            {formData.item_description.length}/500 caracteres
+            {formData.item_description.length}/{REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS} caracteres
           </div>
         </div>
 

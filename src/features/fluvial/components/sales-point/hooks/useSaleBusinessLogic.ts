@@ -2,7 +2,12 @@
 
 import { useCallback } from "react";
 import { toast } from "react-toastify";
-import { PassengerData, Representative, Infant } from "../core/types";
+import {
+  PassengerData,
+  Representative,
+  Infant,
+  REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS,
+} from "../core/types";
 import { saleValidationService } from "../services/saleValidationService";
 import { invoiceCreationService } from "../services/invoiceCreationService";
 import { SeatMapItem } from "../../../../../types";
@@ -237,7 +242,10 @@ export const useSaleBusinessLogic = ({
 
           const representativeItemDescription = rep.item_description?.trim();
           if (representativeItemDescription) {
-            repPayload.item_description = representativeItemDescription.slice(0, 500);
+            repPayload.item_description = representativeItemDescription.slice(
+              0,
+              REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS
+            );
           }
 
           // Infantes anidados dentro del representante correspondiente

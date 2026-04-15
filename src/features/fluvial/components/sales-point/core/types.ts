@@ -28,6 +28,9 @@ export type InfantRelationship =
   | 'tutor_legal'
   | 'otro';
 
+/** Texto libre por representante; el backend antepone el servicio fijo y el total enviado a SUNAT no puede superar 500 caracteres. */
+export const REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS = 453;
+
 export const INFANT_RELATIONSHIP_LABELS: Record<InfantRelationship, string> = {
   padre: 'Padre',
   madre: 'Madre',
@@ -57,7 +60,7 @@ export interface Representative {
   phone: string | null; // ← Permitir null cuando no se proporciona
   email?: string; // ← NUEVO: Campo email para representante
   seat_number?: string;
-  item_description?: string; // ← NUEVO: Descripción opcional por representante (máx. 500)
+  item_description?: string; // ← NUEVO: Descripción opcional por representante (máx. 453; total SUNAT 500 con prefijo de servicio)
   special_notes?: string; // ← NUEVO: Campo notas especiales
   trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
   infants?: Infant[]; // ← Infantes a cargo del representante

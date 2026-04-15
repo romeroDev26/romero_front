@@ -231,27 +231,21 @@ const ReceivablesPage: React.FC = () => {
               </button>
 
               {showDatePicker && (
-                <div className="absolute left-0 right-0 z-50 mt-2 overflow-x-auto rounded-xl border border-gray-200 bg-white p-3 shadow-lg sm:left-0 sm:w-auto sm:p-4">
-                  <DatePicker
-                    selected={dateRange[0]}
-                    onChange={handleDateRangeChange}
-                    startDate={dateRange[0]}
-                    endDate={dateRange[1]}
-                    selectsRange
-                    inline
-                    locale={es}
-                    calendarClassName="!text-sm"
-                    dayClassName={(date) => {
-                      const isSelected =
-                        (dateRange[0] && date.toDateString() === dateRange[0].toDateString()) ||
-                        (dateRange[1] && date.toDateString() === dateRange[1].toDateString());
-                      const isInRange =
-                        dateRange[0] && dateRange[1] && date > dateRange[0] && date < dateRange[1];
-                      if (isSelected) return 'bg-indigo-600 text-white rounded-full';
-                      if (isInRange) return 'bg-indigo-100 text-indigo-800';
-                      return '';
-                    }}
-                  />
+                <div className="absolute left-0 top-full z-50 mt-2 w-max max-w-[min(100vw-1.5rem,24rem)] rounded-xl border border-gray-200 bg-white p-3 shadow-lg sm:p-4">
+                  {/* Mismas clases que en reportes/cotizaciones: evita que Tailwind rompa el grid del calendario */}
+                  <div className="custom-datepicker-wrapper">
+                    <DatePicker
+                      selected={dateRange[0]}
+                      onChange={handleDateRangeChange}
+                      startDate={dateRange[0]}
+                      endDate={dateRange[1]}
+                      selectsRange
+                      inline
+                      monthsShown={1}
+                      locale={es}
+                      calendarClassName="custom-datepicker text-sm"
+                    />
+                  </div>
                   <div className="mt-3 flex justify-between border-t border-gray-200 pt-3">
                     <button
                       onClick={clearDateFilter}

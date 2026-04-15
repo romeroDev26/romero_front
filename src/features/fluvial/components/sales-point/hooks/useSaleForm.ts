@@ -897,7 +897,6 @@ export function useSaleForm({
           discount,
           isIgvGravado,
           selectedFacturaSeries,
-          itemDescription,
           selectedSeat,
           splitPaymentData.paymentMethod1,
           splitPaymentData.operationCode1,

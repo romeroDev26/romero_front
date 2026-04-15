@@ -57,6 +57,7 @@ export interface Representative {
   phone: string | null; // ← Permitir null cuando no se proporciona
   email?: string; // ← NUEVO: Campo email para representante
   seat_number?: string;
+  item_description?: string; // ← NUEVO: Descripción opcional por representante (máx. 500)
   special_notes?: string; // ← NUEVO: Campo notas especiales
   trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
   infants?: Infant[]; // ← Infantes a cargo del representante

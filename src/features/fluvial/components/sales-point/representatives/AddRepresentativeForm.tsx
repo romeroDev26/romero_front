@@ -14,6 +14,7 @@ interface Representative {
   phone: string | null; // ← Permitir null
   email?: string; // ← NUEVO: Campo email
   seat_number?: string;
+  item_description?: string; // ← NUEVO: Descripción opcional por representante
   special_notes?: string; // ← NUEVO: Campo notas especiales
 }
 
@@ -57,6 +58,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     phone: '',
     email: '', // ← NUEVO: Campo email
     seat_number: '',
+    item_description: '', // ← NUEVO: Descripción por ítem/representante
     special_notes: '', // ← NUEVO: Campo notas especiales
   });
   
@@ -214,6 +216,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       phone: formData.phone.trim() || null, // ← Enviar null si está vacío
       email: formData.email.trim() || undefined, // ← NUEVO: Campo email
       seat_number: seatNumber,
+      item_description: formData.item_description.trim() || undefined,
       special_notes: formData.special_notes.trim() || undefined, // ← NUEVO: Campo notas especiales
     });
 
@@ -225,6 +228,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       phone: '',
       email: '', // ← NUEVO: Campo email
       seat_number: '',
+      item_description: '', // ← NUEVO: Descripción por ítem/representante
       special_notes: '', // ← NUEVO: Campo notas especiales
     });
     
@@ -322,6 +326,23 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
             placeholder="Correo electrónico del representante"
             className="text-sm"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Descripción por ítem <span className="text-gray-400">(opcional)</span>
+          </label>
+          <textarea
+            value={formData.item_description}
+            onChange={(e) => setFormData(prev => ({ ...prev, item_description: e.target.value }))}
+            placeholder="Ej. Pasaje Iquitos-Nauta - PASAJERO: NOMBRE"
+            className="w-full p-2 border border-gray-300 rounded-md text-sm resize-none"
+            rows={2}
+            maxLength={500}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            {formData.item_description.length}/500 caracteres
+          </div>
         </div>
 
         {/* ← NUEVO: Campo Notas Especiales */}

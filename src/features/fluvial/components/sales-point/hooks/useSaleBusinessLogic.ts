@@ -68,7 +68,6 @@ export const useSaleBusinessLogic = ({
     discount?: number,
     isIgvGravado?: boolean,
     series?: string,
-    itemDescription?: string,
     selectedSeat?: any,
     selectedPaymentMethod?: string,
     paymentOperationCode?: string,
@@ -125,9 +124,7 @@ export const useSaleBusinessLogic = ({
           unit_price: parseFloat(baseUnitPriceWithIgv.toFixed(10)),
           discount: discount ? parseFloat(discount.toFixed(10)) : 0,
           tax_category_code: isIgvGravado ? "10" : "20", // 10=Gravado, 20=Exonerado
-          item_description: itemDescription?.trim() 
-            ? `Servicio de Transporte de Pasajeros - ${itemDescription.trim()}`
-            : "Servicio de Transporte de Pasajeros",
+          item_description: "Servicio de Transporte de Pasajeros",
           unit_code: "ZZ", // ZZ = Servicio (CORREGIDO de NIU)
           // Agregar información del asiento si está disponible
           trip_seat_id: selectedSeat?.id || null,
@@ -237,6 +234,11 @@ export const useSaleBusinessLogic = ({
             special_notes: rep.special_notes || "",
             trip_seat_id: tripSeatId,
           };
+
+          const representativeItemDescription = rep.item_description?.trim();
+          if (representativeItemDescription) {
+            repPayload.item_description = representativeItemDescription.slice(0, 500);
+          }
 
           // Infantes anidados dentro del representante correspondiente
           if (rep.infants && rep.infants.length > 0) {

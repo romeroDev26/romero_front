@@ -13,6 +13,7 @@ interface Representative {
   phone: string | null; // ← Permitir null
   email?: string; // ← NUEVO: Campo email
   seat_number?: string;
+  item_description?: string; // ← NUEVO: Descripción opcional por representante
   special_notes?: string; // ← NUEVO: Campo notas especiales
   infants?: Infant[]; // ← Infantes a cargo
 }
@@ -181,6 +182,13 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       </div>
                       
                       {/* ← NUEVO: Mostrar notas especiales si existen */}
+                      {rep.item_description && (
+                        <div className="mt-2 p-2 bg-blue-50 rounded-md">
+                          <div className="text-xs text-blue-700 font-medium mb-1">Descripción del ítem:</div>
+                          <div className="text-xs text-blue-900">{rep.item_description}</div>
+                        </div>
+                      )}
+
                       {rep.special_notes && (
                         <div className="mt-2 p-2 bg-gray-50 rounded-md">
                           <div className="text-xs text-gray-500 font-medium mb-1">Notas especiales:</div>

@@ -157,7 +157,7 @@ export function useSaleForm({
   // Hooks de servicios
   const { createCompanyInvoiceWithRepresentatives, isCreating } =
     useRepresentantes();
-  const { reserveSeat, releaseSeat, getReservedSeatNumbers, isReserving } =
+  const { reserveSeat, releaseSeat, getReservedSeatNumbers, isReserving, reservedSeats, updateReservationSeatId } =
     useSeatReservations(trip.id);
 
   // Hook de usuario actual
@@ -606,9 +606,80 @@ export function useSaleForm({
     );
   };
 
+  // NUEVO: Función para reservar asiento inmediatamente cuando se selecciona en el mapa
+  // Esta función usa SOLO WebSocket ya que el endpoint de API REST no existe
+  const handleSeatReserveForRepresentative = async (seatNumber: string, representativeIndex: number): Promise<boolean> => {
+    try {
+      // Buscar el seatId correspondiente al seatNumber
+      const seat = seatMap.find(s => s.seat_number === seatNumber);
+
+      if (!seat) {
+        toast.error('No se encontró el asiento seleccionado');
+        return false;
+      }
+
+      // Verificar que el asiento no esté siendo usado por otro vendedor
+      const existingSelection = activeSeatSelections?.get(seat.id);
+      if (existingSelection) {
+        const existingBaseUserId = existingSelection.userId.split('-company-')[0];
+        if (existingBaseUserId !== currentUser?.id) {
+          toast.error(`El asiento ${seatNumber} está siendo usado por otro vendedor`);
+          return false;
+        }
+      }
+
+      // Reservar vía WebSocket (esto notifica a otros vendedores)
+      if (isWebSocketConnected && selectSeatForRepresentative) {
+        const success = selectSeatForRepresentative(
+          seat.id,
+          representativeIndex,
+          `Representante ${representativeIndex + 1}` // Placeholder temporal
+        );
+
+        if (!success) {
+          toast.error('No se pudo reservar el asiento. Intente con otro.');
+          return false;
+        }
+
+        // Registrar localmente la reserva CON el seatId correcto
+        await reserveSeat(seatNumber, representativeIndex, seat.id);
+
+        toast.success(`Asiento ${seatNumber} reservado temporalmente`);
+        return true;
+      } else {
+        // Si no hay WebSocket, solo registrar localmente
+        await reserveSeat(seatNumber, representativeIndex, 0);
+        toast.success(`Asiento ${seatNumber} seleccionado`);
+        return true;
+      }
+    } catch (error) {
+      console.error('Error al reservar asiento para representante:', error);
+      toast.error('Error al reservar el asiento');
+      return false;
+    }
+  };
+
+  // NUEVO: Función para liberar asiento de representante (SOLO WebSocket)
+  const handleSeatReleaseForRepresentative = async (representativeIndex: number) => {
+    // Buscar la reserva local
+    const reservation = reservedSeats.find(r => r.representativeIndex === representativeIndex);
+    
+    if (reservation && reservation.seatId) {
+      // Liberar vía WebSocket
+      if (isWebSocketConnected && releaseSeatForRepresentative) {
+        releaseSeatForRepresentative(reservation.seatId, representativeIndex);
+      }
+    }
+
+    // Liberar localmente
+    await releaseSeat(representativeIndex);
+  };
+
   const handleAddRepresentative = async (representative: Representative) => {
-    // Primero, reservar el asiento vía WebSocket si hay uno seleccionado
+    // Ya no necesitamos reservar aquí porque se hizo inmediatamente en handleSeatReserveForRepresentative
+    // Solo actualizamos el nombre en WebSocket si es posible
     if (selectedSeatForRepresentative && isWebSocketConnected && selectSeatForRepresentative) {
+      // Reenviar con el nombre correcto del representante para actualizar la visualización
       selectSeatForRepresentative(
         selectedSeatForRepresentative.id,
         representatives.length,
@@ -623,22 +694,15 @@ export function useSaleForm({
     toast.success("Representante agregado exitosamente");
   };
 
-  const handleRemoveRepresentative = (index: number) => {
+  const handleRemoveRepresentative = async (index: number) => {
     const representativeToRemove = representatives[index];
 
     if (
       representativeToRemove.seat_number &&
       representativeToRemove.seat_number !== "Elección libre"
     ) {
-      // Encontrar el seatId correcto basado en el seat_number
-      const seatId = findSeatIdBySeatNumber(representativeToRemove.seat_number);
-
-      if (seatId) {
-        // Usar las funciones correctas con el seatId y el índice del representante
-        if (releaseSeatForRepresentative) {
-          releaseSeatForRepresentative(seatId, index);
-        }
-      }
+      // Usar la nueva función combinada para liberar (API + WebSocket)
+      await handleSeatReleaseForRepresentative(index);
     }
 
     setRepresentatives((prev) => prev.filter((_, i) => i !== index));
@@ -833,7 +897,6 @@ export function useSaleForm({
           discount,
           isIgvGravado,
           selectedFacturaSeries,
-          itemDescription,
           selectedSeat,
           splitPaymentData.paymentMethod1,
           splitPaymentData.operationCode1,
@@ -1043,6 +1106,8 @@ export function useSaleForm({
     handleUpdateRepresentativeInfants,
     handleAddRepresentative,
     handleRemoveRepresentative,
+    handleSeatReserveForRepresentative,
+    handleSeatReleaseForRepresentative,
     handleShowAddFormChange,
     existingDocuments,
     usedSeatNumbers,

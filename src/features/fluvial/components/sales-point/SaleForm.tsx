@@ -95,6 +95,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
       reserveSeat,
       releaseSeat,
       getReservedSeatNumbers,
+      handleSeatReserveForRepresentative,
+      handleSeatReleaseForRepresentative,
       currentUser,
       tripDetails,
       passengerService,
@@ -217,7 +219,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
           <div className="grid lg:grid-cols-5 gap-4 lg:gap-8">
             <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-              <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+              <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4 lg:p-5">
                 <PassengerDataForm
                   passengerData={passengerData}
                   setPassengerData={setPassengerData}
@@ -257,8 +259,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                     onSeatSelectForRepresentative={
                       setSelectedSeatForRepresentative
                     }
-                    onSeatReserve={reserveSeat}
-                    onSeatRelease={releaseSeat}
+                    onSeatReserve={handleSeatReserveForRepresentative}
+                    onSeatRelease={handleSeatReleaseForRepresentative}
                     getReservedSeatNumbers={getReservedSeatNumbers}
                     onUpdateRepresentativeInfants={
                       handleUpdateRepresentativeInfants
@@ -308,6 +310,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       representativeSelectedSeatIds
                     }
                     onWebSocketReady={handleWebSocketReady}
+                    onSeatReserveForRepresentative={
+                      isRuc ? handleSeatReserveForRepresentative : undefined
+                    }
+                    onSeatReleaseForRepresentative={
+                      isRuc ? handleSeatReleaseForRepresentative : undefined
+                    }
+                    currentRepresentativeIndex={representatives.length}
                   />
                 ) : (
                   <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
@@ -542,20 +551,27 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                           </div>
                         )}
 
-                        <div>
-                          <label className="mb-1.5 ml-1 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
-                            Descripción
-                          </label>
-                          <input
-                            type="text"
-                            value={itemDescription}
-                            onChange={(e) =>
-                              setItemDescription(e.target.value)
-                            }
-                            placeholder="Ej. Servicio de transporte"
-                            className="w-full rounded-lg border-0 bg-gray-100 py-3 px-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                          />
-                        </div>
+                        {!isRuc && (
+                          <div>
+                            <label className="mb-1.5 ml-1 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                              Descripción
+                            </label>
+                            <textarea
+                              value={itemDescription}
+                              onChange={(e) => {
+                                if (e.target.value.length <= 500) {
+                                  setItemDescription(e.target.value);
+                                }
+                              }}
+                              placeholder="Ej. Servicio de transporte"
+                              rows={2}
+                              className="w-full rounded-lg border-0 bg-gray-100 py-3 px-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[80px]"
+                            />
+                            <p className="mt-1 text-[10px] text-gray-500">
+                              {(itemDescription || "").length}/500 caracteres
+                            </p>
+                          </div>
+                        )}
 
                         <CurrencySelector
                           selectedCurrency={selectedCurrency}

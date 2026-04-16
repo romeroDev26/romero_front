@@ -26,6 +26,7 @@ export interface CompanyInvoiceWithRepresentatives {
     passenger_phone?: string;
     passenger_email?: string; // ← AGREGADO: Campo email
     seat_number?: string; // "Elección libre" o número específico
+    item_description?: string; // ← NUEVO: Texto libre (máx. 453; backend concatena servicio fijo, total SUNAT 500)
     special_notes?: string; // ← AGREGADO: Campo notas especiales
     trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
     infants?: Array<{

@@ -75,6 +75,8 @@ export const CargoSalePage: React.FC = () => {
 
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<CargoItemData | null>(null);
+  /** Incrementa al abrir "Añadir ítem" para remontar el formulario y aplicar el servicio por defecto */
+  const [cargoItemFormKey, setCargoItemFormKey] = useState(0);
 
   // Estados para el modal de ticket
   const [showTicketPreview, setShowTicketPreview] = useState(false);
@@ -724,7 +726,11 @@ export const CargoSalePage: React.FC = () => {
                         Volver a Seleccionar Tramo
                       </Button>
                       <Button
-                        onClick={() => { setEditingItem(null); setIsItemModalOpen(true); }}
+                        onClick={() => {
+                          setEditingItem(null);
+                          setCargoItemFormKey((k) => k + 1);
+                          setIsItemModalOpen(true);
+                        }}
                         size="md"
                         className="w-full justify-center rounded-xl px-5 py-3 shadow-sm sm:w-auto"
                         disabled={cargoItems.length >= 1}
@@ -966,9 +972,10 @@ export const CargoSalePage: React.FC = () => {
         title={editingItem ? 'Editar Item de Encomienda' : 'Añadir Item de Encomienda'} 
         maxWidth="3xl"
       >
-        <CargoItemForm 
-          onSubmit={handleItemSubmit} 
-          onClose={() => setIsItemModalOpen(false)} 
+        <CargoItemForm
+          key={editingItem ? editingItem.id : `new-${cargoItemFormKey}`}
+          onSubmit={handleItemSubmit}
+          onClose={() => setIsItemModalOpen(false)}
           existingItem={editingItem}
           defaultRecipient={recipient}
         />

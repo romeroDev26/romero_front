@@ -3,7 +3,16 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CheckCircleIcon, AlertTriangleIcon, FileTextIcon } from 'lucide-react';
+import {
+  CheckCircle,
+  AlertTriangle,
+  FileText,
+  User,
+  MapPin,
+  Ship,
+  Calendar,
+  Receipt,
+} from 'lucide-react';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
@@ -21,15 +30,14 @@ interface PaymentConfirmationModalProps {
 
 /**
  * Modal para confirmar el pago de una encomienda
- * Muestra detalles de la encomienda y formulario de pago
- * Soporta pagos divididos (hasta 2 metodos de pago)
+ * Estilo TailAdmin: compacto, limpio, con jerarquía visual clara
  */
 export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> = ({
   isOpen,
   onClose,
   receivableItem,
   onConfirm,
-  isLoading = false
+  isLoading = false,
 }) => {
   const [formData, setFormData] = useState<PaymentFormData>({
     payment_method_code: 'EFE',
@@ -47,26 +55,19 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
   const [selectedPdfType, setSelectedPdfType] = useState<'80mm' | '58mm' | null>(null);
 
-  // Obtener el monto total
   const totalAmount = receivableItem ? parseFloat(receivableItem.amount) : 0;
 
-  // Seleccionar PDF para preview
   const handleSelectPDF = useCallback((url: string, type: '80mm' | '58mm') => {
-    if (!url) {
-      console.warn(`No hay URL disponible para el comprobante ${type}`);
-      return;
-    }
+    if (!url) return;
     setSelectedPdfUrl(url);
     setSelectedPdfType(type);
   }, []);
 
-  // Manejar cambios en el formulario
   const handleFormDataChange = useCallback((data: PaymentFormData) => {
     setFormData(data);
-    setValidationError(''); // Limpiar errores al cambiar datos
+    setValidationError('');
   }, []);
 
-  // Seleccionar automaticamente el primer PDF disponible cuando se abre el modal
   useEffect(() => {
     if (isOpen && receivableItem && !selectedPdfUrl) {
       if (receivableItem.pdf_ticket_file_path) {
@@ -77,80 +78,59 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
         setSelectedPdfType('58mm');
       }
     }
-    // Limpiar seleccion cuando se cierra el modal
     if (!isOpen) {
       setSelectedPdfUrl(null);
       setSelectedPdfType(null);
     }
   }, [isOpen, receivableItem, selectedPdfUrl]);
 
-  // Validar formulario antes de confirmar
   const validateForm = (): boolean => {
-    // Metodo de pago es obligatorio (siempre tiene valor por defecto)
     if (!formData.payment_method_code) {
-      setValidationError('El metodo de pago es obligatorio');
+      setValidationError('El método de pago es obligatorio');
       return false;
     }
-
-    // Codigo de operacion obligatorio para ciertos metodos (pago 1)
     if (
-      (formData.payment_method_code === 'TRF' || 
-       formData.payment_method_code === 'YAP' || 
+      (formData.payment_method_code === 'TRF' ||
+       formData.payment_method_code === 'YAP' ||
        formData.payment_method_code === 'PLN') &&
       !formData.payment_operation_code.trim()
     ) {
-      setValidationError('El codigo de operacion es obligatorio para este metodo de pago');
+      setValidationError('El código de operación es obligatorio para este método de pago');
       return false;
     }
-
-    // Validaciones para pago dividido
     if (formData.is_split_payment) {
-      // Codigo de operacion obligatorio para ciertos metodos (pago 2)
       if (
-        (formData.payment_method_code_2 === 'TRF' || 
-         formData.payment_method_code_2 === 'YAP' || 
+        (formData.payment_method_code_2 === 'TRF' ||
+         formData.payment_method_code_2 === 'YAP' ||
          formData.payment_method_code_2 === 'PLN') &&
         !formData.payment_operation_code_2.trim()
       ) {
-        setValidationError('El codigo de operacion es obligatorio para el segundo metodo de pago');
+        setValidationError('El código de operación es obligatorio para el segundo método');
         return false;
       }
-
-      // Validar que la suma de montos sea igual al total
       const totalPaid = formData.payment_amount_1 + formData.payment_amount_2;
       if (Math.abs(totalPaid - totalAmount) > 0.01) {
         setValidationError('La suma de los pagos debe ser igual al monto total');
         return false;
       }
     }
-
-    // Fecha es obligatoria
     if (!formData.payment_date) {
       setValidationError('La fecha de pago es obligatoria');
       return false;
     }
-
-    // Fecha no puede ser futura
     const selectedDate = new Date(formData.payment_date);
-    const now = new Date();
-    if (selectedDate > now) {
+    if (selectedDate > new Date()) {
       setValidationError('La fecha de pago no puede ser futura');
       return false;
     }
-
     return true;
   };
 
-  // Manejar confirmacion
   const handleConfirm = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const success = await onConfirm(formData);
-
     if (success) {
-      // Resetear formulario
       setFormData({
         payment_method_code: 'EFE',
         payment_operation_code: '',
@@ -174,200 +154,182 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Confirmar Pago de Encomienda"
-      maxWidth={hasPdfFiles ? "6xl" : "2xl"}
+      title="Confirmar Pago"
+      maxWidth={hasPdfFiles ? '6xl' : '3xl'}
     >
       <div className={`flex flex-col ${hasPdfFiles ? 'lg:flex-row' : ''} gap-6`}>
-        {/* Panel izquierdo - Formulario de confirmación */}
-        <div className={`${hasPdfFiles ? 'lg:w-1/2' : 'w-full'} space-y-6`}>
-        {/* Detalles de la encomienda */}
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Detalles de la Encomienda #{receivableItem.invoice_item_id}
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Remitente */}
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Remitente</h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p className="font-medium">{receivableItem.sender_name}</p>
-                <p>DNI/RUC: {receivableItem.sender_document}</p>
+        {/* Panel Formulario */}
+        <div className={`${hasPdfFiles ? 'lg:w-3/5' : 'w-full'} space-y-5`}>
+          {/* Header compacto con número de encomienda */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
+                <Ship className="h-5 w-5 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Encomienda</p>
+                <p className="text-lg font-bold tabular-nums text-gray-900">
+                  #{receivableItem.invoice_item_id}
+                </p>
               </div>
             </div>
-            
-            {/* Destinatario */}
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Destinatario</h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p className="font-medium">{receivableItem.recipient_name}</p>
-                <p>DNI/RUC: {receivableItem.recipient_document}</p>
-              </div>
+            {/* Badge de monto destacado */}
+            <div className="rounded-xl bg-emerald-50 px-4 py-3 text-right">
+              <p className="text-xs font-medium text-emerald-600">Monto a cobrar</p>
+              <p className="text-2xl font-bold tabular-nums text-emerald-700">
+                S/ {totalAmount.toFixed(2)}
+              </p>
             </div>
-            
-            {/* Viaje */}
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Viaje</h4>
-              <div className="text-sm text-gray-600 space-y-1">
-                <p>Viaje #{receivableItem.trip_id}</p>
-                <p>{receivableItem.origin_port} → {receivableItem.destination_port}</p>
-              </div>
-            </div>
-            
-            {/* Monto */}
-            <div>
-              <h4 className="font-medium text-gray-700 mb-2">Monto a Cobrar</h4>
-              <div className="text-2xl font-bold text-green-600">
-                S/ {parseFloat(receivableItem.amount).toFixed(2)}
-              </div>
-            </div>
-          </div>
-          
-          {/* Descripción */}
-          <div className="mt-4">
-            <h4 className="font-medium text-gray-700 mb-2">Descripción</h4>
-            <p className="text-sm text-gray-600">{receivableItem.cargo_description}</p>
           </div>
 
-          {/* Fecha de emisión */}
-          <div className="mt-4">
-            <h4 className="font-medium text-gray-700 mb-2">Fecha de Emisión</h4>
-            <p className="text-sm text-gray-600">
-              {format(new Date(receivableItem.issue_date), "dd 'de' MMMM 'de' yyyy", { locale: es })}
+          {/* Datos clave en lista compacta */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+              <User className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-gray-500">Remitente</p>
+                <p className="truncate text-sm font-semibold text-gray-900">{receivableItem.sender_name}</p>
+                <p className="text-xs text-gray-400">{receivableItem.sender_document}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+              <User className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-gray-500">Destinatario</p>
+                <p className="truncate text-sm font-semibold text-gray-900">{receivableItem.recipient_name}</p>
+                <p className="text-xs text-gray-400">{receivableItem.recipient_document}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+              <div>
+                <p className="text-xs font-medium text-gray-500">Ruta</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {receivableItem.origin_port} → {receivableItem.destination_port}
+                </p>
+                <p className="text-xs text-gray-400">Viaje #{receivableItem.trip_id}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+              <Calendar className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+              <div>
+                <p className="text-xs font-medium text-gray-500">Fecha de emisión</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  {format(new Date(receivableItem.issue_date), "dd 'de' MMMM 'de' yyyy", { locale: es })}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Descripción */}
+          {receivableItem.cargo_description && (
+            <div className="rounded-lg border border-gray-100 bg-gray-50/50 p-3">
+              <p className="text-xs font-medium text-gray-500">Descripción</p>
+              <p className="mt-0.5 text-sm text-gray-700">{receivableItem.cargo_description}</p>
+            </div>
+          )}
+
+          {/* Selector de comprobantes */}
+          {hasPdfFiles && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Receipt className="h-4 w-4 text-gray-400" />
+              <span className="text-xs font-medium text-gray-500">Comprobante:</span>
+              {receivableItem.pdf_ticket_file_path && (
+                <button
+                  onClick={() => handleSelectPDF(receivableItem.pdf_ticket_file_path!, '80mm')}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                    selectedPdfType === '80mm'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Ticket 80mm
+                </button>
+              )}
+              {receivableItem.pdf_ticket58_file_path && (
+                <button
+                  onClick={() => handleSelectPDF(receivableItem.pdf_ticket58_file_path!, '58mm')}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-all ${
+                    selectedPdfType === '58mm'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  Ticket 58mm
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Formulario de pago */}
+          <div className="border-t border-gray-100 pt-5">
+            <h3 className="mb-3 text-sm font-semibold text-gray-800">Información de Pago</h3>
+            <PaymentDetailsForm
+              onDataChange={handleFormDataChange}
+              disabled={isLoading}
+              totalAmount={totalAmount}
+              currencySymbol="S/"
+            />
+          </div>
+
+          {/* Error de validación */}
+          {validationError && (
+            <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+              <p className="text-sm font-medium text-red-700">{validationError}</p>
+            </div>
+          )}
+
+          {/* Nota sutil de confirmación */}
+          <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <p className="text-xs text-amber-700">
+              Al confirmar, se marcará esta encomienda como pagada y se registrará el pago en el sistema.
             </p>
           </div>
 
-          {/* Preview de Comprobantes */}
-          {(receivableItem.pdf_ticket_file_path || receivableItem.pdf_ticket58_file_path) && (
-            <div className="mt-4">
-              <h4 className="font-medium text-gray-700 mb-3">Seleccionar Comprobante</h4>
-              <div className="flex flex-wrap gap-3">
-                {receivableItem.pdf_ticket_file_path && (
-                  <Button
-                    variant={selectedPdfType === '80mm' ? 'primary' : 'outline'}
-                    size="sm"
-                    onClick={() => handleSelectPDF(receivableItem.pdf_ticket_file_path!, '80mm')}
-                    className="flex items-center"
-                  >
-                    <FileTextIcon className="w-4 h-4 mr-2" />
-                    Ticket 80mm
-                  </Button>
-                )}
-                {receivableItem.pdf_ticket58_file_path && (
-                  <Button
-                    variant={selectedPdfType === '58mm' ? 'primary' : 'outline'}
-                    size="sm"
-                    onClick={() => handleSelectPDF(receivableItem.pdf_ticket58_file_path!, '58mm')}
-                    className="flex items-center"
-                  >
-                    <FileTextIcon className="w-4 h-4 mr-2" />
-                    Ticket 58mm
-                  </Button>
-                )}
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                * Selecciona un formato para ver la vista previa
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Formulario de pago */}
-        <div className="border-t border-gray-200 pt-4">
-          <h3 className="text-base font-semibold text-gray-900 mb-3">
-            Informacion de Pago
-          </h3>
-          <PaymentDetailsForm
-            onDataChange={handleFormDataChange}
-            disabled={isLoading}
-            totalAmount={totalAmount}
-            currencySymbol="S/"
-          />
-        </div>
-
-        {/* Mensaje de validación */}
-        {validationError && (
-          <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-            <div className="flex items-start">
-              <AlertTriangleIcon className="w-5 h-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{validationError}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Mensaje de advertencia */}
-        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-          <div className="flex items-start">
-            <AlertTriangleIcon className="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-medium text-yellow-800 mb-1">
-                Confirmar Pago
-              </h4>
-              <p className="text-sm text-yellow-700">
-                ¿Está seguro de que desea marcar esta encomienda como pagada? 
-                Esta acción confirmará que el cliente ha pagado el monto de{' '}
-                <span className="font-semibold">S/ {parseFloat(receivableItem.amount).toFixed(2)}</span>
-                {' '}y que la encomienda ha sido entregada correctamente.
-              </p>
-            </div>
+          {/* Botones de acción */}
+          <div className="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={isLoading}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            >
+              {isLoading ? (
+                <>
+                  <Spinner className="mr-2 h-4 w-4" />
+                  Confirmando...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Confirmar Pago
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
-        {/* Botones de acción */}
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={isLoading}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={isLoading}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isLoading ? (
-              <>
-                <Spinner className="w-4 h-4 mr-2" />
-                Confirmando...
-              </>
-            ) : (
-              <>
-                <CheckCircleIcon className="w-4 h-4 mr-2" />
-                Confirmar Pago
-              </>
-            )}
-          </Button>
-        </div>
-        </div>
-
-        {/* Panel derecho - Vista previa del PDF */}
+        {/* Panel PDF */}
         {hasPdfFiles && (
-          <div className="lg:w-1/2 flex flex-col">
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Vista Previa del Comprobante
-              </h3>
-              
+          <div className="lg:w-2/5">
+            <div className="sticky top-4 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-800">Vista Previa</h3>
               {selectedPdfUrl ? (
-                <div className="h-[600px] lg:h-[700px] border border-gray-300 rounded-lg overflow-hidden bg-white">
+                <div className="h-[600px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm lg:h-[680px]">
                   <iframe
                     src={selectedPdfUrl}
-                    className="w-full h-full"
+                    className="h-full w-full"
                     title={`Comprobante ${selectedPdfType}`}
                   />
                 </div>
               ) : (
-                <div className="h-[600px] lg:h-[700px] border border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
-                  <div className="text-center text-gray-500">
-                    <FileTextIcon className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <p className="text-lg font-medium mb-2">Sin vista previa</p>
-                    <p className="text-sm">
-                      Selecciona un formato de comprobante<br />
-                      para ver la vista previa
-                    </p>
-                  </div>
+                <div className="flex h-[400px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50">
+                  <FileText className="mb-3 h-12 w-12 text-gray-300" />
+                  <p className="text-sm font-medium text-gray-400">Selecciona un comprobante</p>
                 </div>
               )}
             </div>

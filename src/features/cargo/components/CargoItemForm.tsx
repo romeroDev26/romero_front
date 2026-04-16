@@ -1,6 +1,6 @@
 // src/features/cargo/components/CargoItemForm.tsx
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import Select from 'react-select';
@@ -37,6 +37,7 @@ const UNIT_OF_MEASURE_OPTIONS = [
 export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose, existingItem, defaultRecipient }) => {
   const { data: allServices = [], isLoading: isLoadingServices } = useProductsServicesData({ is_active: true });
   const { queryDni, isQueryingDni, queryRuc, isQueryingRuc } = useSunatData();
+  const cargoServicePrefillAppliedRef = useRef(false);
 
   const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
@@ -63,17 +64,27 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
   const isFormLocked = !selectedProduct; // true mientras no se seleccione un servicio
 
   const cargoServices = useMemo(() => {
-    // Si no hay servicios, devolvemos un array vacío
     if (!allServices || allServices.length === 0) {
       return [];
     }
-    
-    // CORRECCIÓN: Hacemos el filtro más flexible.
-    // Buscamos servicios cuya categoría INCLUYA las palabras "ENCOMIENDA" o "CARGA".
-    // Esto es más robusto a variaciones como "ENCOMIENDA_PEQUENA", "CARGA_GENERAL", etc.
-    return allServices.filter(service => {
+
+    const filtered = allServices.filter(service => {
       const category = service.service_category?.toUpperCase() || '';
       return category.includes('ENCOMIENDA') || category.includes('CARGA');
+    });
+
+    // Encomienda primero (servicio "uno" en la lista corta), luego carga; mismo criterio por id
+    const rank = (service: (typeof filtered)[0]) => {
+      const c = service.service_category?.toUpperCase() || '';
+      if (c.includes('ENCOMIENDA')) return 0;
+      if (c.includes('CARGA')) return 1;
+      return 2;
+    };
+
+    return [...filtered].sort((a, b) => {
+      const d = rank(a) - rank(b);
+      if (d !== 0) return d;
+      return (a.id ?? 0) - (b.id ?? 0);
     });
   }, [allServices]);
 
@@ -86,6 +97,20 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
       }
     }
   }, [selectedProduct, setValue, existingItem]);
+
+  // Nuevo ítem: preseleccionar el primer servicio listado (encomienda antes que carga). Una sola vez por montaje.
+  useEffect(() => {
+    if (existingItem) {
+      cargoServicePrefillAppliedRef.current = false;
+      return;
+    }
+    if (cargoServices.length === 0) return;
+    if (cargoServicePrefillAppliedRef.current) return;
+    const first = cargoServices[0];
+    setValue('product', first);
+    setValue('description', first.name);
+    cargoServicePrefillAppliedRef.current = true;
+  }, [existingItem, cargoServices, setValue]);
 
   const handleFormSubmit = (data: FormValues) => {
     if (!data.product) {

@@ -82,6 +82,13 @@ const ReceivablesPage: React.FC = () => {
     updateFilters({ start_date: null, end_date: null });
   };
 
+  /** Limpia filtros del hook y el rango local del calendario (estaban desincronizados). */
+  const handleClearAllFilters = () => {
+    clearFilters();
+    setDateRange([null, null]);
+    setShowDatePicker(false);
+  };
+
   const clearStatusFilter = () => {
     updateFilters({ payment_status: null });
   };
@@ -269,7 +276,7 @@ const ReceivablesPage: React.FC = () => {
               <>
                 <div className="h-4 w-px bg-gray-200 sm:h-5" />
                 <button
-                  onClick={clearFilters}
+                  onClick={handleClearAllFilters}
                   className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 transition-colors sm:px-3 sm:py-1.5"
                 >
                   <X className="h-3.5 w-3.5" />

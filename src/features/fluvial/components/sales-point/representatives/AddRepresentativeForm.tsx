@@ -334,13 +334,13 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
 
         <div>
           <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[#62625b]">
-            Descripción por ítem <span className="text-gray-400">(opcional)</span>
+            Descripción por ítem <span className="font-normal text-red-600">(opcional)</span>
           </label>
           <textarea
             value={formData.item_description}
             onChange={(e) => setFormData(prev => ({ ...prev, item_description: e.target.value }))}
             placeholder="Ej. Pasaje Iquitos-Nauta - PASAJERO: NOMBRE"
-            className="w-full resize-none rounded-lg border border-[#d6d6d1] bg-white p-2 text-sm text-[#211922] focus:border-[#435ee5] focus:outline-none focus:ring-2 focus:ring-[#435ee5]/20"
+            className="w-full resize-none rounded-lg border-2 border-red-300 bg-white p-2 text-sm text-[#211922] placeholder:text-gray-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
             rows={2}
             maxLength={REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS}
           />

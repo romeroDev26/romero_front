@@ -1,7 +1,7 @@
 // src/features/accounting/credit-notes/pages/CreditNoteDetailPage.tsx
 
-import React, { useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeftIcon,
   DocumentArrowDownIcon,
@@ -15,18 +15,47 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { toast } from 'react-toastify';
-import { useCreditNote, useCreditNoteSunatStatus } from '../hooks/useCreditNotes';
+import {
+  useCreditNote,
+  useCreditNoteSunatStatus,
+  useGenerateCreditNotePdf,
+} from '../hooks/useCreditNotes';
+
+type PdfFormatTab = 'ticket80mm' | 'a4';
 
 export const CreditNoteDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4'>('ticket80mm');
+  const [ncPdfTab, setNcPdfTab] = useState<PdfFormatTab>('ticket80mm');
+  const [affectedPdfTab, setAffectedPdfTab] = useState<PdfFormatTab>('ticket80mm');
   const [showPdfError, setShowPdfError] = useState(false);
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   
   const creditNoteId = id ? parseInt(id, 10) : null;
-  const { data: creditNote, isLoading } = useCreditNote(creditNoteId);
+  const { data: creditNote, isLoading, dataUpdatedAt } = useCreditNote(creditNoteId);
   const { data: sunatStatus, isLoading: isLoadingStatus } = useCreditNoteSunatStatus(creditNoteId);
+  const { mutate: generateCreditNotePdf, isPending: isGeneratingPdf } = useGenerateCreditNotePdf();
+
+  useEffect(() => {
+    if (!creditNote) return;
+    const t = Boolean(creditNote.pdf_ticket_file_path?.trim());
+    const a4 = Boolean(creditNote.pdf_a4_file_path?.trim());
+    if (t && !a4) setNcPdfTab('ticket80mm');
+    else if (!t && a4) setNcPdfTab('a4');
+  }, [creditNote?.pdf_ticket_file_path, creditNote?.pdf_a4_file_path]);
+
+  useEffect(() => {
+    if (!creditNote) return;
+    const inv = (creditNote as any).affected_invoice;
+    if (!inv) return;
+    const t = Boolean(inv.pdf_ticket_file_path?.trim());
+    const a4 = Boolean(inv.pdf_a4_file_path?.trim());
+    if (t && !a4) setAffectedPdfTab('ticket80mm');
+    else if (!t && a4) setAffectedPdfTab('a4');
+  }, [
+    (creditNote as any)?.affected_invoice?.pdf_ticket_file_path,
+    (creditNote as any)?.affected_invoice?.pdf_a4_file_path,
+  ]);
 
   const getSunatStatusIcon = (status: string) => {
     switch (status) {
@@ -128,7 +157,7 @@ export const CreditNoteDetailPage: React.FC = () => {
         }
       } catch (error) {
         console.warn('Error al imprimir desde iframe:', error);
-        const pdfUrl = activeTab === 'ticket80mm' ? creditNote?.pdf_ticket_file_path : creditNote?.pdf_a4_file_path;
+        const pdfUrl = ncPdfTab === 'ticket80mm' ? creditNote?.pdf_ticket_file_path : creditNote?.pdf_a4_file_path;
         const printWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');
         if (printWindow) {
           printWindow.onload = () => {
@@ -148,8 +177,8 @@ export const CreditNoteDetailPage: React.FC = () => {
   };
 
   const handleDownload = () => {
-    const pdfUrl = activeTab === 'ticket80mm' ? creditNote?.pdf_ticket_file_path : creditNote?.pdf_a4_file_path;
-    const fileName = activeTab === 'ticket80mm' 
+    const pdfUrl = ncPdfTab === 'ticket80mm' ? creditNote?.pdf_ticket_file_path : creditNote?.pdf_a4_file_path;
+    const fileName = ncPdfTab === 'ticket80mm' 
       ? `nc-ticket-${creditNote?.series}-${String(creditNote?.number).padStart(8, '0')}.pdf`
       : `nc-a4-${creditNote?.series}-${String(creditNote?.number).padStart(8, '0')}.pdf`;
     
@@ -162,8 +191,15 @@ export const CreditNoteDetailPage: React.FC = () => {
       document.body.removeChild(link);
       toast.success('PDF descargado correctamente');
     } else {
-      toast.error(`No hay PDF ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} disponible para descargar`);
+      toast.error(`No hay PDF ${ncPdfTab === 'ticket80mm' ? '80mm' : 'A4'} disponible para descargar`);
     }
+  };
+
+  const handleGenerateOrRegenerateCurrentPdf = () => {
+    if (creditNoteId == null) return;
+    setShowPdfError(false);
+    const size = ncPdfTab === 'ticket80mm' ? '80mm' : 'a4';
+    generateCreditNotePdf({ id: creditNoteId, size });
   };
 
   if (isLoading) {
@@ -188,309 +224,299 @@ export const CreditNoteDetailPage: React.FC = () => {
     );
   }
 
+  const hasNcTicket = Boolean(creditNote.pdf_ticket_file_path?.trim());
+  const hasNcA4 = Boolean(creditNote.pdf_a4_file_path?.trim());
+  const ncPdfSize: '80mm' | 'a4' = ncPdfTab === 'ticket80mm' ? '80mm' : 'a4';
+  const hasPdfForCurrentNcTab = ncPdfTab === 'ticket80mm' ? hasNcTicket : hasNcA4;
+  const pdfCacheBuster = `${creditNote.updated_at ? new Date(creditNote.updated_at).getTime() : 0}_${dataUpdatedAt}`;
+  const ncPdfBase =
+    ncPdfTab === 'ticket80mm' ? creditNote.pdf_ticket_file_path : creditNote.pdf_a4_file_path;
+  const ncPdfSrc = ncPdfBase ? `${ncPdfBase}?v=${pdfCacheBuster}` : '';
+
+  const clientName = creditNote.client?.name || (creditNote as any).client_name || '—';
+  const clientDoc = creditNote.client?.doc_number || (creditNote as any).client_document;
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      {/* Cabecera */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3 min-w-0">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/accounting/credit-notes')}
-              className="mr-4"
+              className="shrink-0"
             >
               <ArrowLeftIcon className="h-4 w-4" />
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Nota de Crédito {creditNote.series}-{String(creditNote.number).padStart(8, '0')}
+            <div className="min-w-0">
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Nota de crédito electrónica</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+                {creditNote.series}-{String(creditNote.number).padStart(8, '0')}
               </h1>
-                <p className="text-gray-600 mt-1">
-                Emitida el {formatDate(creditNote.issue_date)} • Cliente: {creditNote.client?.name || (creditNote as any).client_name || 'N/A'}
+              <p className="text-sm text-slate-600 mt-1 truncate" title={clientName}>
+                {formatDate(creditNote.issue_date)} · {clientName}
               </p>
-              <div className="flex items-center mt-2">
-                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getSunatStatusColor(resolvedSunatStatus)}`}>
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getSunatStatusColor(resolvedSunatStatus)}`}>
                   {getSunatStatusIcon(resolvedSunatStatus)}
-                  <span className="ml-2">
-                    {resolvedSunatStatus === 'ACCEPTED' ? 'Aceptado por SUNAT' :
-                     resolvedSunatStatus === 'REJECTED' ? 'Rechazado por SUNAT' :
-                     resolvedSunatStatus === 'SENT' ? 'Enviado a SUNAT' :
-                     resolvedSunatStatus === 'PENDING' ? 'Pendiente de envío' : 'Estado desconocido'}
+                  <span className="ml-1.5">
+                    {resolvedSunatStatus === 'ACCEPTED' ? 'Aceptada SUNAT' :
+                     resolvedSunatStatus === 'REJECTED' ? 'Rechazada' :
+                     resolvedSunatStatus === 'SENT' ? 'Enviada' :
+                     resolvedSunatStatus === 'PENDING' ? 'Pendiente' : 'Sin estado'}
                   </span>
                 </div>
-                <span className="ml-4 text-sm text-gray-500">
-                  Total: {formatCurrency(creditNote.total_payable)}
+                <span className="text-sm font-semibold text-slate-800">
+                  Total {formatCurrency(creditNote.total_payable)}
                 </span>
               </div>
             </div>
           </div>
-          <div className="flex space-x-3">
-            {creditNote.pdf_a4_file_path && (
-              <a
-                href={creditNote.pdf_a4_file_path}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="outline">
-                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                  PDF A4
-                </Button>
-              </a>
-            )}
-            {creditNote.pdf_ticket_file_path && (
-              <a
-                href={creditNote.pdf_ticket_file_path}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="outline">
-                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
-                  PDF Ticket
-                </Button>
-              </a>
-            )}
-          </div>
         </div>
       </div>
 
-      {/* Vista previa del PDF */}
-      {(creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-          <div className="border-b border-gray-200">
-            <div className="px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center space-x-2 mb-2 md:mb-0">
-                  <DocumentArrowDownIcon className="h-5 w-5 text-blue-600" />
-                  <h2 className="font-semibold text-gray-900">Vista Previa de Nota de Crédito</h2>
-                </div>
-                <div className="text-sm text-gray-500">
-                  Cliente: {creditNote.client?.name || (creditNote as any).client_name || 'N/A'}
-                </div>
-              </div>
+      {/* Comprobante PDF: un formato por llamada al backend */}
+      <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">Comprobante PDF</h2>
+              <p className="text-sm text-slate-500 mt-0.5">
+                Elige el formato y genera o regenera únicamente ese PDF (una petición por tamaño).
+              </p>
             </div>
-
-            {/* Tabs para seleccionar formato */}
-            {creditNote.pdf_ticket_file_path && creditNote.pdf_a4_file_path && (
-              <div className="px-6 pt-4">
-                <div className="flex border-b border-gray-200">
-                  <button
-                    onClick={() => {
-                      setActiveTab('ticket80mm');
-                      setShowPdfError(false);
-                    }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
-                      activeTab === 'ticket80mm'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Ticket 80mm (Térmico)
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab('a4');
-                      setShowPdfError(false);
-                    }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
-                      activeTab === 'a4'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    Formato A4
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
-
-          {/* Contenedor del PDF */}
-          <div className="relative bg-gray-100">
-            {showPdfError ? (
-              <div className="flex flex-col items-center justify-center py-12 px-4">
-                <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 mb-4" />
-                <p className="text-gray-600 text-center mb-4">
-                  No se pudo cargar el PDF. Puedes descargarlo directamente.
-                </p>
-                <Button onClick={handleDownload} variant="primary">
-                  <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-                  Descargar PDF
-                </Button>
-              </div>
-            ) : (
-              <iframe
-                ref={pdfIframeRef}
-                src={(activeTab === 'ticket80mm' ? creditNote.pdf_ticket_file_path : creditNote.pdf_a4_file_path) || ''}
-                className="w-full"
-                style={{ height: '700px' }}
-                title="Vista previa del PDF"
-                onError={() => setShowPdfError(true)}
-              />
-            )}
-          </div>
-
-          {/* Botones de acción */}
-          <div className="border-t border-gray-200 px-6 py-4 bg-white">
-            <div className="flex flex-wrap gap-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={handlePrint}
-                disabled={showPdfError}
-              >
-                <PrinterIcon className="h-4 w-4 mr-2" />
-                Imprimir
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleDownload}
-              >
-                <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-                Descargar PDF
-              </Button>
-            </div>
+          <div className="mt-4 flex border-b border-slate-200">
+            <button
+              type="button"
+              onClick={() => {
+                setNcPdfTab('ticket80mm');
+                setShowPdfError(false);
+              }}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                ncPdfTab === 'ticket80mm'
+                  ? 'border-b-2 border-blue-600 text-blue-600 -mb-px'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Ticket 80&nbsp;mm
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setNcPdfTab('a4');
+                setShowPdfError(false);
+              }}
+              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+                ncPdfTab === 'a4'
+                  ? 'border-b-2 border-blue-600 text-blue-600 -mb-px'
+                  : 'text-slate-500 hover:text-slate-700'
+              }`}
+            >
+              Formato A4
+            </button>
           </div>
         </div>
-      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Información Principal (reordenado) */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Información de la Empresa */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Empresa</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">RUC</p>
-                <p className="text-gray-900">{creditNote.company?.ruc || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Razón Social</p>
-                <p className="text-gray-900">{creditNote.company?.business_name || 'N/A'}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm font-medium text-gray-500">Dirección</p>
-                <p className="text-gray-900">{creditNote.company?.address || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                <p className="text-gray-900">{creditNote.company?.phone || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Email</p>
-                <p className="text-gray-900">{creditNote.company?.email || 'N/A'}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Información Técnica del Documento (movida) */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información Técnica</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Serie - Número</p>
-                <p className="text-gray-900 font-mono">{creditNote.series}-{String(creditNote.number).padStart(8, '0')}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Tipo de Documento</p>
-                <p className="text-gray-900">Nota de Crédito (07)</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Moneda</p>
-                <p className="text-gray-900">
-                  {creditNote.currency_code === 'PEN' ? 'Soles (PEN)' : creditNote.currency_code || 'PEN'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Versión UBL</p>
-                <p className="text-gray-900">{creditNote.ubl_version || '2.1'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Fecha de Emisión</p>
-                <p className="text-gray-900">{formatDate(creditNote.issue_date)}</p>
-              </div>
-              {(creditNote as any).issue_time && (
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Hora de Emisión</p>
-                  <p className="text-gray-900">{(creditNote as any).issue_time}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-sm font-medium text-gray-500">Creado por</p>
-                <p className="text-gray-900 text-xs font-mono">{creditNote.created_by || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Fecha de Creación</p>
-                <p className="text-gray-900 text-xs">
-                  {formatDateTime(creditNote.created_at)}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Última Actualización</p>
-                <p className="text-gray-900 text-xs">
-                  {formatDateTime(creditNote.updated_at)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Motivo de la Nota de Crédito (movido) */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Motivo de la Nota de Crédito</h2>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-sm font-medium text-gray-500 mb-1">
-                Código: {creditNote.credit_note_type_code || 'N/A'}
+        <div className="relative bg-slate-100">
+          {!hasPdfForCurrentNcTab ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <DocumentArrowDownIcon className="h-10 w-10 text-slate-400 mb-3" />
+              <p className="text-slate-600 text-center text-sm max-w-md mb-4">
+                No hay PDF <strong>{ncPdfSize === '80mm' ? 'ticket 80 mm' : 'A4'}</strong> para esta nota. Genera únicamente este formato.
               </p>
-              <p className="text-gray-900">{creditNote.reason || 'Sin motivo especificado'}</p>
+              <Button
+                variant="primary"
+                onClick={handleGenerateOrRegenerateCurrentPdf}
+                isLoading={isGeneratingPdf}
+                disabled={creditNoteId == null}
+              >
+                <ArrowPathIcon className="h-4 w-4 mr-2" />
+                Generar PDF {ncPdfSize === '80mm' ? '80 mm' : 'A4'}
+              </Button>
             </div>
+          ) : showPdfError ? (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <ExclamationTriangleIcon className="h-12 w-12 text-amber-500 mb-4" />
+              <p className="text-slate-600 text-center text-sm mb-4">
+                No se pudo mostrar el PDF en el navegador. Descárgalo o regenera este formato.
+              </p>
+              <div className="flex flex-wrap gap-2 justify-center">
+                <Button onClick={handleDownload} variant="primary">
+                  <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                  Descargar
+                </Button>
+                <Button variant="outline" onClick={handleGenerateOrRegenerateCurrentPdf} isLoading={isGeneratingPdf}>
+                  <ArrowPathIcon className="h-4 w-4 mr-2" />
+                  Regenerar {ncPdfSize === '80mm' ? '80 mm' : 'A4'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <iframe
+              ref={pdfIframeRef}
+              src={ncPdfSrc}
+              className="w-full min-h-[520px] h-[62vh] max-h-[760px]"
+              title="Vista previa del PDF de la nota de crédito"
+              onError={() => setShowPdfError(true)}
+            />
+          )}
+        </div>
+
+        {hasPdfForCurrentNcTab && (
+          <div className="border-t border-slate-100 px-5 py-3 sm:px-6 bg-white flex flex-wrap gap-2 justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateOrRegenerateCurrentPdf}
+              isLoading={isGeneratingPdf}
+            >
+              <ArrowPathIcon className="h-4 w-4 mr-2" />
+              Regenerar {ncPdfSize === '80mm' ? '80 mm' : 'A4'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint} disabled={showPdfError}>
+              <PrinterIcon className="h-4 w-4 mr-2" />
+              Imprimir
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleDownload}>
+              <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+              Descargar
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6">
+        <div className="lg:col-span-2 space-y-5">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Emisor</h2>
+            <p className="text-sm text-slate-800">
+              <span className="text-slate-500">RUC</span>{' '}
+              <span className="font-medium tabular-nums">{creditNote.company?.ruc || '—'}</span>
+              <span className="text-slate-300 mx-2">·</span>
+              <span>{creditNote.company?.business_name || '—'}</span>
+            </p>
+            {(creditNote.company?.address || creditNote.company?.phone || creditNote.company?.email) && (
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                {[creditNote.company?.address, creditNote.company?.phone, creditNote.company?.email].filter(Boolean).join(' · ')}
+              </p>
+            )}
+            <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <span className="text-slate-400 block mb-0.5">Serie-número</span>
+                <span className="font-mono text-slate-800">{creditNote.series}-{String(creditNote.number).padStart(8, '0')}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block mb-0.5">Tipo</span>
+                <span className="text-slate-800">NC (07)</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block mb-0.5">Emisión</span>
+                <span className="text-slate-800">{formatDate(creditNote.issue_date)}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block mb-0.5">Moneda · UBL</span>
+                <span className="text-slate-800">{creditNote.currency_code || 'PEN'} · {creditNote.ubl_version || '2.1'}</span>
+              </div>
+            </div>
+            {(creditNote.created_by || creditNote.created_at) && (
+              <p className="text-[11px] text-slate-400 mt-3">
+                {creditNote.created_by && <>Registro: {creditNote.created_by} · </>}
+                {formatDateTime(creditNote.created_at)}
+                {creditNote.updated_at && creditNote.updated_at !== creditNote.created_at && (
+                  <> · Act. {formatDateTime(creditNote.updated_at)}</>
+                )}
+              </p>
+            )}
           </div>
 
-          {/* Documento Afectado (movido) */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Documento Afectado</h2>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Motivo (cat. 09)</h2>
+            <p className="text-xs text-slate-500">Código {creditNote.credit_note_type_code || '—'}</p>
+            <p className="text-sm text-slate-800 mt-1">{creditNote.reason || 'Sin motivo indicado'}</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Tipo de Documento</p>
-                <p className="text-gray-900">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">Documento afectado</h2>
+                <p className="text-sm font-medium text-slate-900 mt-1">
                   {creditNote.affected_document_type_code === '01' ? 'Factura' :
-                   creditNote.affected_document_type_code === '03' ? 'Boleta' : 'Otro'}
+                   creditNote.affected_document_type_code === '03' ? 'Boleta' : 'Documento'}{' '}
+                  <span className="font-mono text-slate-700">{creditNote.affected_document_series_number || '—'}</span>
                 </p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Número de Documento</p>
-                <p className="text-gray-900">{creditNote.affected_document_series_number || 'N/A'}</p>
-              </div>
+              {(creditNote as any).affected_invoice?.id && (
+                <Link
+                  to={`/accounting/invoices/${(creditNote as any).affected_invoice.id}`}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-800 shrink-0"
+                >
+                  Abrir en contabilidad →
+                </Link>
+              )}
             </div>
-            
-            {/* Información detallada de la factura afectada */}
+
             {(creditNote as any).affected_invoice && (
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h3 className="text-md font-semibold text-gray-800 mb-4">Detalles del Documento Afectado</h3>
-                
-                {/* Preview de PDFs de la factura afectada */}
-                {((creditNote as any).affected_invoice.pdf_ticket_file_path || (creditNote as any).affected_invoice.pdf_a4_file_path) && (
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-medium text-gray-700">Vista Previa del Documento</h4>
-                      <div className="flex gap-2">
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+                  <span>
+                    Emisión{' '}
+                    <span className="font-medium text-slate-800">
+                      {formatDate((creditNote as any).affected_invoice.issue_date)}
+                    </span>
+                  </span>
+                  <span>
+                    Total doc.{' '}
+                    <span className="font-semibold text-slate-900">
+                      {formatCurrency((creditNote as any).affected_invoice.total_payable || '0')}
+                    </span>
+                  </span>
+                  <span className="inline-flex items-center gap-2">
+                    SUNAT
+                    <span
+                      className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                        (creditNote as any).affected_invoice.sunat_status === 'ACCEPTED'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : (creditNote as any).affected_invoice.sunat_status === 'REJECTED'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {(creditNote as any).affected_invoice.sunat_status || '—'}
+                    </span>
+                  </span>
+                </div>
+
+                {((creditNote as any).affected_invoice.pdf_ticket_file_path ||
+                  (creditNote as any).affected_invoice.pdf_a4_file_path) && (
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-xs font-medium text-slate-500">Vista previa del documento original</span>
+                      <div className="flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
                         {(creditNote as any).affected_invoice.pdf_ticket_file_path && (
                           <button
-                            onClick={() => setActiveTab('ticket80mm')}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                              activeTab === 'ticket80mm'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            type="button"
+                            onClick={() => setAffectedPdfTab('ticket80mm')}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                              affectedPdfTab === 'ticket80mm'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
                             }`}
                           >
-                            Ticket
+                            80&nbsp;mm
                           </button>
                         )}
                         {(creditNote as any).affected_invoice.pdf_a4_file_path && (
                           <button
-                            onClick={() => setActiveTab('a4')}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                              activeTab === 'a4'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            type="button"
+                            onClick={() => setAffectedPdfTab('a4')}
+                            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                              affectedPdfTab === 'a4'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
                             }`}
                           >
                             A4
@@ -498,105 +524,26 @@ export const CreditNoteDetailPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-                    <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+                    <div className="rounded-lg border border-slate-200 overflow-hidden bg-slate-100">
                       <iframe
-                        src={(activeTab === 'ticket80mm' ? (creditNote as any).affected_invoice.pdf_ticket_file_path : (creditNote as any).affected_invoice.pdf_a4_file_path) || ''}
-                        className="w-full"
-                        style={{ height: '500px' }}
-                        title="Vista previa del documento afectado"
+                        src={
+                          (affectedPdfTab === 'ticket80mm'
+                            ? (creditNote as any).affected_invoice.pdf_ticket_file_path
+                            : (creditNote as any).affected_invoice.pdf_a4_file_path) || ''
+                        }
+                        className="w-full h-80 sm:h-96"
+                        title="Documento afectado"
                       />
                     </div>
                   </div>
                 )}
-                
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Fecha de Emisión</p>
-                    <p className="text-gray-900 text-sm">{formatDate((creditNote as any).affected_invoice.issue_date)}</p>
-                  </div>
-                  {(creditNote as any).affected_invoice.issue_time && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Hora de Emisión</p>
-                      <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.issue_time}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Estado SUNAT</p>
-                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      (creditNote as any).affected_invoice.sunat_status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
-                      (creditNote as any).affected_invoice.sunat_status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {(creditNote as any).affected_invoice.sunat_status || 'N/A'}
-                    </div>
-                  </div>
-                  {(creditNote as any).affected_invoice.business_status && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Estado de Negocio</p>
-                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        (creditNote as any).affected_invoice.business_status === 'PAID' ? 'bg-green-100 text-green-800' :
-                        (creditNote as any).affected_invoice.business_status === 'CANCELLED' ? 'bg-red-100 text-red-800' :
-                        (creditNote as any).affected_invoice.business_status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {(creditNote as any).affected_invoice.business_status}
-                      </div>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Tipo de Operación</p>
-                    <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.operation_type_code || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Método de Pago</p>
-                    <p className="text-gray-900 text-sm">
-                      {(creditNote as any).affected_invoice.payment_method_code === 'EFE' ? 'Efectivo' :
-                       (creditNote as any).affected_invoice.payment_method_code === 'TRA' ? 'Transferencia' :
-                       (creditNote as any).affected_invoice.payment_method_code || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Tipo de Venta</p>
-                    <p className="text-gray-900 text-sm">
-                      {(creditNote as any).affected_invoice.is_credit_sale ? 'Crédito' : 'Contado'}
-                    </p>
-                  </div>
-                  {(creditNote as any).affected_invoice.payment_terms_description && (
-                    <div>
-                      <p className="text-sm font-medium text-gray-500">Términos de Pago</p>
-                      <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.payment_terms_description}</p>
-                    </div>
-                  )}
-                  <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-gray-500">Totales del Documento Afectado</p>
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      <p className="text-xs text-gray-600">Gravado: <span className="font-medium">{formatCurrency((creditNote as any).affected_invoice.total_taxable || '0')}</span></p>
-                      <p className="text-xs text-gray-600">Exonerado: <span className="font-medium">{formatCurrency((creditNote as any).affected_invoice.total_exonerated || '0')}</span></p>
-                      <p className="text-xs text-gray-600">IGV: <span className="font-medium">{formatCurrency((creditNote as any).affected_invoice.total_igv || '0')}</span></p>
-                      <p className="text-xs text-gray-600">Total: <span className="font-semibold text-gray-900">{formatCurrency((creditNote as any).affected_invoice.total_payable || '0')}</span></p>
-                    </div>
-                  </div>
-                  {(creditNote as any).affected_invoice.notes && (
-                    <div className="md:col-span-3">
-                      <p className="text-sm font-medium text-gray-500">Notas</p>
-                      <p className="text-gray-900 text-sm">{(creditNote as any).affected_invoice.notes}</p>
-                    </div>
-                  )}
-                  {(creditNote as any).affected_invoice.sunat_response_description && (
-                    <div className="md:col-span-3">
-                      <p className="text-sm font-medium text-gray-500">Respuesta SUNAT</p>
-                      <p className="text-gray-900 text-xs">{(creditNote as any).affected_invoice.sunat_response_description}</p>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
 
-          {/* Items (movidos) */}
           {creditNote.items && creditNote.items.length > 0 && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Detalle de Items</h2>
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+              <h2 className="text-sm font-semibold text-slate-900 mb-3">Líneas de la nota</h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -653,104 +600,35 @@ export const CreditNoteDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Información del Vendedor */}
-          {(creditNote as any).seller && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Vendedor</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Nombre del Vendedor</p>
-                  <p className="text-gray-900">{(creditNote as any).seller.name || (creditNote as any).seller.full_name || 'N/A'}</p>
-                </div>
-                {(creditNote as any).seller.email && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Email</p>
-                    <p className="text-gray-900">{(creditNote as any).seller.email}</p>
+          {((creditNote as any).seller || (creditNote as any).branch_office) && (
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Punto de venta</h2>
+              <dl className="space-y-2 text-sm">
+                {(creditNote as any).seller && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-slate-500 shrink-0">Vendedor</dt>
+                    <dd className="text-slate-800 text-right">
+                      {(creditNote as any).seller.name || (creditNote as any).seller.full_name || '—'}
+                      {(creditNote as any).seller.code && (
+                        <span className="text-slate-400 font-mono text-xs ml-1">({(creditNote as any).seller.code})</span>
+                      )}
+                    </dd>
                   </div>
                 )}
-                {(creditNote as any).seller.phone && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                    <p className="text-gray-900">{(creditNote as any).seller.phone}</p>
+                {(creditNote as any).branch_office && (
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-slate-500 shrink-0">Sucursal</dt>
+                    <dd className="text-slate-800 text-right">{(creditNote as any).branch_office.name || '—'}</dd>
                   </div>
                 )}
-                {(creditNote as any).seller.code && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Código</p>
-                    <p className="text-gray-900 font-mono text-sm">{(creditNote as any).seller.code}</p>
-                  </div>
-                )}
-              </div>
+              </dl>
             </div>
           )}
-
-          {/* Información de la Sucursal */}
-          {(creditNote as any).branch_office && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Sucursal</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">Nombre de la Sucursal</p>
-                  <p className="text-gray-900">{(creditNote as any).branch_office.name || 'N/A'}</p>
-                </div>
-                {(creditNote as any).branch_office.address && (
-                  <div className="md:col-span-2">
-                    <p className="text-sm font-medium text-gray-500">Dirección</p>
-                    <p className="text-gray-900">{(creditNote as any).branch_office.address}</p>
-                  </div>
-                )}
-                {(creditNote as any).branch_office.phone && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                    <p className="text-gray-900">{(creditNote as any).branch_office.phone}</p>
-                  </div>
-                )}
-                {(creditNote as any).branch_office.code && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Código</p>
-                    <p className="text-gray-900 font-mono text-sm">{(creditNote as any).branch_office.code}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Información del Cliente (movida al final) */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Nombre/Razón Social</p>
-                <p className="text-gray-900">{creditNote.client?.name || (creditNote as any).client_name || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Tipo Documento</p>
-                <p className="text-gray-900">
-                  {creditNote.client?.doc_type === '1' ? 'DNI' :
-                   creditNote.client?.doc_type === '6' ? 'RUC' : 'Otro'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Número Documento</p>
-                <p className="text-gray-900">{creditNote.client?.doc_number || (creditNote as any).client_document || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Teléfono</p>
-                <p className="text-gray-900">{creditNote.client?.phone || 'No especificado'}</p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm font-medium text-gray-500">Email</p>
-                <p className="text-gray-900">{creditNote.client?.email || 'No especificado'}</p>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Panel Lateral */}
-        <div className="space-y-6">
-          {/* Estado SUNAT */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Estado SUNAT</h2>
+        <div className="space-y-5">
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Estado SUNAT</h2>
             
             {isLoadingStatus ? (
               <div className="flex items-center justify-center py-4">
@@ -792,9 +670,26 @@ export const CreditNoteDetailPage: React.FC = () => {
             )}
           </div>
 
-          {/* Totales */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Resumen de Totales</h2>
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Cliente</h2>
+            <p className="text-sm font-medium text-slate-900">{clientName}</p>
+            <p className="text-xs text-slate-500 mt-1 tabular-nums">
+              {creditNote.client?.doc_type === '1'
+                ? 'DNI'
+                : creditNote.client?.doc_type === '6'
+                  ? 'RUC'
+                  : 'Documento'}{' '}
+              {clientDoc || '—'}
+            </p>
+            {(creditNote.client?.phone || creditNote.client?.email) && (
+              <p className="text-xs text-slate-600 mt-2 break-words">
+                {[creditNote.client?.phone, creditNote.client?.email].filter(Boolean).join(' · ')}
+              </p>
+            )}
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Totales</h2>
             <div className="space-y-2">
               {(parseFloat(String(creditNote.total_taxable ?? '0')) > 0) && (
                 <div className="flex justify-between">
@@ -857,52 +752,18 @@ export const CreditNoteDetailPage: React.FC = () => {
           </div>
 
           {/* Archivos Electrónicos con Preview */}
-          {(creditNote.signed_xml_file_path || creditNote.cdr_file_path || creditNote.pdf_file_path || creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Archivos Electrónicos</h2>
-              
-              {/* Preview de PDFs con Tabs */}
-              {(creditNote.pdf_a4_file_path || creditNote.pdf_ticket_file_path) && (
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-medium text-gray-700">Vista Previa</h3>
-                    <div className="flex gap-2">
-                      {creditNote.pdf_ticket_file_path && (
-                        <button
-                          onClick={() => setActiveTab('ticket80mm')}
-                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                            activeTab === 'ticket80mm'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          Ticket
-                        </button>
-                      )}
-                      {creditNote.pdf_a4_file_path && (
-                        <button
-                          onClick={() => setActiveTab('a4')}
-                          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                            activeTab === 'a4'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        >
-                          A4
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
-                    <iframe
-                      src={(activeTab === 'ticket80mm' ? creditNote.pdf_ticket_file_path : creditNote.pdf_a4_file_path) || ''}
-                      className="w-full"
-                      style={{ height: '400px' }}
-                      title="Vista previa del PDF lateral"
-                    />
-                  </div>
-                </div>
-              )}
+          {(creditNote.signed_xml_file_path ||
+            creditNote.cdr_file_path ||
+            creditNote.pdf_file_path ||
+            creditNote.pdf_a4_file_path ||
+            creditNote.pdf_ticket_file_path ||
+            creditNote.qr_code_data ||
+            (creditNote as any).affected_invoice?.qr_code_data) && (
+            <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm p-5">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Archivos y QR</h2>
+              <p className="text-xs text-slate-500 mb-4">
+                Descargas; el PDF de la nota se gestiona en la sección superior.
+              </p>
 
               {/* QR Code de la Factura Afectada */}
               {(creditNote as any).affected_invoice?.qr_code_data && (
@@ -1000,6 +861,7 @@ export const CreditNoteDetailPage: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

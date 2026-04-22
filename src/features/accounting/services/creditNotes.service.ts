@@ -58,6 +58,18 @@ class CreditNotesService {
     return response.data;
   }
 
+  /**
+   * Genera u obtiene el PDF de la nota de crédito (mismo contrato que facturas: id + tamaño).
+   */
+  async generatePdf(id: number, size: '80mm' | 'a4' = 'a4'): Promise<string> {
+    const response = await api.post<string>(
+      `/sunat/credit-notes/${id}/generate-pdf`,
+      null,
+      { params: { size } }
+    );
+    return response.data;
+  }
+
   // Consultar estado SUNAT de una nota de crédito
   async checkSunatStatus(id: number): Promise<SunatStatusResponse> {
     const response = await api.get<SunatStatusResponse>(`/sunat/tickets/documents/credit_note/${id}/status`);

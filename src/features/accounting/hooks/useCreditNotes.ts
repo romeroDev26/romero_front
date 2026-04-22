@@ -107,3 +107,20 @@ export const useRefreshPendingStatuses = () => {
     },
   });
 };
+
+/** Genera u obtiene un solo PDF (80mm o A4) y refresca el detalle. */
+export const useGenerateCreditNotePdf = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, size }: { id: number; size: '80mm' | 'a4' }) =>
+      creditNotesService.generatePdf(id, size),
+    onSuccess: async (_, { id, size }) => {
+      await queryClient.invalidateQueries({ queryKey: ['creditNote', id] });
+      toast.success(size === 'a4' ? 'PDF A4 listo' : 'PDF ticket 80 mm listo');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.detail || 'Error al generar el PDF de la nota de crédito');
+    },
+  });
+};

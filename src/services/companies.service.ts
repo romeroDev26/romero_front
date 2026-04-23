@@ -85,6 +85,18 @@ class CompaniesService {
     });
     return response.data;
   }
+  /**
+   * Obtiene el logo de una empresa como Blob, enrutando el request
+   * a través de nuestro backend para evitar restricciones CORS del CDN.
+   * El backend debe implementar: GET /companies/{id}/logo
+   * que hace proxy de la imagen desde Bunny CDN y la retorna con CORS libre.
+   */
+  async getLogoBlob(id: number): Promise<Blob> {
+    const response = await api.get<Blob>(`${this.basePath}/${id}/logo`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
 }
 
 export const companiesService = new CompaniesService();

@@ -38,7 +38,7 @@ export const generatePassengerManifestPDF = async (
         y: logoY,
         width: logoW,
         height: logoH,
-      }, 1); // companyId=1 → usa /companies/1/logo como proxy (evita CORS de Bunny CDN)
+      });
 
       if (!hasLogo) {
         drawLogoPlaceholder(pdf, logoX, logoY, logoW, logoH);

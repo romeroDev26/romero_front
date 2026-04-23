@@ -4,6 +4,8 @@ import React from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AutoGenerateRemissionGuide } from '../../../../types';
+import { drawLogoInPdf } from '../../../../utils/pdfLogo';
+import { getDocumentCompanyInfo } from '../../../../utils/documentCompanyInfo';
 
 // Tipo para especificar el tipo de guía de remisión
 export type RemissionGuideType = 'transportista' | 'remitente';
@@ -18,19 +20,12 @@ export const generateRemissionGuidePDF = async (
   guideData: AutoGenerateRemissionGuide,
   guideType: RemissionGuideType = 'transportista'
 ): Promise<{ pdf: jsPDF; blob: Blob }> => {
-  // Log detallado para diagnosticar el problema con la URL del logo
-  console.debug('[DEBUG] Datos relacionados con el logo:', {
-    company_logo_url: guideData.company_logo_url,
-    tipoCompanyLogoUrl: typeof guideData.company_logo_url,
-    tieneValor: Boolean(guideData.company_logo_url),
-    esStringValido: typeof guideData.company_logo_url === 'string' && guideData.company_logo_url.trim() !== '',
-    urlExplicita: "https://romero-cdn.b-cdn.net/companies/20602423248/2025/08/logos/logo.png"
-  });
   const pdf = new jsPDF('p', 'mm', 'a4');
   const pageWidth = pdf.internal.pageSize.width; // 210mm
   const pageHeight = pdf.internal.pageSize.height; // 297mm
   const margin = 8; // Margen mínimo optimizado para impresión (8mm)
   let currentY = 12;
+  const company = await getDocumentCompanyInfo();
 
   // ============ HEADER CON LOGO Y DATOS DE LA EMPRESA ============
   // Logo mejorado en el lado izquierdo
@@ -39,58 +34,23 @@ export const generateRemissionGuidePDF = async (
   const logoW = 50;
   const logoH = 25;
   
-  // Ya no usamos loadImageElement, ahora usamos la estrategia directa de ManifestPreviewModal.tsx
-
-  // Implementando la estrategia que funciona en ManifestPreviewModal.tsx
   try {
-    // SOLUCIÓN: Para garantizar que siempre tengamos una URL válida, usaremos
-    // la URL de log.md como respaldo si la URL dinámica falla
-    let logoUrl = guideData.company_logo_url;
-    
-    // Verificamos si la URL es válida, si no, usamos la URL de respaldo
-    if (!logoUrl || typeof logoUrl !== 'string' || logoUrl.trim() === '') {
-      logoUrl = "https://romero-cdn.b-cdn.net/companies/20602423248/2025/08/logos/logo.png";
-      console.debug('URL dinámica inválida, usando URL de respaldo:', logoUrl);
-    } else {
-      console.debug('Usando URL dinámica correcta:', logoUrl);
-    }
-    
-    // Ya tenemos garantizado que logoUrl es válida
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    await new Promise((resolve, reject) => {
-      img.onload = () => {
-        console.debug('Logo cargado exitosamente:', img.width, 'x', img.height);
-        resolve(img);
-      };
-      img.onerror = (e) => {
-        console.error('Error cargando imagen:', e);
-        reject(e);
-      };
-      img.src = logoUrl;
+    const hasLogo = await drawLogoInPdf(pdf, company.logoUrl, {
+      x: logoX,
+      y: logoY,
+      width: logoW,
+      height: logoH,
+      padding: 5,
     });
-      
-    // Calcular proporciones para mantener aspecto
-    const ratio = img.width / img.height;
-    let drawW = logoW - 10; // Reducir para que quepa bien
-    let drawH = drawW / ratio;
-    if (drawH > logoH - 10) {
-      drawH = logoH - 10;
-      drawW = drawH * ratio;
+
+    if (!hasLogo) {
+      throw new Error('No se pudo renderizar el logo');
     }
-    const dx = logoX + (logoW - drawW) / 2;
-    const dy = logoY + (logoH - drawH) / 2;
-    
-    // Añadir la imagen especificando formato PNG explícitamente
-    pdf.addImage(img, 'PNG', dx, dy, drawW, drawH);
-    console.debug('Imagen añadida al PDF correctamente');
   } catch (err) {
-    // En caso de cualquier error, registrar y mostrar texto de fallback
-    console.error('Error cargando o procesando logo:', err);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(11);
     pdf.setTextColor(0, 0, 0);
-    pdf.text(guideData.company_business_name || 'Empresa', logoX + logoW / 2, logoY + logoH / 2 - 2, { align: 'center' });
+    pdf.text(company.businessName, logoX + logoW / 2, logoY + logoH / 2 - 2, { align: 'center' });
     pdf.setFontSize(7);
     const companyType = guideType === 'transportista' ? 'TRANSPORTISTA' : 'REMITENTE';
     pdf.text(`S.A.C. - ${companyType}`, logoX + logoW / 2, logoY + logoH / 2 + 4, { align: 'center' });
@@ -103,27 +63,27 @@ export const generateRemissionGuidePDF = async (
 
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(12);
-  pdf.text(guideData.company_business_name, companyX, companyStartY);
+  pdf.text(company.businessName, companyX, companyStartY);
 
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(9);
   let companyInfoY = companyStartY + 6;
   // Dirección (puede ocupar varias líneas)
-  const addressLines = pdf.splitTextToSize(guideData.company_address || '', companyMaxWidth);
+  const addressLines = pdf.splitTextToSize(company.address, companyMaxWidth);
   addressLines.forEach((line: string) => {
     pdf.text(line, companyX, companyInfoY);
     companyInfoY += 4;
   });
   // RUC
-  pdf.text(`RUC: ${guideData.company_ruc}`, companyX, companyInfoY);
+  pdf.text(`RUC: ${company.ruc}`, companyX, companyInfoY);
   companyInfoY += 5;
   // Teléfono y email si existen
-  if (guideData.company_phone) {
-    pdf.text(`Tel: ${guideData.company_phone}`, companyX, companyInfoY);
+  if (company.phone !== 'N/A') {
+    pdf.text(`Tel: ${company.phone}`, companyX, companyInfoY);
     companyInfoY += 4;
   }
-  if (guideData.company_email) {
-    pdf.text(guideData.company_email, companyX, companyInfoY);
+  if (company.email !== 'N/A') {
+    pdf.text(company.email, companyX, companyInfoY);
     companyInfoY += 4;
   }
 

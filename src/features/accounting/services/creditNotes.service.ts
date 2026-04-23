@@ -2,6 +2,7 @@
 
 import api from '../../../config/api';
 import { CreditNote } from '../../../types';
+import { pdfTasksService, GeneratePdfResponse } from '../../../services/pdfTasks.service';
 import { 
   CreditNoteCreateData, 
   CreditNoteAnnulData,
@@ -59,15 +60,37 @@ class CreditNotesService {
   }
 
   /**
-   * Genera u obtiene el PDF de la nota de crédito (mismo contrato que facturas: id + tamaño).
+   * Genera u obtiene el PDF de la nota de crédito.
+   * Maneja la respuesta inteligente del backend (completed vs uploading + polling).
    */
   async generatePdf(id: number, size: '80mm' | 'a4' = 'a4'): Promise<string> {
-    const response = await api.post<string>(
+    const response = await api.post<GeneratePdfResponse>(
       `/sunat/credit-notes/${id}/generate-pdf`,
       null,
       { params: { size } }
     );
-    return response.data;
+
+    const data = response.data;
+
+    // Respuesta rápida: Bunny terminó dentro del tiempo de espera del backend
+    if (data.status === 'completed' && data.url) {
+      return data.url;
+    }
+
+    // Respuesta lenta: hacer polling desde frontend
+    if (data.task_id) {
+      const url = await pdfTasksService.pollForUrl(data.task_id);
+      if (url) return url;
+    }
+
+    // Fallback: obtener URL directamente de la nota de crédito actualizada
+    const updatedNote = await this.getById(id);
+    const fallbackUrl = size === 'a4'
+      ? (updatedNote as any).pdf_a4_file_path
+      : (updatedNote as any).pdf_ticket_file_path;
+    if (fallbackUrl) return fallbackUrl;
+
+    throw new Error(`No se pudo obtener la URL del PDF ${size} para la NC ${id}`);
   }
 
   // Consultar estado SUNAT de una nota de crédito

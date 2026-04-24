@@ -589,14 +589,14 @@ export const generatePassengerManifestPDF = async (
         5: { halign: "center", cellWidth: adjustedColWidths[5] }, // ASIENTO (sin overflow para mostrar texto completo)
         6: { halign: "center", cellWidth: adjustedColWidths[6] }, // ORIGEN
         7: { halign: "center", cellWidth: adjustedColWidths[7] }, // DESTINO
-        8: { halign: "center", cellWidth: adjustedColWidths[8] }, // TELÃ‰FONO
+        8: { halign: "center", cellWidth: adjustedColWidths[8] }, // TELÉFONO
       };
 
       autoTable(pdf, {
         startY: currentY,
         head: [
           [
-            "NÂ°",
+            "N°",
             "APELLIDOS Y NOMBRES",
             "DOC DE IDENT",
             "NACIONALIDAD",
@@ -604,7 +604,7 @@ export const generatePassengerManifestPDF = async (
             "ASIENTO",
             "ORIGEN",
             "DESTINO",
-            "TELÃ‰FONO",
+            "TELÉFONO",
           ],
         ],
         body: tableData,

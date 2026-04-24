@@ -26,5 +26,20 @@ export default defineConfig({
       'localhost',
       '*.vercel.app'
     ],
+    proxy: {
+      // Proxy para cargar imágenes del CDN de Bunny en desarrollo sin bloqueo CORS.
+      // pdfLogo.ts llama: /__image-proxy?url=<encoded-cdn-url>
+      '/__image-proxy': {
+        target: 'https://romero-cdn-v2.b-cdn.net',
+        changeOrigin: true,
+        rewrite: (path) => {
+          const match = path.match(/[?&]url=([^&]+)/);
+          if (!match) return path;
+          const decoded = decodeURIComponent(match[1]);
+          // Quitar el origen del CDN y dejar solo el path
+          return decoded.replace('https://romero-cdn-v2.b-cdn.net', '');
+        },
+      },
+    },
   }
 });

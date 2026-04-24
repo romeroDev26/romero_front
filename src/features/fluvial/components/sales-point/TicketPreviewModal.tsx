@@ -89,29 +89,17 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       setIsGenerating(true);
       setGenerationSuccess(false);
 
-      // Llamar al backend para generar solo el PDF de 80mm
-      await invoicesService.generatePdf(invoiceId, '80mm');
+      // generatePdf ya maneja la espera inteligente y retorna la URL directamente
+      const url80mm = await invoicesService.generatePdf(invoiceId, '80mm');
 
-      // Obtener la invoice actualizada para extraer la URL del PDF
-      const updatedInvoice = await invoicesService.getById(invoiceId);
-
-      // Extraer URL directa del CDN
-      const url80mm = updatedInvoice.pdf_ticket_file_path;
-
-      if (!url80mm) {
-        throw new Error('PDF generado pero URL no disponible');
-      }
-
-      // Usar URL directa en el iframe
       setPreviewUrl80mm(url80mm);
       setGenerationSuccess(true);
-
       toast.success('Ticket generado exitosamente');
     } catch (error) {
       console.error('Error generando ticket desde el backend:', error);
       toast.error(
-        error instanceof Error 
-          ? error.message 
+        error instanceof Error
+          ? error.message
           : 'Error al generar el ticket. Por favor, intente nuevamente.'
       );
     } finally {
@@ -127,31 +115,18 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       setIsGenerating(true);
       setGenerationSuccess(false);
 
-      // Llamar al backend para generar ambos PDFs en paralelo
-      await invoicesService.generateBothPdfs(invoiceId);
+      // generateBothPdfs llama a generatePdf x2, que ya maneja polling internamente
+      const { url80mm, urlA4 } = await invoicesService.generateBothPdfs(invoiceId);
 
-      // Obtener la invoice actualizada para extraer las URLs de los PDFs
-      const updatedInvoice = await invoicesService.getById(invoiceId);
-
-      // Extraer URLs directas del CDN para usar en iframes (evita problemas de CORS en iframes)
-      const url80mm = updatedInvoice.pdf_ticket_file_path;
-      const urlA4 = updatedInvoice.pdf_a4_file_path;
-
-      if (!url80mm || !urlA4) {
-        throw new Error('PDFs generados pero URLs no disponibles');
-      }
-
-      // Usar URLs directas en los iframes (los iframes no tienen restricción CORS para visualización)
       setPreviewUrl80mm(url80mm);
       setPreviewUrlA4(urlA4);
       setGenerationSuccess(true);
-
       toast.success('Tickets generados exitosamente');
     } catch (error) {
       console.error('Error generando tickets desde el backend:', error);
       toast.error(
-        error instanceof Error 
-          ? error.message 
+        error instanceof Error
+          ? error.message
           : 'Error al generar los tickets. Por favor, intente nuevamente.'
       );
     } finally {
@@ -351,12 +326,12 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                   <p className="text-gray-600">
                     {activeFormat === 'sticker100x100'
                       ? 'Generando sticker 100x100...'
-                      : 'Generando tickets en el backend...'}
+                      : 'Generando tickets...'}
                   </p>
                   <p className="text-sm text-gray-500">
                     {activeFormat === 'sticker100x100'
-                      ? 'El backend está creando el sticker y almacenándolo en la nube'
-                      : 'El backend está creando los PDFs (80mm y A4) y almacenándolos en la nube'}
+                      ? 'Creando el sticker y subiendo a la nube...'
+                      : 'Generando PDFs (80mm y A4) y subiendo a la nube. Esto puede tomar unos segundos...'}
                   </p>
                 </div>
               </div>

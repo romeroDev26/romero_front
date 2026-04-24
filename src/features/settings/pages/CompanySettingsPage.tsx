@@ -51,6 +51,7 @@ export const CompanySettingsPage: React.FC = () => {
 
   const [showSunatPassword, setShowSunatPassword] = useState(false);
   const [showCertPassword, setShowCertPassword] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const [company, setCompany] = useState<any>(null);
   const { data, isLoading, error } = useQuery({
@@ -149,9 +150,14 @@ export const CompanySettingsPage: React.FC = () => {
 
   const handleLogoUpload = async (file: File | undefined) => {
     if (!file) return;
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Solo se permiten archivos JPG, PNG o SVG');
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp'];
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'svg', 'webp'];
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+    const isValidByType = allowedTypes.includes(file.type);
+    const isValidByExtension = allowedExtensions.includes(fileExtension);
+
+    if (!isValidByType && !isValidByExtension) {
+      toast.error('Solo se permiten archivos JPG, PNG, SVG o WEBP');
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -159,12 +165,15 @@ export const CompanySettingsPage: React.FC = () => {
       return;
     }
     try {
+      setIsUploadingLogo(true);
       const result = await companiesService.uploadLogo(COMPANY_ID, file, { ...getValues() });
       setCompany((prev: any) => prev ? { ...prev, logo_url: result.logo_url } : prev);
       toast.success('Logo actualizado');
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
     } catch (err) {
       toast.error('Error al subir logo');
+    } finally {
+      setIsUploadingLogo(false);
     }
   };
 
@@ -303,7 +312,7 @@ export const CompanySettingsPage: React.FC = () => {
             <div className="p-6 space-y-6 flex-1">
               {/* Logo */}
               <div className="flex items-center gap-6">
-                <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
+                <div className="relative w-20 h-20 shrink-0 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden">
                   {company?.logo_url ? (
                     <img src={company.logo_url} alt="Logo" className="w-full h-full object-contain" />
                   ) : (
@@ -311,22 +320,28 @@ export const CompanySettingsPage: React.FC = () => {
                       <PhotoIcon className="h-8 w-8 text-primary" />
                     </div>
                   )}
+                  {isUploadingLogo && (
+                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                      <Spinner size="sm" />
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-bold">Logo de la Empresa</p>
-                  <p className="text-xs text-slate-500">Recomendado: SVG o PNG (400×400 px)</p>
+                  <p className="text-xs text-slate-500">Recomendado: SVG, PNG o WEBP (400×400 px)</p>
                   <button
                     type="button"
                     onClick={() => logoInputRef.current?.click()}
-                    className="text-xs bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-50 transition-colors"
+                    disabled={isUploadingLogo}
+                    className="text-xs bg-white border border-slate-300 px-3 py-1.5 rounded-lg font-bold hover:bg-slate-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Cambiar Logo
+                    {isUploadingLogo ? 'Subiendo logo...' : 'Cambiar Logo'}
                   </button>
                   <input
                     type="file"
                     ref={logoInputRef}
                     className="hidden"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,.svg,.webp,image/jpeg,image/png,image/svg+xml,image/webp"
                     onChange={e => handleLogoUpload(e.target.files?.[0])}
                   />
                 </div>

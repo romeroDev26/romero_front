@@ -13,7 +13,7 @@ import {
 import { Button } from '../../../components/common/Button';
 import { Manifest } from '../types/manifest.types';
 import { manifestService } from '../services/manifest.service';
-import { generatePassengerManifestPDF } from './ManifestPDFGenerator';
+import { generatePassengerManifestPDF } from '../services/manifestPdfGeneration.service';
 import { toast } from 'react-toastify';
 
 interface ManifestDetailsProps {
@@ -370,7 +370,7 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
               onClick={async () => {
                 // Descargar PDF generado localmente por el frontend (usa la nueva plantilla)
                 try {
-                  const { pdf } = generatePassengerManifestPDF(manifest);
+                  const { pdf } = await generatePassengerManifestPDF(manifest);
                   const blob = new Blob([pdf.output('blob')], { type: 'application/pdf' });
                   const url = window.URL.createObjectURL(blob);
                   const link = document.createElement('a');

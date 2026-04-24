@@ -6,6 +6,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { quotationPdfUploadService } from '../services/quotationPdfUpload.service';
 import { Quotation } from '../types';
+import { drawLogoInPdf } from '../../../utils/pdfLogo';
+import { getDocumentCompanyInfo } from '../../../utils/documentCompanyInfo';
 
 export interface QuotationPDFResult {
   success: boolean;
@@ -25,72 +27,67 @@ const generateQuotationPDFWithLogo = async (quotationData: Quotation): Promise<{
   const pageWidth = pdf.internal.pageSize.width;
   const margin = 15;
   let currentY = 20;
+  const company = await getDocumentCompanyInfo();
 
   // ============ HEADER CON LOGO EN SU PROPIO ESPACIO ============
-  if (quotationData.company) {
-    const company = quotationData.company;
-    
-    // Intentar cargar el logo si existe
-    if (company.logo_url) {
-      try {
-        const logoImg = new Image();
-        logoImg.crossOrigin = 'anonymous';
-        
-        await new Promise((logoResolve, logoReject) => {
-          logoImg.onload = () => logoResolve(logoImg);
-          logoImg.onerror = () => logoReject('Error loading logo');
-          logoImg.src = company.logo_url;
-        });
-        
-        // Logo en su propio espacio (lado izquierdo)
-        const logoWidth = 30;
-        const logoHeight = 15;
-        pdf.addImage(logoImg, 'PNG', margin, currentY - 5, logoWidth, logoHeight);
-        
-        // Contenido de empresa ajustado al espacio restante (lado derecho)
-        const contentStartX = margin + logoWidth + 10; // Más separación
-        const availableWidth = pageWidth - contentStartX - margin;
-        
-        // Nombre de la empresa en el espacio disponible
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text(company.business_name, contentStartX, currentY);
-        
-        // Información de la empresa en el espacio disponible
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        const infoText = `RUC: ${company.ruc} | ${company.address} | Tel: ${company.phone}`;
-        const infoLines = pdf.splitTextToSize(infoText, availableWidth);
-        pdf.text(infoLines, contentStartX, currentY + 6);
-        
-        currentY += Math.max(logoHeight, infoLines.length * 4 + 8);
-        
-      } catch (logoError) {
-        // Fallback sin logo
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.text(company.business_name, pageWidth / 2, currentY, { align: 'center' });
-        
-        currentY += 6;
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(8);
-        pdf.text(`RUC: ${company.ruc} | ${company.address} | Tel: ${company.phone}`, pageWidth / 2, currentY, { align: 'center' });
-        
-        currentY += 10;
+  if (company.logoUrl) {
+    try {
+      // Logo en su propio espacio (lado izquierdo)
+      const logoWidth = 30;
+      const logoHeight = 15;
+      const hasLogo = await drawLogoInPdf(pdf, company.logoUrl, {
+        x: margin,
+        y: currentY - 5,
+        width: logoWidth,
+        height: logoHeight,
+      });
+
+      if (!hasLogo) {
+        throw new Error('No se pudo renderizar el logo');
       }
-    } else {
-      // Sin logo, centrado
+
+      // Contenido de empresa ajustado al espacio restante (lado derecho)
+      const contentStartX = margin + logoWidth + 10; // Más separación
+      const availableWidth = pageWidth - contentStartX - margin;
+
+      // Nombre de la empresa en el espacio disponible
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(12);
-      pdf.text(company.business_name, pageWidth / 2, currentY, { align: 'center' });
-      
+      pdf.text(company.businessName, contentStartX, currentY);
+
+      // Información de la empresa en el espacio disponible
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      const infoText = `RUC: ${company.ruc} | ${company.address} | Tel: ${company.phone}`;
+      const infoLines = pdf.splitTextToSize(infoText, availableWidth);
+      pdf.text(infoLines, contentStartX, currentY + 6);
+
+      currentY += Math.max(logoHeight, infoLines.length * 4 + 8);
+    } catch (logoError) {
+      // Fallback sin logo
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.text(company.businessName, pageWidth / 2, currentY, { align: 'center' });
+
       currentY += 6;
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
       pdf.text(`RUC: ${company.ruc} | ${company.address} | Tel: ${company.phone}`, pageWidth / 2, currentY, { align: 'center' });
-      
+
       currentY += 10;
     }
+  } else {
+    // Sin logo, centrado
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(12);
+    pdf.text(company.businessName, pageWidth / 2, currentY, { align: 'center' });
+
+    currentY += 6;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.text(`RUC: ${company.ruc} | ${company.address} | Tel: ${company.phone}`, pageWidth / 2, currentY, { align: 'center' });
+
+    currentY += 10;
   }
 
   // ============ TÍTULO DE LA COTIZACIÓN OPTIMIZADO ============

@@ -1,8 +1,7 @@
-// src/services/invoices.service.ts
-
 import axios from 'axios';
 import api from '../config/api';
 import { Invoice } from '../types';
+import { pdfTasksService, GeneratePdfResponse } from './pdfTasks.service';
 
 /** GET a URLs públicas (CDN) sin cabecera Authorization: evita preflight/CORS innecesarios del cliente `api`. */
 const publicCdnClient = axios.create({
@@ -165,36 +164,55 @@ class InvoicesService {
   }
 
   /**
-   * Genera y obtiene el PDF de una factura desde el backend
-   * @param invoiceId - ID de la factura
-   * @param size - Tamaño del PDF: '80mm', '58mm' o 'a4'
-   * @returns URL del PDF generado (almacenado en el backend)
+   * Genera y obtiene el PDF de una factura desde el backend.
+   * Maneja la respuesta inteligente del backend:
+   * - status: "completed" → URL disponible de inmediato
+   * - status: "uploading" → hace polling hasta obtener la URL (máx. 30s)
+   * @returns URL del PDF generado en el CDN
    */
   async generatePdf(invoiceId: number, size: '80mm' | '58mm' | 'a4' | '100x100' = '80mm'): Promise<string> {
-    const response = await api.post<string>(
+    const response = await api.post<GeneratePdfResponse>(
       `${this.basePath}${invoiceId}/generate-pdf`,
       null,
       {
         params: { size, ...(size === '100x100' ? { force: true } : {}) }
       }
     );
-    return response.data;
+
+    const data = response.data;
+
+    // Respuesta rápida: Bunny terminó dentro del tiempo de espera del backend
+    if (data.status === 'completed' && data.url) {
+      return data.url;
+    }
+
+    // Respuesta lenta: Bunny aún está procesando → hacer polling desde frontend
+    if (data.task_id) {
+      const url = await pdfTasksService.pollForUrl(data.task_id);
+      if (url) return url;
+    }
+
+    // Fallback: obtener la URL directamente desde la invoice actualizada
+    const updatedInvoice = await this.getById(invoiceId);
+    let fallbackUrl: string | null | undefined;
+    switch (size) {
+      case '80mm':    fallbackUrl = updatedInvoice.pdf_ticket_file_path; break;
+      case '58mm':    fallbackUrl = (updatedInvoice as any).pdf_ticket58_file_path; break;
+      case 'a4':      fallbackUrl = updatedInvoice.pdf_a4_file_path; break;
+      case '100x100': fallbackUrl = updatedInvoice.pdf_sticker_100x100_file_path; break;
+    }
+    if (fallbackUrl) return fallbackUrl;
+
+    throw new Error(`No se pudo obtener la URL del PDF ${size} para la factura ${invoiceId}`);
   }
 
   /**
-   * Genera el sticker de encomienda 100x100mm y retorna la URL del PDF
-   * @param invoiceId - ID de la factura de encomienda
-   * @returns URL del PDF sticker almacenado en el CDN
+   * Genera el sticker de encomienda 100x100mm y retorna la URL del PDF.
+   * Maneja la respuesta inteligente (completed vs uploading + polling).
    */
   async generateSticker100x100(invoiceId: number): Promise<string> {
-    const response = await api.post<{ invoice_id: number; size: string; stored_in_field: string; url: string }>(
-      `${this.basePath}${invoiceId}/generate-pdf`,
-      null,
-      {
-        params: { size: '100x100', force: true }
-      }
-    );
-    return response.data.url;
+    // Reutiliza generatePdf que ya maneja el polling
+    return this.generatePdf(invoiceId, '100x100');
   }
 
   /**

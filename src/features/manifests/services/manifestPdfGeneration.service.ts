@@ -239,7 +239,12 @@ export const generatePassengerManifestPDF = async (
       const bottomMargin = 20; // Margen inferior mÃ­nimo
       const minSpaceForGroupHeader = 50; // Espacio mÃ­nimo necesario para tÃ­tulo + al menos 1 fila de tabla
 
-      for (const group of grouped.groups) {
+      // Ordenar grupos por disembarking_stop_order ascendente
+      const sortedGroups = [...grouped.groups].sort(
+        (a: any, b: any) => (a.disembarking_stop_order ?? 0) - (b.disembarking_stop_order ?? 0)
+      );
+
+      for (const group of sortedGroups) {
         // Verificar si hay espacio suficiente para el tÃ­tulo del grupo + header de tabla
         // Si no hay espacio, crear nueva pÃ¡gina
         if (currentY + minSpaceForGroupHeader > pageHeight - bottomMargin) {
@@ -251,13 +256,18 @@ export const generatePassengerManifestPDF = async (
         pdf.setFontSize(10);
         const origin = (group.origin_port_name || "N/A").toString();
         const dest = (group.destination_port_name || "N/A").toString();
-        pdf.text(`${origin} â†’ ${dest}`, pageWidth / 2, currentY, {
+        pdf.text(`${origin} - ${dest}`, pageWidth / 2, currentY, {
           align: "center",
         });
         currentY += 8;
 
-        const tableData = (group.items || []).map((item: any) => {
-          // Formatear contactos: R: (remitente) D: (destinatario) con salto de lÃ­nea
+        // Ordenar ítems del grupo por parcel_number (ascendente)
+        const sortedItems = [...(group.items || [])].sort(
+          (a: any, b: any) => (a.parcel_number ?? 0) - (b.parcel_number ?? 0)
+        );
+
+        const tableData = sortedItems.map((item: any) => {
+          // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
           let contactos = "";
           const remitentePhone = item.remitente_phone && item.remitente_phone.trim() !== "" ? item.remitente_phone : null;
           const destinatarioPhone = item.destinatario_phone && item.destinatario_phone.trim() !== "" ? item.destinatario_phone : null;
@@ -269,17 +279,17 @@ export const generatePassengerManifestPDF = async (
           }
           if (!contactos) contactos = "N/A";
 
-          // Formatear descripciÃ³n: separar por "-" y agregar viÃ±etas
+          // Formatear descripción: separar por "-" y agregar asteriscos (jsPDF helvetica no soporta •)
           let formattedDescription = item.cargo_description || "N/A";
           if (formattedDescription !== "N/A" && formattedDescription.includes("-")) {
-            const items = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
-            if (items.length > 1) {
-              formattedDescription = items.map((i: string) => `â€¢ ${i}`).join("\n");
+            const parts = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+            if (parts.length > 1) {
+              formattedDescription = parts.map((i: string) => `* ${i}`).join("\n");
             }
           }
 
           return [
-            globalItemNumber++, // NumeraciÃ³n continua
+            (item.parcel_number ?? item.item_order ?? globalItemNumber++).toString(), // Nro. de la boleta/factura
             formattedDescription,
             item.remitente_nombre || "N/A",
             item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
@@ -334,8 +344,8 @@ export const generatePassengerManifestPDF = async (
           startY: currentY,
           head: [
             [
-              "NÂ°",
-              "DESCRIPCIÃ“N",
+              "N\u00B0",
+              "DESCRIPCI\u00D3N",
               "REMITENTE",
               "DOC. REM.",
               "DESTINATARIO",
@@ -374,10 +384,10 @@ export const generatePassengerManifestPDF = async (
         currentY = finalY + 16;
       }
     } else if (cargoItems && cargoItems.length > 0) {
-      const tableData = cargoItems
-        .sort((a: any, b: any) => a.item_order - b.item_order)
+      const tableData = [...cargoItems]
+        .sort((a: any, b: any) => (a.item_order ?? 0) - (b.item_order ?? 0))
         .map((item: any, idx: number) => {
-          // Formatear contactos: R: (remitente) D: (destinatario) con salto de lÃ­nea
+          // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
           let contactos = "";
           const remitentePhone = item.remitente_phone && item.remitente_phone.trim() !== "" ? item.remitente_phone : null;
           const destinatarioPhone = item.destinatario_phone && item.destinatario_phone.trim() !== "" ? item.destinatario_phone : null;
@@ -389,17 +399,17 @@ export const generatePassengerManifestPDF = async (
           }
           if (!contactos) contactos = "N/A";
 
-          // Formatear descripciÃ³n: separar por "-" y agregar viÃ±etas
+          // Formatear descripción: separar por "-" y agregar asteriscos (jsPDF helvetica no soporta •)
           let formattedDescription = item.cargo_description || "N/A";
           if (formattedDescription !== "N/A" && formattedDescription.includes("-")) {
-            const items = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
-            if (items.length > 1) {
-              formattedDescription = items.map((i: string) => `â€¢ ${i}`).join("\n");
+            const parts = formattedDescription.split("-").map((i: string) => i.trim()).filter((i: string) => i.length > 0);
+            if (parts.length > 1) {
+              formattedDescription = parts.map((i: string) => `* ${i}`).join("\n");
             }
           }
 
           return [
-            (idx + 1).toString(),
+            (item.parcel_number ?? item.item_order ?? idx + 1).toString(), // Nro. de la boleta/factura
             formattedDescription,
             item.remitente_nombre || "N/A",
             item.remitente_doc?.replace("1-", "DNI: ") || "N/A",
@@ -454,8 +464,8 @@ export const generatePassengerManifestPDF = async (
         startY: currentY,
         head: [
           [
-            "NÂ°",
-            "DESCRIPCIÃ“N",
+            "N\u00B0",
+            "DESCRIPCI\u00D3N",
             "REMITENTE",
             "DOC. REM.",
             "DESTINATARIO",

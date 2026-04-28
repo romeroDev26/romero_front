@@ -516,37 +516,51 @@ export const InvoiceDetailPage: React.FC = () => {
                     <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-gray-400" />
                     <h3 className="text-lg font-medium mb-2">
                       {activeTab === 'sticker100x100'
-                        ? 'Sticker 100x100 no generado'
+                        ? 'Sticker 100x100 no generado o con error'
                         : `No se pudo cargar el ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'}`}
                     </h3>
-                    <p className="text-sm text-center mb-4">
+                    <p className="text-sm text-center mb-4 max-w-md">
                       {activeTab === 'sticker100x100'
-                        ? 'Haz clic en el botón para generar el sticker de encomienda.'
-                        : 'El PDF no se puede mostrar en el navegador. Puedes descargarlo usando el botón de arriba.'}
+                        ? 'El sticker de encomienda no existe o no se pudo cargar. Puedes intentar generarlo nuevamente.'
+                        : 'El PDF no se puede mostrar en el navegador o el archivo no se generó correctamente en el servidor. Puedes intentar regenerarlo.'}
                     </p>
-                    {activeTab === 'sticker100x100' && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={handleGenerateSticker100x100}
-                        disabled={isGeneratingSticker}
-                        className="flex items-center mb-3"
-                      >
-                        <Tag className="h-4 w-4 mr-2" />
-                        {isGeneratingSticker ? 'Generando...' : 'Generar Sticker 100x100'}
-                      </Button>
-                    )}
-                    {hasCurrentPdf && (
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => window.open(currentPdfUrl ?? undefined, '_blank')}
-                        className="flex items-center"
-                      >
-                        <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-                        Abrir en nueva ventana
-                      </Button>
-                    )}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      {activeTab === 'sticker100x100' ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleGenerateSticker100x100}
+                          disabled={isGeneratingSticker}
+                          className="flex items-center"
+                        >
+                          <Tag className="h-4 w-4 mr-2" />
+                          {isGeneratingSticker ? 'Generando...' : 'Generar / Regenerar Sticker 100x100'}
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={handleRegeneratePdfs}
+                          disabled={isRegenerating}
+                          className="flex items-center"
+                        >
+                          <ArrowPathIcon className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
+                          {isRegenerating ? 'Regenerando tickets...' : 'Regenerar Tickets'}
+                        </Button>
+                      )}
+                      
+                      {hasCurrentPdf && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.open(currentPdfUrl ?? undefined, '_blank')}
+                          className="flex items-center"
+                        >
+                          <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                          Abrir en nueva ventana
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

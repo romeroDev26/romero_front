@@ -1,6 +1,6 @@
 // src/features/accounting/pages/InvoiceDetailPage.tsx
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
@@ -236,6 +236,39 @@ export const InvoiceDetailPage: React.FC = () => {
     }
   };
 
+  /**
+   * Regenera SOLO el PDF del tab activo (80mm, A4 o 100x100).
+   * Útil cuando Bunny CDN no almacenó el archivo a tiempo.
+   */
+  const handleRegenerateCurrentPdf = async () => {
+    if (!invoice || isRegenerating) return;
+    setIsRegenerating(true);
+    setShowPdfError(false);
+    try {
+      let size: '80mm' | 'a4' | '100x100';
+      if (activeTab === 'sticker100x100') {
+        size = '100x100';
+      } else if (activeTab === 'a4') {
+        size = 'a4';
+      } else {
+        size = '80mm';
+      }
+      await invoicesService.generatePdf(invoiceId, size);
+      await queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      toast.success(`Ticket ${activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : '100x100'} regenerado exitosamente`);
+    } catch (error) {
+      console.error('Error regenerando PDF:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Error al regenerar el ticket. Por favor, intente nuevamente.'
+      );
+      setShowPdfError(true);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   if (isLoading) return <div className="flex justify-center p-8"><Spinner size="lg" /></div>;
   if (error) return <div className="p-6 text-center text-red-600">Error al cargar la factura: {error instanceof Error ? error.message : 'Error desconocido'}</div>;
   if (!invoice) return <div className="p-6 text-center text-gray-500">No se encontró la factura.</div>;
@@ -319,6 +352,7 @@ export const InvoiceDetailPage: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
+              {/* Botón Imprimir / Descargar - solo si hay PDF del tab activo */}
               {(hasTicketPdf || hasA4Pdf) && (
                 <>
                   <Button
@@ -343,6 +377,27 @@ export const InvoiceDetailPage: React.FC = () => {
                   </Button>
                 </>
               )}
+
+              {/* Botón Regenerar ─ siempre visible para forzar regeneración del tab activo */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateCurrentPdf}
+                disabled={isRegenerating}
+                className="flex items-center text-amber-600 border-amber-300 hover:bg-amber-50"
+                title={`Regenerar ticket ${
+                  activeTab === 'ticket80mm' ? '80mm' :
+                  activeTab === 'a4' ? 'A4' : '100x100'
+                } (usar si el archivo da error o no cargó)`}
+              >
+                <ArrowPathIcon className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
+                {isRegenerating
+                  ? 'Regenerando...'
+                  : `Regenerar ${
+                      activeTab === 'ticket80mm' ? '80mm' :
+                      activeTab === 'a4' ? 'A4' : '100x100'
+                    }`}
+              </Button>
               
               {/* Botón WhatsApp - disponible si hay cualquier tipo de PDF */}
               {hasAnyPdf && (
@@ -420,8 +475,8 @@ export const InvoiceDetailPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border">
             {/* Header del visor PDF */}
             <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-                <div className="flex items-center space-x-2 mb-2 md:mb-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
                   <DocumentTextIcon className="h-5 w-5 text-blue-600" />
                   <h2 className="font-semibold text-gray-900">Ticket de Venta</h2>
                 </div>
@@ -496,71 +551,22 @@ export const InvoiceDetailPage: React.FC = () => {
                     className="w-full h-full border-0"
                     style={{ minHeight: '600px' }}
                     title={`Ticket ${
-                    activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : 'Sticker 100x100'
-                  } ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
+                      activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : 'Sticker 100x100'
+                    } ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
                     onError={() => setShowPdfError(true)}
-                    onLoad={(e) => {
-                      // Verificar si el iframe se cargó correctamente
-                      try {
-                        const iframe = e.target as HTMLIFrameElement;
-                        if (!iframe.contentWindow) {
-                          setShowPdfError(true);
-                        }
-                      } catch (error) {
-                        setShowPdfError(true);
-                      }
-                    }}
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-96 text-gray-500">
-                    <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-gray-400" />
-                    <h3 className="text-lg font-medium mb-2">
+                    <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-amber-400" />
+                    <h3 className="text-lg font-medium mb-2 text-gray-800">
                       {activeTab === 'sticker100x100'
-                        ? 'Sticker 100x100 no generado o con error'
-                        : `No se pudo cargar el ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'}`}
+                        ? 'Sticker 100x100 no disponible'
+                        : `Ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} no disponible`}
                     </h3>
-                    <p className="text-sm text-center mb-4 max-w-md">
-                      {activeTab === 'sticker100x100'
-                        ? 'El sticker de encomienda no existe o no se pudo cargar. Puedes intentar generarlo nuevamente.'
-                        : 'El PDF no se puede mostrar en el navegador o el archivo no se generó correctamente en el servidor. Puedes intentar regenerarlo.'}
+                    <p className="text-sm text-center text-gray-500 max-w-sm">
+                      El archivo no se encontró o no se generó correctamente.
+                      Usa el botón <strong>Regenerar</strong> en la barra superior para solicitarlo de nuevo al servidor.
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      {activeTab === 'sticker100x100' ? (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={handleGenerateSticker100x100}
-                          disabled={isGeneratingSticker}
-                          className="flex items-center"
-                        >
-                          <Tag className="h-4 w-4 mr-2" />
-                          {isGeneratingSticker ? 'Generando...' : 'Generar / Regenerar Sticker 100x100'}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={handleRegeneratePdfs}
-                          disabled={isRegenerating}
-                          className="flex items-center"
-                        >
-                          <ArrowPathIcon className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
-                          {isRegenerating ? 'Regenerando tickets...' : 'Regenerar Tickets'}
-                        </Button>
-                      )}
-                      
-                      {hasCurrentPdf && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.open(currentPdfUrl ?? undefined, '_blank')}
-                          className="flex items-center"
-                        >
-                          <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-                          Abrir en nueva ventana
-                        </Button>
-                      )}
-                    </div>
                   </div>
                 )}
               </div>

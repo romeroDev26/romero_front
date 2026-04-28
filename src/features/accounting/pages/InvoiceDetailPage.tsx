@@ -42,8 +42,6 @@ export const InvoiceDetailPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4' | 'sticker100x100'>('ticket80mm');
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [isGeneratingSticker, setIsGeneratingSticker] = useState(false);
-  // Estado de validez real de la URL del PDF (puede ser 404 aunque el campo no sea null)
-  const [pdfUrlStatus, setPdfUrlStatus] = useState<'checking' | 'ok' | 'error'>('checking');
   const pdfIframeRef = useRef<HTMLIFrameElement>(null);
   const { hasPermission } = usePermissions();
   const currentUser = authService.getCurrentUser();
@@ -238,6 +236,39 @@ export const InvoiceDetailPage: React.FC = () => {
     }
   };
 
+  /**
+   * Regenera SOLO el PDF del tab activo (80mm, A4 o 100x100).
+   * Útil cuando Bunny CDN no almacenó el archivo a tiempo.
+   */
+  const handleRegenerateCurrentPdf = async () => {
+    if (!invoice || isRegenerating) return;
+    setIsRegenerating(true);
+    setShowPdfError(false);
+    try {
+      let size: '80mm' | 'a4' | '100x100';
+      if (activeTab === 'sticker100x100') {
+        size = '100x100';
+      } else if (activeTab === 'a4') {
+        size = 'a4';
+      } else {
+        size = '80mm';
+      }
+      await invoicesService.generatePdf(invoiceId, size);
+      await queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+      toast.success(`Ticket ${activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : '100x100'} regenerado exitosamente`);
+    } catch (error) {
+      console.error('Error regenerando PDF:', error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : 'Error al regenerar el ticket. Por favor, intente nuevamente.'
+      );
+      setShowPdfError(true);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   if (isLoading) return <div className="flex justify-center p-8"><Spinner size="lg" /></div>;
   if (error) return <div className="p-6 text-center text-red-600">Error al cargar la factura: {error instanceof Error ? error.message : 'Error desconocido'}</div>;
   if (!invoice) return <div className="p-6 text-center text-gray-500">No se encontró la factura.</div>;
@@ -272,43 +303,6 @@ export const InvoiceDetailPage: React.FC = () => {
   const hasCurrentPdf = activeTab === 'ticket80mm' ? hasTicketPdf
     : activeTab === 'a4' ? hasA4Pdf
     : hasStickerPdf;
-
-  // ─── Verificación real de la URL del PDF ─────────────────────────────────
-  // El onError del iframe NO se dispara cuando Bunny CDN devuelve una página
-  // HTML de 404 con status 200. Por eso hacemos un HEAD request proactivo.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    let cancelled = false;
-    if (!basePdfUrl) {
-      setPdfUrlStatus('error');
-      return;
-    }
-    setPdfUrlStatus('checking');
-    setShowPdfError(false);
-
-    fetch(basePdfUrl, { method: 'HEAD', cache: 'no-store' })
-      .then((res) => {
-        if (cancelled) return;
-        if (res.ok) {
-          setPdfUrlStatus('ok');
-        } else {
-          // 404, 403, etc. → el archivo no existe realmente en el CDN
-          setPdfUrlStatus('error');
-          setShowPdfError(true);
-        }
-      })
-      .catch(() => {
-        if (cancelled) return;
-        // Error de red o CORS → tratamos como error para mostrar el botón
-        setPdfUrlStatus('error');
-        setShowPdfError(true);
-      });
-
-    return () => { cancelled = true; };
-  // Recalcular cuando cambia el tab, el invoice o el cacheBuster
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [basePdfUrl]);
-  // ─────────────────────────────────────────────────────────────────────────
 
   // Formatea la fecha de emisión tal como viene del backend (YYYY-MM-DD)
   const formatIssueDate = (dateStr?: string): string => {
@@ -358,6 +352,7 @@ export const InvoiceDetailPage: React.FC = () => {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
+              {/* Botón Imprimir / Descargar - solo si hay PDF del tab activo */}
               {(hasTicketPdf || hasA4Pdf) && (
                 <>
                   <Button
@@ -382,6 +377,27 @@ export const InvoiceDetailPage: React.FC = () => {
                   </Button>
                 </>
               )}
+
+              {/* Botón Regenerar ─ siempre visible para forzar regeneración del tab activo */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegenerateCurrentPdf}
+                disabled={isRegenerating}
+                className="flex items-center text-amber-600 border-amber-300 hover:bg-amber-50"
+                title={`Regenerar ticket ${
+                  activeTab === 'ticket80mm' ? '80mm' :
+                  activeTab === 'a4' ? 'A4' : '100x100'
+                } (usar si el archivo da error o no cargó)`}
+              >
+                <ArrowPathIcon className={`h-4 w-4 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
+                {isRegenerating
+                  ? 'Regenerando...'
+                  : `Regenerar ${
+                      activeTab === 'ticket80mm' ? '80mm' :
+                      activeTab === 'a4' ? 'A4' : '100x100'
+                    }`}
+              </Button>
               
               {/* Botón WhatsApp - disponible si hay cualquier tipo de PDF */}
               {hasAnyPdf && (
@@ -459,55 +475,13 @@ export const InvoiceDetailPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border">
             {/* Header del visor PDF */}
             <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2">
-                <div className="flex items-center space-x-2 mb-2 md:mb-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
                   <DocumentTextIcon className="h-5 w-5 text-blue-600" />
                   <h2 className="font-semibold text-gray-900">Ticket de Venta</h2>
-                  {/* Indicador de estado de verificación de la URL */}
-                  {pdfUrlStatus === 'checking' && hasCurrentPdf && (
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      <ArrowPathIcon className="h-3 w-3 animate-spin" />
-                      Verificando archivo...
-                    </span>
-                  )}
-                  {pdfUrlStatus === 'error' && hasCurrentPdf && (
-                    <span className="text-xs text-amber-600 flex items-center gap-1">
-                      <ExclamationTriangleIcon className="h-3 w-3" />
-                      Archivo no disponible en CDN
-                    </span>
-                  )}
                 </div>
-                <div className="flex items-center gap-3">
-                  {/* Botón regenerar SIEMPRE visible cuando hay algún PDF del tab activo */}
-                  {hasCurrentPdf && activeTab !== 'sticker100x100' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleRegeneratePdfs}
-                      disabled={isRegenerating}
-                      className="flex items-center text-amber-600 border-amber-300 hover:bg-amber-50"
-                      title="Regenerar tickets si el archivo da error 404"
-                    >
-                      <ArrowPathIcon className={`h-4 w-4 mr-1.5 ${isRegenerating ? 'animate-spin' : ''}`} />
-                      {isRegenerating ? 'Regenerando...' : 'Regenerar'}
-                    </Button>
-                  )}
-                  {hasCurrentPdf && activeTab === 'sticker100x100' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleGenerateSticker100x100}
-                      disabled={isGeneratingSticker}
-                      className="flex items-center text-amber-600 border-amber-300 hover:bg-amber-50"
-                      title="Regenerar sticker 100x100 si el archivo da error"
-                    >
-                      <ArrowPathIcon className={`h-4 w-4 mr-1.5 ${isGeneratingSticker ? 'animate-spin' : ''}`} />
-                      {isGeneratingSticker ? 'Regenerando...' : 'Regenerar'}
-                    </Button>
-                  )}
-                  <div className="text-sm text-gray-500">
-                    Cliente: {invoice.client?.name}
-                  </div>
+                <div className="text-sm text-gray-500">
+                  Cliente: {invoice.client?.name}
                 </div>
               </div>
             </div>
@@ -569,16 +543,7 @@ export const InvoiceDetailPage: React.FC = () => {
             {/* Visor PDF */}
             <div className="p-6">
               <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
-                {/* Overlay de verificación mientras se comprueba la URL */}
-                {pdfUrlStatus === 'checking' && hasCurrentPdf && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 z-10">
-                    <ArrowPathIcon className="h-8 w-8 text-blue-500 animate-spin mb-3" />
-                    <p className="text-sm text-gray-500">Verificando disponibilidad del archivo...</p>
-                  </div>
-                )}
-
-                {/* Estado OK: mostramos el iframe */}
-                {pdfUrlStatus === 'ok' && !showPdfError && hasCurrentPdf && (
+                {!showPdfError && hasCurrentPdf ? (
                   <iframe
                     ref={pdfIframeRef}
                     key={`${activeTab}-${cacheBuster}`}
@@ -590,63 +555,18 @@ export const InvoiceDetailPage: React.FC = () => {
                     } ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
                     onError={() => setShowPdfError(true)}
                   />
-                )}
-
-                {/* Estado ERROR: URL nula, 404 de CDN, o error del iframe */}
-                {(pdfUrlStatus === 'error' || showPdfError || !hasCurrentPdf) && pdfUrlStatus !== 'checking' && (
-                  <div className="flex flex-col items-center justify-center h-full min-h-96 text-gray-500 py-16">
-                    <div className="bg-amber-50 border border-amber-200 rounded-full p-4 mb-4">
-                      <ExclamationTriangleIcon className="h-10 w-10 text-amber-500" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-96 text-gray-500">
+                    <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-amber-400" />
+                    <h3 className="text-lg font-medium mb-2 text-gray-800">
                       {activeTab === 'sticker100x100'
                         ? 'Sticker 100x100 no disponible'
                         : `Ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} no disponible`}
                     </h3>
-                    <p className="text-sm text-center text-gray-500 mb-2 max-w-sm">
-                      {!hasCurrentPdf
-                        ? 'El PDF no fue generado o la URL no está registrada.'
-                        : 'El archivo no se encontró en el servidor de almacenamiento (posiblemente un error de subida al CDN).'}
+                    <p className="text-sm text-center text-gray-500 max-w-sm">
+                      El archivo no se encontró o no se generó correctamente.
+                      Usa el botón <strong>Regenerar</strong> en la barra superior para solicitarlo de nuevo al servidor.
                     </p>
-                    <p className="text-xs text-center text-gray-400 mb-6 max-w-sm">
-                      Usa el botón "Regenerar" para solicitar al servidor que vuelva a generar y subir el archivo.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      {activeTab === 'sticker100x100' ? (
-                        <Button
-                          variant="primary"
-                          size="md"
-                          onClick={handleGenerateSticker100x100}
-                          disabled={isGeneratingSticker}
-                          className="flex items-center"
-                        >
-                          <ArrowPathIcon className={`h-5 w-5 mr-2 ${isGeneratingSticker ? 'animate-spin' : ''}`} />
-                          {isGeneratingSticker ? 'Generando sticker...' : 'Generar / Regenerar Sticker'}
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="primary"
-                          size="md"
-                          onClick={handleRegeneratePdfs}
-                          disabled={isRegenerating}
-                          className="flex items-center"
-                        >
-                          <ArrowPathIcon className={`h-5 w-5 mr-2 ${isRegenerating ? 'animate-spin' : ''}`} />
-                          {isRegenerating ? 'Regenerando tickets...' : 'Regenerar Tickets (80mm y A4)'}
-                        </Button>
-                      )}
-                      {hasCurrentPdf && pdfUrlStatus === 'ok' && (
-                        <Button
-                          variant="outline"
-                          size="md"
-                          onClick={() => window.open(currentPdfUrl ?? undefined, '_blank')}
-                          className="flex items-center"
-                        >
-                          <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
-                          Abrir en nueva ventana
-                        </Button>
-                      )}
-                    </div>
                   </div>
                 )}
               </div>

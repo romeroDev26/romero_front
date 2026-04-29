@@ -216,8 +216,8 @@ export const InvoiceDetailPage: React.FC = () => {
     setShowPdfError(false);
     
     try {
-      // Llamar al servicio para regenerar ambos PDFs
-      await invoicesService.generateBothPdfs(invoiceId);
+      // force=true para sobreescribir el archivo aunque ya exista en el CDN
+      await invoicesService.generateBothPdfs(invoiceId, true);
       
       // Invalidar y refetch la query para obtener las nuevas URLs
       await queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
@@ -253,7 +253,8 @@ export const InvoiceDetailPage: React.FC = () => {
       } else {
         size = '80mm';
       }
-      await invoicesService.generatePdf(invoiceId, size);
+      // force=true para sobreescribir el archivo aunque ya exista en el CDN
+      await invoicesService.generatePdf(invoiceId, size, true);
       await queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
       toast.success(`Ticket ${activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : '100x100'} regenerado exitosamente`);
     } catch (error) {
@@ -471,7 +472,10 @@ export const InvoiceDetailPage: React.FC = () => {
 
       {/* Contenido principal */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {(hasTicketPdf || hasA4Pdf || hasStickerPdf) ? (
+        {/* Sección principal del visor:
+             - Siempre se muestra para facturas que no son 100% encomienda
+             - También se muestra si hay cualquier PDF disponible */}
+        {(!isCargoInvoice || hasTicketPdf || hasA4Pdf || hasStickerPdf) ? (
           <div className="bg-white rounded-lg shadow-sm border">
             {/* Header del visor PDF */}
             <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
@@ -486,59 +490,94 @@ export const InvoiceDetailPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Tabs para seleccionar formato */}
-            {(hasTicketPdf || hasA4Pdf) && (
-              <div className="px-6 pt-4">
-                <div className="flex border-b border-gray-200">
-                  {hasTicketPdf && (
-                    <button
-                      onClick={() => {
-                        setActiveTab('ticket80mm');
-                        setShowPdfError(false);
-                      }}
-                      className={`px-6 py-3 text-sm font-medium transition-colors ${
-                        activeTab === 'ticket80mm'
-                          ? 'border-b-2 border-blue-600 text-blue-600'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Ticket 80mm (Térmico)
-                    </button>
-                  )}
-                  {hasA4Pdf && (
-                    <button
-                      onClick={() => {
-                        setActiveTab('a4');
-                        setShowPdfError(false);
-                      }}
-                      className={`px-6 py-3 text-sm font-medium transition-colors ${
-                        activeTab === 'a4'
-                          ? 'border-b-2 border-blue-600 text-blue-600'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      Ticket A4 (Corporativo)
-                    </button>
-                  )}
-                  {isCargoInvoice && (
-                    <button
-                      onClick={() => {
-                        setActiveTab('sticker100x100');
-                        setShowPdfError(false);
-                      }}
-                      className={`px-6 py-3 text-sm font-medium transition-colors flex items-center gap-1 ${
-                        activeTab === 'sticker100x100'
-                          ? 'border-b-2 border-orange-500 text-orange-600'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      <Tag className="h-3.5 w-3.5" />
-                      Sticker 100x100
-                    </button>
-                  )}
-                </div>
+            {/* Tabs para seleccionar formato
+                 - Para facturas normales: siempre se muestran 80mm y A4
+                   (aunque el PDF no exista aún, para que el usuario pueda regenerarlo)
+                 - Sticker 100x100: solo si es encomienda */}
+            <div className="px-6 pt-4">
+              <div className="flex border-b border-gray-200">
+                {/* Tab 80mm: siempre visible para facturas/boletas normales */}
+                {!isCargoInvoice && (
+                  <button
+                    onClick={() => {
+                      setActiveTab('ticket80mm');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'ticket80mm'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Ticket 80mm (Térmico)
+                  </button>
+                )}
+                {/* Tab 80mm para encomiendas (solo si existe) */}
+                {isCargoInvoice && hasTicketPdf && (
+                  <button
+                    onClick={() => {
+                      setActiveTab('ticket80mm');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'ticket80mm'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Ticket 80mm (Térmico)
+                  </button>
+                )}
+                {/* Tab A4: siempre visible para facturas/boletas normales */}
+                {!isCargoInvoice && (
+                  <button
+                    onClick={() => {
+                      setActiveTab('a4');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'a4'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Ticket A4 (Corporativo)
+                  </button>
+                )}
+                {/* Tab A4 para encomiendas (solo si existe) */}
+                {isCargoInvoice && hasA4Pdf && (
+                  <button
+                    onClick={() => {
+                      setActiveTab('a4');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                      activeTab === 'a4'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Ticket A4 (Corporativo)
+                  </button>
+                )}
+                {isCargoInvoice && (
+                  <button
+                    onClick={() => {
+                      setActiveTab('sticker100x100');
+                      setShowPdfError(false);
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors flex items-center gap-1 ${
+                      activeTab === 'sticker100x100'
+                        ? 'border-b-2 border-orange-500 text-orange-600'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <Tag className="h-3.5 w-3.5" />
+                    Sticker 100x100
+                  </button>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Visor PDF */}
             <div className="p-6">

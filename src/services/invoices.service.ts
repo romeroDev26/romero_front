@@ -170,12 +170,17 @@ class InvoicesService {
    * - status: "uploading" → hace polling hasta obtener la URL (máx. 30s)
    * @returns URL del PDF generado en el CDN
    */
-  async generatePdf(invoiceId: number, size: '80mm' | '58mm' | 'a4' | '100x100' = '80mm'): Promise<string> {
+  async generatePdf(
+    invoiceId: number,
+    size: '80mm' | '58mm' | 'a4' | '100x100' = '80mm',
+    force: boolean = false,
+  ): Promise<string> {
     const response = await api.post<GeneratePdfResponse>(
       `${this.basePath}${invoiceId}/generate-pdf`,
       null,
       {
-        params: { size, ...(size === '100x100' ? { force: true } : {}) }
+        // force=true se envía siempre que el caller lo pida O cuando el tamaño es 100x100
+        params: { size, ...((force || size === '100x100') ? { force: true } : {}) }
       }
     );
 
@@ -306,10 +311,13 @@ class InvoicesService {
    * @param invoiceId - ID de la factura
    * @returns URLs de ambos PDFs generados
    */
-  async generateBothPdfs(invoiceId: number): Promise<{ url80mm: string; urlA4: string }> {
+  async generateBothPdfs(
+    invoiceId: number,
+    force: boolean = false,
+  ): Promise<{ url80mm: string; urlA4: string }> {
     const [url80mm, urlA4] = await Promise.all([
-      this.generatePdf(invoiceId, '80mm'),
-      this.generatePdf(invoiceId, 'a4')
+      this.generatePdf(invoiceId, '80mm', force),
+      this.generatePdf(invoiceId, 'a4', force)
     ]);
     
     return { url80mm, urlA4 };

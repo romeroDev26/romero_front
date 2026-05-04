@@ -1,5 +1,5 @@
 // src/features/fluvial/pages/ScheduleTripsPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PlusIcon, CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
@@ -16,13 +16,19 @@ import { ScheduledTemplatesTable } from '../components/schedule/ScheduledTemplat
 import { TripsTable } from '../components/schedule/TripsTable';
 import { ScheduledTemplateFormModal } from '../components/schedule/ScheduledTemplateFormModal';
 import { TripFormModal } from '../components/schedule/TripFormModal';
-import { TripFilters } from '../components/schedule/TripFilters';
+import { TripFilters, TripAdvancedFilters } from '../components/schedule/TripFilters';
 import { CalendarView } from '../components/schedule/CalendarView';
 import { ManifestGenerationModal } from '../components/schedule/ManifestGenerationModal';
 import { ManifestPreviewModal } from '../../manifests/components/ManifestPreviewModal';
 import { Manifest } from '../../manifests/types/manifest.types';
 
 type ViewFilterMode = 'upcoming' | 'week' | 'history';
+
+const VIEW_FILTER_LABELS: Record<ViewFilterMode, string> = {
+  upcoming: 'Proximos Viajes',
+  week: 'Vista Semanal',
+  history: 'Historial',
+};
 
 export const ScheduleTripsPage: React.FC = () => {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -37,9 +43,11 @@ export const ScheduleTripsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const [viewFilter, setViewFilter] = useState<ViewFilterMode>('upcoming');
   const [weekDate, setWeekDate] = useState(new Date());
-  const [advancedFilters, setAdvancedFilters] = useState({
-    origin_city_id: undefined as number | undefined,
-    destination_city_id: undefined as number | undefined,
+  const [advancedFilters, setAdvancedFilters] = useState<TripAdvancedFilters>({
+    origin_city_id: undefined,
+    destination_city_id: undefined,
+    status: undefined,
+    search: undefined,
   });
 
   const COMPANY_ID = 1;
@@ -49,12 +57,30 @@ export const ScheduleTripsPage: React.FC = () => {
     queryFn: () => authService.getProfile(),
   });
 
-  const { data: trips = [], isLoading: isLoadingTrips, refetch } = useTripsView({
+  const { data: rawTrips = [], isLoading: isLoadingTrips, refetch } = useTripsView({
     viewMode: viewFilter,
     weekDate,
     companyId: COMPANY_ID,
     filters: advancedFilters,
   });
+
+  // Filtros frontend: status y busqueda por nombre/embarcacion
+  const trips = useMemo(() => {
+    let result = rawTrips;
+    if (advancedFilters.status) {
+      result = result.filter((t) => t.status === advancedFilters.status);
+    }
+    if (advancedFilters.search) {
+      const q = advancedFilters.search.toLowerCase();
+      result = result.filter(
+        (t) =>
+          (t.trip_name ?? '').toLowerCase().includes(q) ||
+          (t.vessel_name ?? '').toLowerCase().includes(q) ||
+          String(t.trip_id).includes(q)
+      );
+    }
+    return result;
+  }, [rawTrips, advancedFilters.status, advancedFilters.search]);
 
   const { templates: scheduledTemplates, isLoading: isLoadingTemplates } = useScheduledTemplates(COMPANY_ID);
 
@@ -139,23 +165,20 @@ export const ScheduleTripsPage: React.FC = () => {
   };
 
   const handleManifestGenerated = () => {
-    // Actualizar la lista de viajes si es necesario
     refetch();
   };
 
   const handleManifestCreated = (manifest: Manifest, _type: 'PASSENGER' | 'CARGO') => {
     setCreatedManifest(manifest);
-    // Cerrar modal de generación y abrir modal de previsualización
     setIsManifestModalOpen(false);
     setIsPreviewModalOpen(true);
   };
 
-  // Función para mapear Manifest a la estructura esperada
   const mapManifestToManifestData = (manifest: Manifest): Manifest => {
     const result = {
       ...manifest,
       vessel_name: selectedTripForManifest?.vessel_name || undefined,
-      route_name: undefined, // No disponible en UnifiedTripViewItem
+      route_name: undefined,
       departure_datetime: selectedTripForManifest?.departure_datetime || manifest.generation_date,
       total_passengers: manifest.total_passengers || 0,
       total_cargo_weight_kg: manifest.total_cargo_weight_kg || 0,
@@ -183,30 +206,39 @@ export const ScheduleTripsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Programar Viajes</h1>
-        <p className="text-gray-600">
+
+      {/* ── Encabezado de pagina ─────────────────────────────────────────── */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Programar Viajes</h1>
+        <p className="text-sm text-gray-500 mt-1">
           Gestione las plantillas de viajes recurrentes y los viajes programados
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Plantillas de Viajes Recurrentes
-          </h2>
+      {/* ── Seccion: Plantillas de Viajes Recurrentes ────────────────────── */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">Plantillas de Viajes Recurrentes</h2>
+            {!isLoadingTemplates && (
+              <p className="text-xs text-gray-400 mt-0.5">
+                {scheduledTemplates?.length ?? 0}{' '}
+                {(scheduledTemplates?.length ?? 0) === 1 ? 'plantilla configurada' : 'plantillas configuradas'}
+              </p>
+            )}
+          </div>
           <Button
             variant="primary"
             onClick={handleCreateTemplate}
             className="flex items-center gap-2 w-full sm:w-auto justify-center"
           >
-            <PlusIcon className="h-5 w-5" />
+            <PlusIcon className="h-4 w-4" />
             Nueva Plantilla
           </Button>
         </div>
 
         {isLoadingTemplates ? (
-          <div className="flex justify-center py-8">
+          <div className="flex justify-center py-10">
             <Spinner size="lg" />
           </div>
         ) : (
@@ -218,63 +250,89 @@ export const ScheduleTripsPage: React.FC = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
-        <div className="space-y-4">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-            <h2 className="text-lg font-semibold text-gray-900">Viajes Programados</h2>
+      {/* ── Seccion: Viajes Programados ──────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Header de la seccion */}
+        <div className="px-5 py-4 border-b border-gray-100">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+            {/* Titulo + contador */}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base font-semibold text-gray-900">Viajes Programados</h2>
+              {!isLoadingTrips && (
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {trips.length} {trips.length === 1 ? 'viaje encontrado' : 'viajes encontrados'}
+                </p>
+              )}
+            </div>
+
+            {/* Controles de accion */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              {/* Toggle tabla / calendario */}
+              <div className="flex bg-gray-100 rounded-lg p-1 self-start sm:self-auto">
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`flex-1 sm:flex-initial px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                     viewMode === 'table'
                       ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
                   Tabla
                 </button>
                 <button
                   onClick={() => setViewMode('calendar')}
-                  className={`flex-1 sm:flex-initial px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+                  className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap ${
                     viewMode === 'calendar'
                       ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  <CalendarIcon className="h-4 w-4 inline mr-1" />
+                  <CalendarIcon className="h-4 w-4" />
                   Calendario
                 </button>
               </div>
-              <Button variant="outline" onClick={handleRefresh} className="w-full sm:w-auto justify-center">
-                <ArrowPathIcon className="h-4 w-4 mr-2" />
-                Actualizar
-              </Button>
-              <Button variant="primary" onClick={handleCreateTrip} className="w-full sm:w-auto justify-center">
-                <PlusIcon className="h-5 w-5 mr-2" />
-                Nuevo Viaje
-              </Button>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleRefresh}
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5"
+                >
+                  <ArrowPathIcon className="h-4 w-4" />
+                  Actualizar
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleCreateTrip}
+                  className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                  Nuevo Viaje
+                </Button>
+              </div>
             </div>
           </div>
 
-          <div className="flex border-b border-gray-200 overflow-x-auto">
-            {(['upcoming', 'week', 'history'] as ViewFilterMode[]).map(mode => (
+          {/* Tabs de modo de vista */}
+          <div className="mt-4 flex gap-1 p-1 bg-gray-100 rounded-xl w-full sm:w-fit">
+            {(Object.keys(VIEW_FILTER_LABELS) as ViewFilterMode[]).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewFilter(mode)}
-                className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 whitespace-nowrap ${
+                className={`flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
                   viewFilter === mode
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-white text-indigo-700 shadow-sm font-semibold'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                {mode === 'upcoming' && 'Próximos Viajes'}
-                {mode === 'week' && 'Vista Semanal'}
-                {mode === 'history' && 'Historial'}
+                {VIEW_FILTER_LABELS[mode]}
               </button>
             ))}
           </div>
+        </div>
 
+        {/* Filtros */}
+        <div className="px-5 py-4 border-b border-gray-100">
           <TripFilters
             currentDate={weekDate}
             onDateChange={setWeekDate}
@@ -282,23 +340,25 @@ export const ScheduleTripsPage: React.FC = () => {
             onFiltersChange={(filters) => setAdvancedFilters(prev => ({ ...prev, ...filters }))}
             viewMode={viewFilter}
           />
+        </div>
 
-          {isLoadingTrips ? (
-            <div className="flex justify-center py-8">
-              <Spinner size="lg" />
-            </div>
-          ) : viewMode === 'table' ? (
-            <TripsTable
-              trips={trips}
-              onEdit={handleEditTrip}
-              onCancel={handleCancelTrip}
-              onGenerateManifest={handleGenerateManifest}
-            />
-          ) : (
+        {/* Contenido principal */}
+        {isLoadingTrips ? (
+          <div className="flex justify-center py-16">
+            <Spinner size="lg" />
+          </div>
+        ) : viewMode === 'table' ? (
+          <TripsTable
+            trips={trips}
+            onEdit={handleEditTrip}
+            onCancel={handleCancelTrip}
+            onGenerateManifest={handleGenerateManifest}
+          />
+        ) : (
+          <div className="p-4">
             <CalendarView
               trips={trips as unknown as any[]}
               onTripClick={(trip) => {
-                // Adapt AvailableTrip to UnifiedTripViewItem
                 const unifiedTrip: UnifiedTripViewItem = {
                   ...trip,
                   trip_name: trip.trip_name ?? null,
@@ -313,10 +373,11 @@ export const ScheduleTripsPage: React.FC = () => {
               }}
               onDateClick={handleDateClickFromCalendar}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
+      {/* ── Modales ──────────────────────────────────────────────────────── */}
       {isTemplateModalOpen && (
         <ScheduledTemplateFormModal
           isOpen={isTemplateModalOpen}

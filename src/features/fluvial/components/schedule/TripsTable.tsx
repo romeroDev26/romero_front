@@ -1,12 +1,14 @@
 // src/features/fluvial/components/schedule/TripsTable.tsx
-import React, { useMemo } from 'react';
-import { DataTable, Column } from '../../../../components/common/DataTable';
+import React, { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   PencilIcon,
   TrashIcon,
   DocumentTextIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  InboxStackIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { UnifiedTripViewItem } from '../../hooks/useTripsView';
@@ -18,209 +20,255 @@ interface TripsTableProps {
   onGenerateManifest?: (trip: UnifiedTripViewItem) => void;
 }
 
-// Componente para el estado visual
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
+
+// ─── Status Badge ────────────────────────────────────────────────────────────
 const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const getStatusConfig = () => {
     switch (status) {
       case 'SCHEDULED':
-        return { label: 'Programado', color: 'text-blue-700 bg-blue-50' };
+        return { label: 'Programado', className: 'text-blue-700 bg-blue-50 ring-blue-600/20' };
       case 'BOARDING':
-        return { label: 'Embarcando', color: 'text-yellow-700 bg-yellow-50' };
+        return { label: 'Embarcando', className: 'text-yellow-700 bg-yellow-50 ring-yellow-600/20' };
       case 'DEPARTED':
-        return { label: 'En Ruta', color: 'text-purple-700 bg-purple-50' };
+        return { label: 'En Ruta', className: 'text-purple-700 bg-purple-50 ring-purple-600/20' };
       case 'ARRIVED':
-        return { label: 'Arribado', color: 'text-green-700 bg-green-50' };
+        return { label: 'Arribado', className: 'text-green-700 bg-green-50 ring-green-600/20' };
       case 'COMPLETED':
-        return { label: 'Completado', color: 'text-gray-700 bg-gray-50' };
+        return { label: 'Completado', className: 'text-gray-700 bg-gray-50 ring-gray-600/20' };
       case 'CANCELLED':
-        return { label: 'Cancelado', color: 'text-red-700 bg-red-50' };
+        return { label: 'Cancelado', className: 'text-red-700 bg-red-50 ring-red-600/20' };
       default:
-        return { label: 'Desconocido', color: 'text-gray-700 bg-gray-50' };
+        return { label: 'Desconocido', className: 'text-gray-700 bg-gray-50 ring-gray-600/20' };
     }
   };
 
   const config = getStatusConfig();
-
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${config.className}`}
     >
       {config.label}
     </span>
   );
 };
 
+// ─── Availability Bar ─────────────────────────────────────────────────────────
+const AvailabilityBar: React.FC<{ available: number | null; total: number | null }> = ({
+  available,
+  total,
+}) => {
+  if (available === null || total === null || total === 0) {
+    return <span className="text-gray-400 text-sm">N/A</span>;
+  }
+  const pct = Math.round(((total - available) / total) * 100);
+  const barColor = pct >= 90 ? 'bg-red-400' : pct >= 60 ? 'bg-yellow-400' : 'bg-green-400';
+  return (
+    <div className="flex items-center gap-2 min-w-[100px]">
+      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-xs text-gray-600 whitespace-nowrap font-medium">
+        {available}/{total}
+      </span>
+    </div>
+  );
+};
+
+// ─── Pagination Controls ──────────────────────────────────────────────────────
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+}
+
+const PaginationControls: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+}) => {
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
+
+  const getPageNumbers = () => {
+    const pages: (number | '...')[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      const start = Math.max(1, currentPage - 1);
+      const end = Math.min(totalPages, currentPage + 1);
+      if (start > 1) { pages.push(1); if (start > 2) pages.push('...'); }
+      for (let i = start; i <= end; i++) pages.push(i);
+      if (end < totalPages) { if (end < totalPages - 1) pages.push('...'); pages.push(totalPages); }
+    }
+    return pages;
+  };
+
+  if (totalPages <= 1 && totalItems <= PAGE_SIZE_OPTIONS[0]) return null;
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3 bg-white border-t border-gray-100 gap-3">
+      <div className="flex items-center gap-3 text-sm text-gray-600">
+        <span>
+          Mostrando <span className="font-semibold text-gray-800">{startItem}–{endItem}</span> de{' '}
+          <span className="font-semibold text-gray-800">{totalItems}</span> viajes
+        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-gray-400 hidden sm:inline">|</span>
+          <label className="hidden sm:inline text-gray-500">Por página:</label>
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className="px-2 py-1 text-xs border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-700"
+          >
+            {PAGE_SIZE_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <ChevronLeftIcon className="h-4 w-4" />
+        </button>
+
+        {getPageNumbers().map((page, idx) =>
+          page === '...' ? (
+            <span key={`ellipsis-${idx}`} className="px-2 text-gray-400 text-sm">…</span>
+          ) : (
+            <button
+              key={page}
+              onClick={() => onPageChange(page)}
+              className={`min-w-[32px] h-8 px-2 rounded-md text-sm font-medium transition-colors border ${
+                currentPage === page
+                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              {page}
+            </button>
+          )
+        )}
+
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <ChevronRightIcon className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export const TripsTable: React.FC<TripsTableProps> = ({
   trips,
   onEdit,
   onCancel,
   onGenerateManifest,
 }) => {
-  const columns: Column<UnifiedTripViewItem>[] = useMemo(
-    () => [
-      {
-        key: 'trip',
-        header: 'Viaje',
-        accessor: (trip) => (
-          <div>
-            <p className="font-semibold text-gray-800">
-              {trip.trip_name || `Viaje #${trip.trip_id}`}
-            </p>
-            <p className="text-sm text-gray-500">{trip.vessel_name}</p>
-          </div>
-        ),
-      },
-      {
-        key: 'route',
-        header: 'Origen → Destino',
-        accessor: (trip) =>
-          `${trip.origin_port_name || 'N/A'} → ${trip.destination_port_name || 'N/A'}`,
-      },
-      {
-        key: 'departure',
-        header: 'Salida',
-        accessor: (trip) => (
-          <div>
-            <p className="font-medium">
-              {format(new Date(trip.departure_datetime), 'dd MMM yyyy', {
-                locale: es,
-              })}
-            </p>
-            <p className="text-sm text-gray-500">
-              {format(new Date(trip.departure_datetime), 'HH:mm')}
-            </p>
-          </div>
-        ),
-      },
-      {
-        key: 'availability',
-        header: 'Disponibilidad',
-        accessor: (trip) => {
-          if (trip.available_seats === null || trip.total_seats === null) {
-            return <span className="text-gray-500">No especificada</span>;
-          }
-          return (
-            <span className="font-medium">{`${trip.available_seats} / ${trip.total_seats}`}</span>
-          );
-        },
-      },
-      {
-        key: 'status',
-        header: 'Estado',
-        accessor: (trip) => <StatusBadge status={trip.status} />,
-      },
-      {
-        key: 'manifests',
-        header: 'Manifiestos',
-        accessor: (trip) => {
-          // Solo mostrar el bot\u00f3n si el viaje est\u00e1 programado o en embarque
-          const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
-          
-          return (
-            <Button 
-              variant={canGenerateManifest ? "outline" : "secondary"}
-              size="sm"
-              onClick={canGenerateManifest ? () => onGenerateManifest?.(trip) : undefined}
-              disabled={!canGenerateManifest}
-              title={canGenerateManifest ? "Generar manifiesto para este viaje" : "No se puede generar manifiesto para este estado"}
-            >
-              <DocumentTextIcon className="h-4 w-4 mr-2" />
-              {canGenerateManifest ? 'Generar' : 'N/A'}
-            </Button>
-          );
-        },
-      },
-      {
-        key: 'actions',
-        header: 'Acciones',
-        accessor: (trip) => (
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => onEdit(trip)}
-              className="text-gray-500 hover:text-blue-600"
-            >
-              <PencilIcon className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => onCancel(trip)}
-              className="text-gray-500 hover:text-red-600"
-            >
-              <TrashIcon className="h-5 w-5" />
-            </button>
-          </div>
-        ),
-      },
-    ],
-    [onEdit, onCancel, onGenerateManifest]
-  );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.max(1, Math.ceil(trips.length / pageSize));
+
+  // Reset page when trips change (e.g. filter applied)
+  const stableTripsLength = trips.length;
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [stableTripsLength]);
+
+  const paginatedTrips = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return trips.slice(start, start + pageSize);
+  }, [trips, currentPage, pageSize]);
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  };
 
   if (!trips.length) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        No se encontraron viajes para los filtros seleccionados.
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+        <InboxStackIcon className="h-12 w-12 mb-3 opacity-30" />
+        <p className="text-sm font-medium">No se encontraron viajes</p>
+        <p className="text-xs mt-1">Intenta cambiar los filtros o crear un nuevo viaje.</p>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-4 mt-4">
-        {trips.map((trip) => {
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      {/* ── Mobile Card View ── */}
+      <div className="block lg:hidden divide-y divide-gray-100">
+        {paginatedTrips.map((trip) => {
           const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
-          
           return (
-            <div key={trip.trip_id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div key={trip.trip_id} className="p-4 hover:bg-gray-50 transition-colors">
               <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <h3 className="text-base font-semibold text-gray-900">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 truncate">
                     {trip.trip_name || `Viaje #${trip.trip_id}`}
                   </h3>
-                  <p className="text-sm text-gray-500">{trip.vessel_name}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{trip.vessel_name}</p>
                 </div>
                 <StatusBadge status={trip.status} />
               </div>
 
               <div className="space-y-2 text-sm mb-3">
                 <div>
-                  <span className="block text-xs text-gray-500">Ruta</span>
-                  <span className="font-medium text-gray-900">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">Ruta</span>
+                  <p className="font-medium text-gray-800 mt-0.5">
                     {trip.origin_port_name || 'N/A'} → {trip.destination_port_name || 'N/A'}
-                  </span>
+                  </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <span className="block text-xs text-gray-500">Fecha Salida</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Fecha</span>
+                    <p className="font-medium text-gray-800 mt-0.5">
                       {format(new Date(trip.departure_datetime), 'dd MMM yyyy', { locale: es })}
-                    </span>
+                    </p>
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Hora Salida</span>
-                    <span className="font-medium text-gray-900 font-mono">
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Hora</span>
+                    <p className="font-medium text-gray-800 font-mono mt-0.5">
                       {format(new Date(trip.departure_datetime), 'HH:mm')}
-                    </span>
+                    </p>
                   </div>
                 </div>
                 {trip.available_seats !== null && trip.total_seats !== null && (
                   <div>
-                    <span className="block text-xs text-gray-500">Disponibilidad</span>
-                    <span className="font-medium text-gray-900">
-                      {trip.available_seats} / {trip.total_seats} asientos
-                    </span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Disponibilidad</span>
+                    <div className="mt-1.5">
+                      <AvailabilityBar available={trip.available_seats} total={trip.total_seats} />
+                    </div>
                   </div>
                 )}
               </div>
 
               <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
                 <Button
-                  variant={canGenerateManifest ? "outline" : "secondary"}
+                  variant={canGenerateManifest ? 'outline' : 'secondary'}
                   onClick={canGenerateManifest ? () => onGenerateManifest?.(trip) : undefined}
                   disabled={!canGenerateManifest}
                   className="flex items-center justify-center text-sm w-full"
                 >
                   <DocumentTextIcon className="h-4 w-4 mr-2" />
-                  {canGenerateManifest ? 'Generar Manifiesto' : 'No disponible'}
+                  {canGenerateManifest ? 'Generar Manifiesto' : 'Manifiesto N/A'}
                 </Button>
                 <div className="flex gap-2">
                   <Button
@@ -244,15 +292,124 @@ export const TripsTable: React.FC<TripsTableProps> = ({
         })}
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block">
-        <DataTable
-          columns={columns}
-          data={trips}
-          keyExtractor={(trip) => trip.trip_id}
-          emptyMessage="No se encontraron viajes para los filtros seleccionados."
-        />
+      {/* ── Desktop Table View ── */}
+      <div className="hidden lg:block overflow-x-auto">
+        <table className="min-w-full">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50">
+              {['Viaje', 'Ruta', 'Salida', 'Disponibilidad', 'Estado', 'Manifiesto', 'Acciones'].map(
+                (header) => (
+                  <th
+                    key={header}
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                  >
+                    {header}
+                  </th>
+                )
+              )}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {paginatedTrips.map((trip) => {
+              const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
+              return (
+                <tr key={trip.trip_id} className="hover:bg-gray-50/70 transition-colors">
+                  {/* Viaje */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <p className="font-semibold text-sm text-gray-900">
+                      {trip.trip_name || `Viaje #${trip.trip_id}`}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">{trip.vessel_name}</p>
+                  </td>
+
+                  {/* Ruta */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-700">
+                      {trip.origin_port_name || 'N/A'}
+                    </span>
+                    <span className="mx-1.5 text-gray-300">→</span>
+                    <span className="text-sm text-gray-700">
+                      {trip.destination_port_name || 'N/A'}
+                    </span>
+                  </td>
+
+                  {/* Salida */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <p className="text-sm font-medium text-gray-800">
+                      {format(new Date(trip.departure_datetime), 'dd MMM yyyy', { locale: es })}
+                    </p>
+                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                      {format(new Date(trip.departure_datetime), 'HH:mm')}
+                    </p>
+                  </td>
+
+                  {/* Disponibilidad */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <AvailabilityBar
+                      available={trip.available_seats}
+                      total={trip.total_seats}
+                    />
+                  </td>
+
+                  {/* Estado */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <StatusBadge status={trip.status} />
+                  </td>
+
+                  {/* Manifiesto */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <Button
+                      variant={canGenerateManifest ? 'outline' : 'secondary'}
+                      size="sm"
+                      onClick={canGenerateManifest ? () => onGenerateManifest?.(trip) : undefined}
+                      disabled={!canGenerateManifest}
+                      title={
+                        canGenerateManifest
+                          ? 'Generar manifiesto'
+                          : 'No disponible para este estado'
+                      }
+                      className="flex items-center gap-1.5"
+                    >
+                      <DocumentTextIcon className="h-3.5 w-3.5" />
+                      {canGenerateManifest ? 'Generar' : 'N/A'}
+                    </Button>
+                  </td>
+
+                  {/* Acciones */}
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => onEdit(trip)}
+                        className="p-1.5 rounded-md text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                        title="Editar viaje"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => onCancel(trip)}
+                        className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        title="Cancelar viaje"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-    </>
+
+      {/* ── Pagination ── */}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={trips.length}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
+    </div>
   );
 };

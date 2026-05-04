@@ -25,6 +25,7 @@ import SystemUpdatesModal from '../../features/updates/components/SystemUpdatesM
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
+const SIDEBAR_AUTO_HIDE_WIDTH = 1280;
 const PENDING_SYNC_TTL_MS = 30000;
 
 // Accesos rápidos para las funciones más comerciales
@@ -98,14 +99,14 @@ const Dashboard: React.FC = () => {
   
   // Estado para el sidebar en desktop (persistente)
   const [sidebarHidden, setSidebarHidden] = useState(() => {
-    if (window.innerWidth < 1024) return true;
+    if (window.innerWidth < SIDEBAR_AUTO_HIDE_WIDTH) return true;
     const saved = localStorage.getItem(STORAGE_KEY_SIDEBAR_HIDDEN);
     return saved ? JSON.parse(saved) : false;
   });
 
   // Efecto para persistir el estado del sidebar en desktop
   useEffect(() => {
-    if (window.innerWidth >= 1024) {
+    if (window.innerWidth >= SIDEBAR_AUTO_HIDE_WIDTH) {
       localStorage.setItem(STORAGE_KEY_SIDEBAR_HIDDEN, JSON.stringify(sidebarHidden));
     }
   }, [sidebarHidden]);
@@ -355,7 +356,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
+      if (window.innerWidth < SIDEBAR_AUTO_HIDE_WIDTH) {
         setSidebarHidden(true);
         closeMobileSidebar();
       }
@@ -365,7 +366,7 @@ const Dashboard: React.FC = () => {
   }, [closeMobileSidebar]);
 
   const toggleSidebar = () => {
-    if (window.innerWidth < 1024) {
+    if (window.innerWidth < SIDEBAR_AUTO_HIDE_WIDTH) {
       if (sidebarOpen) {
         closeMobileSidebar();
       } else {
@@ -425,7 +426,7 @@ const Dashboard: React.FC = () => {
       </AnimatePresence>
 
       {/* Sidebar para escritorio */}
-      <div className={`hidden lg:flex lg:flex-shrink-0 transition-all duration-300 ${sidebarHidden ? 'w-0' : 'w-80'}`}>
+      <div className={`hidden xl:flex xl:flex-shrink-0 transition-all duration-300 ${sidebarHidden ? 'w-0' : 'w-80'}`}>
         <div className={`flex flex-col w-80 transition-opacity duration-300 ${sidebarHidden ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <Sidebar 
             currentUser={currentUser} 

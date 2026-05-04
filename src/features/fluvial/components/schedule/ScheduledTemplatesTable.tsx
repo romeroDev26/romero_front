@@ -1,6 +1,6 @@
 // src/features/fluvial/components/schedule/ScheduledTemplatesTable.tsx
-import React from 'react';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import React, { useState, useMemo } from 'react';
+import { PencilIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { ScheduledRouteTemplate } from '../../../../types';
 
@@ -10,41 +10,119 @@ interface Props {
   onDelete: (template: ScheduledRouteTemplate) => void;
 }
 
-const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Mi\u00e9rcoles', 'Jueves', 'Viernes', 'S\u00e1bado', 'Domingo'];
+const DAYS_OF_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const TEMPLATES_PAGE_SIZE = 6;
 
+// ── Paginacion de plantillas ─────────────────────────────────────────────────
+interface TemplatePaginationProps {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+}
+
+const TemplatePagination: React.FC<TemplatePaginationProps> = ({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}) => {
+  const startItem = (currentPage - 1) * TEMPLATES_PAGE_SIZE + 1;
+  const endItem = Math.min(currentPage * TEMPLATES_PAGE_SIZE, totalItems);
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 border-t border-gray-100 gap-2">
+      <p className="text-xs text-gray-500">
+        Mostrando{' '}
+        <span className="font-semibold text-gray-700">{startItem}–{endItem}</span>{' '}
+        de{' '}
+        <span className="font-semibold text-gray-700">{totalItems}</span>{' '}
+        plantillas
+      </p>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          title="Pagina anterior"
+        >
+          <ChevronLeftIcon className="h-4 w-4" />
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`min-w-[30px] h-7 px-2 rounded-md text-xs font-medium transition-colors border ${
+              currentPage === page
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          title="Pagina siguiente"
+        >
+          <ChevronRightIcon className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ── Componente principal ─────────────────────────────────────────────────────
 export const ScheduledTemplatesTable: React.FC<Props> = ({
   templates,
   onEdit,
   onDelete,
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(templates.length / TEMPLATES_PAGE_SIZE));
+
+  // Reset de pagina si cambia el numero de plantillas
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [templates.length]);
+
+  const paginatedTemplates = useMemo(() => {
+    const start = (currentPage - 1) * TEMPLATES_PAGE_SIZE;
+    return templates.slice(start, start + TEMPLATES_PAGE_SIZE);
+  }, [templates, currentPage]);
+
+  const showPagination = templates.length > TEMPLATES_PAGE_SIZE;
+
   if (!templates.length) {
     return (
-      <div className="text-center py-4 text-gray-500">
+      <div className="text-center py-8 text-gray-400 text-sm">
         No hay plantillas configuradas.
       </div>
     );
   }
 
   const getDayOfWeekLabel = (day: number) => {
-    // day_of_week: 1=Lunes, 7=Domingo. Nuestro array es 0-indexed.
-    return DAYS_OF_WEEK[day - 1] || 'D\u00eda inv\u00e1lido';
+    return DAYS_OF_WEEK[day - 1] || 'Día inválido';
   };
 
   return (
-    <>
+    <div className="rounded-xl border border-gray-100 overflow-hidden">
       {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-4">
-        {templates.map((template) => (
-          <div key={template.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="block lg:hidden divide-y divide-gray-100">
+        {paginatedTemplates.map((template) => (
+          <div key={template.id} className="p-4 hover:bg-gray-50 transition-colors">
             <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <h3 className="text-base font-semibold text-gray-900">{template.template_name}</h3>
-                <p className="text-sm text-gray-500 mt-1">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-gray-900 truncate">{template.template_name}</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
                   {template.route?.origin_port?.name} → {template.route?.destination_port?.name}
                 </p>
               </div>
               <span
-                className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                className={`ml-3 flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full ${
                   template.is_active
                     ? 'bg-green-100 text-green-800'
                     : 'bg-red-100 text-red-800'
@@ -56,28 +134,28 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
 
             <div className="space-y-2 text-sm mb-3">
               <div>
-                <span className="block text-xs text-gray-500">Ruta</span>
-                <span className="font-medium text-gray-900">{template.route?.name}</span>
+                <span className="block text-xs text-gray-400 uppercase tracking-wide">Ruta</span>
+                <span className="font-medium text-gray-800">{template.route?.name}</span>
               </div>
               <div>
-                <span className="block text-xs text-gray-500">Embarcaci\u00f3n</span>
-                <span className="font-medium text-gray-900">
+                <span className="block text-xs text-gray-400 uppercase tracking-wide">Embarcación</span>
+                <span className="font-medium text-gray-800">
                   {template.vessel?.name || <span className="text-gray-400">No asignada</span>}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="block text-xs text-gray-500">D\u00eda Salida</span>
-                  <span className="font-medium text-gray-900">{getDayOfWeekLabel(template.day_of_week)}</span>
+                  <span className="block text-xs text-gray-400 uppercase tracking-wide">Día Salida</span>
+                  <span className="font-medium text-gray-800">{getDayOfWeekLabel(template.day_of_week)}</span>
                 </div>
                 <div>
-                  <span className="block text-xs text-gray-500">Hora Salida</span>
-                  <span className="font-medium text-gray-900 font-mono">{template.departure_time.substring(0, 5)}</span>
+                  <span className="block text-xs text-gray-400 uppercase tracking-wide">Hora Salida</span>
+                  <span className="font-medium text-gray-800 font-mono">{template.departure_time.substring(0, 5)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+            <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
               <Button
                 variant="outline"
                 onClick={() => onEdit(template)}
@@ -99,83 +177,69 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
 
       {/* Desktop Table View */}
       <div className="hidden lg:block overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nombre Plantilla
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ruta
-              </th>
-               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Embarcaci\u00f3n
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                D\u00eda Salida
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hora Salida
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
+        <table className="min-w-full">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50">
+              {['Nombre Plantilla', 'Ruta', 'Embarcación', 'Día Salida', 'Hora Salida', 'Estado', 'Acciones'].map(
+                (header) => (
+                  <th
+                    key={header}
+                    className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                  >
+                    {header}
+                  </th>
+                )
+              )}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {templates.map((template) => (
-              <tr key={template.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium text-gray-900">{template.template_name}</div>
+          <tbody className="divide-y divide-gray-50">
+            {paginatedTemplates.map((template) => (
+              <tr key={template.id} className="hover:bg-gray-50/70 transition-colors">
+                <td className="px-5 py-4 whitespace-nowrap">
+                  <p className="font-semibold text-sm text-gray-900">{template.template_name}</p>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{template.route?.name}</div>
-                  <div className="text-sm text-gray-500">
-                      {template.route?.origin_port?.name} → {template.route?.destination_port?.name}
-                  </div>
+                <td className="px-5 py-4 whitespace-nowrap">
+                  <p className="text-sm text-gray-800">{template.route?.name}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {template.route?.origin_port?.name} → {template.route?.destination_port?.name}
+                  </p>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-700">
                   {template.vessel?.name || <span className="text-gray-400">No asignada</span>}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-700">
                   {getDayOfWeekLabel(template.day_of_week)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {/* La hora viene en "HH:MM:SS", la mostramos como "HH:mm" */}
+                <td className="px-5 py-4 whitespace-nowrap text-sm text-gray-700 font-mono">
                   {template.departure_time.substring(0, 5)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-5 py-4 whitespace-nowrap">
                   <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset ${
                       template.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'text-green-700 bg-green-50 ring-green-600/20'
+                        : 'text-red-700 bg-red-50 ring-red-600/20'
                     }`}
                   >
                     {template.is_active ? 'Activa' : 'Inactiva'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
+                <td className="px-5 py-4 whitespace-nowrap">
+                  <div className="flex items-center gap-1">
+                    <button
                       onClick={() => onEdit(template)}
-                      className="p-1"
-                      title="Editar"
+                      className="p-1.5 rounded-md text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                      title="Editar plantilla"
                     >
                       <PencilIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
+                    </button>
+                    <button
                       onClick={() => onDelete(template)}
-                      className="p-1 text-red-600 hover:text-red-800"
-                      title="Desactivar"
+                      className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      title="Desactivar plantilla"
                     >
                       <TrashIcon className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -183,6 +247,16 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
           </tbody>
         </table>
       </div>
-    </>
+
+      {/* Paginacion */}
+      {showPagination && (
+        <TemplatePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={templates.length}
+          onPageChange={setCurrentPage}
+        />
+      )}
+    </div>
   );
 };

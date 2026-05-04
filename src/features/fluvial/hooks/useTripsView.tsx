@@ -25,6 +25,8 @@ interface UseTripsViewParams {
   filters: {
     origin_city_id?: number;
     destination_city_id?: number;
+    status?: string;
+    search?: string;
   };
 }
 
@@ -66,7 +68,6 @@ export const useTripsView = ({
         break;
       }
       case 'history': {
-        const hasAdvancedFilters = filters.origin_city_id || filters.destination_city_id;
         const endDate = format(new Date(), 'yyyy-MM-dd');
         const startDate = format(subYears(new Date(), 1), 'yyyy-MM-dd');
 
@@ -74,7 +75,8 @@ export const useTripsView = ({
           company_id: companyId,
           start_date: startDate,
           end_date: endDate,
-          ...(hasAdvancedFilters && filters)
+          ...(filters.origin_city_id ? { origin_city_id: filters.origin_city_id } : {}),
+          ...(filters.destination_city_id ? { destination_city_id: filters.destination_city_id } : {}),
         };
 
         rawTrips = await tripsService.search(searchParams);

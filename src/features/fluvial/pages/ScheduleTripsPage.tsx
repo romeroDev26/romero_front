@@ -9,6 +9,7 @@ import { useScheduledTemplates } from '../hooks/useScheduledTemplates';
 import { authService } from '../../../services/auth.service';
 import { User, ScheduledRouteTemplate } from '../../../types';
 import { UnifiedTripViewItem } from '../hooks/useTripsView';
+import { useCities } from '../../../hooks/useCitiesPortsData';
 
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
@@ -64,9 +65,41 @@ export const ScheduleTripsPage: React.FC = () => {
     filters: advancedFilters,
   });
 
-  // Filtros frontend: status y busqueda por nombre/embarcacion
+  const { data: cities = [] } = useCities();
+
+  // Filtros frontend: status, search, y ciudades de origen/destino
   const trips = useMemo(() => {
     let result = rawTrips;
+    
+    if (advancedFilters.origin_city_id || advancedFilters.destination_city_id) {
+      const originCity = cities.find(c => c.id === advancedFilters.origin_city_id);
+      const destCity = cities.find(c => c.id === advancedFilters.destination_city_id);
+
+      const originName = (originCity?.name || '').toLowerCase().trim();
+      const destName = (destCity?.name || '').toLowerCase().trim();
+
+      result = result.filter(t => {
+        // Los nombres de origen/destino ya vienen en origin_port_name / destination_port_name
+        // del UnifiedTripViewItem. Usamos el trip_name como fallback por si el endpoint
+        // no rellena esos campos.
+        const oPort = (t.origin_port_name || '').toLowerCase();
+        const dPort = (t.destination_port_name || '').toLowerCase();
+        const tName = (t.trip_name || '').toLowerCase();
+
+        let matchOrigin = !advancedFilters.origin_city_id;
+        let matchDest   = !advancedFilters.destination_city_id;
+
+        if (advancedFilters.origin_city_id && originName) {
+          matchOrigin = oPort.includes(originName) || tName.includes(originName);
+        }
+        if (advancedFilters.destination_city_id && destName) {
+          matchDest = dPort.includes(destName) || tName.includes(destName);
+        }
+
+        return matchOrigin && matchDest;
+      });
+    }
+
     if (advancedFilters.status) {
       result = result.filter((t) => t.status === advancedFilters.status);
     }
@@ -80,7 +113,7 @@ export const ScheduleTripsPage: React.FC = () => {
       );
     }
     return result;
-  }, [rawTrips, advancedFilters.status, advancedFilters.search]);
+  }, [rawTrips, advancedFilters.status, advancedFilters.search, advancedFilters.origin_city_id, advancedFilters.destination_city_id, cities]);
 
   const { templates: scheduledTemplates, isLoading: isLoadingTemplates } = useScheduledTemplates(COMPANY_ID);
 

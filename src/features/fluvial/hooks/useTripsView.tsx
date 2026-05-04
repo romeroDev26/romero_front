@@ -53,7 +53,16 @@ export const useTripsView = ({
   companyId,
   filters,
 }: UseTripsViewParams) => {
-  const queryKey = ['tripsView', viewMode, weekDate, companyId, filters];
+  // El queryKey solo incluye lo que realmente afecta la llamada al backend.
+  // Status, search y city filters son filtros puramente frontend: no deben
+  // provocar un re-fetch al cambiar.
+  const queryKey =
+    viewMode === 'history'
+      ? ['tripsView', viewMode, weekDate, companyId, {
+          origin_city_id: filters.origin_city_id,
+          destination_city_id: filters.destination_city_id,
+        }]
+      : ['tripsView', viewMode, weekDate, companyId];
   const queryFn = async (): Promise<UnifiedTripViewItem[]> => {
     let rawTrips: any[] = [];
 

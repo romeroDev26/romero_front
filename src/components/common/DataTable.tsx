@@ -3,7 +3,6 @@ import React from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Spinner } from './Spinner';
 
-// La interfaz Column se mantiene igual
 export interface Column<T> {
   key: string;
   header: string;
@@ -11,7 +10,6 @@ export interface Column<T> {
   className?: string;
 }
 
-// La interfaz DataTableProps se mantiene igual
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
@@ -25,7 +23,6 @@ interface DataTableProps<T> {
   customActions?: (item: T) => React.ReactNode;
 }
 
-// El componente DataTable con las correcciones
 export function DataTable<T>({
   data,
   columns,
@@ -38,11 +35,9 @@ export function DataTable<T>({
   showActions = true,
   customActions,
 }: DataTableProps<T>) {
-  
-  // Las secciones isLoading, error y data.length === 0 se mantienen igual
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8">
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-10">
         <div className="flex justify-center">
           <Spinner size="lg" />
         </div>
@@ -52,10 +47,12 @@ export function DataTable<T>({
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8">
-        <div className="text-center text-red-600">
-          <p className="font-semibold">Error al cargar los datos</p>
-          <p className="text-sm mt-1">{typeof error.message === 'string' ? error.message : 'Ocurrió un error inesperado'}</p>
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-10">
+        <div className="text-center text-[#cf1322]">
+          <p className="font-medium text-[15px]">Error al cargar los datos</p>
+          <p className="text-[13px] mt-1 text-[#4d4d4d]">
+            {typeof error.message === 'string' ? error.message : 'Ocurrió un error inesperado'}
+          </p>
         </div>
       </div>
     );
@@ -63,9 +60,9 @@ export function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8">
-        <div className="text-center text-gray-500">
-          <p>{emptyMessage}</p>
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-10">
+        <div className="text-center text-[#828282]">
+          <p className="text-[15px]">{emptyMessage}</p>
         </div>
       </div>
     );
@@ -74,15 +71,15 @@ export function DataTable<T>({
   const hasActions = showActions && (onEdit || onDelete || customActions);
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full">
+          <thead className="bg-[#f5f5f5]">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                  className={`px-5 py-3.5 text-left text-[13px] font-medium text-[#4d4d4d] tracking-normal ${
                     column.className || ''
                   }`}
                 >
@@ -90,50 +87,48 @@ export function DataTable<T>({
                 </th>
               ))}
               {hasActions && (
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-5 py-3.5 text-right text-[13px] font-medium text-[#4d4d4d]">
                   Acciones
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-[#e8e8e8]">
             {data.map((item, index) => {
-              // Lógica robusta para la key de la fila
               const rowKey = keyExtractor(item) ?? `row-${index}`;
 
               return (
-                <tr key={rowKey} className="hover:bg-gray-50">
+                <tr key={rowKey} className="hover:bg-[#f5f5f5]/60 transition-colors">
                   {columns.map((column) => {
-                    // Lógica robusta para la key de la celda
                     const cellKey = `${rowKey}-${column.key}`;
                     return (
                       <td
                         key={cellKey}
-                        className={`px-6 py-4 whitespace-nowrap ${column.className || ''}`}
+                        className={`px-5 py-4 whitespace-nowrap text-[14px] text-[#202020] ${column.className || ''}`}
                       >
                         {column.accessor(item)}
                       </td>
                     );
                   })}
                   {hasActions && (
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="px-5 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-3">
                         {onEdit && (
                           <button
                             onClick={() => onEdit(item)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-[#828282] hover:text-[#1F4690] transition-colors"
                             title="Editar"
                           >
-                            <PencilIcon className="h-4 w-4" />
+                            <PencilIcon className="h-4 w-4" strokeWidth={1.5} />
                           </button>
                         )}
                         {onDelete && (
                           <button
                             onClick={() => onDelete(item)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Eliminar"
+                            className="text-[#828282] hover:text-[#cf1322] transition-colors"
+                            title="Desactivar"
                           >
-                            <TrashIcon className="h-4 w-4" />
+                            <TrashIcon className="h-4 w-4" strokeWidth={1.5} />
                           </button>
                         )}
                         {customActions && customActions(item)}
@@ -150,7 +145,6 @@ export function DataTable<T>({
   );
 }
 
-// El hook se mantiene igual, está perfecto.
 export const useConfirmDelete = (
   onConfirm: (item: any) => void,
   getMessage: (item: any) => string

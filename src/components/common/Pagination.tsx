@@ -1,7 +1,6 @@
 // src/components/common/Pagination.tsx
 import React from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { Button } from './Button';
 
 interface PaginationProps {
   currentPage: number;
@@ -18,36 +17,34 @@ export const Pagination: React.FC<PaginationProps> = ({
   total,
   limit,
   onPageChange,
-  loading = false
+  loading = false,
 }) => {
   const startItem = (currentPage - 1) * limit + 1;
   const endItem = Math.min(currentPage * limit, total);
 
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
-    const showPages = 5; // Número de páginas a mostrar
-    
+    const showPages = 5;
+
     if (totalPages <= showPages) {
-      // Si hay pocas páginas, mostrar todas
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
       }
     } else {
-      // Lógica más compleja para muchas páginas
       const start = Math.max(1, currentPage - 2);
       const end = Math.min(totalPages, currentPage + 2);
-      
+
       if (start > 1) {
         pages.push(1);
         if (start > 2) {
           pages.push('...');
         }
       }
-      
+
       for (let i = start; i <= end; i++) {
         pages.push(i);
       }
-      
+
       if (end < totalPages) {
         if (end < totalPages - 1) {
           pages.push('...');
@@ -55,7 +52,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
@@ -64,58 +61,57 @@ export const Pagination: React.FC<PaginationProps> = ({
   }
 
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
-      <div className="flex items-center text-sm text-gray-700">
-        <span>
-          Mostrando {startItem} a {endItem} de {total} registros
-        </span>
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-1 py-4">
+      <div className="text-[13px] text-[#828282]">
+        Mostrando{' '}
+        <span className="font-medium text-[#202020]">{startItem}</span> a{' '}
+        <span className="font-medium text-[#202020]">{endItem}</span> de{' '}
+        <span className="font-medium text-[#202020]">{total}</span> registros
       </div>
-      
-      <div className="flex items-center space-x-1">
+
+      <div className="flex items-center gap-1.5">
         {/* Botón Anterior */}
-        <Button
-          size="sm"
-          variant="outline"
+        <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1 || loading}
-          className="flex items-center"
+          className="inline-flex items-center justify-center px-3 py-2 rounded-lg border border-[#e8e8e8] bg-white text-[#4d4d4d] text-[13px] font-medium hover:bg-[#f5f5f5] hover:text-[#202020] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          <ChevronLeftIcon className="h-4 w-4 mr-1" />
+          <ChevronLeftIcon className="h-4 w-4 mr-1" strokeWidth={1.5} />
           Anterior
-        </Button>
-        
+        </button>
+
         {/* Números de página */}
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center gap-1">
           {getPageNumbers().map((page, index) => (
             <React.Fragment key={index}>
               {page === '...' ? (
-                <span className="px-2 py-1 text-sm text-gray-500">...</span>
+                <span className="px-2 py-1 text-[13px] text-[#828282]">...</span>
               ) : (
-                <Button
-                  size="sm"
-                  variant={currentPage === page ? 'primary' : 'outline'}
+                <button
                   onClick={() => onPageChange(page as number)}
                   disabled={loading}
-                  className="min-w-[32px]"
+                  className={`inline-flex items-center justify-center min-w-[36px] h-[36px] rounded-lg text-[13px] font-medium transition-colors ${
+                    currentPage === page
+                      ? 'bg-[#1F4690] text-white'
+                      : 'bg-white text-[#4d4d4d] border border-[#e8e8e8] hover:bg-[#f5f5f5] hover:text-[#202020]'
+                  }`}
                 >
                   {page}
-                </Button>
+                </button>
               )}
             </React.Fragment>
           ))}
         </div>
-        
+
         {/* Botón Siguiente */}
-        <Button
-          size="sm"
-          variant="outline"
+        <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages || loading}
-          className="flex items-center"
+          className="inline-flex items-center justify-center px-3 py-2 rounded-lg border border-[#e8e8e8] bg-white text-[#4d4d4d] text-[13px] font-medium hover:bg-[#f5f5f5] hover:text-[#202020] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Siguiente
-          <ChevronRightIcon className="h-4 w-4 ml-1" />
-        </Button>
+          <ChevronRightIcon className="h-4 w-4 ml-1" strokeWidth={1.5} />
+        </button>
       </div>
     </div>
   );

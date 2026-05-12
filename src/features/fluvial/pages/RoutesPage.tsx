@@ -3,18 +3,20 @@
 import React, { useState, useMemo } from 'react';
 import { 
   PlusIcon, 
-  MagnifyingGlassIcon, 
   MapIcon, 
   ClockIcon,
   PencilIcon,
   TrashIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  MapPinIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-toastify';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
 import { DataTable, Column, useConfirmDelete } from '../../../components/common/DataTable';
+import { SearchInput } from '../../../components/common/SearchInput';
+import { StatusBadge } from '../../../components/common/StatusBadge';
 import { SearchableSelect } from '../../../components/common/SearchableSelect';
 import { Route } from '../../../types';
 import { usePortsData } from '../../../hooks/usePorts'; // **RUTA CORRECTA Y VERIFICADA**
@@ -344,123 +346,156 @@ export const RoutesPage: React.FC = () => {
     }
   };
 
-  // La definición de columnas ya es correcta, no necesita cambios.
   const routeColumns: Column<Route>[] = [
-    { key: 'name', header: 'Ruta', accessor: (r) => <div className="font-medium text-gray-900">{r.name}</div> },
-    { key: 'origin_destination', header: 'Origen → Destino', accessor: (r) => `${r.origin_port?.name || 'N/A'} → ${r.destination_port?.name || 'N/A'}` },
-    { key: 'duration', header: 'Duración', accessor: (r) => ( <div className="flex items-center text-sm text-gray-600"><ClockIcon className="h-4 w-4 mr-1.5" />{`${routeHelpers.isoStringToHours(r.estimated_duration).toFixed(1)}h`}</div> )},
-    { key: 'stops', header: 'Paradas', accessor: (r) => <span className="text-sm text-gray-600">{r.stops?.length || 0} paradas</span> },
-    { key: 'status', header: 'Estado', accessor: (r) => (<span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${ r.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }`}>{r.is_active ? 'Activo' : 'Inactivo'}</span>) },
+    { 
+      key: 'name', 
+      header: 'Ruta', 
+      accessor: (r) => (
+        <div className="flex items-center gap-2.5">
+          <MapPinIcon className="h-4 w-4 text-[#828282] shrink-0" strokeWidth={1.5} />
+          <span className="font-medium text-[#202020]">{r.name}</span>
+        </div>
+      ) 
+    },
+    { 
+      key: 'origin_destination', 
+      header: 'Origen → Destino', 
+      accessor: (r) => (
+        <span className="text-[14px] text-[#4d4d4d]">
+          {r.origin_port?.name || 'N/A'} → {r.destination_port?.name || 'N/A'}
+        </span>
+      ) 
+    },
+    { 
+      key: 'duration', 
+      header: 'Duración', 
+      accessor: (r) => ( 
+        <div className="flex items-center text-[14px] text-[#4d4d4d]">
+          <ClockIcon className="h-4 w-4 mr-1.5 text-[#828282]" strokeWidth={1.5} />
+          {`${routeHelpers.isoStringToHours(r.estimated_duration).toFixed(1)}h`}
+        </div> 
+      )
+    },
+    { 
+      key: 'stops', 
+      header: 'Paradas', 
+      accessor: (r) => (
+        <span className="text-[14px] text-[#828282]">{r.stops?.length || 0} paradas</span>
+      ) 
+    },
+    { 
+      key: 'status', 
+      header: 'Estado', 
+      accessor: (r) => <StatusBadge isActive={r.is_active} /> 
+    },
   ];
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Gestión de Rutas Fluviales</h1>
-          <p className="text-sm md:text-base text-gray-600">Crea, edita y gestiona las rutas y sus paradas.</p>
+          <h1
+            className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            Rutas Fluviales
+          </h1>
+          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+            Crea, edita y gestiona las rutas y sus paradas.
+          </p>
         </div>
-        <Button onClick={handleOpenNewRouteModal} className="w-full sm:w-auto justify-center">
-          <PlusIcon className="h-5 w-5 mr-2" />
+        <button
+          onClick={handleOpenNewRouteModal}
+          className="inline-flex items-center px-5 py-3 bg-[#1F4690] hover:bg-[#163672] text-white text-[15px] font-medium rounded-[20px] transition-colors shrink-0"
+        >
+          <PlusIcon className="h-5 w-5 mr-2" strokeWidth={1.5} />
           Nueva Ruta
-        </Button>
+        </button>
       </div>
-      
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-        <div className="relative flex-grow w-full sm:max-w-md">
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input 
-            type="text" 
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border" 
-            placeholder="Buscar por nombre o puerto..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
+
+      {/* Controles */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+        <SearchInput
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Buscar por nombre o puerto..."
+          className="w-full sm:max-w-sm"
+        />
+        <label className="flex items-center cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={showOnlyActive}
+            onChange={(e) => setShowOnlyActive(e.target.checked)}
+            className="h-4 w-4 rounded border-[#e8e8e8] text-[#1F4690] focus:ring-[#1F4690]/20 mr-2"
           />
-        </div>
-        <label className="flex items-center text-sm text-gray-700 w-full sm:w-auto">
-          <input 
-            type="checkbox" 
-            checked={showOnlyActive} 
-            onChange={(e) => setShowOnlyActive(e.target.checked)} 
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
-          />
-          Mostrar solo activas
+          <span className="text-[14px] text-[#4d4d4d]">Mostrar solo activas</span>
         </label>
       </div>
-      
+
       {/* Mobile Card View */}
-      <div className="block lg:hidden space-y-4">
+      <div className="block lg:hidden space-y-3">
         {filteredRoutes.map((route) => (
-          <div key={route.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
-              <div>
-                <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{route.name}</h3>
-                <div className="flex items-center gap-2 mt-1 text-sm text-gray-600 flex-wrap">
-                  <span className="font-medium">
-                    {route.origin_port?.name || 'N/A'} → {route.destination_port?.name || 'N/A'}
-                  </span>
-                </div>
+          <div
+            key={route.id}
+            className="bg-white rounded-[12px] border border-[#e8e8e8] p-5"
+          >
+            <div className="flex justify-between items-start mb-3 gap-3">
+              <div className="min-w-0">
+                <h3 className="text-[15px] font-medium text-[#202020] truncate">{route.name}</h3>
+                <p className="text-[13px] text-[#4d4d4d] mt-0.5">
+                  {route.origin_port?.name || 'N/A'} → {route.destination_port?.name || 'N/A'}
+                </p>
               </div>
-              <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ${ 
-                route.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' 
-              }`}>
-                {route.is_active ? 'Activo' : 'Inactivo'}
-              </span>
+              <StatusBadge isActive={route.is_active} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-              <div className="flex items-center">
-                <ClockIcon className="h-4 w-4 mr-1.5 text-gray-400 flex-shrink-0" />
+            <div className="flex items-center gap-4 text-[13px] text-[#828282] mb-4">
+              <div className="flex items-center gap-1.5">
+                <ClockIcon className="h-4 w-4" strokeWidth={1.5} />
                 <span>{routeHelpers.isoStringToHours(route.estimated_duration).toFixed(1)}h</span>
               </div>
-              <div className="flex items-center">
-                <MapIcon className="h-4 w-4 mr-1.5 text-gray-400 flex-shrink-0" />
+              <div className="flex items-center gap-1.5">
+                <MapIcon className="h-4 w-4" strokeWidth={1.5} />
                 <span>{route.stops?.length || 0} paradas</span>
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-end gap-3 pt-3 border-t border-gray-100">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleConfigureStops(route)} 
-                className="text-blue-700 border-blue-200 bg-blue-50 hover:bg-blue-100 flex-1 sm:flex-none justify-center"
+            <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-[#f0f0f0]">
+              <button
+                onClick={() => handleConfigureStops(route)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-[#1F4690] bg-[#1F4690]/5 border border-[#1F4690]/10 rounded-[10px] hover:bg-[#1F4690]/10 transition-colors"
               >
-                <MapIcon className="h-4 w-4 mr-1" />
+                <MapIcon className="h-4 w-4" strokeWidth={1.5} />
                 Mapa
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
+              </button>
+              <button
                 onClick={() => handleSyncTripStops(route)}
                 disabled={syncingRouteId === route.id}
-                className="text-purple-700 border-purple-200 bg-purple-50 hover:bg-purple-100 disabled:opacity-50 flex-1 sm:flex-none justify-center"
-                title="Sincronizar paradas de viajes con la ruta"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-[#4d4d4d] bg-[#f5f5f5] border border-[#e8e8e8] rounded-[10px] hover:bg-[#e8e8e8] disabled:opacity-50 transition-colors"
               >
-                <ArrowPathIcon className={`h-4 w-4 mr-1 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} />
+                <ArrowPathIcon className={`h-4 w-4 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} strokeWidth={1.5} />
                 {syncingRouteId === route.id ? 'Sincronizando...' : 'Sincronizar'}
-              </Button>
+              </button>
               <button
                 onClick={() => handleEditRoute(route)}
-                className="flex items-center justify-center text-primary hover:text-primary/80 text-sm font-medium px-4 py-2 sm:px-2 sm:py-0 border border-transparent rounded sm:border-0 flex-1 sm:flex-none bg-gray-50 sm:bg-transparent"
+                className="p-2 text-[#828282] hover:text-[#1F4690] transition-colors"
               >
-                <PencilIcon className="h-4 w-4 mr-1" />
-                Editar
+                <PencilIcon className="h-4 w-4" strokeWidth={1.5} />
               </button>
               <button
                 onClick={() => handleDelete(route)}
-                className="flex items-center justify-center text-red-600 hover:text-red-900 text-sm font-medium px-4 py-2 sm:px-2 sm:py-0 border border-transparent rounded sm:border-0 flex-1 sm:flex-none bg-red-50 sm:bg-transparent"
+                className="p-2 text-[#828282] hover:text-[#cf1322] transition-colors"
               >
-                <TrashIcon className="h-4 w-4 mr-1" />
-                Eliminar
+                <TrashIcon className="h-4 w-4" strokeWidth={1.5} />
               </button>
             </div>
           </div>
         ))}
-        
+
         {filteredRoutes.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
-            No se encontraron rutas que coincidan con los filtros.
+          <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-8 text-center">
+            <p className="text-[15px] text-[#828282]">No se encontraron rutas que coincidan con los filtros.</p>
           </div>
         )}
       </div>
@@ -468,10 +503,9 @@ export const RoutesPage: React.FC = () => {
       {/* Desktop Table View */}
       <div className="hidden lg:block">
         <DataTable
-          // ** PASO 3: PASAR LOS DATOS CORRECTOS A LA TABLA **
-          data={filteredRoutes} 
+          data={filteredRoutes}
           columns={routeColumns}
-          isLoading={routesLoading || portsLoading} // Mostrar loading si cualquiera de los dos está cargando
+          isLoading={routesLoading || portsLoading}
           error={routesError as Error | null}
           onEdit={handleEditRoute}
           onDelete={handleDelete}
@@ -479,28 +513,34 @@ export const RoutesPage: React.FC = () => {
           emptyMessage="No se encontraron rutas que coincidan con los filtros."
           showActions={true}
           customActions={(route) => (
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleConfigureStops(route)} title="Gestionar paradas en el mapa" className="bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700">
-                <MapIcon className="h-4 w-4" />
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleSyncTripStops(route)} 
-                disabled={syncingRouteId === route.id}
-                title="Sincronizar paradas de viajes con la ruta" 
-                className="bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-700 disabled:opacity-50"
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => handleConfigureStops(route)}
+                className="text-[#828282] hover:text-[#1F4690] transition-colors"
+                title="Gestionar paradas en el mapa"
               >
-                <ArrowPathIcon className={`h-4 w-4 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} />
-              </Button>
+                <MapIcon className="h-4 w-4" strokeWidth={1.5} />
+              </button>
+              <button
+                onClick={() => handleSyncTripStops(route)}
+                disabled={syncingRouteId === route.id}
+                className="text-[#828282] hover:text-[#1F4690] transition-colors disabled:opacity-40"
+                title="Sincronizar paradas de viajes con la ruta"
+              >
+                <ArrowPathIcon className={`h-4 w-4 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+              </button>
             </div>
           )}
         />
       </div>
-      
+
       <RouteFormModal isOpen={isFormModalOpen} onClose={() => setIsFormModalOpen(false)} route={selectedRoute} routes={routes} />
-      
-      <RouteMapModal isOpen={isMapModalOpen && !!routeForMap} onClose={() => { setIsMapModalOpen(false); setConfiguringRouteId(null); }} route={routeForMap as RouteWithStops | undefined} />
+
+      <RouteMapModal
+        isOpen={isMapModalOpen && !!routeForMap}
+        onClose={() => { setIsMapModalOpen(false); setConfiguringRouteId(null); }}
+        route={routeForMap as RouteWithStops | undefined}
+      />
     </div>
   );
 };

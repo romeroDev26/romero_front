@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -334,13 +335,23 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
               }`}
             />
           </button>
+          <AnimatePresence initial={false}>
           {isExpanded && item.subitems && (
-            <div className="mt-1 bg-gray-50/50 rounded-lg mx-2">
-              <div className="py-2 space-y-1">
-                {item.subitems.map((subitem: NavItem) => renderMenuItem(subitem, true, level + 1))}
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="mt-1 bg-gray-50/50 rounded-lg mx-2">
+                <div className="py-2 space-y-1">
+                  {item.subitems.map((subitem: NavItem) => renderMenuItem(subitem, true, level + 1))}
+                </div>
               </div>
-            </div>
+            </motion.div>
           )}
+        </AnimatePresence>
         </div>
       );
     }
@@ -398,17 +409,27 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
             }`}
           />
         </button>
-        {isExpanded && (
-          <div className="mt-1 bg-gray-50 rounded-lg mx-2 overflow-hidden">
-            <div className="py-2 space-y-1">
-              {group.items.map((item: NavItem) => (
-                <div key={item.name || item.path}>
-                  {renderMenuItem(item, false, 0)}
+        <AnimatePresence initial={false}>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="mt-1 bg-gray-50 rounded-lg mx-2">
+                <div className="py-2 space-y-1">
+                  {group.items.map((item: NavItem) => (
+                    <div key={item.name || item.path}>
+                      {renderMenuItem(item, false, 0)}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }, [expandedMenus, renderMenuItem]);

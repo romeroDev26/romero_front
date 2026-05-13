@@ -86,6 +86,8 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
           title="Pasajeros"
           icon={<UsersIcon className="w-4 h-4" strokeWidth={1.5} />}
           manifest={trip.passengerManifest}
+          countValue={trip.passengerManifest?.total_passengers}
+          countUnit="registrados"
           isGenerating={isGenerating}
           onGenerate={() => onGenerate(trip.id, 'PASSENGER')}
           onDownloadPDF={onDownloadPDF}
@@ -98,6 +100,8 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
           title="Carga"
           icon={<CubeIcon className="w-4 h-4" strokeWidth={1.5} />}
           manifest={trip.cargoManifest}
+          countValue={trip.cargoManifest?.total_cargo_weight_kg}
+          countUnit="Unidad"
           isGenerating={isGenerating}
           onGenerate={() => onGenerate(trip.id, 'CARGO')}
           onDownloadPDF={onDownloadPDF}
@@ -114,6 +118,8 @@ interface ManifestSectionProps {
   title: string;
   icon: React.ReactNode;
   manifest?: Manifest;
+  countValue?: number | null;
+  countUnit?: string;
   isGenerating: boolean;
   onGenerate: () => void;
   onDownloadPDF: (url: string | null | undefined, manifestNumber: string) => void;
@@ -125,6 +131,8 @@ const ManifestSection: React.FC<ManifestSectionProps> = ({
   title,
   icon,
   manifest,
+  countValue,
+  countUnit,
   isGenerating,
   onGenerate,
   onDownloadPDF,
@@ -148,10 +156,10 @@ const ManifestSection: React.FC<ManifestSectionProps> = ({
         <div className="space-y-3">
           <div className="flex items-baseline gap-2">
             <span className="text-[24px] font-bold text-[#202020] leading-none">
-              {manifest!.total_passengers || manifest!.total_cargo_weight_kg || '—'}
+              {countValue ?? '—'}
             </span>
             <span className="text-[12px] text-[#828282]">
-              {title === 'Carga' ? 'kg' : 'registrados'}
+              {countUnit}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-[12px] font-medium text-emerald-600">

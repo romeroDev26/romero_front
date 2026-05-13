@@ -164,8 +164,8 @@ export const useManifestsPage = () => {
         groups.set(trip.id, {
           id: trip.id,
           departure_datetime: trip.departure_datetime,
-          route_name: trip.route?.name,
-          vessel_name: trip.vessel?.name,
+          route_name: trip.trip_name || trip.route?.name,
+          vessel_name: trip.vessel_name || trip.vessel?.name,
           status: trip.status,
         });
       }

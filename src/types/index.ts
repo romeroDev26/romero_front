@@ -383,6 +383,8 @@ export interface Trip {
   template_id?: number;
   template?: ScheduledRouteTemplate;
   trip_name?: string;
+  vessel_name?: string;
+  route_name?: string;
   departure_datetime: string;
   estimated_arrival_datetime?: string;
   actual_departure_datetime?: string;

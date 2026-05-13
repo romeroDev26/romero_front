@@ -162,3 +162,5 @@ export interface ManifestResponse {
   message?: string;
   isRegeneration?: boolean; // Indica si fue una regeneración en lugar de una creación nueva
 }
+
+

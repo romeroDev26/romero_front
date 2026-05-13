@@ -110,7 +110,10 @@ class TripsService {
       paramsSerializer: p => stringify(p, { arrayFormat: 'comma', allowDots: true }),
     };
     const response = await api.get(`${this.basePath}search`, config);
-    return response.data;
+    // Normalizar respuesta: puede ser un array directo o un objeto paginado { results: [...] }
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    return data?.results || data?.items || data?.data || [];
   }
 
   async searchAvailable(params: {

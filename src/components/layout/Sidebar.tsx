@@ -298,11 +298,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
     setExpandedMenus(prev => ({ ...prev, [menuKey]: !prev[menuKey] }));
   };
 
-  const getRoleDisplay = (user: User | undefined) => {
-    if (!user) return '';
-    return user.role?.description || user.role?.name || user.role_name || 'Sin rol';
-  };
-
   const renderMenuItem = useCallback((item: NavItem, isSubitem = false, level = 0) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
     const baseClasses = `flex items-center w-full text-left text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-lg`;
@@ -477,14 +472,16 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
         </nav>
       </div>
 
-      {currentUser && (
-        <div className="p-4 border-t border-gray-100">
-          <div className="text-sm text-gray-600 mb-2">
-            <div className="font-medium">{currentUser.full_name}</div>
-            <div className="text-xs text-gray-500">{getRoleDisplay(currentUser)}</div>
-          </div>
+      <div className="px-4 py-3 border-t border-gray-100">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            Versión
+          </span>
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">
+            v1.0.1
+          </span>
         </div>
-      )}
+      </div>
 
       <div className="p-3 border-t border-gray-100">
         <button

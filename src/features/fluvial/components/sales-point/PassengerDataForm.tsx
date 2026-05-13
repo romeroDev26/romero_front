@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/PassengerDataForm.tsx
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, User } from 'lucide-react';
 import { useSunatData } from '../../hooks/useSunatData';
 import { DOCUMENT_TYPES, SunatDocType } from '../../types/sunat.types';
 import { Button } from '../../../../components/common/Button';
@@ -94,16 +94,28 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">Datos del Pasajero / Cliente</h3>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#dbe1ff]">
+          <User className="h-5 w-5 text-primary" />
+        </div>
+        <h3 className="text-base font-bold tracking-tight text-gray-900">
+          Datos del Pasajero
+        </h3>
+      </div>
+
+      {/* Tipo Doc + Número */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div className="md:col-span-1">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Tipo Doc.</label>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Tipo Doc.
+          </label>
           <select
             name="docType"
             value={passengerData.docType}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 bg-white p-2 disabled:cursor-not-allowed disabled:bg-gray-100"
             disabled={disabled}
+            className="w-full appearance-none rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {DOCUMENT_TYPES.map(doc => (
               <option key={doc.code} value={doc.code}>{doc.name}</option>
@@ -111,29 +123,33 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           </select>
         </div>
         <div className="md:col-span-2">
-          <label className="mb-1 block text-sm font-medium text-gray-700">Número de Documento</label>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Número de Documento
+          </label>
           <div className="flex">
             <input
               type="text"
               name="docNumber"
               value={passengerData.docNumber || ""}
               onChange={handleInputChange}
-              className="w-full rounded-l-md border border-gray-300 p-2 disabled:bg-gray-100"
-              placeholder="Ingrese el número"
               disabled={disabled}
+              placeholder="Ingrese el número"
+              className="w-full rounded-l-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
             <Button
               onClick={handleSearch}
               disabled={!isSearchable || isQueryingDni || isQueryingRuc || disabled}
-              className="rounded-l-none"
+              className="rounded-l-none rounded-r-lg px-3"
             >
               {isQueryingDni || isQueryingRuc ? <Spinner size="sm"/> : <Search className="h-4 w-4" />}
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Nombre / Razón Social */}
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
           {passengerData.docType === SunatDocType.RUC ? 'Razón Social' : 'Nombres Completos'}
         </label>
         <input
@@ -141,21 +157,25 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           name="name"
           value={passengerData.name || ""}
           onChange={handleInputChange}
-          className="w-full rounded-md border border-gray-300 p-2 disabled:bg-gray-100"
-          placeholder="Nombres y apellidos o Razón Social"
           disabled={disabled}
+          placeholder="Nombres y apellidos o Razón Social"
+          className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
         />
       </div>
+
+      {/* Dirección Fiscal (solo RUC) */}
       {passengerData.docType === SunatDocType.RUC && (
-         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Dirección Fiscal</label>
+        <div>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Dirección Fiscal
+          </label>
           <input
             type="text"
             name="address"
             value={passengerData.address || ""}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2 disabled:bg-gray-100"
             disabled={disabled}
+            className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
       )}
@@ -163,7 +183,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
       {/* Selector de países para documentos extranjeros */}
       {showCountrySelector && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
             País de Procedencia
           </label>
           <CountrySelector
@@ -174,53 +194,59 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             className="w-full"
           />
           {passengerData.countryCode && passengerData.countryName && (
-            <div className="mt-1 text-xs text-gray-500">
-              Código de país: <span className="font-mono font-semibold">{passengerData.countryCode}</span>
+            <div className="mt-1.5 text-[11px] text-gray-500">
+              Código de país: <span className="font-mono font-semibold text-gray-700">{passengerData.countryCode}</span>
             </div>
           )}
         </div>
       )}
       
-      {/* Mostrar país fijo para documentos peruanos */}
+      {/* País fijo para documentos peruanos */}
       {!showCountrySelector && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
             País
           </label>
-          <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 p-2">
+          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3">
             <img 
               src="https://flagcdn.com/pe.svg" 
               alt="Bandera de Perú"
               className="h-3 w-5 rounded object-cover"
             />
-            <span className="text-gray-900">Peru</span>
-            <span className="text-sm text-gray-500">(PE)</span>
+            <span className="text-sm font-medium text-gray-800">Peru</span>
+            <span className="text-xs text-gray-500">(PE)</span>
           </div>
         </div>
       )}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+      {/* Teléfono + Email */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Teléfono</label>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Teléfono
+          </label>
           <input
             type="tel"
             name="phone"
             value={passengerData.phone || ""}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2 disabled:bg-gray-100"
-            placeholder="Número de teléfono"
             disabled={disabled}
+            placeholder="Número de teléfono"
+            className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Email
+          </label>
           <input
             type="email"
             name="email"
             value={passengerData.email || ""}
             onChange={handleInputChange}
-            className="w-full rounded-md border border-gray-300 p-2 disabled:bg-gray-100"
-            placeholder="Correo electrónico"
             disabled={disabled}
+            placeholder="Correo electrónico"
+            className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
       </div>

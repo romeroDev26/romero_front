@@ -1,8 +1,7 @@
 // src/features/fluvial/components/sales-point/infants/InfantForm.tsx
 import React, { useState } from 'react';
-import { Baby } from 'lucide-react';
+import { Baby, X } from 'lucide-react';
 import { Button } from '../../../../../components/common/Button';
-import { Input } from '../../../../../components/common/Input';
 import { Infant, InfantRelationship, INFANT_RELATIONSHIP_LABELS } from '../core/types';
 
 interface InfantFormProps {
@@ -73,40 +72,53 @@ export const InfantForm: React.FC<InfantFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 bg-amber-50 border border-amber-200 rounded-lg p-4"
+      className="relative space-y-3 rounded-xl border border-amber-100 bg-amber-50/50 p-3"
     >
-      {/* Indicador de responsable */}
-      <div className="flex items-center gap-2 text-xs text-amber-800 font-medium">
-        <Baby className="h-3.5 w-3.5 flex-shrink-0" />
-        <span>
-          Responsable:{' '}
-          <span className="font-semibold">{responsibleName || '—'}</span>
-        </span>
+      {/* Cierre rápido */}
+      <button
+        type="button"
+        onClick={onCancel}
+        className="absolute right-2 top-2 rounded-md p-1 text-gray-400 transition-colors hover:bg-amber-100 hover:text-gray-600"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+
+      {/* Header mini */}
+      <div className="flex items-center gap-2 pr-6">
+        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100">
+          <Baby className="h-3.5 w-3.5 text-amber-600" />
+        </div>
+        <div className="leading-tight">
+          <p className="text-xs font-semibold text-amber-800">Nuevo infante</p>
+          <p className="text-[10px] text-amber-700/80">
+            Resp: <span className="font-medium">{responsibleName || '—'}</span>
+          </p>
+        </div>
       </div>
 
       {/* Nombre y DNI */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2 sm:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-gray-500">
             Nombre Completo
           </label>
-          <Input
+          <input
             type="text"
             value={form.full_name}
             onChange={(e) => setForm((p) => ({ ...p, full_name: e.target.value }))}
             placeholder="Nombre y apellidos"
-            className="text-sm"
+            className="w-full rounded-lg border-0 bg-white py-2 px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           />
           {errors.full_name && (
-            <p className="text-xs text-red-500 mt-1">{errors.full_name}</p>
+            <p className="mt-1 text-[11px] text-red-500">{errors.full_name}</p>
           )}
         </div>
 
-        <div className="col-span-2 sm:col-span-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            DNI <span className="text-gray-400 font-normal">(opcional)</span>
+        <div>
+          <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-gray-500">
+            DNI <span className="normal-case text-gray-400 font-normal">(opcional)</span>
           </label>
-          <Input
+          <input
             type="text"
             value={form.document_number}
             onChange={(e) =>
@@ -116,11 +128,11 @@ export const InfantForm: React.FC<InfantFormProps> = ({
               }))
             }
             placeholder="8 dígitos"
-            className="text-sm"
             maxLength={8}
+            className="w-full rounded-lg border-0 bg-white py-2 px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           />
           {errors.document_number && (
-            <p className="text-xs text-red-500 mt-1">{errors.document_number}</p>
+            <p className="mt-1 text-[11px] text-red-500">{errors.document_number}</p>
           )}
         </div>
       </div>
@@ -128,29 +140,31 @@ export const InfantForm: React.FC<InfantFormProps> = ({
       {/* Fecha y Sexo */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha de Nacimiento
+          <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-gray-500">
+            Fecha Nac.
           </label>
           <input
             type="date"
             value={form.birth_date}
             max={today}
             onChange={(e) => setForm((p) => ({ ...p, birth_date: e.target.value }))}
-            className="w-full p-2 border border-gray-300 rounded-md text-sm bg-white"
+            className="w-full rounded-lg border-0 bg-white py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           />
           {errors.birth_date && (
-            <p className="text-xs text-red-500 mt-1">{errors.birth_date}</p>
+            <p className="mt-1 text-[11px] text-red-500">{errors.birth_date}</p>
           )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Sexo</label>
+          <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-gray-500">
+            Sexo
+          </label>
           <select
             value={form.gender}
             onChange={(e) =>
               setForm((p) => ({ ...p, gender: e.target.value as 'M' | 'F' }))
             }
-            className="w-full p-2 border border-gray-300 rounded-md text-sm bg-white"
+            className="w-full rounded-lg border-0 bg-white py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           >
             <option value="M">Masculino</option>
             <option value="F">Femenino</option>
@@ -160,8 +174,8 @@ export const InfantForm: React.FC<InfantFormProps> = ({
 
       {/* Relación con el responsable */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Relación con el Responsable
+        <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-gray-500">
+          Relación
         </label>
         <select
           value={form.relationship}
@@ -171,7 +185,7 @@ export const InfantForm: React.FC<InfantFormProps> = ({
               relationship: e.target.value as InfantRelationship,
             }))
           }
-          className="w-full p-2 border border-gray-300 rounded-md text-sm bg-white"
+          className="w-full rounded-lg border-0 bg-white py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-300/50"
         >
           {Object.entries(INFANT_RELATIONSHIP_LABELS).map(([key, label]) => (
             <option key={key} value={key}>
@@ -182,20 +196,20 @@ export const InfantForm: React.FC<InfantFormProps> = ({
       </div>
 
       {/* Acciones */}
-      <div className="flex gap-2 pt-1">
+      <div className="flex gap-2 pt-0.5">
         <Button
           type="submit"
           size="sm"
-          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-sm"
+          className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs rounded-lg h-8"
         >
-          Registrar Infante
+          Registrar
         </Button>
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onCancel}
-          className="px-4 text-sm"
+          className="px-3 text-xs rounded-lg border-gray-300 text-gray-600 hover:bg-gray-50 h-8"
         >
           Cancelar
         </Button>

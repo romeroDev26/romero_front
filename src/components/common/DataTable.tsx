@@ -37,7 +37,7 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-10">
+      <div className="bg-white rounded-xl border border-gray-200 p-10">
         <div className="flex justify-center">
           <Spinner size="lg" />
         </div>
@@ -47,10 +47,10 @@ export function DataTable<T>({
 
   if (error) {
     return (
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-10">
-        <div className="text-center text-[#cf1322]">
+      <div className="bg-white rounded-xl border border-gray-200 p-10">
+        <div className="text-center text-error">
           <p className="font-medium text-[15px]">Error al cargar los datos</p>
-          <p className="text-[13px] mt-1 text-[#4d4d4d]">
+          <p className="text-[13px] mt-1 text-gray-600">
             {typeof error.message === 'string' ? error.message : 'Ocurrió un error inesperado'}
           </p>
         </div>
@@ -60,8 +60,8 @@ export function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-10">
-        <div className="text-center text-[#828282]">
+      <div className="bg-white rounded-xl border border-gray-200 p-10">
+        <div className="text-center text-gray-500">
           <p className="text-[15px]">{emptyMessage}</p>
         </div>
       </div>
@@ -71,15 +71,15 @@ export function DataTable<T>({
   const hasActions = showActions && (onEdit || onDelete || customActions);
 
   return (
-    <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="min-w-full">
-          <thead className="bg-[#f5f5f5]">
+          <thead className="bg-gray-50">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-5 py-3.5 text-left text-[13px] font-medium text-[#4d4d4d] tracking-normal ${
+                  className={`px-5 py-3.5 text-left text-[13px] font-medium text-gray-600 tracking-normal ${
                     column.className || ''
                   }`}
                 >
@@ -87,24 +87,24 @@ export function DataTable<T>({
                 </th>
               ))}
               {hasActions && (
-                <th className="px-5 py-3.5 text-right text-[13px] font-medium text-[#4d4d4d]">
+                <th className="px-5 py-3.5 text-right text-[13px] font-medium text-gray-600">
                   Acciones
                 </th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#e8e8e8]">
+          <tbody className="divide-y divide-gray-200">
             {data.map((item, index) => {
               const rowKey = keyExtractor(item) ?? `row-${index}`;
 
               return (
-                <tr key={rowKey} className="hover:bg-[#f5f5f5]/60 transition-colors">
+                <tr key={rowKey} className="hover:bg-gray-50/60 transition-colors">
                   {columns.map((column) => {
                     const cellKey = `${rowKey}-${column.key}`;
                     return (
                       <td
                         key={cellKey}
-                        className={`px-5 py-4 whitespace-nowrap text-[14px] text-[#202020] ${column.className || ''}`}
+                        className={`px-5 py-4 whitespace-nowrap text-[14px] text-gray-900 ${column.className || ''}`}
                       >
                         {column.accessor(item)}
                       </td>
@@ -116,7 +116,7 @@ export function DataTable<T>({
                         {onEdit && (
                           <button
                             onClick={() => onEdit(item)}
-                            className="text-[#828282] hover:text-[#1F4690] transition-colors"
+                            className="text-gray-500 hover:text-primary transition-colors"
                             title="Editar"
                           >
                             <PencilIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -125,7 +125,7 @@ export function DataTable<T>({
                         {onDelete && (
                           <button
                             onClick={() => onDelete(item)}
-                            className="text-[#828282] hover:text-[#cf1322] transition-colors"
+                            className="text-gray-500 hover:text-error transition-colors"
                             title="Desactivar"
                           >
                             <TrashIcon className="h-4 w-4" strokeWidth={1.5} />

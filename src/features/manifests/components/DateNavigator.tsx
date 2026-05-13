@@ -1,5 +1,6 @@
-import React from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+// src/features/manifests/components/DateNavigator.tsx
+import React, { useRef, useState, useEffect } from 'react';
+import { ChevronLeftIcon, ChevronRightIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import {
   addDays,
   subDays,
@@ -9,6 +10,10 @@ import {
   isSameDay,
   format,
   isToday,
+  startOfMonth,
+  endOfMonth,
+  getDay,
+  isSameMonth,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -23,10 +28,33 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
   onSelectDate,
   datesWithManifests = [],
 }) => {
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState(selectedDate);
+  const calendarRef = useRef<HTMLDivElement>(null);
+
   const weekDays = React.useMemo(() => {
     const start = startOfWeek(selectedDate, { locale: es });
     const end = endOfWeek(selectedDate, { locale: es });
     return eachDayOfInterval({ start, end });
+  }, [selectedDate]);
+
+  // Cerrar calendario al hacer clic fuera
+  useEffect(() => {
+    if (!showCalendar) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
+        setShowCalendar(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showCalendar]);
+
+  // Sincronizar mes del calendario con la fecha seleccionada
+  useEffect(() => {
+    if (!isSameMonth(selectedDate, calendarMonth)) {
+      setCalendarMonth(selectedDate);
+    }
   }, [selectedDate]);
 
   const goToPreviousWeek = () => onSelectDate(subDays(selectedDate, 7));
@@ -40,6 +68,23 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
       month: '2-digit',
       day: '2-digit',
     }).format(d);
+
+  // ---------- Mini calendario mensual ----------
+  const monthStart = startOfMonth(calendarMonth);
+  const monthEnd = endOfMonth(calendarMonth);
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const startDayOfWeek = (getDay(monthStart) + 6) % 7;
+  const calendarDays = [...Array(startDayOfWeek).fill(null), ...daysInMonth];
+
+  const handlePrevMonth = () => setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1));
+  const handleNextMonth = () => setCalendarMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1));
+
+  const handleDaySelect = (day: Date) => {
+    onSelectDate(getPeruDate(day));
+    setShowCalendar(false);
+  };
+
+  const weekDayLabels = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'];
 
   return (
     <div className="bg-white rounded-2xl border border-[#e8e8e8] p-4 sm:p-5">
@@ -105,7 +150,7 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
         </button>
       </div>
 
-      <div className="mt-3 flex justify-center">
+      <div className="mt-3 flex items-center justify-center gap-2">
         <button
           onClick={goToToday}
           className={`px-3 py-1 rounded-lg text-[12px] font-medium transition-colors ${
@@ -116,6 +161,91 @@ export const DateNavigator: React.FC<DateNavigatorProps> = ({
         >
           {isToday(selectedDate) ? 'Hoy' : 'Ir a hoy'}
         </button>
+
+        {/* Botón de calendario + popover */}
+        <div className="relative">
+          <button
+            onClick={() => setShowCalendar((s) => !s)}
+            className={`inline-flex items-center justify-center w-9 h-9 rounded-xl border transition-colors shrink-0 ${
+              showCalendar
+                ? 'bg-[#1F4690] border-[#1F4690] text-white'
+                : 'border-[#e8e8e8] text-[#4d4d4d] hover:bg-[#f5f5f5] hover:text-[#1F4690]'
+            }`}
+            title="Elegir fecha"
+          >
+            <CalendarIcon className="w-4 h-4" strokeWidth={2} />
+          </button>
+
+          {showCalendar && (
+            <div
+              ref={calendarRef}
+              className="absolute left-1/2 -translate-x-1/2 mt-2 bg-white rounded-2xl border border-[#e8e8e8] shadow-xl p-4 w-[280px] z-50"
+            >
+              {/* Header del mini calendario */}
+              <div className="flex items-center justify-between mb-3">
+                <button
+                  onClick={handlePrevMonth}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronLeftIcon className="w-4 h-4 text-gray-600" strokeWidth={2} />
+                </button>
+                <span className="text-sm font-semibold text-gray-900 capitalize">
+                  {format(calendarMonth, 'MMMM yyyy', { locale: es })}
+                </span>
+                <button
+                  onClick={handleNextMonth}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ChevronRightIcon className="w-4 h-4 text-gray-600" strokeWidth={2} />
+                </button>
+              </div>
+
+              {/* Días de la semana */}
+              <div className="grid grid-cols-7 gap-1 mb-1">
+                {weekDayLabels.map((label) => (
+                  <div
+                    key={label}
+                    className="text-center text-[10px] font-medium text-gray-400 uppercase tracking-wider py-1"
+                  >
+                    {label}
+                  </div>
+                ))}
+              </div>
+
+              {/* Días del mes */}
+              <div className="grid grid-cols-7 gap-1">
+                {calendarDays.map((day, index) => {
+                  if (!day) {
+                    return <div key={`empty-${index}`} className="h-8" />;
+                  }
+                  const isSelected = isSameDay(day, selectedDate);
+                  const isTodayDate = isToday(day);
+                  const dayKey = formatDayKey(day);
+                  const hasManifests = datesWithManifests.includes(dayKey);
+
+                  return (
+                    <button
+                      key={day.toISOString()}
+                      onClick={() => handleDaySelect(day)}
+                      className={`relative h-8 w-8 mx-auto rounded-lg text-[13px] font-medium transition-all ${
+                        isSelected
+                          ? 'bg-[#1F4690] text-white shadow-sm'
+                          : isTodayDate
+                            ? 'ring-1 ring-[#1F4690] text-[#1F4690] hover:bg-[#1F4690]/5'
+                            : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {format(day, 'd')}
+                      {hasManifests && !isSelected && (
+                        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#1F4690]" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

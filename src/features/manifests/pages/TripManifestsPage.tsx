@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
-import { 
+import { useNavigate } from 'react-router-dom';
+import {
   ArrowLeftIcon,
   DocumentTextIcon,
   UsersIcon,
@@ -12,71 +10,44 @@ import {
   MapPinIcon,
   TruckIcon,
   EyeIcon,
-  DocumentArrowDownIcon
+  DocumentArrowDownIcon,
+  PlusIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
-import { manifestService } from '../services/manifest.service';
-import { Manifest } from '../types/manifest.types';
+import { useTripManifests } from '../hooks/useTripManifests';
 
 export const TripManifestsPage: React.FC = () => {
-  const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<'passenger' | 'cargo'>('passenger');
 
-  // Query para obtener manifiestos del trip específico
-  const { 
-    data: manifests = [], 
-    isLoading, 
-    error 
-  } = useQuery({
-    queryKey: ['trip-manifests', tripId],
-    queryFn: async () => {
-      if (!tripId) return [];
-      try {
-        const selectedBranch = localStorage.getItem('selectedSalesBranch');
-        if (!selectedBranch) throw new Error('No hay sucursal seleccionada');
-        const branchData = JSON.parse(selectedBranch);
+  const {
+    tripId,
+    passengerManifest,
+    cargoManifest,
+    tripInfo,
+    isLoading,
+    error,
+    isGenerating,
+    isGeneratingPDF,
+    generateManifest,
+    regeneratePDF,
+    handleDownloadPDF,
+    statusLabel,
+    statusColor,
+  } = useTripManifests();
 
-        const cached = queryClient.getQueryData<any[]>(['manifests', branchData.id]);
-        if (cached && Array.isArray(cached)) {
-          return cached.filter(m => m.trip_id === parseInt(tripId));
-        }
-
-        const branchManifests = await manifestService.getManifestsByBranchOffice(branchData.id);
-        return branchManifests.filter(m => m.trip_id === parseInt(tripId));
-      } catch (error) {
-        console.error('Error al obtener manifiestos por viaje usando lista de sucursal:', error);
-        return [];
-      }
-    },
-    enabled: !!tripId,
-    staleTime: 1000 * 60 * 5,
-    retry: false
-  });
-
-  const passengerManifest = manifests.find(m => m.manifest_type === 'PASSENGER');
-  const cargoManifest = manifests.find(m => m.manifest_type === 'CARGO');
-  const tripInfo = manifests[0];
-  const activeManifest: Manifest | undefined = activeTab === 'passenger' ? passengerManifest : cargoManifest;
-
-  const handleDownloadPDF = (pdfUrl: string, manifestNumber: string) => {
-    if (!pdfUrl) { toast.error('PDF no disponible'); return; }
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = `${manifestNumber}.pdf`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const activeManifest = activeTab === 'passenger' ? passengerManifest : cargoManifest;
+  const departureDatetime = tripInfo?.departure_datetime
+    ? new Date(tripInfo.departure_datetime)
+    : null;
 
   // ── Estados de carga / error ────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-slate-500">Cargando manifiestos del viaje...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1F4690] mx-auto mb-4" />
+          <p className="text-[15px] text-[#828282]">Cargando manifiestos del viaje...</p>
         </div>
       </div>
     );
@@ -85,9 +56,11 @@ export const TripManifestsPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <h3 className="text-red-800 font-medium">Error al cargar manifiestos</h3>
-          <p className="text-red-600 text-sm mt-1">{error instanceof Error ? error.message : 'Error desconocido'}</p>
+        <div className="bg-white border border-[#e8e8e8] rounded-[12px] p-6">
+          <h3 className="text-[15px] font-medium text-[#202020]">Error al cargar manifiestos</h3>
+          <p className="text-[13px] text-[#4d4d4d] mt-1">
+            {error instanceof Error ? error.message : 'Error desconocido'}
+          </p>
         </div>
       </div>
     );
@@ -95,22 +68,31 @@ export const TripManifestsPage: React.FC = () => {
 
   if (!tripInfo) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-          <h3 className="text-yellow-800 font-semibold mb-1">No se encontraron manifiestos</h3>
-          <p className="text-yellow-700 text-sm">
-            No existen manifiestos para el viaje solicitado. Asegúrate de haber seleccionado una sucursal y de que el viaje tenga manifiestos generados.
+      <div className="min-h-[60vh] flex items-center justify-center p-6">
+        <div className="w-full max-w-lg bg-[#efefef] rounded-[20px] p-10 text-center">
+          <div className="w-16 h-16 bg-[#f5f5f5] rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <DocumentTextIcon className="w-8 h-8 text-[#828282]" strokeWidth={1.5} />
+          </div>
+          <h2
+            className="text-[24px] font-medium text-[#202020] tracking-[-0.48px] leading-[1.19]"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            No se encontraron manifiestos
+          </h2>
+          <p className="mt-3 text-[15px] text-[#4d4d4d] leading-[1.33]">
+            No existen manifiestos para el viaje solicitado. Asegúrate de haber seleccionado una
+            sucursal y de que el viaje tenga manifiestos generados.
           </p>
-          <div className="mt-4 flex gap-2">
+          <div className="mt-8 flex gap-3 justify-center">
             <button
               onClick={() => navigate('/fluvial/operations/manifests')}
-              className="px-4 py-2 text-sm font-semibold border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="px-5 py-2.5 text-[15px] font-medium text-[#202020] bg-white border border-[#e8e8e8] rounded-[20px] hover:bg-[#f5f5f5] transition-colors"
             >
               Volver a la lista
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 text-sm font-semibold border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+              className="px-5 py-2.5 text-[15px] font-medium text-white bg-[#1F4690] rounded-[20px] hover:bg-[#163672] transition-colors"
             >
               Recargar
             </button>
@@ -120,286 +102,341 @@ export const TripManifestsPage: React.FC = () => {
     );
   }
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
-  const statusBadge = (status?: string) => {
-    if (!status) return null;
-    const map: Record<string, string> = {
-      GENERATED: 'bg-green-100 text-green-700',
-      DRAFT:     'bg-yellow-100 text-yellow-700',
-      CANCELLED: 'bg-red-100 text-red-700',
-    };
-    const label: Record<string, string> = {
-      GENERATED: 'Completado',
-      DRAFT:     'Borrador',
-      CANCELLED: 'Cancelado',
-    };
-    return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${map[status] ?? 'bg-slate-100 text-slate-600'}`}>
-        {label[status] ?? status}
-      </span>
-    );
-  };
+  const colorClasses = statusColor(activeManifest?.status);
 
-  const departureDatetime = tripInfo.departure_datetime ? new Date(tripInfo.departure_datetime) : null;
-
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="-mx-6 -mt-6">
-
+    <div className="space-y-6">
       {/* ── Header ── */}
-      <header className="bg-white border-b border-slate-200 px-6 py-4 mb-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            {/* Breadcrumb */}
-            <nav className="flex text-sm font-medium text-slate-500 mb-2">
-              <button
-                onClick={() => navigate('/fluvial/operations/manifests')}
-                className="hover:text-primary transition-colors"
-              >
-                Manifiestos
-              </button>
-              <span className="mx-2">/</span>
-              <span className="text-slate-900">Detalle del Viaje</span>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              <div className="bg-primary p-2 rounded-lg text-white">
-                <TruckIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-black tracking-tight text-slate-900">
-                  {activeManifest
-                    ? `Manifiesto #${activeManifest.manifest_number}`
-                    : `Viaje #${tripId}`}
-                </h1>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-600 mt-0.5">
-                  {tripInfo.vessel_name && (
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <TruckIcon className="h-3.5 w-3.5" />
-                      <span className="font-medium">{tripInfo.vessel_name}</span>
-                    </div>
-                  )}
-                  {tripInfo.route_name && (
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <MapPinIcon className="h-3.5 w-3.5" />
-                      <span>{tripInfo.route_name}</span>
-                    </div>
-                  )}
-                  {departureDatetime && (
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <CalendarDaysIcon className="h-3.5 w-3.5" />
-                      <span>
-                        {departureDatetime.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        {' '}
-                        <ClockIcon className="h-3 w-3 inline -mt-0.5" />
-                        {' '}
-                        {departureDatetime.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Acciones */}
-          <div className="flex gap-3 shrink-0">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          {/* Breadcrumb */}
+          <nav className="flex text-[13px] font-medium text-[#828282] mb-2">
             <button
               onClick={() => navigate('/fluvial/operations/manifests')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+              className="hover:text-[#1F4690] transition-colors"
             >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Volver
+              Manifiestos
             </button>
-            {activeManifest?.pdf_file_path && (
-              <button
-                onClick={() => handleDownloadPDF(activeManifest.pdf_file_path!, activeManifest.manifest_number)}
-                className="flex items-center gap-2 px-5 py-2 text-sm font-bold bg-primary text-white rounded-lg hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+            <span className="mx-2 text-[#c4c4c4]">/</span>
+            <span className="text-[#202020]">Detalle del Viaje</span>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#1F4690] rounded-xl flex items-center justify-center text-white shrink-0">
+              <TruckIcon className="h-5 w-5" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h1
+                className="text-[28px] font-medium text-[#202020] tracking-[-0.56px] leading-[1.19]"
+                style={{ fontFamily: "'Inter', sans-serif" }}
               >
-                <DocumentArrowDownIcon className="h-4 w-4" />
-                Descargar PDF
-              </button>
-            )}
+                {activeManifest
+                  ? `Manifiesto #${activeManifest.manifest_number}`
+                  : `Viaje #${tripId}`}
+              </h1>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[#4d4d4d] mt-0.5">
+                {tripInfo.vessel_name && (
+                  <div className="flex items-center gap-1.5 text-[13px]">
+                    <TruckIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    <span className="font-medium">{tripInfo.vessel_name}</span>
+                  </div>
+                )}
+                {tripInfo.route_name && (
+                  <div className="flex items-center gap-1.5 text-[13px]">
+                    <MapPinIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    <span>{tripInfo.route_name}</span>
+                  </div>
+                )}
+                {departureDatetime && (
+                  <div className="flex items-center gap-1.5 text-[13px]">
+                    <CalendarDaysIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    <span>
+                      {departureDatetime.toLocaleDateString('es-PE', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </span>
+                    <ClockIcon className="h-3 w-3" strokeWidth={1.5} />
+                    <span>
+                      {departureDatetime.toLocaleTimeString('es-PE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </header>
+
+        {/* Acciones */}
+        <div className="flex gap-3 shrink-0">
+          <button
+            onClick={() => navigate('/fluvial/operations/manifests')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium bg-white border border-[#e8e8e8] rounded-[20px] text-[#202020] hover:bg-[#f5f5f5] transition-colors"
+          >
+            <ArrowLeftIcon className="h-4 w-4" strokeWidth={1.5} />
+            Volver
+          </button>
+          {activeManifest?.pdf_file_path && (
+            <button
+              onClick={() =>
+                handleDownloadPDF(activeManifest.pdf_file_path!, activeManifest.manifest_number)
+              }
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-[13px] font-medium bg-[#1F4690] text-white rounded-[20px] hover:bg-[#163672] transition-colors"
+            >
+              <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
+              Descargar PDF
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* ── Body ── */}
-      <div className="px-6 pb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-          {/* ── Sidebar ── */}
-          <aside className="lg:col-span-4 space-y-6">
-
-            {/* Info card */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-6">
-                Detalles del Documento
-              </h3>
-              <div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">ID de Manifiesto</span>
-                  <span className="text-sm font-bold text-slate-900">
-                    #{activeManifest?.manifest_number ?? '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Fecha Emisión</span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {activeManifest
-                      ? new Date(activeManifest.created_at).toLocaleDateString('es-PE')
-                      : '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Hora de Salida</span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {departureDatetime
-                      ? departureDatetime.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })
-                      : '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Generado por</span>
-                  <span className="text-sm font-semibold text-slate-900 text-right max-w-[55%] truncate">
-                    {activeManifest?.generated_by_user?.full_name
-                      ?? activeManifest?.generated_by_name
-                      ?? activeManifest?.generated_by
-                      ?? '—'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">
-                    {activeTab === 'passenger' ? 'Pasajeros' : 'Peso total'}
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {activeTab === 'passenger'
-                      ? (activeManifest?.total_passengers ?? '—')
-                      : (activeManifest?.total_cargo_weight_kg ?? '—')}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-3">
-                  <span className="text-sm text-slate-500">Estado</span>
-                  {statusBadge(activeManifest?.status)}
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* ── Sidebar ── */}
+        <aside className="lg:col-span-4 space-y-5">
+          {/* Info card */}
+          <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-6">
+            <h3 className="text-[12px] font-semibold uppercase tracking-wider text-[#828282] mb-5">
+              Detalles del Documento
+            </h3>
+            <div className="space-y-0">
+              <div className="flex justify-between items-center py-3 border-b border-[#f0f0f0]">
+                <span className="text-[13px] text-[#828282]">ID de Manifiesto</span>
+                <span className="text-[13px] font-semibold text-[#202020]">
+                  #{activeManifest?.manifest_number ?? '—'}
+                </span>
               </div>
-
-              {activeManifest?.observations && (
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Observaciones</p>
-                  <p className="text-sm text-slate-600 leading-relaxed">{activeManifest.observations}</p>
-                </div>
-              )}
-            </div>
-
-            {/* Action card */}
-            {activeManifest?.pdf_file_path && (
-              <div className="bg-primary/5 p-6 rounded-xl border border-primary/10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                    <EyeIcon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-sm font-bold text-primary">Previsualización</h3>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                  Este manifiesto ha sido verificado electrónicamente. Puede ver el documento completo o descargarlo para su impresión.
-                </p>
-                <button
-                  onClick={() => window.open(activeManifest.pdf_file_path!, '_blank')}
-                  className="w-full py-2.5 text-sm font-bold text-primary border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all"
-                >
-                  Ver Pantalla Completa
-                </button>
+              <div className="flex justify-between items-center py-3 border-b border-[#f0f0f0]">
+                <span className="text-[13px] text-[#828282]">Fecha Emisión</span>
+                <span className="text-[13px] font-semibold text-[#202020]">
+                  {activeManifest
+                    ? new Date(activeManifest.created_at).toLocaleDateString('es-PE')
+                    : '—'}
+                </span>
               </div>
-            )}
-          </aside>
-
-          {/* ── Contenido principal ── */}
-          <div className="lg:col-span-8 flex flex-col gap-6">
-
-            {/* Tabs — píldoras */}
-            <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-              <button
-                onClick={() => setActiveTab('passenger')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-bold rounded-lg transition-all ${
-                  activeTab === 'passenger'
-                    ? 'bg-primary text-white shadow-md'
-                    : 'text-slate-500 hover:bg-slate-50'
-                }`}
-              >
-                <UsersIcon className="h-4 w-4" />
-                Manifiesto de Pasajeros
-                {passengerManifest && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    activeTab === 'passenger' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
-                  }`}>
-                    {passengerManifest.total_passengers}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => setActiveTab('cargo')}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-bold rounded-lg transition-all ${
-                  activeTab === 'cargo'
-                    ? 'bg-primary text-white shadow-md'
-                    : 'text-slate-500 hover:bg-slate-50'
-                }`}
-              >
-                <CubeIcon className="h-4 w-4" />
-                Manifiesto de Carga
-                {cargoManifest && (
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    activeTab === 'cargo' ? 'bg-white/20 text-white' : 'bg-green-100 text-green-700'
-                  }`}>
-                    {cargoManifest.total_cargo_weight_kg}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            {/* PDF / empty states */}
-            {activeManifest ? (
-              activeManifest.pdf_file_path ? (
-                <div
-                  className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden flex-1"
-                  style={{ minHeight: '700px' }}
-                >
-                  <iframe
-                    src={activeManifest.pdf_file_path}
-                    className="w-full"
-                    style={{ height: '80vh', minHeight: '700px' }}
-                    title={`PDF ${activeTab === 'passenger' ? 'Pasajeros' : 'Carga'}`}
-                  />
-                </div>
-              ) : (
-                <div
-                  className="bg-white rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center"
-                  style={{ minHeight: '400px' }}
-                >
-                  <div className="text-center p-8">
-                    <DocumentTextIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-base font-semibold text-slate-600 mb-1">PDF no disponible</h3>
-                    <p className="text-sm text-slate-400">El manifiesto fue generado pero aún no tiene PDF asociado.</p>
-                  </div>
-                </div>
-              )
-            ) : (
-              <div
-                className="bg-white rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center"
-                style={{ minHeight: '400px' }}
-              >
-                <div className="text-center p-8">
+              <div className="flex justify-between items-center py-3 border-b border-[#f0f0f0]">
+                <span className="text-[13px] text-[#828282]">Hora de Salida</span>
+                <span className="text-[13px] font-semibold text-[#202020]">
+                  {departureDatetime
+                    ? departureDatetime.toLocaleTimeString('es-PE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+                    : '—'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-b border-[#f0f0f0]">
+                <span className="text-[13px] text-[#828282]">Generado por</span>
+                <span className="text-[13px] font-semibold text-[#202020] text-right max-w-[55%] truncate">
+                  {activeManifest?.generated_by_user?.full_name ??
+                    activeManifest?.generated_by_name ??
+                    activeManifest?.generated_by ??
+                    '—'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-3 border-b border-[#f0f0f0]">
+                <span className="text-[13px] text-[#828282]">
+                  {activeTab === 'passenger' ? 'Pasajeros' : 'Peso total'}
+                </span>
+                <span className="text-[13px] font-semibold text-[#202020]">
                   {activeTab === 'passenger'
-                    ? <UsersIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    : <CubeIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />}
-                  <h3 className="text-base font-semibold text-slate-600 mb-1">
-                    {activeTab === 'passenger' ? 'Manifiesto de Pasajeros' : 'Manifiesto de Carga'} no generado
-                  </h3>
-                  <p className="text-sm text-slate-400">No existe manifiesto de este tipo para el viaje.</p>
-                </div>
+                    ? (activeManifest?.total_passengers ?? '—')
+                    : (activeManifest?.total_cargo_weight_kg ?? '—')}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-3">
+                <span className="text-[13px] text-[#828282]">Estado</span>
+                {activeManifest ? (
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium ${colorClasses.bg} ${colorClasses.text}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${colorClasses.text}`} />
+                    {statusLabel(activeManifest.status)}
+                  </span>
+                ) : (
+                  <span className="text-[13px] text-[#828282]">—</span>
+                )}
+              </div>
+            </div>
+
+            {activeManifest?.observations && (
+              <div className="mt-5 pt-4 border-t border-[#f0f0f0]">
+                <p className="text-[12px] font-semibold uppercase tracking-wider text-[#828282] mb-2">
+                  Observaciones
+                </p>
+                <p className="text-[13px] text-[#4d4d4d] leading-relaxed">
+                  {activeManifest.observations}
+                </p>
               </div>
             )}
           </div>
+
+          {/* Action card */}
+          {activeManifest?.pdf_file_path && (
+            <div className="bg-[#f5f5f5] rounded-[12px] border border-[#e8e8e8] p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-[#1F4690] shrink-0">
+                  <EyeIcon className="h-5 w-5" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-[14px] font-semibold text-[#202020]">Previsualización</h3>
+              </div>
+              <p className="text-[13px] text-[#4d4d4d] leading-relaxed mb-5">
+                Este manifiesto ha sido verificado electrónicamente. Puede ver el documento completo
+                o descargarlo para su impresión.
+              </p>
+              <button
+                onClick={() => window.open(activeManifest.pdf_file_path!, '_blank')}
+                className="w-full py-2.5 text-[14px] font-medium text-[#1F4690] bg-white border border-[#e8e8e8] rounded-[12px] hover:bg-[#1F4690] hover:text-white hover:border-[#1F4690] transition-all"
+              >
+                Ver Pantalla Completa
+              </button>
+            </div>
+          )}
+        </aside>
+
+        {/* ── Contenido principal ── */}
+        <div className="lg:col-span-8 flex flex-col gap-5">
+          {/* Tabs */}
+          <div className="flex bg-white p-1 rounded-[12px] border border-[#e8e8e8]">
+            <button
+              onClick={() => setActiveTab('passenger')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-[14px] font-medium rounded-[10px] transition-all ${
+                activeTab === 'passenger'
+                  ? 'bg-[#1F4690] text-white'
+                  : 'text-[#828282] hover:text-[#202020] hover:bg-[#f5f5f5]'
+              }`}
+            >
+              <UsersIcon className="h-4 w-4" strokeWidth={1.5} />
+              Manifiesto de Pasajeros
+              {passengerManifest && (
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                    activeTab === 'passenger'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-[#1F4690]/10 text-[#1F4690]'
+                  }`}
+                >
+                  {passengerManifest.total_passengers}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveTab('cargo')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-[14px] font-medium rounded-[10px] transition-all ${
+                activeTab === 'cargo'
+                  ? 'bg-[#1F4690] text-white'
+                  : 'text-[#828282] hover:text-[#202020] hover:bg-[#f5f5f5]'
+              }`}
+            >
+              <CubeIcon className="h-4 w-4" strokeWidth={1.5} />
+              Manifiesto de Carga
+              {cargoManifest && (
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                    activeTab === 'cargo'
+                      ? 'bg-white/20 text-white'
+                      : 'bg-[#36D399]/10 text-[#15803d]'
+                  }`}
+                >
+                  {cargoManifest.total_cargo_weight_kg}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* PDF / empty states */}
+          {activeManifest ? (
+            activeManifest.pdf_file_path ? (
+              <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden flex-1 min-h-[400px] md:min-h-[700px]">
+                <iframe
+                  src={activeManifest.pdf_file_path}
+                  className="w-full h-[50vh] md:h-[80vh] min-h-[400px] md:min-h-[700px]"
+                  title={`PDF ${activeTab === 'passenger' ? 'Pasajeros' : 'Carga'}`}
+                />
+              </div>
+            ) : (
+              <div className="bg-white rounded-[12px] border-2 border-dashed border-[#e8e8e8] flex items-center justify-center min-h-[300px] md:min-h-[400px]">
+                <div className="text-center p-8 max-w-sm">
+                  <DocumentTextIcon
+                    className="h-12 w-12 text-[#c4c4c4] mx-auto mb-4"
+                    strokeWidth={1.5}
+                  />
+                  <h3 className="text-[18px] font-medium text-[#202020] mb-2">PDF no disponible</h3>
+                  <p className="text-[14px] text-[#828282] mb-6">
+                    El manifiesto fue generado pero aún no tiene PDF asociado. Puedes generarlo
+                    ahora.
+                  </p>
+                  <button
+                    onClick={() => regeneratePDF(activeManifest)}
+                    disabled={isGeneratingPDF}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#1F4690] hover:bg-[#163672] text-white text-[14px] font-medium rounded-[20px] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingPDF ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Generando PDF...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowPathIcon className="h-4 w-4" strokeWidth={2} />
+                        Generar PDF
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="bg-white rounded-[12px] border-2 border-dashed border-[#e8e8e8] flex items-center justify-center min-h-[300px] md:min-h-[400px]">
+              <div className="text-center p-8 max-w-sm">
+                {activeTab === 'passenger' ? (
+                  <UsersIcon
+                    className="h-12 w-12 text-[#c4c4c4] mx-auto mb-4"
+                    strokeWidth={1.5}
+                  />
+                ) : (
+                  <CubeIcon
+                    className="h-12 w-12 text-[#c4c4c4] mx-auto mb-4"
+                    strokeWidth={1.5}
+                  />
+                )}
+                <h3 className="text-[18px] font-medium text-[#202020] mb-2">
+                  {activeTab === 'passenger'
+                    ? 'Manifiesto de Pasajeros'
+                    : 'Manifiesto de Carga'}{' '}
+                  no generado
+                </h3>
+                <p className="text-[14px] text-[#828282] mb-6">
+                  No existe manifiesto de este tipo para el viaje. Puedes generarlo ahora
+                  directamente desde esta pantalla.
+                </p>
+                <button
+                  onClick={() =>
+                    generateManifest(activeTab === 'passenger' ? 'PASSENGER' : 'CARGO')
+                  }
+                  disabled={isGenerating}
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#1F4690] hover:bg-[#163672] text-white text-[14px] font-medium rounded-[20px] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isGenerating ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generando...
+                    </>
+                  ) : (
+                    <>
+                      <PlusIcon className="h-4 w-4" strokeWidth={2} />
+                      Generar{' '}
+                      {activeTab === 'passenger' ? 'Manifiesto de Pasajeros' : 'Manifiesto de Carga'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -297,11 +298,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
     setExpandedMenus(prev => ({ ...prev, [menuKey]: !prev[menuKey] }));
   };
 
-  const getRoleDisplay = (user: User | undefined) => {
-    if (!user) return '';
-    return user.role?.description || user.role?.name || user.role_name || 'Sin rol';
-  };
-
   const renderMenuItem = useCallback((item: NavItem, isSubitem = false, level = 0) => {
     const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
     const baseClasses = `flex items-center w-full text-left text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-lg`;
@@ -334,13 +330,23 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
               }`}
             />
           </button>
+          <AnimatePresence initial={false}>
           {isExpanded && item.subitems && (
-            <div className="mt-1 bg-gray-50/50 rounded-lg mx-2">
-              <div className="py-2 space-y-1">
-                {item.subitems.map((subitem: NavItem) => renderMenuItem(subitem, true, level + 1))}
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="mt-1 bg-gray-50/50 rounded-lg mx-2">
+                <div className="py-2 space-y-1">
+                  {item.subitems.map((subitem: NavItem) => renderMenuItem(subitem, true, level + 1))}
+                </div>
               </div>
-            </div>
+            </motion.div>
           )}
+        </AnimatePresence>
         </div>
       );
     }
@@ -398,17 +404,27 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
             }`}
           />
         </button>
-        {isExpanded && (
-          <div className="mt-1 bg-gray-50 rounded-lg mx-2 overflow-hidden">
-            <div className="py-2 space-y-1">
-              {group.items.map((item: NavItem) => (
-                <div key={item.name || item.path}>
-                  {renderMenuItem(item, false, 0)}
+        <AnimatePresence initial={false}>
+          {isExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="mt-1 bg-gray-50 rounded-lg mx-2">
+                <div className="py-2 space-y-1">
+                  {group.items.map((item: NavItem) => (
+                    <div key={item.name || item.path}>
+                      {renderMenuItem(item, false, 0)}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }, [expandedMenus, renderMenuItem]);
@@ -456,14 +472,16 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
         </nav>
       </div>
 
-      {currentUser && (
-        <div className="p-4 border-t border-gray-100">
-          <div className="text-sm text-gray-600 mb-2">
-            <div className="font-medium">{currentUser.full_name}</div>
-            <div className="text-xs text-gray-500">{getRoleDisplay(currentUser)}</div>
-          </div>
+      <div className="px-4 py-3 border-t border-gray-100">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            Versión
+          </span>
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">
+            v1.0.1
+          </span>
         </div>
-      )}
+      </div>
 
       <div className="p-3 border-t border-gray-100">
         <button

@@ -9,8 +9,11 @@ import {
   EyeIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  DocumentTextIcon,
+  FunnelIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../../components/common/Button';
+import { PlusIcon } from 'lucide-react';
+import { DataTable, Column } from '../../../../components/common/DataTable';
 import { SunatStatusBadge } from '../../components/SunatStatusBadge';
 import { useCreditNotes, useRefreshPendingStatuses } from '../hooks/useCreditNotes';
 import { CreditNotesListParams } from '../../types';
@@ -27,7 +30,7 @@ export const CreditNotesListPage: React.FC = () => {
   const debouncedSeries = useDebounce(series, 300);
 
   const [filters, setFilters] = useState<CreditNotesListParams>({
-    company_id: 1, // TODO: Obtener de contexto de usuario
+    company_id: 1,
     skip: 0,
     limit: itemsPerPage,
   });
@@ -53,13 +56,13 @@ export const CreditNotesListPage: React.FC = () => {
   // Polling automático cada 2 minutos para documentos pendientes
   useEffect(() => {
     const interval = setInterval(() => {
-      const hasPendingDocs = creditNotes?.some(note => 
+      const hasPendingDocs = creditNotes?.some((note) =>
         note.sunat_status === 'PENDING' || note.sunat_status === 'SENT'
       );
       if (hasPendingDocs) {
         refetch();
       }
-    }, 120000); // 2 minutos
+    }, 120000);
 
     return () => clearInterval(interval);
   }, [creditNotes, refetch]);
@@ -80,59 +83,19 @@ export const CreditNotesListPage: React.FC = () => {
     setCurrentPage(0);
   };
 
-  // Función para navegar entre páginas
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  // Componente de paginación
-  const PaginationControls = () => {
-    const hasNextPage = creditNotes && creditNotes.length === itemsPerPage;
-    const hasPrevPage = currentPage > 0;
-
-    return (
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
-        <div className="flex items-center text-sm text-gray-700">
-          <span>
-            Página {currentPage + 1} • Mostrando {creditNotes?.length || 0} registros
-          </span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={!hasPrevPage}
-            className="flex items-center"
-          >
-            <ChevronLeftIcon className="h-4 w-4 mr-1" />
-            Anterior
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={!hasNextPage}
-            className="flex items-center"
-          >
-            Siguiente
-            <ChevronRightIcon className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      </div>
-    );
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
-      currency: 'PEN'
+      currency: 'PEN',
     }).format(amount);
   };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '—';
-    // Si la fecha viene en formato YYYY-MM-DD (sin zona), crear Date en local
     const dateOnlyMatch = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})$/);
     try {
       if (dateOnlyMatch) {
@@ -140,61 +103,174 @@ export const CreditNotesListPage: React.FC = () => {
         const date = new Date(Number(y), Number(m) - 1, Number(d));
         return date.toLocaleDateString('es-PE');
       }
-      // Para ISO con zona, usar el constructor normal
       return new Date(dateString).toLocaleDateString('es-PE');
     } catch {
       return String(dateString);
     }
   };
 
+  const columns: Column<CreditNote>[] = [
+    {
+      key: 'document',
+      header: 'Documento',
+      accessor: (note) => (
+        <div>
+          <div className="text-[14px] font-medium text-[#202020]">
+            {note.series}-{String(note.number).padStart(8, '0')}
+          </div>
+          <div className="text-[12px] text-[#828282]">Nota de Crédito</div>
+        </div>
+      ),
+    },
+    {
+      key: 'client',
+      header: 'Cliente',
+      accessor: (note) => (
+        <div>
+          <div className="text-[14px] font-medium text-[#202020]">
+            {note.client?.name || (note as any).client_name || 'N/A'}
+          </div>
+          <div className="text-[12px] text-[#828282]">
+            {note.client?.doc_number || (note as any).client_document || ''}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'affected',
+      header: 'Doc. Afectado',
+      accessor: (note) => (
+        <div>
+          <div className="text-[14px] font-medium text-[#202020]">{note.affected_document_series_number}</div>
+          <div className="text-[12px] text-[#828282]">
+            {note.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'amount',
+      header: 'Monto',
+      accessor: (note) => (
+        <span className="text-[14px] font-semibold text-[#202020]">
+          {formatCurrency(note.total_payable)}
+        </span>
+      ),
+    },
+    {
+      key: 'sunat_status',
+      header: 'Estado SUNAT',
+      accessor: (note) => <SunatStatusBadge status={note.sunat_status} />,
+    },
+    {
+      key: 'issue_date',
+      header: 'Fecha',
+      accessor: (note) => (
+        <span className="text-[13px] text-[#4d4d4d]">
+          {note.issue_date ? formatDate(note.issue_date) : formatDate((note as any).created_at)}
+        </span>
+      ),
+    },
+  ];
+
+  const customActions = (note: CreditNote) => (
+    <div className="flex items-center gap-3">
+      <Link
+        to={`/accounting/credit-notes/${note.id}`}
+        className="text-[#828282] hover:text-[#1F4690] transition-colors"
+        title="Ver detalle"
+      >
+        <EyeIcon className="h-4 w-4" strokeWidth={1.5} />
+      </Link>
+      {note.pdf_a4_file_path && (
+        <a
+          href={note.pdf_a4_file_path}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#828282] hover:text-[#cf1322] transition-colors"
+          title="Descargar PDF A4"
+        >
+          <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
+        </a>
+      )}
+      {note.pdf_ticket_file_path && (
+        <a
+          href={note.pdf_ticket_file_path}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[#828282] hover:text-[#237804] transition-colors"
+          title="Descargar Ticket 80mm"
+        >
+          <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />
+        </a>
+      )}
+    </div>
+  );
+
+  // ── Paginación ──
+  const hasNextPage = creditNotes && creditNotes.length === itemsPerPage;
+  const hasPrevPage = currentPage > 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Notas de Crédito</h1>
-            <p className="text-gray-600">Gestiona las anulaciones y notas de crédito</p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              onClick={() => refreshStatuses(10)}
-              isLoading={isRefreshing}
-              className="flex items-center justify-center"
-            >
-              <ArrowPathIcon className="h-4 w-4 mr-2" />
-              Actualizar Estados
-            </Button>
-            <Link to="/accounting/credit-notes/new" className="w-full sm:w-auto">
-              <Button className="w-full justify-center">Nueva Nota de Crédito</Button>
-            </Link>
-          </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1
+            className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            Notas de Crédito
+          </h1>
+          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+            Gestiona las anulaciones y notas de crédito
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => refreshStatuses(10)}
+            disabled={isRefreshing}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#e8e8e8] rounded-[20px] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] disabled:opacity-50 transition-colors"
+          >
+            <ArrowPathIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+            Actualizar Estados
+          </button>
+          <Link
+            to="/accounting/credit-notes/new"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1F4690] hover:bg-[#163672] text-white text-[14px] font-medium rounded-[20px] transition-colors"
+          >
+            <PlusIcon className="h-4 w-4" strokeWidth={1.5} />
+            Nueva Nota de Crédito
+          </Link>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-lg shadow p-4 lg:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <FunnelIcon className="w-4 h-4 text-[#828282]" strokeWidth={1.5} />
+          <span className="text-[13px] font-semibold text-[#202020]">Filtros</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
               Serie
             </label>
             <input
               type="text"
               placeholder="FC01, BC01..."
               value={series}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
               onChange={(e) => handleSeriesChange(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
               Estado SUNAT
             </label>
             <select
               value={sunatStatus}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all appearance-none"
               onChange={(e) => handleSunatStatusChange(e.target.value)}
             >
               <option value="">Todos los estados</option>
@@ -205,162 +281,194 @@ export const CreditNotesListPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
               Fecha de Emisión
             </label>
             <input
               type="date"
               value={issueDate}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
               onChange={(e) => handleIssueDateChange(e.target.value)}
             />
           </div>
           <div className="flex items-end">
-            <Button
-              variant="outline"
-              className="flex items-center"
+            <button
               onClick={() => refetch()}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#e8e8e8] rounded-[12px] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] transition-colors"
             >
-              <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
+              <MagnifyingGlassIcon className="h-4 w-4" strokeWidth={1.5} />
               Buscar
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Cargando notas de crédito...</p>
-          </div>
-        ) : creditNotes?.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-600">No se encontraron notas de crédito</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Documento
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cliente
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Documento Afectado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Monto
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado SUNAT
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha de Emisión
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {creditNotes?.map((creditNote: CreditNote) => (
-                  <tr key={creditNote.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {creditNote.series}-{String(creditNote.number).padStart(8, '0')}
+      {/* Lista */}
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+        {/* Desktop */}
+        <div className="hidden md:block">
+          <DataTable<CreditNote>
+            data={creditNotes || []}
+            columns={columns}
+            keyExtractor={(note) => note.id}
+            isLoading={isLoading}
+            emptyMessage="No se encontraron notas de crédito"
+            showActions={true}
+            customActions={customActions}
+          />
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden">
+          {isLoading ? (
+            <div className="p-10 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1F4690] mx-auto" />
+              <p className="mt-3 text-[14px] text-[#828282]">Cargando notas de crédito...</p>
+            </div>
+          ) : creditNotes?.length === 0 ? (
+            <div className="p-10 text-center text-[14px] text-[#828282]">
+              No se encontraron notas de crédito
+            </div>
+          ) : (
+            <div className="p-4 space-y-3">
+              {creditNotes?.map((note) => (
+                <div
+                  key={note.id}
+                  className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden"
+                >
+                  {/* Header */}
+                  <div className="p-4">
+                    <div className="flex justify-between items-start gap-3 mb-2">
+                      <div>
+                        <span className="text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                          {note.series}-{String(note.number).padStart(8, '0')}
+                        </span>
+                        <h3 className="text-[15px] font-medium text-[#202020] mt-0.5">
+                          {note.client?.name || (note as any).client_name || 'N/A'}
+                        </h3>
+                        <p className="text-[13px] text-[#828282] mt-0.5">
+                          {(note as any).client_document || note.client?.doc_number || ''}
+                        </p>
                       </div>
-                      <div className="text-sm text-gray-500">NC</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{creditNote.client?.name || (creditNote as any).client_name || 'N/A'}</div>
-                      <div className="text-sm text-gray-500">{creditNote.client?.doc_number || (creditNote as any).client_document || ''}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {creditNote.affected_document_series_number}
+                      <SunatStatusBadge status={note.sunat_status} />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <span className="text-[11px] text-[#828282]">Doc. Afectado</span>
+                        <p className="text-[13px] font-medium text-[#202020]">
+                          {note.affected_document_series_number}
+                        </p>
+                        <p className="text-[11px] text-[#828282]">
+                          {note.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
+                        </p>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {creditNote.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
+                      <div>
+                        <span className="text-[11px] text-[#828282]">Monto</span>
+                        <p className="text-[18px] font-semibold text-[#202020]">
+                          {formatCurrency(note.total_payable)}
+                        </p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(creditNote.total_payable)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <SunatStatusBadge status={creditNote.sunat_status} />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {creditNote.issue_date ? formatDate(creditNote.issue_date) : formatDate((creditNote as any).created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-4 py-3 border-t border-[#f0f0f0] bg-[#fafafa]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-[#828282]">
+                        {note.issue_date ? formatDate(note.issue_date) : formatDate((note as any).created_at)}
+                      </span>
+                      <div className="flex items-center gap-3">
                         <Link
-                          to={`/accounting/credit-notes/${creditNote.id}`}
-                          className="text-blue-600 hover:text-blue-900"
+                          to={`/accounting/credit-notes/${note.id}`}
+                          className="p-2 text-[#828282] hover:text-[#1F4690] transition-colors"
                           title="Ver detalle"
                         >
-                          <EyeIcon className="h-5 w-5" />
+                          <EyeIcon className="h-4 w-4" strokeWidth={1.5} />
                         </Link>
-                        {creditNote.pdf_a4_file_path && (
+                        {note.pdf_a4_file_path && (
                           <a
-                            href={creditNote.pdf_a4_file_path}
+                            href={note.pdf_a4_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-red-600 hover:text-red-900"
+                            className="p-2 text-[#828282] hover:text-[#cf1322] transition-colors"
                             title="Descargar PDF A4"
                           >
-                            <DocumentArrowDownIcon className="h-5 w-5" />
+                            <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
                           </a>
                         )}
-                        {creditNote.pdf_ticket_file_path && (
+                        {note.pdf_ticket_file_path && (
                           <a
-                            href={creditNote.pdf_ticket_file_path}
+                            href={note.pdf_ticket_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-green-600 hover:text-green-900"
+                            className="p-2 text-[#828282] hover:text-[#237804] transition-colors"
                             title="Descargar Ticket 80mm"
                           >
-                            <DocumentArrowDownIcon className="h-5 w-5" />
+                            <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />
                           </a>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-        {/* Controles de paginación */}
+        {/* Paginación */}
         {!isLoading && creditNotes && creditNotes.length > 0 && (
-          <PaginationControls />
+          <div className="px-4 py-3 border-t border-[#f0f0f0] flex items-center justify-between">
+            <span className="text-[13px] text-[#828282]">
+              Página {currentPage + 1} • Mostrando {creditNotes.length} registros
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={!hasPrevPage}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[8px] border border-[#e8e8e8] text-[13px] text-[#4d4d4d] hover:bg-[#f5f5f5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeftIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Anterior
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={!hasNextPage}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[8px] border border-[#e8e8e8] text-[13px] text-[#4d4d4d] hover:bg-[#f5f5f5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Siguiente
+                <ChevronRightIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Información adicional */}
+      {/* Info SUNAT */}
       {creditNotes && creditNotes.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">
-                Información sobre Estados SUNAT
-              </h3>
-              <div className="mt-2 text-sm text-blue-700">
-                <ul className="list-disc pl-5 space-y-1">
-                  <li><strong>Pendiente:</strong> Documento creado, esperando envío a SUNAT</li>
-                  <li><strong>Enviado:</strong> Documento enviado, esperando respuesta de SUNAT</li>
-                  <li><strong>Aceptado:</strong> Documento válido y procesado correctamente</li>
-                  <li><strong>Rechazado:</strong> Documento con errores, revisar observaciones</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        <div className="bg-[#1F4690]/5 border border-[#1F4690]/10 rounded-[12px] p-5">
+          <h3 className="text-[13px] font-semibold text-[#1F4690] mb-2">
+            Información sobre Estados SUNAT
+          </h3>
+          <ul className="space-y-1.5 text-[13px] text-[#4d4d4d]">
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-[#202020]">Pendiente:</strong> Documento creado, esperando envío a SUNAT</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-[#202020]">Enviado:</strong> Documento enviado, esperando respuesta de SUNAT</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-[#202020]">Aceptado:</strong> Documento válido y procesado correctamente</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-[#202020]">Rechazado:</strong> Documento con errores, revisar observaciones</span>
+            </li>
+          </ul>
         </div>
       )}
     </div>

@@ -3,60 +3,121 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { CalendarCheck, Check, Ban, MapPin, Clock, User, CreditCard } from 'lucide-react';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { useSearchReservations, useUpdateReservation } from '../hooks/useReservations';
 import { SeatReservation, BranchOffice } from '../../../types';
-import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import { useDebounce } from '../../../hooks/useDebounce';
 
-// Componente para los filtros
-const ReservationFilters = ({ onFilterChange, selectedBranch }: { onFilterChange: (filters: any) => void, selectedBranch: BranchOffice | null }) => {
-    const [status, setStatus] = useState('');
-    const [docNumber, setDocNumber] = useState('');
-    const debouncedDocNumber = useDebounce(docNumber, 500);
-
-    useEffect(() => {
-        // Limpiar el número de documento (quitar espacios) antes de enviar
-        const cleanDocNumber = debouncedDocNumber?.trim() || '';
-        onFilterChange({
-            status: status ? [status] : undefined,
-            // Enviar el documento completo sin truncar, mínimo 3 caracteres para buscar
-            customer_doc_number: cleanDocNumber.length >= 3 ? cleanDocNumber : undefined,
-        });
-    }, [status, debouncedDocNumber, onFilterChange]);
-
-    return (
-        <div className="bg-white p-3 lg:p-4 rounded-lg shadow-sm border mb-4 lg:mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-                <div>
-                    <label className="block text-xs lg:text-sm font-medium text-gray-700">Sucursal Activa</label>
-                    <p className="font-semibold text-sm lg:text-base text-blue-600 mt-1">{selectedBranch?.name || 'Ninguna'}</p>
-                </div>
-                <div>
-                    <label className="block text-xs lg:text-sm font-medium text-gray-700">Filtrar por Estado</label>
-                    <select onChange={(e) => setStatus(e.target.value)} className="w-full p-2 text-sm border border-gray-300 rounded-md mt-1">
-                        <option value="">Todos</option>
-                        <option value="RESERVED">Reservado</option>
-                        <option value="CONFIRMED">Confirmado</option>
-                        <option value="CANCELLED">Cancelado</option>
-                        <option value="EXPIRED">Expirado</option>
-                    </select>
-                </div>
-                <div>
-                    <Input
-                        label="Buscar por DNI/RUC de Cliente"
-                        value={docNumber}
-                        onChange={(e) => setDocNumber(e.target.value)}
-                        placeholder="Ingrese documento..."
-                    />
-                </div>
-            </div>
-        </div>
-    );
+// ------------------------------------------------------------------
+// Helpers visuales
+// ------------------------------------------------------------------
+const STATUS_CONFIG: Record<string, { label: string; classes: string }> = {
+  RESERVED: {
+    label: 'Reservado',
+    classes: 'bg-amber-50 text-amber-700 border border-amber-100',
+  },
+  CONFIRMED: {
+    label: 'Confirmado',
+    classes: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+  },
+  CANCELLED: {
+    label: 'Cancelado',
+    classes: 'bg-red-50 text-red-700 border border-red-100',
+  },
+  EXPIRED: {
+    label: 'Expirado',
+    classes: 'bg-gray-100 text-gray-600 border border-gray-200',
+  },
 };
 
+const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.EXPIRED;
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${config.classes}`}>
+      {config.label}
+    </span>
+  );
+};
+
+// ------------------------------------------------------------------
+// Filtros
+// ------------------------------------------------------------------
+const ReservationFilters = ({
+  onFilterChange,
+  selectedBranch,
+}: {
+  onFilterChange: (filters: any) => void;
+  selectedBranch: BranchOffice | null;
+}) => {
+  const [status, setStatus] = useState('');
+  const [docNumber, setDocNumber] = useState('');
+  const debouncedDocNumber = useDebounce(docNumber, 500);
+
+  useEffect(() => {
+    const cleanDocNumber = debouncedDocNumber?.trim() || '';
+    onFilterChange({
+      status: status ? [status] : undefined,
+      customer_doc_number: cleanDocNumber.length >= 3 ? cleanDocNumber : undefined,
+    });
+  }, [status, debouncedDocNumber, onFilterChange]);
+
+  return (
+    <div className="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Sucursal */}
+        <div>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Sucursal Activa
+          </label>
+          <div className="flex items-center gap-2 rounded-lg bg-gray-100 py-2.5 px-3.5">
+            <MapPin className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm font-semibold text-gray-800">
+              {selectedBranch?.name || 'Ninguna'}
+            </span>
+          </div>
+        </div>
+
+        {/* Estado */}
+        <div>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Filtrar por Estado
+          </label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className="w-full appearance-none rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">Todos</option>
+            <option value="RESERVED">Reservado</option>
+            <option value="CONFIRMED">Confirmado</option>
+            <option value="CANCELLED">Cancelado</option>
+            <option value="EXPIRED">Expirado</option>
+          </select>
+        </div>
+
+        {/* Documento */}
+        <div>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+            Buscar por DNI / RUC
+          </label>
+          <input
+            type="text"
+            value={docNumber}
+            onChange={(e) => setDocNumber(e.target.value)}
+            placeholder="Ingrese documento..."
+            className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ------------------------------------------------------------------
+// Página principal
+// ------------------------------------------------------------------
 export const ReservationsPage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [filters, setFilters] = useState({});
@@ -71,27 +132,31 @@ export const ReservationsPage: React.FC = () => {
 
   const { data: reservations = [], isLoading, error } = useSearchReservations({
     branch_office_id: selectedBranch?.id,
-    ...filters
+    ...filters,
   });
 
   const { mutate: updateReservation } = useUpdateReservation();
 
   const handleCancelReservation = (reservation: SeatReservation) => {
-    if (window.confirm(`¿Está seguro de que desea CANCELAR la reserva del asiento ${reservation.seat_number} para ${reservation.customer_name}?`)) {
+    if (
+      window.confirm(
+        `¿Está seguro de que desea CANCELAR la reserva del asiento ${reservation.seat_number} para ${reservation.customer_name}?`
+      )
+    ) {
       updateReservation({
         reservationId: reservation.id,
         tripId: reservation.trip_id,
-        data: { status: 'CANCELLED' }
+        data: { status: 'CANCELLED' },
       });
     }
   };
 
   const handleConfirmReservation = (reservation: SeatReservation) => {
     navigate(`/fluvial/operations/sales-point`, {
-        state: {
-            tripId: reservation.trip_id,
-            reservationToConfirm: reservation
-        }
+      state: {
+        tripId: reservation.trip_id,
+        reservationToConfirm: reservation,
+      },
     });
   };
 
@@ -100,57 +165,75 @@ export const ReservationsPage: React.FC = () => {
       key: 'details',
       header: 'Viaje / Asiento',
       accessor: (item) => (
-        <div>
-          <div className="text-sm font-bold text-blue-700">{item.trip_name || `Viaje #${item.trip_id}`}</div>
-          <div className="text-sm font-semibold text-gray-900">Asiento: {item.seat_number}</div>
-          <div className="text-xs text-gray-500">Embarque: {item.boarding_stop?.port?.name || 'N/A'}</div>
+        <div className="space-y-0.5">
+          <div className="text-sm font-bold text-primary">{item.trip_name || `Viaje #${item.trip_id}`}</div>
+          <div className="text-[13px] font-medium text-gray-900">
+            Asiento {item.seat_number}
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-gray-500">
+            <MapPin className="h-3 w-3 shrink-0" />
+            {item.boarding_stop?.port?.name || 'N/A'}
+          </div>
         </div>
-      )
+      ),
     },
     {
       key: 'customer',
       header: 'Cliente',
       accessor: (item) => (
-        <div>
-          <div className="text-sm font-medium text-gray-900">{item.customer_name}</div>
-          <div className="text-xs text-gray-500">{item.customer_doc_type}: {item.customer_doc_number}</div>
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
+            <User className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            {item.customer_name}
+          </div>
+          <div className="text-[11px] text-gray-500">
+            {item.customer_doc_type} {item.customer_doc_number}
+          </div>
         </div>
-      )
+      ),
     },
     {
       key: 'amount',
       header: 'Adelanto',
       accessor: (item) => (
-        <span className="text-sm text-green-700">
-          {new Intl.NumberFormat('es-PE', { style: 'currency', currency: item.currency_code }).format(item.advance_amount)}
-        </span>
-      )
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-900">
+          <CreditCard className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+          {new Intl.NumberFormat('es-PE', {
+            style: 'currency',
+            currency: item.currency_code,
+          }).format(item.advance_amount)}
+        </div>
+      ),
     },
     {
       key: 'status',
       header: 'Estado',
-      accessor: (item) => (
-        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-          item.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
-          item.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
-          'bg-red-100 text-red-800'
-        }`}>
-          {item.status}
-        </span>
-      )
+      accessor: (item) => <StatusBadge status={item.status} />,
     },
     {
       key: 'expires_at',
       header: 'Expira',
-      accessor: (item) => item.expires_at
-        ? format(new Date(item.expires_at), 'dd MMM yyyy, hh:mm a', { locale: es })
-        : 'N/A'
-    }
+      accessor: (item) =>
+        item.expires_at ? (
+          <div className="flex items-center gap-1.5 text-[13px] text-gray-600">
+            <Clock className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            {format(new Date(item.expires_at), 'dd MMM yyyy, hh:mm a', { locale: es })}
+          </div>
+        ) : (
+          <span className="text-[13px] text-gray-400">N/A</span>
+        ),
+    },
   ];
 
   return (
-    <div className="p-4 lg:p-6">
-      <h1 className="text-xl lg:text-2xl font-bold text-gray-800 mb-3 lg:mb-4">Gestionar Reservas</h1>
+    <div className="p-4 lg:p-6 space-y-4 lg:space-y-5">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#dbe1ff]">
+          <CalendarCheck className="h-5 w-5 text-primary" />
+        </div>
+        <h1 className="text-lg font-bold tracking-tight text-gray-900">Gestionar Reservas</h1>
+      </div>
 
       <ReservationFilters onFilterChange={setFilters} selectedBranch={selectedBranch} />
 
@@ -168,12 +251,20 @@ export const ReservationsPage: React.FC = () => {
             <div className="flex items-center justify-end gap-2">
               {item.status === 'RESERVED' && (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => handleConfirmReservation(item)} title="Confirmar Venta">
-                    <CheckCircleIcon className="h-5 w-5 text-green-600"/>
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleCancelReservation(item)} title="Cancelar Reserva">
-                    <XCircleIcon className="h-5 w-5 text-red-600"/>
-                  </Button>
+                  <button
+                    onClick={() => handleConfirmReservation(item)}
+                    title="Confirmar venta"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-emerald-50 hover:text-emerald-600"
+                  >
+                    <Check className="h-4 w-4" strokeWidth={2} />
+                  </button>
+                  <button
+                    onClick={() => handleCancelReservation(item)}
+                    title="Cancelar reserva"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600"
+                  >
+                    <Ban className="h-4 w-4" strokeWidth={2} />
+                  </button>
                 </>
               )}
             </div>
@@ -184,87 +275,115 @@ export const ReservationsPage: React.FC = () => {
       {/* Mobile Card View */}
       <div className="block lg:hidden space-y-3">
         {isLoading && (
-          <div className="text-center py-8 text-gray-500">Cargando reservas...</div>
+          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
+            Cargando reservas…
+          </div>
         )}
         {error && (
-          <div className="text-center py-8 text-red-500">Error al cargar reservas</div>
+          <div className="rounded-xl border border-red-200 bg-red-50 p-8 text-center text-sm text-red-600">
+            Error al cargar reservas
+          </div>
         )}
         {!isLoading && !error && reservations.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No se encontraron reservas con los filtros actuales.</div>
+          <div className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">
+            No se encontraron reservas con los filtros actuales.
+          </div>
         )}
-        {!isLoading && !error && reservations.map((reservation) => (
-          <div key={reservation.id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-            {/* Header con Viaje, Asiento y Estado */}
-            <div className="flex items-start justify-between mb-3 pb-3 border-b">
-              <div>
-                <div className="text-sm font-bold text-blue-700">{reservation.trip_name || `Viaje #${reservation.trip_id}`}</div>
-                <div className="text-sm font-semibold text-gray-900">Asiento: {reservation.seat_number}</div>
-              </div>
-              <span className={`px-2.5 py-1 text-xs font-semibold rounded-full shrink-0 ${
-                reservation.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-800' :
-                reservation.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
-                'bg-red-100 text-red-800'
-              }`}>
-                {reservation.status}
-              </span>
-            </div>
-
-            {/* Información del Cliente */}
-            <div className="space-y-2 mb-3">
-              <div>
-                <div className="text-xs text-gray-500">Cliente</div>
-                <div className="text-sm font-medium text-gray-900">{reservation.customer_name}</div>
-                <div className="text-xs text-gray-500">{reservation.customer_doc_type}: {reservation.customer_doc_number}</div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2">
+        {!isLoading &&
+          !error &&
+          reservations.map((reservation) => (
+            <div
+              key={reservation.id}
+              className="rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm"
+            >
+              {/* Header: viaje + estado */}
+              <div className="mb-3 flex items-start justify-between border-b border-gray-100 pb-3">
                 <div>
-                  <div className="text-xs text-gray-500">Embarque</div>
-                  <div className="text-xs font-medium text-gray-900">{reservation.boarding_stop?.port?.name || 'N/A'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-gray-500">Adelanto</div>
-                  <div className="text-sm font-semibold text-green-700">
-                    {new Intl.NumberFormat('es-PE', { style: 'currency', currency: reservation.currency_code }).format(reservation.advance_amount)}
+                  <div className="text-sm font-bold text-primary">
+                    {reservation.trip_name || `Viaje #${reservation.trip_id}`}
+                  </div>
+                  <div className="text-[13px] font-medium text-gray-900">
+                    Asiento {reservation.seat_number}
                   </div>
                 </div>
+                <StatusBadge status={reservation.status} />
               </div>
 
-              {reservation.expires_at && (
+              {/* Info */}
+              <div className="mb-3 space-y-2">
                 <div>
-                  <div className="text-xs text-gray-500">Expira</div>
-                  <div className="text-xs font-medium text-gray-900">
-                    {format(new Date(reservation.expires_at), 'dd MMM yyyy, hh:mm a', { locale: es })}
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                    Cliente
                   </div>
+                  <div className="flex items-center gap-1.5 text-sm font-medium text-gray-900">
+                    <User className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                    {reservation.customer_name}
+                  </div>
+                  <div className="text-[11px] text-gray-500">
+                    {reservation.customer_doc_type} {reservation.customer_doc_number}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                      Embarque
+                    </div>
+                    <div className="flex items-center gap-1 text-xs font-medium text-gray-900">
+                      <MapPin className="h-3 w-3 shrink-0 text-gray-400" />
+                      {reservation.boarding_stop?.port?.name || 'N/A'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                      Adelanto
+                    </div>
+                    <div className="flex items-center gap-1 text-sm font-semibold text-gray-900">
+                      <CreditCard className="h-3 w-3 shrink-0 text-gray-400" />
+                      {new Intl.NumberFormat('es-PE', {
+                        style: 'currency',
+                        currency: reservation.currency_code,
+                      }).format(reservation.advance_amount)}
+                    </div>
+                  </div>
+                </div>
+
+                {reservation.expires_at && (
+                  <div>
+                    <div className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                      Expira
+                    </div>
+                    <div className="flex items-center gap-1 text-xs font-medium text-gray-600">
+                      <Clock className="h-3 w-3 shrink-0 text-gray-400" />
+                      {format(new Date(reservation.expires_at), 'dd MMM yyyy, hh:mm a', {
+                        locale: es,
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Acciones */}
+              {reservation.status === 'RESERVED' && (
+                <div className="flex gap-2 pt-3 border-t border-gray-100">
+                  <button
+                    onClick={() => handleConfirmReservation(reservation)}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 py-2 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    Confirmar
+                  </button>
+                  <button
+                    onClick={() => handleCancelReservation(reservation)}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 py-2 text-xs font-medium text-red-700 transition-colors hover:bg-red-100"
+                  >
+                    <Ban className="h-3.5 w-3.5" />
+                    Cancelar
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Acciones */}
-            {reservation.status === 'RESERVED' && (
-              <div className="flex gap-2 pt-3 border-t">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleConfirmReservation(reservation)} 
-                  className="flex-1 justify-center"
-                >
-                  <CheckCircleIcon className="h-4 w-4 text-green-600 mr-1"/>
-                  <span className="text-xs">Confirmar</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleCancelReservation(reservation)}
-                  className="flex-1 justify-center"
-                >
-                  <XCircleIcon className="h-4 w-4 text-red-600 mr-1"/>
-                  <span className="text-xs">Cancelar</span>
-                </Button>
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );

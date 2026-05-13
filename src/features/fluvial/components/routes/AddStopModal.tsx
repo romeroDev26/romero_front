@@ -173,10 +173,10 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         {/* Información de posición */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center space-x-2">
-            <MapPinIcon className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-medium text-blue-800">
+        <div className="bg-[#1F4690]/5 border border-[#1F4690]/10 rounded-[12px] p-4">
+          <div className="flex items-center gap-2">
+            <MapPinIcon className="h-5 w-5 text-[#1F4690]" strokeWidth={1.5} />
+            <span className="text-[14px] font-medium text-[#1F4690]">
               Esta parada se insertará en la posición {insertPosition + 1} de la ruta
             </span>
           </div>
@@ -184,7 +184,7 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
 
         {/* Selección de puerto */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-[13px] font-medium text-[#4d4d4d]">
             Puerto de la parada *
           </label>
           <SearchableSelect
@@ -194,14 +194,14 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
             placeholder="Buscar puerto..."
           />
           {errors.port_id && (
-            <p className="text-sm text-red-600 flex items-center space-x-1">
-              <ExclamationTriangleIcon className="h-4 w-4" />
+            <p className="text-[13px] text-[#cf1322] flex items-center gap-1">
+              <ExclamationTriangleIcon className="h-4 w-4" strokeWidth={1.5} />
               <span>{errors.port_id}</span>
             </p>
           )}
           {availablePorts.length === 0 && (
-            <p className="text-sm text-amber-600 flex items-center space-x-1">
-              <ExclamationTriangleIcon className="h-4 w-4" />
+            <p className="text-[13px] text-[#d48806] flex items-center gap-1">
+              <ExclamationTriangleIcon className="h-4 w-4" strokeWidth={1.5} />
               <span>Todos los puertos disponibles ya están en uso en esta ruta</span>
             </p>
           )}
@@ -209,36 +209,36 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
 
         {/* Duración estimada */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            <ClockIcon className="h-4 w-4 inline mr-1" />
+          <label className="block text-[13px] font-medium text-[#4d4d4d]">
+            <ClockIcon className="h-4 w-4 inline mr-1" strokeWidth={1.5} />
             Tiempo estimado desde el origen
           </label>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Horas</label>
+              <label className="block text-[12px] text-[#828282] mb-1">Horas</label>
               <input
                 type="number"
                 value={formData.estimated_duration_hours}
                 onChange={(e) => handleInputChange('estimated_duration_hours', e.target.value === '' ? '' : parseInt(e.target.value))}
                 onFocus={() => { if (formData.estimated_duration_hours === 0) handleInputChange('estimated_duration_hours', ''); }}
                 onBlur={() => { if (formData.estimated_duration_hours === '') handleInputChange('estimated_duration_hours', 0); }}
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.duration ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2.5 bg-[#f5f5f5] border rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all ${
+                  errors.duration ? 'border-[#cf1322]' : 'border-[#e8e8e8]'
                 }`}
                 min="0"
                 placeholder="0"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-gray-500 mb-1">Minutos</label>
+              <label className="block text-[12px] text-[#828282] mb-1">Minutos</label>
               <input
                 type="number"
                 value={formData.estimated_duration_minutes}
                 onChange={(e) => handleInputChange('estimated_duration_minutes', e.target.value === '' ? '' : parseInt(e.target.value))}
                 onFocus={() => { if (formData.estimated_duration_minutes === 0) handleInputChange('estimated_duration_minutes', ''); }}
                 onBlur={() => { if (formData.estimated_duration_minutes === '') handleInputChange('estimated_duration_minutes', 0); }}
-                className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.duration ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2.5 bg-[#f5f5f5] border rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all ${
+                  errors.duration ? 'border-[#cf1322]' : 'border-[#e8e8e8]'
                 }`}
                 min="0"
                 max="59"
@@ -247,72 +247,72 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
             </div>
           </div>
           {errors.duration && (
-            <p className="text-sm text-red-600 flex items-center space-x-1">
-              <ExclamationTriangleIcon className="h-4 w-4" />
+            <p className="text-[13px] text-[#cf1322] flex items-center gap-1">
+              <ExclamationTriangleIcon className="h-4 w-4" strokeWidth={1.5} />
               <span>{errors.duration}</span>
             </p>
           )}
-          <p className="text-xs text-gray-500">
+          <p className="text-[12px] text-[#828282]">
             Tiempo total: {Number(formData.estimated_duration_hours || 0)}h {Number(formData.estimated_duration_minutes || 0)}m
           </p>
         </div>
 
         {/* Operaciones permitidas */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-[13px] font-medium text-[#4d4d4d]">
             Operaciones permitidas
           </label>
           <div className="space-y-2">
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.is_boarding_allowed}
                 onChange={(e) => handleInputChange('is_boarding_allowed', e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-[#e8e8e8] text-[#1F4690] focus:ring-[#1F4690]/20 h-4 w-4"
               />
-              <span className="text-sm text-gray-700">Permitir embarque de pasajeros</span>
+              <span className="text-[14px] text-[#202020]">Permitir embarque de pasajeros</span>
             </label>
-            <label className="flex items-center space-x-2">
+            <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.is_disembarking_allowed}
                 onChange={(e) => handleInputChange('is_disembarking_allowed', e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-[#e8e8e8] text-[#1F4690] focus:ring-[#1F4690]/20 h-4 w-4"
               />
-              <span className="text-sm text-gray-700">Permitir desembarque de pasajeros</span>
+              <span className="text-[14px] text-[#202020]">Permitir desembarque de pasajeros</span>
             </label>
           </div>
         </div>
 
         {/* Notas */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            <DocumentTextIcon className="h-4 w-4 inline mr-1" />
+          <label className="block text-[13px] font-medium text-[#4d4d4d]">
+            <DocumentTextIcon className="h-4 w-4 inline mr-1" strokeWidth={1.5} />
             Notas adicionales (opcional)
           </label>
           <textarea
             value={formData.notes}
             onChange={(e) => handleInputChange('notes', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
             rows={3}
             placeholder="Información adicional sobre esta parada..."
           />
         </div>
 
         {/* Botones de acción */}
-        <div className="flex justify-end space-x-3 pt-4 border-t">
-          <Button
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-[#f0f0f0]">
+          <button
             type="button"
-            variant="outline"
             onClick={onClose}
             disabled={isSubmitting}
+            className="px-4 py-2.5 text-[14px] font-medium text-[#202020] bg-white border border-[#e8e8e8] rounded-[10px] hover:bg-[#f5f5f5] disabled:opacity-50 transition-colors"
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
             type="submit"
             disabled={isSubmitting || availablePorts.length === 0}
-            className="flex items-center space-x-2"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-[14px] font-medium text-white bg-[#1F4690] rounded-[10px] hover:bg-[#163672] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isSubmitting ? (
               <>
@@ -321,11 +321,11 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
               </>
             ) : (
               <>
-                <CheckIcon className="h-4 w-4" />
+                <CheckIcon className="h-4 w-4" strokeWidth={1.5} />
                 <span>Agregar Parada</span>
               </>
             )}
-          </Button>
+          </button>
         </div>
       </form>
     </Modal>

@@ -1,5 +1,5 @@
 // src/features/fluvial/components/sales-point/hooks/useSaleForm.ts
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { toast } from "react-toastify";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -157,7 +157,7 @@ export function useSaleForm({
   // Hooks de servicios
   const { createCompanyInvoiceWithRepresentatives, isCreating } =
     useRepresentantes();
-  const { reserveSeat, releaseSeat, getReservedSeatNumbers, isReserving, reservedSeats, updateReservationSeatId } =
+  const { reserveSeat, releaseSeat, getReservedSeatNumbers, isReserving, reservedSeats, updateReservationSeatId, releaseAllReservations } =
     useSeatReservations(trip.id);
 
   // Hook de usuario actual
@@ -779,6 +779,66 @@ export function useSaleForm({
   const activeSeatSelections = webSocketFunctions?.activeSeatSelections || new Map();
   const seatMap = webSocketFunctions?.seatMap || [];
   const isWebSocketConnected = webSocketFunctions?.isWebSocketConnected || false;
+
+  // Refs para detectar cambio de RUC a no-RUC sin dependencias circulares
+  const prevDocTypeRef = useRef(passengerData.docType);
+  const releaseAllReservationsRef = useRef(releaseAllReservations);
+  const wsCleanupRef = useRef({
+    isWebSocketConnected,
+    releaseSeatForRepresentative,
+    seatMap,
+    representatives,
+  });
+
+  // Sincronizar refs con valores actuales en cada render
+  releaseAllReservationsRef.current = releaseAllReservations;
+  wsCleanupRef.current = {
+    isWebSocketConnected,
+    releaseSeatForRepresentative,
+    seatMap,
+    representatives,
+  };
+
+  useEffect(() => {
+    const prevDocType = prevDocTypeRef.current;
+    const currentDocType = passengerData.docType;
+    const wasRuc = prevDocType === SunatDocType.RUC;
+    const isCurrentlyRuc = currentDocType === SunatDocType.RUC;
+
+    // Cambio de RUC a no-RUC: limpiar representantes y sus asientos
+    if (wasRuc && !isCurrentlyRuc) {
+      const ws = wsCleanupRef.current;
+
+      // 1. Liberar reservas locales
+      releaseAllReservationsRef.current();
+
+      // 2. Liberar vía WebSocket cualquier asiento asignado a representantes
+      //    (respaldo por si hay desincronización entre reservedSeats y representatives)
+      if (ws.isWebSocketConnected && ws.releaseSeatForRepresentative) {
+        ws.representatives.forEach((rep) => {
+          if (rep.seat_number && rep.seat_number !== "Elección libre") {
+            const seat = ws.seatMap.find((s) => s.seat_number === rep.seat_number);
+            if (seat) {
+              ws.releaseSeatForRepresentative!(seat.id);
+            }
+          }
+        });
+      }
+
+      // 3. Limpiar estado de representantes
+      setRepresentatives([]);
+      setSelectedSeatForRepresentative(null);
+      setShowAddForm(false);
+    }
+
+    // Cambio de no-RUC a RUC: limpiar asiento del pasajero principal e infantes
+    if (!wasRuc && isCurrentlyRuc) {
+      setSelectedSeat(null);
+      setBoletaInfants([]);
+    }
+
+    prevDocTypeRef.current = currentDocType;
+  }, [passengerData.docType]);
 
   // NUEVO: useEffect para manejo de confirmación de reservas (ahora después de definir seatMap)
   useEffect(() => {

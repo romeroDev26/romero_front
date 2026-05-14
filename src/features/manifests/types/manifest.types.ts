@@ -163,4 +163,36 @@ export interface ManifestResponse {
   isRegeneration?: boolean; // Indica si fue una regeneración en lugar de una creación nueva
 }
 
+// ------------------------------------------------------------------
+// Vista diaria / semanal de manifiestos (endpoint unificado)
+// ------------------------------------------------------------------
+
+export interface DailyManifestSummary {
+  id: number;
+  manifest_number: string;
+  status: 'DRAFT' | 'GENERATED' | 'PRINTED' | 'CANCELLED';
+  total_passengers: number;
+  total_cargo_weight_kg: number;
+  pdf_file_path: string | null;
+  generated_by_name: string | null;
+  generation_date: string | null;
+}
+
+export interface DailyTripManifestItem {
+  id: number;
+  trip_name: string;
+  departure_datetime: string;
+  status: string;
+  origin_port_name: string;
+  destination_port_name: string;
+  vessel_id: number;
+  vessel_name: string;
+  passenger_manifest: DailyManifestSummary | null;
+  cargo_manifest: DailyManifestSummary | null;
+}
+
+export interface DailyManifestViewResponse {
+  trips: DailyTripManifestItem[];
+}
+
 

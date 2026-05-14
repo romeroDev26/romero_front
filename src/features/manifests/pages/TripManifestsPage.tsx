@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeftIcon,
   DocumentTextIcon,
@@ -18,7 +18,13 @@ import { useTripManifests } from '../hooks/useTripManifests';
 
 export const TripManifestsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'passenger' | 'cargo'>('passenger');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'cargo' ? 'cargo' : 'passenger';
+  const [activeTab, setActiveTab] = useState<'passenger' | 'cargo'>(initialTab);
+  const returnDate = searchParams.get('date');
+  const backUrl = returnDate
+    ? `/fluvial/operations/manifests?date=${returnDate}`
+    : '/fluvial/operations/manifests';
 
   const {
     tripId,
@@ -85,7 +91,7 @@ export const TripManifestsPage: React.FC = () => {
           </p>
           <div className="mt-8 flex gap-3 justify-center">
             <button
-              onClick={() => navigate('/fluvial/operations/manifests')}
+              onClick={() => navigate(backUrl)}
               className="px-5 py-2.5 text-[15px] font-medium text-[#202020] bg-white border border-[#e8e8e8] rounded-[20px] hover:bg-[#f5f5f5] transition-colors"
             >
               Volver a la lista
@@ -112,7 +118,7 @@ export const TripManifestsPage: React.FC = () => {
           {/* Breadcrumb */}
           <nav className="flex text-[13px] font-medium text-[#828282] mb-2">
             <button
-              onClick={() => navigate('/fluvial/operations/manifests')}
+              onClick={() => navigate(backUrl)}
               className="hover:text-[#1F4690] transition-colors"
             >
               Manifiestos
@@ -174,7 +180,7 @@ export const TripManifestsPage: React.FC = () => {
         {/* Acciones */}
         <div className="flex gap-3 shrink-0">
           <button
-            onClick={() => navigate('/fluvial/operations/manifests')}
+            onClick={() => navigate(backUrl)}
             className="inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium bg-white border border-[#e8e8e8] rounded-[20px] text-[#202020] hover:bg-[#f5f5f5] transition-colors"
           >
             <ArrowLeftIcon className="h-4 w-4" strokeWidth={1.5} />

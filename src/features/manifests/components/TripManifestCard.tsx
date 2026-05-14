@@ -18,7 +18,7 @@ interface TripManifestCardProps {
   isGenerating: boolean;
   onGenerate: (tripId: number, type: 'PASSENGER' | 'CARGO') => void;
   onDownloadPDF: (url: string | null | undefined, manifestNumber: string) => void;
-  onNavigateToTrip: (tripId: number) => void;
+  onNavigateToTrip: (tripId: number, manifestType?: 'PASSENGER' | 'CARGO') => void;
 }
 
 function getTripStatusLabel(status?: string): { label: string; className: string } {
@@ -98,7 +98,7 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
           isGenerating={isGenerating}
           onGenerate={() => onGenerate(trip.id, 'PASSENGER')}
           onDownloadPDF={onDownloadPDF}
-          onNavigateToTrip={() => onNavigateToTrip(trip.id)}
+          onNavigateToTrip={() => onNavigateToTrip(trip.id, 'PASSENGER')}
           activeColor="blue"
         />
 
@@ -108,11 +108,11 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
           icon={<CubeIcon className="w-4 h-4" strokeWidth={1.5} />}
           manifest={trip.cargoManifest}
           countValue={trip.cargoManifest?.total_cargo_weight_kg}
-          countUnit="Unidad"
+          countUnit={trip.cargoManifest?.total_cargo_weight_kg === 1 ? 'Unidad' : 'Unidades'}
           isGenerating={isGenerating}
           onGenerate={() => onGenerate(trip.id, 'CARGO')}
           onDownloadPDF={onDownloadPDF}
-          onNavigateToTrip={() => onNavigateToTrip(trip.id)}
+          onNavigateToTrip={() => onNavigateToTrip(trip.id, 'CARGO')}
           activeColor="emerald"
         />
       </div>

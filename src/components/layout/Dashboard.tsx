@@ -393,7 +393,7 @@ const Dashboard: React.FC = () => {
               <motion.div
                 key="mobile-sidebar-backdrop"
                 ref={mobileBackdropRef}
-                className="fixed inset-0 z-40 lg:hidden bg-gray-600/75"
+                className="fixed inset-0 z-40 xl:hidden bg-gray-600/75"
                 role="presentation"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -404,7 +404,7 @@ const Dashboard: React.FC = () => {
               <motion.div
                 key="mobile-sidebar-panel"
                 ref={mobilePanelRef}
-                className="fixed inset-y-0 left-0 z-50 flex flex-col w-80 max-w-xs m-5 lg:hidden"
+                className="fixed inset-y-0 left-0 z-50 flex flex-col w-80 max-w-xs m-5 xl:hidden"
                 initial={{ x: '-108%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-108%' }}

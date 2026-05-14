@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { toast } from 'react-toastify';
 import { manifestService } from '../services/manifest.service';
@@ -101,7 +101,15 @@ export const useManifestsPage = () => {
   });
   const [showBranchSelector, setShowBranchSelector] = useState(false);
   const branchSelectorRef = useRef<HTMLDivElement>(null);
-  const [selectedDate, setSelectedDate] = useState<Date>(getPeruDate());
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialDateParam = searchParams.get('date');
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (initialDateParam) {
+      const parsed = new Date(`${initialDateParam}T05:00:00Z`);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    return getPeruDate();
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -262,8 +270,11 @@ export const useManifestsPage = () => {
     setShowBranchSelector(false);
   };
 
-  const navigateToTrip = (tripId: number) => {
-    navigate(`/fluvial/operations/manifests/trip/${tripId}`);
+  const navigateToTrip = (tripId: number, manifestType?: 'PASSENGER' | 'CARGO') => {
+    const params = new URLSearchParams();
+    if (manifestType) params.set('tab', manifestType.toLowerCase());
+    params.set('date', dateStr);
+    navigate(`/fluvial/operations/manifests/trip/${tripId}?${params.toString()}`);
   };
 
   const isLoading = isLoadingManifests || isLoadingDailyView;

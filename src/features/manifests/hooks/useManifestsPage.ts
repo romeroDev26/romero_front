@@ -1,20 +1,17 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { startOfWeek, endOfWeek, format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
 import { toast } from 'react-toastify';
 import { manifestService } from '../services/manifest.service';
 import { generatePassengerManifestPDF } from '../services/manifestPdfGeneration.service';
-import { Manifest, ManifestFormData } from '../types/manifest.types';
+import { ManifestFormData, DailyTripManifestItem } from '../types/manifest.types';
 import { TripManifestGroup } from '../types/ui.types';
-import { tripsService } from '../../../services/trips.service';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { BranchOffice } from '../../../types';
-import { routeHelpers } from '../../../services/routes.service';
 import { getPeruDate, formatPeruDate } from '../utils/dateUtils';
 
-function getManifestDateInPeru(manifest: Manifest): string {
+function getManifestDateInPeru(manifest: { departure_datetime?: string; created_at?: string }): string {
   const iso = manifest.departure_datetime || manifest.created_at;
   if (!iso) return '';
   try {
@@ -29,26 +26,67 @@ function getManifestDateInPeru(manifest: Manifest): string {
   }
 }
 
-function getTripDateInPeru(trip: { departure_datetime?: string }): string {
-  const iso = trip.departure_datetime;
-  if (!iso) return '';
-  try {
-    return new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Lima',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).format(new Date(iso));
-  } catch {
-    return '';
-  }
+interface ApiError {
+  response?: {
+    status?: number;
+    data?: {
+      detail?: string;
+      message?: string;
+    };
+  };
+  message?: string;
+}
+
+function mapDailyItemToGroup(item: DailyTripManifestItem): TripManifestGroup {
+  return {
+    id: item.id,
+    departure_datetime: item.departure_datetime,
+    trip_name: item.trip_name,
+    route_name: item.trip_name,
+    origin_port_name: item.origin_port_name,
+    destination_port_name: item.destination_port_name,
+    vessel_name: item.vessel_name,
+    status: item.status,
+    passengerManifest: item.passenger_manifest
+      ? {
+          id: item.passenger_manifest.id,
+          trip_id: item.id,
+          manifest_number: item.passenger_manifest.manifest_number,
+          generation_date: item.passenger_manifest.generation_date || '',
+          generated_by: '',
+          status: item.passenger_manifest.status,
+          total_passengers: item.passenger_manifest.total_passengers,
+          total_cargo_weight_kg: 0,
+          manifest_type: 'PASSENGER',
+          pdf_file_path: item.passenger_manifest.pdf_file_path,
+          created_at: '',
+          updated_at: '',
+          items: [],
+        }
+      : undefined,
+    cargoManifest: item.cargo_manifest
+      ? {
+          id: item.cargo_manifest.id,
+          trip_id: item.id,
+          manifest_number: item.cargo_manifest.manifest_number,
+          generation_date: item.cargo_manifest.generation_date || '',
+          generated_by: '',
+          status: item.cargo_manifest.status,
+          total_passengers: 0,
+          total_cargo_weight_kg: item.cargo_manifest.total_cargo_weight_kg,
+          manifest_type: 'CARGO',
+          pdf_file_path: item.cargo_manifest.pdf_file_path,
+          created_at: '',
+          updated_at: '',
+          items: [],
+        }
+      : undefined,
+  };
 }
 
 export const useManifestsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const companyId = routeHelpers.getCurrentCompanyId();
-
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(() => {
     const savedBranch = localStorage.getItem('selectedSalesBranch');
     if (savedBranch) {
@@ -80,15 +118,33 @@ export const useManifestsPage = () => {
 
   const dateStr = useMemo(() => formatPeruDate(selectedDate), [selectedDate]);
 
-  // 1. TODOS los manifiestos de la sucursal
+  // Rango del mes actual para traer solo los manifiestos necesarios para el calendario
+  const monthRange = useMemo(() => {
+    const start = format(startOfMonth(selectedDate), 'yyyy-MM-dd');
+    const end = format(endOfMonth(selectedDate), 'yyyy-MM-dd');
+    return { start, end };
+  }, [selectedDate]);
+
+
+
+  // 1. Manifiestos del mes (solo para calcular fechas con manifiestos en el calendario)
   const {
-    data: allManifests = [],
+    data: monthManifests = [],
     isLoading: isLoadingManifests,
   } = useQuery({
-    queryKey: ['manifests', selectedBranch?.id],
+    queryKey: ['manifests-month', selectedBranch?.id, monthRange.start, monthRange.end],
     queryFn: async () => {
       if (!selectedBranch?.id) return [];
-      return manifestService.getManifestsByBranchOffice(selectedBranch.id);
+      try {
+        return await manifestService.getManifestsByBranchOffice(selectedBranch.id, {
+          date_from: monthRange.start,
+          date_to: monthRange.end,
+        });
+      } catch (error: any) {
+        // Si el endpoint falla, devolver array vacío para no romper la UI del calendario
+        console.error('Error al obtener manifiestos del mes:', error);
+        return [];
+      }
     },
     enabled: !!selectedBranch?.id,
     staleTime: 1000 * 60 * 2,
@@ -98,92 +154,48 @@ export const useManifestsPage = () => {
   // Fechas únicas que tienen manifiestos
   const datesWithManifests = useMemo(() => {
     const set = new Set<string>();
-    allManifests.forEach((m) => {
+    monthManifests.forEach((m) => {
       const d = getManifestDateInPeru(m);
       if (d) set.add(d);
     });
     return Array.from(set).sort((a, b) => b.localeCompare(a));
-  }, [allManifests]);
+  }, [monthManifests]);
 
-  // 2. Viajes de la semana completa (sin filtro de estado, para no perder viajes pasados)
-  const weekStart = useMemo(
-    () => format(startOfWeek(selectedDate, { locale: es }), 'yyyy-MM-dd'),
-    [selectedDate]
-  );
-  const weekEnd = useMemo(
-    () => format(endOfWeek(selectedDate, { locale: es }), 'yyyy-MM-dd'),
-    [selectedDate]
-  );
-
+  // 2. Vista diaria unificada: viajes + manifiestos ya filtrados por sucursal y fecha
   const {
-    data: tripsForWeek = [],
-    isLoading: isLoadingTrips,
+    data: dailyView,
+    isLoading: isLoadingDailyView,
+    error: dailyViewError,
   } = useQuery({
-    queryKey: ['trips-for-manifests-week', companyId, weekStart, weekEnd],
+    queryKey: ['manifests-daily-view', selectedBranch?.id, dateStr],
     queryFn: async () => {
-      const result = await tripsService.search({
-        company_id: companyId,
-        start_date: weekStart,
-        end_date: weekEnd,
-      });
-      return result;
+      if (!selectedBranch?.id) return { trips: [] };
+      return manifestService.getDailyManifestView(selectedBranch.id, dateStr);
     },
-    enabled: !!companyId && !!selectedBranch,
-    staleTime: 1000 * 60 * 2,
+    enabled: !!selectedBranch?.id && !!dateStr,
+    staleTime: 1000 * 60 * 1,
     retry: 1,
   });
 
-  // Filtrar viajes de la semana para quedarnos solo con los del día seleccionado
-  const tripsForDate = useMemo(() => {
-    return tripsForWeek.filter((trip) => getTripDateInPeru(trip) === dateStr);
-  }, [tripsForWeek, dateStr]);
-
-  // 3. Construir grupos combinando manifiestos + viajes del día
+  // 3. Mapear trips del endpoint unificado al grupo de UI
   const tripGroups: TripManifestGroup[] = useMemo(() => {
-    const groups = new Map<number, TripManifestGroup>();
-
-    const manifestsForDate = allManifests.filter((m) => getManifestDateInPeru(m) === dateStr);
-
-    manifestsForDate.forEach((m) => {
-      if (!groups.has(m.trip_id)) {
-        groups.set(m.trip_id, {
-          id: m.trip_id,
-          departure_datetime: m.departure_datetime,
-          route_name: m.route_name,
-          vessel_name: m.vessel_name,
-          status: m.trip_status,
-        });
-      }
-      const g = groups.get(m.trip_id)!;
-      if (m.manifest_type === 'PASSENGER') g.passengerManifest = m;
-      else if (m.manifest_type === 'CARGO') g.cargoManifest = m;
-    });
-
-    tripsForDate.forEach((trip) => {
-      if (!groups.has(trip.id)) {
-        groups.set(trip.id, {
-          id: trip.id,
-          departure_datetime: trip.departure_datetime,
-          route_name: trip.trip_name || trip.route?.name,
-          vessel_name: trip.vessel_name || trip.vessel?.name,
-          status: trip.status,
-        });
-      }
-    });
-
-    return Array.from(groups.values()).sort((a, b) => {
-      const ta = a.departure_datetime || '';
-      const tb = b.departure_datetime || '';
-      return ta.localeCompare(tb);
-    });
-  }, [allManifests, tripsForDate, dateStr]);
+    const trips = dailyView?.trips || [];
+    return trips
+      .map(mapDailyItemToGroup)
+      .sort((a, b) => {
+        const ta = a.departure_datetime || '';
+        const tb = b.departure_datetime || '';
+        return ta.localeCompare(tb);
+      });
+  }, [dailyView]);
 
   const generateMutation = useMutation({
     mutationFn: async (data: ManifestFormData) => manifestService.createOrRegenerateManifest(data),
     onSuccess: async (result) => {
       const action = result.isRegeneration ? 'regenerado' : 'generado';
       toast.success(`Manifiesto ${action} exitosamente`);
-      queryClient.invalidateQueries({ queryKey: ['manifests'] });
+      queryClient.invalidateQueries({ queryKey: ['manifests-daily-view'] });
+      queryClient.invalidateQueries({ queryKey: ['manifests-month'] });
       queryClient.invalidateQueries({ queryKey: ['trip-manifests'] });
 
       // Generar y subir PDF automáticamente tras crear/regenerar el manifiesto
@@ -196,29 +208,32 @@ export const useManifestsPage = () => {
           await manifestService.uploadManifestPDF(result.data.id, file, 'a4');
           toast.success('PDF generado y subido correctamente');
           // Refrescar para mostrar el pdf_file_path actualizado
-          queryClient.invalidateQueries({ queryKey: ['manifests'] });
+          queryClient.invalidateQueries({ queryKey: ['manifests-daily-view'] });
+          queryClient.invalidateQueries({ queryKey: ['manifests-month'] });
           queryClient.invalidateQueries({ queryKey: ['trip-manifests'] });
-        } catch (pdfError: any) {
-          console.error('Error al generar/subir PDF:', pdfError);
+        } catch (pdfError: unknown) {
+          const err = pdfError as ApiError;
+          console.error('Error al generar/subir PDF:', err);
           toast.error('El manifiesto se creó pero no se pudo generar el PDF automáticamente');
         }
       }
     },
-    onError: (error: any) => {
-      console.error('Error al generar manifiesto:', error);
+    onError: (error: unknown) => {
+      const err = error as ApiError;
+      console.error('Error al generar manifiesto:', err);
 
-      if (error.response?.status === 403) {
-        toast.error(error.response.data?.detail || 'No tienes permisos para generar manifiestos');
-      } else if (error.response?.status === 401) {
+      if (err.response?.status === 403) {
+        toast.error(err.response.data?.detail || 'No tienes permisos para generar manifiestos');
+      } else if (err.response?.status === 401) {
         toast.error('No se puede generar el manifiesto: no hay datos registrados para este viaje');
-      } else if (error.response?.status === 400 || error.response?.status === 422) {
+      } else if (err.response?.status === 400 || err.response?.status === 422) {
         const msg =
-          error.response.data?.message ||
-          error.response.data?.detail ||
+          err.response.data?.message ||
+          err.response.data?.detail ||
           'No hay datos suficientes para generar el manifiesto';
         toast.error(msg);
       } else {
-        toast.error(error.message || 'Error al generar el manifiesto');
+        toast.error(err.message || 'Error al generar el manifiesto');
       }
     },
   });
@@ -251,7 +266,7 @@ export const useManifestsPage = () => {
     navigate(`/fluvial/operations/manifests/trip/${tripId}`);
   };
 
-  const isLoading = isLoadingTrips || isLoadingManifests;
+  const isLoading = isLoadingManifests || isLoadingDailyView;
 
   return {
     selectedBranch,
@@ -271,5 +286,6 @@ export const useManifestsPage = () => {
     handleGenerateManifest,
     handleDownloadPDF,
     navigateToTrip,
+    dailyViewError,
   };
 };

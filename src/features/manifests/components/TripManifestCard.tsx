@@ -60,12 +60,19 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
             <div className="h-8 w-px bg-[#e8e8e8] hidden sm:block" />
             <div>
               <div className="text-[15px] font-semibold text-[#202020]">
-                {trip.route_name || 'Sin ruta'}
+                {trip.trip_name || trip.route_name || 'Sin ruta'}
               </div>
               <div className="flex items-center gap-1.5 text-[13px] text-[#828282] mt-0.5">
                 <Ship className="w-3.5 h-3.5" strokeWidth={1.5} />
                 <span>{trip.vessel_name || 'Sin embarcación'}</span>
               </div>
+              {trip.origin_port_name && trip.destination_port_name && (
+                <div className="flex items-center gap-1 text-[11px] text-[#a0a0a0] mt-0.5">
+                  <span>{trip.origin_port_name}</span>
+                  <span>→</span>
+                  <span>{trip.destination_port_name}</span>
+                </div>
+              )}
             </div>
           </div>
           <div className="text-right shrink-0">

@@ -3,7 +3,8 @@ import {
   Manifest,
   ManifestFormData, 
   ManifestResponse,
-  Trip
+  Trip,
+  DailyManifestViewResponse
 } from '../types/manifest.types';
 
 export const manifestService = {
@@ -71,12 +72,12 @@ export const manifestService = {
     }
   ): Promise<Manifest[]> => {
     try {
-      const params = {
+      const params: Record<string, any> = {
         skip: filters?.skip || 0,
         limit: filters?.limit || 100,
         ...(filters?.status && { status: filters.status }),
         ...(filters?.date_from && { date_from: filters.date_from }),
-        ...(filters?.date_to && { date_to: filters.date_to })
+        ...(filters?.date_to && { date_to: filters.date_to }),
       };
       
       const response = await api.get(`/dispatch/manifests/by-branch-office/${branchOfficeId}`, { params });
@@ -89,6 +90,33 @@ export const manifestService = {
         error.response?.data?.message || 
         error.response?.data?.detail || 
         'Error al obtener los manifiestos de la sucursal'
+      );
+    }
+  },
+
+  // Vista diaria unificada: viajes + manifiestos ya agrupados por sucursal y fecha
+  getDailyManifestView: async (
+    branchOfficeId: number,
+    date: string
+  ): Promise<DailyManifestViewResponse> => {
+    try {
+      const response = await api.get('/dispatch/manifests/daily-view', {
+        params: {
+          branch_office_id: branchOfficeId,
+          date,
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching daily manifest view:', error);
+      // Loguear el cuerpo completo del error para diagnóstico (especialmente útil para 422 de FastAPI)
+      if (error.response?.data) {
+        console.error('Detalle del error 422:', JSON.stringify(error.response.data, null, 2));
+      }
+      throw new Error(
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        'Error al obtener la vista diaria de manifiestos'
       );
     }
   },

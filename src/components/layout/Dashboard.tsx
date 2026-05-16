@@ -577,11 +577,14 @@ const Dashboard: React.FC = () => {
 
         {/* Área de contenido */}
         <main
-          className={`flex-1 overflow-y-auto rounded-xl shadow-sm ${
+          className={`relative flex-1 overflow-y-auto rounded-xl shadow-sm ${
             isGrayFullBleedRoute ? 'bg-gray-50' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
           }`}
         >
-          <div className="p-4 lg:p-6">
+          {location.pathname === '/' && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,_rgba(145,141,246,0.10)_0%,_transparent_60%)]" />
+          )}
+          <div className="relative p-4 lg:p-6">
             <Outlet />
           </div>
         </main>

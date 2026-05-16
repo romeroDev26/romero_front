@@ -1,13 +1,12 @@
 // src/features/dashboard/components/WelcomeContent.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  DocumentArrowDownIcon,
-} from '@heroicons/react/24/outline';
+import { DocumentArrowDownIcon } from '@heroicons/react/24/outline';
+import { FileSpreadsheet } from 'lucide-react';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
-import { SellerRanking } from './SellerRanking';
 import UserSalesChart from './UserSalesChart';
+import { SellerRanking } from './SellerRanking';
 import { useExportReport } from '../../../hooks/useExportReport';
 import { Modal } from '../../../components/common/Modal';
 import { Button } from '../../../components/common/Button';
@@ -15,13 +14,13 @@ import { DateRangeFilter, DateFilterOption } from './DateRangeFilter';
 import { toast } from 'react-toastify';
 import type { ExportRequest } from '../../../types/exports';
 import {
-  MainAnalyticsGrid,
-  OperationSummaryCards,
-  QuickActionsGrid,
+  WelcomeHero,
+  QuickActions,
+  KpiCards,
+  AnalyticsSection,
   WelcomeFooter,
-  WelcomeHeroSection,
   type QuickActionKey,
-} from './WelcomeDashboardUI';
+} from './welcome';
 
 const getPeruDateString = (): string => {
   try {
@@ -84,11 +83,21 @@ export const WelcomeContent: React.FC = () => {
       return;
     }
     switch (action) {
-      case 'sales-point': navigate('/fluvial/operations/sales-point'); break;
-      case 'cargo': navigate('/fluvial/operations/cargo-sale'); break;
-      case 'quick-sale': navigate('/fluvial/operations/quick-sales'); break;
-      case 'reservations': navigate('/fluvial/operations/reservations'); break;
-      case 'manifests': navigate('/fluvial/operations/manifests'); break;
+      case 'sales-point':
+        navigate('/fluvial/operations/sales-point');
+        break;
+      case 'cargo':
+        navigate('/fluvial/operations/cargo-sale');
+        break;
+      case 'quick-sale':
+        navigate('/fluvial/operations/quick-sales');
+        break;
+      case 'reservations':
+        navigate('/fluvial/operations/reservations');
+        break;
+      case 'manifests':
+        navigate('/fluvial/operations/manifests');
+        break;
     }
   };
 
@@ -105,7 +114,9 @@ export const WelcomeContent: React.FC = () => {
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate.toISOString().split('T')[0],
         filters: { include_vessel_data: false },
-        metadata: { report_title: `Reporte Global por Sucursal.${format === 'excel' ? 'xlsx' : 'pdf'}` },
+        metadata: {
+          report_title: `Reporte Global por Sucursal.${format === 'excel' ? 'xlsx' : 'pdf'}`,
+        },
         sync: true,
       };
       await requestExport(payload);
@@ -116,39 +127,36 @@ export const WelcomeContent: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-8 px-1 md:px-2">
-      <WelcomeHeroSection
+      <WelcomeHero
         branchesLoading={branchesLoading}
         branches={branches}
         selectedBranch={selectedBranch}
         onBranchChange={handleBranchChange}
       />
 
-      <QuickActionsGrid
-        selectedBranch={selectedBranch}
-        onActionClick={handleQuickAction}
-      />
+      <QuickActions selectedBranch={selectedBranch} onActionClick={handleQuickAction} />
 
-      <OperationSummaryCards
+      <KpiCards
         statisticsLoading={statisticsLoading}
         todaySales={todaySales}
         todayRevenue={todayRevenue}
         monthSales={monthSales}
       />
 
-      <MainAnalyticsGrid
+      <AnalyticsSection
         chart={(
-          <div className="space-y-3">
+          <div className="space-y-4">
             <UserSalesChart />
-            <div className="mt-10 mx-auto w-full max-w-xl flex flex-col items-center gap-3 text-center px-2">
-              <p className="text-sm text-slate-500 max-w-lg">
-                Exporta tu rendimiento de ventas en formato Excel para seguimiento y analisis.
+            <div className="mx-auto w-full max-w-xl flex flex-col items-center gap-3 text-center pt-4 border-t border-light-gray">
+              <p className="text-sm text-medium-gray max-w-lg">
+                Exporta tu rendimiento de ventas en formato Excel para seguimiento y análisis.
               </p>
               <button
                 onClick={() => setShowFormatModal(true)}
                 disabled={syncExporting}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#217346] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1a5c38] disabled:opacity-60"
               >
-                <DocumentArrowDownIcon className="h-4 w-4" />
+                <FileSpreadsheet className="h-4 w-4" />
                 {syncExporting ? 'Exportando...' : 'Exportar a Excel'}
               </button>
             </div>
@@ -173,7 +181,10 @@ export const WelcomeContent: React.FC = () => {
           <DateRangeFilter
             startDate={startDate}
             endDate={endDate}
-            onDateChange={(s, e) => { setStartDate(s); setEndDate(e); }}
+            onDateChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
             selectedOption={filterOption}
             onOptionChange={(opt) => setFilterOption(opt)}
           />

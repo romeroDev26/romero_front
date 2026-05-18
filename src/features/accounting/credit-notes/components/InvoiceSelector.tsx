@@ -7,7 +7,7 @@ import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { useVoidableInvoices } from '../../hooks/useCreditNotes';
 import { invoicesService } from '../../../../services/invoices.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface InvoiceSelectorProps {
 	companyId: number;

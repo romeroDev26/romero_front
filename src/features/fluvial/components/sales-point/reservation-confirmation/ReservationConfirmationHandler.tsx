@@ -3,7 +3,7 @@ import React, { useEffect, useMemo } from 'react';
 import { Clock, AlertCircle, CheckCircle, User } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { SeatReservation, SeatMapItem } from '../../../../../types';
 import { PassengerData } from '../core/types';
 import { SunatDocType } from '../../../types/sunat.types';

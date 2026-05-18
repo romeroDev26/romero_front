@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';

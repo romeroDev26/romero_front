@@ -1,7 +1,7 @@
 // src/hooks/useWhatsAppConfig.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { 
   whatsappConfigService, 
   WhatsAppCreateInstanceRequest,

@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { format, parseISO } from 'date-fns';
 import { 
   MagnifyingGlassIcon, 

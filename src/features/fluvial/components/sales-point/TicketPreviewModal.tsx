@@ -9,7 +9,7 @@ import { Download, Eye, MessageCircle, RefreshCw, Tag } from 'lucide-react';
 import { BackendInvoiceData, BackendCompanyInvoiceData } from './tickets/types/backend.types';
 import { WhatsAppSendModal } from './WhatsAppSendModal';
 import { invoicesService } from '../../../../services/invoices.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface TicketPreviewModalProps {
   isOpen: boolean;

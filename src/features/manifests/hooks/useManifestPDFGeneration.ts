@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { manifestService } from '../services/manifest.service';
 import { Manifest } from '../types/manifest.types';
 import { generatePassengerManifestPDF } from '../services/manifestPdfGeneration.service';

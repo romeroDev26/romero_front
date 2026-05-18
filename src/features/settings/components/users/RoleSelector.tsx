@@ -1,6 +1,6 @@
 // src/features/settings/components/users/RoleSelector.tsx
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Spinner } from '../../../../components/common/Spinner';
 import { Role } from '../../../../types';
 import { rolesService } from '../../../../services/roles.service';

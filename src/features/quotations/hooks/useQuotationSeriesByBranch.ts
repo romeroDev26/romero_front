@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { documentSeriesService, QUOTATION_DOCUMENT_TYPE_CODE } from '../../../services/documentSeries.service';
 import { authService } from '../../../services/auth.service';
 import { DocumentSeries, User } from '../../../types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 export const useQuotationSeriesByBranch = (branchOfficeId?: number) => {
   const [selectedSeries, setSelectedSeries] = useState<string>('');

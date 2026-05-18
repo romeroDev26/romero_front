@@ -1,6 +1,6 @@
 // src/features/fluvial/hooks/useSeatAssignments.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { assignmentsService, SeatAssignmentCreateData } from '../../../services/assignments.service';
 
 /**

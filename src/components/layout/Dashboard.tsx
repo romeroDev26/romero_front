@@ -14,7 +14,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { User } from '../../types';
 import Sidebar from './Sidebar';
 import { useWebSocketNotifications } from '../../hooks/useWebSocketNotifications';

@@ -1,6 +1,6 @@
 // src/features/quotations/hooks/useQuotations.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { quotationsService } from '../services/quotations.service';
 import { 
   Quotation, 

@@ -1,6 +1,6 @@
 // src/components/common/LocationSelector.tsx
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Spinner } from './Spinner';
 import { 
   geonamesService, 

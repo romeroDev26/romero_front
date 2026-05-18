@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientsService } from '../../../services/clients.service';
 import { Client, CreateClientData } from '../../../types';
 import { SunatDocType } from '../types/sunat.types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 /**
  * Determina si un tipo de documento requiere creación directa sin búsqueda previa

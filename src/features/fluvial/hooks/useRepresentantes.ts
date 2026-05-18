@@ -1,6 +1,6 @@
 // src/features/fluvial/hooks/useRepresentantes.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { 
   representantesService, 
   CompanyInvoiceWithRepresentatives

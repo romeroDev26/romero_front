@@ -1,7 +1,7 @@
 // src/features/supervisor/pages/CancellationRequestsPage.tsx
 
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import {
   BellAlertIcon,
   CheckCircleIcon,

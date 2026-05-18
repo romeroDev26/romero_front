@@ -1,7 +1,7 @@
 // src/features/remissionGuides/components/RemissionGuidePreviewModal.tsx
 
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import {
   DocumentArrowDownIcon,
   XMarkIcon,

@@ -1,7 +1,7 @@
 // src/features/accounting/hooks/useSunatVoids.ts
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { sunatBatchesService } from '../services/sunatBatches.service';
 import { invoicesService } from '../../../services/invoices.service';
 import { VoidCreateData, VoidableInvoice, VoidDocument } from '../types';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';

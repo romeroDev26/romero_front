@@ -1,7 +1,7 @@
 // src/features/settings/pages/UsersPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { PencilIcon, TrashIcon, PlusIcon, KeyIcon } from '@heroicons/react/24/outline';
 
 import { Spinner } from '../../../components/common/Spinner';

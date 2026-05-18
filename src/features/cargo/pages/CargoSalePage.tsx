@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { AnimatePresence, motion } from 'motion/react';
 import { CreditCard, PlusIcon, PencilIcon, TrashIcon, ClipboardListIcon, HashIcon, ArrowRightIcon, PackageIcon, UserIcon, MapPinIcon, ReceiptTextIcon, UsersRound } from 'lucide-react';
 

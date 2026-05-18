@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Spinner } from '../../../components/common/Spinner';
 import { companiesService } from '../../../services/companies.service';
 import { CompanyUpdate } from '../../../types';

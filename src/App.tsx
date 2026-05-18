@@ -2,8 +2,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'sileo';
 
 import Dashboard from './components/layout/Dashboard';
 import { LoginPage } from './features/auth/pages/LoginPage';
@@ -337,7 +336,18 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
-        <ToastContainer position="top-right" autoClose={3000} />
+        <Toaster 
+          position="top-right" 
+          theme="dark"
+          options={{
+            duration: 4000,
+            fill: '#171717',
+            styles: {
+              title: '!text-white',
+              description: '!text-gray-300',
+            },
+          }}
+        />
       </Router>
     );
 }

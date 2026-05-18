@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '../../../../components/common/Button';

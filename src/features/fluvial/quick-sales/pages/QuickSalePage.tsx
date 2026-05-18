@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   Zap, 

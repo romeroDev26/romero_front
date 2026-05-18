@@ -1,6 +1,6 @@
 //src/hooks/useDocumentSeries.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { documentSeriesService, DocumentSeriesCreateData, DocumentSeriesUpdateData } from '../services/documentSeries.service';
 import { getErrorMessage } from '../utils/errorHandler';
 

@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 import { Button } from '../../../../components/common/Button';
 import { useCreateCreditNote } from '../../hooks/useCreditNotes';

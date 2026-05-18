@@ -1,7 +1,7 @@
 // src/features/fluvial/components/sales-point/hooks/useSaleBusinessLogic.ts
 
 import { useCallback } from "react";
-import { toast } from "react-toastify";
+import { toast } from '@/utils/sileo-toast';
 import {
   PassengerData,
   Representative,

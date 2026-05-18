@@ -265,3 +265,25 @@
 .custom-datepicker .react-datepicker__navigation--next {
   right: 10px;
 }
+
+/* ================================================
+   Sileo Toast Notifications — Custom Sizes
+   ================================================ */
+
+/* Aumentar tamaño de letra del título */
+[data-sileo-title] {
+  font-size: 0.95rem !important;
+  line-height: 1.25rem !important;
+}
+
+/* Aumentar tamaño de letra de la descripción */
+[data-sileo-description] {
+  font-size: 0.9rem !important;
+  line-height: 1.35rem !important;
+}
+
+/* Aumentar ligeramente el badge/icono */
+[data-sileo-badge] {
+  height: 28px !important;
+  width: 28px !important;
+}

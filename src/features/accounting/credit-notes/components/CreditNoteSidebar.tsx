@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface CreditNoteSidebarProps {
 	creditNoteTypeCode: string;

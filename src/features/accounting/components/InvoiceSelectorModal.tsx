@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 // Icon imports removed (no usados)
 import { Modal } from '../../../components/common/Modal';
 import { Button } from '../../../components/common/Button';

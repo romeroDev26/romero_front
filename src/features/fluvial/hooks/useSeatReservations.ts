@@ -3,7 +3,7 @@
 // ya que el endpoint de API REST no existe en el backend
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface SeatReservation {
   seatNumber: string;

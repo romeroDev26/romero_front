@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientsService } from '../../../services/clients.service';
 import { Client, CreateClientData } from '../../../types/index';
 import { SunatDocType } from '../../../features/fluvial/types/sunat.types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 const isInternationalDocument = (docType: string): boolean => {
   return [

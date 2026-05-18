@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/reservation-confirmation/useReservationConfirmation.ts
 import { useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { SeatReservation, SeatMapItem } from '../../../../../types';
 import { PassengerData } from '../core/types';
 import { SunatDocType } from '../../../types/sunat.types';

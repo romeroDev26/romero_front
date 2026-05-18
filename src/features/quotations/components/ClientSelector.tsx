@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, User } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
 import { clientsService } from '../../../services/clients.service';

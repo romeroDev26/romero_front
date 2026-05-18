@@ -14,7 +14,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import {
   useCreditNote,
   useCreditNoteSunatStatus,

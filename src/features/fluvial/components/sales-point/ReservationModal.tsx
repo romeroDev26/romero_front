@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/ReservationModal.tsx
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Modal } from '../../../../components/common/Modal';
 import { Button } from '../../../../components/common/Button';
 import { Input } from '../../../../components/common/Input';

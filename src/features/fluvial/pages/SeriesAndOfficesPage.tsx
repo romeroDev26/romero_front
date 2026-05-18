@@ -14,7 +14,7 @@ import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';
 import { Spinner } from '../../../components/common/Spinner';
 import { DocumentSeries, BranchOffice, Port } from '../../../types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 // Hooks para Series
 import {

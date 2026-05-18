@@ -272,16 +272,13 @@ export class WebSocketMessageHandler {
     const errorMessage = message.error || 'Este asiento ya no está disponible';
 
     setTimeout(() => {
-      import('react-toastify').then(({ toast }) => {
+      import('@/utils/sileo-toast').then(({ toast }) => {
         toast.error(`Asiento ${message.seatId}: ${errorMessage}`, {
           position: 'top-right',
           autoClose: 4000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
         });
       }).catch(() => {
-
+        // Silenciar error de importación
       });
     }, 50);
   }

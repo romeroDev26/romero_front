@@ -18,7 +18,7 @@ import { useQuotationPDFGeneration } from '../hooks/useQuotationPDFGeneration';
 import { QuotationWhatsAppModal } from '../components/QuotationWhatsAppModal';
 import { quotationsService } from '../services/quotations.service';
 import { Quotation, QuotationStatus } from '../types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 const statusLabels: Record<QuotationStatus, string> = {
   DRAFT: 'Borrador',

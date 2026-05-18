@@ -1,7 +1,7 @@
 // src/features/quotations/hooks/useQuotationPDFGeneration.ts
 
 import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { quotationPdfUploadService } from '../services/quotationPdfUpload.service';

@@ -1,7 +1,7 @@
 // src/hooks/useWebSocketNotifications.ts
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { getWebSocketUrl as getWsBaseUrl, API_PREFIX } from '../config/env';
 
 // Datos del evento cuando se crea una solicitud

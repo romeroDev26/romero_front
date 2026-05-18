@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { citiesConfigService, portsConfigService } from '../services/ports.cities.service';
 import { CityCreateData, CityUpdateData, PortCreateData, PortUpdateData } from '../services/ports.cities.service';
 import { PortType } from '../types';

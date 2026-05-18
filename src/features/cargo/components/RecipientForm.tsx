@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { SunatDocType, DOCUMENT_TYPES } from '../../fluvial/types/sunat.types';
 import { useSunatData } from '../../fluvial/hooks/useSunatData';
 import { Search, CheckCircle } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 
 export interface RecipientData {

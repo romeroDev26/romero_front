@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { paymentService } from '../services/payment.service';
 import { PaymentConfirmationData, PaymentTicketData } from '../types/payment.types';
 import { ReceivablesItem } from '../types/receivables.types';

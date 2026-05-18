@@ -5,7 +5,7 @@ import { TrashIcon, PlusIcon, InformationCircleIcon } from '@heroicons/react/24/
 import { useAddSeatConfiguration, useDeleteSeatConfiguration, useUpdateVessel } from '../../hooks/useVesselsData';
 import { useSeatTypes } from '../../hooks/useSeatTypesData';
 import { VesselWithConfigurations, SeatConfigurationCreateData, vesselValidations } from '../../../../services/vessels.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Input } from '../../../../components/common/Input';
 
 interface ConfigRowState {

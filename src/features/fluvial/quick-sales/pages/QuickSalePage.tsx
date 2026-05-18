@@ -17,6 +17,7 @@ import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { SplitPaymentForm, SplitPaymentData } from '../../../../components/common/SplitPaymentForm';
 import { PassengerDataForm } from '../../components/sales-point/PassengerDataForm';
+import { BranchSelector } from '../../components/sales-point/BranchSelector';
 import { ConfirmSaleModal } from '../../components/sales-point/ConfirmSaleModal';
 import { TicketPreviewModal } from '../../components/sales-point/TicketPreviewModal';
 import { BackendInvoiceData } from '../../components/sales-point/tickets/types/backend.types';
@@ -423,27 +424,30 @@ export const QuickSalePage: React.FC = () => {
     );
   }
 
-  // Si no hay sucursal seleccionada
+  // Handler para seleccionar sucursal inline
+  const handleBranchSelect = (branch: BranchOffice) => {
+    setSelectedBranch(branch);
+    localStorage.setItem('selectedSalesBranch', JSON.stringify(branch));
+  };
+
+  // Si no hay sucursal seleccionada, mostrar selector inline
   if (!selectedBranch) {
     return (
-      <div className="p-6">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-yellow-800">
-            <AlertTriangle className="h-5 w-5" />
-            <p className="font-medium">No hay sucursal seleccionada</p>
+      <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Zap className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Venta Rápida</h1>
+              <p className="text-sm text-gray-600">
+                Registre ventas de servicios y productos sin asociar a un viaje específico
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-yellow-700 mt-2">
-            Por favor, seleccione una sucursal desde el punto de venta principal.
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/fluvial/operations/sales-point')}
-            className="mt-3"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Ir a Punto de Venta
-          </Button>
         </div>
+        <BranchSelector onBranchSelect={handleBranchSelect} />
       </div>
     );
   }

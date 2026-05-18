@@ -1,6 +1,6 @@
 // src/features/fluvial/hooks/useRepresentantes.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from '@/utils/sileo-toast';
+import { saleNotify } from '@/utils/sileo-toast';
 import { 
   representantesService, 
   CompanyInvoiceWithRepresentatives
@@ -49,12 +49,9 @@ export function useRepresentantes() {
     onSuccess: (data: any) => {
       const { invoice, representatives } = data;
       
-      toast.success(
-        `Factura ${invoice.series}-${String(invoice.number).padStart(8, '0')} creada con ${representatives.length} representantes`,
-        { 
-          autoClose: 8000,
-          position: "top-right"
-        }
+      saleNotify.success(
+        'Factura empresarial creada',
+        `${invoice.series}-${String(invoice.number).padStart(8, '0')} · ${representatives.length} representantes registrados`
       );
       
       // Invalidar queries relacionadas para refrescar datos
@@ -65,10 +62,7 @@ export function useRepresentantes() {
     
     onError: (error: any) => {
       const friendlyMessage = getErrorMessage(error);
-      toast.error(`Error: ${friendlyMessage}`, { 
-        autoClose: 10000,
-        position: "top-right"
-      });
+      saleNotify.error('Error en factura empresarial', friendlyMessage);
       
       // Log detallado del error para debugging
       console.error('Error creando factura empresarial:', {

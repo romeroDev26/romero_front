@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from '@/utils/sileo-toast'
+import { authNotify } from '@/utils/sileo-toast'
+import { useLockoutCountdown } from '@/hooks/useLockoutCountdown'
 import { authService } from '../../../services/auth.service'
 
 // Esquema de validación con el campo opcional 'rememberMe'
@@ -22,7 +23,21 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [lockoutMessage, setLockoutMessage] = useState<string>('Demasiados intentos fallidos. Cuenta bloqueada temporalmente.')
+  const { isLocked, formattedTime, lockFromSeconds, clearLock } = useLockoutCountdown()
   const navigate = useNavigate()
+
+  const extractLockoutInfo = (err: any): { message: string; retryAfter: number } | null => {
+    if (err.response?.status !== 429) return null
+    const detail = err.response?.data?.detail
+    if (detail && typeof detail === 'object') {
+      return {
+        message: detail.message || 'Cuenta bloqueada temporalmente.',
+        retryAfter: Number(detail.retry_after_seconds) || 300,
+      }
+    }
+    return null
+  }
 
   const rememberedEmail = typeof window !== 'undefined' ? localStorage.getItem(REMEMBER_KEY) : null
 
@@ -54,27 +69,36 @@ export const LoginPage: React.FC = () => {
         localStorage.removeItem(REMEMBER_KEY)
       }
 
-      toast.success('Inicio de sesión exitoso')
+      authNotify.success('Inicio de sesión exitoso', 'Redirigiendo al panel de control...')
+      clearLock()
       navigate('/')
     } catch (err: any) {
-      if (err.response) {
+      const lockoutInfo = extractLockoutInfo(err)
+      if (lockoutInfo) {
+        lockFromSeconds(lockoutInfo.retryAfter)
+        setLockoutMessage(lockoutInfo.message)
+        setLoginError(null)
+        authNotify.error('Cuenta bloqueada temporalmente', lockoutInfo.message)
+      } else if (err.response) {
         if (err.response.status === 401) {
-          const msg = 'Credenciales incorrectas. Verifique su email y contraseña.'
-          setLoginError(msg)
-          toast.error(msg)
+          const msg = 'Credenciales incorrectas'
+          setLoginError('Credenciales incorrectas. Verifique su email y contraseña.')
+          authNotify.error(msg, 'Verifique su email y contraseña e intente de nuevo.')
         } else {
-          const msg = `Error ${err.response.status}: ${err.response?.data?.detail || 'Error en el servidor'}`
+          const status = err.response.status
+          const detail = err.response?.data?.detail || 'Error en el servidor'
+          const msg = `Error ${status}: ${detail}`
           setLoginError(msg)
-          toast.error(msg)
+          authNotify.error('Error del servidor', detail)
         }
       } else if (err.request) {
         const msg = 'No se pudo conectar con el servidor. Verifique su conexión a internet.'
         setLoginError(msg)
-        toast.error(msg)
+        authNotify.error('Sin conexión', 'Verifique su conexión a internet e intente de nuevo.')
       } else {
         const msg = `Error al iniciar sesión: ${err.message}`
         setLoginError(msg)
-        toast.error(msg)
+        authNotify.error('Error inesperado', err.message)
       }
     } finally {
       setIsLoading(false)
@@ -107,6 +131,29 @@ export const LoginPage: React.FC = () => {
 
           {/* Formulario */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Banner de bloqueo por intentos fallidos */}
+            {isLocked && (
+              <div
+                className="bg-[#cf1322]/5 border border-[#cf1322]/20 px-5 py-4 rounded-[12px] flex items-start gap-3"
+                role="alert"
+              >
+                <div className="mt-0.5 flex-shrink-0">
+                  <svg className="h-5 w-5 text-[#cf1322]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-[14px] font-medium text-[#cf1322]">
+                    Cuenta bloqueada temporalmente
+                  </div>
+                  <div className="mt-1 text-[13px] text-[#cf1322]/80 leading-[1.4]">
+                    {lockoutMessage} Intente nuevamente en{' '}
+                    <span className="font-mono font-semibold tabular-nums">{formattedTime}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {loginError && (
               <div
                 className="bg-white border border-[#e8e8e8] text-[#202020] px-5 py-3.5 rounded-[12px] flex items-start justify-between"
@@ -125,55 +172,61 @@ export const LoginPage: React.FC = () => {
             )}
 
             {/* Email */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-[#828282]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" />
-                </svg>
+            <div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-[#828282]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" />
+                  </svg>
+                </div>
+                <input
+                  type="email"
+                  placeholder="Correo Electrónico"
+                  autoComplete="email"
+                  disabled={isLocked}
+                  className="w-full py-3.5 rounded-[20px] bg-white border border-[#e8e8e8] focus:border-[#1F4690] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/10 pl-11 pr-4 text-[15px] leading-none text-[#202020] placeholder:text-[#828282] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  {...register('email')}
+                />
               </div>
-              <input
-                type="email"
-                placeholder="Correo Electrónico"
-                autoComplete="email"
-                className="w-full px-4 py-3.5 rounded-[20px] bg-white border border-[#e8e8e8] focus:border-[#1F4690] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/10 pl-11 text-[15px] text-[#202020] placeholder:text-[#828282] transition-all"
-                {...register('email')}
-              />
               {errors.email && (
                 <p className="mt-1.5 text-[13px] text-[#cf1322] ml-4">{errors.email.message}</p>
               )}
             </div>
 
             {/* Contraseña */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-[#828282]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+            <div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg className="h-5 w-5 text-[#828282]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Contraseña"
+                  autoComplete="current-password"
+                  disabled={isLocked}
+                  className="w-full py-3.5 rounded-[20px] bg-white border border-[#e8e8e8] focus:border-[#1F4690] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/10 pl-11 pr-11 text-[15px] leading-none text-[#202020] placeholder:text-[#828282] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  {...register('password')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#828282] hover:text-[#4d4d4d] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
               </div>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Contraseña"
-                autoComplete="current-password"
-                className="w-full px-4 py-3.5 rounded-[20px] bg-white border border-[#e8e8e8] focus:border-[#1F4690] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/10 pl-11 pr-11 text-[15px] text-[#202020] placeholder:text-[#828282] transition-all"
-                {...register('password')}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-4 flex items-center text-[#828282] hover:text-[#4d4d4d] transition-colors"
-                tabIndex={-1}
-              >
-                {showPassword ? (
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                  </svg>
-                ) : (
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )}
-              </button>
               {errors.password && (
                 <p className="mt-1.5 text-[13px] text-[#cf1322] ml-4">{errors.password.message}</p>
               )}
@@ -204,10 +257,10 @@ export const LoginPage: React.FC = () => {
             {/* Botón */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isLocked}
               className="w-full py-3.5 bg-[#1F4690] hover:bg-[#163672] text-white font-medium rounded-[20px] transition-all duration-200 text-[16px] disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
+              {isLoading ? 'Iniciando Sesión...' : isLocked ? `Bloqueado (${formattedTime})` : 'Iniciar Sesión'}
             </button>
           </form>
         </div>

@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { toast } from '@/utils/sileo-toast';
+import { toast, saleNotify } from '@/utils/sileo-toast';
 import { AnimatePresence, motion } from 'motion/react';
 import { CreditCard, PlusIcon, PencilIcon, TrashIcon, ClipboardListIcon, HashIcon, ArrowRightIcon, PackageIcon, UserIcon, MapPinIcon, ReceiptTextIcon, UsersRound } from 'lucide-react';
 
@@ -430,7 +430,7 @@ export const CargoSalePage: React.FC = () => {
     setShowTicketPreview(false);
     setTicketBackendData(null);
     
-    toast.success('Venta de encomienda completada y ticket generado!');
+    saleNotify.success('Venta de encomienda completada', 'El ticket ha sido generado correctamente.');
   };
 
   // Función para limpiar el formulario cuando se cierre el modal (sin éxito)

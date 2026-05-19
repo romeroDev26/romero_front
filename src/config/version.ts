@@ -17,6 +17,22 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '1.1.0',
     date: '2026-05-18',
+    title: 'Refactorización de modales de anulación y supervisión',
+    description:
+      'Los modales de respuestas a solicitudes (vendedor), solicitud de aprobación de anulación, aprobación y rechazo (supervisor), así como la página de gestión de solicitudes, fueron completamente rediseñados con una estética minimalista empresarial: bordes finos, tipografía jerárquica, fondos neutros y sin sombras pesadas.',
+    tags: ['ui', 'improvement'],
+  },
+  {
+    version: '1.1.0',
+    date: '2026-05-18',
+    title: 'Rediseño de la anulación de comprobantes',
+    description:
+      'La página de anulación de notas de crédito (/accounting/credit-notes/annul) ahora usa un layout de dos columnas: a la izquierda la información del comprobante y a la derecha el formulario de acción. Se unificó el fondo del contenedor principal, se eliminaron los emojis y se aplicó el mismo estilo minimalista empresarial del sistema.',
+    tags: ['ui', 'improvement'],
+  },
+  {
+    version: '1.1.0',
+    date: '2026-05-18',
     title: 'Regeneración de manifiestos de viaje',
     description:
       'Ahora puedes regenerar manifiestos de pasajeros y carga directamente desde el detalle del manifiesto, sin necesidad de navegar a Programar Viajes.',

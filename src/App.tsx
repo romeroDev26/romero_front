@@ -25,7 +25,7 @@ const RolesPage = React.lazy(() => import('./features/settings/pages/RolesPage')
 const SettingsIndexPage = React.lazy(() => import('./features/settings/pages/SettingslndexPage'));
 const WhatsAppConfigPage = React.lazy(() => import('./features/settings/pages/WhatsAppConfigPage'));
 const UpdatesAdminPage = React.lazy(() => import('./features/updates/pages/UpdatesAdminPage'));
-const ChangelogPage = React.lazy(() => import('./features/changelog/pages/ChangelogPage').then(module => ({ default: module.ChangelogPage })));
+const ChangelogPage = React.lazy(() => import('./features/changelog/pages/ChangelogPage'));
 
 // Páginas de ventas (lazy)
 const QuotationsListPage = React.lazy(() => import('./features/sales/pages/QuotationsListPage').then(module => ({ default: module.QuotationsListPage })));

@@ -17,9 +17,17 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '1.1.0',
     date: '2026-05-18',
-    title: 'Regeneración de manifiestos y selector de sucursal en encomiendas',
+    title: 'Regeneración de manifiestos de viaje',
     description:
-      'Ahora puedes regenerar manifiestos de pasajeros y carga directamente desde el detalle del manifiesto, sin necesidad de navegar a Programar Viajes. También se agregó la posibilidad de seleccionar una sucursal directamente desde la Venta Rápida y desde la Venta de Encomiendas cuando aún no tienes una elegida.',
+      'Ahora puedes regenerar manifiestos de pasajeros y carga directamente desde el detalle del manifiesto, sin necesidad de navegar a Programar Viajes.',
+    tags: ['feature', 'improvement'],
+  },
+  {
+    version: '1.1.0',
+    date: '2026-05-18',
+    title: 'Selector de sucursal en Reservas, Venta Rápida y Encomiendas',
+    description:
+      'Se agregó la posibilidad de seleccionar una sucursal directamente desde la página de Reservas, la Venta Rápida y la Venta de Encomiendas cuando aún no tienes una elegida. Esto elimina el redireccionamiento forzado y mejora la experiencia de usuario.',
     tags: ['feature', 'improvement'],
   },
   {

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { XMarkIcon, PaperAirplaneIcon, ClockIcon } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { cancellationRequestsService } from '../services/cancellationRequests.service';
 
 interface SellerCancellationRequestModalProps {

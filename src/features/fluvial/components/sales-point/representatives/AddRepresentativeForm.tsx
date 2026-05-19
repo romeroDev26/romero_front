@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/representatives/AddRepresentativeForm.tsx
 import React, { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../../../../../components/common/Button';
 import { Input } from '../../../../../components/common/Input';

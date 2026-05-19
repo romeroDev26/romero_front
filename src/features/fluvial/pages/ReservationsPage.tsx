@@ -9,6 +9,7 @@ import { useSearchReservations, useUpdateReservation } from '../hooks/useReserva
 import { SeatReservation, BranchOffice } from '../../../types';
 import { Input } from '../../../components/common/Input';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { BranchSelector } from '../components/sales-point/BranchSelector';
 
 // ------------------------------------------------------------------
 // Helpers visuales
@@ -123,6 +124,11 @@ export const ReservationsPage: React.FC = () => {
   const [filters, setFilters] = useState({});
   const navigate = useNavigate();
 
+  const handleBranchSelect = (branch: BranchOffice) => {
+    setSelectedBranch(branch);
+    localStorage.setItem('selectedSalesBranch', JSON.stringify(branch));
+  };
+
   useEffect(() => {
     const savedBranchJson = localStorage.getItem('selectedSalesBranch');
     if (savedBranchJson) {
@@ -224,6 +230,24 @@ export const ReservationsPage: React.FC = () => {
         ),
     },
   ];
+
+  if (!selectedBranch) {
+    return (
+      <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#dbe1ff]">
+            <CalendarCheck className="h-5 w-5 text-primary" />
+          </div>
+          <h1 className="text-lg font-bold tracking-tight text-gray-900">Gestionar Reservas</h1>
+        </div>
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Seleccione una sucursal</h2>
+          <p className="text-gray-600">Elija la sucursal desde la cual gestionará las reservas.</p>
+        </div>
+        <BranchSelector onBranchSelect={handleBranchSelect} />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 lg:p-6 space-y-4 lg:space-y-5">

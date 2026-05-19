@@ -11,9 +11,11 @@ import {
   ChevronRightIcon,
   DocumentTextIcon,
   FunnelIcon,
+  PlusIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
-import { PlusIcon } from 'lucide-react';
 import { DataTable, Column } from '../../../../components/common/DataTable';
+import { Spinner } from '../../../../components/common/Spinner';
 import { SunatStatusBadge } from '../../components/SunatStatusBadge';
 import { useCreditNotes, useRefreshPendingStatuses } from '../hooks/useCreditNotes';
 import { CreditNotesListParams } from '../../types';
@@ -174,10 +176,10 @@ export const CreditNotesListPage: React.FC = () => {
   ];
 
   const customActions = (note: CreditNote) => (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-1">
       <Link
         to={`/accounting/credit-notes/${note.id}`}
-        className="text-[#828282] hover:text-[#1F4690] transition-colors"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
         title="Ver detalle"
       >
         <EyeIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -187,7 +189,7 @@ export const CreditNotesListPage: React.FC = () => {
           href={note.pdf_a4_file_path}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#828282] hover:text-[#cf1322] transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#cf1322] hover:bg-red-50 transition-colors"
           title="Descargar PDF A4"
         >
           <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -198,7 +200,7 @@ export const CreditNotesListPage: React.FC = () => {
           href={note.pdf_ticket_file_path}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[#828282] hover:text-[#237804] transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#237804] hover:bg-green-50 transition-colors"
           title="Descargar Ticket 80mm"
         >
           <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -215,16 +217,21 @@ export const CreditNotesListPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1
-            className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            Notas de Crédito
-          </h1>
-          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
-            Gestiona las anulaciones y notas de crédito
-          </p>
+        <div className="flex items-start gap-4">
+          <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#1F4690]/10">
+            <ClipboardDocumentListIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h1
+              className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            >
+              Notas de Crédito
+            </h1>
+            <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+              Gestiona las anulaciones y notas de crédito
+            </p>
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
@@ -321,9 +328,9 @@ export const CreditNotesListPage: React.FC = () => {
         {/* Mobile cards */}
         <div className="md:hidden">
           {isLoading ? (
-            <div className="p-10 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1F4690] mx-auto" />
-              <p className="mt-3 text-[14px] text-[#828282]">Cargando notas de crédito...</p>
+            <div className="p-10 flex flex-col items-center justify-center gap-3">
+              <Spinner size="md" />
+              <p className="text-[14px] text-[#828282]">Cargando notas de crédito...</p>
             </div>
           ) : creditNotes?.length === 0 ? (
             <div className="p-10 text-center text-[14px] text-[#828282]">
@@ -378,10 +385,10 @@ export const CreditNotesListPage: React.FC = () => {
                       <span className="text-[12px] text-[#828282]">
                         {note.issue_date ? formatDate(note.issue_date) : formatDate((note as any).created_at)}
                       </span>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
                         <Link
                           to={`/accounting/credit-notes/${note.id}`}
-                          className="p-2 text-[#828282] hover:text-[#1F4690] transition-colors"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
                           title="Ver detalle"
                         >
                           <EyeIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -391,7 +398,7 @@ export const CreditNotesListPage: React.FC = () => {
                             href={note.pdf_a4_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 text-[#828282] hover:text-[#cf1322] transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#cf1322] hover:bg-red-50 transition-colors"
                             title="Descargar PDF A4"
                           >
                             <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -402,7 +409,7 @@ export const CreditNotesListPage: React.FC = () => {
                             href={note.pdf_ticket_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 text-[#828282] hover:text-[#237804] transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#237804] hover:bg-green-50 transition-colors"
                             title="Descargar Ticket 80mm"
                           >
                             <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />

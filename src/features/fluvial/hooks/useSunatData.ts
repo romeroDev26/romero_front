@@ -1,7 +1,7 @@
 // src/features/fluvial/hooks/useSunatData.ts
 import { useMutation } from '@tanstack/react-query';
 import { externalQueryService, DniResponse, RucResponse } from '../../../services/external.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 export const useSunatData = () => {
   const queryDniMutation = useMutation<DniResponse, Error, string>({

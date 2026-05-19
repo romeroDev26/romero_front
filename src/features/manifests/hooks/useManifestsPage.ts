@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { startOfMonth, endOfMonth, format } from 'date-fns';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { manifestService } from '../services/manifest.service';
 import { generatePassengerManifestPDF } from '../services/manifestPdfGeneration.service';
 import { ManifestFormData, DailyTripManifestItem } from '../types/manifest.types';

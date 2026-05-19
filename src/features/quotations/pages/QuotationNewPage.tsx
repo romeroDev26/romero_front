@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO } from 'date-fns';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import DatePicker from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import "react-datepicker/dist/react-datepicker.css";

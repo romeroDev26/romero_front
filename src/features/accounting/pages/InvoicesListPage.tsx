@@ -3,10 +3,10 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { format, parseISO } from 'date-fns';
-import { 
-  MagnifyingGlassIcon, 
+import {
+  MagnifyingGlassIcon,
   EyeIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -15,6 +15,7 @@ import {
   CodeBracketIcon,
   ArrowDownTrayIcon,
   XMarkIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { DataTable, Column } from '../../../components/common/DataTable';
@@ -133,19 +134,19 @@ export const InvoicesListPage: React.FC = () => {
     const hasPrevPage = currentPage > 0;
 
     return (
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
-        <div className="flex items-center text-sm text-gray-700">
+      <div className="flex items-center justify-between px-6 py-3.5 bg-[#fafafa] border-t border-[#e8e8e8]">
+        <div className="flex items-center text-[12px] text-[#828282]">
           <span>
             Página {currentPage + 1} • Mostrando {invoices.length} registros
           </span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant="outline"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={!hasPrevPage}
-            className="flex items-center"
+            className="flex items-center rounded-full px-4"
           >
             <ChevronLeftIcon className="h-4 w-4 mr-1" />
             Anterior
@@ -155,7 +156,7 @@ export const InvoicesListPage: React.FC = () => {
             variant="outline"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={!hasNextPage}
-            className="flex items-center"
+            className="flex items-center rounded-full px-4"
           >
             Siguiente
             <ChevronRightIcon className="h-4 w-4 ml-1" />
@@ -244,10 +245,10 @@ export const InvoicesListPage: React.FC = () => {
       header: 'Documento',
       accessor: (invoice: Invoice) => (
         <div>
-          <div className="font-medium text-gray-900">
+          <div className="font-medium text-[#202020]">
             {getDocumentTypeLabel(invoice.document_type_code)}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-[12px] text-[#828282]">
             {invoice.series}-{String(invoice.number).padStart(8, '0')}
           </div>
         </div>
@@ -260,12 +261,12 @@ export const InvoicesListPage: React.FC = () => {
       accessor: (invoice: Invoice) => (
         <div className="max-w-[160px] xl:max-w-[220px]">
           <div
-            className="font-medium text-gray-900 truncate"
+            className="font-medium text-[#202020] truncate"
             title={invoice.client?.name || 'Cliente no disponible'}
           >
             {invoice.client?.name || 'Cliente no disponible'}
           </div>
-          <div className="text-sm text-gray-500 truncate" title={invoice.client?.doc_number}>
+          <div className="text-[12px] text-[#828282] truncate" title={invoice.client?.doc_number}>
             {invoice.client?.doc_number}
           </div>
         </div>
@@ -275,7 +276,7 @@ export const InvoicesListPage: React.FC = () => {
       key: 'issue_date',
       header: 'Fecha',
       accessor: (invoice: Invoice) => (
-        <div className="text-sm text-gray-900">
+        <div className="text-[13px] text-[#4d4d4d]">
           {format(parseISO(invoice.issue_date), 'dd/MM/yyyy')}
         </div>
       ),
@@ -295,7 +296,7 @@ export const InvoicesListPage: React.FC = () => {
       header: 'Monto',
       accessor: (invoice: Invoice) => (
         <div className="text-right">
-          <div className="font-medium text-gray-900">
+          <div className="font-medium text-[#202020]">
             {getCurrencySymbol(invoice.currency_code)} {invoice.total_payable}
           </div>
         </div>
@@ -305,19 +306,26 @@ export const InvoicesListPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <header className="flex justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Facturas</h1>
-          <p className="text-gray-600">Gestión de comprobantes electrónicos</p>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
+              <DocumentTextIcon className="w-5 h-5 text-[#1F4690]" />
+            </div>
+            <h1 className="text-[22px] font-semibold text-[#202020] tracking-tight">
+              Facturas
+            </h1>
+          </div>
+          <p className="text-[14px] text-[#828282]">Gestión de comprobantes electrónicos</p>
         </div>
-      </div>
+      </header>
 
       {/* Filtros */}
-      <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-5">
+      <div className="bg-white p-5 rounded-[12px] border border-[#e8e8e8] flex flex-col gap-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="w-full md:w-auto">
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-              Rango de Fechas
+            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
+              Rango de fechas
             </label>
             <DateRangeFilter
               startDate={startDate}
@@ -334,7 +342,7 @@ export const InvoicesListPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleClearFilters}
-                className="text-gray-500 bg-white hover:bg-gray-50 border-gray-200 shadow-sm flex items-center mb-0 md:mt-6"
+                className="text-[#4d4d4d] bg-white hover:bg-[#f5f5f5] border-[#e8e8e8] flex items-center mb-0 md:mt-6 rounded-full px-4"
               >
                 <XMarkIcon className="w-4 h-4 mr-2" />
                 Limpiar Filtros
@@ -343,25 +351,25 @@ export const InvoicesListPage: React.FC = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-4 border-t border-gray-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-4 border-t border-[#e8e8e8]">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
               Cliente
             </label>
             <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-4 w-4 text-[#828282] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <Input
                 type="text"
                 placeholder="DNI, RUC o nombre..."
                 value={clientSearch}
                 onChange={(e) => handleClientSearchChange(e.target.value)}
-                className="pl-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                className="pl-10 bg-[#f5f5f5] border-[#e8e8e8] focus:bg-white transition-colors rounded-[12px]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
               Serie
             </label>
             <Input
@@ -369,12 +377,12 @@ export const InvoicesListPage: React.FC = () => {
               placeholder="Ej: F001, B001..."
               value={series}
               onChange={(e) => handleSeriesChange(e.target.value)}
-              className="bg-gray-50 border-gray-200 focus:bg-white transition-colors uppercase"
+              className="bg-[#f5f5f5] border-[#e8e8e8] focus:bg-white transition-colors uppercase rounded-[12px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
               Número
             </label>
             <Input
@@ -382,18 +390,18 @@ export const InvoicesListPage: React.FC = () => {
               placeholder="Número correlativo"
               value={documentNumber}
               onChange={(e) => handleDocumentNumberChange(e.target.value)}
-              className="bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+              className="bg-[#f5f5f5] border-[#e8e8e8] focus:bg-white transition-colors rounded-[12px]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
               Estado SUNAT
             </label>
             <select
               value={sunatStatusFilter}
               onChange={(e) => handleSunatStatusChange(e.target.value)}
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm text-gray-700"
+              className="w-full px-4 py-2.5 border border-[#e8e8e8] rounded-[12px] bg-[#f5f5f5] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors text-[14px] text-[#202020]"
             >
               <option value="">Todos los estados</option>
               <option value="PENDING">Pendiente</option>
@@ -411,69 +419,60 @@ export const InvoicesListPage: React.FC = () => {
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
         <DataTable
           columns={columns}
           data={invoices}
           isLoading={isLoading}
           keyExtractor={(item) => item.id}
           customActions={(invoice) => (
-            <div className="flex space-x-1">
-              <Button
-                size="sm"
-                variant="outline"
+            <div className="flex items-center justify-end gap-1">
+              <button
                 onClick={() => navigate(`/accounting/invoices/${invoice.id}`)}
                 title="Ver detalle"
+                className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
               >
                 <EyeIcon className="h-4 w-4" />
-              </Button>
-              
+              </button>
+
               {invoice.signed_xml_file_path && (
-                <Button
-                  size="sm"
-                  variant="outline"
+                <button
                   onClick={() => handlePreviewSignedXml(invoice)}
                   title="Previsualizar XML y descargar archivo"
+                  className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
                 >
                   <CodeBracketIcon className="h-4 w-4" />
-                </Button>
+                </button>
               )}
-              
+
               {invoice.cdr_file_path && (
-                <Button
-                  size="sm"
-                  variant="outline"
+                <button
                   onClick={() => window.open(invoice.cdr_file_path!, '_blank')}
                   title="Descargar CDR"
+                  className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4" />
-                </Button>
+                </button>
               )}
-              
-              {/* Solo mostrar acciones de notas si el documento está aceptado por SUNAT y no cancelado por el negocio */}
+
               {invoice.sunat_status === 'ACCEPTED' && invoice.business_status !== 'CANCELLED' && (
                 <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-red-600 border-red-300 hover:bg-red-50"
+                  <button
                     onClick={() => navigate(`/accounting/credit-notes/new?invoice_id=${invoice.id}`)}
                     title="Crear Nota de Crédito"
+                    className="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <MinusIcon className="h-4 w-4" />
-                  </Button>
-                  
-                  {/* No mostrar opción de nota de débito si el documento tiene estado INCREASED */}
+                  </button>
+
                   {invoice.business_status !== 'INCREASED' && (
-                    <Button
-                      size="sm"
-                      variant="outline" 
-                      className="text-green-600 border-green-300 hover:bg-green-50"
+                    <button
                       onClick={() => navigate(`/accounting/debit-notes/new?invoice_id=${invoice.id}`)}
                       title="Crear Nota de Débito"
+                      className="flex items-center justify-center w-8 h-8 rounded-full text-emerald-600 hover:bg-emerald-50 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4" />
-                    </Button>
+                    </button>
                   )}
                 </>
               )}

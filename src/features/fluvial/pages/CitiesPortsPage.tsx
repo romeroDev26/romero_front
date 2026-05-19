@@ -20,7 +20,7 @@ import {
   useDeactivatePort,
 } from '../../../hooks/useCitiesPortsData';
 import { CityCreateData, CityUpdateData, PortCreateData, PortUpdateData } from '../../../services/ports.cities.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 const PORT_TYPE_LABELS: Record<PortType, string> = {
   PRIMARY_HUB: 'Puerto Principal',

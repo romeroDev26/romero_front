@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
+import { APP_VERSION } from '../../config/version';
 
 import {
   HomeIcon, UserGroupIcon, DocumentTextIcon, CreditCardIcon, TruckIcon,
@@ -163,6 +164,7 @@ const navGroups: NavGroup[] = [
 
 const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile, pendingCount = 0 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { scrollRef, handleScroll } = useSidebarScroll();
   const { hasPermission } = usePermissions();
   
@@ -473,14 +475,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
       </div>
 
       <div className="px-4 py-3 border-t border-gray-100">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
+        <button
+          onClick={() => navigate('/changelog')}
+          className="flex items-center justify-between w-full group"
+        >
+          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 group-hover:text-[#1F4690] transition-colors">
             Versión
           </span>
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600">
-            v1.0.1
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-600 group-hover:bg-[#1F4690]/10 group-hover:text-[#1F4690] transition-colors">
+            v{APP_VERSION}
           </span>
-        </div>
+        </button>
       </div>
 
       <div className="p-3 border-t border-gray-100">

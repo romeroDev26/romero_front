@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { TableCellsIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../components/common/Button';
 import { ProductService } from '../../../types';

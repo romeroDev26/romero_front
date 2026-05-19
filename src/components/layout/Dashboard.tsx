@@ -14,7 +14,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { User } from '../../types';
 import Sidebar from './Sidebar';
 import { useWebSocketNotifications } from '../../hooks/useWebSocketNotifications';
@@ -381,8 +381,10 @@ const Dashboard: React.FC = () => {
   const isSalesPointRoute = /^\/fluvial\/operations\/sales-point$/.test(location.pathname);
   const isCargoSaleRoute = /^\/fluvial\/operations\/cargo-sale$/.test(location.pathname);
   const isRemissionGuidesRoute = /^\/remission-guides/.test(location.pathname);
+  const isCreditNoteAnnulRoute = /^\/accounting\/credit-notes\/annul$/.test(location.pathname);
+  const isSettingsRoute = /^\/settings/.test(location.pathname);
   const isGrayFullBleedRoute =
-    isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute;
+    isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute || isCreditNoteAnnulRoute || isSettingsRoute;
 
   return (
     <div className="flex h-screen bg-gray-100 p-5">
@@ -577,11 +579,14 @@ const Dashboard: React.FC = () => {
 
         {/* Área de contenido */}
         <main
-          className={`flex-1 overflow-y-auto rounded-xl shadow-sm ${
-            isGrayFullBleedRoute ? 'bg-gray-50' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
+          className={`relative flex-1 overflow-y-auto rounded-xl shadow-sm ${
+            isGrayFullBleedRoute ? 'bg-[#f5f5f5]' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
           }`}
         >
-          <div className="p-4 lg:p-6">
+          {location.pathname === '/' && (
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,_rgba(145,141,246,0.10)_0%,_transparent_60%)]" />
+          )}
+          <div className="relative p-4 lg:p-6">
             <Outlet />
           </div>
         </main>

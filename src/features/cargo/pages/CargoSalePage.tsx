@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { toast } from 'react-toastify';
+import { toast, saleNotify } from '@/utils/sileo-toast';
 import { AnimatePresence, motion } from 'motion/react';
 import { CreditCard, PlusIcon, PencilIcon, TrashIcon, ClipboardListIcon, HashIcon, ArrowRightIcon, PackageIcon, UserIcon, MapPinIcon, ReceiptTextIcon, UsersRound } from 'lucide-react';
 
@@ -23,6 +23,7 @@ import { RecipientForm, RecipientData as RecipientFormData } from '../components
 import { CargoTripSelector } from '../components/CargoTripSelector';
 import { CargoItemData } from '../types/cargo-ui.types';
 import { ConfirmSaleModal } from '../../fluvial/components/sales-point/ConfirmSaleModal';
+import { BranchSelector } from '../../fluvial/components/sales-point/BranchSelector';
 import { BranchOffice } from '../../../types';
 import { SunatDocType, SunatInvoiceType } from '../../fluvial/types/sunat.types';
 import { AvailableTripByPort } from '../../../services/trips.service';
@@ -104,6 +105,11 @@ export const CargoSalePage: React.FC = () => {
   const { findOrCreateClient, isProcessingClient } = useClientManager();
   const { mutateAsync: createInvoice, isPending: isCreatingInvoice } = useCreateInvoice();
   
+  const handleBranchSelect = (branch: BranchOffice) => {
+    setSelectedBranch(branch);
+    localStorage.setItem('selectedSalesBranch', JSON.stringify(branch));
+  };
+
   useEffect(() => {
     const savedBranchJson = localStorage.getItem('selectedSalesBranch');
     if (savedBranchJson) {
@@ -135,11 +141,8 @@ export const CargoSalePage: React.FC = () => {
         sessionStorage.removeItem(CARGO_SALE_DRAFT_KEY);
       }
       setDraftReady(true);
-    } else {
-      toast.warn("Seleccione una sucursal en 'Punto de Venta (Pasajes)' para empezar.");
-      navigate('/fluvial/operations/sales-point');
     }
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     if (!draftReady || !selectedBranch) return;
@@ -430,7 +433,7 @@ export const CargoSalePage: React.FC = () => {
     setShowTicketPreview(false);
     setTicketBackendData(null);
     
-    toast.success('Venta de encomienda completada y ticket generado!');
+    saleNotify.success('Venta de encomienda completada', 'El ticket ha sido generado correctamente.');
   };
 
   // Función para limpiar el formulario cuando se cierre el modal (sin éxito)
@@ -505,7 +508,17 @@ export const CargoSalePage: React.FC = () => {
   const availableSeries = isRuc ? availableFacturaSeries : availableBoletaSeries;
 
   const renderContent = () => {
-    if (!selectedBranch) return <div className="p-6 text-center text-gray-500">Cargando...</div>;
+    if (!selectedBranch) {
+      return (
+        <div className="max-w-7xl mx-auto px-4 pt-4 md:px-6">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Seleccione una sucursal</h2>
+            <p className="text-gray-600">Elija la sucursal desde la cual registrará la encomienda.</p>
+          </div>
+          <BranchSelector onBranchSelect={handleBranchSelect} />
+        </div>
+      );
+    }
     
     switch (currentView) {
       case 'clientSelection':

@@ -10,7 +10,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import {
   updatesService,
   SystemUpdate,

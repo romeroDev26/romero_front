@@ -12,7 +12,7 @@ import { RemissionGuideRemitente } from '../../../types';
 import { convertSenderGuideToAutoGenerate } from '../utils/guideConversion';
 import { generateRemissionGuidePDF } from './pdf/RemissionGuidePDFGenerator';
 import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface RemissionGuideSenderPreviewModalProps {
   isOpen: boolean;

@@ -9,7 +9,7 @@ import { generateRemissionGuidePDF } from './pdf/RemissionGuidePDFGenerator';
 import { convertSenderGuideToAutoGenerate, canGenerateSenderPDF } from '../utils/guideConversion';
 import { RemissionGuideRemitente } from '../../../types';
 import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface RemissionGuideSenderPDFButtonProps {
   guide: RemissionGuideRemitente;

@@ -1,7 +1,16 @@
 // src/features/supervisor/components/ApprovalModal.tsx
 
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import {
+  XMarkIcon,
+  CheckCircleIcon,
+  ArrowPathIcon,
+  ExclamationTriangleIcon,
+  UserIcon,
+  DocumentTextIcon,
+  MapPinIcon,
+  CalendarDaysIcon,
+} from '@heroicons/react/24/outline';
 import { CancellationRequestListItem } from '../../accounting/types/cancellationRequests';
 
 interface ApprovalModalProps {
@@ -11,14 +20,14 @@ interface ApprovalModalProps {
   isLoading: boolean;
 }
 
-const ApprovalModal: React.FC<ApprovalModalProps> = ({ request, onClose, onApprove, isLoading }) => {
-  // La Nota de Crédito debe usar LA MISMA SERIE que el documento afectado
-  // No usar series diferentes como BC01 o FC01
-  const [creditNoteSeries, setCreditNoteSeries] = useState(() => 
-    request?.series || ''
-  );
+const ApprovalModal: React.FC<ApprovalModalProps> = ({
+  request,
+  onClose,
+  onApprove,
+  isLoading,
+}) => {
+  const [creditNoteSeries, setCreditNoteSeries] = useState(() => request?.series || '');
 
-  // Actualizar la serie cuando cambia la solicitud
   useEffect(() => {
     if (request) {
       setCreditNoteSeries(request.series);
@@ -33,123 +42,176 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({ request, onClose, onAppro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-[#202020]/30 backdrop-blur-[2px] transition-opacity"
+        onClick={!isLoading ? onClose : undefined}
+      />
+
+      {/* Panel */}
+      <div className="relative z-10 flex flex-col w-full max-w-2xl max-h-[90vh] bg-white rounded-[20px] border border-[#e8e8e8] overflow-hidden">
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-8 py-5 border-b border-[#e8e8e8]">
           <div className="flex items-center gap-3">
-            <CheckCircleIcon className="w-8 h-8 text-green-500" />
-            <h2 className="text-2xl font-bold text-gray-900">Aprobar Solicitud de Anulación</h2>
+            <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-emerald-50">
+              <CheckCircleIcon className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-[15px] font-semibold text-[#202020] tracking-tight">
+                Aprobar solicitud de anulación
+              </h2>
+              <p className="text-[12px] text-[#828282]">
+                {request.series}-{request.number}
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
             disabled={isLoading}
+            className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#202020] hover:bg-[#f5f5f5] transition-colors disabled:opacity-50"
           >
-            <XMarkIcon className="w-6 h-6" />
+            <XMarkIcon className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
-        <form onSubmit={handleSubmit}>
-          <div className="p-6 space-y-6">
+        {/* ── Body ── */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+          <div className="px-8 py-6 space-y-6">
             {/* Información de la solicitud */}
-            <div className="bg-blue-50 rounded-lg p-4 space-y-3">
-              <h3 className="font-semibold text-blue-900">Información de la Solicitud</h3>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-blue-700 font-medium">Vendedor:</span>
-                  <p className="text-blue-900">{request.requester_name}</p>
+            <div className="rounded-[12px] border border-[#e8e8e8] bg-[#fafafa] p-5 space-y-3">
+              <h3 className="text-[13px] font-semibold text-[#202020]">
+                Información de la solicitud
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-[6px] bg-white border border-[#e8e8e8] flex items-center justify-center flex-shrink-0">
+                    <UserIcon className="w-3.5 h-3.5 text-[#828282]" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-[#828282]">Vendedor</p>
+                    <p className="text-[13px] font-medium text-[#202020]">{request.requester_name}</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Comprobante:</span>
-                  <p className="text-blue-900">{request.series}-{request.number}</p>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-[6px] bg-white border border-[#e8e8e8] flex items-center justify-center flex-shrink-0">
+                    <DocumentTextIcon className="w-3.5 h-3.5 text-[#828282]" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-[#828282]">Comprobante</p>
+                    <p className="text-[13px] font-medium text-[#202020]">
+                      {request.series}-{request.number}
+                    </p>
+                  </div>
                 </div>
+
                 {request.passenger_name && (
-                  <div>
-                    <span className="text-blue-700 font-medium">Pasajero:</span>
-                    <p className="text-blue-900">{request.passenger_name}</p>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-[6px] bg-white border border-[#e8e8e8] flex items-center justify-center flex-shrink-0">
+                      <UserIcon className="w-3.5 h-3.5 text-[#828282]" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-[#828282]">Pasajero</p>
+                      <p className="text-[13px] font-medium text-[#202020]">{request.passenger_name}</p>
+                    </div>
                   </div>
                 )}
+
                 {request.trip_info && (
-                  <div>
-                    <span className="text-blue-700 font-medium">Viaje:</span>
-                    <p className="text-blue-900">{request.trip_info}</p>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-[6px] bg-white border border-[#e8e8e8] flex items-center justify-center flex-shrink-0">
+                      <MapPinIcon className="w-3.5 h-3.5 text-[#828282]" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-[#828282]">Viaje</p>
+                      <p className="text-[13px] font-medium text-[#202020]">{request.trip_info}</p>
+                    </div>
                   </div>
                 )}
-                <div className="col-span-2">
-                  <span className="text-blue-700 font-medium">Motivo de la solicitud:</span>
-                  <p className="text-blue-900 mt-1">{request.request_reason}</p>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-[6px] bg-white border border-[#e8e8e8] flex items-center justify-center flex-shrink-0">
+                    <CalendarDaysIcon className="w-3.5 h-3.5 text-[#828282]" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-[#828282]">Fecha de solicitud</p>
+                    <p className="text-[13px] font-medium text-[#202020]">
+                      {new Date(request.created_at).toLocaleString('es-PE')}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-blue-700 font-medium">Fecha de solicitud:</span>
-                  <p className="text-blue-900">{new Date(request.created_at).toLocaleString('es-PE')}</p>
+
+                <div className="sm:col-span-2 pt-1">
+                  <p className="text-[11px] text-[#828282] mb-1">Motivo de la solicitud</p>
+                  <p className="text-[13px] text-[#4d4d4d] leading-relaxed bg-white rounded-[8px] border border-[#e8e8e8] px-3.5 py-2.5">
+                    {request.request_reason}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Información de serie de NC */}
+            {/* Serie de NC */}
             <div>
-              <label htmlFor="creditNoteSeries" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="creditNoteSeries"
+                className="block text-[13px] font-medium text-[#202020] mb-2"
+              >
                 Serie de Nota de Crédito
               </label>
-              <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+              <div className="w-full px-4 py-3 rounded-[12px] border border-[#e8e8e8] bg-[#f5f5f5]">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-900 font-semibold text-lg">{creditNoteSeries}</span>
-                  <span className="text-sm text-gray-500">(Serie del documento afectado)</span>
+                  <span className="text-[14px] font-semibold text-[#202020]">{creditNoteSeries}</span>
+                  <span className="text-[12px] text-[#828282]">Serie del documento afectado</span>
                 </div>
               </div>
-              <p className="mt-2 text-sm text-gray-500">
-                La Nota de Crédito debe usar la misma serie que el documento afectado. 
-                Se generará automáticamente y se enviará a SUNAT.
+              <p className="mt-2 text-[12px] text-[#828282]">
+                La Nota de Crédito debe usar la misma serie que el documento afectado. Se generará
+                automáticamente y se enviará a SUNAT.
               </p>
             </div>
 
             {/* Advertencia */}
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+            <div className="rounded-[12px] border border-amber-200/60 bg-amber-50/40 p-5">
+              <div className="flex items-start gap-3.5">
+                <div className="flex-shrink-0 w-8 h-8 rounded-[8px] bg-amber-100 flex items-center justify-center">
+                  <ExclamationTriangleIcon className="w-4.5 h-4.5 text-amber-600" />
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">
-                    <strong>Importante:</strong> Al aprobar esta solicitud, se generará automáticamente una Nota de Crédito
-                    que anulará el comprobante original. Esta acción no se puede deshacer.
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] text-[#4d4d4d] leading-relaxed">
+                    <span className="font-semibold text-[#202020]">Importante:</span> al aprobar esta
+                    solicitud, se generará automáticamente una Nota de Crédito que anulará el
+                    comprobante original. Esta acción no se puede deshacer.
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+          {/* ── Footer ── */}
+          <div className="flex items-center justify-end gap-3 px-8 py-4 border-t border-[#e8e8e8] bg-[#fafafa]">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               disabled={isLoading}
+              className="px-5 py-2.5 text-[13px] font-medium text-[#4d4d4d] hover:text-[#202020] hover:bg-[#f5f5f5] rounded-full transition-colors disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-6 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               disabled={isLoading}
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-[13px] font-medium text-white bg-emerald-500 hover:bg-emerald-600 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Aprobando...</span>
+                  <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                  <span>Aprobando…</span>
                 </>
               ) : (
                 <>
-                  <CheckCircleIcon className="w-5 h-5" />
-                  <span>Aprobar y Generar NC</span>
+                  <CheckCircleIcon className="w-3.5 h-3.5" />
+                  <span>Aprobar y generar NC</span>
                 </>
               )}
             </button>

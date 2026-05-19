@@ -1,9 +1,19 @@
 // src/components/common/SellerNotificationsModal.tsx
 
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import {
+  XMarkIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  InboxIcon,
+  ChatBubbleLeftRightIcon,
+  ArrowPathIcon,
+  CheckIcon,
+} from '@heroicons/react/24/outline';
 import { CancellationRequestListItem } from '../../features/accounting/types/cancellationRequests';
 import { Pagination } from './Pagination';
+import { Spinner } from './Spinner';
 
 interface SellerNotificationsModalProps {
   isOpen: boolean;
@@ -20,7 +30,7 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
   requests,
   isLoading,
   onMarkAllAsRead,
-  onMarkOneAsRead
+  onMarkOneAsRead,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isMarkingAsRead, setIsMarkingAsRead] = useState(false);
@@ -29,12 +39,9 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
 
   // Resetear página cuando se abre el modal
   useEffect(() => {
-    if (isOpen) {
-      setCurrentPage(1);
-    }
+    if (isOpen) setCurrentPage(1);
   }, [isOpen]);
 
-  // Función para marcar todas como leídas
   const handleMarkAllAsRead = async () => {
     setIsMarkingAsRead(true);
     try {
@@ -44,7 +51,6 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
     }
   };
 
-  // Función para marcar una como leída
   const handleMarkOneAsRead = async (requestId: number) => {
     setMarkingRequestId(requestId);
     try {
@@ -56,224 +62,245 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Filtrar solo las resueltas (aprobadas o rechazadas) y ordenar por más recientes
   const resolvedRequests = requests
-    .filter(r => r.status === 'APPROVED' || r.status === 'REJECTED')
+    .filter((r) => r.status === 'APPROVED' || r.status === 'REJECTED')
     .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
 
-  // Calcular paginación
   const totalItems = resolvedRequests.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedRequests = resolvedRequests.slice(startIndex, endIndex);
+  const paginatedRequests = resolvedRequests.slice(startIndex, startIndex + itemsPerPage);
+  const unreadCount = resolvedRequests.filter((r) => !r.requester_read_at).length;
+
+  // ── helpers visuales ──
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('es-PE', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        {/* Overlay */}
-        <div className="fixed inset-0 bg-black bg-opacity-25 transition-opacity" onClick={onClose}></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-[#202020]/30 backdrop-blur-[2px] transition-opacity"
+        onClick={onClose}
+      />
 
-        {/* Modal */}
-        <div className="relative bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h3 className="text-xl font-semibold text-gray-900">
-              Respuestas a mis Solicitudes
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <XMarkIcon className="w-6 h-6" />
-            </button>
+      {/* Panel */}
+      <div className="relative z-10 flex flex-col w-full max-w-2xl max-h-[85vh] bg-white rounded-[20px] border border-[#e8e8e8] overflow-hidden">
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-8 py-5 border-b border-[#e8e8e8]">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
+              <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#1F4690]" />
+            </div>
+            <div>
+              <h3 className="text-[15px] font-semibold text-[#202020] tracking-tight">
+                Respuestas a mis solicitudes
+              </h3>
+              <p className="text-[12px] text-[#828282] mt-0.5">
+                {unreadCount > 0
+                  ? `${unreadCount} respuesta${unreadCount > 1 ? 's' : ''} sin leer`
+                  : 'Todas las respuestas han sido leídas'}
+              </p>
+            </div>
           </div>
+          <button
+            onClick={onClose}
+            className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#202020] hover:bg-[#f5f5f5] transition-colors"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Content */}
-          <div className="overflow-y-auto max-h-[60vh] p-6">
-            {isLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <svg className="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+        {/* ── Body ── */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Spinner size="lg" color="text-[#1F4690]" />
+              <p className="text-[13px] text-[#828282]">Cargando respuestas…</p>
+            </div>
+          ) : resolvedRequests.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-[#f5f5f5]">
+                <InboxIcon className="w-8 h-8 text-[#828282]" />
               </div>
-            ) : resolvedRequests.length === 0 ? (
-              <div className="text-center py-12">
-                <ClockIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg">No tienes respuestas aún</p>
-                <p className="text-gray-400 text-sm mt-2">
-                  Aquí verás las respuestas del supervisor a tus solicitudes
+              <div className="text-center">
+                <p className="text-[15px] font-medium text-[#202020]">
+                  No tienes respuestas aún
+                </p>
+                <p className="text-[13px] text-[#828282] mt-1 max-w-[280px]">
+                  Aquí aparecerán las respuestas del supervisor a tus solicitudes de anulación.
                 </p>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {paginatedRequests.map((request) => {
-                  // Usar requester_read_at del backend para determinar si es nueva
-                  const isNew = !request.requester_read_at;
-                  return (
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {paginatedRequests.map((request) => {
+                const isNew = !request.requester_read_at;
+                const isApproved = request.status === 'APPROVED';
+
+                return (
                   <div
                     key={request.id}
-                    className={`border rounded-lg p-4 relative ${
-                      request.status === 'APPROVED'
-                        ? 'border-green-200 bg-green-50'
-                        : 'border-red-200 bg-red-50'
+                    className={`relative group rounded-[12px] border transition-all duration-200 ${
+                      isNew
+                        ? 'border-[#1F4690]/20 bg-[#1F4690]/[0.02]'
+                        : 'border-[#e8e8e8] bg-white hover:border-[#d4d4d4]'
                     }`}
                   >
-                    {/* Badge de "Nueva" para respuestas no vistas */}
+                    {/* Badge "Nueva" */}
                     {isNew && (
-                      <div className="absolute -top-2 -right-2">
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-bold text-white bg-blue-500 rounded-full shadow-lg">
+                      <div className="absolute -top-2.5 right-4">
+                        <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold text-white bg-[#1F4690] rounded-full shadow-sm">
                           Nueva
                         </span>
                       </div>
                     )}
-                    
-                    {/* Header de la tarjeta */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        {request.status === 'APPROVED' ? (
-                          <CheckCircleIcon className="w-6 h-6 text-green-600 flex-shrink-0" />
-                        ) : (
-                          <XCircleIcon className="w-6 h-6 text-red-600 flex-shrink-0" />
-                        )}
-                        <div>
-                          <h4 className={`font-semibold ${
-                            request.status === 'APPROVED' ? 'text-green-900' : 'text-red-900'
-                          }`}>
-                            {request.status === 'APPROVED' ? 'Solicitud Aprobada' : 'Solicitud Rechazada'}
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            Comprobante: <span className="font-medium">{request.series}-{request.number}</span>
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {new Date(request.updated_at).toLocaleDateString('es-PE', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </span>
-                    </div>
 
-                    {/* Información del pasajero si existe */}
-                    {request.passenger_name && (
-                      <div className="mb-2">
-                        <span className="text-sm text-gray-600">
-                          Pasajero: <span className="font-medium">{request.passenger_name}</span>
+                    <div className="p-5">
+                      {/* Fila superior: estado + fecha */}
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="flex items-center gap-2.5">
+                          <div
+                            className={`flex items-center justify-center w-8 h-8 rounded-[8px] flex-shrink-0 ${
+                              isApproved ? 'bg-emerald-50' : 'bg-red-50'
+                            }`}
+                          >
+                            {isApproved ? (
+                              <CheckCircleIcon className="w-5 h-5 text-emerald-600" />
+                            ) : (
+                              <XCircleIcon className="w-5 h-5 text-red-500" />
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="text-[14px] font-semibold text-[#202020]">
+                              {isApproved
+                                ? 'Solicitud aprobada'
+                                : 'Solicitud rechazada'}
+                            </h4>
+                            <p className="text-[12px] text-[#828282]">
+                              {request.series}-{request.number}
+                              {request.passenger_name && (
+                                <span className="text-[#4d4d4d]">
+                                  {' · '}
+                                  {request.passenger_name}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-[11px] text-[#828282] font-medium whitespace-nowrap mt-1">
+                          {formatDate(request.updated_at)}
                         </span>
                       </div>
-                    )}
 
-                    {/* Tu motivo de solicitud */}
-                    <div className="mb-3">
-                      <p className="text-xs font-medium text-gray-500 mb-1">Tu motivo de solicitud:</p>
-                      <p className="text-sm text-gray-700 bg-white bg-opacity-50 rounded p-2">
-                        {request.request_reason}
-                      </p>
+                      {/* Motivo de solicitud */}
+                      <div className="mb-3">
+                        <p className="text-[11px] font-medium text-[#828282] uppercase tracking-wider mb-1.5">
+                          Tu motivo
+                        </p>
+                        <p className="text-[13px] text-[#4d4d4d] leading-relaxed bg-[#f5f5f5] rounded-[8px] px-3.5 py-2.5">
+                          {request.request_reason}
+                        </p>
+                      </div>
+
+                      {/* Respuesta del supervisor */}
+                      {isApproved ? (
+                        <div className="flex items-start gap-2 rounded-[8px] bg-emerald-50/60 border border-emerald-100 px-3.5 py-2.5">
+                          <CheckCircleIcon className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                          <p className="text-[13px] text-emerald-800 leading-relaxed">
+                            La nota de crédito fue generada automáticamente.
+                          </p>
+                        </div>
+                      ) : request.rejection_reason ? (
+                        <div className="rounded-[8px] bg-red-50/40 border border-red-100 px-3.5 py-2.5">
+                          <p className="text-[11px] font-medium text-red-700 uppercase tracking-wider mb-1">
+                            Motivo del rechazo
+                          </p>
+                          <p className="text-[13px] text-red-900 leading-relaxed">
+                            {request.rejection_reason}
+                          </p>
+                        </div>
+                      ) : null}
+
+                      {/* Marcar como leída */}
+                      {isNew && (
+                        <div className="mt-4 pt-3 border-t border-[#e8e8e8]">
+                          <button
+                            onClick={() => handleMarkOneAsRead(request.id)}
+                            disabled={markingRequestId === request.id}
+                            className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-[#1F4690] bg-[#1F4690]/5 hover:bg-[#1F4690]/10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {markingRequestId === request.id ? (
+                              <>
+                                <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                                <span>Marcando…</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckIcon className="w-3.5 h-3.5" />
+                                <span>Marcar como leída</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Respuesta del supervisor (solo si está rechazada) */}
-                    {request.status === 'REJECTED' && request.rejection_reason && (
-                      <div>
-                        <p className="text-xs font-medium text-red-700 mb-1">Motivo del rechazo:</p>
-                        <p className="text-sm text-red-900 bg-white bg-opacity-50 rounded p-2 border-l-2 border-red-400">
-                          {request.rejection_reason}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Info adicional para aprobadas */}
-                    {request.status === 'APPROVED' && (
-                      <div className="mt-2">
-                        <p className="text-sm text-green-700">
-                          ✓ La nota de crédito ha sido generada automáticamente
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Botón para marcar como leída (solo si no ha sido leída) */}
-                    {isNew && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <button
-                          onClick={() => handleMarkOneAsRead(request.id)}
-                          disabled={markingRequestId === request.id}
-                          className="w-full px-3 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors disabled:bg-blue-200 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                          {markingRequestId === request.id ? (
-                            <>
-                              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              <span>Marcando...</span>
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircleIcon className="w-4 h-4" />
-                              <span>Marcar como leída</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
                   </div>
-                  );
-                })}
-              </div>
-            )}
+                );
+              })}
 
-            {/* Paginación */}
-            {!isLoading && resolvedRequests.length > itemsPerPage && (
-              <div className="mt-6">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  total={totalItems}
-                  limit={itemsPerPage}
-                  onPageChange={setCurrentPage}
-                  loading={false}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="flex justify-between items-center gap-3 p-6 border-t border-gray-200 bg-gray-50">
-            <div>
-              {resolvedRequests.filter(r => !r.requester_read_at).length > 0 && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                  disabled={isMarkingAsRead}
-                  className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isMarkingAsRead ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Marcando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircleIcon className="w-5 h-5" />
-                      <span>Marcar todas como leídas ({resolvedRequests.filter(r => !r.requester_read_at).length})</span>
-                    </>
-                  )}
-                </button>
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div className="pt-2">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    total={totalItems}
+                    limit={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    loading={false}
+                  />
+                </div>
               )}
             </div>
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Cerrar
-            </button>
+          )}
+        </div>
+
+        {/* ── Footer ── */}
+        <div className="flex items-center justify-between gap-3 px-8 py-4 border-t border-[#e8e8e8] bg-[#fafafa]">
+          <div>
+            {unreadCount > 0 && !isLoading && (
+              <button
+                onClick={handleMarkAllAsRead}
+                disabled={isMarkingAsRead}
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-[13px] font-medium text-white bg-[#1F4690] hover:bg-[#16377a] rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isMarkingAsRead ? (
+                  <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <CheckIcon className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  Marcar todas como leídas
+                  <span className="ml-1.5 opacity-80">({unreadCount})</span>
+                </span>
+              </button>
+            )}
           </div>
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 text-[13px] font-medium text-[#4d4d4d] hover:text-[#202020] hover:bg-[#f5f5f5] rounded-full transition-colors"
+          >
+            Cerrar
+          </button>
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ import {
   ArrowPathIcon,
   MapPinIcon,
 } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { Modal } from '../../../components/common/Modal';

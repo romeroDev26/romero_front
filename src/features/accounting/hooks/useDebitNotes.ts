@@ -6,7 +6,7 @@ import {
   DebitNotesListParams, 
   DebitNoteCreateData,
 } from '../types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 // Hook para listar notas de débito
 export const useDebitNotes = (params: DebitNotesListParams) => {

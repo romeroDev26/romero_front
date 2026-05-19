@@ -1,6 +1,6 @@
 // src/features/fluvial/hooks/useInvoices.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { invoicesService, InvoiceCreateData } from '../../../services/invoices.service';
 import { Invoice } from '../../../types'; // Asegúrate de importar Invoice
 

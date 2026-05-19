@@ -1,7 +1,7 @@
 // src/features/quotations/pages/QuotationFormPage.tsx
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
 import { useCreateQuotation } from '../hooks/useQuotations';

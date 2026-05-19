@@ -17,25 +17,22 @@ const periodLabels: Record<RankingPeriod, string> = {
 const getRankBadge = (position: number) => {
   if (position === 1) {
     return {
-      wrapper: 'bg-yellow-100 text-yellow-600 ring-yellow-200 shadow-yellow-100',
-      icon: <Trophy className="h-5 w-5" />,
+      wrapper: 'bg-amber-400 text-white',
+      icon: <Trophy className="h-3.5 w-3.5" />,
     };
   }
-
   if (position === 2) {
     return {
-      wrapper: 'bg-slate-100 text-slate-600 ring-slate-200 shadow-slate-100',
-      icon: <Medal className="h-5 w-5" />,
+      wrapper: 'bg-slate-400 text-white',
+      icon: <Medal className="h-3.5 w-3.5" />,
     };
   }
-
   if (position === 3) {
     return {
-      wrapper: 'bg-orange-100 text-orange-600 ring-orange-200 shadow-orange-100',
-      icon: <Award className="h-5 w-5" />,
+      wrapper: 'bg-orange-400 text-white',
+      icon: <Award className="h-3.5 w-3.5" />,
     };
   }
-
   return null;
 };
 
@@ -44,7 +41,7 @@ const RankBadge: React.FC<{ position: number }> = ({ position }) => {
 
   if (!badge) {
     return (
-      <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-600">
+      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500">
         {position}
       </span>
     );
@@ -52,7 +49,7 @@ const RankBadge: React.FC<{ position: number }> = ({ position }) => {
 
   return (
     <span
-      className={`flex h-9 w-9 items-center justify-center rounded-xl ring-2 shadow-sm transition-transform group-hover:scale-105 ${badge.wrapper}`}
+      className={`flex h-7 w-7 items-center justify-center rounded-full ${badge.wrapper}`}
       title={`Puesto ${position}`}
     >
       {badge.icon}
@@ -76,141 +73,34 @@ const getPercentageColor = (position: number) => {
 
 const getTopCardStyles = (position: number) => {
   if (position === 1) {
-    return 'bg-gradient-to-br from-indigo-950/95 via-slate-900/95 to-indigo-900/95 ring-1 ring-indigo-300/30';
+    return 'bg-amber-50/40 border-l-2 border-amber-400';
   }
   if (position === 2) {
-    return 'bg-gradient-to-br from-slate-100 to-slate-50 ring-1 ring-slate-300/80';
+    return 'bg-slate-50/60 border-l-2 border-slate-400';
   }
   if (position === 3) {
-    return 'bg-gradient-to-br from-orange-100/90 to-amber-50 ring-1 ring-orange-300/80';
+    return 'bg-orange-50/40 border-l-2 border-orange-400';
   }
   return '';
 };
 
 const TopRankBackground: React.FC<{ position: number }> = ({ position }) => {
-  if (position === 1) {
-    const stars = [
-      { left: '10%', top: '18%', size: 9, delay: 0, color: 'text-white/90' },
-      { left: '22%', top: '42%', size: 11, delay: 0.2, color: 'text-cyan-200/85' },
-      { left: '34%', top: '24%', size: 9, delay: 0.45, color: 'text-white/90' },
-      { left: '48%', top: '55%', size: 11, delay: 0.7, color: 'text-violet-200/85' },
-      { left: '61%', top: '30%', size: 9, delay: 1, color: 'text-white/90' },
-      { left: '74%', top: '50%', size: 11, delay: 1.25, color: 'text-cyan-200/80' },
-      { left: '86%', top: '22%', size: 9, delay: 1.4, color: 'text-violet-200/80' },
-    ];
-
-    return (
-      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
-        <motion.div
-          className="absolute -left-10 -top-12 h-28 w-28 rounded-full bg-indigo-400/30 blur-2xl"
-          animate={{ x: [0, 15, -10, 0], y: [0, 10, -8, 0], scale: [1, 1.12, 0.95, 1] }}
-          transition={{ duration: 8.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute -right-8 bottom-0 h-24 w-24 rounded-full bg-violet-400/30 blur-2xl"
-          animate={{ x: [0, -10, 8, 0], y: [0, -6, 6, 0], scale: [1, 1.1, 0.96, 1] }}
-          transition={{ duration: 7.2, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
-        />
-        <motion.div
-          className="absolute left-[35%] top-[35%] h-20 w-20 rounded-full bg-cyan-300/20 blur-2xl"
-          animate={{ opacity: [0.25, 0.55, 0.22], scale: [0.9, 1.15, 0.95] }}
-          transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        {stars.map((star, idx) => (
-          <motion.svg
-            key={idx}
-            viewBox="0 0 24 24"
-            fill="none"
-            className={`absolute ${star.color} drop-shadow-[0_0_6px_rgba(255,255,255,0.75)]`}
-            width={star.size}
-            height={star.size}
-            style={{ left: star.left, top: star.top }}
-            animate={{ opacity: [0.25, 1, 0.35], scale: [0.8, 1.3, 0.9] }}
-            transition={{
-              duration: 2.4,
-              delay: star.delay,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          >
-            <path
-              d="M12 3L14.6 9.4L21 12L14.6 14.6L12 21L9.4 14.6L3 12L9.4 9.4L12 3Z"
-              fill="currentColor"
-            />
-          </motion.svg>
-        ))}
-      </div>
-    );
-  }
-
-  if (position === 2) {
-    return (
-      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
-        <motion.div
-          className="absolute right-2 top-1 opacity-45"
-          animate={{ rotate: [0, 10, 0], scale: [0.94, 1.08, 0.98], opacity: [0.3, 0.6, 0.35] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <Medal className="h-10 w-10 text-slate-400" />
-        </motion.div>
-        <motion.div
-          className="absolute -left-1/2 top-0 h-full w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/80 to-transparent"
-          animate={{ x: ['-20%', '360%'] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: 'linear', repeatDelay: 0.8 }}
-        />
-      </div>
-    );
-  }
-
-  if (position === 3) {
-    const bronzeShards = [
-      { left: '18%', top: '70%', delay: 0 },
-      { left: '36%', top: '62%', delay: 0.25 },
-      { left: '54%', top: '74%', delay: 0.5 },
-      { left: '72%', top: '66%', delay: 0.75 },
-    ];
-
-    return (
-      <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
-        <motion.div
-          className="absolute right-4 top-2 opacity-35"
-          animate={{ y: [0, -2, 0], rotate: [0, -5, 0], opacity: [0.28, 0.48, 0.32] }}
-          transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <Award className="h-10 w-10 text-orange-400" />
-        </motion.div>
-        <motion.div
-          className="absolute -left-10 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full border border-orange-300/45"
-          animate={{ scale: [0.82, 1.3], opacity: [0.55, 0.05] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute -left-8 top-1/2 h-16 w-16 -translate-y-1/2 rounded-full border border-amber-200/40"
-          animate={{ scale: [0.84, 1.34], opacity: [0.52, 0.06] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-        />
-        {bronzeShards.map((shard, idx) => (
-          <motion.span
-            key={idx}
-            className="absolute block h-2 w-2 rotate-45 rounded-[2px] bg-amber-200/90 shadow-[0_0_10px_rgba(251,191,36,0.75)]"
-            style={{
-              left: shard.left,
-              top: shard.top,
-            }}
-            animate={{ x: [0, 16, 28], y: [0, -5, -9], opacity: [0.12, 0.85, 0.18], scale: [0.86, 1, 0.92] }}
-            transition={{
-              duration: 2.4,
-              delay: shard.delay,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
-      </div>
-    );
-  }
-
-  return null;
+  if (position !== 1) return null;
+  return (
+    <motion.div
+      className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      <motion.div
+        className="absolute -inset-full top-0 h-full w-[200%] bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12"
+        initial={{ x: '-100%' }}
+        animate={{ x: '100%' }}
+        transition={{ duration: 1.8, ease: 'easeInOut', delay: 0.6 }}
+      />
+    </motion.div>
+  );
 };
 
 export const SellerRanking: React.FC = () => {
@@ -264,9 +154,9 @@ export const SellerRanking: React.FC = () => {
 
   if (isLoading) {
     return (
-      <section className="flex h-full flex-col overflow-hidden rounded-xl bg-white p-0 shadow-sm">
+      <section className="flex h-full flex-col overflow-hidden">
         {header}
-        <div className="flex flex-grow items-center justify-center">
+        <div className="flex flex-grow items-center justify-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
         </div>
       </section>
@@ -275,9 +165,9 @@ export const SellerRanking: React.FC = () => {
 
   if (error) {
     return (
-      <section className="flex h-full flex-col overflow-hidden rounded-xl bg-white p-0 shadow-sm">
+      <section className="flex h-full flex-col overflow-hidden">
         {header}
-        <div className="flex flex-grow items-center justify-center p-6 text-center text-sm text-red-500">
+        <div className="flex flex-grow items-center justify-center py-8 text-center text-sm text-red-500">
           Error al cargar el ranking de vendedores
         </div>
       </section>
@@ -286,9 +176,9 @@ export const SellerRanking: React.FC = () => {
 
   if (!data || totalVendors === 0) {
     return (
-      <section className="flex h-full flex-col overflow-hidden rounded-xl bg-white p-0 shadow-sm">
+      <section className="flex h-full flex-col overflow-hidden">
         {header}
-        <div className="flex flex-grow items-center justify-center p-6 text-center text-sm text-slate-500">
+        <div className="flex flex-grow items-center justify-center py-8 text-center text-sm text-slate-500">
           No hay datos disponibles para el período seleccionado
         </div>
       </section>
@@ -296,7 +186,7 @@ export const SellerRanking: React.FC = () => {
   }
 
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-xl bg-white p-0 shadow-sm">
+    <section className="flex h-full flex-col overflow-hidden">
       {header}
 
       <div
@@ -309,7 +199,7 @@ export const SellerRanking: React.FC = () => {
       >
         {branchGroups.map((sucursal) => (
           <div key={sucursal.sucursal_id} className="space-y-3">
-            <h3 className="border-b border-slate-200 pb-2 text-[13px] font-extrabold uppercase tracking-wide text-slate-700">
+            <h3 className="pb-2 text-[13px] font-extrabold uppercase tracking-wide text-slate-700">
               {sucursal.sucursal_nombre}
             </h3>
 
@@ -318,96 +208,46 @@ export const SellerRanking: React.FC = () => {
                 <motion.div
                   key={vendedor.vendedor_id}
                   className={`group relative min-h-[84px] overflow-hidden rounded-xl p-2 ${getTopCardStyles(vendedor.posicion_ranking)}`}
-                  initial={{ opacity: 0, y: 12 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: index * 0.04, ease: 'easeOut' }}
+                  transition={{
+                    duration: vendedor.posicion_ranking <= 3 ? 0.55 : 0.35,
+                    delay: vendedor.posicion_ranking <= 3
+                      ? vendedor.posicion_ranking * 0.12 + 0.15
+                      : index * 0.04,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                  whileHover={vendedor.posicion_ranking <= 3 ? { y: -2 } : undefined}
                 >
                   <TopRankBackground position={vendedor.posicion_ranking} />
 
-                  {vendedor.posicion_ranking === 1 && (
-                    <motion.div
-                      className="pointer-events-none absolute right-2 top-1"
-                      animate={{ opacity: [0.04, 0.2, 0.06], scale: [0.94, 1.06, 0.98] }}
-                      transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      <Trophy className="h-14 w-14 text-yellow-300" />
-                    </motion.div>
-                  )}
-
                   <div className="relative z-10 mb-2 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <RankBadge position={vendedor.posicion_ranking} />
-                      <p
-                        className={`text-sm font-semibold ${
-                          vendedor.posicion_ranking === 1 ? 'text-white' : 'text-slate-900'
-                        }`}
-                      >
+                      <p className="text-sm font-semibold text-slate-900">
                         {vendedor.vendedor_nombre}
                       </p>
                     </div>
-                    <p
-                      className={`text-xs ${
-                        vendedor.posicion_ranking === 1 ? 'text-slate-200' : 'text-slate-500'
-                      }`}
-                    >
+                    <p className="text-xs text-slate-500">
                       {vendedor.total_facturas} facturas · {vendedor.total_pasajeros} pasajeros
                     </p>
                   </div>
 
                   <div
                     className={`relative z-10 h-1.5 w-full overflow-hidden rounded-full ${
-                      vendedor.posicion_ranking === 1 ? 'bg-white/20' : 'bg-slate-100'
+                      vendedor.posicion_ranking === 1 ? 'bg-amber-100/60' : 'bg-slate-100'
                     }`}
                   >
                     <motion.div
                       className={`h-full rounded-full transition-all duration-700 ${getProgressBarColors(vendedor.posicion_ranking)}`}
                       initial={{ width: 0 }}
                       animate={{ width: `${vendedor.porcentaje_relativo}%` }}
-                      transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
+                      transition={{ duration: 1.1, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
                     />
                   </div>
 
-                  {vendedor.posicion_ranking === 1 && (
-                    <div className="pointer-events-none absolute inset-x-4 top-[62px] z-10 h-6">
-                      {[
-                        { left: '7%', top: '8%', size: 7, delay: 0.1, color: 'text-cyan-200/75' },
-                        { left: '31%', top: '76%', size: 8, delay: 0.45, color: 'text-violet-200/80' },
-                        { left: '63%', top: '16%', size: 7, delay: 0.2, color: 'text-white/80' },
-                        { left: '92%', top: '70%', size: 8, delay: 0.65, color: 'text-cyan-200/70' },
-                      ].map((star, idx) => (
-                        <motion.svg
-                          key={idx}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          width={star.size}
-                          height={star.size}
-                          className={`absolute ${star.color} drop-shadow-[0_0_5px_rgba(255,255,255,0.6)]`}
-                          style={{ left: star.left, top: star.top }}
-                          animate={{ opacity: [0.22, 0.9, 0.3], scale: [0.86, 1.14, 0.92] }}
-                          transition={{
-                            duration: 2.2,
-                            delay: star.delay,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                          }}
-                        >
-                          <path
-                            d="M12 3L14.6 9.4L21 12L14.6 14.6L12 21L9.4 14.6L3 12L9.4 9.4L12 3Z"
-                            fill="currentColor"
-                          />
-                        </motion.svg>
-                      ))}
-                    </div>
-                  )}
-
                   <div className="relative z-10 mt-2 text-right">
-                    <p
-                      className={`text-xs font-black ${
-                        vendedor.posicion_ranking === 1
-                          ? 'text-yellow-200'
-                          : getPercentageColor(vendedor.posicion_ranking)
-                      }`}
-                    >
+                    <p className="text-xs font-bold text-slate-500">
                       {vendedor.porcentaje_relativo.toFixed(1)}%
                     </p>
                   </div>

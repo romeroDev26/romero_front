@@ -1,7 +1,7 @@
 // src/features/remissionGuides/hooks/useRemissionGuideSenderPDFGeneration.ts
 
 import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { generateRemissionGuidePDF } from '../components/pdf/RemissionGuidePDFGenerator';
 import { convertSenderGuideToAutoGenerate } from '../utils/guideConversion';
 import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';

@@ -188,21 +188,6 @@ export const ManifestsPage: React.FC = () => {
           <p className="text-[14px] text-[#828282] max-w-md mx-auto mb-4">
             El servidor no puede procesar la solicitud debido a un problema de configuración en la API.
           </p>
-          <div className="bg-[#f5f5f5] rounded-xl p-4 text-left max-w-lg mx-auto">
-            <p className="text-[12px] font-semibold text-[#666666] uppercase tracking-wider mb-2">
-              Para el equipo de backend
-            </p>
-            <ul className="text-[13px] text-[#4d4d4d] space-y-1.5 list-disc list-inside">
-              <li>
-                Mover <code className="bg-white px-1 py-0.5 rounded border border-[#e8e8e8] text-[#cf1322]">@router.get(&quot;/daily-view&quot;)</code>{' '}
-                <strong>arriba</strong> de <code className="bg-white px-1 py-0.5 rounded border border-[#e8e8e8] text-[#cf1322]">@router.get(&quot;/{'{manifest_id}'}&quot;)</code>{' '}
-                en <code className="bg-white px-1 py-0.5 rounded border border-[#e8e8e8]">manifests.py</code>
-              </li>
-              <li>
-                Corregir el bug de SQLAlchemy en <code className="bg-white px-1 py-0.5 rounded border border-[#e8e8e8]">get_manifests_by_branch_office</code>: convertir strings a objetos <code className="bg-white px-1 py-0.5 rounded border border-[#e8e8e8]">datetime.date</code> antes de pasarlos a la query
-              </li>
-            </ul>
-          </div>
         </div>
       ) : tripGroups.length === 0 ? (
         <div className="bg-white rounded-2xl border border-[#e8e8e8] p-12 text-center">

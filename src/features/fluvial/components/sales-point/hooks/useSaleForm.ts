@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/hooks/useSaleForm.ts
 import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { toast } from "react-toastify";
+import { toast } from '@/utils/sileo-toast';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { SplitPaymentData } from "../../../../../components/common/SplitPaymentForm";

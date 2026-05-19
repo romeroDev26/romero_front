@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { XMarkIcon, ArrowPathIcon, ChevronLeftIcon } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { assignmentsService, SeatAssignmentDetail, ReassignBulkData } from '../../../services/assignments.service';
 import { useSeatMap } from '../../fluvial/hooks/useSeatMap';

@@ -1,6 +1,6 @@
 // src/features/fluvial/hooks/useProductsServicesData.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { ProductService } from '../../../types';
 import { 
   productsServicesService, 

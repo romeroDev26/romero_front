@@ -2,8 +2,7 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from 'sileo';
 
 import Dashboard from './components/layout/Dashboard';
 import { LoginPage } from './features/auth/pages/LoginPage';
@@ -26,6 +25,7 @@ const RolesPage = React.lazy(() => import('./features/settings/pages/RolesPage')
 const SettingsIndexPage = React.lazy(() => import('./features/settings/pages/SettingslndexPage'));
 const WhatsAppConfigPage = React.lazy(() => import('./features/settings/pages/WhatsAppConfigPage'));
 const UpdatesAdminPage = React.lazy(() => import('./features/updates/pages/UpdatesAdminPage'));
+const ChangelogPage = React.lazy(() => import('./features/changelog/pages/ChangelogPage'));
 
 // Páginas de ventas (lazy)
 const QuotationsListPage = React.lazy(() => import('./features/sales/pages/QuotationsListPage').then(module => ({ default: module.QuotationsListPage })));
@@ -331,13 +331,31 @@ function AppContent() {
                 </Suspense>
               } />
             </Route>
+
+            {/* Changelog del frontend */}
+            <Route path="changelog" element={
+              <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                <ChangelogPage />
+              </Suspense>
+            } />
           </Route>
           
           {/* Ruta para manejar páginas no encontradas */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
-        <ToastContainer position="top-right" autoClose={3000} />
+        <Toaster 
+          position="top-right" 
+          theme="dark"
+          options={{
+            duration: 4000,
+            fill: '#171717',
+            styles: {
+              title: '!text-white',
+              description: '!text-gray-300',
+            },
+          }}
+        />
       </Router>
     );
 }

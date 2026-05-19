@@ -1,6 +1,6 @@
 // src/features/fluvial/hooks/useReservations.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { reservationsService, ReservationCreateData, ReservationUpdateData, ReservationSearchParams } from '../../../services/reservations.service';
 import { SeatReservation } from '../../../types';
 import { getErrorMessage } from '../../../utils/errorHandler';

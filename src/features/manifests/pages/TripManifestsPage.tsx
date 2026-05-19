@@ -186,6 +186,22 @@ export const TripManifestsPage: React.FC = () => {
             <ArrowLeftIcon className="h-4 w-4" strokeWidth={1.5} />
             Volver
           </button>
+          {activeManifest && (
+            <button
+              onClick={() =>
+                generateManifest(activeTab === 'passenger' ? 'PASSENGER' : 'CARGO')
+              }
+              disabled={isGenerating}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-[13px] font-medium bg-amber-600 text-white rounded-[20px] hover:bg-amber-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <ArrowPathIcon className="h-4 w-4" strokeWidth={1.5} />
+              )}
+              Regenerar Manifiesto
+            </button>
+          )}
           {activeManifest?.pdf_file_path && (
             <button
               onClick={() =>

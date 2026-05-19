@@ -1,7 +1,7 @@
 // src/features/fluvial/components/sales-point/hooks/useSaleBusinessLogic.ts
 
 import { useCallback } from "react";
-import { toast } from "react-toastify";
+import { toast, saleNotify } from '@/utils/sileo-toast';
 import {
   PassengerData,
   Representative,
@@ -456,8 +456,9 @@ export const useSaleBusinessLogic = ({
       const operationType = isConfirmingMode ? "Reserva confirmada" : "Venta registrada";
       const seatInfo = selectedSeat ? `Asiento: ${selectedSeat.seat_number}` : "Eleccion libre";
       
-      toast.success(
-        `${operationType} exitosamente. ${documentType}: ${documentNumber} | ${seatInfo}`
+      saleNotify.success(
+        operationType,
+        `${documentType} ${documentNumber} · ${seatInfo}`
       );
 
       // NOTA: No liberar reserva temporal cuando la venta es exitosa
@@ -477,13 +478,16 @@ export const useSaleBusinessLogic = ({
       }
       
       if (error.response?.status === 409) {
-        toast.error("El asiento seleccionado acaba de ser vendido por otro vendedor. Por favor, seleccione otro asiento.");
+        saleNotify.error(
+          'Asiento no disponible',
+          'El asiento seleccionado acaba de ser vendido por otro vendedor. Seleccione otro.'
+        );
         return;
       }
       
-      toast.error(
-        error.response?.data?.detail ||
-        "Ocurrió un error inesperado durante la venta."
+      saleNotify.error(
+        'Error en la venta',
+        error.response?.data?.detail || 'Ocurrió un error inesperado. Intente de nuevo.'
       );
     }
   }, [

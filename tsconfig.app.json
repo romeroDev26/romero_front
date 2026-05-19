@@ -22,6 +22,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     
+    /* Path aliases */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    
     /* Optimizaciones adicionales */
     "importHelpers": true,
     "removeComments": true,

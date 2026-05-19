@@ -14,7 +14,7 @@ import { Button } from '../../../components/common/Button';
 import { Manifest } from '../types/manifest.types';
 import { manifestService } from '../services/manifest.service';
 import { generatePassengerManifestPDF } from '../services/manifestPdfGeneration.service';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface ManifestDetailsProps {
   manifest: Manifest;

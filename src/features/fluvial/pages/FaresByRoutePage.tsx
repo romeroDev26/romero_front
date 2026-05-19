@@ -13,7 +13,7 @@ import { useFaresByRoute } from '../../../hooks/useFaresByRoute';
 import { routeHelpers } from '../../../services/routes.service';
 import { RouteSegmentFare, CreateFareData, UpdateFareData } from '../../../services/fareService';
 import { ServiceCategory } from '../../../types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
   { value: 'PASAJES', label: 'Express' },

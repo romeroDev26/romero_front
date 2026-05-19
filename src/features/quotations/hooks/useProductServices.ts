@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { productsServicesService } from '../../../services/products-services.service';
 import { ProductService } from '../../../types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 export const useProductServices = () => {
   const [services, setServices] = useState<ProductService[]>([]);

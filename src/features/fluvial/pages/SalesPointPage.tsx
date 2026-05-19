@@ -8,7 +8,7 @@ import { BranchSelector } from '../components/sales-point/BranchSelector';
 import { TripSelection } from '../components/sales-point/TripSelection';
 import { SaleForm } from '../components/sales-point/SaleForm';
 import { Spinner } from '../../../components/common/Spinner';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 type SalesPointView = 'branchSelection' | 'tripSelection' | 'saleForm' | 'loading';
 

@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { PlusIcon, CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { useTripsView } from '../hooks/useTripsView';
 import { useTripMutations } from '../hooks/useTrips';
 import { useScheduledTemplates } from '../hooks/useScheduledTemplates';

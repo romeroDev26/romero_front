@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import { manifestService } from '../services/manifest.service';
 import { generatePassengerManifestPDF } from '../services/manifestPdfGeneration.service';
 import { Manifest, ManifestFormData } from '../types/manifest.types';

@@ -100,7 +100,8 @@ export const usePermissions = () => {
       '/accounting/debit-notes': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR también pueden gestionar notas
       '/finance': ['admin', 'sales', 'supervisor', 'accountant'],
       '/supervisor': ['admin', 'supervisor'], // Solo supervisor y admin
-      '/settings': ['admin']
+      '/settings': ['admin'],
+      '/changelog': ['admin', 'sales', 'supervisor', 'dispatcher', 'accountant', 'driver', 'warehouse'], // Changelog visible para todos los usuarios autenticados
     };
 
     // Verificar rutas exactas

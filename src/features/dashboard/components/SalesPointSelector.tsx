@@ -4,7 +4,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useQueryClient } from '@tanstack/react-query';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useAllUserStatistics } from '../../../hooks/useUserStatistics';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 import UserSalesChart from './UserSalesChart';
 import { AnimatedCounter } from '../../../components/common/AnimatedCounter';
 

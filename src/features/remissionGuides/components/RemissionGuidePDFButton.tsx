@@ -9,7 +9,7 @@ import { Button } from '../../../components/common/Button';
 import { useRemissionGuidePDFGeneration } from '../hooks/useRemissionGuidePDFGeneration';
 import { convertToAutoGenerateGuide, canGeneratePDF } from '../utils/guideConversion';
 import { RemissionGuideTransportista } from '../../../types';
-import { toast } from 'react-toastify';
+import { toast } from '@/utils/sileo-toast';
 
 interface RemissionGuidePDFButtonProps {
   guide: RemissionGuideTransportista;

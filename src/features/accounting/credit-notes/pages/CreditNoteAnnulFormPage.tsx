@@ -7,23 +7,33 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/utils/sileo-toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  ExclamationTriangleIcon,
+  ArrowLeftIcon,
+  DocumentTextIcon,
+  UserIcon,
+  MapPinIcon,
+  BanknotesIcon,
+  ClipboardDocumentListIcon,
+  ChevronRightIcon,
+} from '@heroicons/react/24/outline';
 
 import { Button } from '../../../../components/common/Button';
+import { Spinner } from '../../../../components/common/Spinner';
 import { useCreateCreditNoteByAnnulment } from '../hooks/useCreditNotes';
 import { CreditNoteAnnulData } from '../../types';
-import { Invoice, User } from '../../../../types'; 
+import { Invoice, User } from '../../../../types';
 import { useAccountingDocumentSeriesForBranch } from '../../../../hooks/useAccountingDocumentSeries';
 import { authService } from '../../../../services/auth.service';
-import RequestCancellationModal from '../../components/RequestCancellationModal'; 
+import RequestCancellationModal from '../../components/RequestCancellationModal';
 
-// Catálogo 09 de SUNAT para motivos de Nota de Crédito (Solo anulación para esta página)
 const CREDIT_NOTE_REASONS = [
   { code: '01', description: 'Anulación de la operación' },
 ];
 
 const creditNoteSchema = z.object({
-  credit_note_type_code: z.string().nonempty("Debe seleccionar un motivo."),
-  reason: z.string().min(10, "El sustento debe tener al menos 10 caracteres."),
+  credit_note_type_code: z.string().nonempty('Debe seleccionar un motivo.'),
+  reason: z.string().min(10, 'El sustento debe tener al menos 10 caracteres.'),
 });
 
 type CreditNoteFormData = z.infer<typeof creditNoteSchema>;
@@ -31,16 +41,18 @@ type CreditNoteFormData = z.infer<typeof creditNoteSchema>;
 export const CreditNoteAnnulFormPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Tipamos explícitamente el estado que esperamos recibir
-  const { affectedInvoice, simplifiedAnnul, isDebitNote } = (location.state as { affectedInvoice: Invoice; simplifiedAnnul?: boolean; isDebitNote?: boolean }) || {};
+  const { affectedInvoice, simplifiedAnnul, isDebitNote } = (location.state as {
+    affectedInvoice: Invoice;
+    simplifiedAnnul?: boolean;
+    isDebitNote?: boolean;
+  }) || {};
 
-  const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>("");
+  const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>('');
   const [showRequestModal, setShowRequestModal] = useState(false);
 
   const { mutate: createCreditNote, isPending } = useCreateCreditNoteByAnnulment();
   const queryClient = useQueryClient();
 
-  // Hook de usuario actual
   const { data: currentUser } = useQuery<User>({
     queryKey: ['currentUser'],
     queryFn: async (): Promise<User> => {
@@ -48,32 +60,34 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
       return data;
     },
     staleTime: 1000 * 60 * 5,
-    retry: 1
+    retry: 1,
   });
 
-  // Hook para obtener series de notas de crédito por branch office
+  const { availableCreditNoteSeries, isLoading: isLoadingSeries } =
+    useAccountingDocumentSeriesForBranch(
+      currentUser?.default_branch_office_id || null,
+      currentUser?.company_id || 1
+    );
+
   const {
-    availableCreditNoteSeries,
-    isLoading: isLoadingSeries,
-  } = useAccountingDocumentSeriesForBranch(
-    currentUser?.default_branch_office_id || null,
-    currentUser?.company_id || 1 // Valor por defecto si no está definido
-  );
-
-  const { control, handleSubmit, formState: { errors } } = useForm<CreditNoteFormData>({
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CreditNoteFormData>({
     resolver: zodResolver(creditNoteSchema),
-    defaultValues: { 
-      credit_note_type_code: '01', 
-      reason: '' 
-    }
+    defaultValues: {
+      credit_note_type_code: '01',
+      reason: '',
+    },
   });
 
-  // Efecto para configurar la serie por defecto
   useEffect(() => {
-    const cachedSeries = localStorage.getItem("lastUsedCreditNoteSeries");
-    
+    const cachedSeries = localStorage.getItem('lastUsedCreditNoteSeries');
     if (availableCreditNoteSeries.length > 0) {
-      if (cachedSeries && availableCreditNoteSeries.some((s) => s.series_code === cachedSeries)) {
+      if (
+        cachedSeries &&
+        availableCreditNoteSeries.some((s) => s.series_code === cachedSeries)
+      ) {
         setSelectedCreditNoteSeries(cachedSeries);
       } else {
         setSelectedCreditNoteSeries(availableCreditNoteSeries[0].series_code);
@@ -81,24 +95,24 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
     }
   }, [availableCreditNoteSeries]);
 
-  // Handler para cambio de serie
   const handleCreditNoteSeriesChange = (seriesCode: string) => {
     setSelectedCreditNoteSeries(seriesCode);
-    localStorage.setItem("lastUsedCreditNoteSeries", seriesCode);
+    localStorage.setItem('lastUsedCreditNoteSeries', seriesCode);
   };
 
   if (!affectedInvoice || !affectedInvoice.client) {
     React.useEffect(() => {
-      toast.error(`No se ha especificado ${isDebitNote ? 'una nota de débito' : 'una factura'} válida para anular.`);
-      navigate('/accounting/credit-notes/new'); // Redirigir a selección de factura
+      toast.error(
+        `No se ha especificado ${isDebitNote ? 'una nota de débito' : 'una factura'} válida para anular.`
+      );
+      navigate('/accounting/credit-notes/new');
     }, [navigate]);
     return null;
   }
-  
-  // Modo simplificado: mostrar tarjeta con info y botón único para anular
+
   const handleSimplifiedAnnul = () => {
     if (!selectedCreditNoteSeries) {
-      toast.error("No hay serie de nota de crédito seleccionada.");
+      toast.error('No hay serie de nota de crédito seleccionada.');
       return;
     }
 
@@ -114,22 +128,24 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
         navigate('/accounting/credit-notes');
       },
       onError: (error: any) => {
-        // Manejar error 403 - Viaje ya partió
         if (error?.response?.status === 403) {
           const errorDetail = error?.response?.data?.detail || '';
-          if (errorDetail.includes('Viaje ya salió') || errorDetail.includes('Solicita aprobación')) {
+          if (
+            errorDetail.includes('Viaje ya salió') ||
+            errorDetail.includes('Solicita aprobación')
+          ) {
             setShowRequestModal(true);
           } else {
             toast.error(errorDetail || 'No tienes permisos para realizar esta acción');
           }
         }
-      }
+      },
     });
   };
-  
+
   const onSubmit: SubmitHandler<CreditNoteFormData> = (data) => {
     if (!selectedCreditNoteSeries) {
-      toast.error("Debe seleccionar una serie para la nota de crédito");
+      toast.error('Debe seleccionar una serie para la nota de crédito');
       return;
     }
 
@@ -138,270 +154,406 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
       credit_note_series: selectedCreditNoteSeries,
       reason: data.reason,
     };
-    
+
     createCreditNote(payload, {
       onSuccess: async () => {
         await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
-        navigate('/accounting/credit-notes'); 
+        navigate('/accounting/credit-notes');
       },
       onError: (error: any) => {
-        // Manejar error 403 - Viaje ya partió
         if (error?.response?.status === 403) {
           const errorDetail = error?.response?.data?.detail || '';
-          if (errorDetail.includes('Viaje ya salió') || errorDetail.includes('Solicita aprobación')) {
+          if (
+            errorDetail.includes('Viaje ya salió') ||
+            errorDetail.includes('Solicita aprobación')
+          ) {
             setShowRequestModal(true);
           } else {
             toast.error(errorDetail || 'No tienes permisos para realizar esta acción');
           }
         }
-      }
+      },
     });
   };
 
-  // Si estamos en modo simplificado renderizamos opción única
+  // ── Componentes auxiliares de UI ──
+
+  const Breadcrumb = () => (
+    <button
+      onClick={() => navigate(-1)}
+      className="inline-flex items-center gap-1.5 text-[13px] text-[#828282] hover:text-[#202020] transition-colors mb-6"
+    >
+      <ArrowLeftIcon className="w-4 h-4" />
+      <span>Volver</span>
+    </button>
+  );
+
+  const SunatAlert = () => (
+    <div className="rounded-[12px] border border-[#e8e8e8] bg-[#fafafa] p-5">
+      <div className="flex items-start gap-3.5">
+        <div className="flex-shrink-0 w-8 h-8 rounded-[8px] bg-amber-50 flex items-center justify-center">
+          <ExclamationTriangleIcon className="w-4.5 h-4.5 text-amber-600" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[13px] font-semibold text-[#202020]">
+            Requisito importante de SUNAT
+          </h3>
+          <div className="mt-1.5 text-[13px] text-[#4d4d4d] leading-relaxed space-y-1">
+            <p>
+              Según normativa SUNAT,{' '}
+              <span className="font-semibold text-[#202020]">
+                la serie de la nota de crédito debe ser la misma que la serie del comprobante que afecta
+              </span>
+              .
+            </p>
+            <p>
+              Ejemplo: si el comprobante es{' '}
+              <code className="text-[12px] font-medium text-[#202020] bg-white px-1.5 py-0.5 rounded border border-[#e8e8e8]">
+                B004-00000123
+              </code>
+              , la serie de la nota de crédito debe ser{' '}
+              <code className="text-[12px] font-medium text-[#202020] bg-white px-1.5 py-0.5 rounded border border-[#e8e8e8]">
+                B004
+              </code>
+              .
+            </p>
+            <p className="text-[12px] text-[#828282]">
+              Verifique que la serie seleccionada coincida con la del comprobante a afectar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const DocumentCard = () => {
+    const client = affectedInvoice.client!;
+    const items = affectedInvoice.items || [];
+    const displayItems = items.slice(0, 5);
+    const remaining = items.length - 5;
+
+    return (
+      <div className="rounded-[12px] border border-[#e8e8e8] bg-white overflow-hidden">
+        {/* Header del comprobante */}
+        <div className="px-6 py-5 border-b border-[#e8e8e8]">
+          <div className="flex items-center gap-2 mb-1">
+            <DocumentTextIcon className="w-4 h-4 text-[#1F4690]" />
+            <span className="text-[12px] font-semibold text-[#1F4690] uppercase tracking-wider">
+              {isDebitNote ? 'Nota de Débito' : 'Comprobante'} a anular
+            </span>
+          </div>
+          <h1 className="text-[22px] font-semibold text-[#202020] tracking-tight">
+            {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
+          </h1>
+        </div>
+
+        {/* Datos del cliente */}
+        <div className="px-6 py-5 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[8px] bg-[#f5f5f5] flex items-center justify-center flex-shrink-0">
+              <UserIcon className="w-4 h-4 text-[#828282]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[12px] text-[#828282]">Cliente</p>
+              <p className="text-[14px] font-medium text-[#202020] truncate">
+                {client.name}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[8px] bg-[#f5f5f5] flex items-center justify-center flex-shrink-0">
+              <DocumentTextIcon className="w-4 h-4 text-[#828282]" />
+            </div>
+            <div>
+              <p className="text-[12px] text-[#828282]">Documento</p>
+              <p className="text-[14px] font-medium text-[#202020]">
+                {client.doc_type} - {client.doc_number}
+              </p>
+            </div>
+          </div>
+
+          {(client.address_line || client.address) && (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-[8px] bg-[#f5f5f5] flex items-center justify-center flex-shrink-0">
+                <MapPinIcon className="w-4 h-4 text-[#828282]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] text-[#828282]">Dirección</p>
+                <p className="text-[14px] font-medium text-[#202020] truncate">
+                  {client.address_line ?? client.address}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-[8px] bg-[#f5f5f5] flex items-center justify-center flex-shrink-0">
+              <BanknotesIcon className="w-4 h-4 text-[#828282]" />
+            </div>
+            <div>
+              <p className="text-[12px] text-[#828282]">Total</p>
+              <p className="text-[14px] font-semibold text-[#202020]">
+                S/ {affectedInvoice.total_payable}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Servicios */}
+        {items.length > 0 && (
+          <div className="px-6 py-5 border-t border-[#e8e8e8] bg-[#fafafa]/50">
+            <div className="flex items-center gap-2 mb-3">
+              <ClipboardDocumentListIcon className="w-4 h-4 text-[#828282]" />
+              <span className="text-[12px] font-semibold text-[#4d4d4d] uppercase tracking-wider">
+                Servicios incluidos
+              </span>
+            </div>
+            <ul className="space-y-2">
+              {displayItems.map((it) => (
+                <li
+                  key={it.id}
+                  className="flex items-center justify-between text-[13px]"
+                >
+                  <span className="text-[#4d4d4d] truncate pr-4">
+                    {it.item_description ?? it.product?.name ?? 'Ítem'} x{it.quantity}
+                  </span>
+                  <span className="font-medium text-[#202020] whitespace-nowrap">
+                    S/ {it.total_line}
+                  </span>
+                </li>
+              ))}
+              {remaining > 0 && (
+                <li className="text-[12px] text-[#828282] pt-1">
+                  +{remaining} servicios adicionales
+                </li>
+              )}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const SeriesSelector = () => (
+    <div>
+      <label className="block text-[13px] font-medium text-[#202020] mb-2">
+        Serie de la Nota de Crédito
+        <span className="text-red-500 ml-0.5">*</span>
+      </label>
+      {isLoadingSeries ? (
+        <div className="flex items-center gap-2 w-full px-4 py-3 rounded-[12px] border border-[#e8e8e8] bg-[#f5f5f5] text-[13px] text-[#828282]">
+          <Spinner size="sm" color="text-[#828282]" />
+          <span>Cargando series...</span>
+        </div>
+      ) : availableCreditNoteSeries.length > 0 ? (
+        <div className="relative">
+          <select
+            value={selectedCreditNoteSeries}
+            onChange={(e) => handleCreditNoteSeriesChange(e.target.value)}
+            className="w-full appearance-none px-4 py-3 pr-10 text-[14px] text-[#202020] bg-white border border-[#e8e8e8] rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors"
+          >
+            {availableCreditNoteSeries.map((series) => (
+              <option key={series.id} value={series.series_code}>
+                {series.series_code} - Nota de Crédito
+              </option>
+            ))}
+          </select>
+          <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#828282] rotate-90 pointer-events-none" />
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 w-full px-4 py-3 rounded-[12px] border border-red-200 bg-red-50/50 text-[13px] text-red-700">
+          <ExclamationTriangleIcon className="w-4 h-4 flex-shrink-0" />
+          <span>No hay series de notas de crédito disponibles para esta sucursal</span>
+        </div>
+      )}
+    </div>
+  );
+
+  const FormFooter = ({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) => (
+    <div className="flex items-center justify-end gap-3 pt-6 border-t border-[#e8e8e8]">
+      {children}
+    </div>
+  );
+
+  // ── Vista simplificada ──
   if (simplifiedAnnul) {
     return (
-      <div className="p-6 bg-gray-50">
-        <div className="max-w-2xl mx-auto space-y-4">
-          {/* Alerta informativa sobre series */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+      <div className="min-h-screen bg-[#f5f5f5] p-6 lg:p-10">
+        <div className="max-w-6xl mx-auto">
+          <Breadcrumb />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+            {/* Columna izquierda: info del comprobante */}
+            <div className="space-y-5">
+              <SunatAlert />
+              <DocumentCard />
+            </div>
+
+            {/* Columna derecha: acción de anulación */}
+            <div className="rounded-[12px] border border-[#e8e8e8] bg-white p-6 space-y-6">
+              <div>
+                <h2 className="text-[15px] font-semibold text-[#202020] mb-1">
+                  Anulación simplificada
+                </h2>
+                <p className="text-[13px] text-[#828282]">
+                  Selecciona la serie y confirma para generar la nota de crédito.
+                </p>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-amber-800">
-                  Requisito importante de SUNAT
-                </h3>
-                <div className="mt-2 text-sm text-amber-700">
-                  <p>
-                    Según normativa SUNAT, <strong>la serie de la nota de crédito debe ser la misma que la serie del comprobante que afecta</strong>.
-                  </p>
-                  <p className="mt-1">
-                    Ejemplo: Si el comprobante es <code className="bg-amber-100 px-1 py-0.5 rounded">B004-00000123</code>, 
-                    la serie de la nota de crédito debe ser <code className="bg-amber-100 px-1 py-0.5 rounded">B004</code>.
-                  </p>
-                  <p className="mt-2 font-medium">
-                    📝 Por favor, verifique que la serie seleccionada coincida con la del comprobante a afectar.
-                  </p>
-                </div>
-              </div>
+
+              <SeriesSelector />
+
+              <FormFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate(-1)}
+                  className="rounded-full px-5"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSimplifiedAnnul}
+                  isLoading={isPending}
+                  disabled={!selectedCreditNoteSeries}
+                  className="rounded-full px-6"
+                >
+                  Confirmar anulación
+                </Button>
+              </FormFooter>
             </div>
           </div>
-
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              Anular {isDebitNote ? 'Nota de Débito' : 'Comprobante'}
-            </h1>
-            <div className="mb-4">
-            <div className="font-medium">{affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}</div>
-            <div className="text-sm text-gray-600">Cliente: {affectedInvoice.client.name}</div>
-            <div className="text-sm text-gray-600">Documento: {affectedInvoice.client.doc_type} - {affectedInvoice.client.doc_number}</div>
-            {(affectedInvoice.client.address_line || affectedInvoice.client.address) && (
-              <div className="text-sm text-gray-600">Dirección: {affectedInvoice.client.address_line ?? affectedInvoice.client.address}</div>
-            )}
-            <div className="text-sm text-gray-600">Total: S/ {affectedInvoice.total_payable}</div>
-
-            {/* Resumen breve de servicios / ítems */}
-            <div className="mt-3">
-              <div className="text-sm font-medium text-gray-700 mb-1">Servicios incluidos</div>
-              {affectedInvoice.items && affectedInvoice.items.length > 0 ? (
-                <ul className="text-sm text-gray-600 space-y-1">
-                  {affectedInvoice.items.slice(0, 5).map((it) => (
-                    <li key={it.id} className="flex justify-between">
-                      <span className="truncate">{it.item_description ?? it.product?.name ?? 'Ítem'} x{it.quantity}</span>
-                      <span>S/ {it.total_line}</span>
-                    </li>
-                  ))}
-                  {affectedInvoice.items.length > 5 && (
-                    <li className="text-sm text-gray-500">+{affectedInvoice.items.length - 5} más</li>
-                  )}
-                </ul>
-              ) : (
-                <div className="text-sm text-gray-500">Sin servicios listados</div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Serie NC a usar</label>
-            {isLoadingSeries ? (
-              <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100">Cargando series...</div>
-            ) : availableCreditNoteSeries.length > 0 ? (
-              <select
-                value={selectedCreditNoteSeries}
-                onChange={(e) => handleCreditNoteSeriesChange(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white"
-              >
-                {availableCreditNoteSeries.map((series) => (
-                  <option key={series.id} value={series.series_code}>{series.series_code}</option>
-                ))}
-              </select>
-            ) : (
-              <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 text-red-600">No hay series disponibles</div>
-            )}
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-6 border-t">
-            <Button variant="outline" onClick={() => navigate(-1)}>Cancelar</Button>
-            <Button variant="primary" onClick={handleSimplifiedAnnul} isLoading={isPending} disabled={!selectedCreditNoteSeries}>
-              Usar anulación simplificada
-            </Button>
-          </div>
         </div>
-        </div>
+
+        {showRequestModal && (
+          <RequestCancellationModal
+            invoiceId={affectedInvoice.id}
+            invoiceSeries={affectedInvoice.series}
+            invoiceNumber={affectedInvoice.number}
+            onClose={() => setShowRequestModal(false)}
+            onSuccess={() => navigate('/accounting/invoices')}
+          />
+        )}
       </div>
     );
   }
 
+  // ── Vista completa con formulario ──
   return (
-    <div className="p-6 bg-gray-50">
-      <div className="max-w-2xl mx-auto space-y-4">
-        {/* Alerta informativa sobre series */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-amber-800">
-                Requisito importante de SUNAT
-              </h3>
-              <div className="mt-2 text-sm text-amber-700">
-                <p>
-                  Según normativa SUNAT, <strong>la serie de la nota de crédito debe ser la misma que la serie del comprobante que afecta</strong>.
-                </p>
-                <p className="mt-1">
-                  Ejemplo: Si el comprobante es <code className="bg-amber-100 px-1 py-0.5 rounded">B004-00000123</code>, 
-                  la serie de la nota de crédito debe ser <code className="bg-amber-100 px-1 py-0.5 rounded">B004</code>.
-                </p>
-                <p className="mt-2 font-medium">
-                  📝 Por favor, verifique que la serie seleccionada coincida con la del comprobante a afectar.
-                </p>
-              </div>
-            </div>
+    <div className="min-h-screen bg-[#f5f5f5] p-6 lg:p-10">
+      <div className="max-w-6xl mx-auto">
+        <Breadcrumb />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+          {/* Columna izquierda: info del comprobante */}
+          <div className="space-y-5">
+            <SunatAlert />
+            <DocumentCard />
           </div>
-        </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Anular {isDebitNote ? 'Nota de Débito' : 'Comprobante'}: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
-          </h1>
-          <div className="text-gray-600 mb-6">
-          <div>Cliente: <span className="font-medium">{affectedInvoice.client.name}</span></div>
-          <div>Documento: <span className="font-medium">{affectedInvoice.client.doc_type} - {affectedInvoice.client.doc_number}</span></div>
-          {(affectedInvoice.client.address_line || affectedInvoice.client.address) && (
-            <div>Dirección: <span className="font-medium">{affectedInvoice.client.address_line ?? affectedInvoice.client.address}</span></div>
-          )}
+          {/* Columna derecha: formulario */}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="rounded-[12px] border border-[#e8e8e8] bg-white p-6 space-y-6"
+          >
+            <div>
+              <h2 className="text-[15px] font-semibold text-[#202020] mb-1">
+                Generar Nota de Crédito
+              </h2>
+              <p className="text-[13px] text-[#828282]">
+                Complete los datos para registrar la anulación ante SUNAT.
+              </p>
+            </div>
 
-          {/* Resumen breve de servicios */}
-          <div className="mt-3">
-            <div className="text-sm font-medium text-gray-700 mb-1">Servicios incluidos</div>
-            {affectedInvoice.items && affectedInvoice.items.length > 0 ? (
-              <ul className="text-sm text-gray-600 space-y-1">
-                {affectedInvoice.items.slice(0, 5).map((it) => (
-                  <li key={it.id} className="flex justify-between">
-                    <span className="truncate">{it.item_description ?? it.product?.name ?? 'Ítem'} x{it.quantity}</span>
-                    <span>S/ {it.total_line}</span>
-                  </li>
-                ))}
-                {affectedInvoice.items.length > 5 && (
-                  <li className="text-sm text-gray-500">+{affectedInvoice.items.length - 5} más</li>
+            <SeriesSelector />
+
+            <div>
+              <label className="block text-[13px] font-medium text-[#202020] mb-2">
+                Motivo de la Nota de Crédito
+                <span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <Controller
+                name="credit_note_type_code"
+                control={control}
+                render={({ field }) => (
+                  <div className="relative">
+                    <select
+                      {...field}
+                      className="w-full appearance-none px-4 py-3 pr-10 text-[14px] text-[#202020] bg-white border border-[#e8e8e8] rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors"
+                    >
+                      {CREDIT_NOTE_REASONS.map((reason) => (
+                        <option key={reason.code} value={reason.code}>
+                          {reason.description}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#828282] rotate-90 pointer-events-none" />
+                  </div>
                 )}
-              </ul>
-            ) : (
-              <div className="text-sm text-gray-500">Sin servicios listados</div>
-            )}
-          </div>
-        </div>
+              />
+              {errors.credit_note_type_code && (
+                <p className="text-[12px] text-red-600 mt-1.5">
+                  {errors.credit_note_type_code.message}
+                </p>
+              )}
+            </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Serie de la Nota de Crédito*</label>
-            {isLoadingSeries ? (
-              <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100">
-                Cargando series...
-              </div>
-            ) : availableCreditNoteSeries.length > 0 ? (
-              <select
-                value={selectedCreditNoteSeries}
-                onChange={(e) => handleCreditNoteSeriesChange(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white"
+            <div>
+              <label className="block text-[13px] font-medium text-[#202020] mb-2">
+                Descripción / Sustento
+                <span className="text-red-500 ml-0.5">*</span>
+              </label>
+              <Controller
+                name="reason"
+                control={control}
+                render={({ field }) => (
+                  <textarea
+                    {...field}
+                    rows={4}
+                    className="w-full px-4 py-3 text-[14px] text-[#202020] bg-white border border-[#e8e8e8] rounded-[12px] placeholder:text-[#828282] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors resize-none"
+                    placeholder="Ej: El cliente desistió de la compra y solicitó la devolución del dinero."
+                  />
+                )}
+              />
+              {errors.reason && (
+                <p className="text-[12px] text-red-600 mt-1.5">
+                  {errors.reason.message}
+                </p>
+              )}
+            </div>
+
+            <FormFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate(-1)}
+                className="rounded-full px-5"
               >
-                {availableCreditNoteSeries.map((series) => (
-                  <option key={series.id} value={series.series_code}>
-                    {series.series_code} - Nota de Crédito
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 text-red-600">
-                No hay series de notas de crédito disponibles para esta sucursal
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Motivo de la Nota de Crédito*</label>
-            <Controller
-              name="credit_note_type_code"
-              control={control}
-              render={({ field }) => (
-                <select {...field} className="w-full p-2 border border-gray-300 rounded-md bg-white">
-                  {CREDIT_NOTE_REASONS.map(reason => (
-                    <option key={reason.code} value={reason.code}>{reason.description}</option>
-                  ))}
-                </select>
-              )}
-            />
-            {errors.credit_note_type_code && <p className="text-sm text-error mt-1">{errors.credit_note_type_code.message}</p>}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción / Sustento*</label>
-            <Controller
-              name="reason"
-              control={control}
-              render={({ field }) => (
-                <textarea
-                  {...field}
-                  rows={4}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  placeholder="Ej: El cliente desistió de la compra y solicitó la devolución del dinero."
-                />
-              )}
-            />
-            {errors.reason && <p className="text-sm text-error mt-1">{errors.reason.message}</p>}
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)}>Cancelar</Button>
-            <Button 
-              type="submit" 
-              isLoading={isPending}
-              disabled={!selectedCreditNoteSeries || availableCreditNoteSeries.length === 0}
-            >
-              Generar Nota de Crédito
-            </Button>
-          </div>
-        </form>
-      </div>
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                isLoading={isPending}
+                disabled={!selectedCreditNoteSeries || availableCreditNoteSeries.length === 0}
+                className="rounded-full px-6"
+              >
+                Generar Nota de Crédito
+              </Button>
+            </FormFooter>
+          </form>
+        </div>
       </div>
 
-      {/* Modal de solicitud de anulación (cuando viaje ya partió) */}
       {showRequestModal && (
         <RequestCancellationModal
           invoiceId={affectedInvoice.id}
           invoiceSeries={affectedInvoice.series}
           invoiceNumber={affectedInvoice.number}
           onClose={() => setShowRequestModal(false)}
-          onSuccess={() => {
-            navigate('/accounting/invoices');
-          }}
+          onSuccess={() => navigate('/accounting/invoices')}
         />
       )}
     </div>

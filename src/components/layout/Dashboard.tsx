@@ -381,8 +381,9 @@ const Dashboard: React.FC = () => {
   const isSalesPointRoute = /^\/fluvial\/operations\/sales-point$/.test(location.pathname);
   const isCargoSaleRoute = /^\/fluvial\/operations\/cargo-sale$/.test(location.pathname);
   const isRemissionGuidesRoute = /^\/remission-guides/.test(location.pathname);
+  const isCreditNoteAnnulRoute = /^\/accounting\/credit-notes\/annul$/.test(location.pathname);
   const isGrayFullBleedRoute =
-    isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute;
+    isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute || isCreditNoteAnnulRoute;
 
   return (
     <div className="flex h-screen bg-gray-100 p-5">
@@ -578,7 +579,7 @@ const Dashboard: React.FC = () => {
         {/* Área de contenido */}
         <main
           className={`relative flex-1 overflow-y-auto rounded-xl shadow-sm ${
-            isGrayFullBleedRoute ? 'bg-gray-50' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
+            isGrayFullBleedRoute ? 'bg-[#f5f5f5]' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
           }`}
         >
           {location.pathname === '/' && (

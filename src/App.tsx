@@ -25,6 +25,7 @@ const RolesPage = React.lazy(() => import('./features/settings/pages/RolesPage')
 const SettingsIndexPage = React.lazy(() => import('./features/settings/pages/SettingslndexPage'));
 const WhatsAppConfigPage = React.lazy(() => import('./features/settings/pages/WhatsAppConfigPage'));
 const UpdatesAdminPage = React.lazy(() => import('./features/updates/pages/UpdatesAdminPage'));
+const ChangelogPage = React.lazy(() => import('./features/changelog/pages/ChangelogPage').then(module => ({ default: module.ChangelogPage })));
 
 // Páginas de ventas (lazy)
 const QuotationsListPage = React.lazy(() => import('./features/sales/pages/QuotationsListPage').then(module => ({ default: module.QuotationsListPage })));
@@ -330,6 +331,13 @@ function AppContent() {
                 </Suspense>
               } />
             </Route>
+
+            {/* Changelog del frontend */}
+            <Route path="changelog" element={
+              <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+                <ChangelogPage />
+              </Suspense>
+            } />
           </Route>
           
           {/* Ruta para manejar páginas no encontradas */}

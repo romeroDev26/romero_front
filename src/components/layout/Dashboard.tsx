@@ -382,8 +382,9 @@ const Dashboard: React.FC = () => {
   const isCargoSaleRoute = /^\/fluvial\/operations\/cargo-sale$/.test(location.pathname);
   const isRemissionGuidesRoute = /^\/remission-guides/.test(location.pathname);
   const isCreditNoteAnnulRoute = /^\/accounting\/credit-notes\/annul$/.test(location.pathname);
+  const isSettingsRoute = /^\/settings/.test(location.pathname);
   const isGrayFullBleedRoute =
-    isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute || isCreditNoteAnnulRoute;
+    isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute || isCreditNoteAnnulRoute || isSettingsRoute;
 
   return (
     <div className="flex h-screen bg-gray-100 p-5">

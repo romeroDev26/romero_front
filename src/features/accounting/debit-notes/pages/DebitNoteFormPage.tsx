@@ -16,6 +16,7 @@ import {
   ArrowLeftIcon,
   PlusIcon,
   TrashIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import Select from "react-select";
 
@@ -425,768 +426,618 @@ export const DebitNoteFormPage: React.FC = () => {
     preparedPayload?.affected_document_series_number ?? "";
 
   return (
-    <div className="min-h-screen bg-neutral">
-      {/* Enhanced Header Section */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/accounting/debit-notes")}
-                className="flex items-center space-x-2 px-4 py-2"
-              >
-                <ArrowLeftIcon className="h-5 w-5" />
-                <span className="hidden sm:inline">Volver</span>
-              </Button>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Nueva Nota de Débito
-                </h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  Agregar cargos adicionales a un comprobante existente
-                </p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+        <div className="flex items-start gap-4">
+          <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#1F4690]/10">
+            <ArrowLeftIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
+          </div>
+          <div>
+            <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+              Nueva Nota de Débito
+            </h1>
+            <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+              Agregar cargos adicionales a un comprobante existente
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => navigate("/accounting/debit-notes")}
+          className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center"
+        >
+          <ArrowLeftIcon className="h-5 w-5 mr-2" />
+          <span className="hidden sm:inline">Volver</span>
+        </button>
+      </div>
+
+      {!finalAffectedInvoice ? (
+        <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#cf1322]/10 shrink-0">
+              <TrashIcon className="h-6 w-6 text-[#cf1322]" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="text-[15px] font-medium text-[#202020]">
+                Error: No se encontró el comprobante
+              </h3>
+              <p className="mt-1 text-[14px] text-[#4d4d4d]">
+                No se pudo encontrar la información del comprobante para generar la nota de débito. Por favor, regrese a la lista de comprobantes y seleccione uno válido.
+              </p>
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/accounting/debit-notes/new")}
+                  className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+                >
+                  Seleccionar Comprobante
+                </Button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Main Content Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!finalAffectedInvoice ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+      ) : !getValidClientId(finalAffectedInvoice) ||
+        getValidClientId(finalAffectedInvoice) === 0 ? (
+        <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#cf1322]/10 shrink-0">
+              <TrashIcon className="h-6 w-6 text-[#cf1322]" strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="text-[15px] font-medium text-[#202020]">
+                Error: Cliente no válido
+              </h3>
+              <p className="mt-1 text-[14px] text-[#4d4d4d]">
+                El comprobante seleccionado no tiene un cliente válido asociado. No se puede generar una nota de débito sin esta información.
+              </p>
+              <p className="mt-1 text-[14px] text-[#4d4d4d]">
+                Comprobante: {finalAffectedInvoice.series}-{String(finalAffectedInvoice.number).padStart(8, "0")}
+              </p>
+              <p className="text-[14px] text-[#4d4d4d]">
+                Cliente detectado: {finalAffectedInvoice.client_name || "No disponible"}
+              </p>
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/accounting/debit-notes/new")}
+                  className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Error: No se encontró el comprobante
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>
-                    No se pudo encontrar la información del comprobante para
-                    generar la nota de débito. Por favor, regrese a la lista de
-                    comprobantes y seleccione uno válido.
-                  </p>
-                </div>
-                <div className="mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate("/accounting/debit-notes/new")}
-                  >
-                    Seleccionar Comprobante
-                  </Button>
-                </div>
+                  Seleccionar Otro Comprobante
+                </Button>
               </div>
             </div>
           </div>
-        ) : !getValidClientId(finalAffectedInvoice) ||
-          getValidClientId(finalAffectedInvoice) === 0 ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-400"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Error: Cliente no válido
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>
-                    El comprobante seleccionado no tiene un cliente válido
-                    asociado. No se puede generar una nota de débito sin esta
-                    información.
-                  </p>
-                  <p className="mt-1">
-                    Comprobante: {finalAffectedInvoice.series}-
-                    {String(finalAffectedInvoice.number).padStart(8, "0")}
-                  </p>
-                  <p>
-                    Cliente detectado:{" "}
-                    {finalAffectedInvoice.client_name || "No disponible"}
-                  </p>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Mostrar errores de validación */}
+          {Object.keys(errors).length > 0 && (
+            <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#cf1322]/10 shrink-0">
+                  <TrashIcon className="h-6 w-6 text-[#cf1322]" strokeWidth={1.5} />
                 </div>
-                <div className="mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate("/accounting/debit-notes/new")}
-                  >
-                    Seleccionar Otro Comprobante
-                  </Button>
+                <div className="flex-1">
+                  <h3 className="text-[15px] font-medium text-[#202020]">
+                    Error en el formulario
+                  </h3>
+                  <div className="mt-2 text-[14px] text-[#4d4d4d]">
+                    <ul className="list-disc list-inside space-y-1">
+                      {Object.entries(errors).map(([field, error]) => {
+                        if (field === 'items' && error?.message) {
+                          return (
+                            <li key={field}>
+                              <strong>Items:</strong> {error.message}
+                            </li>
+                          );
+                        } else if (field !== 'items') {
+                          return (
+                            <li key={field}>
+                              <strong>
+                                {field === 'client_id' && 'Cliente'}
+                                {field === 'series' && 'Serie'}
+                                {field === 'affected_document_type_code' && 'Tipo de documento afectado'}
+                                {field === 'affected_document_series_number' && 'Número de serie del documento afectado'}
+                                {field === 'debit_note_type_code' && 'Tipo de nota de débito'}
+                                {field === 'reason' && 'Razón'}
+                                {field}:
+                              </strong>{" "}
+                              {error?.message || "Error de validación"}
+                            </li>
+                          );
+                        }
+                        return null;
+                      }).filter(Boolean)}
+
+                      {errors.items && Array.isArray(errors.items) && errors.items.map((itemError, index) => {
+                        if (itemError) {
+                          const itemFieldErrors = [];
+                          if (itemError.quantity?.message) itemFieldErrors.push('Cantidad debe ser mayor a 0');
+                          if (itemError.unit_code?.message) itemFieldErrors.push('Código de unidad requerido');
+                          if (itemError.unit_price?.message) itemFieldErrors.push('Precio unitario debe ser mayor o igual a 0');
+                          if (itemError.price_with_tax?.message) itemFieldErrors.push('Precio final debe ser mayor o igual a 0');
+                          if (itemError.price_type_code?.message) itemFieldErrors.push('Código de tipo de precio requerido');
+                          if (itemError.tax_category_code?.message) itemFieldErrors.push('Código de categoría de impuesto requerido');
+
+                          if (itemFieldErrors.length > 0) {
+                            return (
+                              <li key={`item-${index}`}>
+                                <strong>Cargo #{index + 1}:</strong>
+                                <ul className="list-disc list-inside ml-4 mt-1">
+                                  {itemFieldErrors.map((errorMsg, errorIndex) => (
+                                    <li key={errorIndex}>{errorMsg}</li>
+                                  ))}
+                                </ul>
+                              </li>
+                            );
+                          }
+                        }
+                        return null;
+                      }).filter(Boolean)}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Mostrar errores de validación */}
-            {Object.keys(errors).length > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-red-400"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Columna izquierda - Contenido principal del formulario */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Card del comprobante afectado */}
+              {finalAffectedInvoice && (
+                <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-[18px] font-medium text-[#202020]">
+                      Comprobante Afectado
+                    </h2>
+                    <span className="rounded-full px-2.5 py-0.5 text-[12px] font-medium bg-[#f5f5f5] text-[#1F4690]">
+                      Seleccionado
+                    </span>
                   </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">
-                      Error en el formulario
-                    </h3>
-                    <div className="mt-2 text-sm text-red-700">
-                      <ul className="list-disc list-inside space-y-1">
-                        {Object.entries(errors).map(([field, error]) => {
-                          if (field === 'items' && error?.message) {
-                            // Error general de items (ej: array vacío)
-                            return (
-                              <li key={field}>
-                                <strong>Items:</strong> {error.message}
-                              </li>
-                            );
-                          } else if (field !== 'items') {
-                            // Errores de campos normales
-                            return (
-                              <li key={field}>
-                                <strong>
-                                  {field === 'client_id' && 'Cliente'}
-                                  {field === 'series' && 'Serie'}
-                                  {field === 'affected_document_type_code' && 'Tipo de documento afectado'}
-                                  {field === 'affected_document_series_number' && 'Número de serie del documento afectado'}
-                                  {field === 'debit_note_type_code' && 'Tipo de nota de débito'}
-                                  {field === 'reason' && 'Razón'}
-                                  {field}:
-                                </strong>{" "}
-                                {error?.message || "Error de validación"}
-                              </li>
-                            );
-                          }
-                          return null;
-                        }).filter(Boolean)}
 
-                        {/* Mostrar errores específicos de cada item */}
-                        {errors.items && Array.isArray(errors.items) && errors.items.map((itemError, index) => {
-                          if (itemError) {
-                            const itemFieldErrors = [];
-                            if (itemError.quantity?.message) itemFieldErrors.push('Cantidad debe ser mayor a 0');
-                            if (itemError.unit_code?.message) itemFieldErrors.push('Código de unidad requerido');
-                            if (itemError.unit_price?.message) itemFieldErrors.push('Precio unitario debe ser mayor o igual a 0');
-                            if (itemError.price_with_tax?.message) itemFieldErrors.push('Precio final debe ser mayor o igual a 0');
-                            if (itemError.price_type_code?.message) itemFieldErrors.push('Código de tipo de precio requerido');
-                            if (itemError.tax_category_code?.message) itemFieldErrors.push('Código de categoría de impuesto requerido');
-
-                            if (itemFieldErrors.length > 0) {
-                              return (
-                                <li key={`item-${index}`}>
-                                  <strong>Cargo #{index + 1}:</strong>
-                                  <ul className="list-disc list-inside ml-4 mt-1">
-                                    {itemFieldErrors.map((errorMsg, errorIndex) => (
-                                      <li key={errorIndex}>{errorMsg}</li>
-                                    ))}
-                                  </ul>
-                                </li>
-                              );
-                            }
-                          }
-                          return null;
-                        }).filter(Boolean)}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left Column - Main Form Content */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* Enhanced Affected Invoice Card */}
-                {finalAffectedInvoice && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg shadow-sm p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-semibold text-gray-900">
-                        Comprobante Afectado
-                      </h2>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        Seleccionado
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
-                          Número de Documento
-                        </label>
-                        <p className="text-lg font-bold text-gray-900">
-                          {finalAffectedInvoice.series}-
-                          {String(finalAffectedInvoice.number).padStart(8, "0")}
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
-                          Cliente
-                        </label>
-                        <p className="text-sm font-medium text-gray-900">
-                          {finalAffectedInvoice.client_name}
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
-                          Fecha de Emisión
-                        </label>
-                        <p className="text-sm text-gray-900">
-                          {new Date(
-                            finalAffectedInvoice.issue_date
-                          ).toLocaleDateString("es-PE")}
-                        </p>
-                      </div>
-
-                      <div className="md:col-span-2 lg:col-span-1">
-                        <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
-                          Monto Original
-                        </label>
-                        <p className="text-xl font-bold text-primary">
-                          {new Intl.NumberFormat("es-PE", {
-                            style: "currency",
-                            currency: "PEN",
-                          }).format(
-                            parseFloat(
-                              String(finalAffectedInvoice.total_payable || 0)
-                            )
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Enhanced Form Section - Charge Information */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3">
-                    Información del Cargo
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Serie ND
+                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                        Número de Documento
                       </label>
-                      <Controller
-                        name="series"
-                        control={control}
-                        render={({ field }) => (
+                      <p className="text-[18px] font-semibold text-[#202020]">
+                        {finalAffectedInvoice.series}-{String(finalAffectedInvoice.number).padStart(8, "0")}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                        Cliente
+                      </label>
+                      <p className="text-[14px] font-medium text-[#202020]">
+                        {finalAffectedInvoice.client_name}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                        Fecha de Emisión
+                      </label>
+                      <p className="text-[14px] text-[#202020]">
+                        {new Date(finalAffectedInvoice.issue_date).toLocaleDateString("es-PE")}
+                      </p>
+                    </div>
+
+                    <div className="md:col-span-2 lg:col-span-1">
+                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                        Monto Original
+                      </label>
+                      <p className="text-[24px] font-semibold text-[#1F4690]">
+                        {new Intl.NumberFormat("es-PE", {
+                          style: "currency",
+                          currency: "PEN",
+                        }).format(
+                          parseFloat(String(finalAffectedInvoice.total_payable || 0))
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sección de información del cargo */}
+              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+                <h2 className="text-[18px] font-medium text-[#202020] mb-4 pb-3 border-b border-[#f0f0f0]">
+                  Información del Cargo
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                      Serie ND
+                    </label>
+                    <Controller
+                      name="series"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="relative">
                           <select
                             {...field}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
-                            disabled={
-                              isLoadingSeries ||
-                              availableDebitNoteSeries.length === 0
-                            }
+                            className="peer w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
+                            disabled={isLoadingSeries || availableDebitNoteSeries.length === 0}
                           >
                             {availableDebitNoteSeries.length === 0 ? (
-                              <option value="">
-                                No hay series disponibles
-                              </option>
+                              <option value="">No hay series disponibles</option>
                             ) : (
                               availableDebitNoteSeries.map((series) => (
-                                <option
-                                  key={series.id}
-                                  value={series.series_code}
-                                >
+                                <option key={series.id} value={series.series_code}>
                                   {series.series_code}
-                                  {series.branch_office?.name
-                                    ? ` - ${series.branch_office.name}`
-                                    : ""}
+                                  {series.branch_office?.name ? ` - ${series.branch_office.name}` : ""}
                                 </option>
                               ))
                             )}
                           </select>
-                        )}
-                      />
-                      {errors.series && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {errors.series.message}
-                        </p>
+                          <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                        </div>
                       )}
-                    </div>
+                    />
+                    {errors.series && (
+                      <p className="mt-1 text-[13px] text-[#cf1322]">{errors.series.message}</p>
+                    )}
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Motivo
-                      </label>
-                      <Controller
-                        name="debit_note_type_code"
-                        control={control}
-                        render={({ field }) => (
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                      Motivo
+                    </label>
+                    <Controller
+                      name="debit_note_type_code"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="relative">
                           <select
                             {...field}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors"
+                            className="peer w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
                           >
                             {DEBIT_NOTE_REASONS.map((r) => (
-                              <option key={r.code} value={r.code}>
-                                {r.description}
-                              </option>
+                              <option key={r.code} value={r.code}>{r.description}</option>
                             ))}
                           </select>
-                        )}
-                      />
-                    </div>
+                          <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                        </div>
+                      )}
+                    />
+                  </div>
 
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Descripción / Sustento
-                      </label>
-                      <Controller
-                        name="reason"
-                        control={control}
-                        render={({ field }) => (
-                          <textarea
-                            {...field}
-                            rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary transition-colors resize-none"
-                            placeholder="Describa el motivo del cargo adicional..."
-                          />
-                        )}
-                      />
-                    </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                      Descripción / Sustento
+                    </label>
+                    <Controller
+                      name="reason"
+                      control={control}
+                      render={({ field }) => (
+                        <textarea
+                          {...field}
+                          rows={3}
+                          className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
+                          placeholder="Describa el motivo del cargo adicional..."
+                        />
+                      )}
+                    />
+                  </div>
 
-                    <div className="md:col-span-2">
-                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <p className="text-sm text-gray-600">
-                          Precio sin IGV (región amazónica exonerada)
-                        </p>
-                      </div>
+                  <div className="md:col-span-2">
+                    <div className="bg-[#f5f5f5] rounded-[12px] p-4 border border-[#e8e8e8]">
+                      <p className="text-[14px] text-[#4d4d4d]">
+                        Precio sin IGV (región amazónica exonerada)
+                      </p>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Enhanced Items Section */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-6 border-b border-gray-200 pb-3">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Cargos Adicionales a Incluir
-                    </h2>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        append({
-                          ...DEFAULT_ITEM,
-                          tax_category_code: "20",
-                        });
-                      }}
-                      className="flex items-center space-x-2"
+              {/* Sección de cargos adicionales */}
+              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#f0f0f0]">
+                  <h2 className="text-[18px] font-medium text-[#202020]">
+                    Cargos Adicionales a Incluir
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      append({ ...DEFAULT_ITEM, tax_category_code: "20" });
+                    }}
+                    className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Agregar Cargo
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {fields.map((f, idx) => (
+                    <div
+                      key={f.id}
+                      className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5"
                     >
-                      <PlusIcon className="h-4 w-4" />
-                      <span>Agregar Cargo</span>
-                    </Button>
-                  </div>
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center justify-center w-6 h-6 bg-[#1F4690] text-white text-[12px] font-medium rounded-full">
+                            {idx + 1}
+                          </span>
+                          <h3 className="font-medium text-[14px] text-[#202020]">
+                            Cargo #{idx + 1}
+                          </h3>
+                        </div>
+                        {fields.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => remove(idx)}
+                            className="flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f5f5] hover:bg-[#e8e8e8] transition-colors"
+                            title="Eliminar cargo"
+                          >
+                            <TrashIcon className="h-4 w-4 text-[#cf1322]" />
+                          </button>
+                        )}
+                      </div>
 
-                  <div className="space-y-6">
-                    {fields.map((f, idx) => (
-                      <div
-                        key={f.id}
-                        className="border border-gray-200 rounded-lg p-6 bg-gray-50"
-                      >
-                        <div className="flex justify-between items-center mb-4">
-                          <div className="flex items-center space-x-2">
-                            <span className="inline-flex items-center justify-center w-6 h-6 bg-primary text-white text-xs font-medium rounded-full">
-                              {idx + 1}
-                            </span>
-                            <h3 className="font-medium text-gray-900">
-                              Cargo #{idx + 1}
-                            </h3>
-                          </div>
-                          {fields.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => remove(idx)}
-                              className="flex items-center space-x-1 text-red-600 border-red-300 hover:bg-red-50"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                              <span className="hidden sm:inline">Eliminar</span>
-                            </Button>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <div className="md:col-span-2 lg:col-span-2">
+                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                            Servicio <span className="text-[#cf1322]">*</span>
+                          </label>
+                          <Controller
+                            name={`items.${idx}.product_id`}
+                            control={control}
+                            render={({ field }) => (
+                              <Select
+                                {...field}
+                                options={serviceOptions}
+                                isLoading={isLoadingServices}
+                                placeholder="Seleccione un servicio..."
+                                noOptionsMessage={() => "No se encontraron servicios"}
+                                value={serviceOptions.find((opt) => opt.value === field.value) || null}
+                                onChange={(option) => {
+                                  field.onChange(option?.value || 0);
+                                  if (option?.service) {
+                                    const service = option.service;
+                                    const unitPrice = Number(service.sale_price);
+                                    setValue(`items.${idx}.unit_code`, service.unit_code, { shouldValidate: false });
+                                    setValue(`items.${idx}.unit_price`, unitPrice, { shouldValidate: false });
+                                    setValue(`items.${idx}.price_with_tax`, unitPrice, { shouldValidate: false });
+                                    setValue(`items.${idx}.price_type_code`, "01", { shouldValidate: false });
+                                    setValue(`items.${idx}.tax_category_code`, "20", { shouldValidate: false });
+                                  }
+                                }}
+                                className="react-select-container"
+                                classNamePrefix="react-select"
+                              />
+                            )}
+                          />
+                          {(!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0) && (
+                            <p className="mt-2 text-[13px] text-[#4d4d4d] bg-[#f5f5f5] p-2.5 rounded-[12px] border border-[#e8e8e8]">
+                              Selecciona un servicio para habilitar los campos de cantidad y precios
+                            </p>
                           )}
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                          <div className="md:col-span-2 lg:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Servicio <span className="text-red-500">*</span>
-                            </label>
-                            <Controller
-                              name={`items.${idx}.product_id`}
-                              control={control}
-                              render={({ field }) => (
-                                <Select
-                                  {...field}
-                                  options={serviceOptions}
-                                  isLoading={isLoadingServices}
-                                  placeholder="Seleccione un servicio..."
-                                  noOptionsMessage={() =>
-                                    "No se encontraron servicios"
-                                  }
-                                  value={
-                                    serviceOptions.find(
-                                      (opt) => opt.value === field.value
-                                    ) || null
-                                  }
-                                  onChange={(option) => {
-                                    field.onChange(option?.value || 0);
-                                    // Auto-poblar otros campos cuando se selecciona un servicio
-                                    if (option?.service) {
-                                      const service = option.service;
-                                      const unitPrice = Number(
-                                        service.sale_price
-                                      );
-                                      // Usar setValue con shouldValidate: false para evitar re-renders innecesarios
-                                      setValue(
-                                        `items.${idx}.unit_code`,
-                                        service.unit_code,
-                                        { shouldValidate: false }
-                                      );
-                                      setValue(
-                                        `items.${idx}.unit_price`,
-                                        unitPrice,
-                                        { shouldValidate: false }
-                                      );
-                                      setValue(
-                                        `items.${idx}.price_with_tax`,
-                                        unitPrice,
-                                        { shouldValidate: false }
-                                      );
-                                      setValue(
-                                        `items.${idx}.price_type_code`,
-                                        "01",
-                                        { shouldValidate: false }
-                                      );
-                                      setValue(
-                                        `items.${idx}.tax_category_code`,
-                                        "20",
-                                        { shouldValidate: false }
-                                      ); // Siempre exonerado
-                                    }
-                                  }}
-                                  className="react-select-container"
-                                  classNamePrefix="react-select"
-                                />
-                              )}
-                            />
-                            {(!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0) && (
-                              <p className="mt-1 text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                                Selecciona un servicio para habilitar los campos de cantidad y precios
-                              </p>
-                            )}
-                          </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Cantidad <span className="text-red-500">*</span>
-                            </label>
-                            <Controller
-                              name={`items.${idx}.quantity`}
-                              control={control}
-                              render={({ field }) => (
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                            Cantidad <span className="text-[#cf1322]">*</span>
+                          </label>
+                          <Controller
+                            name={`items.${idx}.quantity`}
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                type="number"
+                                step="0.01"
+                                disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
+                                className={`block w-full px-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] focus:outline-none transition-all ${
+                                  errors.items?.[idx]?.quantity
+                                    ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
+                                    : 'border-[#e8e8e8] focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
+                                } ${
+                                  (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
+                                    ? 'bg-[#f5f5f5] cursor-not-allowed'
+                                    : 'bg-[#f5f5f5]'
+                                }`}
+                                placeholder="1.00"
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
+                            )}
+                          />
+                          {errors.items?.[idx]?.quantity && (
+                            <p className="mt-1 text-[13px] text-[#cf1322]">{errors.items[idx].quantity.message}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                            Código Unidad <span className="text-[#cf1322]">*</span>
+                          </label>
+                          <Controller
+                            name={`items.${idx}.unit_code`}
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
+                                className={`block w-full px-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] focus:outline-none transition-all ${
+                                  errors.items?.[idx]?.unit_code
+                                    ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
+                                    : 'border-[#e8e8e8] focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
+                                } ${
+                                  (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
+                                    ? 'bg-[#f5f5f5] cursor-not-allowed'
+                                    : 'bg-[#f5f5f5]'
+                                }`}
+                                placeholder="ZZ"
+                              />
+                            )}
+                          />
+                          {errors.items?.[idx]?.unit_code && (
+                            <p className="mt-1 text-[13px] text-[#cf1322]">{errors.items[idx].unit_code.message}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                            Precio Unitario <span className="text-[#cf1322]">*</span>
+                          </label>
+                          <Controller
+                            name={`items.${idx}.unit_price`}
+                            control={control}
+                            render={({ field }) => (
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#828282] text-[14px]">S/</span>
                                 <input
                                   {...field}
                                   type="number"
                                   step="0.01"
                                   disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
-                                  className={`w-full px-3 py-2 border rounded-md shadow-sm transition-colors ${
-                                    errors.items?.[idx]?.quantity
-                                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                                      : 'border-gray-300 focus:ring-primary focus:border-primary'
+                                  className={`block w-full pl-8 pr-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] focus:outline-none transition-all ${
+                                    errors.items?.[idx]?.unit_price
+                                      ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
+                                      : 'border-[#e8e8e8] focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
                                   } ${
                                     (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
-                                      ? 'bg-gray-100 cursor-not-allowed'
-                                      : 'bg-white'
+                                      ? 'bg-[#f5f5f5] cursor-not-allowed'
+                                      : 'bg-[#f5f5f5]'
                                   }`}
-                                  placeholder="1.00"
+                                  placeholder="0.00"
                                   onChange={(e) => {
-                                    field.onChange(parseFloat(e.target.value) || 0);
+                                    const unitPrice = parseFloat(e.target.value) || 0;
+                                    field.onChange(unitPrice);
+                                    setValue(`items.${idx}.price_with_tax`, unitPrice, { shouldValidate: false });
                                   }}
                                 />
-                              )}
-                            />
-                            {errors.items?.[idx]?.quantity && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {errors.items[idx].quantity.message}
-                              </p>
+                              </div>
                             )}
-                          </div>
+                          />
+                          {errors.items?.[idx]?.unit_price && (
+                            <p className="mt-1 text-[13px] text-[#cf1322]">{errors.items[idx].unit_price.message}</p>
+                          )}
+                        </div>
 
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Código Unidad <span className="text-red-500">*</span>
-                            </label>
-                            <Controller
-                              name={`items.${idx}.unit_code`}
-                              control={control}
-                              render={({ field }) => (
+                        <div>
+                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                            Precio Final <span className="text-[#cf1322]">*</span>
+                          </label>
+                          <Controller
+                            name={`items.${idx}.price_with_tax`}
+                            control={control}
+                            render={({ field }) => (
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#828282] text-[14px]">S/</span>
                                 <input
                                   {...field}
-                                  disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
-                                  className={`w-full px-3 py-2 border rounded-md shadow-sm transition-colors ${
-                                    errors.items?.[idx]?.unit_code
-                                      ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                                      : 'border-gray-300 focus:ring-primary focus:border-primary'
-                                  } ${
-                                    (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
-                                      ? 'bg-gray-100 cursor-not-allowed'
-                                      : 'bg-white'
+                                  type="number"
+                                  step="0.01"
+                                  readOnly
+                                  className={`block w-full pl-8 pr-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] bg-[#f5f5f5] cursor-not-allowed focus:outline-none ${
+                                    errors.items?.[idx]?.price_with_tax
+                                      ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
+                                      : 'border-[#e8e8e8]'
                                   }`}
-                                  placeholder="ZZ"
+                                  placeholder="0.00"
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                 />
-                              )}
-                            />
-                            {errors.items?.[idx]?.unit_code && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {errors.items[idx].unit_code.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Precio Unitario <span className="text-red-500">*</span>
-                            </label>
-                            <Controller
-                              name={`items.${idx}.unit_price`}
-                              control={control}
-                              render={({ field }) => (
-                                <div className="relative">
-                                  <span className="absolute left-3 top-2 text-gray-500 text-sm">
-                                    S/
-                                  </span>
-                                  <input
-                                    {...field}
-                                    type="number"
-                                    step="0.01"
-                                    disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
-                                    className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm transition-colors ${
-                                      errors.items?.[idx]?.unit_price
-                                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                                        : 'border-gray-300 focus:ring-primary focus:border-primary'
-                                    } ${
-                                      (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
-                                        ? 'bg-gray-100 cursor-not-allowed'
-                                        : 'bg-white'
-                                    }`}
-                                    placeholder="0.00"
-                                    onChange={(e) => {
-                                      const unitPrice =
-                                        parseFloat(e.target.value) || 0;
-                                      field.onChange(unitPrice);
-                                      // Actualizar automáticamente el precio final (sin IGV)
-                                      setValue(
-                                        `items.${idx}.price_with_tax`,
-                                        unitPrice,
-                                        { shouldValidate: false }
-                                      );
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            />
-                            {errors.items?.[idx]?.unit_price && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {errors.items[idx].unit_price.message}
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Precio Final <span className="text-red-500">*</span>
-                            </label>
-                            <Controller
-                              name={`items.${idx}.price_with_tax`}
-                              control={control}
-                              render={({ field }) => (
-                                <div className="relative">
-                                  <span className="absolute left-3 top-2 text-gray-500 text-sm">
-                                    S/
-                                  </span>
-                                  <input
-                                    {...field}
-                                    type="number"
-                                    step="0.01"
-                                    readOnly
-                                    className={`w-full pl-8 pr-3 py-2 border rounded-md shadow-sm transition-colors bg-gray-100 cursor-not-allowed ${
-                                      errors.items?.[idx]?.price_with_tax
-                                        ? 'border-red-500 focus:ring-red-500 focus:border-red-500'
-                                        : 'border-gray-300 focus:ring-primary focus:border-primary'
-                                    }`}
-                                    placeholder="0.00"
-                                    onChange={(e) => {
-                                      field.onChange(parseFloat(e.target.value) || 0);
-                                    }}
-                                  />
-                                </div>
-                              )}
-                            />
-                            {errors.items?.[idx]?.price_with_tax && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {errors.items[idx].price_with_tax.message}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Campos ocultos - se manejan automáticamente */}
-                          <Controller
-                            name={`items.${idx}.price_type_code`}
-                            control={control}
-                            render={({ field }) => (
-                              <input {...field} type="hidden" />
+                              </div>
                             )}
                           />
-
-                          <Controller
-                            name={`items.${idx}.tax_category_code`}
-                            control={control}
-                            render={({ field }) => (
-                              <input {...field} type="hidden" />
-                            )}
-                          />
+                          {errors.items?.[idx]?.price_with_tax && (
+                            <p className="mt-1 text-[13px] text-[#cf1322]">{errors.items[idx].price_with_tax.message}</p>
+                          )}
                         </div>
+
+                        <Controller
+                          name={`items.${idx}.price_type_code`}
+                          control={control}
+                          render={({ field }) => <input {...field} type="hidden" />}
+                        />
+                        <Controller
+                          name={`items.${idx}.tax_category_code`}
+                          control={control}
+                          render={({ field }) => <input {...field} type="hidden" />}
+                        />
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
+            </div>
 
-              {/* Right Column - Summary Panel and Information */}
-              <div className="space-y-6">
-                {/* Summary Panel - Sticky on Desktop */}
-                <div className="lg:sticky lg:top-8">
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-3">
-                      Resumen de Totales
-                    </h3>
+            {/* Columna derecha - Panel de resumen */}
+            <div className="space-y-6">
+              <div className="lg:sticky lg:top-8 space-y-6">
+                <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5 space-y-4">
+                  <h3 className="text-[18px] font-medium text-[#202020] pb-3 border-b border-[#f0f0f0]">
+                    Resumen de Totales
+                  </h3>
 
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">
-                          Monto Original
-                        </span>
-                        <span className="text-lg font-medium text-gray-900">
-                          {new Intl.NumberFormat("es-PE", {
-                            style: "currency",
-                            currency: "PEN",
-                          }).format(originalAmount)}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">
-                          Cargos Adicionales (Base)
-                        </span>
-                        <span className="text-lg font-medium text-gray-900">
-                          {new Intl.NumberFormat("es-PE", {
-                            style: "currency",
-                            currency: "PEN",
-                          }).format(baseAmount)}
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">
-                          Total Cargos Adicionales
-                        </span>
-                        <span className="text-xl font-semibold text-primary">
-                          {new Intl.NumberFormat("es-PE", {
-                            style: "currency",
-                            currency: "PEN",
-                          }).format(additionalTotal)}
-                        </span>
-                      </div>
-
-                      <div className="border-t border-gray-200 pt-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-base font-medium text-gray-900">
-                            Nuevo Monto Total
-                          </span>
-                          <span className="text-2xl font-bold text-primary">
-                            {new Intl.NumberFormat("es-PE", {
-                              style: "currency",
-                              currency: "PEN",
-                            }).format(newTotal)}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1 text-right">
-                          Sin IGV (exonerado)
-                        </p>
-                      </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[14px] text-[#4d4d4d]">Monto Original</span>
+                      <span className="text-[14px] font-medium text-[#202020]">
+                        {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(originalAmount)}
+                      </span>
                     </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => navigate("/accounting/debit-notes")}
-                        className="flex-1"
-                      >
-                        Cancelar
-                      </Button>
-                      <Button
-                        type="submit"
-                        isLoading={isPending}
-                        className="flex-1"
-                      >
-                        Generar Nota de Débito
-                      </Button>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[14px] text-[#4d4d4d]">Cargos Adicionales (Base)</span>
+                      <span className="text-[14px] font-medium text-[#202020]">
+                        {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(baseAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[14px] text-[#4d4d4d]">Total Cargos Adicionales</span>
+                      <span className="text-[18px] font-semibold text-[#1F4690]">
+                        {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(additionalTotal)}
+                      </span>
+                    </div>
+                    <div className="border-t border-[#f0f0f0] pt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[14px] font-medium text-[#202020]">Nuevo Monto Total</span>
+                        <span className="text-[24px] font-bold text-[#1F4690]">
+                          {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(newTotal)}
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-[#828282] mt-1 text-right">Sin IGV (exonerado)</p>
                     </div>
                   </div>
 
-                  {/* Information Panel */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-                    <h4 className="text-sm font-medium text-blue-900 mb-2">
-                      Información Importante
-                    </h4>
-                    <div className="text-xs text-blue-800 space-y-1">
-                      <p>• Las notas de débito aumentan el valor de la deuda</p>
-                      <p>• Se enviarán a SUNAT automáticamente</p>
-                      <p>• Los precios son sin IGV (exonerados)</p>
-                    </div>
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#f0f0f0]">
+                    <button
+                      type="button"
+                      onClick={() => navigate("/accounting/debit-notes")}
+                      className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex-1"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isPending}
+                      className="rounded-full px-5 py-2.5 bg-[#1F4690] hover:bg-[#163672] text-white text-[14px] font-medium flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isPending ? 'Generando...' : 'Generar Nota de Débito'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+                  <h4 className="text-[15px] font-medium text-[#202020] mb-2">
+                    Información Importante
+                  </h4>
+                  <div className="text-[13px] text-[#4d4d4d] space-y-1">
+                    <p>• Las notas de débito aumentan el valor de la deuda</p>
+                    <p>• Se enviarán a SUNAT automáticamente</p>
+                    <p>• Los precios son sin IGV (exonerados)</p>
                   </div>
                 </div>
               </div>
             </div>
-          </form>
-        )}
-      </div>
+          </div>
+        </form>
+      )}
 
       {/* Modal de confirmación */}
       {showConfirmModal && preparedPayload && (
@@ -1196,35 +1047,34 @@ export const DebitNoteFormPage: React.FC = () => {
           title="Confirmar generación de Nota de Débito"
         >
           <div className="space-y-4">
-            <p>
+            <p className="text-[14px] text-[#4d4d4d]">
               Se generará una Nota de Débito por{" "}
-              <strong>{formattedAdditionalTotal}</strong>
+              <strong className="text-[#202020]">{formattedAdditionalTotal}</strong>
               {affectedSeriesNumber
                 ? ` asociada al comprobante ${affectedSeriesNumber}.`
                 : "."}
             </p>
-            <div className="bg-gray-50 p-3 rounded text-sm">
+            <div className="bg-[#f5f5f5] p-3 rounded-[12px] text-[14px] text-[#4d4d4d]">
               <p>
-                <strong>Categoría de impuesto:</strong> Exonerado (20)
+                <strong className="text-[#202020]">Categoría de impuesto:</strong> Exonerado (20)
               </p>
             </div>
-            <div className="flex justify-end space-x-3">
-              <Button
+            <div className="flex justify-end gap-3 pt-2">
+              <button
                 type="button"
-                variant="outline"
                 onClick={() => setShowConfirmModal(false)}
+                className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
               >
                 Cancelar
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                onClick={() => {
-                  confirmCreate();
-                }}
-                isLoading={isPending}
+                onClick={confirmCreate}
+                disabled={isPending}
+                className="rounded-full px-5 py-2.5 bg-[#1F4690] hover:bg-[#163672] text-white text-[14px] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Confirmar y Enviar
-              </Button>
+                {isPending ? 'Enviando...' : 'Confirmar y Enviar'}
+              </button>
             </div>
           </div>
         </Modal>

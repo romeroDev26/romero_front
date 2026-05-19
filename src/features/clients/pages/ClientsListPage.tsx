@@ -298,26 +298,35 @@ export const ClientsListPage: React.FC = () => {
 
       {/* Filtros y búsqueda */}
       <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-        <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className="flex flex-col lg:flex-row gap-4 items-end">
+          {/* Campo de búsqueda de cliente */}
           <div className="relative flex-1 min-w-0 w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-[#828282]" />
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+              Búsqueda de cliente
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-[#828282]" />
+              </div>
+              <input
+                type="text"
+                className="pl-10 block w-full min-w-0 px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
+                placeholder="Buscar por nombre, documento, email, teléfono o dirección..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-            <input
-              type="text"
-              className="pl-10 block w-full min-w-0 px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
-              placeholder="Buscar por nombre, documento, email, teléfono o dirección..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-center w-full lg:w-auto">
+          {/* Fila de filtros: Documento, Estado y País */}
+          <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-end w-full lg:w-auto">
             <div className="relative w-full sm:w-auto">
-              <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Documento</label>
+              <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                Documento
+              </label>
               <div className="relative">
                 <select
-                  className="w-full sm:w-auto appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all relative z-20 min-w-[200px] pr-8"
+                  className="peer w-full sm:w-auto appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all min-w-[200px] pr-10"
                   value={filterDocType}
                   onChange={(e) => setFilterDocType(e.target.value as DocType | 'ALL')}
                 >
@@ -328,15 +337,17 @@ export const ClientsListPage: React.FC = () => {
                   <option value="7">Pasaporte</option>
                   <option value="0">Otros</option>
                 </select>
-                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] -rotate-90 pointer-events-none z-30" />
+                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
               </div>
             </div>
 
             <div className="relative w-full sm:w-auto">
-              <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Estado</label>
+              <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                Estado
+              </label>
               <div className="relative">
                 <select
-                  className="w-full sm:w-auto appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all relative z-20 min-w-[160px] pr-8"
+                  className="peer w-full sm:w-auto appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all min-w-[160px] pr-10"
                   value={filterActive}
                   onChange={(e) => setFilterActive(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
                 >
@@ -344,16 +355,18 @@ export const ClientsListPage: React.FC = () => {
                   <option value="ACTIVE">Activos</option>
                   <option value="INACTIVE">Inactivos</option>
                 </select>
-                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] -rotate-90 pointer-events-none z-30" />
+                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
               </div>
             </div>
 
             {uniqueCountries.length > 0 && (
               <div className="relative w-full sm:w-auto">
-                <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">País</label>
+                <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                  País
+                </label>
                 <div className="relative">
                   <select
-                    className="w-full sm:w-auto appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all relative z-20 min-w-[160px] pr-8"
+                    className="peer w-full sm:w-auto appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all min-w-[160px] pr-10"
                     value={filterCountry}
                     onChange={(e) => setFilterCountry(e.target.value)}
                   >
@@ -364,7 +377,7 @@ export const ClientsListPage: React.FC = () => {
                       </option>
                     ))}
                   </select>
-                  <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] -rotate-90 pointer-events-none z-30" />
+                  <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
                 </div>
               </div>
             )}

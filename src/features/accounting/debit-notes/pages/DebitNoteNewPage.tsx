@@ -7,7 +7,7 @@ import {
   ArrowLeftIcon,
   CreditCardIcon,
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../../components/common/Button';
+import { Spinner } from '../../../../components/common/Spinner';
 import { useVoidableInvoices } from '../../credit-notes/hooks/useCreditNotes';
 import { VoidableInvoice } from '../../types';
 
@@ -83,37 +83,46 @@ export const DebitNoteNewPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/accounting/debit-notes')}
-            className="mr-4"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-          </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+        <div className="flex items-start gap-4">
+          <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#1F4690]/10">
+            <CreditCardIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
+          </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Nueva Nota de Débito</h1>
-            <p className="text-gray-600">Selecciona la factura para agregar cargos adicionales</p>
+            <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+              Nueva Nota de Débito
+            </h1>
+            <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+              Selecciona la factura para agregar cargos adicionales
+            </p>
           </div>
         </div>
+        <button
+          onClick={() => navigate('/accounting/debit-notes')}
+          className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+        >
+          <ArrowLeftIcon className="h-4 w-4 inline mr-2 -mt-0.5" />
+          Volver
+        </button>
       </div>
 
       {/* Buscador */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
         <div className="flex items-center space-x-4">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
               Buscar factura
             </label>
             <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <MagnifyingGlassIcon className="h-5 w-5 text-[#828282]" />
+              </div>
               <input
                 type="text"
                 placeholder="Buscar por serie, número o cliente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="pl-10 block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
               />
             </div>
           </div>
@@ -121,47 +130,47 @@ export const DebitNoteNewPage: React.FC = () => {
       </div>
 
       {/* Lista de Facturas */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+        <div className="px-4 py-4 lg:px-5 border-b border-[#f0f0f0]">
+          <h2 className="text-[15px] font-medium text-[#202020]">
             Facturas Disponibles para Agregar Cargos
           </h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-[13px] text-[#4d4d4d] mt-1">
             Solo se muestran facturas que pueden recibir cargos adicionales
           </p>
         </div>
 
         {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Cargando facturas...</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Spinner size="md" />
+            <p className="text-[14px] text-[#828282]">Cargando facturas...</p>
           </div>
         ) : filteredInvoices.length === 0 ? (
           <div className="p-8 text-center">
             {voidableInvoices?.length === 0 ? (
               <div>
-                <CreditCardIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <CreditCardIcon className="h-12 w-12 text-[#828282] mx-auto mb-4" />
+                <h3 className="text-[15px] font-medium text-[#202020] mb-2">
                   No hay facturas disponibles
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-[14px] text-[#4d4d4d]">
                   No se encontraron facturas disponibles para generar notas de débito.
                 </p>
               </div>
             ) : (
               <div>
-                <MagnifyingGlassIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <MagnifyingGlassIcon className="h-12 w-12 text-[#828282] mx-auto mb-4" />
+                <h3 className="text-[15px] font-medium text-[#202020] mb-2">
                   No se encontraron resultados
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-[14px] text-[#4d4d4d]">
                   No hay facturas que coincidan con tu búsqueda.
                 </p>
               </div>
             )}
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-[#f0f0f0]">
             {filteredInvoices.map((invoice) => {
               const isCancelled = invoice.business_status === 'CANCELLED';
               const isIncreased = invoice.business_status === 'INCREASED';
@@ -170,58 +179,61 @@ export const DebitNoteNewPage: React.FC = () => {
               return (
                 <div
                   key={invoice.id}
-                  className={`p-6 transition-colors ${
+                  className={`p-4 ${
                     isDisabled 
-                      ? 'bg-gray-100 cursor-not-allowed opacity-60' 
-                      : 'hover:bg-gray-50 cursor-pointer'
+                      ? 'bg-[#f5f5f5] opacity-60 cursor-not-allowed' 
+                      : 'hover:bg-[#fafafa]/60 transition-colors cursor-pointer'
                   }`}
                   onClick={() => !isDisabled && handleSelectInvoice(invoice)}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <div className={`text-sm font-medium ${isDisabled ? 'text-gray-500' : 'text-gray-900'}`}>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+                        <div className="min-w-0">
+                          <div className={`text-[14px] font-medium ${isDisabled ? 'text-[#828282]' : 'text-[#202020]'}`}>
                             {invoice.series}-{String(invoice.number).padStart(8, '0')}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-[13px] text-[#828282]">
                             {invoice.document_type_code === '01' ? 'Factura' : 'Boleta'}
                             {isCancelled && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <span className="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium bg-[#f5f5f5] text-[#cf1322]">
                                 CANCELADO
                               </span>
                             )}
                             {isIncreased && (
-                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <span className="ml-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-[12px] font-medium bg-[#f5f5f5] text-[#f5a623]">
                                 AUMENTADO
                               </span>
                             )}
                           </div>
                         </div>
-                        <div className="flex-1">
-                          <div className={`text-sm font-medium ${isDisabled ? 'text-gray-500' : 'text-gray-900'}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className={`text-[14px] font-medium ${isDisabled ? 'text-[#828282]' : 'text-[#202020]'}`}>
                             {invoice.client_name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-[13px] text-[#828282]">
                             Emitida el {formatDate(invoice.issue_date)}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className={`text-sm font-medium ${isDisabled ? 'text-gray-500' : 'text-gray-900'}`}>
+                        <div className="text-left sm:text-right min-w-[100px]">
+                          <div className={`text-[14px] font-medium ${isDisabled ? 'text-[#828282]' : 'text-[#202020]'}`}>
                             {formatCurrency(invoice.total_payable)}
                           </div>
-                          <div className="text-sm text-gray-500">Total</div>
+                          <div className="text-[13px] text-[#828282]">Total</div>
                         </div>
                       </div>
                     </div>
-                    <div className="ml-6">
-                      <Button 
-                        size="sm" 
-                        className={`bg-orange-600 hover:bg-orange-700 ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    <div className="shrink-0">
+                      <button 
+                        className={`rounded-full px-5 py-2.5 text-[14px] font-medium ${isDisabled ? 'bg-[#f5f5f5] text-[#828282] cursor-not-allowed' : 'bg-[#1F4690] hover:bg-[#163672] text-white'}`}
                         disabled={isDisabled}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isDisabled) handleSelectInvoice(invoice);
+                        }}
                       >
                         {isDisabled ? 'No disponible' : 'Agregar Cargos'}
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -232,22 +244,20 @@ export const DebitNoteNewPage: React.FC = () => {
       </div>
 
       {/* Información adicional */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <div className="flex">
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-orange-800">
-              Información sobre Notas de Débito
-            </h3>
-            <div className="mt-2 text-sm text-orange-700">
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Las notas de débito se utilizan para aplicar cargos adicionales a una factura existente</li>
-                <li>Las facturas marcadas como "CANCELADO" no pueden recibir cargos adicionales</li>
-                <li>Las facturas marcadas como "AUMENTADO" ya tienen una nota de débito aplicada y no pueden recibir más cargos</li>
-                <li>Puedes incluir intereses por mora, penalidades, recargos u otros conceptos no incluidos inicialmente</li>
-                <li>El documento será enviado automáticamente a SUNAT para su procesamiento</li>
-                <li>Podrás descargar el PDF una vez que SUNAT lo procese</li>
-              </ul>
-            </div>
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+        <div>
+          <h3 className="text-[14px] font-medium text-[#202020]">
+            Información sobre Notas de Débito
+          </h3>
+          <div className="mt-2 text-[13px] text-[#4d4d4d]">
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Las notas de débito se utilizan para aplicar cargos adicionales a una factura existente</li>
+              <li>Las facturas marcadas como "CANCELADO" no pueden recibir cargos adicionales</li>
+              <li>Las facturas marcadas como "AUMENTADO" ya tienen una nota de débito aplicada y no pueden recibir más cargos</li>
+              <li>Puedes incluir intereses por mora, penalidades, recargos u otros conceptos no incluidos inicialmente</li>
+              <li>El documento será enviado automáticamente a SUNAT para su procesamiento</li>
+              <li>Podrás descargar el PDF una vez que SUNAT lo procese</li>
+            </ul>
           </div>
         </div>
       </div>

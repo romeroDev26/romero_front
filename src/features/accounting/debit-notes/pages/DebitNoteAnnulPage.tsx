@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/utils/sileo-toast';
 import { useQuery } from '@tanstack/react-query';
+import { ReceiptRefundIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 import { Button } from '../../../../components/common/Button';
 import { useAnnulDebitNote } from '../hooks/useDebitNotes';
@@ -88,11 +89,9 @@ export const DebitNoteAnnulPage: React.FC = () => {
       navigate('/accounting/debit-notes');
     }, [navigate]);
     return (
-      <div className="p-6 bg-gray-50">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-yellow-800">Redirigiendo al listado...</p>
-          </div>
+      <div className="space-y-6">
+        <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+          <p className="text-[13px] text-[#4d4d4d]">Redirigiendo al listado...</p>
         </div>
       </div>
     );
@@ -118,69 +117,83 @@ export const DebitNoteAnnulPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50">
-      <div className="max-w-2xl mx-auto space-y-4">
-        {/* Alerta informativa sobre anulación */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-amber-800">
-                Anulación mediante Nota de Crédito
-              </h3>
-              <div className="mt-2 text-sm text-amber-700">
-                <p>
-                  Según normativa SUNAT, <strong>una nota de débito se anula generando una nota de crédito</strong> que revierte el cargo adicional.
-                </p>
-                <p className="mt-2">
-                  La serie de la nota de crédito debe coincidir con la serie de la nota de débito a anular.
-                </p>
-              </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start gap-4">
+        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#1F4690]/10">
+          <ReceiptRefundIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
+        </div>
+        <div>
+          <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            Anular Nota de Débito
+          </h1>
+          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+            Genera una nota de crédito para anular la nota de débito seleccionada
+          </p>
+        </div>
+      </div>
+
+      {/* Alerta informativa sobre anulación */}
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-[#1F4690]" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-[15px] font-medium text-[#202020]">
+              Anulación mediante Nota de Crédito
+            </h3>
+            <div className="mt-2 text-[13px] text-[#4d4d4d]">
+              <p>
+                Según normativa SUNAT, <strong className="text-[#202020]">una nota de débito se anula generando una nota de crédito</strong> que revierte el cargo adicional.
+              </p>
+              <p className="mt-2">
+                La serie de la nota de crédito debe coincidir con la serie de la nota de débito a anular.
+              </p>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Anular Nota de Débito
-          </h1>
-          <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <div className="font-medium text-lg text-orange-900 mb-2">
-              {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
-            </div>
-            <div className="text-sm text-gray-700 space-y-1">
-              {debitNote.client && (
-                <>
-                  <div>Cliente: <span className="font-medium">{debitNote.client.name}</span></div>
-                  <div>Documento: <span className="font-medium">{debitNote.client.doc_number}</span></div>
-                </>
-              )}
-              <div>Motivo original: <span className="font-medium">{debitNote.reason}</span></div>
-              <div>Total: <span className="font-medium">S/ {debitNote.total_payable}</span></div>
-            </div>
-          </div>
+      {/* Card del documento seleccionado */}
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+        <div className="text-[15px] font-medium text-[#202020] mb-2">
+          {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
+        </div>
+        <div className="text-[13px] text-[#4d4d4d] space-y-1">
+          {debitNote.client && (
+            <>
+              <div>Cliente: <span className="font-medium text-[#202020]">{debitNote.client.name}</span></div>
+              <div>Documento: <span className="font-medium text-[#202020]">{debitNote.client.doc_number}</span></div>
+            </>
+          )}
+          <div>Motivo original: <span className="font-medium text-[#202020]">{debitNote.reason}</span></div>
+          <div>Total: <span className="font-medium text-[#202020]">S/ {debitNote.total_payable}</span></div>
+        </div>
+      </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Serie de la Nota de Crédito*
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Debe coincidir con la serie de la nota de débito: <strong>{debitNote.series}</strong>
-              </p>
-              {isLoadingSeries ? (
-                <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100">
-                  Cargando series...
-                </div>
-              ) : availableCreditNoteSeries.length > 0 ? (
+      {/* Formulario */}
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div>
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+              Serie de la Nota de Crédito*
+            </label>
+            <p className="text-[13px] text-[#828282] mb-2">
+              Debe coincidir con la serie de la nota de débito: <strong className="text-[#202020]">{debitNote.series}</strong>
+            </p>
+            {isLoadingSeries ? (
+              <div className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#828282]">
+                Cargando series...
+              </div>
+            ) : availableCreditNoteSeries.length > 0 ? (
+              <div className="relative">
                 <select
                   value={selectedCreditNoteSeries}
                   onChange={(e) => handleCreditNoteSeriesChange(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                  className="peer block w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
                 >
                   {availableCreditNoteSeries.map((series) => (
                     <option key={series.id} value={series.series_code}>
@@ -188,51 +201,53 @@ export const DebitNoteAnnulPage: React.FC = () => {
                     </option>
                   ))}
                 </select>
-              ) : (
-                <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 text-red-600">
-                  No hay series de notas de crédito disponibles para esta sucursal
-                </div>
+                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+              </div>
+            ) : (
+              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+                <p className="text-[13px] text-[#cf1322]">No hay series de notas de crédito disponibles para esta sucursal</p>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+              Motivo de la Anulación*
+            </label>
+            <Controller
+              name="reason"
+              control={control}
+              render={({ field }) => (
+                <textarea
+                  {...field}
+                  rows={4}
+                  className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
+                  placeholder="Ej: Anulación de nota de débito por corrección en facturación..."
+                />
               )}
-            </div>
+            />
+            {errors.reason && <p className="mt-1 text-[13px] text-[#cf1322]">{errors.reason.message}</p>}
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Motivo de la Anulación*
-              </label>
-              <Controller
-                name="reason"
-                control={control}
-                render={({ field }) => (
-                  <textarea
-                    {...field}
-                    rows={4}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Ej: Anulación de nota de débito por corrección en facturación..."
-                  />
-                )}
-              />
-              {errors.reason && <p className="text-sm text-red-600 mt-1">{errors.reason.message}</p>}
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-4 border-t">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => navigate('/accounting/debit-notes')}
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                isLoading={isPending}
-                disabled={!selectedCreditNoteSeries || availableCreditNoteSeries.length === 0}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Generar Nota de Crédito de Anulación
-              </Button>
-            </div>
-          </form>
-        </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#f0f0f0]">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => navigate('/accounting/debit-notes')}
+              className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              isLoading={isPending}
+              disabled={!selectedCreditNoteSeries || availableCreditNoteSeries.length === 0}
+              className="rounded-full px-5 py-2.5 bg-[#cf1322] hover:bg-[#a8101c] text-white text-[14px] font-medium"
+            >
+              Generar Nota de Crédito de Anulación
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

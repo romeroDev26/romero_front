@@ -7,7 +7,6 @@ import Select from 'react-select';
 import { Search } from 'lucide-react';
 
 import { Button } from '../../../components/common/Button';
-import { Input } from '../../../components/common/Input';
 import { Spinner } from '../../../components/common/Spinner';
 import { useProductsServicesData } from '../../fluvial/hooks/useProductsServicesData';
 import { useSunatData } from '../../fluvial/hooks/useSunatData';
@@ -34,46 +33,74 @@ const UNIT_OF_MEASURE_OPTIONS = [
   { code: 'LTR', name: 'Litro' },
 ];
 
-export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose, existingItem, defaultRecipient }) => {
+/* ── Tokens de diseño (DESIGN.md) ── */
+const COLORS = {
+  midnight: '#202020',
+  canvas: '#ffffff',
+  slateMist: '#efefef',
+  cloudWhisper: '#f5f5f5',
+  darkShale: '#4d4d4d',
+  silverAsh: '#828282',
+  lightPearl: '#e8e8e8',
+  sunset: '#ff682c',
+};
+
+const FONT = {
+  inter: "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  heading: "'Saira', 'Montserrat', ui-sans-serif, system-ui, sans-serif",
+};
+
+export const CargoItemForm: React.FC<CargoItemFormProps> = ({
+  onSubmit,
+  onClose,
+  existingItem,
+  defaultRecipient,
+}) => {
   const { data: allServices = [], isLoading: isLoadingServices } = useProductsServicesData({ is_active: true });
   const { queryDni, isQueryingDni, queryRuc, isQueryingRuc } = useSunatData();
   const cargoServicePrefillAppliedRef = useRef(false);
 
-  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<FormValues>({
     defaultValues: {
-  product: existingItem?.product || undefined,
-  quantity: existingItem?.quantity || 1,
-  description: existingItem?.description || '',
-  // Dejar el precio indefinido cuando no hay un ítem existente para forzar la entrada del usuario
-  price: existingItem?.price ?? undefined,
-      recipient: existingItem?.recipient || defaultRecipient || {
-        isSameAsSender: true,
-        name: '',
-        docType: SunatDocType.DNI,
-        docNumber: '',
-        phone: '',
-      },
+      product: existingItem?.product || undefined,
+      quantity: existingItem?.quantity || 1,
+      description: existingItem?.description || '',
+      price: existingItem?.price ?? undefined,
+      recipient:
+        existingItem?.recipient ||
+        defaultRecipient || {
+          isSameAsSender: true,
+          name: '',
+          docType: SunatDocType.DNI,
+          docNumber: '',
+          phone: '',
+        },
       unitOfMeasure: existingItem?.unitOfMeasure || 'ZZ',
-    }
+    },
   });
 
   const selectedProduct = watch('product');
   const isSameAsSender = watch('recipient.isSameAsSender');
   const recipientDocType = watch('recipient.docType');
 
-  const isFormLocked = !selectedProduct; // true mientras no se seleccione un servicio
+  const isFormLocked = !selectedProduct;
 
   const cargoServices = useMemo(() => {
-    if (!allServices || allServices.length === 0) {
-      return [];
-    }
+    if (!allServices || allServices.length === 0) return [];
 
-    const filtered = allServices.filter(service => {
+    const filtered = allServices.filter((service) => {
       const category = service.service_category?.toUpperCase() || '';
       return category.includes('ENCOMIENDA') || category.includes('CARGA');
     });
 
-    // Encomienda primero (servicio "uno" en la lista corta), luego carga; mismo criterio por id
     const rank = (service: (typeof filtered)[0]) => {
       const c = service.service_category?.toUpperCase() || '';
       if (c.includes('ENCOMIENDA')) return 0;
@@ -90,15 +117,12 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
 
   useEffect(() => {
     if (selectedProduct) {
-      // No rellenar automáticamente el precio al seleccionar un servicio.
-      // Sólo rellenamos la descripción cuando se crea un nuevo ítem.
       if (!existingItem) {
         setValue('description', selectedProduct.name);
       }
     }
   }, [selectedProduct, setValue, existingItem]);
 
-  // Nuevo ítem: preseleccionar el primer servicio listado (encomienda antes que carga). Una sola vez por montaje.
   useEffect(() => {
     if (existingItem) {
       cargoServicePrefillAppliedRef.current = false;
@@ -117,8 +141,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
       toast.error('Debe seleccionar un servicio.');
       return;
     }
-    
-    // Validación adicional para destinatario cuando no es el mismo remitente
+
     if (!data.recipient.isSameAsSender) {
       if (!data.recipient.name.trim()) {
         toast.error('El nombre del destinatario es obligatorio.');
@@ -136,11 +159,10 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
     });
   };
 
-  // Función para manejar la búsqueda del destinatario
   const handleRecipientSearch = async () => {
     const docType = getValues('recipient.docType');
     const docNumber = getValues('recipient.docNumber');
-    
+
     if (!docNumber.trim()) {
       toast.warning('Ingrese un número de documento para buscar.');
       return;
@@ -151,7 +173,6 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
         const data = await queryDni(docNumber);
         if (data) {
           setValue('recipient.name', data.nombreCompleto, { shouldValidate: true });
-          // Solo actualizar phone si está disponible en la respuesta
           if (data.phone) {
             setValue('recipient.phone', data.phone, { shouldValidate: true });
           }
@@ -161,7 +182,6 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
         const data = await queryRuc(docNumber);
         if (data) {
           setValue('recipient.name', data.razonSocial, { shouldValidate: true });
-          // Solo actualizar phone si está disponible en la respuesta
           if (data.phone) {
             setValue('recipient.phone', data.phone, { shouldValidate: true });
           }
@@ -171,243 +191,581 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({ onSubmit, onClose,
         toast.info('La búsqueda automática solo está disponible para DNI y RUC.');
       }
     } catch (error) {
-      // El hook useSunatData ya muestra un toast de error, no necesitamos hacer nada más aquí.
-      console.error("Error en la búsqueda del destinatario:", error);
+      console.error('Error en la búsqueda del destinatario:', error);
     }
   };
 
-  // CORRECCIÓN: Convertimos `sale_price` a número antes de usar `.toFixed()`
-  const productOptions = useMemo(() => {
-    // Mostrar solo el nombre del servicio en la lista (sin precio)
-    return cargoServices.map(service => ({
-      value: service,
-      label: service.name,
-    }));
-  }, [cargoServices]);
+  const productOptions = useMemo(
+    () =>
+      cargoServices.map((service) => ({
+        value: service,
+        label: service.name,
+      })),
+    [cargoServices]
+  );
 
-  const isRecipientSearchable = recipientDocType === SunatDocType.DNI || recipientDocType === SunatDocType.RUC;
+  const isRecipientSearchable =
+    recipientDocType === SunatDocType.DNI || recipientDocType === SunatDocType.RUC;
   const isQueryingRecipient = isQueryingDni || isQueryingRuc;
+
+  /* ── Estilos react-select alineados con DESIGN.md ── */
+  const selectStyles = {
+    control: (base: any, state: any) => ({
+      ...base,
+      borderRadius: 8,
+      borderColor: state.isFocused ? COLORS.midnight : COLORS.lightPearl,
+      boxShadow: state.isFocused ? `0 0 0 1px ${COLORS.midnight}` : 'none',
+      backgroundColor: isFormLocked ? COLORS.cloudWhisper : COLORS.canvas,
+      minHeight: 42,
+      fontFamily: FONT.inter,
+      fontSize: 15,
+      color: COLORS.midnight,
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        borderColor: COLORS.midnight,
+      },
+    }),
+    placeholder: (base: any) => ({
+      ...base,
+      color: COLORS.silverAsh,
+      fontFamily: FONT.inter,
+      fontSize: 15,
+    }),
+    singleValue: (base: any) => ({
+      ...base,
+      color: COLORS.midnight,
+      fontFamily: FONT.inter,
+      fontSize: 15,
+    }),
+    menu: (base: any) => ({
+      ...base,
+      borderRadius: 8,
+      border: `1px solid ${COLORS.lightPearl}`,
+      boxShadow: 'none',
+      fontFamily: FONT.inter,
+      fontSize: 15,
+      zIndex: 20,
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? COLORS.slateMist
+        : state.isFocused
+        ? COLORS.cloudWhisper
+        : COLORS.canvas,
+      color: COLORS.midnight,
+      fontFamily: FONT.inter,
+      fontSize: 15,
+      cursor: 'pointer',
+    }),
+    noOptionsMessage: (base: any) => ({
+      ...base,
+      color: COLORS.silverAsh,
+      fontFamily: FONT.inter,
+      fontSize: 14,
+    }),
+    loadingMessage: (base: any) => ({
+      ...base,
+      color: COLORS.silverAsh,
+      fontFamily: FONT.inter,
+      fontSize: 14,
+    }),
+  };
+
+  const inputClass = (hasError?: string, locked?: boolean) =>
+    `w-full rounded-lg border px-3 py-2.5 text-[15px] transition duration-200 outline-none ${FONT.inter} ` +
+    (hasError
+      ? 'border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500/20 '
+      : `border-[${COLORS.lightPearl}] focus:border-[${COLORS.midnight}] focus:ring-1 focus:ring-[${COLORS.midnight}]/10 `) +
+    (locked ? 'bg-[#f5f5f5] text-[#828282] cursor-not-allowed ' : 'bg-white text-[#202020] ');
+
+  const labelClass = `block text-sm font-medium mb-1.5 ${FONT.inter}`;
+
+  const sectionClass = `rounded-lg border border-[${COLORS.lightPearl}] bg-white p-5 space-y-5`;
 
   return (
     <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        {/* Sección de Servicio */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Servicio de Encomienda/Carga *
-          </label>
-          <Controller
-            name="product"
-            control={control}
-            rules={{ required: 'Debe seleccionar un servicio' }}
-            render={({ field }) => (
-              <Select
-                {...field}
-                options={productOptions}
-                isLoading={isLoadingServices}
-                placeholder="Busque y seleccione un servicio..."
-                noOptionsMessage={() => 'No se encontraron servicios de carga/encomienda'}
-                // CORRECCIÓN: Para mostrar el valor seleccionado correctamente
-                value={field.value ? productOptions.find(opt => opt.value.id === field.value.id) : null}
-                onChange={(option) => field.onChange(option?.value)}
-                className="react-select-container"
-                classNamePrefix="react-select"
-              />
-            )}
-          />
-          {errors.product && (
-            <p className="text-sm text-red-500 mt-1">{errors.product.message}</p>
-          )}
-          {isFormLocked && (
-            <p className="text-sm text-gray-500 mt-2">Seleccione un servicio para activar el resto del formulario.</p>
-          )}
+        {/* Encabezado */}
+        <div className="space-y-1">
+          <h2
+            className="font-medium tracking-tight"
+            style={{
+              fontFamily: FONT.heading,
+              fontSize: 18,
+              lineHeight: 1.25,
+              color: COLORS.midnight,
+            }}
+          >
+            {existingItem ? 'Editar ítem de encomienda' : 'Añadir ítem de encomienda'}
+          </h2>
+          <p
+            style={{
+              fontFamily: FONT.inter,
+              fontSize: 15,
+              lineHeight: 1.33,
+              color: COLORS.silverAsh,
+            }}
+          >
+            Complete los datos del servicio, cantidad, precio y destinatario.
+          </p>
         </div>
 
-        {/* Cantidad y Precio */}
-      <div className="grid grid-cols-2 gap-4">
+        {/* Sección Servicio */}
+        <div
+          className="rounded-lg border bg-white p-5 space-y-4"
+          style={{ borderColor: COLORS.lightPearl }}
+        >
           <div>
-            <Input
-              label="Cantidad *"
-              type="number"
-        {...register('quantity', { 
-                valueAsNumber: true, 
-                min: { value: 1, message: 'La cantidad debe ser al menos 1' },
-                required: 'La cantidad es obligatoria'
+            <label
+              className={labelClass}
+              style={{ color: COLORS.midnight }}
+            >
+              Servicio de Encomienda/Carga <span style={{ color: COLORS.sunset }}>*</span>
+            </label>
+            <Controller
+              name="product"
+              control={control}
+              rules={{ required: 'Debe seleccionar un servicio' }}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={productOptions}
+                  isLoading={isLoadingServices}
+                  isDisabled={false}
+                  placeholder="Busque y seleccione un servicio…"
+                  noOptionsMessage={() => 'No se encontraron servicios de carga/encomienda'}
+                  value={
+                    field.value
+                      ? productOptions.find((opt) => opt.value.id === field.value.id)
+                      : null
+                  }
+                  onChange={(option) => field.onChange(option?.value)}
+                  styles={selectStyles}
+                />
+              )}
+            />
+            {errors.product && (
+              <p
+                className="mt-1.5 text-sm"
+                style={{ color: '#d9534f', fontFamily: FONT.inter }}
+              >
+                {errors.product.message}
+              </p>
+            )}
+            {isFormLocked && (
+              <p
+                className="mt-2 text-sm"
+                style={{ color: COLORS.silverAsh, fontFamily: FONT.inter }}
+              >
+                Seleccione un servicio para activar el resto del formulario.
+              </p>
+            )}
+          </div>
+
+          {/* Cantidad y Precio */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <label
+                className={labelClass}
+                style={{ color: COLORS.midnight }}
+              >
+                Cantidad <span style={{ color: COLORS.sunset }}>*</span>
+              </label>
+              <input
+                type="number"
+                min={1}
+                step={1}
+                disabled={isFormLocked}
+                {...register('quantity', {
+                  valueAsNumber: true,
+                  min: { value: 1, message: 'La cantidad debe ser al menos 1' },
+                  required: 'La cantidad es obligatoria',
+                })}
+                className={inputClass(errors.quantity?.message, isFormLocked)}
+                style={{
+                  borderColor: errors.quantity ? '#fca5a5' : COLORS.lightPearl,
+                }}
+              />
+              {errors.quantity && (
+                <p
+                  className="mt-1.5 text-sm"
+                  style={{ color: '#d9534f', fontFamily: FONT.inter }}
+                >
+                  {errors.quantity.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                className={labelClass}
+                style={{ color: COLORS.midnight }}
+              >
+                Precio Unitario (S/) <span style={{ color: COLORS.sunset }}>*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                disabled={isFormLocked}
+                {...register('price', {
+                  valueAsNumber: true,
+                  required: 'El precio es obligatorio',
+                  min: { value: 0.01, message: 'El precio debe ser mayor que 0' },
+                })}
+                className={inputClass(errors.price?.message, isFormLocked)}
+                style={{
+                  borderColor: errors.price ? '#fca5a5' : COLORS.lightPearl,
+                }}
+              />
+              {errors.price && (
+                <p
+                  className="mt-1.5 text-sm"
+                  style={{ color: '#d9534f', fontFamily: FONT.inter }}
+                >
+                  {errors.price.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Unidad de Medida */}
+          <div>
+            <label
+              className={labelClass}
+              style={{ color: COLORS.midnight }}
+            >
+              Unidad de Medida <span style={{ color: COLORS.sunset }}>*</span>
+            </label>
+            <select
+              {...register('unitOfMeasure', {
+                required: 'La unidad de medida es obligatoria',
               })}
               disabled={isFormLocked}
-              className={isFormLocked ? 'bg-gray-100' : ''}
-              error={errors.quantity?.message}
-              min="1"
-              step="1"
-            />
+              className={inputClass(errors.unitOfMeasure?.message, isFormLocked)}
+              style={{
+                borderColor: errors.unitOfMeasure ? '#fca5a5' : COLORS.lightPearl,
+              }}
+            >
+              {UNIT_OF_MEASURE_OPTIONS.map((opt) => (
+                <option key={opt.code} value={opt.code} disabled={opt.code !== 'ZZ'}>
+                  {opt.name}
+                  {opt.code !== 'ZZ' ? ' — Deshabilitado temporalmente' : ''}
+                </option>
+              ))}
+            </select>
+            {errors.unitOfMeasure && (
+              <p
+                className="mt-1.5 text-sm"
+                style={{ color: '#d9534f', fontFamily: FONT.inter }}
+              >
+                {errors.unitOfMeasure.message}
+              </p>
+            )}
           </div>
+
+          {/* Descripción */}
           <div>
-            <Input
-              label="Precio Unitario (S/) *"
-              type="number"
-              step="0.01"
-        {...register('price', { 
-                valueAsNumber: true, 
-                // Precio obligatorio y mayor que 0
-                required: 'El precio es obligatorio',
-                min: { value: 0.01, message: 'El precio debe ser mayor que 0' },
+            <label
+              className={labelClass}
+              style={{ color: COLORS.midnight }}
+            >
+              Descripción del Contenido <span style={{ color: COLORS.sunset }}>*</span>
+            </label>
+            <textarea
+              {...register('description', {
+                required: 'La descripción es obligatoria',
               })}
-        error={errors.price?.message}
-        disabled={isFormLocked}
-              className={isFormLocked ? 'bg-gray-100' : ''}
-              />
+              rows={4}
+              disabled={isFormLocked}
+              placeholder="Ej: Repuestos de motor, ropa, electrodomésticos, etc."
+              className={`${inputClass(errors.description?.message, isFormLocked)} resize-y`}
+              style={{
+                borderColor: errors.description ? '#fca5a5' : COLORS.lightPearl,
+              }}
+            />
+            {errors.description && (
+              <p
+                className="mt-1.5 text-sm"
+                style={{ color: '#d9534f', fontFamily: FONT.inter }}
+              >
+                {errors.description.message}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Unidad de Medida */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Unidad de Medida *
-          </label>
-          <select
-            {...register('unitOfMeasure', { required: 'La unidad de medida es obligatoria' })}
-            className={`w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${isFormLocked ? 'bg-gray-100' : 'bg-white'}`}
-            disabled={isFormLocked}
-          >
-            {UNIT_OF_MEASURE_OPTIONS.map(opt => (
-              <option key={opt.code} value={opt.code} disabled={opt.code !== 'ZZ'}>
-                {opt.name}{opt.code !== 'ZZ' ? ' - Desabilitado temporalmente' : ''}
-              </option>
-            ))}
-          </select>
-          {errors.unitOfMeasure && (
-            <p className="text-sm text-red-500 mt-1">{errors.unitOfMeasure.message}</p>
-          )}
-        </div>
-
-        {/* Descripción */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Descripción del Contenido *
-          </label>
-          <textarea
-            {...register('description', { required: 'La descripción es obligatoria' })}
-            rows={4}
-            className={`w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y ${isFormLocked ? 'bg-gray-100' : 'bg-white'}`}
-            placeholder="Ej: Repuestos de motor, ropa, electrodomésticos, etc."
-            disabled={isFormLocked}
-          />
-          {errors.description && (
-            <p className="text-sm text-red-500 mt-1">{errors.description.message}</p>
-          )}
-        </div>
-        
-        {/* Si no se pasa defaultRecipient, mostrar sección de destinatario */}
+        {/* Sección Destinatario */}
         {!defaultRecipient && (
-          <>
-            <div className="pt-4 border-t border-gray-200">
-              <h4 className="font-semibold text-md text-gray-800 mb-3">Datos del Destinatario</h4>
-                <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isSameAsSender"
-                  {...register('recipient.isSameAsSender')}
-                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  disabled={isFormLocked}
-                />
-                <label htmlFor="isSameAsSender" className="ml-2 block text-sm text-gray-900">
-                  El destinatario es el mismo que el remitente
-                </label>
-              </div>
+          <div
+            className="rounded-lg border bg-white p-5 space-y-5"
+            style={{ borderColor: COLORS.lightPearl }}
+          >
+            <div>
+              <h3
+                className="font-medium"
+                style={{
+                  fontFamily: FONT.heading,
+                  fontSize: 16,
+                  color: COLORS.midnight,
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                Datos del Destinatario
+              </h3>
+              <p
+                className="mt-1"
+                style={{
+                  fontFamily: FONT.inter,
+                  fontSize: 14,
+                  color: COLORS.silverAsh,
+                }}
+              >
+                Indique quién recibirá la encomienda en destino.
+              </p>
             </div>
+
+            <label
+              className="flex items-center gap-3 cursor-pointer select-none"
+              style={{ cursor: isFormLocked ? 'not-allowed' : 'pointer', opacity: isFormLocked ? 0.6 : 1 }}
+            >
+              <input
+                type="checkbox"
+                id="isSameAsSender"
+                {...register('recipient.isSameAsSender')}
+                disabled={isFormLocked}
+                className="h-[18px] w-[18px] rounded border-2 cursor-pointer"
+                style={{
+                  accentColor: COLORS.midnight,
+                  borderColor: COLORS.lightPearl,
+                }}
+              />
+              <span
+                className="text-[15px]"
+                style={{ fontFamily: FONT.inter, color: COLORS.midnight }}
+              >
+                El destinatario es el mismo que el remitente
+              </span>
+            </label>
+
             {/* Formulario de destinatario */}
             {!isSameAsSender && (
-              <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tipo Doc. *
-                    </label>
-                    <select 
-                      {...register('recipient.docType')} 
-                      className={`w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${isFormLocked ? 'bg-gray-100' : 'bg-white'}`}
-                      disabled={isFormLocked}
+              <div
+                className="rounded-lg p-5 space-y-5"
+                style={{
+                  backgroundColor: COLORS.cloudWhisper,
+                  border: `1px solid ${COLORS.lightPearl}`,
+                }}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  <div className="sm:col-span-1">
+                    <label
+                      className={labelClass}
+                      style={{ color: COLORS.midnight }}
                     >
-                      {DOCUMENT_TYPES.map(doc => (
+                      Tipo Doc. <span style={{ color: COLORS.sunset }}>*</span>
+                    </label>
+                    <select
+                      {...register('recipient.docType')}
+                      disabled={isFormLocked}
+                      className={inputClass(undefined, isFormLocked)}
+                      style={{ borderColor: COLORS.lightPearl }}
+                    >
+                      {DOCUMENT_TYPES.map((doc) => (
                         <option key={doc.code} value={doc.code}>
                           {doc.name}
                         </option>
                       ))}
                     </select>
                   </div>
-                <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      N° Documento *
+
+                  <div className="sm:col-span-2">
+                    <label
+                      className={labelClass}
+                      style={{ color: COLORS.midnight }}
+                    >
+                      N° Documento <span style={{ color: COLORS.sunset }}>*</span>
                     </label>
                     <div className="flex">
-          <Input
+                      <input
                         {...register('recipient.docNumber', {
-                          required: !isSameAsSender ? 'El número de documento es obligatorio' : false
+                          required: !isSameAsSender
+                            ? 'El número de documento es obligatorio'
+                            : false,
                         })}
-            error={errors.recipient?.docNumber?.message}
-            className={`rounded-r-none ${isFormLocked ? 'bg-gray-100' : ''}`}
-            placeholder={recipientDocType === SunatDocType.DNI ? '12345678' : '20123456789'}
-            disabled={isFormLocked}
+                        placeholder={
+                          recipientDocType === SunatDocType.DNI
+                            ? '12345678'
+                            : '20123456789'
+                        }
+                        disabled={isFormLocked}
+                        className={`${inputClass(errors.recipient?.docNumber?.message, isFormLocked)} rounded-r-none`}
+                        style={{
+                          borderColor: errors.recipient?.docNumber
+                            ? '#fca5a5'
+                            : COLORS.lightPearl,
+                        }}
                       />
-                      <Button
+                      <button
                         type="button"
                         onClick={handleRecipientSearch}
-            disabled={!isRecipientSearchable || isQueryingRecipient || isFormLocked}
-                        className="rounded-l-none px-3 h-10 flex items-center justify-center"
-                        title={isRecipientSearchable ? 'Buscar datos en SUNAT' : 'Búsqueda disponible solo para DNI y RUC'}
+                        disabled={!isRecipientSearchable || isQueryingRecipient || isFormLocked}
+                        title={
+                          isRecipientSearchable
+                            ? 'Buscar datos en SUNAT'
+                            : 'Búsqueda disponible solo para DNI y RUC'
+                        }
+                        className="inline-flex items-center justify-center px-3 rounded-r-lg border border-l-0 transition duration-200 shrink-0"
+                        style={{
+                          backgroundColor:
+                            !isRecipientSearchable || isFormLocked
+                              ? COLORS.cloudWhisper
+                              : COLORS.midnight,
+                          borderColor: COLORS.lightPearl,
+                          color:
+                            !isRecipientSearchable || isFormLocked
+                              ? COLORS.silverAsh
+                              : COLORS.canvas,
+                          cursor:
+                            !isRecipientSearchable || isFormLocked
+                              ? 'not-allowed'
+                              : 'pointer',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (isRecipientSearchable && !isFormLocked) {
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                              COLORS.darkShale;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (isRecipientSearchable && !isFormLocked) {
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+                              COLORS.midnight;
+                          }
+                        }}
                       >
                         {isQueryingRecipient ? (
                           <Spinner size="sm" />
                         ) : (
                           <Search className="h-4 w-4" />
                         )}
-                      </Button>
+                      </button>
                     </div>
+                    {errors.recipient?.docNumber && (
+                      <p
+                        className="mt-1.5 text-sm"
+                        style={{ color: '#d9534f', fontFamily: FONT.inter }}
+                      >
+                        {errors.recipient.docNumber.message}
+                      </p>
+                    )}
                   </div>
                 </div>
+
                 <div>
-                  <Input 
-                    label="Nombre Completo del Destinatario *" 
+                  <label
+                    className={labelClass}
+                    style={{ color: COLORS.midnight }}
+                  >
+                    Nombre Completo del Destinatario{' '}
+                    <span style={{ color: COLORS.sunset }}>*</span>
+                  </label>
+                  <input
                     {...register('recipient.name', {
-                      required: !isSameAsSender ? 'El nombre del destinatario es obligatorio' : false
+                      required: !isSameAsSender
+                        ? 'El nombre del destinatario es obligatorio'
+                        : false,
                     })}
-                    error={errors.recipient?.name?.message}
                     placeholder="Nombre completo o razón social"
                     disabled={isFormLocked}
-                    className={isFormLocked ? 'bg-gray-100' : ''}
+                    className={inputClass(errors.recipient?.name?.message, isFormLocked)}
+                    style={{
+                      borderColor: errors.recipient?.name
+                        ? '#fca5a5'
+                        : COLORS.lightPearl,
+                    }}
                   />
+                  {errors.recipient?.name && (
+                    <p
+                      className="mt-1.5 text-sm"
+                      style={{ color: '#d9534f', fontFamily: FONT.inter }}
+                    >
+                      {errors.recipient.name.message}
+                    </p>
+                  )}
                 </div>
+
                 <div>
-                  <Input 
-                    label="Teléfono de Contacto" 
+                  <label
+                    className={labelClass}
+                    style={{ color: COLORS.midnight }}
+                  >
+                    Teléfono de Contacto
+                  </label>
+                  <input
                     {...register('recipient.phone')}
                     placeholder="Número de teléfono (opcional)"
                     type="tel"
                     disabled={isFormLocked}
-                    className={isFormLocked ? 'bg-gray-100' : ''}
+                    className={inputClass(undefined, isFormLocked)}
+                    style={{ borderColor: COLORS.lightPearl }}
                   />
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
 
         {/* Botones de acción */}
-        <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <Button 
-            type="button" 
-            variant="outline" 
+        <div
+          className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2"
+          style={{ borderTop: `1px solid ${COLORS.lightPearl}` }}
+        >
+          <Button
+            type="button"
+            variant="outline"
             onClick={onClose}
+            className="w-full sm:w-auto justify-center"
+            style={{
+              borderRadius: 20,
+              fontFamily: FONT.inter,
+              fontSize: 15,
+              borderColor: COLORS.midnight,
+              color: COLORS.midnight,
+            }}
           >
             Cancelar
           </Button>
-          <Button 
+          <Button
             type="submit"
-            className={`bg-blue-600 hover:bg-blue-700 ${isFormLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
             disabled={isFormLocked}
             title={isFormLocked ? 'Seleccione un servicio primero' : ''}
+            className="w-full sm:w-auto justify-center transition-all duration-200"
+            style={{
+              borderRadius: 20,
+              fontFamily: FONT.inter,
+              fontSize: 15,
+              fontWeight: 500,
+              backgroundColor: isFormLocked ? COLORS.lightPearl : COLORS.midnight,
+              color: isFormLocked ? COLORS.silverAsh : COLORS.canvas,
+              border: 'none',
+            }}
+            onMouseEnter={(e) => {
+              if (!isFormLocked) {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = COLORS.darkShale;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isFormLocked) {
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = COLORS.midnight;
+              }
+            }}
           >
-            {isFormLocked ? 'Seleccione un servicio' : (existingItem ? 'Actualizar Ítem' : 'Añadir Ítem')}
+            {isFormLocked
+              ? 'Seleccione un servicio'
+              : existingItem
+              ? 'Actualizar ítem'
+              : 'Añadir ítem'}
           </Button>
         </div>
       </form>

@@ -88,6 +88,19 @@
   input[type="number"]:focus {
     -moz-appearance: textfield;
   }
+
+  /* Eliminar flecha nativa de los select para evitar superposición con íconos custom */
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: none;
+  }
+
+  /* IE/Edge legacy */
+  select::-ms-expand {
+    display: none;
+  }
 }
 
 @layer utilities {

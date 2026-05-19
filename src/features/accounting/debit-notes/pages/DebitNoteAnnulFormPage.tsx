@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/utils/sileo-toast';
 import { useQuery } from '@tanstack/react-query';
+import { DocumentPlusIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 import { Button } from '../../../../components/common/Button';
 import { useCreateDebitNote } from '../hooks/useDebitNotes';
@@ -140,59 +141,73 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50">
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">
-          Crear Nota de Débito para: {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')}
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Cliente: {affectedInvoice.client.name}
-        </p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start gap-4">
+        <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#1F4690]/10">
+          <DocumentPlusIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
+        </div>
+        <div>
+          <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            Crear Nota de Débito
+          </h1>
+          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+            {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')} — {affectedInvoice.client.name}
+          </p>
+        </div>
+      </div>
 
+      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Serie de la Nota de Débito*</label>
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Serie de la Nota de Débito*</label>
             {isLoadingSeries ? (
-              <div className="w-full p-2 border border-gray-300 rounded-md bg-gray-100">
+              <div className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#828282]">
                 Cargando series...
               </div>
             ) : availableDebitNoteSeries.length > 0 ? (
-              <select
-                value={selectedDebitNoteSeries}
-                onChange={(e) => handleDebitNoteSeriesChange(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white"
-              >
-                {availableDebitNoteSeries.map((series) => (
-                  <option key={series.id} value={series.series_code}>
-                    {series.series_code} - Nota de Débito
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={selectedDebitNoteSeries}
+                  onChange={(e) => handleDebitNoteSeriesChange(e.target.value)}
+                  className="peer block w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
+                >
+                  {availableDebitNoteSeries.map((series) => (
+                    <option key={series.id} value={series.series_code}>
+                      {series.series_code} - Nota de Débito
+                    </option>
+                  ))}
+                </select>
+                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+              </div>
             ) : (
-              <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 text-red-600">
-                No hay series de notas de débito disponibles para esta sucursal
+              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+                <p className="text-[13px] text-[#cf1322]">No hay series de notas de débito disponibles para esta sucursal</p>
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Motivo de la Nota de Débito*</label>
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Motivo de la Nota de Débito*</label>
             <Controller
               name="debit_note_type_code"
               control={control}
               render={({ field }) => (
-                <select {...field} className="w-full p-2 border border-gray-300 rounded-md bg-white">
-                  {DEBIT_NOTE_REASONS.map(reason => (
-                    <option key={reason.code} value={reason.code}>{reason.description}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select {...field} className="peer block w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10">
+                    {DEBIT_NOTE_REASONS.map(reason => (
+                      <option key={reason.code} value={reason.code}>{reason.description}</option>
+                    ))}
+                  </select>
+                  <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                </div>
               )}
             />
-            {errors.debit_note_type_code && <p className="text-sm text-error mt-1">{errors.debit_note_type_code.message}</p>}
+            {errors.debit_note_type_code && <p className="mt-1 text-[13px] text-[#cf1322]">{errors.debit_note_type_code.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Monto Adicional (S/)*</label>
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Monto Adicional (S/)*</label>
             <Controller
               name="additional_amount"
               control={control}
@@ -202,17 +217,17 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
                   type="number"
                   step="0.01"
                   min="0.01"
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
                   placeholder="0.00"
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                 />
               )}
             />
-            {errors.additional_amount && <p className="text-sm text-error mt-1">{errors.additional_amount.message}</p>}
+            {errors.additional_amount && <p className="mt-1 text-[13px] text-[#cf1322]">{errors.additional_amount.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción / Sustento*</label>
+            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Descripción / Sustento*</label>
             <Controller
               name="reason"
               control={control}
@@ -220,20 +235,21 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
                 <textarea
                   {...field}
                   rows={4}
-                  className="w-full p-2 border border-gray-300 rounded-md"
+                  className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
                   placeholder="Ej: Intereses por mora según contrato..."
                 />
               )}
             />
-            {errors.reason && <p className="text-sm text-error mt-1">{errors.reason.message}</p>}
+            {errors.reason && <p className="mt-1 text-[13px] text-[#cf1322]">{errors.reason.message}</p>}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)}>Cancelar</Button>
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#f0f0f0]">
+            <Button type="button" variant="outline" onClick={() => navigate(-1)} className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]">Cancelar</Button>
             <Button 
               type="submit" 
               isLoading={isPending}
               disabled={!selectedDebitNoteSeries || availableDebitNoteSeries.length === 0}
+              className="rounded-full px-5 py-2.5 bg-[#1F4690] hover:bg-[#163672] text-white text-[14px] font-medium"
             >
               Generar Nota de Débito
             </Button>

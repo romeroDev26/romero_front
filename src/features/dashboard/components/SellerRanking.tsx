@@ -73,13 +73,13 @@ const getPercentageColor = (position: number) => {
 
 const getTopCardStyles = (position: number) => {
   if (position === 1) {
-    return 'bg-amber-50 dark:bg-amber-950/30/40 border-l-2 border-amber-400';
+    return 'bg-amber-50 dark:bg-amber-950/40 border-l-2 border-amber-400';
   }
   if (position === 2) {
     return 'bg-dm-bg-secondary/60 border-l-2 border-slate-400 dark:border-slate-500';
   }
   if (position === 3) {
-    return 'bg-orange-50 dark:bg-orange-950/30/40 border-l-2 border-orange-400';
+    return 'bg-orange-50 dark:bg-orange-950/40 border-l-2 border-orange-400';
   }
   return '';
 };
@@ -94,7 +94,7 @@ const TopRankBackground: React.FC<{ position: number }> = ({ position }) => {
       transition={{ duration: 0.4 }}
     >
       <motion.div
-        className="absolute -inset-full top-0 h-full w-[200%] bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12"
+        className="absolute -inset-full top-0 h-full w-[200%] bg-gradient-to-r from-transparent via-white/25 dark:via-white/10 to-transparent skew-x-12"
         initial={{ x: '-100%' }}
         animate={{ x: '100%' }}
         transition={{ duration: 1.8, ease: 'easeInOut', delay: 0.6 }}
@@ -235,7 +235,7 @@ export const SellerRanking: React.FC = () => {
 
                   <div
                     className={`relative z-10 h-1.5 w-full overflow-hidden rounded-full ${
-                      vendedor.posicion_ranking === 1 ? 'bg-amber-100/60' : 'bg-dm-bg-secondary'
+                      vendedor.posicion_ranking === 1 ? 'bg-amber-100/60 dark:bg-amber-900/30' : 'bg-dm-bg-secondary'
                     }`}
                   >
                     <motion.div

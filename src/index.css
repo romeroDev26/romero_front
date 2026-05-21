@@ -211,6 +211,18 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   View Transitions API — Tema oscuro / claro
+   ═══════════════════════════════════════════════════════════ */
+
+/* Desactivar la animación por defecto de view-transition
+   para poder controlarla manualmente desde JS */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 @layer utilities {
   .animate-fade-in {
     animation: fadeIn 0.8s ease-out forwards;

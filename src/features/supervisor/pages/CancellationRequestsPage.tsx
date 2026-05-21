@@ -297,7 +297,7 @@ const CancellationRequestsPage: React.FC = () => {
 
       {/* ── Error ── */}
       {error && (
-        <div className="rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/30/40 p-4">
+        <div className="rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/40 p-4">
           <p className="text-[13px] text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}

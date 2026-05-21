@@ -196,7 +196,7 @@ export const CompanySettingsPage: React.FC = () => {
 
   if (error)
     return (
-      <div className="rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/30/40 p-5 text-center">
+      <div className="rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/40 p-5 text-center">
         <p className="text-[13px] text-red-700 dark:text-red-300">Error al cargar la información de la empresa.</p>
       </div>
     );

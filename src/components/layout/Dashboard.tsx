@@ -27,7 +27,7 @@ import SystemUpdatesModal from '../../features/updates/components/SystemUpdatesM
 import { useServiceStatus } from '../../hooks/useServiceStatus';
 import ServiceStatusBanner from '../common/ServiceStatusBanner';
 import { useSystemStatusStore } from '@/stores/systemStatus.store';
-import { useThemeStore } from '@/stores/theme.store';
+import { useThemeTransition } from '@/hooks/useThemeTransition';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
   useServiceStatus();
 
   const isSystemDown = useSystemStatusStore((s) => s.isReachable === false);
-  const { resolvedTheme, toggle } = useThemeStore();
+  const { resolvedTheme, toggleTheme } = useThemeTransition();
 
   // Estado para el sidebar móvil
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -580,7 +580,7 @@ const Dashboard: React.FC = () => {
 
                     {/* Toggle de tema (visible para todos) */}
                     <button
-                      onClick={toggle}
+                      onClick={toggleTheme}
                       className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
                       title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
                     >

@@ -231,7 +231,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
                 <div key={`${seller.vendedor_id}-${seller.sucursal_id}`} className="group">
                   <div className="flex items-center gap-3">
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-semibold ${
-                      isTop ? 'bg-amber-100 text-amber-700 dark:text-amber-300' : 'bg-dm-bg-secondary text-dm-text-muted'
+                      isTop ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' : 'bg-dm-bg-secondary text-dm-text-muted'
                     }`}>
                       {index + 1}
                     </div>
@@ -268,7 +268,7 @@ export const TopSellersByBranch: React.FC<TopSellersByBranchProps> = ({
         {/* Top sucursal destacada */}
         {data?.resumen_general && (
           <div className="mt-4 pt-4 border-t border-dm-border-secondary">
-            <div className="flex items-center justify-between rounded-lg bg-indigo-50 dark:bg-indigo-950/30/50 p-3">
+            <div className="flex items-center justify-between rounded-lg bg-indigo-50 dark:bg-indigo-950/50 p-3">
               <div>
                 <p className="text-xs text-dm-text-muted">Sucursal líder</p>
                 <p className="text-sm font-semibold text-dm-text-primary">{data.resumen_general.top_sucursal_nombre}</p>

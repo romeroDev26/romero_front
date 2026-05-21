@@ -21,8 +21,8 @@ type SeatRow = SeatMapItem[];
 
 const getZoneColor = (seatTypeName: string): string => {
   const name = (seatTypeName || '').toLowerCase();
-  if (name.includes('reclinable')) return 'bg-green-100 dark:bg-green-900/40/80 border border-green-200';
-  if (name.includes('estático')) return 'bg-yellow-100 dark:bg-yellow-900/40/80 border border-yellow-200';
+  if (name.includes('reclinable')) return 'bg-green-100 dark:bg-green-900/40 border border-green-200';
+  if (name.includes('estático')) return 'bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-200';
   return 'bg-dm-bg-secondary/80 border border-dm-border-primary';
 };
 

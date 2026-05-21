@@ -95,7 +95,7 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="px-8 py-6 space-y-6">
             {/* Alerta: viaje ya partido */}
-            <div className="rounded-[12px] border border-amber-200/60 bg-amber-50 dark:bg-amber-950/30/40 p-5">
+            <div className="rounded-[12px] border border-amber-200/60 bg-amber-50 dark:bg-amber-950/40 p-5">
               <div className="flex items-start gap-3.5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-[8px] bg-amber-100 flex items-center justify-center">
                   <ClockIcon className="w-4.5 h-4.5 text-amber-600 dark:text-amber-400" />

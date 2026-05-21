@@ -159,7 +159,7 @@ const RejectionModal: React.FC<RejectionModalProps> = ({
             </div>
 
             {/* Advertencia */}
-            <div className="rounded-[12px] border border-amber-200/60 bg-amber-50 dark:bg-amber-950/30/40 p-5">
+            <div className="rounded-[12px] border border-amber-200/60 bg-amber-50 dark:bg-amber-950/40 p-5">
               <div className="flex items-start gap-3.5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-[8px] bg-amber-100 flex items-center justify-center">
                   <ExclamationTriangleIcon className="w-4.5 h-4.5 text-amber-600 dark:text-amber-400" />

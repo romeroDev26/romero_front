@@ -362,7 +362,7 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
           <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dm-text-muted rotate-90 pointer-events-none" />
         </div>
       ) : (
-        <div className="flex items-center gap-2 w-full px-4 py-3 rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/30/50 text-[13px] text-red-700 dark:text-red-300">
+        <div className="flex items-center gap-2 w-full px-4 py-3 rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/50 text-[13px] text-red-700 dark:text-red-300">
           <ExclamationTriangleIcon className="w-4 h-4 flex-shrink-0" />
           <span>No hay series de notas de crédito disponibles para esta sucursal</span>
         </div>

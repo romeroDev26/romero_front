@@ -72,7 +72,7 @@ export const InfantForm: React.FC<InfantFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="relative space-y-3 rounded-xl border border-amber-100 bg-amber-50 dark:bg-amber-950/30/50 p-3"
+      className="relative space-y-3 rounded-xl border border-amber-100 bg-amber-50 dark:bg-amber-950/40 p-3"
     >
       {/* Cierre rápido */}
       <button

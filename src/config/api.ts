@@ -1,6 +1,8 @@
 // src/config/api.ts
 import axios from 'axios';
 import { getApiUrl, API_PREFIX } from './env';
+import { useSystemStatusStore } from '@/stores/systemStatus.store';
+import { healthService } from '@/services/health.service';
 
 // Definir la URL base de la API
 const baseURL = getApiUrl();
@@ -32,15 +34,26 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Ignorar cancelaciones intencionales de Axios (AbortController / timeout controlado)
+    if (axios.isCancel(error)) {
+      return Promise.reject(error);
+    }
+
     // Si no hay conexión con el servidor o es un error CORS
     if (!error.response) {
-      // Detectar si es un error CORS específicamente
-      if (error.message?.includes('CORS') || 
+      if (error.message?.includes('CORS') ||
           error.message?.includes('Access-Control-Allow-Origin')) {
         console.debug('Error CORS detectado - usando método alternativo');
+      } else if (error.code === 'ECONNABORTED' || error.message?.toLowerCase().includes('timeout')) {
+        console.warn('Timeout de conexión');
       } else {
         console.error('Error de red');
+        // Notificar al store de estado global que el backend no es alcanzable
+        useSystemStatusStore.getState().setBackendUnreachable('network');
       }
+
+      // Disparar diagnóstico para verificar si es una caída global
+      triggerDiagnosticIfNeeded(error.config?.url);
       return Promise.reject(error);
     }
 
@@ -57,8 +70,25 @@ api.interceptors.response.use(
       window.location.href = '/login';
     }
 
+    // Errores 5xx indican problema del servidor backend
+    if (error.response.status >= 500) {
+      useSystemStatusStore.getState().setBackendUnreachable('api');
+      triggerDiagnosticIfNeeded(error.config?.url);
+    }
+
     return Promise.reject(error);
   }
 );
+
+/**
+ * Dispara el diagnóstico de salud solo si la petición que falló NO es
+ * el propio endpoint /health, para evitar un loop infinito de diagnósticos.
+ */
+function triggerDiagnosticIfNeeded(url?: string) {
+  if (url && url.includes('/health')) {
+    return;
+  }
+  healthService.diagnose();
+}
 
 export default api;

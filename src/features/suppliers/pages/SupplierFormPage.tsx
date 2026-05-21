@@ -158,22 +158,22 @@ export const SupplierFormPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-dm-text-primary">
           {isEditing ? 'Editar Proveedor' : 'Nuevo Proveedor'}
         </h1>
       </div>
       
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-dm-bg-primary rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tipo de Documento */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Tipo de Documento *
               </label>
               <select
                 {...register('doc_type')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               >
                 <option value="6">RUC</option>
                 <option value="1">DNI</option>
@@ -182,19 +182,19 @@ export const SupplierFormPage: React.FC = () => {
                 <option value="0">Otros</option>
               </select>
               {errors.doc_type && (
-                <p className="mt-1 text-sm text-red-600">{errors.doc_type.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.doc_type.message}</p>
               )}
             </div>
             
             {/* Número de Documento */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Número de Documento *
               </label>
               <input
                 type="text"
                 {...register('doc_number')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder={
                   docType === '1' ? 'Ingrese 8 dígitos' :
                   docType === '6' ? 'Ingrese 11 dígitos' :
@@ -207,90 +207,90 @@ export const SupplierFormPage: React.FC = () => {
                 }
               />
               {errors.doc_number && (
-                <p className="mt-1 text-sm text-red-600">{errors.doc_number.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.doc_number.message}</p>
               )}
             </div>
             
             {/* Nombre o Razón Social */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 {docType === '6' ? 'Razón Social' : 'Nombre Completo'} *
               </label>
               <input
                 type="text"
                 {...register('name')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder={
                   docType === '6' ? 'Ingrese razón social' : 'Ingrese nombre completo'
                 }
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
               )}
             </div>
             
             {/* Dirección */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Dirección
               </label>
               <input
                 type="text"
                 {...register('address')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder="Ingrese dirección completa"
               />
               {errors.address && (
-                <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.address.message}</p>
               )}
             </div>
             
             {/* Ubigeo */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Ubigeo
               </label>
               <input
                 type="text"
                 {...register('ubigeo')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder="Código de 6 dígitos"
                 maxLength={6}
               />
               {errors.ubigeo && (
-                <p className="mt-1 text-sm text-red-600">{errors.ubigeo.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ubigeo.message}</p>
               )}
             </div>
             
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Email
               </label>
               <input
                 type="email"
                 {...register('email')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder="correo@ejemplo.com"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
               )}
             </div>
             
             {/* Teléfono */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Teléfono
               </label>
               <input
                 type="text"
                 {...register('phone')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder="Ingrese teléfono"
               />
               {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.phone.message}</p>
               )}
             </div>
             
@@ -300,9 +300,9 @@ export const SupplierFormPage: React.FC = () => {
                 type="checkbox"
                 id="is_active"
                 {...register('is_active')}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
+                className="rounded border-dm-border-primary text-primary focus:ring-primary"
               />
-              <label htmlFor="is_active" className="text-sm text-gray-700">
+              <label htmlFor="is_active" className="text-sm text-dm-text-secondary">
                 Proveedor Activo
               </label>
             </div>

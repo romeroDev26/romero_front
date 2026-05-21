@@ -79,12 +79,12 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 
 	return (
 		<>
-			<div className="bg-white rounded-lg shadow p-6">
-				<h2 className="text-lg font-semibold text-gray-900 mb-4">Información Importante</h2>
-				<div className="space-y-3 text-sm text-gray-600">
-					<div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-						<p className="font-medium text-blue-800 mb-1">Información</p>
-						<ul className="space-y-1 text-blue-700">
+			<div className="bg-dm-bg-primary rounded-lg shadow p-6">
+				<h2 className="text-lg font-semibold text-dm-text-primary mb-4">Información Importante</h2>
+				<div className="space-y-3 text-sm text-dm-text-secondary">
+					<div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-3">
+						<p className="font-medium text-blue-800 dark:text-blue-300 mb-1">Información</p>
+						<ul className="space-y-1 text-blue-700 dark:text-blue-300">
 							<li>• Las notas de crédito reducen la deuda del cliente</li>
 							<li>• Se enviarán automáticamente a SUNAT</li>
 							<li>• Verificar todos los datos antes de crear</li>
@@ -95,8 +95,8 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 					{/* Ayuda específica para tipo 09 - Disminución en el valor */}
 					{creditNoteTypeCode === '09' && (
 						<div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-							<p className="font-medium text-yellow-800 mb-2">Disminución en el valor (Tipo 09)</p>
-							<p className="text-sm text-yellow-700 mb-2">Puedes aplicar una disminución global o editar por ítem en una ventana aparte.</p>
+							<p className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">Disminución en el valor (Tipo 09)</p>
+							<p className="text-sm text-yellow-700 dark:text-yellow-300 mb-2">Puedes aplicar una disminución global o editar por ítem en una ventana aparte.</p>
 							<div className="flex items-center space-x-2">
 								<input
 									type="number"
@@ -104,7 +104,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 									min="0"
 									value={decreaseAmount}
 									onChange={(e) => setDecreaseAmount(parseFloat(e.target.value || '0'))}
-									className="w-full p-2 border border-yellow-300 rounded-md bg-white"
+									className="w-full p-2 border border-yellow-300 rounded-md bg-dm-bg-primary"
 									placeholder="S/ 0.00"
 								/>
 								<Button onClick={applyDecreaseProportionally} variant="outline">Aplicar</Button>
@@ -115,9 +115,9 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 
 					{/* Ayuda específica para tipo 04 - Descuento global */}
 					{creditNoteTypeCode === '04' && (
-						<div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-3">
-							<p className="font-medium text-green-800 mb-2">Descuento global (Tipo 04)</p>
-							<p className="text-sm text-green-700 mb-2">Ingrese el monto total de descuento y seleccione cómo aplicarlo.</p>
+						<div className="mt-4 bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-3">
+							<p className="font-medium text-green-800 dark:text-green-300 mb-2">Descuento global (Tipo 04)</p>
+							<p className="text-sm text-green-700 dark:text-green-300 mb-2">Ingrese el monto total de descuento y seleccione cómo aplicarlo.</p>
 							<div className="space-y-2">
 								<div className="flex items-center space-x-2">
 									<select 
@@ -136,7 +136,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 										min="0"
 										value={globalDiscountAmount}
 										onChange={(e) => setGlobalDiscountAmount(parseFloat(e.target.value || '0'))}
-										className="w-full p-2 border border-green-300 rounded-md bg-white"
+										className="w-full p-2 border border-green-300 rounded-md bg-dm-bg-primary"
 										placeholder="S/ 0.00"
 									/>
 									<Button onClick={applyGlobalDiscount} variant="outline">Aplicar</Button>
@@ -151,19 +151,19 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 			<Modal isOpen={showDecreaseModal} onClose={() => setShowDecreaseModal(false)} title="Editar Disminución">
 				<div className="space-y-4">
 					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-1">Modo de edición</label>
+						<label className="block text-sm font-medium text-dm-text-secondary mb-1">Modo de edición</label>
 						<div className="flex space-x-2">
 							<button
 								type="button"
 								onClick={() => setDecreaseMode('global')}
-								className={`px-3 py-2 rounded-md border ${decreaseMode === 'global' ? 'bg-gray-100 border-gray-300' : 'bg-white border-gray-200'}`}
+								className={`px-3 py-2 rounded-md border ${decreaseMode === 'global' ? 'bg-dm-bg-secondary border-dm-border-primary' : 'bg-dm-bg-primary border-dm-border-primary'}`}
 							>
 								Global
 							</button>
 							<button
 								type="button"
 								onClick={() => setDecreaseMode('per_item')}
-								className={`px-3 py-2 rounded-md border ${decreaseMode === 'per_item' ? 'bg-gray-100 border-gray-300' : 'bg-white border-gray-200'}`}
+								className={`px-3 py-2 rounded-md border ${decreaseMode === 'per_item' ? 'bg-dm-bg-secondary border-dm-border-primary' : 'bg-dm-bg-primary border-dm-border-primary'}`}
 							>
 								Por ítem
 							</button>
@@ -172,7 +172,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 
 					{decreaseMode === 'global' && (
 						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-1">Monto total a disminuir</label>
+							<label className="block text-sm font-medium text-dm-text-secondary mb-1">Monto total a disminuir</label>
 							<div className="flex space-x-2">
 								<input
 									type="number"
@@ -180,7 +180,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 									min="0"
 									value={decreaseAmount}
 									onChange={(e) => setDecreaseAmount(parseFloat(e.target.value || '0'))}
-									className="w-full p-2 border border-gray-300 rounded-md"
+									className="w-full p-2 border border-dm-border-primary rounded-md"
 								/>
 								<Button 
 									onClick={() => { 
@@ -201,21 +201,21 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 								<div key={idx} className="flex items-center space-x-2 border-b pb-2">
 									<div className="flex-1">
 										<div className="text-sm font-medium">{it.description || `Item ${idx + 1}`}</div>
-										<div className="text-xs text-gray-500">Cantidad: {it.quantity}</div>
+										<div className="text-xs text-dm-text-muted">Cantidad: {it.quantity}</div>
 									</div>
 									<div className="w-36">
-										<label className="text-xs text-gray-500">Descuento</label>
+										<label className="text-xs text-dm-text-muted">Descuento</label>
 										<input
 											type="number"
 											step="0.01"
 											min="0"
 											defaultValue={it.discount || 0}
 											onChange={(e) => setValue(`items.${idx}.discount`, parseFloat(e.target.value || '0'))}
-											className="w-full p-2 border border-gray-300 rounded-md"
+											className="w-full p-2 border border-dm-border-primary rounded-md"
 										/>
 									</div>
 									<div className="w-36">
-										<label className="text-xs text-gray-500">Nuevo unit_price</label>
+										<label className="text-xs text-dm-text-muted">Nuevo unit_price</label>
 										<input
 											type="number"
 											step="0.01"
@@ -226,7 +226,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 												setValue(`items.${idx}.unit_price`, v);
 												setValue(`items.${idx}.price_with_tax`, parseFloat((v * 1.18).toFixed(10)));
 											}}
-											className="w-full p-2 border border-gray-300 rounded-md"
+											className="w-full p-2 border border-dm-border-primary rounded-md"
 										/>
 									</div>
 								</div>

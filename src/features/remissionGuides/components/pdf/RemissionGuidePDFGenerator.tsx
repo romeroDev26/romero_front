@@ -546,7 +546,7 @@ export const MultipleRemissionGuidePDFGenerator: React.FC<MultipleRemissionGuide
   return (
     <div className="space-y-4">
       {/* Botones de acción general */}
-      <div className="flex space-x-3 pb-4 border-b border-gray-200">
+      <div className="flex space-x-3 pb-4 border-b border-dm-border-primary">
         <button
           onClick={handleGenerateAllPDFs}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
@@ -565,12 +565,12 @@ export const MultipleRemissionGuidePDFGenerator: React.FC<MultipleRemissionGuide
       {/* Lista de guías individuales */}
       <div className="space-y-3">
         {guidesData.map(guide => (
-          <div key={guide.guide_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div key={guide.guide_id} className="flex items-center justify-between p-3 bg-dm-bg-secondary rounded-lg">
             <div className="flex-1">
-              <div className="font-medium text-sm text-gray-900">
+              <div className="font-medium text-sm text-dm-text-primary">
                 Guía #{guide.document_number}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-dm-text-secondary">
                 Destino: {guide.destination_port_name} | 
                 Destinatario: {guide.recipient_name}
               </div>

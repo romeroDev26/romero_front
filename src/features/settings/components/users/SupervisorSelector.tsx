@@ -56,7 +56,7 @@ export const SupervisorSelector: React.FC<SupervisorSelectorProps> = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-dm-text-secondary mb-1">
         Supervisor
       </label>
       <select
@@ -67,9 +67,9 @@ export const SupervisorSelector: React.FC<SupervisorSelectorProps> = ({
           mt-1 block w-full rounded-md shadow-sm p-2 pr-8
           ${error 
             ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-            : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+            : 'border-dm-border-primary focus:border-blue-500 focus:ring-blue-500'
           }
-          disabled:bg-gray-100 disabled:cursor-not-allowed
+          disabled:bg-dm-bg-secondary disabled:cursor-not-allowed
           focus:ring-2
         `}
       >
@@ -81,9 +81,9 @@ export const SupervisorSelector: React.FC<SupervisorSelectorProps> = ({
         ))}
       </select>
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
       )}
-      <p className="mt-1 text-xs text-gray-500">
+      <p className="mt-1 text-xs text-dm-text-muted">
         Opcional: Asignar un supervisor para este usuario
       </p>
     </div>

@@ -139,11 +139,11 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-dm-bg-primary rounded-xl border border-dm-border-secondary shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-        <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-          <TableCellsIcon className="h-5 w-5 text-gray-400" />
+      <div className="flex items-center justify-between px-6 py-4 border-b border-dm-border-secondary">
+        <h3 className="flex items-center gap-2 text-base font-semibold text-dm-text-primary">
+          <TableCellsIcon className="h-5 w-5 text-dm-text-muted" />
           Ítems de Cotización
         </h3>
         {!showAddForm && (
@@ -160,25 +160,25 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
 
       {/* Formulario para agregar nuevo item */}
       {showAddForm && (
-        <div className="px-6 py-4 bg-gray-50 border-b border-gray-100">
+        <div className="px-6 py-4 bg-dm-bg-secondary border-b border-dm-border-secondary">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Cantidad</label>
+              <label className="block text-xs font-medium text-dm-text-muted mb-1">Cantidad</label>
               <input
                 type="number"
                 min="1"
                 step="1"
                 value={newItem.cantidad}
                 onChange={(e) => setNewItem(prev => ({ ...prev, cantidad: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full border border-dm-border-primary rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Unidad</label>
+              <label className="block text-xs font-medium text-dm-text-muted mb-1">Unidad</label>
               <select
                 value={newItem.unidad}
                 onChange={(e) => setNewItem(prev => ({ ...prev, unidad: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white"
+                className="w-full border border-dm-border-primary rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary bg-dm-bg-primary"
               >
                 {UNITS.map(unit => (
                   <option key={unit.code} value={unit.code}>{unit.name}</option>
@@ -186,26 +186,26 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Precio Unitario (S/)</label>
+              <label className="block text-xs font-medium text-dm-text-muted mb-1">Precio Unitario (S/)</label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={newItem.precio_unitario}
                 onChange={(e) => setNewItem(prev => ({ ...prev, precio_unitario: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full border border-dm-border-primary rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="0.00"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Descuento (S/)</label>
+              <label className="block text-xs font-medium text-dm-text-muted mb-1">Descuento (S/)</label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
                 value={newItem.descuento}
                 onChange={(e) => setNewItem(prev => ({ ...prev, descuento: e.target.value }))}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full border border-dm-border-primary rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 placeholder="0.00"
               />
             </div>
@@ -213,18 +213,18 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div className="md:col-span-3">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Descripción</label>
+              <label className="block text-xs font-medium text-dm-text-muted mb-1">Descripción</label>
               <input
                 type="text"
                 value={newItem.descripcion}
                 onChange={(e) => setNewItem(prev => ({ ...prev, descripcion: e.target.value }))}
                 placeholder="Descripción del producto o servicio..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="w-full border border-dm-border-primary rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
             <div className="flex flex-col justify-end gap-1.5">
-              <p className="text-xs text-gray-500 text-right">
-                Total: <span className="font-semibold text-gray-900">S/ {newItem.importe_total.toFixed(2)}</span>
+              <p className="text-xs text-dm-text-muted text-right">
+                Total: <span className="font-semibold text-dm-text-primary">S/ {newItem.importe_total.toFixed(2)}</span>
               </p>
               <div className="flex gap-2">
                 <Button
@@ -255,23 +255,23 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
       {items.length > 0 ? (
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-100">
-              <th className="text-left px-6 py-3 text-sm font-semibold text-slate-500 w-1/3">
+            <tr className="border-b border-dm-border-secondary">
+              <th className="text-left px-6 py-3 text-sm font-semibold text-dm-text-muted w-1/3">
                 Descripción
               </th>
-              <th className="text-center px-4 py-3 text-sm font-semibold text-slate-500">
+              <th className="text-center px-4 py-3 text-sm font-semibold text-dm-text-muted">
                 Cant.
               </th>
-              <th className="text-center px-4 py-3 text-sm font-semibold text-slate-500">
+              <th className="text-center px-4 py-3 text-sm font-semibold text-dm-text-muted">
                 Unidad
               </th>
-              <th className="text-right px-4 py-3 text-sm font-semibold text-slate-500">
+              <th className="text-right px-4 py-3 text-sm font-semibold text-dm-text-muted">
                 Precio
               </th>
-              <th className="text-right px-4 py-3 text-sm font-semibold text-slate-500">
+              <th className="text-right px-4 py-3 text-sm font-semibold text-dm-text-muted">
                 Dcto. (S/)
               </th>
-              <th className="text-right px-6 py-3 text-sm font-semibold text-slate-500">
+              <th className="text-right px-6 py-3 text-sm font-semibold text-dm-text-muted">
                 Subtotal
               </th>
               <th className="w-10 px-3 py-3" />
@@ -279,28 +279,28 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
           </thead>
           <tbody className="divide-y divide-slate-50">
             {items.map((item, index) => (
-              <tr key={index} className="hover:bg-slate-50/60 transition-colors">
+              <tr key={index} className="hover:bg-dm-bg-hover/60 transition-colors">
                 <td className="px-6 py-4 text-sm text-primary font-medium max-w-xs">
                   <div className="truncate" title={item.descripcion}>{item.descripcion}</div>
                 </td>
-                <td className="px-4 py-4 text-sm text-slate-700 text-center">{item.cantidad}</td>
-                <td className="px-4 py-4 text-sm text-slate-500 text-center">
+                <td className="px-4 py-4 text-sm text-dm-text-secondary text-center">{item.cantidad}</td>
+                <td className="px-4 py-4 text-sm text-dm-text-muted text-center">
                   {UNITS.find(u => u.code === item.unidad)?.name || item.unidad}
                 </td>
-                <td className="px-4 py-4 text-sm text-slate-700 text-right">
+                <td className="px-4 py-4 text-sm text-dm-text-secondary text-right">
                   {item.precio_unitario.toFixed(2)}
                 </td>
-                <td className="px-4 py-4 text-sm text-slate-700 text-right">
+                <td className="px-4 py-4 text-sm text-dm-text-secondary text-right">
                   {item.descuento.toFixed(2)}
                 </td>
-                <td className="px-6 py-4 text-sm font-semibold text-slate-900 text-right">
+                <td className="px-6 py-4 text-sm font-semibold text-dm-text-primary text-right">
                   S/ {item.importe_total.toFixed(2)}
                 </td>
                 <td className="px-3 py-4 text-right">
                   <button
                     type="button"
                     onClick={() => handleRemoveItem(index)}
-                    className="text-slate-300 hover:text-red-500 transition-colors"
+                    className="text-dm-text-muted hover:text-red-500 dark:text-red-400 transition-colors"
                     title="Eliminar"
                   >
                     <TrashIcon className="h-4 w-4" />
@@ -313,7 +313,7 @@ export const QuotationItemsManager: React.FC<QuotationItemsManagerProps> = ({
       ) : (
         !showAddForm && (
           <div className="px-6 py-10 text-center">
-            <p className="text-sm text-gray-400">No hay ítems agregados.</p>
+            <p className="text-sm text-dm-text-muted">No hay ítems agregados.</p>
             <button
               type="button"
               onClick={() => setShowAddForm(true)}

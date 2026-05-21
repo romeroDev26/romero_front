@@ -251,16 +251,16 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       
       // Obtener colores de fondo y texto que contrasten
       const getZoneColorWithText = (typeName?: string | null): { bgColor: string; textColor: string } => {
-        if (!typeName) return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+        if (!typeName) return { bgColor: 'bg-dm-bg-secondary/80 border border-dm-border-primary', textColor: 'text-dm-text-secondary' };
         
         const name = typeName.toLowerCase();
-        if (name.includes('reclinable')) return { bgColor: 'bg-green-100/80 border border-green-200', textColor: 'text-green-800' };
-        if (name.includes('estático')) return { bgColor: 'bg-yellow-100/80 border border-yellow-200', textColor: 'text-yellow-800' };
+        if (name.includes('reclinable')) return { bgColor: 'bg-green-100 dark:bg-green-900/40/80 border border-green-200', textColor: 'text-green-800 dark:text-green-300' };
+        if (name.includes('estático')) return { bgColor: 'bg-yellow-100 dark:bg-yellow-900/40/80 border border-yellow-200', textColor: 'text-yellow-800 dark:text-yellow-300' };
         if (name.includes('premium')) return { bgColor: 'bg-purple-100/80 border border-purple-200', textColor: 'text-purple-800' };
-        if (name.includes('vip')) return { bgColor: 'bg-indigo-100/80 border border-indigo-200', textColor: 'text-indigo-800' };
-        if (name.includes('económico') || name.includes('economico')) return { bgColor: 'bg-blue-100/80 border border-blue-200', textColor: 'text-blue-800' };
+        if (name.includes('vip')) return { bgColor: 'bg-indigo-100 dark:bg-indigo-900/40/80 border border-indigo-200', textColor: 'text-indigo-800 dark:text-indigo-300' };
+        if (name.includes('económico') || name.includes('economico')) return { bgColor: 'bg-blue-100 dark:bg-blue-900/40/80 border border-blue-200', textColor: 'text-blue-800 dark:text-blue-300' };
         
-        return { bgColor: 'bg-gray-100/80 border border-gray-200', textColor: 'text-gray-700' };
+        return { bgColor: 'bg-dm-bg-secondary/80 border border-dm-border-primary', textColor: 'text-dm-text-secondary' };
       };
       
       const { bgColor, textColor } = getZoneColorWithText(seatTypeName);
@@ -278,14 +278,14 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-40">
-        <Spinner /><span className="ml-2 text-gray-600">Cargando...</span>
+        <Spinner /><span className="ml-2 text-dm-text-secondary">Cargando...</span>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-800">Tramo y Asiento</h2>
+      <h2 className="text-lg font-semibold text-dm-text-primary">Tramo y Asiento</h2>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <SearchableSelect
@@ -313,20 +313,20 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
       </div>
 
       {selectedSeat && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 text-center mb-3">Asiento Seleccionado</p>
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 p-4 rounded-lg">
+          <p className="text-sm text-dm-text-secondary text-center mb-3">Asiento Seleccionado</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
             <div className="text-center">
-              <p className="font-bold text-2xl text-blue-700">
+              <p className="font-bold text-2xl text-blue-700 dark:text-blue-300">
                 N° {selectedSeat.seat_number}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Número</p>
+              <p className="text-xs text-dm-text-muted mt-1">Número</p>
             </div>
             <div className="text-center">
               <div className={`px-4 py-2 rounded-lg text-sm font-semibold shadow-sm ${getSeatZoneInfo(selectedSeat).zoneColor}`}>
                 {getSeatZoneInfo(selectedSeat).zoneName}
               </div>
-              <p className="text-xs text-gray-500 mt-1">Zona</p>
+              <p className="text-xs text-dm-text-muted mt-1">Zona</p>
             </div>
           </div>
         </div>

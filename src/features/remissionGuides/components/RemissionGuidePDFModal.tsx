@@ -52,24 +52,24 @@ export const RemissionGuidePDFModal: React.FC<RemissionGuidePDFModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" maxWidth="6xl">
       <div className="space-y-4">
-        <div className="flex items-start justify-between pb-4 border-b border-gray-200">
+        <div className="flex items-start justify-between pb-4 border-b border-dm-border-primary">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-dm-text-primary">
               Guía de Remisión - {guideType === 'transportista' ? 'Transportista' : 'Remitente'}
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-dm-text-secondary mt-1">
               N° {guideNumber}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           >
-            <XMarkIcon className="w-5 h-5 text-gray-500" />
+            <XMarkIcon className="w-5 h-5 text-dm-text-muted" />
           </button>
         </div>
 
-        <div className="bg-gray-50 rounded-lg" style={{ height: '70vh' }}>
+        <div className="bg-dm-bg-secondary rounded-lg" style={{ height: '70vh' }}>
           {pdfUrl ? (
             <iframe
               src={pdfUrl}
@@ -79,8 +79,8 @@ export const RemissionGuidePDFModal: React.FC<RemissionGuidePDFModalProps> = ({
           ) : (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <EyeIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">
+                <EyeIcon className="w-12 h-12 text-dm-text-muted mx-auto mb-4" />
+                <p className="text-dm-text-muted">
                   PDF no disponible para esta guía
                 </p>
               </div>
@@ -88,7 +88,7 @@ export const RemissionGuidePDFModal: React.FC<RemissionGuidePDFModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end space-x-3 pt-4 border-t border-dm-border-primary">
           <Button variant="secondary" onClick={onClose}>
             Cerrar
           </Button>

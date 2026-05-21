@@ -148,21 +148,21 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
           <DocumentPlusIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
         </div>
         <div>
-          <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <h1 className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
             Crear Nota de Débito
           </h1>
-          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+          <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
             {affectedInvoice.series}-{String(affectedInvoice.number).padStart(8, '0')} — {affectedInvoice.client.name}
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Serie de la Nota de Débito*</label>
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">Serie de la Nota de Débito*</label>
             {isLoadingSeries ? (
-              <div className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#828282]">
+              <div className="block w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-muted">
                 Cargando series...
               </div>
             ) : availableDebitNoteSeries.length > 0 ? (
@@ -170,7 +170,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
                 <select
                   value={selectedDebitNoteSeries}
                   onChange={(e) => handleDebitNoteSeriesChange(e.target.value)}
-                  className="peer block w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
+                  className="peer block w-full appearance-none px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
                 >
                   {availableDebitNoteSeries.map((series) => (
                     <option key={series.id} value={series.series_code}>
@@ -178,28 +178,28 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
               </div>
             ) : (
-              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+              <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
                 <p className="text-[13px] text-[#cf1322]">No hay series de notas de débito disponibles para esta sucursal</p>
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Motivo de la Nota de Débito*</label>
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">Motivo de la Nota de Débito*</label>
             <Controller
               name="debit_note_type_code"
               control={control}
               render={({ field }) => (
                 <div className="relative">
-                  <select {...field} className="peer block w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10">
+                  <select {...field} className="peer block w-full appearance-none px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10">
                     {DEBIT_NOTE_REASONS.map(reason => (
                       <option key={reason.code} value={reason.code}>{reason.description}</option>
                     ))}
                   </select>
-                  <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                  <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
                 </div>
               )}
             />
@@ -207,7 +207,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Monto Adicional (S/)*</label>
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">Monto Adicional (S/)*</label>
             <Controller
               name="additional_amount"
               control={control}
@@ -217,7 +217,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
                   type="number"
                   step="0.01"
                   min="0.01"
-                  className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
+                  className="block w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
                   placeholder="0.00"
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                 />
@@ -227,7 +227,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">Descripción / Sustento*</label>
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">Descripción / Sustento*</label>
             <Controller
               name="reason"
               control={control}
@@ -235,7 +235,7 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
                 <textarea
                   {...field}
                   rows={4}
-                  className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
+                  className="block w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
                   placeholder="Ej: Intereses por mora según contrato..."
                 />
               )}
@@ -243,8 +243,8 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
             {errors.reason && <p className="mt-1 text-[13px] text-[#cf1322]">{errors.reason.message}</p>}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#f0f0f0]">
-            <Button type="button" variant="outline" onClick={() => navigate(-1)} className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]">Cancelar</Button>
+          <div className="flex justify-end gap-3 pt-4 border-t border-dm-border-secondary">
+            <Button type="button" variant="outline" onClick={() => navigate(-1)} className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary">Cancelar</Button>
             <Button 
               type="submit" 
               isLoading={isPending}

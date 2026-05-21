@@ -80,7 +80,7 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
         variant="outline"
         size={size}
         onClick={() => setShowPDFModal(true)}
-        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+        className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:bg-blue-950/30"
         title="Ver PDF de la guía"
       >
         <EyeIcon className="h-4 w-4" />
@@ -115,7 +115,7 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
             size={size}
             onClick={handleCheckTicketStatus}
             disabled={isLoading || !guide.sunat_ticket}
-            className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+            className="text-yellow-600 dark:text-yellow-400 hover:text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50"
             title="Consultar estado"
           >
             <ArrowPathIcon className="h-4 w-4" />
@@ -132,7 +132,7 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
             size={size}
             onClick={handleProcessCdr}
             disabled={isLoading}
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:bg-blue-950/30"
             title="Procesar CDR"
           >
             <CheckCircleIcon className="h-4 w-4" />
@@ -150,7 +150,7 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
               variant="outline"
               size={size}
               onClick={() => window.open(guide.cdr_file_path, '_blank')}
-              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+              className="text-green-600 dark:text-green-400 hover:text-green-700 dark:text-green-300 hover:bg-green-50 dark:bg-green-950/30"
               title="Descargar CDR"
             >
               <DocumentArrowDownIcon className="h-4 w-4" />
@@ -169,7 +169,7 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
           variant="outline"
           size={size}
           onClick={() => setShowSunatModal(true)}
-          className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+          className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:bg-indigo-950/30"
           title="Ver estado SUNAT"
         >
           <ClockIcon className="h-4 w-4" />

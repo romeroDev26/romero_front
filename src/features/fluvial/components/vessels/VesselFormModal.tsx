@@ -151,7 +151,7 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
       maxWidth="4xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-dm-text-secondary mb-4">
           Complete los detalles de la embarcación. La matrícula se genera automáticamente.
         </p>
         
@@ -207,7 +207,7 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
             placeholder="0"
           />
         </div>
-        {errors.capacity && <p className="text-sm text-red-600 mt-1">{errors.capacity}</p>}
+        {errors.capacity && <p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.capacity}</p>}
 
         <div className="flex items-center pt-2">
           <input
@@ -216,14 +216,14 @@ export const VesselFormModal: React.FC<VesselFormProps> = ({ isOpen, onClose, ve
             type="checkbox"
             checked={formData.is_active}
             onChange={handleChange}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-dm-border-primary text-blue-600 dark:text-blue-400 focus:ring-blue-500"
           />
-          <label htmlFor="is_active" className="ml-3 block text-sm font-medium text-gray-900">
+          <label htmlFor="is_active" className="ml-3 block text-sm font-medium text-dm-text-primary">
             Embarcación activa
           </label>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end gap-3 pt-4 border-t border-dm-border-primary">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>

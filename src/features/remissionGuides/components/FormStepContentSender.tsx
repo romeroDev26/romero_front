@@ -352,15 +352,15 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
           <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-                  <CheckCircleIcon className="h-6 w-6 text-green-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                  <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900">
+                  <h4 className="text-lg font-semibold text-dm-text-primary">
                     Viaje Seleccionado: {selectedTrip?.trip_name || tripDetails?.trip_name || `ID: ${selectedTrip.id}`}
                   </h4>
                   {(selectedTrip?.vessel_name || tripDetails?.vessel?.name) && (
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-dm-text-secondary">
                       <TruckIcon className="h-4 w-4 inline mr-1" />
                       Embarcación: {selectedTrip?.vessel_name || tripDetails?.vessel?.name}
                     </p>
@@ -383,14 +383,14 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
             <div className="flex items-center justify-center">
               <div className="flex items-center space-x-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
-                  <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                  <DocumentTextIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div className="text-center">
-                  <h4 className="text-lg font-semibold text-gray-900">
+                  <h4 className="text-lg font-semibold text-dm-text-primary">
                     Guía de Remisión del Remitente
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-dm-text-secondary">
                     Complete manualmente toda la información requerida
                   </p>
                 </div>
@@ -400,16 +400,16 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
         )}
 
         {/* Sección para agregar productos */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+        <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary p-8">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-lg">
-                  <PlusIcon className="h-6 w-6 text-green-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                  <PlusIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Productos</h3>
-                  <p className="text-sm text-gray-600">Agregue los productos que serán transportados</p>
+                  <h3 className="text-lg font-semibold text-dm-text-primary">Productos</h3>
+                  <p className="text-sm text-dm-text-secondary">Agregue los productos que serán transportados</p>
                 </div>
               </div>
               <Button 
@@ -424,20 +424,20 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
 
             {fields.length === 0 && (
               <div className="text-center py-8">
-                <p className="text-gray-500">No hay productos agregados. Haga clic en "Agregar Producto" para comenzar.</p>
+                <p className="text-dm-text-muted">No hay productos agregados. Haga clic en "Agregar Producto" para comenzar.</p>
               </div>
             )}
 
             {fields.map((field, index) => (
-              <div key={field.id} className="border border-gray-200 rounded-lg p-4 space-y-4">
+              <div key={field.id} className="border border-dm-border-primary rounded-lg p-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-md font-medium text-gray-900">Producto {index + 1}</h4>
+                  <h4 className="text-md font-medium text-dm-text-primary">Producto {index + 1}</h4>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => remove(index)}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-red-600 dark:text-red-400 hover:text-red-700 dark:text-red-300"
                   >
                     <TrashIcon className="h-4 w-4" />
                   </Button>
@@ -459,14 +459,14 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                   />
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Unidad de Medida*</label>
+                    <label className="block text-sm font-medium text-dm-text-secondary mb-2">Unidad de Medida*</label>
                     <Controller
                       name={`items.${index}.unit_measure`}
                       control={control}
                       render={({ field }) => (
                         <select 
                           {...field}
-                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                          className="w-full p-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                         >
                           {UNIT_MEASURE_OPTIONS.map(option => (
                             <option key={option.code} value={option.code}>
@@ -477,7 +477,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                       )}
                     />
                     {errors.items?.[index]?.unit_measure && (
-                      <p className="text-red-500 text-xs mt-1">{errors.items?.[index]?.unit_measure?.message}</p>
+                      <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.items?.[index]?.unit_measure?.message}</p>
                     )}
                   </div>
                   
@@ -508,42 +508,42 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
             ))}
 
             {errors.items && typeof errors.items.message === 'string' && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm">{errors.items.message}</p>
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg">
+                <p className="text-red-600 dark:text-red-400 text-sm">{errors.items.message}</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Formulario principal */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary overflow-hidden">
           <div className="space-y-8 p-8">
             {/* Datos Generales */}
-            <div className="border border-gray-200 rounded-xl p-6">
+            <div className="border border-dm-border-primary rounded-xl p-6">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
-                  <DocumentTextIcon className="h-6 w-6 text-blue-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                  <DocumentTextIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Datos Generales de la Guía</h3>
+                <h3 className="text-lg font-semibold text-dm-text-primary">Datos Generales de la Guía</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Selector de Serie */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                     <DocumentTextIcon className="h-4 w-4 inline mr-1" />
                     Serie*
                   </label>
                   {isLoadingSeries ? (
                     <div className="flex items-center space-x-2">
                       <Spinner size="sm" />
-                      <span className="text-sm text-gray-500">Cargando series...</span>
+                      <span className="text-sm text-dm-text-muted">Cargando series...</span>
                     </div>
                   ) : (
                     <select
                       value={selectedSeries}
                       onChange={(e) => setSelectedSeries(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      className="w-full p-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       disabled={availableSeries.length === 0}
                     >
                       <option value="">
@@ -557,7 +557,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                     </select>
                   )}
                   {availableSeries.length === 0 && !isLoadingSeries && (
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-dm-text-muted mt-1">
                       No se encontraron series activas para guías del remitente en esta sucursal.
                     </p>
                   )}
@@ -568,20 +568,20 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                   control={control} 
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                         <CalendarIcon className="h-4 w-4 inline mr-1" />
                         Fecha Emisión*
                       </label>
                       <DatePicker 
                         selected={field.value} 
                         onChange={field.onChange} 
-                        className="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition bg-gray-50" 
+                        className="block w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition bg-dm-bg-secondary" 
                         locale={es} 
                         dateFormat="dd/MM/yyyy"
                         readOnly
                       />
                       {errors.issue_date && (
-                        <p className="text-red-500 text-xs mt-1">{errors.issue_date.message}</p>
+                        <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.issue_date.message}</p>
                       )}
                     </div>
                   )} 
@@ -592,27 +592,27 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                   control={control} 
                   render={({ field }) => (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                         <CalendarIcon className="h-4 w-4 inline mr-1" />
                         Fecha Traslado*
                       </label>
                       <DatePicker 
                         selected={field.value} 
                         onChange={field.onChange} 
-                        className="block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition" 
+                        className="block w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition" 
                         locale={es} 
                         dateFormat="dd/MM/yyyy"
                         minDate={new Date()}
                       />
                       {errors.transfer_start_date && (
-                        <p className="text-red-500 text-xs mt-1">{errors.transfer_start_date.message}</p>
+                        <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.transfer_start_date.message}</p>
                       )}
                     </div>
                   )} 
                 />
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                     <ScaleIcon className="h-4 w-4 inline mr-1" />
                     Peso Bruto (KGM)*
                   </label>
@@ -625,7 +625,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                         type="number"
                         step="0.01"
                         readOnly
-                        className="bg-gray-50"
+                        className="bg-dm-bg-secondary"
                       />
                     )}
                   />
@@ -636,12 +636,12 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
             {/* Origen y Destinatario */}
             <div className="space-y-8">
               {/* Remitente */}
-              <div className="border border-gray-200 rounded-xl p-6">
+              <div className="border border-dm-border-primary rounded-xl p-6">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
-                    <UserIcon className="h-6 w-6 text-blue-600" />
+                  <div className="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                    <UserIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Remitente</h3>
+                  <h3 className="text-lg font-semibold text-dm-text-primary">Remitente</h3>
                 </div>
 
                 <div className="space-y-4">
@@ -653,14 +653,14 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                   
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Tipo Doc*</label>
+                      <label className="block text-sm font-medium text-dm-text-secondary mb-2">Tipo Doc*</label>
                       <Controller
                         name="sender.document_type_code"
                         control={control}
                         render={({ field }) => (
                           <select 
                             {...field}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            className="w-full p-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                           >
                             {DOCUMENT_TYPES.map(docType => (
                               <option key={docType.code} value={docType.code}>
@@ -671,7 +671,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                         )}
                       />
                       {errors.sender?.document_type_code && (
-                        <p className="text-red-500 text-xs mt-1">{errors.sender.document_type_code.message}</p>
+                        <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.sender.document_type_code.message}</p>
                       )}
                     </div>
                     <div className="col-span-2">
@@ -686,12 +686,12 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
               </div>
 
               {/* Origen */}
-              <div className="border border-gray-200 rounded-xl p-6">
+              <div className="border border-dm-border-primary rounded-xl p-6">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg">
-                    <MapPinIcon className="h-6 w-6 text-gray-600" />
+                  <div className="flex items-center justify-center w-10 h-10 bg-dm-bg-secondary rounded-lg">
+                    <MapPinIcon className="h-6 w-6 text-dm-text-secondary" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Dirección de Partida</h3>
+                  <h3 className="text-lg font-semibold text-dm-text-primary">Dirección de Partida</h3>
                 </div>
 
                 <div className="space-y-4">
@@ -712,12 +712,12 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
               </div>
 
               {/* Destinatario */}
-              <div className="border border-gray-200 rounded-xl p-6">
+              <div className="border border-dm-border-primary rounded-xl p-6">
                 <div className="flex items-center space-x-3 mb-6">
                   <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
                     <MapPinIcon className="h-6 w-6 text-purple-600" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900">Destinatario</h3>
+                  <h3 className="text-lg font-semibold text-dm-text-primary">Destinatario</h3>
                 </div>
 
                 <div className="space-y-4">
@@ -729,14 +729,14 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                   
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Tipo Doc*</label>
+                      <label className="block text-sm font-medium text-dm-text-secondary mb-2">Tipo Doc*</label>
                       <Controller
                         name="receiver.document_type_code"
                         control={control}
                         render={({ field }) => (
                           <select 
                             {...field}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                            className="w-full p-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                           >
                             {DOCUMENT_TYPES.map(docType => (
                               <option key={docType.code} value={docType.code}>
@@ -747,7 +747,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                         )}
                       />
                       {errors.receiver?.document_type_code && (
-                        <p className="text-red-500 text-xs mt-1">{errors.receiver.document_type_code.message}</p>
+                        <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.receiver.document_type_code.message}</p>
                       )}
                     </div>
                     <div className="col-span-2">
@@ -777,12 +777,12 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
             </div>
 
             {/* Conductor */}
-            <div className="border border-gray-200 rounded-xl p-6">
+            <div className="border border-dm-border-primary rounded-xl p-6">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg">
-                  <UserIcon className="h-6 w-6 text-orange-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
+                  <UserIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Datos del Conductor</h3>
+                <h3 className="text-lg font-semibold text-dm-text-primary">Datos del Conductor</h3>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-6 gap-6 items-start">
@@ -803,14 +803,14 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                 </div>
                 
                 <div className="md:col-span-1 flex flex-col">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo Doc*</label>
+                  <label className="block text-sm font-medium text-dm-text-secondary mb-2">Tipo Doc*</label>
                   <Controller
                     name="driver_doc_type"
                     control={control}
                     render={({ field }) => (
                       <select 
                         {...field}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        className="w-full p-2 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       >
                         {DOCUMENT_TYPES.map(docType => (
                           <option key={docType.code} value={docType.code}>
@@ -822,7 +822,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                   />
                   <div className="min-h-[1.25rem] mt-1">
                     {errors.driver_doc_type && (
-                      <p className="text-red-500 text-xs">{errors.driver_doc_type.message}</p>
+                      <p className="text-red-500 dark:text-red-400 text-xs">{errors.driver_doc_type.message}</p>
                     )}
                   </div>
                 </div>
@@ -846,13 +846,13 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
             </div>
 
             {/* Observaciones */}
-            <div className="border border-gray-200 rounded-xl p-6">
+            <div className="border border-dm-border-primary rounded-xl p-6">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg">
-                  <InformationCircleIcon className="h-6 w-6 text-gray-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-dm-bg-secondary rounded-lg">
+                  <InformationCircleIcon className="h-6 w-6 text-dm-text-secondary" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Observaciones</h3>
-                <span className="text-sm text-gray-500">(Opcional)</span>
+                <h3 className="text-lg font-semibold text-dm-text-primary">Observaciones</h3>
+                <span className="text-sm text-dm-text-muted">(Opcional)</span>
               </div>
               
               <Controller
@@ -861,7 +861,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
                 render={({ field }) => (
                   <textarea 
                     {...field}
-                    className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full p-4 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     rows={4}
                     placeholder="Ingrese observaciones adicionales para la guía de remisión..."
                   />
@@ -870,13 +870,13 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
             </div>
 
             {/* Comprobante Relacionado */}
-            <div className="border border-gray-200 rounded-xl p-6">
+            <div className="border border-dm-border-primary rounded-xl p-6">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-                  <DocumentTextIcon className="h-6 w-6 text-indigo-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-lg">
+                  <DocumentTextIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Comprobante Relacionado</h3>
-                <span className="text-sm text-gray-500">(Opcional)</span>
+                <h3 className="text-lg font-semibold text-dm-text-primary">Comprobante Relacionado</h3>
+                <span className="text-sm text-dm-text-muted">(Opcional)</span>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -912,7 +912,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
           </div>
 
           {/* Botones de acción */}
-          <div className="bg-gray-50 px-8 py-6 border-t border-gray-200">
+          <div className="bg-dm-bg-secondary px-8 py-6 border-t border-dm-border-primary">
             <div className="flex items-center justify-end space-x-4">
               <Button 
                 type="button" 
@@ -926,7 +926,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
               <Button 
                 type="submit"
                 disabled={fields.length === 0 || isLoadingTrip || isSubmitting || isGeneratingPDF || !selectedSeries || availableSeries.length === 0}
-                className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg flex items-center transition-colors"
+                className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-dm-text-muted text-white font-medium rounded-lg flex items-center transition-colors"
               >
                 {isSubmitting || isGeneratingPDF ? (
                   <>

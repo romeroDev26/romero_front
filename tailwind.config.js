@@ -37,6 +37,28 @@ export default {
         'accent-pink': '#d6409f',
         surface: '#fafafa',
         canvas: '#ffffff',
+
+        // ═══════════════════════════════════════════════════════════
+        // TOKENS SEMÁNTICOS PARA DARK MODE
+        // ═══════════════════════════════════════════════════════════
+        'dm-bg': {
+          primary: 'var(--bg-primary)',
+          secondary: 'var(--bg-secondary)',
+          tertiary: 'var(--bg-tertiary)',
+          accent: 'var(--bg-accent)',
+          hover: 'var(--bg-hover)',
+          badge: 'var(--bg-badge)',
+        },
+        'dm-text': {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+          accent: 'var(--text-accent)',
+        },
+        'dm-border': {
+          primary: 'var(--border-primary)',
+          secondary: 'var(--border-secondary)',
+        },
       },
       borderRadius: {
         card: '16px',

@@ -153,8 +153,8 @@ export const VoidDocumentFormPage: React.FC = () => {
             <ArrowLeftIcon className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Nueva Comunicación de Baja</h1>
-            <p className="text-gray-600">
+            <h1 className="text-3xl font-bold text-dm-text-primary">Nueva Comunicación de Baja</h1>
+            <p className="text-dm-text-secondary">
               Anular documentos previamente enviados y aceptados por SUNAT
             </p>
           </div>
@@ -162,12 +162,12 @@ export const VoidDocumentFormPage: React.FC = () => {
       </div>
 
       {/* Información importante */}
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-6">
         <div className="flex">
-          <ExclamationTriangleIcon className="h-6 w-6 text-red-600 mt-1" />
+          <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400 mt-1" />
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-red-800">Consideraciones Importantes</h3>
-            <div className="mt-2 text-sm text-red-700">
+            <h3 className="text-lg font-medium text-red-800 dark:text-red-300">Consideraciones Importantes</h3>
+            <div className="mt-2 text-sm text-red-700 dark:text-red-300">
               <ul className="list-disc list-inside space-y-1">
                 <li><strong>Solo se pueden anular documentos previamente ACEPTADOS</strong> por SUNAT</li>
                 <li>Una vez aceptada la comunicación de baja, la anulación es <strong>irreversible</strong></li>
@@ -181,11 +181,11 @@ export const VoidDocumentFormPage: React.FC = () => {
       </div>
 
       {/* Formulario */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-dm-bg-primary rounded-lg shadow">
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           {/* Fecha de Generación */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-2">
               Fecha de Generación *
             </label>
             <Input
@@ -195,7 +195,7 @@ export const VoidDocumentFormPage: React.FC = () => {
               max={new Date().toISOString().split('T')[0]}
             />
             {watch('generation_date') && (
-              <p className="mt-1 text-sm text-gray-600">
+              <p className="mt-1 text-sm text-dm-text-secondary">
                 📅 {formatDateForDisplay(watch('generation_date'))}
               </p>
             )}
@@ -204,7 +204,7 @@ export const VoidDocumentFormPage: React.FC = () => {
           {/* Documentos a Anular */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Documentos a Anular</h3>
+              <h3 className="text-lg font-medium text-dm-text-primary">Documentos a Anular</h3>
               <Button
                 type="button"
                 variant="outline"
@@ -217,17 +217,17 @@ export const VoidDocumentFormPage: React.FC = () => {
             </div>
 
             {errors.items && typeof errors.items.message === 'string' && (
-              <p className="text-sm text-red-600 mb-4">{errors.items.message}</p>
+              <p className="text-sm text-red-600 dark:text-red-400 mb-4">{errors.items.message}</p>
             )}
 
             <div className="space-y-6">
               {fields.map((field, index) => (
-                <div key={field.id} className="border border-gray-200 rounded-lg p-4">
+                <div key={field.id} className="border border-dm-border-primary rounded-lg p-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-medium text-gray-900">
+                    <h4 className="font-medium text-dm-text-primary">
                       Documento #{index + 1}
                       {watchedItems[index]?.series && watchedItems[index]?.number && (
-                        <span className="ml-2 text-sm text-gray-600">
+                        <span className="ml-2 text-sm text-dm-text-secondary">
                           ({getDocumentTypeText(watchedItems[index]?.document_type_code || '01')} {watchedItems[index]?.series}-{String(watchedItems[index]?.number).padStart(8, '0')})
                         </span>
                       )}
@@ -238,7 +238,7 @@ export const VoidDocumentFormPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => removeDocument(index)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 dark:text-red-400 hover:text-red-700 dark:text-red-300"
                       >
                         <TrashIcon className="h-4 w-4" />
                       </Button>
@@ -248,18 +248,18 @@ export const VoidDocumentFormPage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     {/* Tipo de Documento */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                         Tipo de Documento *
                       </label>
                       <select
                         {...register(`items.${index}.document_type_code`)}
-                        className="block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+                        className="block w-full rounded-lg border border-dm-border-primary px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
                       >
                         <option value="01">01 - Factura</option>
                         <option value="03">03 - Boleta</option>
                       </select>
                       {errors.items?.[index]?.document_type_code && (
-                        <p className="mt-1 text-sm text-red-600">
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                           {errors.items[index]?.document_type_code?.message}
                         </p>
                       )}
@@ -267,7 +267,7 @@ export const VoidDocumentFormPage: React.FC = () => {
 
                     {/* Serie */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                         Serie *
                       </label>
                       <Input
@@ -281,7 +281,7 @@ export const VoidDocumentFormPage: React.FC = () => {
 
                     {/* Número */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                         Número *
                       </label>
                       <Input
@@ -297,13 +297,13 @@ export const VoidDocumentFormPage: React.FC = () => {
 
                   {/* Motivo */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                       Motivo de Anulación *
                     </label>
                     
                     {/* Motivos predefinidos */}
                     <div className="mb-2">
-                      <p className="text-xs text-gray-600 mb-2">Motivos comunes (click para usar):</p>
+                      <p className="text-xs text-dm-text-secondary mb-2">Motivos comunes (click para usar):</p>
                       <div className="flex flex-wrap gap-2">
                         {COMMON_REASONS.map((reason, reasonIndex) => (
                           <button
@@ -320,7 +320,7 @@ export const VoidDocumentFormPage: React.FC = () => {
                                 textarea.dispatchEvent(event);
                               }
                             }}
-                            className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
+                            className="px-2 py-1 text-xs bg-dm-bg-secondary hover:bg-dm-bg-hover rounded-full text-dm-text-secondary"
                           >
                             {reason}
                           </button>
@@ -332,15 +332,15 @@ export const VoidDocumentFormPage: React.FC = () => {
                       {...register(`items.${index}.reason`)}
                       rows={3}
                       placeholder="Describa detalladamente el motivo de la anulación..."
-                      className="block w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+                      className="block w-full rounded-lg border border-dm-border-primary px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
                       maxLength={250}
                     />
                     {errors.items?.[index]?.reason && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
                         {errors.items[index]?.reason?.message}
                       </p>
                     )}
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-dm-text-muted">
                       {watchedItems[index]?.reason?.length || 0}/250 caracteres
                     </p>
                   </div>
@@ -350,9 +350,9 @@ export const VoidDocumentFormPage: React.FC = () => {
           </div>
 
           {/* Resumen */}
-          <div className="bg-blue-50 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">Resumen de la Comunicación</h4>
-            <div className="text-sm text-blue-800">
+            <div className="text-sm text-blue-800 dark:text-blue-300">
               <p><strong>Fecha:</strong> {formatDateForDisplay(watch('generation_date'))}</p>
               <p><strong>Documentos a anular:</strong> {fields.length}</p>
               <p><strong>Tipos de documento:</strong></p>
@@ -371,7 +371,7 @@ export const VoidDocumentFormPage: React.FC = () => {
           </div>
 
           {/* Botones */}
-          <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+          <div className="flex justify-end space-x-4 pt-6 border-t border-dm-border-primary">
             <Button
               type="button"
               variant="outline"

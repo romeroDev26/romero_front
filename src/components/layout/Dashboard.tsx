@@ -11,7 +11,9 @@ import {
   BellAlertIcon,
   ChatBubbleLeftRightIcon,
   BriefcaseIcon,
-  SparklesIcon
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
 import { toast } from '@/utils/sileo-toast';
@@ -25,6 +27,7 @@ import SystemUpdatesModal from '../../features/updates/components/SystemUpdatesM
 import { useServiceStatus } from '../../hooks/useServiceStatus';
 import ServiceStatusBanner from '../common/ServiceStatusBanner';
 import { useSystemStatusStore } from '@/stores/systemStatus.store';
+import { useThemeStore } from '@/stores/theme.store';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -99,6 +102,7 @@ const Dashboard: React.FC = () => {
   useServiceStatus();
 
   const isSystemDown = useSystemStatusStore((s) => s.isReachable === false);
+  const { resolvedTheme, toggle } = useThemeStore();
 
   // Estado para el sidebar móvil
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -395,7 +399,7 @@ const Dashboard: React.FC = () => {
     isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute || isCreditNoteAnnulRoute || isSettingsRoute;
 
   return (
-    <div className="flex h-screen bg-gray-100 p-5">
+    <div className="flex h-screen bg-dm-bg-secondary p-5">
       {/* Sidebar móvil: array (no Fragment) para AnimatePresence; closeMobileSidebar desactiva pointer-events antes del exit */}
       <AnimatePresence>
         {sidebarOpen
@@ -403,7 +407,7 @@ const Dashboard: React.FC = () => {
               <motion.div
                 key="mobile-sidebar-backdrop"
                 ref={mobileBackdropRef}
-                className="fixed inset-0 z-40 xl:hidden bg-gray-600/75"
+                className="fixed inset-0 z-40 xl:hidden bg-black/60"
                 role="presentation"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -450,16 +454,16 @@ const Dashboard: React.FC = () => {
       {/* Contenido principal */}
       <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${!sidebarHidden && 'lg:ml-5'}`}>
         {/* Barra superior */}
-        <header className="bg-white rounded-xl mb-3 lg:mb-5 border border-slate-200 shadow-sm overflow-hidden">
+        <header className="bg-dm-bg-primary rounded-xl mb-3 lg:mb-5 border border-dm-border-primary shadow-sm overflow-hidden">
           {/* Fila superior: saludo + banner notificaciones + seller */}
           <div className="flex flex-wrap lg:flex-nowrap items-center justify-between px-3 sm:px-4 lg:px-6 py-2.5 lg:py-4 gap-2 lg:gap-4">
             {/* Botón del sidebar: siempre visible */}
             <button
               onClick={toggleSidebar}
-              className="p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0"
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-dm-bg-hover transition-colors flex-shrink-0"
               title={sidebarHidden ? "Mostrar menú" : "Ocultar menú"}
             >
-              <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
+              <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6 text-dm-text-secondary" />
             </button>
 
             {/* Contenido dinámico: banner de estado o controles normales */}
@@ -488,15 +492,15 @@ const Dashboard: React.FC = () => {
                       <div>
                         {isLoading ? (
                           <div className="space-y-1.5">
-                            <div className="animate-pulse h-4 bg-slate-200 rounded w-36"></div>
-                            <div className="animate-pulse h-3 bg-slate-100 rounded w-48"></div>
+                            <div className="animate-pulse h-4 bg-dm-border-primary rounded w-36"></div>
+                            <div className="animate-pulse h-3 bg-dm-border-secondary rounded w-48"></div>
                           </div>
                         ) : currentUser ? (
                           <>
-                            <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
+                            <h2 className="text-sm sm:text-base font-bold text-dm-text-primary leading-tight">
                               ¡Hola, {currentUser.first_name || currentUser.full_name}!
                             </h2>
-                            <p className="hidden sm:block text-xs text-slate-500">Bienvenido al panel de control de transporte.</p>
+                            <p className="hidden sm:block text-xs text-dm-text-muted">Bienvenido al panel de control de transporte.</p>
                           </>
                         ) : null}
                       </div>
@@ -512,7 +516,7 @@ const Dashboard: React.FC = () => {
                             </div>
                             <div className="overflow-hidden">
                               <p className="text-xs font-semibold text-primary uppercase tracking-wider">Solicitudes de Anulación</p>
-                              <p className="text-sm text-slate-700 font-medium truncate">
+                              <p className="text-sm text-dm-text-secondary font-medium truncate">
                                 {pendingCount > 0
                                   ? `${pendingCount} revisión${pendingCount > 1 ? 'es' : ''} pendiente${pendingCount > 1 ? 's' : ''} hoy`
                                   : 'Sin pendientes por el momento'}
@@ -537,29 +541,29 @@ const Dashboard: React.FC = () => {
                     {/* Botón de Novedades (visible para todos) */}
                     <button
                       onClick={() => { setShowUpdatesModal(true); }}
-                      className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-slate-100 transition-colors relative"
+                      className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors relative"
                       title="Ver novedades del sistema"
                     >
-                      <span className="text-sm font-medium text-slate-700 hidden sm:inline">Novedades</span>
+                      <span className="text-sm font-medium text-dm-text-secondary hidden sm:inline">Novedades</span>
                       <div className="relative">
                         <SparklesIcon className="w-5 h-5 text-amber-500" />
                         {hasNew && (
-                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white animate-pulse" />
+                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-dm-bg-primary animate-pulse" />
                         )}
                       </div>
                     </button>
 
                     {/* Separador */}
-                    <div className="hidden lg:block w-px h-6 bg-slate-200 mx-1" />
+                    <div className="hidden lg:block w-px h-6 bg-dm-border-primary mx-1" />
 
                     {/* Respuestas del vendedor */}
                     {isSeller && (
                       <button
                         onClick={handleOpenSellerModal}
-                        className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-slate-100 transition-colors"
+                        className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
                         title="Ver respuestas a tus solicitudes de anulación"
                       >
-                        <span className="text-sm font-medium text-slate-700 hidden sm:inline">Mis Respuestas</span>
+                        <span className="text-sm font-medium text-dm-text-secondary hidden sm:inline">Mis Respuestas</span>
                         <div className="relative">
                           <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-500" />
                           {sellerResponsesCount > 0 && (
@@ -573,6 +577,22 @@ const Dashboard: React.FC = () => {
                         </div>
                       </button>
                     )}
+
+                    {/* Toggle de tema (visible para todos) */}
+                    <button
+                      onClick={toggle}
+                      className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
+                      title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                    >
+                      <span className="text-sm font-medium text-dm-text-secondary hidden sm:inline">
+                        {resolvedTheme === 'dark' ? 'Claro' : 'Oscuro'}
+                      </span>
+                      {resolvedTheme === 'dark' ? (
+                        <SunIcon className="w-5 h-5 text-amber-400" />
+                      ) : (
+                        <MoonIcon className="w-5 h-5 text-slate-500" />
+                      )}
+                    </button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -580,7 +600,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Navegación de accesos rápidos (tabs estilo log.md) */}
-          <nav className="border-t border-slate-200 bg-slate-50/50 px-2 sm:px-4 lg:px-6">
+          <nav className="border-t border-dm-border-primary bg-dm-bg-secondary/50 px-2 sm:px-4 lg:px-6">
             <div className="flex items-center overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
               {quickAccessItems.map((item) => {
                 const isActive = location.pathname.startsWith(item.path);
@@ -615,7 +635,7 @@ const Dashboard: React.FC = () => {
         {/* Área de contenido */}
         <main
           className={`relative flex-1 overflow-y-auto rounded-xl shadow-sm ${
-            isGrayFullBleedRoute ? 'bg-[#f5f5f5]' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
+            isGrayFullBleedRoute ? 'bg-dm-bg-secondary' : isDashboardOrReports ? 'bg-dm-bg-secondary' : 'bg-dm-bg-primary'
           }`}
         >
           {location.pathname === '/' && (

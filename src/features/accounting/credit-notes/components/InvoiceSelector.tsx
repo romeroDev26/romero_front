@@ -70,18 +70,18 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 	return (
 		<>
 			<div className="mb-4">
-				<label className="block text-sm font-medium text-gray-700 mb-1">Buscar Factura*</label>
+				<label className="block text-sm font-medium text-dm-text-secondary mb-1">Buscar Factura*</label>
 				<div className="flex">
-					<div onClick={() => !disabled && setShowModal(true)} className="flex-1 p-2 border border-gray-300 rounded-md bg-gray-50 cursor-pointer">
+					<div onClick={() => !disabled && setShowModal(true)} className="flex-1 p-2 border border-dm-border-primary rounded-md bg-dm-bg-secondary cursor-pointer">
 						{selectedInvoiceDetail ? (
 							<div>
 								<div className="font-medium">
 									{selectedInvoiceDetail.series}-{String(selectedInvoiceDetail.number).padStart(8, '0')}
-									<span className="ml-2 text-sm text-gray-500">
+									<span className="ml-2 text-sm text-dm-text-muted">
 										({selectedInvoiceDetail.document_type_code === '01' ? 'Factura' : 'Boleta'})
 									</span>
 								</div>
-								<div className="text-sm text-gray-500">
+								<div className="text-sm text-dm-text-muted">
 									{selectedInvoiceDetail.client?.name}  {new Intl.NumberFormat('es-PE', {
 										style: 'currency',
 										currency: 'PEN'
@@ -89,7 +89,7 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 								</div>
 							</div>
 						) : (
-							<div className="text-gray-400">Seleccionar factura a afectar...</div>
+							<div className="text-dm-text-muted">Seleccionar factura a afectar...</div>
 						)}
 					</div>
 				</div>
@@ -97,20 +97,20 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 
 			{/* Información de la factura seleccionada */}
 			{selectedInvoiceDetail && (
-				<div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-					<h4 className="text-sm font-medium text-blue-800 mb-2">Información de la Factura</h4>
+				<div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+					<h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Información de la Factura</h4>
 					<div className="grid grid-cols-2 gap-4 text-sm">
 						<div>
-							<span className="text-blue-700">Cliente:</span> {selectedInvoiceDetail.client?.name}
+							<span className="text-blue-700 dark:text-blue-300">Cliente:</span> {selectedInvoiceDetail.client?.name}
 						</div>
 						<div>
-							<span className="text-blue-700">RUC/DNI:</span> {selectedInvoiceDetail.client?.doc_number}
+							<span className="text-blue-700 dark:text-blue-300">RUC/DNI:</span> {selectedInvoiceDetail.client?.doc_number}
 						</div>
 						<div>
-							<span className="text-blue-700">Fecha:</span> {new Date(selectedInvoiceDetail.issue_date).toLocaleDateString('es-PE')}
+							<span className="text-blue-700 dark:text-blue-300">Fecha:</span> {new Date(selectedInvoiceDetail.issue_date).toLocaleDateString('es-PE')}
 						</div>
 						<div>
-							<span className="text-blue-700">Total:</span> {new Intl.NumberFormat('es-PE', {
+							<span className="text-blue-700 dark:text-blue-300">Total:</span> {new Intl.NumberFormat('es-PE', {
 								style: 'currency',
 								currency: 'PEN'
 							}).format(selectedInvoiceDetail.total_payable)}
@@ -132,14 +132,14 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 							placeholder="Buscar por serie, número o cliente..."
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							className="w-full p-2 border border-gray-300 rounded-md"
+							className="w-full p-2 border border-dm-border-primary rounded-md"
 						/>
 					</div>
 					<div className="max-h-96 overflow-y-auto">
 						{isLoading ? (
 							<div className="text-center py-4">
 								<div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-								<p className="mt-2 text-gray-600">Cargando facturas...</p>
+								<p className="mt-2 text-dm-text-secondary">Cargando facturas...</p>
 							</div>
 						) : (
 							<div className="space-y-2">
@@ -147,25 +147,25 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 									<div
 										key={invoice.id}
 										onClick={() => selectInvoice(invoice)}
-										className="p-3 hover:bg-gray-50 cursor-pointer border rounded-md transition-colors"
+										className="p-3 hover:bg-dm-bg-hover cursor-pointer border rounded-md transition-colors"
 									>
 										<div className="flex justify-between items-start">
 											<div className="flex-1">
 												<div className="font-medium">
 													{invoice.series}-{String(invoice.number).padStart(8, '0')}
-													<span className="ml-2 text-sm text-gray-500">
+													<span className="ml-2 text-sm text-dm-text-muted">
 														({invoice.document_type_code === '01' ? 'Factura' : 'Boleta'})
 													</span>
 												</div>
-												<div className="text-sm text-gray-600 mt-1">
+												<div className="text-sm text-dm-text-secondary mt-1">
 													{invoice.client_name}
 												</div>
-												<div className="text-xs text-gray-500 mt-1">
+												<div className="text-xs text-dm-text-muted mt-1">
 													Emitida: {new Date(invoice.issue_date).toLocaleDateString('es-PE')}
 												</div>
 											</div>
 											<div className="text-right">
-												<div className="font-medium text-gray-900">
+												<div className="font-medium text-dm-text-primary">
 													{new Intl.NumberFormat('es-PE', {
 														style: 'currency',
 														currency: 'PEN'
@@ -174,12 +174,12 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 											</div>
 										</div>
 										{loadingDetail && (
-											<div className="mt-2 text-xs text-blue-600">Cargando detalles...</div>
+											<div className="mt-2 text-xs text-blue-600 dark:text-blue-400">Cargando detalles...</div>
 										)}
 									</div>
 								))}
 								{filteredInvoices.length === 0 && (
-									<div className="text-center py-8 text-gray-500">
+									<div className="text-center py-8 text-dm-text-muted">
 										{voidableInvoices.length === 0 ? (
 											<div>
 												<div className="text-lg mb-2">📄</div>
@@ -195,7 +195,7 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 					</div>
 					
 					<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-						<div className="text-sm text-yellow-800">
+						<div className="text-sm text-yellow-800 dark:text-yellow-300">
 							<strong>Nota:</strong> Solo se muestran facturas que pueden ser afectadas por notas de crédito.
 							Al seleccionar una factura, se cargarán automáticamente todos sus datos y productos.
 						</div>
@@ -212,23 +212,23 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 					<div className="space-y-4">
 						<div>
 							<div className="font-medium">{confirmInvoice.series}-{String(confirmInvoice.number).padStart(8, '0')}</div>
-							<div className="text-sm text-gray-600">Cliente: {confirmInvoice.client?.name}</div>
-							<div className="text-sm text-gray-600">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || confirmInvoice.client?.doc || ''}</div>
+							<div className="text-sm text-dm-text-secondary">Cliente: {confirmInvoice.client?.name}</div>
+							<div className="text-sm text-dm-text-secondary">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || confirmInvoice.client?.doc || ''}</div>
 							{(confirmInvoice.client?.address || confirmInvoice.client_address) && (
-								<div className="text-sm text-gray-600">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
+								<div className="text-sm text-dm-text-secondary">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
 							)}
-							<div className="text-sm text-gray-600">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
+							<div className="text-sm text-dm-text-secondary">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
 						</div>
 
 						{/* Resumen breve de items/servicios */}
 						{confirmInvoice.items && confirmInvoice.items.length > 0 && (
 							<div className="mt-2 border-t pt-2">
-								<div className="text-sm font-medium text-gray-700 mb-1">Servicios / Ítems incluidos</div>
-								<ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
+								<div className="text-sm font-medium text-dm-text-secondary mb-1">Servicios / Ítems incluidos</div>
+								<ul className="text-sm text-dm-text-secondary list-disc pl-5 space-y-1">
 									{confirmInvoice.items.slice(0,5).map((it: any, idx: number) => (
 										<li key={idx}>{it.item_description || it.product_name || it.description || 'Servicio'} — {it.quantity || it.qty || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
 									))}
-									{confirmInvoice.items.length > 5 && <li className="text-xs text-gray-500">+{confirmInvoice.items.length - 5} más</li>}
+									{confirmInvoice.items.length > 5 && <li className="text-xs text-dm-text-muted">+{confirmInvoice.items.length - 5} más</li>}
 								</ul>
 							</div>
 						)}

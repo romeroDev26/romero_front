@@ -114,23 +114,23 @@ export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPrev
         />
 
         {/* Contenido del modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full">
+        <div className="inline-block align-bottom bg-dm-bg-primary rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full">
           {/* Header */}
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-gray-200">
+          <div className="bg-dm-bg-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-dm-border-primary">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
+                <h3 className="text-lg leading-6 font-medium text-dm-text-primary flex items-center">
                   <CheckCircleIcon className="h-6 w-6 text-green-500 mr-2" />
                   Guía de Remisión del Remitente Creada
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-dm-text-muted mt-1">
                   {guide.series}-{guide.number.toString().padStart(8, '0')} - Vista previa del PDF generado
                 </p>
               </div>
               
               <button
                 onClick={onClose}
-                className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md text-dm-text-muted hover:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -138,16 +138,16 @@ export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPrev
           </div>
 
           {/* Contenido */}
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6">
+          <div className="bg-dm-bg-primary px-4 pt-5 pb-4 sm:p-6">
             {/* Información de la guía */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-4 mb-6">
               <div className="flex items-center">
                 <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
                 <div className="text-sm">
-                  <p className="text-green-800 font-medium">
+                  <p className="text-green-800 dark:text-green-300 font-medium">
                     La guía de remisión del remitente ha sido creada exitosamente
                   </p>
-                  <p className="text-green-700 mt-1">
+                  <p className="text-green-700 dark:text-green-300 mt-1">
                     Destinatario: {guide.receiver?.business_name || guide.recipient_name || 'N/A'} | 
                     Origen: {guide.origin_address?.address || guide.origin_address || 'N/A'} → 
                     Destino: {guide.destination_address?.address || guide.destination_address || 'N/A'}
@@ -157,12 +157,12 @@ export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPrev
             </div>
 
             {/* Visor PDF */}
-            <div className="bg-gray-50 rounded-lg" style={{ height: '70vh' }}>
+            <div className="bg-dm-bg-secondary rounded-lg" style={{ height: '70vh' }}>
               {isGenerating ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="text-gray-600 mt-4">Generando PDF...</p>
+                    <p className="text-dm-text-secondary mt-4">Generando PDF...</p>
                   </div>
                 </div>
               ) : pdfUrl ? (
@@ -173,14 +173,14 @@ export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPrev
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500">No se pudo cargar la vista previa del PDF</p>
+                  <p className="text-dm-text-muted">No se pudo cargar la vista previa del PDF</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <div className="bg-dm-bg-secondary px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <div className="flex space-x-3">
               <Button
                 onClick={handleDownloadPDF}

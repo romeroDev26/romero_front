@@ -99,7 +99,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#dbe1ff]">
           <User className="h-5 w-5 text-primary" />
         </div>
-        <h3 className="text-base font-bold tracking-tight text-gray-900">
+        <h3 className="text-base font-bold tracking-tight text-dm-text-primary">
           Datos del Pasajero
         </h3>
       </div>
@@ -107,7 +107,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
       {/* Tipo Doc + Número */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div className="md:col-span-1">
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
             Tipo Doc.
           </label>
           <select
@@ -115,7 +115,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             value={passengerData.docType}
             onChange={handleInputChange}
             disabled={disabled}
-            className="w-full appearance-none rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full appearance-none rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {DOCUMENT_TYPES.map(doc => (
               <option key={doc.code} value={doc.code}>{doc.name}</option>
@@ -123,7 +123,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           </select>
         </div>
         <div className="md:col-span-2">
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
             Número de Documento
           </label>
           <div className="flex">
@@ -134,7 +134,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
               onChange={handleInputChange}
               disabled={disabled}
               placeholder="Ingrese el número"
-              className="w-full rounded-l-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+              className="w-full rounded-l-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
             <Button
               onClick={handleSearch}
@@ -149,7 +149,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
 
       {/* Nombre / Razón Social */}
       <div>
-        <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+        <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
           {passengerData.docType === SunatDocType.RUC ? 'Razón Social' : 'Nombres Completos'}
         </label>
         <input
@@ -159,14 +159,14 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           onChange={handleInputChange}
           disabled={disabled}
           placeholder="Nombres y apellidos o Razón Social"
-          className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+          className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
         />
       </div>
 
       {/* Dirección Fiscal (solo RUC) */}
       {passengerData.docType === SunatDocType.RUC && (
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
             Dirección Fiscal
           </label>
           <input
@@ -175,7 +175,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             value={passengerData.address || ""}
             onChange={handleInputChange}
             disabled={disabled}
-            className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
       )}
@@ -183,7 +183,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
       {/* Selector de países para documentos extranjeros */}
       {showCountrySelector && (
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
             País de Procedencia
           </label>
           <CountrySelector
@@ -194,8 +194,8 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             className="w-full"
           />
           {passengerData.countryCode && passengerData.countryName && (
-            <div className="mt-1.5 text-[11px] text-gray-500">
-              Código de país: <span className="font-mono font-semibold text-gray-700">{passengerData.countryCode}</span>
+            <div className="mt-1.5 text-[11px] text-dm-text-muted">
+              Código de país: <span className="font-mono font-semibold text-dm-text-secondary">{passengerData.countryCode}</span>
             </div>
           )}
         </div>
@@ -204,17 +204,17 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
       {/* País fijo para documentos peruanos */}
       {!showCountrySelector && (
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
             País
           </label>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 py-2 px-3">
+          <div className="inline-flex items-center gap-2 rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2 px-3">
             <img 
               src="https://flagcdn.com/pe.svg" 
               alt="Bandera de Perú"
               className="h-3 w-5 rounded object-cover"
             />
-            <span className="text-sm font-medium text-gray-800">Peru</span>
-            <span className="text-xs text-gray-500">(PE)</span>
+            <span className="text-sm font-medium text-dm-text-primary">Peru</span>
+            <span className="text-xs text-dm-text-muted">(PE)</span>
           </div>
         </div>
       )}
@@ -222,7 +222,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
       {/* Teléfono + Email */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
             Teléfono
           </label>
           <input
@@ -232,11 +232,11 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             onChange={handleInputChange}
             disabled={disabled}
             placeholder="Número de teléfono"
-            className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
             Email
           </label>
           <input
@@ -246,7 +246,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             onChange={handleInputChange}
             disabled={disabled}
             placeholder="Correo electrónico"
-            className="w-full rounded-lg border-0 bg-gray-100 py-2.5 px-3.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
       </div>

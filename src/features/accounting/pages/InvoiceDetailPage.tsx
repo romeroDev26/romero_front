@@ -271,8 +271,8 @@ export const InvoiceDetailPage: React.FC = () => {
   };
 
   if (isLoading) return <div className="flex justify-center p-8"><Spinner size="lg" /></div>;
-  if (error) return <div className="p-6 text-center text-red-600">Error al cargar la factura: {error instanceof Error ? error.message : 'Error desconocido'}</div>;
-  if (!invoice) return <div className="p-6 text-center text-gray-500">No se encontró la factura.</div>;
+  if (error) return <div className="p-6 text-center text-red-600 dark:text-red-400">Error al cargar la factura: {error instanceof Error ? error.message : 'Error desconocido'}</div>;
+  if (!invoice) return <div className="p-6 text-center text-dm-text-muted">No se encontró la factura.</div>;
 
   const hasTicketPdf = invoice.pdf_ticket_file_path && invoice.pdf_ticket_file_path.trim() !== '';
   const hasA4Pdf = invoice.pdf_a4_file_path && invoice.pdf_a4_file_path.trim() !== '';
@@ -318,9 +318,9 @@ export const InvoiceDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dm-bg-secondary">
       {/* Header con información básica */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-dm-bg-primary shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
@@ -334,7 +334,7 @@ export const InvoiceDetailPage: React.FC = () => {
                 Volver a Facturas
               </Button>
               <div className="border-l-0 md:border-l pl-0 md:pl-4 mt-4 md:mt-0">
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="text-xl font-bold text-dm-text-primary">
                   {invoice.document_type_code === '01' ? 'Factura' : 'Boleta'} {invoice.series}-{String(invoice.number).padStart(8, '0')}
                 </h1>
                 <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -342,11 +342,11 @@ export const InvoiceDetailPage: React.FC = () => {
                     sunatStatus={invoice.sunat_status} 
                     businessStatus={invoice.business_status}
                   />
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-dm-text-muted">
                     {formatIssueDate(invoice.issue_date)}
                   </span>
-                  <span className="text-sm text-gray-500">•</span>
-                  <span className="text-sm text-gray-900 font-medium">
+                  <span className="text-sm text-dm-text-muted">•</span>
+                  <span className="text-sm text-dm-text-primary font-medium">
                     {getCurrencySymbol(invoice.currency_code)} {Number(invoice.total_payable).toFixed(2)}
                   </span>
                 </div>
@@ -385,7 +385,7 @@ export const InvoiceDetailPage: React.FC = () => {
                 size="sm"
                 onClick={handleRegenerateCurrentPdf}
                 disabled={isRegenerating}
-                className="flex items-center text-amber-600 border-amber-300 hover:bg-amber-50"
+                className="flex items-center text-amber-600 dark:text-amber-400 border-amber-300 hover:bg-amber-50 dark:bg-amber-950/30"
                 title={`Regenerar ticket ${
                   activeTab === 'ticket80mm' ? '80mm' :
                   activeTab === 'a4' ? 'A4' : '100x100'
@@ -406,7 +406,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleWhatsAppClick}
-                  className="flex items-center text-green-600 border-green-300 hover:bg-green-50"
+                  className="flex items-center text-green-600 dark:text-green-400 border-green-300 hover:bg-green-50 dark:bg-green-950/30"
                   title="Enviar por WhatsApp"
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
@@ -420,7 +420,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowEditSeatModal(true)}
-                  className="flex items-center text-blue-600 border-blue-300 hover:bg-blue-50"
+                  className="flex items-center text-blue-600 dark:text-blue-400 border-blue-300 hover:bg-blue-50 dark:bg-blue-950/30"
                   title="Editar asiento del pasajero"
                   disabled={!hasPermission('accounting', 'invoices', 'sales')}
                 >
@@ -476,15 +476,15 @@ export const InvoiceDetailPage: React.FC = () => {
              - Siempre se muestra para facturas que no son 100% encomienda
              - También se muestra si hay cualquier PDF disponible */}
         {(!isCargoInvoice || hasTicketPdf || hasA4Pdf || hasStickerPdf) ? (
-          <div className="bg-white rounded-lg shadow-sm border">
+          <div className="bg-dm-bg-primary rounded-lg shadow-sm border">
             {/* Header del visor PDF */}
-            <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
+            <div className="px-6 py-4 border-b bg-dm-bg-secondary rounded-t-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <DocumentTextIcon className="h-5 w-5 text-blue-600" />
-                  <h2 className="font-semibold text-gray-900">Ticket de Venta</h2>
+                  <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <h2 className="font-semibold text-dm-text-primary">Ticket de Venta</h2>
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-dm-text-muted">
                   Cliente: {invoice.client?.name}
                 </div>
               </div>
@@ -495,7 +495,7 @@ export const InvoiceDetailPage: React.FC = () => {
                    (aunque el PDF no exista aún, para que el usuario pueda regenerarlo)
                  - Sticker 100x100: solo si es encomienda */}
             <div className="px-6 pt-4">
-              <div className="flex border-b border-gray-200">
+              <div className="flex border-b border-dm-border-primary">
                 {/* Tab 80mm: siempre visible para facturas/boletas normales */}
                 {!isCargoInvoice && (
                   <button
@@ -505,8 +505,8 @@ export const InvoiceDetailPage: React.FC = () => {
                     }}
                     className={`px-6 py-3 text-sm font-medium transition-colors ${
                       activeTab === 'ticket80mm'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
                     Ticket 80mm (Térmico)
@@ -521,8 +521,8 @@ export const InvoiceDetailPage: React.FC = () => {
                     }}
                     className={`px-6 py-3 text-sm font-medium transition-colors ${
                       activeTab === 'ticket80mm'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
                     Ticket 80mm (Térmico)
@@ -537,8 +537,8 @@ export const InvoiceDetailPage: React.FC = () => {
                     }}
                     className={`px-6 py-3 text-sm font-medium transition-colors ${
                       activeTab === 'a4'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
                     Ticket A4 (Corporativo)
@@ -553,8 +553,8 @@ export const InvoiceDetailPage: React.FC = () => {
                     }}
                     className={`px-6 py-3 text-sm font-medium transition-colors ${
                       activeTab === 'a4'
-                        ? 'border-b-2 border-blue-600 text-blue-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
                     Ticket A4 (Corporativo)
@@ -568,8 +568,8 @@ export const InvoiceDetailPage: React.FC = () => {
                     }}
                     className={`px-6 py-3 text-sm font-medium transition-colors flex items-center gap-1 ${
                       activeTab === 'sticker100x100'
-                        ? 'border-b-2 border-orange-500 text-orange-600'
-                        : 'text-gray-500 hover:text-gray-700'
+                        ? 'border-b-2 border-orange-500 text-orange-600 dark:text-orange-400'
+                        : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
                     <Tag className="h-3.5 w-3.5" />
@@ -581,7 +581,7 @@ export const InvoiceDetailPage: React.FC = () => {
 
             {/* Visor PDF */}
             <div className="p-6">
-              <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
+              <div className="relative bg-dm-bg-secondary rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
                 {!showPdfError && hasCurrentPdf ? (
                   <iframe
                     ref={pdfIframeRef}
@@ -595,14 +595,14 @@ export const InvoiceDetailPage: React.FC = () => {
                     onError={() => setShowPdfError(true)}
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-96 text-gray-500">
+                  <div className="flex flex-col items-center justify-center h-96 text-dm-text-muted">
                     <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-amber-400" />
-                    <h3 className="text-lg font-medium mb-2 text-gray-800">
+                    <h3 className="text-lg font-medium mb-2 text-dm-text-primary">
                       {activeTab === 'sticker100x100'
                         ? 'Sticker 100x100 no disponible'
                         : `Ticket ${activeTab === 'ticket80mm' ? '80mm' : 'A4'} no disponible`}
                     </h3>
-                    <p className="text-sm text-center text-gray-500 max-w-sm">
+                    <p className="text-sm text-center text-dm-text-muted max-w-sm">
                       El archivo no se encontró o no se generó correctamente.
                       Usa el botón <strong>Regenerar</strong> en la barra superior para solicitarlo de nuevo al servidor.
                     </p>
@@ -613,13 +613,13 @@ export const InvoiceDetailPage: React.FC = () => {
           </div>
         ) : (
           // Fallback: mostrar información básica si no hay PDF
-          <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="bg-dm-bg-primary rounded-lg shadow-sm border p-6">
             <div className="text-center py-12">
-              <DocumentTextIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <DocumentTextIcon className="h-16 w-16 text-dm-text-muted mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-dm-text-primary mb-2">
                 Ticket no disponible
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-dm-text-muted mb-4">
                 No se encontró el archivo PDF del ticket para esta factura.
               </p>
               
@@ -639,15 +639,15 @@ export const InvoiceDetailPage: React.FC = () => {
               <div className="max-w-2xl mx-auto text-left">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                   <div>
-                    <h4 className="font-semibold text-gray-700 mb-2">Cliente</h4>
-                    <p className="text-gray-900">{invoice.client?.name}</p>
-                    <p className="text-gray-600">{invoice.client?.doc_type === '6' ? 'RUC' : 'DNI'}: {invoice.client?.doc_number}</p>
+                    <h4 className="font-semibold text-dm-text-secondary mb-2">Cliente</h4>
+                    <p className="text-dm-text-primary">{invoice.client?.name}</p>
+                    <p className="text-dm-text-secondary">{invoice.client?.doc_type === '6' ? 'RUC' : 'DNI'}: {invoice.client?.doc_number}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-700 mb-2">Totales</h4>
-                    <p className="text-gray-600">Subtotal: S/ {Number(invoice.total_taxable).toFixed(2)}</p>
-                    <p className="text-gray-600">IGV: S/ {Number(invoice.total_igv).toFixed(2)}</p>
-                    <p className="text-lg font-bold text-gray-900">Total: {getCurrencySymbol(invoice.currency_code)} {Number(invoice.total_payable).toFixed(2)}</p>
+                    <h4 className="font-semibold text-dm-text-secondary mb-2">Totales</h4>
+                    <p className="text-dm-text-secondary">Subtotal: S/ {Number(invoice.total_taxable).toFixed(2)}</p>
+                    <p className="text-dm-text-secondary">IGV: S/ {Number(invoice.total_igv).toFixed(2)}</p>
+                    <p className="text-lg font-bold text-dm-text-primary">Total: {getCurrencySymbol(invoice.currency_code)} {Number(invoice.total_payable).toFixed(2)}</p>
                   </div>
                 </div>
               </div>

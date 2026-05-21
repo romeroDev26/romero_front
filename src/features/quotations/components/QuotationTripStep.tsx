@@ -31,44 +31,44 @@ const TripCard: React.FC<{ trip: AvailableTripByPort; onSelect: () => void }> = 
     : 'Hora no definida';
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+    <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary p-4 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-dm-text-muted uppercase tracking-widest">
             ID VIAJE: #{trip.id}
           </span>
-          <p className="font-bold text-slate-800 truncate">{trip.trip_name}</p>
-          <p className="text-xs text-slate-500 truncate">{trip.vessel_name}</p>
+          <p className="font-bold text-dm-text-primary truncate">{trip.trip_name}</p>
+          <p className="text-xs text-dm-text-muted truncate">{trip.vessel_name}</p>
         </div>
-        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700 shrink-0">
+        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700 dark:text-emerald-300 shrink-0">
           Disponible
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 py-3 border-y border-slate-100">
+      <div className="grid grid-cols-2 gap-3 py-3 border-y border-dm-border-secondary">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
             <ClockIcon className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-xs text-slate-500">Salida</span>
-            <p className="text-sm font-semibold text-slate-800 truncate">{formattedTime}</p>
+            <span className="text-xs text-dm-text-muted">Salida</span>
+            <p className="text-sm font-semibold text-dm-text-primary truncate">{formattedTime}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="size-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+          <div className="size-8 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
             <MapPinIcon className="w-4 h-4" />
           </div>
           <div className="min-w-0">
-            <span className="text-xs text-slate-500">Ruta</span>
-            <p className="text-sm font-semibold text-slate-800 truncate">{trip.route_name || 'No definida'}</p>
+            <span className="text-xs text-dm-text-muted">Ruta</span>
+            <p className="text-sm font-semibold text-dm-text-primary truncate">{trip.route_name || 'No definida'}</p>
           </div>
         </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-3">
-        <div className="text-xs text-slate-500 truncate">
+        <div className="text-xs text-dm-text-muted truncate">
           {trip.available_seats !== undefined
             ? `${trip.available_seats} asientos disponibles`
             : 'Disponibilidad por confirmar'}
@@ -103,13 +103,13 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
   const trips = useMemo(() => tripsByDate[selectedDate] || [], [tripsByDate, selectedDate]);
 
   return (
-    <div className="w-full overflow-x-hidden bg-slate-50">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div className="w-full overflow-x-hidden bg-dm-bg-secondary">
+      <header className="bg-dm-bg-primary border-b border-dm-border-primary sticky top-0 z-10">
         <div className="flex items-center px-4 py-3 justify-between gap-3">
           <button
             type="button"
             onClick={onChangeBranch}
-            className="text-slate-600 hover:text-slate-800 transition-colors"
+            className="text-dm-text-secondary hover:text-dm-text-primary transition-colors"
             aria-label="Cambiar sucursal"
           >
             <ArrowLeftIcon className="h-5 w-5" />
@@ -117,7 +117,7 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
 
           <div className="flex items-center gap-2 min-w-0">
             <DocumentTextIcon className="h-5 w-5 text-primary shrink-0" />
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 truncate">Nueva Cotizacion</h1>
+            <h1 className="text-base sm:text-lg font-bold text-dm-text-primary truncate">Nueva Cotizacion</h1>
           </div>
 
           <button
@@ -135,7 +135,7 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
           <div className="h-2 w-2 rounded-full bg-primary/30" />
         </div>
 
-        <p className="text-center text-xs font-medium text-slate-500 pb-2">
+        <p className="text-center text-xs font-medium text-dm-text-muted pb-2">
           Paso 2 de 3: Fecha y Horario
         </p>
 
@@ -150,7 +150,7 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
       <main className="px-4 pt-4 pb-8">
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
           <section>
-            <h2 className="text-base font-semibold text-gray-800 mb-3">Selecciona la fecha</h2>
+            <h2 className="text-base font-semibold text-dm-text-primary mb-3">Selecciona la fecha</h2>
             <TripCalendar
               currentMonth={currentMonth}
               onMonthChange={setCurrentMonth}
@@ -163,7 +163,7 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
 
           <section>
             <div className="flex items-center justify-between mb-3 gap-2">
-              <h2 className="text-base font-bold text-gray-900">
+              <h2 className="text-base font-bold text-dm-text-primary">
                 Viajes para {format(parseISO(selectedDate), 'dd/MM/yyyy')}
               </h2>
               {trips.length > 0 && (
@@ -177,25 +177,25 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
               {isLoading && (
                 <div className="flex flex-col items-center justify-center py-16 gap-3">
                   <Spinner />
-                  <p className="text-sm text-slate-500">Cargando viajes...</p>
+                  <p className="text-sm text-dm-text-muted">Cargando viajes...</p>
                 </div>
               )}
 
               {!isLoading && error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-4 text-sm text-red-700 dark:text-red-300">
                   Error al cargar los viajes: {error.message}
                 </div>
               )}
 
               {!isLoading && !error && trips.length === 0 && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center">
-                  <div className="bg-slate-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="h-6 w-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="bg-dm-bg-secondary border border-dm-border-primary rounded-xl p-8 text-center">
+                  <div className="bg-dm-bg-secondary w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="h-6 w-6 text-dm-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
                     </svg>
                   </div>
-                  <p className="font-medium text-slate-700">Sin viajes para esta fecha</p>
-                  <p className="text-sm text-slate-500 mt-1">
+                  <p className="font-medium text-dm-text-secondary">Sin viajes para esta fecha</p>
+                  <p className="text-sm text-dm-text-muted mt-1">
                     No hay viajes programados desde {branch.port?.name || branch.name} para el dia seleccionado.
                   </p>
                 </div>
@@ -217,7 +217,7 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
         <button
           type="button"
           onClick={onChangeBranch}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm text-dm-text-secondary border border-dm-border-primary hover:bg-dm-bg-hover rounded-lg transition-colors"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           Cambiar sucursal
@@ -228,7 +228,7 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
         <button
           type="button"
           onClick={() => navigate('/sales/quotations')}
-          className="text-sm font-semibold text-slate-500 hover:text-slate-700 transition-colors"
+          className="text-sm font-semibold text-dm-text-muted hover:text-dm-text-secondary transition-colors"
         >
           Volver a cotizaciones
         </button>

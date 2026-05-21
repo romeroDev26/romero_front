@@ -512,8 +512,8 @@ export const CargoSalePage: React.FC = () => {
       return (
         <div className="max-w-7xl mx-auto px-4 pt-4 md:px-6">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Seleccione una sucursal</h2>
-            <p className="text-gray-600">Elija la sucursal desde la cual registrará la encomienda.</p>
+            <h2 className="text-xl font-semibold text-dm-text-primary mb-2">Seleccione una sucursal</h2>
+            <p className="text-dm-text-secondary">Elija la sucursal desde la cual registrará la encomienda.</p>
           </div>
           <BranchSelector onBranchSelect={handleBranchSelect} />
         </div>
@@ -525,9 +525,9 @@ export const CargoSalePage: React.FC = () => {
         return (
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Datos del Remitente */}
-            <div className="bg-white p-4 md:p-8 rounded-lg shadow-sm border">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Datos del Remitente</h2>
-              <p className="text-gray-500 mb-6">Complete la información de la persona o empresa que realiza el envío.</p>
+            <div className="bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border">
+              <h2 className="text-xl font-semibold text-dm-text-primary mb-6">Datos del Remitente</h2>
+              <p className="text-dm-text-muted mb-6">Complete la información de la persona o empresa que realiza el envío.</p>
               <PassengerDataForm passengerData={remitter} setPassengerData={setRemitter} />
             </div>
             
@@ -543,8 +543,8 @@ export const CargoSalePage: React.FC = () => {
 
       case 'tripSelection':
         return (
-          <div className="bg-white p-4 md:p-8 rounded-lg shadow-sm border">
-            <p className="text-gray-500 mb-6 text-center">Seleccione el viaje en el que se transportará la encomienda.</p>
+          <div className="bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border">
+            <p className="text-dm-text-muted mb-6 text-center">Seleccione el viaje en el que se transportará la encomienda.</p>
             <TripSelection 
               branch={selectedBranch}
               onTripSelect={(trip) => { 
@@ -569,8 +569,8 @@ export const CargoSalePage: React.FC = () => {
         );
       case 'tripSegmentSelection':
         return (
-          <div className="max-w-4xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-sm border">
-            <p className="text-gray-500 mb-6 text-center">Seleccione el tramo específico para la encomienda.</p>
+          <div className="max-w-4xl mx-auto bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border">
+            <p className="text-dm-text-muted mb-6 text-center">Seleccione el tramo específico para la encomienda.</p>
             {selectedTrip && (
               <CargoTripSelector
                 tripId={selectedTrip.id}
@@ -594,41 +594,41 @@ export const CargoSalePage: React.FC = () => {
       case 'itemsDefinition':
         return (
           <div className="max-w-7xl mx-auto space-y-6">
-            <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+            <section className="overflow-hidden rounded-[28px] border border-dm-border-primary bg-dm-bg-primary shadow-sm">
               <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-5 py-6 md:px-8">
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="space-y-4">
-                    <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
+                    <div className="inline-flex items-center rounded-full border border-white/15 bg-dm-bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
                       Paso 4 de 4
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold tracking-tight text-white md:text-3xl">Definir encomienda y cierre de venta</h2>
-                      <p className="mt-2 max-w-2xl text-sm text-slate-300">
+                      <p className="mt-2 max-w-2xl text-sm text-dm-text-muted">
                         Revise los datos del envío, agregue la encomienda y deje listo el cobro sin alterar el flujo actual del sistema.
                       </p>
                     </div>
                   </div>
 
-                  <div className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur xl:max-w-md">
+                  <div className="w-full rounded-2xl border border-white/10 bg-dm-bg-primary/5 p-4 backdrop-blur xl:max-w-md">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300">Comprobante</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-dm-text-muted">Comprobante</p>
                         <p className="mt-1 text-sm font-semibold text-white">Configuración de serie activa</p>
                       </div>
-                      <ReceiptTextIcon className="h-5 w-5 text-slate-300" />
+                      <ReceiptTextIcon className="h-5 w-5 text-dm-text-muted" />
                     </div>
                     {isLoadingSeries ? (
                       <Spinner />
                     ) : (
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_104px]">
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-slate-300">
+                          <label className="mb-1 block text-xs font-medium text-dm-text-muted">
                             Serie de {documentLabel}
                           </label>
                           <select
                             value={selectedSeriesValue}
                             onChange={(e) => isRuc ? handleFacturaSeriesChange(e.target.value) : handleBoletaSeriesChange(e.target.value)}
-                            className="w-full rounded-xl border border-white/10 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            className="w-full rounded-xl border border-white/10 bg-dm-bg-primary px-3 py-2 text-sm text-dm-text-secondary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                             disabled={availableSeries.length <= 1}
                           >
                             {availableSeries.map((s) => (
@@ -639,16 +639,16 @@ export const CargoSalePage: React.FC = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-medium text-slate-300">
+                          <label className="mb-1 block text-xs font-medium text-dm-text-muted">
                             Siguiente N°
                           </label>
                           <div className="relative">
-                            <HashIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                            <HashIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dm-text-muted" />
                             <input
                               type="text"
                               value={currentSeriesNumber || '...'}
                               disabled
-                              className="w-full rounded-xl border border-white/10 bg-slate-100 py-2 pl-9 pr-3 text-center text-sm font-semibold text-slate-600"
+                              className="w-full rounded-xl border border-white/10 bg-dm-bg-secondary py-2 pl-9 pr-3 text-center text-sm font-semibold text-dm-text-secondary"
                             />
                           </div>
                         </div>
@@ -658,63 +658,63 @@ export const CargoSalePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="border-t border-slate-200 bg-slate-50/80 px-5 py-5 md:px-8">
+              <div className="border-t border-dm-border-primary bg-dm-bg-secondary/80 px-5 py-5 md:px-8">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-blue-700">
+                  <div className="rounded-2xl border border-blue-100 bg-blue-50 dark:bg-blue-950/30 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
                       <UserIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Remitente</p>
                     </div>
-                    <p className="text-sm font-semibold text-slate-900">{remitter.name}</p>
-                    <p className="mt-1 text-xs text-slate-600">{remitter.docType}: {remitter.docNumber}</p>
+                    <p className="text-sm font-semibold text-dm-text-primary">{remitter.name}</p>
+                    <p className="mt-1 text-xs text-dm-text-secondary">{remitter.docType}: {remitter.docNumber}</p>
                   </div>
 
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-emerald-700">
+                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 dark:bg-emerald-950/30 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
                       <UserIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Destinatario</p>
                     </div>
-                    <p className="text-sm font-semibold text-slate-900">{recipient.isSameAsSender ? 'Mismo remitente' : recipient.name}</p>
-                    <p className="mt-1 text-xs text-slate-600">
+                    <p className="text-sm font-semibold text-dm-text-primary">{recipient.isSameAsSender ? 'Mismo remitente' : recipient.name}</p>
+                    <p className="mt-1 text-xs text-dm-text-secondary">
                       {recipient.isSameAsSender ? remitter.docType : recipient.docType}: {recipient.isSameAsSender ? remitter.docNumber : recipient.docNumber}
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-violet-100 bg-violet-50 p-4">
+                  <div className="rounded-2xl border border-violet-100 bg-violet-50 dark:bg-violet-950/30 p-4">
                     <div className="mb-3 flex items-center gap-2 text-violet-700">
                       <PackageIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Viaje</p>
                     </div>
-                    <p className="text-sm font-semibold text-slate-900">{selectedTrip?.trip_name}</p>
-                    <p className="mt-1 text-xs text-slate-600">Sucursal: {selectedBranch.name}</p>
+                    <p className="text-sm font-semibold text-dm-text-primary">{selectedTrip?.trip_name}</p>
+                    <p className="mt-1 text-xs text-dm-text-secondary">Sucursal: {selectedBranch.name}</p>
                   </div>
 
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-amber-700">
+                  <div className="rounded-2xl border border-amber-100 bg-amber-50 dark:bg-amber-950/30 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300">
                       <MapPinIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Tramo</p>
                     </div>
-                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-dm-text-primary">
                       <span>{selectedOriginName}</span>
-                      <ArrowRightIcon className="h-4 w-4 text-amber-600" />
+                      <ArrowRightIcon className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                       <span>{selectedDestinationName}</span>
                     </p>
-                    <p className="mt-1 text-xs text-slate-600">Viaje listo para asignar encomienda</p>
+                    <p className="mt-1 text-xs text-dm-text-secondary">Viaje listo para asignar encomienda</p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-end gap-2 border-t border-slate-200/80 bg-slate-50/80 px-5 py-3 md:px-8">
+                <div className="flex flex-wrap items-center justify-end gap-2 border-t border-dm-border-primary/80 bg-dm-bg-secondary/80 px-5 py-3 md:px-8">
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="rounded-xl border-slate-300 text-slate-700 hover:bg-white"
+                    className="rounded-xl border-dm-border-primary text-dm-text-secondary hover:bg-dm-bg-primary"
                     onClick={() => setIsClientEditModalOpen(true)}
                   >
                     <UsersRound className="mr-2 h-4 w-4 shrink-0" />
                     Editar remitente o destinatario
                   </Button>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-dm-text-muted">
                     Sin salir del paso 4; las encomiendas añadidas se conservan
                   </span>
                 </div>
@@ -723,17 +723,17 @@ export const CargoSalePage: React.FC = () => {
 
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
               <section className="space-y-6">
-                <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                <div className="rounded-[28px] border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm md:p-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Gestión de encomienda</p>
-                      <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">Detalle del envío</h3>
-                      <p className="mt-2 text-sm text-slate-500">Agregue una encomienda, revise su información y edítela desde esta misma vista.</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-dm-text-muted">Gestión de encomienda</p>
+                      <h3 className="mt-2 text-2xl font-bold tracking-tight text-dm-text-primary">Detalle del envío</h3>
+                      <p className="mt-2 text-sm text-dm-text-muted">Agregue una encomienda, revise su información y edítela desde esta misma vista.</p>
                     </div>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <Button
                         variant="outline"
-                        className="w-full justify-center rounded-xl border-slate-300 px-4 py-3 text-slate-700 hover:bg-slate-50 sm:w-auto"
+                        className="w-full justify-center rounded-xl border-dm-border-primary px-4 py-3 text-dm-text-secondary hover:bg-dm-bg-hover sm:w-auto"
                         onClick={() => { setSelectedDestinationId(null); setCurrentView('tripSegmentSelection'); }}
                       >
                         Volver a Seleccionar Tramo
@@ -757,19 +757,19 @@ export const CargoSalePage: React.FC = () => {
 
                 <div className="space-y-4">
                   {cargoItems.length === 0 ? (
-                    <div className="rounded-[28px] border-2 border-dashed border-slate-300 bg-white px-6 py-12 text-center shadow-sm">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                    <div className="rounded-[28px] border-2 border-dashed border-dm-border-primary bg-dm-bg-primary px-6 py-12 text-center shadow-sm">
+                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted">
                         <ClipboardListIcon className="h-8 w-8" />
                       </div>
-                      <h4 className="mt-5 text-lg font-semibold text-slate-900">Todavía no hay encomiendas cargadas</h4>
-                      <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">Use el botón principal para registrar la encomienda. La venta conserva la restricción actual de una encomienda por operación.</p>
+                      <h4 className="mt-5 text-lg font-semibold text-dm-text-primary">Todavía no hay encomiendas cargadas</h4>
+                      <p className="mx-auto mt-2 max-w-md text-sm text-dm-text-muted">Use el botón principal para registrar la encomienda. La venta conserva la restricción actual de una encomienda por operación.</p>
                     </div>
                   ) : (
                     cargoItems.map((item, index) => (
-                      <article key={item.id} className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm transition hover:border-primary/40 md:p-6">
+                      <article key={item.id} className="rounded-[28px] border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm transition hover:border-primary/40 md:p-6">
                         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                           <div className="flex min-w-0 gap-4">
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-dm-bg-secondary text-dm-text-muted">
                               <PackageIcon className="h-7 w-7" />
                             </div>
                             <div className="min-w-0">
@@ -781,22 +781,22 @@ export const CargoSalePage: React.FC = () => {
                                   {item.product.name}
                                 </span>
                               </div>
-                              <h4 className="mt-3 text-lg font-semibold text-slate-900">{item.description}</h4>
-                              <p className="mt-1 text-sm text-slate-500">Unidad: {item.unitOfMeasure} · Cantidad: {item.quantity} · Precio unitario: S/ {item.price.toFixed(2)}</p>
+                              <h4 className="mt-3 text-lg font-semibold text-dm-text-primary">{item.description}</h4>
+                              <p className="mt-1 text-sm text-dm-text-muted">Unidad: {item.unitOfMeasure} · Cantidad: {item.quantity} · Precio unitario: S/ {item.price.toFixed(2)}</p>
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2 self-start lg:ml-4">
                             <button
                               onClick={() => { setEditingItem(item); setIsItemModalOpen(true); }}
-                              className="rounded-xl border border-slate-200 p-2.5 text-slate-500 transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
+                              className="rounded-xl border border-dm-border-primary p-2.5 text-dm-text-muted transition hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
                               title="Editar"
                             >
                               <PencilIcon className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => setCargoItems(items => items.filter(i => i.id !== item.id))}
-                              className="rounded-xl border border-slate-200 p-2.5 text-slate-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+                              className="rounded-xl border border-dm-border-primary p-2.5 text-dm-text-muted transition hover:border-red-300 hover:bg-red-50 dark:bg-red-950/30 hover:text-red-600 dark:text-red-400"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -805,20 +805,20 @@ export const CargoSalePage: React.FC = () => {
                         </div>
 
                         <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
-                          <div className="rounded-2xl bg-slate-50 p-4">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Destinatario aplicado</p>
-                            <p className="mt-2 text-sm font-semibold text-slate-900">{item.recipient.isSameAsSender ? remitter.name : item.recipient.name}</p>
-                            <p className="mt-1 text-xs text-slate-500">{item.recipient.isSameAsSender ? remitter.docType : item.recipient.docType}: {item.recipient.isSameAsSender ? remitter.docNumber : item.recipient.docNumber}</p>
+                          <div className="rounded-2xl bg-dm-bg-secondary p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-dm-text-muted">Destinatario aplicado</p>
+                            <p className="mt-2 text-sm font-semibold text-dm-text-primary">{item.recipient.isSameAsSender ? remitter.name : item.recipient.name}</p>
+                            <p className="mt-1 text-xs text-dm-text-muted">{item.recipient.isSameAsSender ? remitter.docType : item.recipient.docType}: {item.recipient.isSameAsSender ? remitter.docNumber : item.recipient.docNumber}</p>
                           </div>
-                          <div className="rounded-2xl bg-slate-50 p-4">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Tramo operativo</p>
-                            <p className="mt-2 text-sm font-semibold text-slate-900">{selectedOriginName} → {selectedDestinationName}</p>
-                            <p className="mt-1 text-xs text-slate-500">Viaje: {selectedTrip?.trip_name}</p>
+                          <div className="rounded-2xl bg-dm-bg-secondary p-4">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-dm-text-muted">Tramo operativo</p>
+                            <p className="mt-2 text-sm font-semibold text-dm-text-primary">{selectedOriginName} → {selectedDestinationName}</p>
+                            <p className="mt-1 text-xs text-dm-text-muted">Viaje: {selectedTrip?.trip_name}</p>
                           </div>
                           <div className="rounded-2xl bg-primary/5 p-4 ring-1 ring-primary/10">
                             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">Subtotal</p>
-                            <p className="mt-2 text-2xl font-bold text-slate-900">S/ {(item.quantity * item.price).toFixed(2)}</p>
-                            <p className="mt-1 text-xs text-slate-500">Se mantiene la lógica actual de cálculo</p>
+                            <p className="mt-2 text-2xl font-bold text-dm-text-primary">S/ {(item.quantity * item.price).toFixed(2)}</p>
+                            <p className="mt-1 text-xs text-dm-text-muted">Se mantiene la lógica actual de cálculo</p>
                           </div>
                         </div>
                       </article>
@@ -828,26 +828,26 @@ export const CargoSalePage: React.FC = () => {
               </section>
 
               <aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
-                <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-                  <div className="border-b border-slate-200 bg-gradient-to-br from-primary/10 via-amber-50 to-white px-6 py-6">
-                    <p className="text-sm font-semibold text-slate-500">Total a Pagar</p>
-                    <p className="mt-2 text-4xl font-black tracking-tight text-slate-900">S/ {totalSaleAmount.toFixed(2)}</p>
-                    <p className="mt-2 text-sm text-slate-500">
+                <section className="overflow-hidden rounded-[28px] border border-dm-border-primary bg-dm-bg-primary shadow-sm">
+                  <div className="border-b border-dm-border-primary bg-gradient-to-br from-primary/10 via-amber-50 to-white px-6 py-6">
+                    <p className="text-sm font-semibold text-dm-text-muted">Total a Pagar</p>
+                    <p className="mt-2 text-4xl font-black tracking-tight text-dm-text-primary">S/ {totalSaleAmount.toFixed(2)}</p>
+                    <p className="mt-2 text-sm text-dm-text-muted">
                       {cargoItems.length} {cargoItems.length === 1 ? 'encomienda registrada' : 'encomiendas registradas'}
                     </p>
                     {isContraentrega && (
-                      <p className="mt-3 rounded-xl bg-amber-100 px-3 py-2 text-sm font-medium text-amber-700">
+                      <p className="mt-3 rounded-xl bg-amber-100 px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300">
                         Pago pendiente. Se cobrará al entregar la encomienda.
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-5 px-6 py-6">
-                    <div className="rounded-2xl bg-slate-50 p-4">
+                    <div className="rounded-2xl bg-dm-bg-secondary p-4">
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <p className="text-sm font-semibold text-slate-800">Contraentrega</p>
-                          <p className="mt-1 text-xs text-slate-500">Actívelo si el pago se realizará en destino.</p>
+                          <p className="text-sm font-semibold text-dm-text-primary">Contraentrega</p>
+                          <p className="mt-1 text-xs text-dm-text-muted">Actívelo si el pago se realizará en destino.</p>
                         </div>
                         <button
                           type="button"
@@ -856,7 +856,7 @@ export const CargoSalePage: React.FC = () => {
                           onClick={() => setIsContraentrega(!isContraentrega)}
                           className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isContraentrega ? 'bg-primary' : 'bg-slate-300'}`}
                         >
-                          <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
+                          <span className={`inline-block h-6 w-6 transform rounded-full bg-dm-bg-primary shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
                         </button>
                       </div>
                     </div>
@@ -870,18 +870,18 @@ export const CargoSalePage: React.FC = () => {
                       />
                     )}
 
-                    <div className="space-y-3 rounded-2xl border border-slate-200 p-4">
+                    <div className="space-y-3 rounded-2xl border border-dm-border-primary p-4">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Documento</span>
-                        <span className="font-semibold text-slate-900">{documentLabel}</span>
+                        <span className="text-dm-text-muted">Documento</span>
+                        <span className="font-semibold text-dm-text-primary">{documentLabel}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Serie</span>
-                        <span className="font-semibold text-slate-900">{selectedSeriesValue || 'Sin serie'}</span>
+                        <span className="text-dm-text-muted">Serie</span>
+                        <span className="font-semibold text-dm-text-primary">{selectedSeriesValue || 'Sin serie'}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Siguiente correlativo</span>
-                        <span className="font-semibold text-slate-900">{currentSeriesNumber || '...'}</span>
+                        <span className="text-dm-text-muted">Siguiente correlativo</span>
+                        <span className="font-semibold text-dm-text-primary">{currentSeriesNumber || '...'}</span>
                       </div>
                     </div>
 
@@ -911,16 +911,16 @@ export const CargoSalePage: React.FC = () => {
       {/* Overlay de carga global durante el procesamiento de venta */}
       {isProcessingSale && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4">
+          <div className="bg-dm-bg-primary rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4">
             <Spinner />
             <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
+              <h3 className="text-xl font-bold text-dm-text-primary mb-2">
                 Procesando Venta...
               </h3>
-              <p className="text-gray-600">
+              <p className="text-dm-text-secondary">
                 Por favor espere mientras se genera el comprobante
               </p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-dm-text-muted mt-2">
                 No cierre esta ventana ni realice otras acciones
               </p>
             </div>
@@ -930,13 +930,13 @@ export const CargoSalePage: React.FC = () => {
       
       <div className="-mx-4 w-full min-h-[calc(100vh-10rem)] pb-8 md:pb-10 lg:-mx-6">
         <div className="mx-auto mb-8 max-w-7xl px-4 pt-4 md:px-6">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 text-center mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-dm-text-primary text-center mb-2">
             Venta de Encomiendas y Carga
           </h1>
-          <p className="text-center text-slate-600 mb-2 max-w-xl mx-auto">
+          <p className="text-center text-dm-text-secondary mb-2 max-w-xl mx-auto">
             El borrador se guarda automáticamente en esta sesión: puede volver atrás o recargar la página sin perder la encomienda en curso.
           </p>
-          <p className="text-center text-slate-500 text-sm mb-6">Siga los pasos para registrar un nuevo envío.</p>
+          <p className="text-center text-dm-text-muted text-sm mb-6">Siga los pasos para registrar un nuevo envío.</p>
           <Stepper steps={steps} currentStep={currentStepIndex} onStepClick={handleStepperStepClick} />
         </div>
         <div className="px-4 md:px-6">
@@ -959,17 +959,17 @@ export const CargoSalePage: React.FC = () => {
         title="Editar remitente y destinatario"
         maxWidth="4xl"
       >
-        <p className="mb-4 text-sm text-slate-600">
+        <p className="mb-4 text-sm text-dm-text-secondary">
           Los datos se actualizan al instante. Cada línea de encomienda puede tener su propio destinatario hasta que la edite desde la lista.
         </p>
         <div className="space-y-6 max-h-[min(70vh,640px)] overflow-y-auto pr-1">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-700">Remitente</h3>
+          <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-4 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-dm-text-secondary">Remitente</h3>
             <PassengerDataForm passengerData={remitter} setPassengerData={setRemitter} />
           </div>
           <RecipientForm recipient={recipient} setRecipient={setRecipient} remitter={remitter} />
         </div>
-        <div className="mt-6 flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+        <div className="mt-6 flex flex-col-reverse gap-2 border-t border-dm-border-secondary pt-4 sm:flex-row sm:justify-end">
           <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsClientEditModalOpen(false)}>
             Cancelar
           </Button>

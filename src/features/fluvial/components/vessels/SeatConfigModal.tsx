@@ -158,8 +158,8 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Configurar Asientos: ${vessel.name}`} maxWidth="2xl">
       <form onSubmit={handleSubmit} className="p-6 flex flex-col" style={{ height: '85vh' }}>
-        <p className="text-sm text-gray-500 mb-4">Define la distribución para cada tipo de asiento. Para modificar una configuración existente, bórrela y añádala de nuevo.</p>
-        <div className="bg-gray-100 p-4 rounded-lg mb-6">
+        <p className="text-sm text-dm-text-muted mb-4">Define la distribución para cada tipo de asiento. Para modificar una configuración existente, bórrela y añádala de nuevo.</p>
+        <div className="bg-dm-bg-secondary p-4 rounded-lg mb-6">
           <Input
             label="Número Total de Columnas en la Embarcación"
             type="number"
@@ -168,13 +168,13 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
             min="1"
             required
           />
-          <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+          <p className="text-xs text-dm-text-muted mt-1 flex items-center gap-1">
             <InformationCircleIcon className="h-4 w-4"/>
             Este valor define el "ancho" de la embarcación y se aplicará a todos los tipos de asiento.
           </p>
         </div>
         {errors.length > 0 && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 rounded-lg">
             <ul className="list-disc list-inside text-sm">
               {errors.map((err, i) => <li key={i}>{err}</li>)}
             </ul>
@@ -182,7 +182,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
         )}
         <div className="flex-1 space-y-4 overflow-y-auto pr-2">
           {configs.map((config, index) => (
-            <div key={config.id || index} className="p-4 border border-gray-200 rounded-lg">
+            <div key={config.id || index} className="p-4 border border-dm-border-primary rounded-lg">
               <div className="grid grid-cols-12 gap-x-4 gap-y-3 items-end">
                 <div className="col-span-12 md:col-span-4">
                   <label className="block text-sm font-medium">Tipo de Asiento</label>
@@ -213,7 +213,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
                     type="text"
                     value={config.total_rows || 0}
                     disabled
-                    className="w-full mt-1 p-2 border-gray-200 bg-gray-100 rounded-md text-sm text-center"
+                    className="w-full mt-1 p-2 border-dm-border-primary bg-dm-bg-secondary rounded-md text-sm text-center"
                   />
                 </div>
                 <div className="col-span-3 md:col-span-2">
@@ -231,7 +231,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
                   <Button
                     type="button"
                     variant="outline"
-                    className="!p-2.5 text-red-600 border-red-200 hover:bg-red-50"
+                    className="!p-2.5 text-red-600 dark:text-red-400 border-red-200 hover:bg-red-50 dark:bg-red-950/30"
                     onClick={() => handleRemoveRow(index, config.id)}
                     title="Eliminar"
                   >

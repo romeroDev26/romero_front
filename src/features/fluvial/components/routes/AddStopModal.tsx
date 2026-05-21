@@ -184,7 +184,7 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
 
         {/* Selección de puerto */}
         <div className="space-y-2">
-          <label className="block text-[13px] font-medium text-[#4d4d4d]">
+          <label className="block text-[13px] font-medium text-dm-text-secondary">
             Puerto de la parada *
           </label>
           <SearchableSelect
@@ -209,36 +209,36 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
 
         {/* Duración estimada */}
         <div className="space-y-2">
-          <label className="block text-[13px] font-medium text-[#4d4d4d]">
+          <label className="block text-[13px] font-medium text-dm-text-secondary">
             <ClockIcon className="h-4 w-4 inline mr-1" strokeWidth={1.5} />
             Tiempo estimado desde el origen
           </label>
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="block text-[12px] text-[#828282] mb-1">Horas</label>
+              <label className="block text-[12px] text-dm-text-muted mb-1">Horas</label>
               <input
                 type="number"
                 value={formData.estimated_duration_hours}
                 onChange={(e) => handleInputChange('estimated_duration_hours', e.target.value === '' ? '' : parseInt(e.target.value))}
                 onFocus={() => { if (formData.estimated_duration_hours === 0) handleInputChange('estimated_duration_hours', ''); }}
                 onBlur={() => { if (formData.estimated_duration_hours === '') handleInputChange('estimated_duration_hours', 0); }}
-                className={`w-full px-3 py-2.5 bg-[#f5f5f5] border rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all ${
-                  errors.duration ? 'border-[#cf1322]' : 'border-[#e8e8e8]'
+                className={`w-full px-3 py-2.5 bg-dm-bg-secondary border rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all ${
+                  errors.duration ? 'border-[#cf1322]' : 'border-dm-border-primary'
                 }`}
                 min="0"
                 placeholder="0"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-[12px] text-[#828282] mb-1">Minutos</label>
+              <label className="block text-[12px] text-dm-text-muted mb-1">Minutos</label>
               <input
                 type="number"
                 value={formData.estimated_duration_minutes}
                 onChange={(e) => handleInputChange('estimated_duration_minutes', e.target.value === '' ? '' : parseInt(e.target.value))}
                 onFocus={() => { if (formData.estimated_duration_minutes === 0) handleInputChange('estimated_duration_minutes', ''); }}
                 onBlur={() => { if (formData.estimated_duration_minutes === '') handleInputChange('estimated_duration_minutes', 0); }}
-                className={`w-full px-3 py-2.5 bg-[#f5f5f5] border rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all ${
-                  errors.duration ? 'border-[#cf1322]' : 'border-[#e8e8e8]'
+                className={`w-full px-3 py-2.5 bg-dm-bg-secondary border rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all ${
+                  errors.duration ? 'border-[#cf1322]' : 'border-dm-border-primary'
                 }`}
                 min="0"
                 max="59"
@@ -252,14 +252,14 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
               <span>{errors.duration}</span>
             </p>
           )}
-          <p className="text-[12px] text-[#828282]">
+          <p className="text-[12px] text-dm-text-muted">
             Tiempo total: {Number(formData.estimated_duration_hours || 0)}h {Number(formData.estimated_duration_minutes || 0)}m
           </p>
         </div>
 
         {/* Operaciones permitidas */}
         <div className="space-y-3">
-          <label className="block text-[13px] font-medium text-[#4d4d4d]">
+          <label className="block text-[13px] font-medium text-dm-text-secondary">
             Operaciones permitidas
           </label>
           <div className="space-y-2">
@@ -268,44 +268,44 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
                 type="checkbox"
                 checked={formData.is_boarding_allowed}
                 onChange={(e) => handleInputChange('is_boarding_allowed', e.target.checked)}
-                className="rounded border-[#e8e8e8] text-[#1F4690] focus:ring-[#1F4690]/20 h-4 w-4"
+                className="rounded border-dm-border-primary text-[#1F4690] focus:ring-[#1F4690]/20 h-4 w-4"
               />
-              <span className="text-[14px] text-[#202020]">Permitir embarque de pasajeros</span>
+              <span className="text-[14px] text-dm-text-primary">Permitir embarque de pasajeros</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.is_disembarking_allowed}
                 onChange={(e) => handleInputChange('is_disembarking_allowed', e.target.checked)}
-                className="rounded border-[#e8e8e8] text-[#1F4690] focus:ring-[#1F4690]/20 h-4 w-4"
+                className="rounded border-dm-border-primary text-[#1F4690] focus:ring-[#1F4690]/20 h-4 w-4"
               />
-              <span className="text-[14px] text-[#202020]">Permitir desembarque de pasajeros</span>
+              <span className="text-[14px] text-dm-text-primary">Permitir desembarque de pasajeros</span>
             </label>
           </div>
         </div>
 
         {/* Notas */}
         <div className="space-y-2">
-          <label className="block text-[13px] font-medium text-[#4d4d4d]">
+          <label className="block text-[13px] font-medium text-dm-text-secondary">
             <DocumentTextIcon className="h-4 w-4 inline mr-1" strokeWidth={1.5} />
             Notas adicionales (opcional)
           </label>
           <textarea
             value={formData.notes}
             onChange={(e) => handleInputChange('notes', e.target.value)}
-            className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
+            className="w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
             rows={3}
             placeholder="Información adicional sobre esta parada..."
           />
         </div>
 
         {/* Botones de acción */}
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-[#f0f0f0]">
+        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-dm-border-secondary">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2.5 text-[14px] font-medium text-[#202020] bg-white border border-[#e8e8e8] rounded-[10px] hover:bg-[#f5f5f5] disabled:opacity-50 transition-colors"
+            className="px-4 py-2.5 text-[14px] font-medium text-dm-text-primary bg-dm-bg-primary border border-dm-border-primary rounded-[10px] hover:bg-dm-bg-secondary disabled:opacity-50 transition-colors"
           >
             Cancelar
           </button>

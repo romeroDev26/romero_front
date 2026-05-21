@@ -48,27 +48,27 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
   const getTripStatusColor = (trip: AvailableTrip) => {
     switch (trip.sales_status) {
       case 'DISPONIBLE':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200';
       case 'URGENTE':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
+        return 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 border-orange-200';
       case 'AGOTADO':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200';
       case 'CERRADO':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-dm-bg-secondary text-dm-text-primary border-dm-border-primary';
       default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200';
     }
   };
 
   const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   return (
-    <div className="bg-white rounded-lg">
+    <div className="bg-dm-bg-primary rounded-lg">
       {/* Header del calendario */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={handlePrevMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
         >
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
@@ -79,18 +79,18 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
         
         <button
           onClick={handleNextMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
         >
           <ChevronRightIcon className="h-5 w-5" />
         </button>
       </div>
 
       {/* Días de la semana */}
-      <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-t-lg overflow-hidden">
+      <div className="grid grid-cols-7 gap-px bg-dm-bg-secondary rounded-t-lg overflow-hidden">
         {weekDays.map((day) => (
           <div
             key={day}
-            className="bg-gray-50 p-2 text-center text-sm font-medium text-gray-700"
+            className="bg-dm-bg-secondary p-2 text-center text-sm font-medium text-dm-text-secondary"
           >
             {day}
           </div>
@@ -98,10 +98,10 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
       </div>
 
       {/* Días del mes */}
-      <div className="grid grid-cols-7 gap-px bg-gray-200 rounded-b-lg overflow-hidden">
+      <div className="grid grid-cols-7 gap-px bg-dm-bg-secondary rounded-b-lg overflow-hidden">
         {calendarDays.map((day, index) => {
           if (!day) {
-            return <div key={`empty-${index}`} className="bg-gray-50 p-2 h-24" />;
+            return <div key={`empty-${index}`} className="bg-dm-bg-secondary p-2 h-24" />;
           }
 
           const dateKey = format(day, 'yyyy-MM-dd');
@@ -111,14 +111,14 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
           return (
             <div
               key={dateKey}
-              className={`bg-white p-2 h-24 overflow-hidden hover:bg-gray-50 cursor-pointer transition-colors ${
+              className={`bg-dm-bg-primary p-2 h-24 overflow-hidden hover:bg-dm-bg-hover cursor-pointer transition-colors ${
                 isCurrentDay ? 'ring-2 ring-primary ring-inset' : ''
               }`}
               onClick={() => onDateClick(day)}
             >
               <div className="flex justify-between items-start mb-1">
                 <span className={`text-sm font-medium ${
-                  isCurrentDay ? 'text-primary' : 'text-gray-900'
+                  isCurrentDay ? 'text-primary' : 'text-dm-text-primary'
                 }`}>
                   {format(day, 'd')}
                 </span>
@@ -144,7 +144,7 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
                   </div>
                 ))}
                 {dayTrips.length > 2 && (
-                  <div className="text-xs text-gray-500 text-center">
+                  <div className="text-xs text-dm-text-muted text-center">
                     +{dayTrips.length - 2} más
                   </div>
                 )}
@@ -157,19 +157,19 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
       {/* Leyenda */}
       <div className="mt-4 flex flex-wrap gap-2 text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-green-100 border border-green-200 rounded"></div>
+          <div className="w-3 h-3 bg-green-100 dark:bg-green-900/40 border border-green-200 rounded"></div>
           <span>Disponible</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-orange-100 border border-orange-200 rounded"></div>
+          <div className="w-3 h-3 bg-orange-100 dark:bg-orange-900/40 border border-orange-200 rounded"></div>
           <span>Urgente</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-red-100 border border-red-200 rounded"></div>
+          <div className="w-3 h-3 bg-red-100 dark:bg-red-900/40 border border-red-200 rounded"></div>
           <span>Agotado</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-gray-100 border border-gray-200 rounded"></div>
+          <div className="w-3 h-3 bg-dm-bg-secondary border border-dm-border-primary rounded"></div>
           <span>Cerrado</span>
         </div>
       </div>

@@ -29,8 +29,8 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
 
   const getColor = () => {
     if (isFirst) return 'text-[#1F4690] bg-[#1F4690]/5 border-[#1F4690]/20';
-    if (stopIndex === stops.length - 1) return 'text-[#4d4d4d] bg-[#4d4d4d]/5 border-[#4d4d4d]/20';
-    return 'text-[#828282] bg-[#f5f5f5] border-[#e8e8e8]';
+    if (stopIndex === stops.length - 1) return 'text-dm-text-secondary bg-[#4d4d4d]/5 border-[#4d4d4d]/20';
+    return 'text-dm-text-muted bg-dm-bg-secondary border-dm-border-primary';
   };
 
   return (
@@ -41,11 +41,11 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
             <span className="text-[18px] font-bold">{stop.stop_order}</span>
           </div>
           <div>
-            <h3 className="text-[18px] font-medium text-[#202020]">{stop.port?.name}</h3>
-            <p className="text-[13px] text-[#828282]">
+            <h3 className="text-[18px] font-medium text-dm-text-primary">{stop.port?.name}</h3>
+            <p className="text-[13px] text-dm-text-muted">
               Parada #{stop.stop_order}
               {fixed && (
-                <span className="ml-2 px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#f5f5f5] text-[#828282] border border-[#e8e8e8]">
+                <span className="ml-2 px-2 py-0.5 rounded-full text-[11px] font-medium bg-dm-bg-secondary text-dm-text-muted border border-dm-border-primary">
                   {isFirst ? 'ORIGEN' : 'DESTINO'}
                 </span>
               )}
@@ -54,21 +54,21 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-[#f5f5f5] rounded-[10px] p-4 border border-[#e8e8e8]">
+          <div className="bg-dm-bg-secondary rounded-[10px] p-4 border border-dm-border-primary">
             <div className="flex items-center gap-2 mb-1">
-              <ClockIcon className="h-4 w-4 text-[#828282]" strokeWidth={1.5} />
-              <span className="text-[12px] text-[#828282]">Tiempo desde origen</span>
+              <ClockIcon className="h-4 w-4 text-dm-text-muted" strokeWidth={1.5} />
+              <span className="text-[12px] text-dm-text-muted">Tiempo desde origen</span>
             </div>
-            <p className="text-[16px] font-semibold text-[#202020]">
+            <p className="text-[16px] font-semibold text-dm-text-primary">
               {routeHelpers.isoStringToHours(stop.estimated_duration_from_origin || 'PT0S').toFixed(1)}h
             </p>
           </div>
-          <div className="bg-[#f5f5f5] rounded-[10px] p-4 border border-[#e8e8e8]">
+          <div className="bg-dm-bg-secondary rounded-[10px] p-4 border border-dm-border-primary">
             <div className="flex items-center gap-2 mb-1">
-              <UserGroupIcon className="h-4 w-4 text-[#828282]" strokeWidth={1.5} />
-              <span className="text-[12px] text-[#828282]">Operaciones</span>
+              <UserGroupIcon className="h-4 w-4 text-dm-text-muted" strokeWidth={1.5} />
+              <span className="text-[12px] text-dm-text-muted">Operaciones</span>
             </div>
-            <p className="text-[14px] font-medium text-[#202020]">
+            <p className="text-[14px] font-medium text-dm-text-primary">
               {stop.is_boarding_allowed && stop.is_disembarking_allowed
                 ? 'Embarque y Desembarque'
                 : stop.is_boarding_allowed
@@ -81,9 +81,9 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
         </div>
 
         {stop.notes && (
-          <div className="bg-[#f5f5f5] rounded-[10px] p-4 border border-[#e8e8e8]">
-            <span className="text-[12px] text-[#828282]">Notas</span>
-            <p className="text-[14px] text-[#202020] mt-1">{stop.notes}</p>
+          <div className="bg-dm-bg-secondary rounded-[10px] p-4 border border-dm-border-primary">
+            <span className="text-[12px] text-dm-text-muted">Notas</span>
+            <p className="text-[14px] text-dm-text-primary mt-1">{stop.notes}</p>
           </div>
         )}
 
@@ -93,7 +93,7 @@ export const StopDetailModal: React.FC<StopDetailModalProps> = ({
               onStartEditing(stop);
               onClose();
             }}
-            className="px-4 py-2 text-[13px] font-medium text-[#202020] bg-white border border-[#e8e8e8] rounded-[10px] hover:bg-[#f5f5f5] transition-colors"
+            className="px-4 py-2 text-[13px] font-medium text-dm-text-primary bg-dm-bg-primary border border-dm-border-primary rounded-[10px] hover:bg-dm-bg-secondary transition-colors"
           >
             Editar Parada
           </button>

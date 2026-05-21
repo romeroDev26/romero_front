@@ -36,7 +36,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
+      <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
         </div>
@@ -45,9 +45,9 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-        <Package className="h-5 w-5 mr-2 text-gray-600" />
+    <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
+      <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
+        <Package className="h-5 w-5 mr-2 text-dm-text-secondary" />
         Seleccione el Servicio o Producto *
       </h3>
 
@@ -56,9 +56,9 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
           value={selectedProduct?.id || ''}
           onChange={handleChange}
           disabled={disabled}
-          className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-gray-100 text-base font-medium text-gray-700 hover:border-gray-400 transition-colors cursor-pointer"
+          className="w-full px-4 py-3.5 border-2 border-dm-border-primary rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:bg-dm-bg-secondary text-base font-medium text-dm-text-secondary hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer"
         >
-          <option value="" className="text-gray-500">
+          <option value="" className="text-dm-text-muted">
             -- Seleccione un servicio o producto --
           </option>
           {filteredProducts.map((product) => (
@@ -84,7 +84,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
               </div>
               
               {selectedProduct.description && (
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p className="text-sm text-dm-text-secondary leading-relaxed">
                   {selectedProduct.description}
                 </p>
               )}
@@ -94,7 +94,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
                   {selectedProduct.item_type === 'SERVICE' ? 'Servicio' : 'Producto'}
                 </span>
                 {selectedProduct.service_category && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
                     {selectedProduct.service_category}
                   </span>
                 )}

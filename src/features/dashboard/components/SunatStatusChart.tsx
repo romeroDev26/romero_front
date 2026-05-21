@@ -22,20 +22,20 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">
-        <p className="text-sm font-medium text-gray-900 mb-2">{data.label}</p>
+      <div className="bg-dm-bg-primary px-4 py-3 shadow-lg rounded-lg border border-dm-border-secondary">
+        <p className="text-sm font-medium text-dm-text-primary mb-2">{data.label}</p>
         <div className="flex items-center gap-2 text-sm">
           <div 
             className="w-3 h-3 rounded-full" 
             style={{ backgroundColor: data.fill }}
           />
-          <span className="text-gray-600">Documentos:</span>
-          <span className="font-semibold text-gray-900">{data.count}</span>
+          <span className="text-dm-text-secondary">Documentos:</span>
+          <span className="font-semibold text-dm-text-primary">{data.count}</span>
         </div>
         <div className="flex items-center gap-2 text-sm mt-1">
-          <div className="w-3 h-3 rounded-full bg-gray-300" />
-          <span className="text-gray-600">Monto:</span>
-          <span className="font-semibold text-gray-900">
+          <div className="w-3 h-3 rounded-full bg-dm-text-muted" />
+          <span className="text-dm-text-secondary">Monto:</span>
+          <span className="font-semibold text-dm-text-primary">
             S/ {data.amount.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
           </span>
         </div>
@@ -56,10 +56,10 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">
         <div className="animate-pulse">
-          <div className="h-5 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="h-64 bg-gray-100 rounded-lg"></div>
+          <div className="h-5 bg-dm-bg-secondary rounded w-1/3 mb-6"></div>
+          <div className="h-64 bg-dm-bg-secondary rounded-lg"></div>
         </div>
       </div>
     );
@@ -74,26 +74,26 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
   }> = {
     'ACCEPTED': {
       label: 'Aceptados',
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50',
+      color: 'text-emerald-600 dark:text-emerald-400',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-950/30',
       icon: CheckCircleIcon
     },
     'REJECTED': {
       label: 'Rechazados',
-      color: 'text-red-600',
-      bgColor: 'bg-red-50',
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-50 dark:bg-red-950/30',
       icon: XCircleIcon
     },
     'PENDING': {
       label: 'Pendientes',
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50',
+      color: 'text-amber-600 dark:text-amber-400',
+      bgColor: 'bg-amber-50 dark:bg-amber-950/30',
       icon: ClockIcon
     },
     'ERROR': {
       label: 'Con Error',
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-50 dark:bg-orange-950/30',
       icon: ExclamationTriangleIcon
     }
   };
@@ -101,12 +101,12 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
   const totalDocuments = Object.values(sunatStatus || {}).reduce((sum, data) => sum + data.cantidad, 0);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-base font-semibold text-gray-900">
+        <h3 className="text-base font-semibold text-dm-text-primary">
           Estado de Documentos
         </h3>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-dm-text-muted">
           {totalDocuments} documentos
         </span>
       </div>
@@ -119,7 +119,7 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
           const Icon = config.icon;
 
           return (
-            <div key={status} className={`${config.bgColor} rounded-lg p-4 border border-gray-200`}>
+            <div key={status} className={`${config.bgColor} rounded-lg p-4 border border-dm-border-primary`}>
               <div className="flex items-start justify-between mb-2">
                 <Icon className={`w-5 h-5 ${config.color}`} />
                 <span className={`text-xs font-semibold ${config.color}`}>
@@ -131,10 +131,10 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
                 <div className={`text-2xl font-bold ${config.color} mb-1`}>
                   {data.cantidad}
                 </div>
-                <div className="text-xs text-gray-600 mb-2">
+                <div className="text-xs text-dm-text-secondary mb-2">
                   {config.label}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-dm-text-muted">
                   S/ {data.monto.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </div>
               </div>
@@ -145,13 +145,13 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
 
       {/* Barra de progreso general */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-gray-600">
+        <div className="flex items-center justify-between text-xs text-dm-text-secondary">
           <span>Estado general</span>
           <span className="font-medium">
             {totalDocuments > 0 ? (((sunatStatus?.['ACCEPTED']?.cantidad || 0) / totalDocuments) * 100).toFixed(1) : 0}% aceptados
           </span>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden flex">
+        <div className="w-full bg-dm-bg-secondary rounded-full h-2.5 overflow-hidden flex">
           {Object.entries(statusConfig).map(([status, config]) => {
             const data = sunatStatus?.[status] || { cantidad: 0, monto: 0 };
             const percentage = totalDocuments > 0 ? (data.cantidad / totalDocuments) * 100 : 0;
@@ -176,12 +176,12 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
 
       {/* Alertas si hay problemas */}
       {((sunatStatus?.['REJECTED']?.cantidad || 0) > 0 || (sunatStatus?.['ERROR']?.cantidad || 0) > 0) && (
-        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg">
           <div className="flex items-start gap-2">
-            <ExclamationTriangleIcon className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            <ExclamationTriangleIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <span className="font-medium text-amber-900 text-sm block mb-1">Atención Requerida</span>
-              <div className="text-xs text-amber-700 space-y-0.5">
+              <span className="font-medium text-amber-900 dark:text-amber-200 text-sm block mb-1">Atención Requerida</span>
+              <div className="text-xs text-amber-700 dark:text-amber-300 space-y-0.5">
                 {(sunatStatus?.['REJECTED']?.cantidad || 0) > 0 && (
                   <div>• {sunatStatus['REJECTED'].cantidad} documentos rechazados</div>
                 )}

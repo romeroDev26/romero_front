@@ -8,6 +8,7 @@ import Dashboard from './components/layout/Dashboard';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { PrivateRoute } from './components/auth/PrivateRoute';
 import { Spinner } from './components/common/Spinner';
+import { useThemeStore } from './stores/theme.store';
 
 // Páginas del dashboard (carga inmediata)
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
@@ -94,6 +95,12 @@ function App() {
 }
 
 function AppContent() {
+  // Inicializar tema (aplica clase 'dark' al <html> si corresponde)
+  const { resolvedTheme } = useThemeStore();
+  React.useEffect(() => {
+    useThemeStore.getState().init();
+  }, []);
+
   return (
     <Router>
         <Routes>
@@ -346,13 +353,13 @@ function AppContent() {
         
         <Toaster 
           position="top-right" 
-          theme="dark"
+          theme={resolvedTheme}
           options={{
             duration: 4000,
-            fill: '#171717',
+            fill: resolvedTheme === 'dark' ? '#171717' : '#ffffff',
             styles: {
-              title: '!text-white',
-              description: '!text-gray-300',
+              title: resolvedTheme === 'dark' ? '!text-white' : '!text-gray-900',
+              description: resolvedTheme === 'dark' ? '!text-gray-300' : '!text-gray-600',
             },
           }}
         />

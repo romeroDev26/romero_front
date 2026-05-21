@@ -22,14 +22,14 @@ export const BranchStepContent: React.FC<BranchStepContentProps> = ({
   // Si no hay sucursal seleccionada, mostrar mensaje de requerimiento
   if (!selectedBranch) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-dm-bg-secondary">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 mb-6">
-              <ExclamationTriangleIcon className="h-8 w-8 text-orange-600" />
+          <div className="bg-dm-bg-primary rounded-2xl shadow-xl p-12 text-center">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 dark:bg-orange-900/40 mb-6">
+              <ExclamationTriangleIcon className="h-8 w-8 text-orange-600 dark:text-orange-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Sucursal Requerida</h2>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-dm-text-primary mb-4">Sucursal Requerida</h2>
+            <p className="text-dm-text-secondary mb-8 max-w-md mx-auto">
               Para crear una guía de remisión, primero debe seleccionar una sucursal activa en el punto de venta.
             </p>
             <Button 

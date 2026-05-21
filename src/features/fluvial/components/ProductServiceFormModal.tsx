@@ -135,24 +135,24 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Descripción</label>
+          <label className="block text-sm font-medium text-dm-text-secondary">Descripción</label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             rows={2}
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Tipo</label>
+            <label className="block text-sm font-medium text-dm-text-secondary">Tipo</label>
             <select
               name="item_type"
               value={formData.item_type}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
               disabled={isEditMode}
             >
               {ITEM_TYPE_OPTIONS.map(opt => (
@@ -163,12 +163,12 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
 
           {formData.item_type === 'SERVICE' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">Categoría de Servicio</label>
+              <label className="block text-sm font-medium text-dm-text-secondary">Categoría de Servicio</label>
               <select
                 name="service_category"
                 value={formData.service_category}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
                 disabled={isEditMode}
               >
                 {SERVICE_CATEGORY_OPTIONS.map(opt => (
@@ -180,7 +180,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
         </div>
 
         {isEditMode && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-yellow-800 text-sm rounded mb-2">
+          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-yellow-800 dark:text-yellow-300 text-sm rounded mb-2">
             Solo puedes modificar el <b>Nombre</b>, <b>Descripción</b> y <b>Afectación IGV (SUNAT)</b>. Para cambiar el Código Interno, Tipo o Categoría de Servicio, comunícate con el equipo de soporte.
           </div>
         )}
@@ -206,12 +206,12 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             onBlur={handlePriceBlur}
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700">Moneda</label>
+            <label className="block text-sm font-medium text-dm-text-secondary">Moneda</label>
             <select
               name="currency_code"
               value={formData.currency_code}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
               {CURRENCY_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -222,12 +222,12 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Unidad de Medida</label>
+            <label className="block text-sm font-medium text-dm-text-secondary">Unidad de Medida</label>
             <select
               name="unit_code"
               value={formData.unit_code}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
               {UNIT_CODE_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -236,7 +236,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
           </div>
 
           <div>
-            <label htmlFor="tax_category_code" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="tax_category_code" className="block text-sm font-medium text-dm-text-secondary">
               Afectación IGV (SUNAT)
             </label>
             <select
@@ -244,7 +244,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
               name="tax_category_code"
               value={formData.tax_category_code}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
               {TAX_CATEGORY_CODE_SUNAT_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
@@ -256,12 +256,12 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Cód. UNSPSC (Opcional)</label>
+          <label className="block text-sm font-medium text-dm-text-secondary">Cód. UNSPSC (Opcional)</label>
           <select
             name="unspcs_code"
             value={formData.unspcs_code}
             onChange={handleChange}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Ninguno</option>
             {UNSPCS_CODE_OPTIONS.map(opt => (
@@ -277,9 +277,9 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             name="is_active"
             checked={formData.is_active}
             onChange={handleChange}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-4 w-4 rounded border-dm-border-primary text-blue-600 dark:text-blue-400 focus:ring-blue-500"
           />
-          <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+          <label htmlFor="is_active" className="ml-2 block text-sm text-dm-text-primary">
             Activo
           </label>
         </div>

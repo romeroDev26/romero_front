@@ -23,13 +23,13 @@ interface TripManifestCardProps {
 
 function getTripStatusLabel(status?: string): { label: string; className: string } {
   const map: Record<string, { label: string; className: string }> = {
-    SCHEDULED: { label: 'Programado', className: 'bg-blue-50 text-blue-700' },
-    BOARDING: { label: 'Embarcando', className: 'bg-amber-50 text-amber-700' },
-    DEPARTED: { label: 'Zarpado', className: 'bg-emerald-50 text-emerald-700' },
-    COMPLETED: { label: 'Completado', className: 'bg-gray-100 text-gray-600' },
-    CANCELLED: { label: 'Cancelado', className: 'bg-red-50 text-red-700' },
+    SCHEDULED: { label: 'Programado', className: 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300' },
+    BOARDING: { label: 'Embarcando', className: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300' },
+    DEPARTED: { label: 'Zarpado', className: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300' },
+    COMPLETED: { label: 'Completado', className: 'bg-dm-bg-secondary text-dm-text-secondary' },
+    CANCELLED: { label: 'Cancelado', className: 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300' },
   };
-  return map[status ?? ''] || { label: status || 'Desconocido', className: 'bg-gray-100 text-gray-600' };
+  return map[status ?? ''] || { label: status || 'Desconocido', className: 'bg-dm-bg-secondary text-dm-text-secondary' };
 }
 
 export const TripManifestCard: React.FC<TripManifestCardProps> = ({
@@ -44,25 +44,25 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
   const hasCargo = !!trip.cargoManifest;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#e8e8e8] overflow-hidden hover:shadow-md transition-shadow">
+    <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary overflow-hidden hover:shadow-md transition-shadow">
       {/* Header */}
-      <div className="p-5 border-b border-[#f0f0f0]">
+      <div className="p-5 border-b border-dm-border-secondary">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="text-center min-w-[56px]">
               <div className="text-[22px] font-bold text-[#1F4690] leading-none">
                 {formatTimeFromISO(trip.departure_datetime)}
               </div>
-              <div className="text-[10px] font-semibold text-[#828282] uppercase tracking-wider mt-1">
+              <div className="text-[10px] font-semibold text-dm-text-muted uppercase tracking-wider mt-1">
                 Salida
               </div>
             </div>
             <div className="h-8 w-px bg-[#e8e8e8] hidden sm:block" />
             <div>
-              <div className="text-[15px] font-semibold text-[#202020]">
+              <div className="text-[15px] font-semibold text-dm-text-primary">
                 {trip.trip_name || trip.route_name || 'Sin ruta'}
               </div>
-              <div className="flex items-center gap-1.5 text-[13px] text-[#828282] mt-0.5">
+              <div className="flex items-center gap-1.5 text-[13px] text-dm-text-muted mt-0.5">
                 <Ship className="w-3.5 h-3.5" strokeWidth={1.5} />
                 <span>{trip.vessel_name || 'Sin embarcación'}</span>
               </div>
@@ -76,7 +76,7 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
             </div>
           </div>
           <div className="text-right shrink-0">
-            <div className="text-[11px] text-[#828282]">Viaje #{trip.id}</div>
+            <div className="text-[11px] text-dm-text-muted">Viaje #{trip.id}</div>
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold mt-1 ${status.className}`}
             >
@@ -147,29 +147,29 @@ const ManifestSection: React.FC<ManifestSectionProps> = ({
   activeColor,
 }) => {
   const hasManifest = !!manifest;
-  const bgColor = activeColor === 'blue' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600';
-  const bgHover = activeColor === 'blue' ? 'hover:border-blue-500 hover:text-blue-600' : 'hover:border-emerald-500 hover:text-emerald-600';
+  const bgColor = activeColor === 'blue' ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400' : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400';
+  const bgHover = activeColor === 'blue' ? 'hover:border-blue-500 hover:text-blue-600 dark:text-blue-400' : 'hover:border-emerald-500 hover:text-emerald-600 dark:text-emerald-400';
 
   return (
     <div className="p-5">
       <div className="flex items-center gap-2 mb-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasManifest ? bgColor : 'bg-gray-100 text-gray-400'}`}>
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasManifest ? bgColor : 'bg-dm-bg-secondary text-dm-text-muted'}`}>
           {icon}
         </div>
-        <span className="text-[13px] font-semibold text-[#202020]">{title}</span>
+        <span className="text-[13px] font-semibold text-dm-text-primary">{title}</span>
       </div>
 
       {hasManifest ? (
         <div className="space-y-3">
           <div className="flex items-baseline gap-2">
-            <span className="text-[24px] font-bold text-[#202020] leading-none">
+            <span className="text-[24px] font-bold text-dm-text-primary leading-none">
               {countValue ?? '—'}
             </span>
-            <span className="text-[12px] text-[#828282]">
+            <span className="text-[12px] text-dm-text-muted">
               {countUnit}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-[12px] font-medium text-emerald-600">
+          <div className="flex items-center gap-1.5 text-[12px] font-medium text-emerald-600 dark:text-emerald-400">
             <CheckCircleIcon className="w-3.5 h-3.5" strokeWidth={2} />
             Manifiesto generado
           </div>
@@ -185,7 +185,7 @@ const ManifestSection: React.FC<ManifestSectionProps> = ({
             )}
             <button
               onClick={onNavigateToTrip}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e8e8e8] hover:bg-[#f5f5f5] text-[#202020] text-[12px] font-medium rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-dm-bg-primary border border-dm-border-primary hover:bg-dm-bg-secondary text-dm-text-primary text-[12px] font-medium rounded-lg transition-colors"
             >
               <EyeIcon className="w-3.5 h-3.5" strokeWidth={2} />
               Ver detalle
@@ -194,11 +194,11 @@ const ManifestSection: React.FC<ManifestSectionProps> = ({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="text-[13px] text-[#828282]">Manifiesto sin generar</div>
+          <div className="text-[13px] text-dm-text-muted">Manifiesto sin generar</div>
           <button
             onClick={onGenerate}
             disabled={isGenerating}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#e8e8e8] ${bgHover} text-[#4d4d4d] text-[12px] font-medium rounded-lg transition-colors disabled:opacity-50`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-dm-bg-primary border border-dm-border-primary ${bgHover} text-dm-text-secondary text-[12px] font-medium rounded-lg transition-colors disabled:opacity-50`}
           >
             {isGenerating ? (
               <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" strokeWidth={2} />

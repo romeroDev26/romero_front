@@ -140,7 +140,7 @@ export const FaresByRoutePage: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando tarifas por ruta...</p>
+          <p className="mt-4 text-dm-text-secondary">Cargando tarifas por ruta...</p>
         </div>
       </div>
     );
@@ -148,7 +148,7 @@ export const FaresByRoutePage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 text-red-600 dark:text-red-400 px-4 py-3 rounded-md">
         <div className="flex items-center">
           <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
           Error al cargar las tarifas: {error}
@@ -162,8 +162,8 @@ export const FaresByRoutePage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Tarifas</h1>
-          <p className="text-gray-600">Configure los precios por parada y categoría de servicio</p>
+          <h1 className="text-2xl font-bold text-dm-text-primary">Gestión de Tarifas</h1>
+          <p className="text-dm-text-secondary">Configure los precios por parada y categoría de servicio</p>
         </div>
       </div>
 
@@ -171,11 +171,11 @@ export const FaresByRoutePage: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow w-full sm:max-w-md">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted" />
           </div>
           <input
             type="text"
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+            className="pl-10 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
             placeholder="Buscar ruta..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -188,7 +188,7 @@ export const FaresByRoutePage: React.FC = () => {
             setSelectedCategory(e.target.value as ServiceCategory);
             setSelectedRouteId(null);
           }}
-          className="w-full sm:w-auto rounded-md border-gray-300 shadow-sm p-2 pr-8 border"
+          className="w-full sm:w-auto rounded-md border-dm-border-primary shadow-sm p-2 pr-8 border"
         >
           {SERVICE_CATEGORIES.map((category) => (
             <option key={category.value} value={category.value}>
@@ -201,15 +201,15 @@ export const FaresByRoutePage: React.FC = () => {
       {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Routes List */}
-        <div className="lg:col-span-1 bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-            <h2 className="text-sm font-semibold text-gray-700">
+        <div className="lg:col-span-1 bg-dm-bg-primary rounded-lg shadow-md overflow-hidden">
+          <div className="bg-dm-bg-secondary px-4 py-3 border-b border-dm-border-primary">
+            <h2 className="text-sm font-semibold text-dm-text-secondary">
               Rutas ({filteredRoutes.length})
             </h2>
           </div>
           <div className="divide-y divide-gray-200 max-h-[300px] lg:max-h-[calc(100vh-300px)] overflow-y-auto">
             {filteredRoutes.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-dm-text-muted">
                 No se encontraron rutas
               </div>
             ) : (
@@ -217,19 +217,19 @@ export const FaresByRoutePage: React.FC = () => {
                 <button
                   key={route.route_id}
                   onClick={() => setSelectedRouteId(route.route_id)}
-                  className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
-                    selectedRouteId === route.route_id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                  className={`w-full text-left px-4 py-3 hover:bg-dm-bg-hover transition-colors ${
+                    selectedRouteId === route.route_id ? 'bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-600' : ''
                   }`}
                 >
-                  <div className="font-medium text-gray-900 text-sm mb-1">
+                  <div className="font-medium text-dm-text-primary text-sm mb-1">
                     {route.route_name}
                   </div>
-                  <div className="text-xs text-gray-500 flex items-center">
+                  <div className="text-xs text-dm-text-muted flex items-center">
                     <span>{route.origin_port_name}</span>
                     <ArrowRightIcon className="h-3 w-3 mx-1" />
                     <span>{route.destination_port_name}</span>
                   </div>
-                  <div className="text-xs text-gray-400 mt-1">
+                  <div className="text-xs text-dm-text-muted mt-1">
                     {route.segments.filter(s => s.price !== null).length} / {route.segments.length} con precio
                   </div>
                 </button>
@@ -239,14 +239,14 @@ export const FaresByRoutePage: React.FC = () => {
         </div>
 
         {/* Fares Content */}
-        <div className="lg:col-span-3 bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="lg:col-span-3 bg-dm-bg-primary rounded-lg shadow-md overflow-hidden">
           {selectedRoute ? (
             <>
-              <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">
+              <div className="bg-dm-bg-secondary px-6 py-4 border-b border-dm-border-primary">
+                <h2 className="text-lg font-semibold text-dm-text-primary">
                   {selectedRoute.route_name}
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-dm-text-secondary mt-1">
                   Tarifas desde {selectedRoute.origin_port_name}
                 </p>
               </div>
@@ -257,27 +257,27 @@ export const FaresByRoutePage: React.FC = () => {
                   const isEditing = editingFare?.segment.stop_order === segment.stop_order;
                   
                   return (
-                    <div key={segment.stop_order} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div key={segment.stop_order} className="bg-dm-bg-primary border border-dm-border-primary rounded-lg p-4 shadow-sm">
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <span className="text-xs font-medium text-gray-500 uppercase">Destino</span>
-                          <div className="text-base font-medium text-gray-900">{segment.to_port_name}</div>
+                          <span className="text-xs font-medium text-dm-text-muted uppercase">Destino</span>
+                          <div className="text-base font-medium text-dm-text-primary">{segment.to_port_name}</div>
                         </div>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-dm-bg-secondary text-dm-text-primary">
                           Orden: {segment.stop_order}
                         </span>
                       </div>
 
                       <div className="space-y-3">
                         <div>
-                          <label className="block text-xs font-medium text-gray-500 mb-1">Precio</label>
+                          <label className="block text-xs font-medium text-dm-text-muted mb-1">Precio</label>
                           {isEditing ? (
                             <input
                               type="number"
                               step="0.01"
                               value={editingFare.price}
                               onChange={(e) => setEditingFare({ ...editingFare, price: e.target.value })}
-                              className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                              className="w-full p-2 border border-dm-border-primary rounded-md text-sm"
                               placeholder="0.00"
                             />
                           ) : (
@@ -285,10 +285,10 @@ export const FaresByRoutePage: React.FC = () => {
                               {segment.price !== null ? (
                                 <>
                                   <CurrencyDollarIcon className="h-4 w-4 text-green-500 mr-1" />
-                                  <span className="font-medium text-gray-900">{segment.price.toFixed(2)}</span>
+                                  <span className="font-medium text-dm-text-primary">{segment.price.toFixed(2)}</span>
                                 </>
                               ) : (
-                                <span className="text-gray-400 italic">Sin precio</span>
+                                <span className="text-dm-text-muted italic">Sin precio</span>
                               )}
                             </div>
                           )}
@@ -296,34 +296,34 @@ export const FaresByRoutePage: React.FC = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Moneda</label>
+                            <label className="block text-xs font-medium text-dm-text-muted mb-1">Moneda</label>
                             {isEditing ? (
                               <select
                                 value={editingFare.currency_code}
                                 onChange={(e) => setEditingFare({ ...editingFare, currency_code: e.target.value })}
-                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                className="w-full p-2 border border-dm-border-primary rounded-md text-sm"
                               >
                                 <option value="PEN">PEN</option>
                                 <option value="USD">USD</option>
                               </select>
                             ) : (
-                              <span className="text-sm text-gray-900">{segment.currency_code || '-'}</span>
+                              <span className="text-sm text-dm-text-primary">{segment.currency_code || '-'}</span>
                             )}
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">IGV</label>
+                            <label className="block text-xs font-medium text-dm-text-muted mb-1">IGV</label>
                             {isEditing ? (
                               <select
                                 value={editingFare.tax_category_code}
                                 onChange={(e) => setEditingFare({ ...editingFare, tax_category_code: e.target.value })}
-                                className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                className="w-full p-2 border border-dm-border-primary rounded-md text-sm"
                               >
                                 <option value="10">Gravado</option>
                                 <option value="20">Exonerado</option>
                                 <option value="30">Inafecto</option>
                               </select>
                             ) : (
-                              <span className="text-sm text-gray-900">
+                              <span className="text-sm text-dm-text-primary">
                                 {segment.tax_category_code === '10' && 'Gravado'}
                                 {segment.tax_category_code === '20' && 'Exonerado'}
                                 {segment.tax_category_code === '30' && 'Inafecto'}
@@ -334,13 +334,13 @@ export const FaresByRoutePage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end gap-2">
+                      <div className="mt-4 pt-3 border-t border-dm-border-secondary flex justify-end gap-2">
                         {isEditing ? (
                           <>
                             <button
                               onClick={handleCancelEdit}
                               disabled={isUpdating || isCreating}
-                              className="flex items-center px-3 py-1.5 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                              className="flex items-center px-3 py-1.5 border border-dm-border-primary rounded text-sm font-medium text-dm-text-secondary bg-dm-bg-primary hover:bg-dm-bg-hover"
                             >
                               <XMarkIcon className="h-4 w-4 mr-1" /> Cancelar
                             </button>
@@ -355,7 +355,7 @@ export const FaresByRoutePage: React.FC = () => {
                         ) : (
                           <button
                             onClick={() => handleEditClick(segment)}
-                            className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 text-sm font-medium"
                           >
                             <PencilIcon className="h-4 w-4 mr-1" /> Editar Tarifa
                           </button>
@@ -369,39 +369,39 @@ export const FaresByRoutePage: React.FC = () => {
               {/* Desktop Table View */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-dm-bg-secondary">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                         Orden
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                         Puerto de Destino
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                         Precio
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                         Moneda
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                         IGV
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-right text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                         Acciones
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
                     {selectedRoute.segments.map((segment) => {
                       const isEditing = editingFare?.segment.stop_order === segment.stop_order;
                       
                       return (
-                        <tr key={segment.stop_order} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <tr key={segment.stop_order} className="hover:bg-dm-bg-hover">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-dm-text-muted">
                             {segment.stop_order}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-dm-text-primary">
                               {segment.to_port_name}
                             </div>
                           </td>
@@ -412,19 +412,19 @@ export const FaresByRoutePage: React.FC = () => {
                                 step="0.01"
                                 value={editingFare.price}
                                 onChange={(e) => setEditingFare({ ...editingFare, price: e.target.value })}
-                                className="w-24 p-1 border border-gray-300 rounded-md text-sm"
+                                className="w-24 p-1 border border-dm-border-primary rounded-md text-sm"
                                 placeholder="0.00"
                                 autoFocus
                               />
                             ) : segment.price !== null ? (
                               <div className="flex items-center">
                                 <CurrencyDollarIcon className="h-4 w-4 text-green-500 mr-1" />
-                                <span className="font-medium text-gray-900">
+                                <span className="font-medium text-dm-text-primary">
                                   {segment.price.toFixed(2)}
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-gray-400 italic text-sm">Sin precio</span>
+                              <span className="text-dm-text-muted italic text-sm">Sin precio</span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -432,13 +432,13 @@ export const FaresByRoutePage: React.FC = () => {
                               <select
                                 value={editingFare.currency_code}
                                 onChange={(e) => setEditingFare({ ...editingFare, currency_code: e.target.value })}
-                                className="w-20 p-1 border border-gray-300 rounded-md text-sm"
+                                className="w-20 p-1 border border-dm-border-primary rounded-md text-sm"
                               >
                                 <option value="PEN">PEN</option>
                                 <option value="USD">USD</option>
                               </select>
                             ) : (
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-dm-text-secondary">
                                 {segment.currency_code || '-'}
                               </span>
                             )}
@@ -448,14 +448,14 @@ export const FaresByRoutePage: React.FC = () => {
                               <select
                                 value={editingFare.tax_category_code}
                                 onChange={(e) => setEditingFare({ ...editingFare, tax_category_code: e.target.value })}
-                                className="w-24 p-1 border border-gray-300 rounded-md text-sm"
+                                className="w-24 p-1 border border-dm-border-primary rounded-md text-sm"
                               >
                                 <option value="10">Gravado</option>
                                 <option value="20">Exonerado</option>
                                 <option value="30">Inafecto</option>
                               </select>
                             ) : (
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-dm-text-secondary">
                                 {segment.tax_category_code === '10' && 'Gravado'}
                                 {segment.tax_category_code === '20' && 'Exonerado'}
                                 {segment.tax_category_code === '30' && 'Inafecto'}
@@ -469,7 +469,7 @@ export const FaresByRoutePage: React.FC = () => {
                                 <button
                                   onClick={handleSaveFare}
                                   disabled={isUpdating || isCreating}
-                                  className="text-green-600 hover:text-green-900 disabled:opacity-50"
+                                  className="text-green-600 dark:text-green-400 hover:text-green-900 disabled:opacity-50"
                                   title="Guardar"
                                 >
                                   <CheckIcon className="h-5 w-5" />
@@ -477,7 +477,7 @@ export const FaresByRoutePage: React.FC = () => {
                                 <button
                                   onClick={handleCancelEdit}
                                   disabled={isUpdating || isCreating}
-                                  className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                                  className="text-red-600 dark:text-red-400 hover:text-red-900 dark:text-red-200 disabled:opacity-50"
                                   title="Cancelar"
                                 >
                                   <XMarkIcon className="h-5 w-5" />
@@ -486,7 +486,7 @@ export const FaresByRoutePage: React.FC = () => {
                             ) : (
                               <button
                                 onClick={() => handleEditClick(segment)}
-                                className="text-blue-600 hover:text-blue-900"
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-900"
                                 title="Editar tarifa"
                               >
                                 <PencilIcon className="h-4 w-4" />
@@ -502,11 +502,11 @@ export const FaresByRoutePage: React.FC = () => {
             </>
           ) : (
             <div className="text-center py-12">
-              <CurrencyDollarIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
+              <CurrencyDollarIcon className="mx-auto h-12 w-12 text-dm-text-muted" />
+              <h3 className="mt-2 text-sm font-medium text-dm-text-primary">
                 Seleccione una ruta
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-dm-text-muted">
                 Elija una ruta de la lista para ver y editar sus tarifas
               </p>
             </div>

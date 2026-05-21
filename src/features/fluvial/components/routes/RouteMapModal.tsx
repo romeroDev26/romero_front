@@ -76,16 +76,16 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
       <Modal isOpen={isOpen} onClose={onClose} title="" maxWidth="6xl">
         <div className="h-[85dvh] sm:h-[90dvh] flex flex-col">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 sm:p-6 border-b border-[#e8e8e8] bg-white shrink-0">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 sm:p-6 border-b border-dm-border-primary bg-dm-bg-primary shrink-0">
             <div className="min-w-0">
               <h2
-                className="text-[20px] sm:text-[24px] font-medium text-[#202020] tracking-[-0.48px] truncate"
+                className="text-[20px] sm:text-[24px] font-medium text-dm-text-primary tracking-[-0.48px] truncate"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 Gestión de Ruta Fluvial
               </h2>
-              <p className="text-[14px] sm:text-[15px] text-[#4d4d4d] mt-0.5 truncate">{route.name}</p>
-              <div className="flex items-center gap-4 mt-1.5 text-[13px] text-[#828282]">
+              <p className="text-[14px] sm:text-[15px] text-dm-text-secondary mt-0.5 truncate">{route.name}</p>
+              <div className="flex items-center gap-4 mt-1.5 text-[13px] text-dm-text-muted">
                 <span className="flex items-center gap-1">
                   <MapIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
                   {stops.length} paradas
@@ -96,7 +96,7 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#e8e8e8] rounded-[20px] text-[13px] font-medium text-[#202020] hover:bg-[#f5f5f5] transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary rounded-[20px] text-[13px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary transition-colors"
               >
                 {viewMode === 'map' ? (
                   <>
@@ -170,11 +170,11 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
           </div>
 
           {/* Footer */}
-          <div className="border-t border-[#e8e8e8] p-3 sm:p-4 bg-white shrink-0">
+          <div className="border-t border-dm-border-primary p-3 sm:p-4 bg-dm-bg-primary shrink-0">
             <form onSubmit={(e) => handleSubmit(e, onClose)}>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div className="text-[13px] text-[#828282]">
-                  Ruta con <span className="font-medium text-[#202020]">{stops.length}</span> paradas
+                <div className="text-[13px] text-dm-text-muted">
+                  Ruta con <span className="font-medium text-dm-text-primary">{stops.length}</span> paradas
                   {stops.length > 2 && (
                     <span className="ml-1 text-[#1F4690]">({stops.length - 2} intermedias)</span>
                   )}
@@ -183,7 +183,7 @@ export const RouteMapModal: React.FC<RouteMapModalProps> = ({ isOpen, onClose, r
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 sm:flex-none px-4 py-2 text-[13px] font-medium text-[#202020] bg-white border border-[#e8e8e8] rounded-[10px] hover:bg-[#f5f5f5] transition-colors"
+                    className="flex-1 sm:flex-none px-4 py-2 text-[13px] font-medium text-dm-text-primary bg-dm-bg-primary border border-dm-border-primary rounded-[10px] hover:bg-dm-bg-secondary transition-colors"
                   >
                     Cancelar
                   </button>

@@ -238,7 +238,7 @@ export const LoginPage: React.FC = () => {
 
           <div className="w-full max-w-md mx-auto lg:mx-0">
             {/* Icono Cabecera */}
-            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6 border border-white/5 shadow-inner">
+            <div className="w-12 h-12 rounded-xl bg-dm-bg-primary/10 flex items-center justify-center mb-6 border border-white/5 shadow-inner">
               <Ship className="text-white w-6 h-6" />
             </div>
 
@@ -275,7 +275,7 @@ export const LoginPage: React.FC = () => {
               {/* Error genérico */}
               {loginError && (
                 <div
-                  className="bg-white/10 border border-[#c22b10]/30 rounded-[10px] px-4 py-3 flex items-start justify-between"
+                  className="bg-dm-bg-primary/10 border border-[#c22b10]/30 rounded-[10px] px-4 py-3 flex items-start justify-between"
                   role="alert"
                 >
                   <div className="mr-3 text-[13px] leading-[1.5] text-[#fca5a5]">{loginError}</div>
@@ -299,7 +299,7 @@ export const LoginPage: React.FC = () => {
                   type="email"
                   autoComplete="email"
                   disabled={isLocked}
-                  className="block w-full pl-12 pr-4 py-4 bg-white border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="block w-full pl-12 pr-4 py-4 bg-dm-bg-primary border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Correo electrónico"
                   {...register('email')}
                 />
@@ -317,7 +317,7 @@ export const LoginPage: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   disabled={isLocked}
-                  className="block w-full pl-12 pr-12 py-4 bg-white border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="block w-full pl-12 pr-12 py-4 bg-dm-bg-primary border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="Contraseña"
                   {...register('password')}
                 />
@@ -344,11 +344,11 @@ export const LoginPage: React.FC = () => {
                     if (el) el.click()
                   }}
                   className={`w-10 h-5 rounded-full relative transition-colors duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#11245E] focus:ring-[#3B82F6] ${
-                    rememberMeChecked ? 'bg-[#3B82F6]' : 'bg-white/20'
+                    rememberMeChecked ? 'bg-[#3B82F6]' : 'bg-dm-bg-primary/20'
                   } ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <span
-                    className={`absolute left-[2px] top-[2px] w-4 h-4 rounded-full bg-white transition-transform duration-300 ease-in-out ${
+                    className={`absolute left-[2px] top-[2px] w-4 h-4 rounded-full bg-dm-bg-primary transition-transform duration-300 ease-in-out ${
                       rememberMeChecked ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />

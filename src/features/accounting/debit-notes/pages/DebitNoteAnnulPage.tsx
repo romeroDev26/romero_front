@@ -90,8 +90,8 @@ export const DebitNoteAnnulPage: React.FC = () => {
     }, [navigate]);
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
-          <p className="text-[13px] text-[#4d4d4d]">Redirigiendo al listado...</p>
+        <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
+          <p className="text-[13px] text-dm-text-secondary">Redirigiendo al listado...</p>
         </div>
       </div>
     );
@@ -124,17 +124,17 @@ export const DebitNoteAnnulPage: React.FC = () => {
           <ReceiptRefundIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
         </div>
         <div>
-          <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <h1 className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
             Anular Nota de Débito
           </h1>
-          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+          <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
             Genera una nota de crédito para anular la nota de débito seleccionada
           </p>
         </div>
       </div>
 
       {/* Alerta informativa sobre anulación */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-[#1F4690]" viewBox="0 0 20 20" fill="currentColor">
@@ -142,12 +142,12 @@ export const DebitNoteAnnulPage: React.FC = () => {
             </svg>
           </div>
           <div className="ml-3">
-            <h3 className="text-[15px] font-medium text-[#202020]">
+            <h3 className="text-[15px] font-medium text-dm-text-primary">
               Anulación mediante Nota de Crédito
             </h3>
-            <div className="mt-2 text-[13px] text-[#4d4d4d]">
+            <div className="mt-2 text-[13px] text-dm-text-secondary">
               <p>
-                Según normativa SUNAT, <strong className="text-[#202020]">una nota de débito se anula generando una nota de crédito</strong> que revierte el cargo adicional.
+                Según normativa SUNAT, <strong className="text-dm-text-primary">una nota de débito se anula generando una nota de crédito</strong> que revierte el cargo adicional.
               </p>
               <p className="mt-2">
                 La serie de la nota de crédito debe coincidir con la serie de la nota de débito a anular.
@@ -158,34 +158,34 @@ export const DebitNoteAnnulPage: React.FC = () => {
       </div>
 
       {/* Card del documento seleccionado */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
-        <div className="text-[15px] font-medium text-[#202020] mb-2">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
+        <div className="text-[15px] font-medium text-dm-text-primary mb-2">
           {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
         </div>
-        <div className="text-[13px] text-[#4d4d4d] space-y-1">
+        <div className="text-[13px] text-dm-text-secondary space-y-1">
           {debitNote.client && (
             <>
-              <div>Cliente: <span className="font-medium text-[#202020]">{debitNote.client.name}</span></div>
-              <div>Documento: <span className="font-medium text-[#202020]">{debitNote.client.doc_number}</span></div>
+              <div>Cliente: <span className="font-medium text-dm-text-primary">{debitNote.client.name}</span></div>
+              <div>Documento: <span className="font-medium text-dm-text-primary">{debitNote.client.doc_number}</span></div>
             </>
           )}
-          <div>Motivo original: <span className="font-medium text-[#202020]">{debitNote.reason}</span></div>
-          <div>Total: <span className="font-medium text-[#202020]">S/ {debitNote.total_payable}</span></div>
+          <div>Motivo original: <span className="font-medium text-dm-text-primary">{debitNote.reason}</span></div>
+          <div>Total: <span className="font-medium text-dm-text-primary">S/ {debitNote.total_payable}</span></div>
         </div>
       </div>
 
       {/* Formulario */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Serie de la Nota de Crédito*
             </label>
-            <p className="text-[13px] text-[#828282] mb-2">
-              Debe coincidir con la serie de la nota de débito: <strong className="text-[#202020]">{debitNote.series}</strong>
+            <p className="text-[13px] text-dm-text-muted mb-2">
+              Debe coincidir con la serie de la nota de débito: <strong className="text-dm-text-primary">{debitNote.series}</strong>
             </p>
             {isLoadingSeries ? (
-              <div className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#828282]">
+              <div className="block w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-muted">
                 Cargando series...
               </div>
             ) : availableCreditNoteSeries.length > 0 ? (
@@ -193,7 +193,7 @@ export const DebitNoteAnnulPage: React.FC = () => {
                 <select
                   value={selectedCreditNoteSeries}
                   onChange={(e) => handleCreditNoteSeriesChange(e.target.value)}
-                  className="peer block w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
+                  className="peer block w-full appearance-none px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
                 >
                   {availableCreditNoteSeries.map((series) => (
                     <option key={series.id} value={series.series_code}>
@@ -201,17 +201,17 @@ export const DebitNoteAnnulPage: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
               </div>
             ) : (
-              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+              <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
                 <p className="text-[13px] text-[#cf1322]">No hay series de notas de crédito disponibles para esta sucursal</p>
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Motivo de la Anulación*
             </label>
             <Controller
@@ -221,7 +221,7 @@ export const DebitNoteAnnulPage: React.FC = () => {
                 <textarea
                   {...field}
                   rows={4}
-                  className="block w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
+                  className="block w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
                   placeholder="Ej: Anulación de nota de débito por corrección en facturación..."
                 />
               )}
@@ -229,12 +229,12 @@ export const DebitNoteAnnulPage: React.FC = () => {
             {errors.reason && <p className="mt-1 text-[13px] text-[#cf1322]">{errors.reason.message}</p>}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#f0f0f0]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-dm-border-secondary">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => navigate('/accounting/debit-notes')}
-              className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+              className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary"
             >
               Cancelar
             </Button>

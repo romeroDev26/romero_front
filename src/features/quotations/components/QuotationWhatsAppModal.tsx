@@ -123,12 +123,12 @@ El equipo de ${businessName}`;
     >
       <div className="p-6">
         <div className="flex items-center mb-4">
-          <MessageCircle className="h-6 w-6 text-green-600 mr-2" />
+          <MessageCircle className="h-6 w-6 text-green-600 dark:text-green-400 mr-2" />
           <div>
-            <h3 className="font-semibold text-gray-800">
+            <h3 className="font-semibold text-dm-text-primary">
               Envío de Cotización
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-dm-text-secondary">
               Cotización: {quotation.series}-{quotation.number.toString().padStart(6, '0')}
             </p>
           </div>
@@ -136,7 +136,7 @@ El equipo de ${businessName}`;
 
         {/* Campo de número de teléfono */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-dm-text-secondary mb-2">
             Número de WhatsApp
           </label>
           <Input
@@ -152,18 +152,18 @@ El equipo de ${businessName}`;
             }`}
           />
           {phoneNumber && !isValidPhoneNumber(phoneNumber) && (
-            <p className="text-xs text-red-600 mt-1">
+            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
               Ingresa un número válido (mínimo 9 dígitos)
             </p>
           )}
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-dm-text-muted mt-1">
             Se agregará automáticamente el código de país +51 si no se especifica
           </p>
         </div>
 
         {/* Campo de mensaje personalizado */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-dm-text-secondary mb-2">
             Mensaje (opcional)
           </label>
           <textarea
@@ -172,9 +172,9 @@ El equipo de ${businessName}`;
             placeholder={defaultMessage}
             disabled={isSending}
             rows={8}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-dm-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-dm-text-muted mt-1">
             Si dejas vacío, se usará el mensaje predeterminado
           </p>
         </div>
@@ -183,21 +183,21 @@ El equipo de ${businessName}`;
         {sendResult && (
           <div className={`mb-4 p-3 rounded-lg flex items-center ${
             sendResult.success 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-green-50 dark:bg-green-950/30 border border-green-200' 
+              : 'bg-red-50 dark:bg-red-950/30 border border-red-200'
           }`}>
             {sendResult.success ? (
               <>
-                <CheckCircle className="h-5 w-5 text-green-600 mr-2 flex-shrink-0" />
-                <div className="text-green-800">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 flex-shrink-0" />
+                <div className="text-green-800 dark:text-green-300">
                   <p className="font-medium">¡Enviado exitosamente!</p>
                   <p className="text-sm">{sendResult.message}</p>
                 </div>
               </>
             ) : (
               <>
-                <AlertCircle className="h-5 w-5 text-red-600 mr-2 flex-shrink-0" />
-                <div className="text-red-800">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" />
+                <div className="text-red-800 dark:text-red-300">
                   <p className="font-medium">Error al enviar</p>
                   <p className="text-sm">{sendResult.error}</p>
                 </div>
@@ -220,7 +220,7 @@ El equipo de ${businessName}`;
           <Button
             onClick={handleSend}
             disabled={isSending || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber) || !whatsAppInstance.hasInstance}
-            className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-dm-text-muted disabled:cursor-not-allowed"
           >
             {isSending ? (
               <>
@@ -240,8 +240,8 @@ El equipo de ${businessName}`;
         {!whatsAppInstance.hasInstance && !whatsAppInstance.isLoading && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start">
-              <AlertCircle className="h-4 w-4 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-yellow-800 text-xs">
+              <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-yellow-800 dark:text-yellow-300 text-xs">
                 <p className="font-medium mb-1">WhatsApp no configurado</p>
                 <p>
                   {whatsAppInstance.error || `La sucursal "${quotation.branch_office_name || 'desconocida'}" no tiene una instancia de WhatsApp configurada.`}
@@ -256,10 +256,10 @@ El equipo de ${businessName}`;
 
         {/* Nota informativa - Solo mostrar si hay WhatsApp configurado */}
         {whatsAppInstance.hasInstance && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
             <div className="flex items-start">
-              <MessageCircle className="h-4 w-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-blue-800 text-xs">
+              <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-blue-800 dark:text-blue-300 text-xs">
                 <p className="font-medium mb-1">Información:</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Verifica que el número tenga WhatsApp activo</li>

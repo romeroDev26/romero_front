@@ -130,7 +130,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 selectedOption === option.value
                   ? 'bg-indigo-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-dm-bg-secondary text-dm-text-secondary hover:bg-dm-bg-hover'
               }`}
             >
               {option.label}
@@ -142,15 +142,15 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         {selectedOption === 'custom' ? (
           <button
             onClick={() => setShowCalendar(!showCalendar)}
-            className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
+            className="inline-flex items-center px-4 py-2 bg-dm-bg-primary border border-dm-border-primary rounded-lg text-sm font-medium text-dm-text-secondary hover:bg-dm-bg-hover transition-colors shadow-sm cursor-pointer"
           >
-            <CalendarDaysIcon className="w-5 h-5 mr-2 text-indigo-600" />
+            <CalendarDaysIcon className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
             <span>{formatDateRange()}</span>
             <ChevronDownIcon className={`w-4 h-4 ml-2 transition-transform ${showCalendar ? 'rotate-180' : ''}`} />
           </button>
         ) : (
-          <div className="inline-flex items-center px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-600">
-            <CalendarDaysIcon className="w-5 h-5 mr-2 text-gray-400" />
+          <div className="inline-flex items-center px-4 py-2 bg-dm-bg-secondary border border-dm-border-primary rounded-lg text-sm font-medium text-dm-text-secondary">
+            <CalendarDaysIcon className="w-5 h-5 mr-2 text-dm-text-muted" />
             <span>{formatDateRange()}</span>
           </div>
         )}
@@ -158,7 +158,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 
       {/* Calendario desplegable */}
       {showCalendar && (
-        <div className="mt-4 w-full max-w-3xl mx-auto bg-white rounded-xl shadow-2xl border border-gray-200 p-4 overflow-x-auto">
+        <div className="mt-4 w-full max-w-3xl mx-auto bg-dm-bg-primary rounded-xl shadow-2xl border border-dm-border-primary p-4 overflow-x-auto">
           <div className="custom-datepicker-wrapper">
             <DatePicker
               selected={tempStartDate}
@@ -184,7 +184,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
                   date < tempEndDate;
 
                 if (isSelected) return 'bg-indigo-600 text-white rounded-full';
-                if (isInRange) return 'bg-indigo-100 text-indigo-800';
+                if (isInRange) return 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300';
                 if (isToday) return 'border-2 border-indigo-600 rounded-full';
                 return '';
               }}
@@ -192,20 +192,20 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
           </div>
           
           {/* Acciones del calendario */}
-          <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+          <div className="flex justify-between items-center mt-4 pt-4 border-t border-dm-border-primary">
             <button
               onClick={() => {
                 setTempStartDate(startDate);
                 setTempEndDate(endDate);
                 setShowCalendar(false);
               }}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              className="px-4 py-2 text-sm text-dm-text-secondary hover:text-dm-text-primary"
             >
               Cancelar
             </button>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-dm-text-muted">
               {tempStartDate && tempEndDate ? (
-                <span className="text-indigo-600 font-medium">
+                <span className="text-indigo-600 dark:text-indigo-400 font-medium">
                   {Math.ceil((tempEndDate.getTime() - tempStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1} días seleccionados
                 </span>
               ) : (

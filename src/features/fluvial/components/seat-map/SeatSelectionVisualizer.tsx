@@ -13,20 +13,20 @@ interface SeatSelectionVisualizerProps {
 export const SeatSelectionVisualizer: React.FC<SeatSelectionVisualizerProps> = ({ tripId, selectedSeats, onSeatToggle }) => {
   return (
     <div className="mt-4 border-t pt-4">
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4">
+      <div className="bg-dm-bg-primary rounded-2xl shadow-lg border border-dm-border-primary p-4">
         <div className="relative">
           {/* Contorno de la embarcación */}
-          <div className="border-2 border-dashed border-gray-300 rounded-2xl p-4 relative">
+          <div className="border-2 border-dashed border-dm-border-primary rounded-2xl p-4 relative">
             
             {/* Frente de la embarcación */}
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-              <div className="w-40 h-8 border-2 border-dashed border-gray-300 rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
-                <span className="text-xs font-bold text-gray-700">FRENTE</span>
+              <div className="w-40 h-8 border-2 border-dashed border-dm-border-primary rounded-t-2xl bg-dm-bg-primary flex items-center justify-center shadow-sm">
+                <span className="text-xs font-bold text-dm-text-secondary">FRENTE</span>
               </div>
             </div>
             
             {/* Mapa de asientos */}
-            <div className="mt-4 bg-gray-50 p-4 rounded-lg overflow-x-auto">
+            <div className="mt-4 bg-dm-bg-secondary p-4 rounded-lg overflow-x-auto">
               <SeatMap 
                 tripId={tripId}
                 vesselName="Embarcación"

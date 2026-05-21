@@ -29,16 +29,16 @@ export const CreditNoteReasonSection: React.FC<CreditNoteReasonSectionProps> = (
 	watch
 }) => {
 	return (
-		<div className="bg-white rounded-lg shadow p-6">
-			<h2 className="text-lg font-semibold text-gray-900 mb-4">Motivo de la Nota de Crédito</h2>
+		<div className="bg-dm-bg-primary rounded-lg shadow p-6">
+			<h2 className="text-lg font-semibold text-dm-text-primary mb-4">Motivo de la Nota de Crédito</h2>
 			<div className="space-y-4">
 				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-1">Motivo*</label>
+					<label className="block text-sm font-medium text-dm-text-secondary mb-1">Motivo*</label>
 					<Controller
 						name="credit_note_type_code"
 						control={control}
 						render={({ field }) => (
-							<select {...field} className="w-full p-2 border border-gray-300 rounded-md">
+							<select {...field} className="w-full p-2 border border-dm-border-primary rounded-md">
 								{CREDIT_NOTE_REASONS.map(reason => (
 									<option key={reason.code} value={reason.code}>
 										{reason.code} - {reason.description}
@@ -48,13 +48,13 @@ export const CreditNoteReasonSection: React.FC<CreditNoteReasonSectionProps> = (
 						)}
 					/>
 					{errors.credit_note_type_code && (
-						<p className="text-sm text-red-600 mt-1">{errors.credit_note_type_code.message?.toString()}</p>
+						<p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.credit_note_type_code.message?.toString()}</p>
 					)}
 					
 					{/* Ayuda contextual */}
 					{watch('credit_note_type_code') && (
-						<div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-							<p className="text-sm text-blue-800">
+						<div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+							<p className="text-sm text-blue-800 dark:text-blue-300">
 								<strong>ℹ️ Información:</strong> {CREDIT_NOTE_REASONS.find(r => r.code === watch('credit_note_type_code'))?.help}
 							</p>
 						</div>
@@ -62,7 +62,7 @@ export const CreditNoteReasonSection: React.FC<CreditNoteReasonSectionProps> = (
 				</div>
 				
 				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-1">Descripción*</label>
+					<label className="block text-sm font-medium text-dm-text-secondary mb-1">Descripción*</label>
 					<Controller
 						name="reason"
 						control={control}
@@ -70,13 +70,13 @@ export const CreditNoteReasonSection: React.FC<CreditNoteReasonSectionProps> = (
 							<textarea
 								{...field}
 								rows={3}
-								className="w-full p-2 border border-gray-300 rounded-md"
+								className="w-full p-2 border border-dm-border-primary rounded-md"
 								placeholder="Ej: Devolución total de productos por defecto de calidad"
 							/>
 						)}
 					/>
 					{errors.reason && (
-						<p className="text-sm text-red-600 mt-1">{errors.reason.message?.toString()}</p>
+						<p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.reason.message?.toString()}</p>
 					)}
 				</div>
 			</div>

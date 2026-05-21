@@ -277,11 +277,11 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
     (hasError
       ? 'border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500/20 '
       : `border-[${COLORS.lightPearl}] focus:border-[${COLORS.midnight}] focus:ring-1 focus:ring-[${COLORS.midnight}]/10 `) +
-    (locked ? 'bg-[#f5f5f5] text-[#828282] cursor-not-allowed ' : 'bg-white text-[#202020] ');
+    (locked ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed ' : 'bg-dm-bg-primary text-dm-text-primary ');
 
   const labelClass = `block text-sm font-medium mb-1.5 ${FONT.inter}`;
 
-  const sectionClass = `rounded-lg border border-[${COLORS.lightPearl}] bg-white p-5 space-y-5`;
+  const sectionClass = `rounded-lg border border-[${COLORS.lightPearl}] bg-dm-bg-primary p-5 space-y-5`;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -313,7 +313,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
 
         {/* Sección Servicio */}
         <div
-          className="rounded-lg border bg-white p-5 space-y-4"
+          className="rounded-lg border bg-dm-bg-primary p-5 space-y-4"
           style={{ borderColor: COLORS.lightPearl }}
         >
           <div>
@@ -498,7 +498,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
         {/* Sección Destinatario */}
         {!defaultRecipient && (
           <div
-            className="rounded-lg border bg-white p-5 space-y-5"
+            className="rounded-lg border bg-dm-bg-primary p-5 space-y-5"
             style={{ borderColor: COLORS.lightPearl }}
           >
             <div>

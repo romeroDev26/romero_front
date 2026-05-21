@@ -56,12 +56,12 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
   const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-4">
       {/* Header del calendario */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={handlePrevMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           type="button"
         >
           <ChevronLeftIcon className="h-5 w-5" />
@@ -73,7 +73,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
         
         <button
           onClick={handleNextMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           type="button"
         >
           <ChevronRightIcon className="h-5 w-5" />
@@ -85,7 +85,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
         {weekDays.map((day) => (
           <div
             key={day}
-            className="p-2 text-center text-sm font-medium text-gray-600"
+            className="p-2 text-center text-sm font-medium text-dm-text-secondary"
           >
             {day}
           </div>
@@ -113,8 +113,8 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
               className={`
                 relative p-2 h-12 rounded-lg text-center cursor-pointer transition-all
                 ${isPastDate 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'hover:bg-blue-50'
+                  ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed' 
+                  : 'hover:bg-blue-50 dark:bg-blue-950/30'
                 }
                 ${isSelected && !isPastDate 
                   ? 'bg-blue-500 text-white' 
@@ -135,7 +135,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
                 <div className={`
                   absolute bottom-1 left-1/2 transform -translate-x-1/2 
                   w-2 h-2 rounded-full
-                  ${isSelected ? 'bg-white' : 'bg-blue-500'}
+                  ${isSelected ? 'bg-dm-bg-primary' : 'bg-blue-500'}
                 `} />
               )}
               
@@ -153,7 +153,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
       </div>
 
       {/* Leyenda */}
-      <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
+      <div className="mt-4 flex flex-wrap gap-4 text-xs text-dm-text-secondary">
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           <span>Viajes disponibles</span>

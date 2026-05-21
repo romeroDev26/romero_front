@@ -102,9 +102,9 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           </Button>
         </div>
 
-        <div className="border border-gray-200 rounded-lg overflow-hidden bg-white min-h-[75vh]">
+        <div className="border border-dm-border-primary rounded-lg overflow-hidden bg-dm-bg-primary min-h-[75vh]">
           {isGeneratingPDF && (
-            <div className="h-[75vh] flex items-center justify-center text-gray-500">
+            <div className="h-[75vh] flex items-center justify-center text-dm-text-muted">
               Generando PDF...
             </div>
           )}
@@ -118,7 +118,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
           )}
 
           {!isGeneratingPDF && !pdfUrl && (
-            <div className="h-[75vh] flex items-center justify-center text-gray-500">
+            <div className="h-[75vh] flex items-center justify-center text-dm-text-muted">
               No se pudo generar la vista previa del PDF.
             </div>
           )}

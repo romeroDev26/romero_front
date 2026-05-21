@@ -16,11 +16,11 @@ function shortName(n: string) {
 export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoading = false }) => {
   if (isLoading) {
     return (
-      <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm">
         <div className="animate-pulse space-y-3">
-          <div className="h-5 w-1/2 rounded bg-gray-100" />
+          <div className="h-5 w-1/2 rounded bg-dm-bg-secondary" />
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-9 rounded-lg bg-gray-50" />
+            <div key={i} className="h-9 rounded-lg bg-dm-bg-secondary" />
           ))}
         </div>
       </div>
@@ -41,31 +41,31 @@ export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoad
 
   if (sortedData.length === 0) {
     return (
-      <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm">
         <div className="mb-3 flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-indigo-600" aria-hidden />
-          <h3 className="text-base font-semibold text-gray-800">Ventas por sucursal</h3>
+          <Building2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" aria-hidden />
+          <h3 className="text-base font-semibold text-dm-text-primary">Ventas por sucursal</h3>
         </div>
-        <p className="text-xs text-gray-500">Montos del período filtrado</p>
+        <p className="text-xs text-dm-text-muted">Montos del período filtrado</p>
         <div className="flex flex-1 flex-col items-center justify-center py-8 text-center">
-          <p className="text-sm text-gray-400">Sin datos por sucursal</p>
+          <p className="text-sm text-dm-text-muted">Sin datos por sucursal</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="flex h-full w-full min-h-[260px] flex-col rounded-xl border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm">
       {/* Header */}
       <div className="mb-4 shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-indigo-600" aria-hidden />
-            <h3 className="text-base font-semibold text-gray-800">Ventas por sucursal</h3>
+            <Building2 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" aria-hidden />
+            <h3 className="text-base font-semibold text-dm-text-primary">Ventas por sucursal</h3>
           </div>
-          <span className="text-xs font-medium text-gray-400">{sortedData.length} sucursales</span>
+          <span className="text-xs font-medium text-dm-text-muted">{sortedData.length} sucursales</span>
         </div>
-        <p className="mt-1 text-lg font-bold tabular-nums text-gray-900">
+        <p className="mt-1 text-lg font-bold tabular-nums text-dm-text-primary">
           S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </p>
       </div>
@@ -77,21 +77,21 @@ export const BranchSalesChart: React.FC<BranchSalesChartProps> = ({ data, isLoad
             <div className="mb-1.5 flex items-center justify-between gap-2">
               <div className="flex min-w-0 flex-1 items-center gap-2">
                 <div className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-                <span className="truncate text-sm font-medium text-gray-700" title={item.name}>
+                <span className="truncate text-sm font-medium text-dm-text-secondary" title={item.name}>
                   {shortName(item.name)}
                 </span>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <span className="text-xs tabular-nums text-gray-400">{item.facturas} fac.</span>
-                <span className="text-sm font-semibold tabular-nums text-gray-900">
+                <span className="text-xs tabular-nums text-dm-text-muted">{item.facturas} fac.</span>
+                <span className="text-sm font-semibold tabular-nums text-dm-text-primary">
                   S/ {item.value.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>
-                <span className="w-11 text-right text-xs tabular-nums text-gray-400">
+                <span className="w-11 text-right text-xs tabular-nums text-dm-text-muted">
                   {item.porcentaje.toFixed(1)}%
                 </span>
               </div>
             </div>
-            <div className="h-1.5 overflow-hidden rounded-full bg-gray-100">
+            <div className="h-1.5 overflow-hidden rounded-full bg-dm-bg-secondary">
               <div
                 className="h-full rounded-full transition-all duration-300 group-hover:opacity-80"
                 style={{

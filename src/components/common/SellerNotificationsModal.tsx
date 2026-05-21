@@ -5,7 +5,6 @@ import {
   XMarkIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ClockIcon,
   InboxIcon,
   ChatBubbleLeftRightIcon,
   ArrowPathIcon,
@@ -88,23 +87,23 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#202020]/30 backdrop-blur-[2px] transition-opacity"
+        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity"
         onClick={onClose}
       />
 
       {/* Panel */}
-      <div className="relative z-10 flex flex-col w-full max-w-2xl max-h-[85vh] bg-white rounded-[20px] border border-[#e8e8e8] overflow-hidden">
+      <div className="relative z-10 flex flex-col w-full max-w-2xl max-h-[85vh] bg-dm-bg-primary rounded-[20px] border border-dm-border-primary overflow-hidden">
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-8 py-5 border-b border-[#e8e8e8]">
+        <div className="flex items-center justify-between px-8 py-5 border-b border-dm-border-primary">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
-              <ChatBubbleLeftRightIcon className="w-5 h-5 text-[#1F4690]" />
+            <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-primary/10">
+              <ChatBubbleLeftRightIcon className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-[15px] font-semibold text-[#202020] tracking-tight">
+              <h3 className="text-[15px] font-semibold text-dm-text-primary tracking-tight">
                 Respuestas a mis solicitudes
               </h3>
-              <p className="text-[12px] text-[#828282] mt-0.5">
+              <p className="text-[12px] text-dm-text-muted mt-0.5">
                 {unreadCount > 0
                   ? `${unreadCount} respuesta${unreadCount > 1 ? 's' : ''} sin leer`
                   : 'Todas las respuestas han sido leídas'}
@@ -113,7 +112,7 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#202020] hover:bg-[#f5f5f5] transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-dm-text-primary hover:bg-dm-bg-hover transition-colors"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -123,19 +122,19 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
         <div className="flex-1 overflow-y-auto px-8 py-6">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <Spinner size="lg" color="text-[#1F4690]" />
-              <p className="text-[13px] text-[#828282]">Cargando respuestas…</p>
+              <Spinner size="lg" color="text-primary" />
+              <p className="text-[13px] text-dm-text-muted">Cargando respuestas…</p>
             </div>
           ) : resolvedRequests.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-[#f5f5f5]">
-                <InboxIcon className="w-8 h-8 text-[#828282]" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-dm-bg-secondary">
+                <InboxIcon className="w-8 h-8 text-dm-text-muted" />
               </div>
               <div className="text-center">
-                <p className="text-[15px] font-medium text-[#202020]">
+                <p className="text-[15px] font-medium text-dm-text-primary">
                   No tienes respuestas aún
                 </p>
-                <p className="text-[13px] text-[#828282] mt-1 max-w-[280px]">
+                <p className="text-[13px] text-dm-text-muted mt-1 max-w-[280px]">
                   Aquí aparecerán las respuestas del supervisor a tus solicitudes de anulación.
                 </p>
               </div>
@@ -151,14 +150,14 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
                     key={request.id}
                     className={`relative group rounded-[12px] border transition-all duration-200 ${
                       isNew
-                        ? 'border-[#1F4690]/20 bg-[#1F4690]/[0.02]'
-                        : 'border-[#e8e8e8] bg-white hover:border-[#d4d4d4]'
+                        ? 'border-primary/20 bg-primary/[0.02]'
+                        : 'border-dm-border-primary bg-dm-bg-primary hover:border-dm-border-secondary'
                     }`}
                   >
                     {/* Badge "Nueva" */}
                     {isNew && (
                       <div className="absolute -top-2.5 right-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold text-white bg-[#1F4690] rounded-full shadow-sm">
+                        <span className="inline-flex items-center px-2.5 py-0.5 text-[11px] font-semibold text-white bg-primary rounded-full shadow-sm">
                           Nueva
                         </span>
                       </div>
@@ -170,25 +169,27 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
                         <div className="flex items-center gap-2.5">
                           <div
                             className={`flex items-center justify-center w-8 h-8 rounded-[8px] flex-shrink-0 ${
-                              isApproved ? 'bg-emerald-50' : 'bg-red-50'
+                              isApproved
+                                ? 'bg-emerald-50 dark:bg-emerald-950/30'
+                                : 'bg-red-50 dark:bg-red-950/30'
                             }`}
                           >
                             {isApproved ? (
-                              <CheckCircleIcon className="w-5 h-5 text-emerald-600" />
+                              <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             ) : (
-                              <XCircleIcon className="w-5 h-5 text-red-500" />
+                              <XCircleIcon className="w-5 h-5 text-red-500 dark:text-red-400" />
                             )}
                           </div>
                           <div>
-                            <h4 className="text-[14px] font-semibold text-[#202020]">
+                            <h4 className="text-[14px] font-semibold text-dm-text-primary">
                               {isApproved
                                 ? 'Solicitud aprobada'
                                 : 'Solicitud rechazada'}
                             </h4>
-                            <p className="text-[12px] text-[#828282]">
+                            <p className="text-[12px] text-dm-text-muted">
                               {request.series}-{request.number}
                               {request.passenger_name && (
-                                <span className="text-[#4d4d4d]">
+                                <span className="text-dm-text-secondary">
                                   {' · '}
                                   {request.passenger_name}
                                 </span>
@@ -196,35 +197,35 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
                             </p>
                           </div>
                         </div>
-                        <span className="text-[11px] text-[#828282] font-medium whitespace-nowrap mt-1">
+                        <span className="text-[11px] text-dm-text-muted font-medium whitespace-nowrap mt-1">
                           {formatDate(request.updated_at)}
                         </span>
                       </div>
 
                       {/* Motivo de solicitud */}
                       <div className="mb-3">
-                        <p className="text-[11px] font-medium text-[#828282] uppercase tracking-wider mb-1.5">
+                        <p className="text-[11px] font-medium text-dm-text-muted uppercase tracking-wider mb-1.5">
                           Tu motivo
                         </p>
-                        <p className="text-[13px] text-[#4d4d4d] leading-relaxed bg-[#f5f5f5] rounded-[8px] px-3.5 py-2.5">
+                        <p className="text-[13px] text-dm-text-secondary leading-relaxed bg-dm-bg-secondary rounded-[8px] px-3.5 py-2.5">
                           {request.request_reason}
                         </p>
                       </div>
 
                       {/* Respuesta del supervisor */}
                       {isApproved ? (
-                        <div className="flex items-start gap-2 rounded-[8px] bg-emerald-50/60 border border-emerald-100 px-3.5 py-2.5">
-                          <CheckCircleIcon className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-[13px] text-emerald-800 leading-relaxed">
+                        <div className="flex items-start gap-2 rounded-[8px] bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 px-3.5 py-2.5">
+                          <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-[13px] text-emerald-800 dark:text-emerald-300 leading-relaxed">
                             La nota de crédito fue generada automáticamente.
                           </p>
                         </div>
                       ) : request.rejection_reason ? (
-                        <div className="rounded-[8px] bg-red-50/40 border border-red-100 px-3.5 py-2.5">
-                          <p className="text-[11px] font-medium text-red-700 uppercase tracking-wider mb-1">
+                        <div className="rounded-[8px] bg-red-50/40 dark:bg-red-950/20 border border-red-200 dark:border-red-800 px-3.5 py-2.5">
+                          <p className="text-[11px] font-medium text-red-700 dark:text-red-300 uppercase tracking-wider mb-1">
                             Motivo del rechazo
                           </p>
-                          <p className="text-[13px] text-red-900 leading-relaxed">
+                          <p className="text-[13px] text-red-900 dark:text-red-200 leading-relaxed">
                             {request.rejection_reason}
                           </p>
                         </div>
@@ -232,11 +233,11 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
 
                       {/* Marcar como leída */}
                       {isNew && (
-                        <div className="mt-4 pt-3 border-t border-[#e8e8e8]">
+                        <div className="mt-4 pt-3 border-t border-dm-border-primary">
                           <button
                             onClick={() => handleMarkOneAsRead(request.id)}
                             disabled={markingRequestId === request.id}
-                            className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-[#1F4690] bg-[#1F4690]/5 hover:bg-[#1F4690]/10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-medium text-primary bg-primary/5 hover:bg-primary/10 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {markingRequestId === request.id ? (
                               <>
@@ -275,13 +276,13 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
         </div>
 
         {/* ── Footer ── */}
-        <div className="flex items-center justify-between gap-3 px-8 py-4 border-t border-[#e8e8e8] bg-[#fafafa]">
+        <div className="flex items-center justify-between gap-3 px-8 py-4 border-t border-dm-border-primary bg-dm-bg-secondary">
           <div>
             {unreadCount > 0 && !isLoading && (
               <button
                 onClick={handleMarkAllAsRead}
                 disabled={isMarkingAsRead}
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-[13px] font-medium text-white bg-[#1F4690] hover:bg-[#16377a] rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-[13px] font-medium text-white bg-primary hover:bg-primary/90 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isMarkingAsRead ? (
                   <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
@@ -297,7 +298,7 @@ const SellerNotificationsModal: React.FC<SellerNotificationsModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="px-5 py-2.5 text-[13px] font-medium text-[#4d4d4d] hover:text-[#202020] hover:bg-[#f5f5f5] rounded-full transition-colors"
+            className="px-5 py-2.5 text-[13px] font-medium text-dm-text-secondary hover:text-dm-text-primary hover:bg-dm-bg-hover rounded-full transition-colors"
           >
             Cerrar
           </button>

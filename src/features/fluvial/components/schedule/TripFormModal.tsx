@@ -166,14 +166,14 @@ export const TripFormModal: React.FC<Props> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {!trip && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ruta <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                Ruta <span className="text-red-500 dark:text-red-400">*</span>
               </label>
               <select
                 value={formData.route_id}
                 onChange={(e) => handleChange('route_id', parseInt(e.target.value))}
                 className={`w-full rounded-md shadow-sm p-2 border ${
-                  errors.route_id ? 'border-red-500' : 'border-gray-300'
+                  errors.route_id ? 'border-red-500' : 'border-dm-border-primary'
                 } focus:border-primary focus:ring focus:ring-primary/20`}
                 disabled={isLoadingRoutes}
               >
@@ -185,19 +185,19 @@ export const TripFormModal: React.FC<Props> = ({
                 ))}
               </select>
               {errors.route_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.route_id}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.route_id}</p>
               )}
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Embarcación <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+              Embarcación <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <select
               value={formData.vessel_id}
               onChange={(e) => handleChange('vessel_id', parseInt(e.target.value))}
               className={`w-full rounded-md shadow-sm p-2 border ${
-                errors.vessel_id ? 'border-red-500' : 'border-gray-300'
+                errors.vessel_id ? 'border-red-500' : 'border-dm-border-primary'
               } focus:border-primary focus:ring focus:ring-primary/20`}
               disabled={isLoadingVessels}
             >
@@ -209,7 +209,7 @@ export const TripFormModal: React.FC<Props> = ({
               ))}
             </select>
             {errors.vessel_id && (
-              <p className="mt-1 text-sm text-red-600">{errors.vessel_id}</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.vessel_id}</p>
             )}
           </div>
           <Input
@@ -220,39 +220,39 @@ export const TripFormModal: React.FC<Props> = ({
           />
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Fecha de Salida
               </label>
               <input
                 type="date"
                 value={datePart}
                 onChange={(e) => setDatePart(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-dm-border-primary rounded-md"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Hora de Salida
               </label>
               <input
                 type="time"
                 value={timePart}
                 onChange={(e) => setTimePart(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-dm-border-primary rounded-md"
                 required
               />
             </div>
           </div>
           {trip && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Estado
               </label>
               <select
                 value={formData.status}
                 onChange={(e) => handleChange('status', e.target.value)}
-                className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
+                className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
               >
                 {TRIP_STATUS_OPTIONS.map((status) => (
                   <option key={status.value} value={status.value}>
@@ -263,13 +263,13 @@ export const TripFormModal: React.FC<Props> = ({
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Capitán (Opcional)
             </label>
             <select
               value={formData.captain_user_id}
               onChange={(e) => handleChange('captain_user_id', e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
+              className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
               disabled={isLoadingCaptains}
             >
               <option value="">Seleccione un capitán</option>
@@ -279,7 +279,7 @@ export const TripFormModal: React.FC<Props> = ({
                 </option>
               ))}
             </select>
-            {isLoadingCaptains && <p className="text-xs text-gray-500 mt-1">Cargando capitanes...</p>}
+            {isLoadingCaptains && <p className="text-xs text-dm-text-muted mt-1">Cargando capitanes...</p>}
           </div>
           {trip && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -302,15 +302,15 @@ export const TripFormModal: React.FC<Props> = ({
               type="checkbox"
               checked={formData.can_sell_tickets}
               onChange={(e) => handleChange('can_sell_tickets', e.target.checked)}
-              className="rounded border-gray-300 text-primary focus:ring-primary"
+              className="rounded border-dm-border-primary text-primary focus:ring-primary"
             />
-            <span className="ml-2 text-sm text-gray-700">
+            <span className="ml-2 text-sm text-dm-text-secondary">
               Permitir venta de tickets
             </span>
           </label>
           {!trip && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-              <p className="text-sm text-yellow-800">
+              <p className="text-sm text-yellow-800 dark:text-yellow-300">
                 Este viaje se creará como un viaje único (no recurrente). Para viajes que se repiten
                 semanalmente, use las plantillas de viaje.
               </p>

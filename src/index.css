@@ -4,32 +4,134 @@
 @import 'tailwindcss/utilities';
 
 @layer base {
+  /* ═══════════════════════════════════════════════════════════
+     SISTEMA DE DISEÑO SEMÁNTICO — Tokens de color
+     ═══════════════════════════════════════════════════════════ */
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --bg-tertiary: #f8fafc;
+    --bg-accent: #eff6ff;        /* equivalente a blue-50 */
+    --bg-hover: #f9fafb;         /* equivalente a gray-50 */
+    --bg-badge: #f3f4f6;         /* equivalente a gray-100 */
+
+    --text-primary: #1f2937;     /* equivalente a gray-800 */
+    --text-secondary: #4b5563;   /* equivalente a gray-600 */
+    --text-muted: #6b7280;       /* equivalente a gray-500 */
+    --text-accent: #1d4ed8;      /* equivalente a blue-700 */
+
+    --border-primary: #e5e7eb;   /* equivalente a gray-200 */
+    --border-secondary: #f3f4f6; /* equivalente a gray-100 */
+
+    /* DatePicker */
+    --dp-text-primary: #374151;
+    --dp-text-secondary: #6b7280;
+    --dp-text-muted: #9ca3af;
+    --dp-text-disabled: #d1d5db;
+    --dp-border: #e5e7eb;
+    --dp-accent: #4f46e5;
+    --dp-accent-text: #4338ca;
+    --dp-hover-bg: #e0e7ff;
+    --dp-selecting-bg: #c7d2fe;
+    --dp-today-border: #4f46e5;
+
+    /* Scrollbars */
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+    --scrollbar-blue-thumb: #93c5fd;
+    --scrollbar-blue-thumb-hover: #60a5fa;
+    --scrollbar-blue-track: #dbeafe;
+  }
+
+  .dark {
+    --bg-primary: #121212;       /* Ligeramente suavizado respecto al negro puro */
+    --bg-secondary: #1a1a1a;     /* Fondo general de la app */
+    --bg-tertiary: #1e1e1e;      /* Cards/contenedores secundarios */
+    --bg-accent: #1e3a5f;        /* Fondo de items activos/seleccionados */
+    --bg-hover: #262626;         /* Fondo al pasar el cursor */
+    --bg-badge: #2a2a2a;         /* Fondo de badges/chips */
+
+    --text-primary: #f3f4f6;     /* Texto principal */
+    --text-secondary: #d1d5db;   /* Texto secundario */
+    --text-muted: #9ca3af;       /* Texto deshabilitado/muted */
+    --text-accent: #60a5fa;      /* Texto de links/items activos */
+
+    --border-primary: #404040;   /* Bordes visibles */
+    --border-secondary: #262626; /* Separadores sutiles */
+
+    /* DatePicker */
+    --dp-text-primary: #e5e7eb;
+    --dp-text-secondary: #9ca3af;
+    --dp-text-muted: #6b7280;
+    --dp-text-disabled: #4b5563;
+    --dp-border: #404040;
+    --dp-accent: #6366f1;
+    --dp-accent-text: #818cf8;
+    --dp-hover-bg: #312e81;
+    --dp-selecting-bg: #3730a3;
+    --dp-today-border: #6366f1;
+
+    /* Scrollbars */
+    --scrollbar-thumb: #475569;
+    --scrollbar-thumb-hover: #64748b;
+    --scrollbar-blue-thumb: #3b82f6;
+    --scrollbar-blue-thumb-hover: #60a5fa;
+    --scrollbar-blue-track: #1e3a5f;
+  }
+
   html {
     @apply antialiased;
   }
   body {
-    @apply bg-neutral font-sans;
+    @apply font-sans;
+    background-color: var(--bg-secondary);
   }
   #root {
     @apply min-h-screen w-full;
   }
-  
+
+  /* ═══════════════════════════════════════════════════════════
+     FORM ELEMENTS — Fallback para inputs sin clase explícita
+     ═══════════════════════════════════════════════════════════ */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="date"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+  }
+
   /* Estilización del scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(128, 128, 128, 0.3);
     border-radius: 3px;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(128, 128, 128, 0.5);
+  }
+
+  /* Scrollbar en modo oscuro */
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
   }
   
   /* Estilos personalizados para la barra de desplazamiento del RouteTimeline */
@@ -39,16 +141,16 @@
   }
   
   .scrollbar-thumb-blue-300::-webkit-scrollbar-thumb {
-    background-color: #93c5fd;
+    background-color: var(--scrollbar-blue-thumb);
     border-radius: 4px;
   }
   
   .scrollbar-thumb-blue-300::-webkit-scrollbar-thumb:hover {
-    background-color: #60a5fa;
+    background-color: var(--scrollbar-blue-thumb-hover);
   }
   
   .scrollbar-track-blue-100::-webkit-scrollbar-track {
-    background-color: #dbeafe;
+    background-color: var(--scrollbar-blue-track);
     border-radius: 4px;
   }
   
@@ -62,12 +164,12 @@
   }
 
   .ranking-scroll::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
+    background-color: var(--scrollbar-thumb);
     border-radius: 10px;
   }
 
   .ranking-scroll::-webkit-scrollbar-thumb:hover {
-    background-color: #94a3b8;
+    background-color: var(--scrollbar-thumb-hover);
   }
 
   /* Ocultar spinners de inputs numéricos (flechitas) */
@@ -129,6 +231,48 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Dark mode — react-datepicker library defaults
+   (applies to datepickers without .custom-datepicker class)
+   ═══════════════════════════════════════════════════════════ */
+.dark .react-datepicker {
+  background-color: var(--bg-primary);
+  border-color: var(--border-primary);
+  color: var(--text-primary);
+}
+.dark .react-datepicker__header {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-primary);
+}
+.dark .react-datepicker__current-month,
+.dark .react-datepicker__day-name {
+  color: var(--text-primary);
+}
+.dark .react-datepicker__day {
+  color: var(--text-primary);
+}
+.dark .react-datepicker__day:hover {
+  background-color: var(--bg-hover);
+}
+.dark .react-datepicker__day--outside-month {
+  color: var(--text-muted);
+}
+.dark .react-datepicker__day--disabled {
+  color: var(--text-muted);
+}
+.dark .react-datepicker__navigation-icon::before {
+  border-color: var(--text-secondary);
+}
+.dark .react-datepicker__time-container {
+  border-left-color: var(--border-primary);
+}
+.dark .react-datepicker__time-box {
+  background-color: var(--bg-primary);
+}
+.dark .react-datepicker__time-list-item:hover {
+  background-color: var(--bg-hover);
+}
+
 /* Estilos personalizados para el DatePicker de reportes */
 .custom-datepicker {
   font-family: inherit;
@@ -142,12 +286,12 @@
 
 .custom-datepicker .react-datepicker__header {
   background: transparent;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--dp-border);
   padding-bottom: 0.75rem;
 }
 
 .custom-datepicker .react-datepicker__current-month {
-  color: #374151;
+  color: var(--dp-text-primary);
   font-weight: 600;
   font-size: 1rem;
   margin-bottom: 0.5rem;
@@ -158,7 +302,7 @@
 }
 
 .custom-datepicker .react-datepicker__day-name {
-  color: #6b7280;
+  color: var(--dp-text-secondary);
   font-weight: 500;
   width: 2.5rem;
   line-height: 2.5rem;
@@ -170,49 +314,49 @@
   line-height: 2.5rem;
   margin: 0.1rem;
   border-radius: 0.5rem;
-  color: #374151;
+  color: var(--dp-text-primary);
   transition: all 0.15s ease;
 }
 
 .custom-datepicker .react-datepicker__day:hover {
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: var(--dp-hover-bg);
+  color: var(--dp-accent);
 }
 
 .custom-datepicker .react-datepicker__day--selected,
 .custom-datepicker .react-datepicker__day--range-start,
 .custom-datepicker .react-datepicker__day--range-end {
-  background-color: #4f46e5 !important;
+  background-color: var(--dp-accent) !important;
   color: white !important;
   font-weight: 600;
 }
 
 .custom-datepicker .react-datepicker__day--in-range {
-  background-color: #e0e7ff;
-  color: #4338ca;
+  background-color: var(--dp-hover-bg);
+  color: var(--dp-accent-text);
 }
 
 .custom-datepicker .react-datepicker__day--in-selecting-range {
-  background-color: #c7d2fe;
-  color: #4338ca;
+  background-color: var(--dp-selecting-bg);
+  color: var(--dp-accent-text);
 }
 
 .custom-datepicker .react-datepicker__day--keyboard-selected {
-  background-color: #e0e7ff;
-  color: #4f46e5;
+  background-color: var(--dp-hover-bg);
+  color: var(--dp-accent);
 }
 
 .custom-datepicker .react-datepicker__day--today {
-  border: 2px solid #4f46e5;
+  border: 2px solid var(--dp-today-border);
   font-weight: 600;
 }
 
 .custom-datepicker .react-datepicker__day--disabled {
-  color: #d1d5db;
+  color: var(--dp-text-disabled);
 }
 
 .custom-datepicker .react-datepicker__day--outside-month {
-  color: #9ca3af;
+  color: var(--dp-text-muted);
 }
 
 .custom-datepicker .react-datepicker__navigation {
@@ -220,11 +364,11 @@
 }
 
 .custom-datepicker .react-datepicker__navigation-icon::before {
-  border-color: #6b7280;
+  border-color: var(--dp-text-secondary);
 }
 
 .custom-datepicker .react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
-  border-color: #4f46e5;
+  border-color: var(--dp-accent);
 }
 
 /* ================================================
@@ -263,7 +407,7 @@
 /* Separador visual entre meses */
 .custom-datepicker-wrapper .react-datepicker__month-container + .react-datepicker__month-container,
 .custom-datepicker .react-datepicker__month-container + .react-datepicker__month-container {
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid var(--dp-border);
   margin-left: 0.75rem;
   padding-left: 0.75rem;
 }

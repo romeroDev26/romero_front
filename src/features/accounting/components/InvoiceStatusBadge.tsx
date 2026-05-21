@@ -15,26 +15,26 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({
   const getSunatStatusColor = (status: SunatDocumentStatus): string => {
     switch (status) {
       case 'PENDING':
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-dm-bg-secondary text-dm-text-primary border-dm-border-primary';
       case 'GENERATED':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-300';
       case 'SIGNED':
-        return 'bg-indigo-100 text-indigo-800 border-indigo-300';
+        return 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 border-indigo-300';
       case 'SENT':
         return 'bg-purple-100 text-purple-800 border-purple-300';
       case 'ACCEPTED':
       case 'RECEIVED':
-        return 'bg-green-100 text-green-800 border-green-300';
+        return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-300';
       case 'REJECTED':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-300';
       case 'OBSERVED':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+        return 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-300';
       case 'VOIDED':
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-dm-bg-secondary text-dm-text-primary border-dm-border-primary';
       case 'ERROR':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-300';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300';
+        return 'bg-dm-bg-secondary text-dm-text-primary border-dm-border-primary';
     }
   };
 
@@ -68,8 +68,8 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({
   // Si el documento está cancelado o aumentado, mostramos ambos estados en línea
   if (businessStatus === 'CANCELLED' || businessStatus === 'INCREASED') {
     const businessStatusColor = businessStatus === 'CANCELLED' 
-      ? 'bg-red-50 text-red-700 border-red-200'
-      : 'bg-yellow-50 text-yellow-700 border-yellow-200';
+      ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200'
+      : 'bg-yellow-50 text-yellow-700 dark:text-yellow-300 border-yellow-200';
     const businessStatusText = businessStatus === 'CANCELLED' ? 'Cancelado' : 'Aumentado';
     
     return (

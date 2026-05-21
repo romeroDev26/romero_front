@@ -157,22 +157,22 @@ El equipo de ${businessName}`;
     >
       <div className="p-6">
         <div className="flex items-center mb-4">
-          <MessageCircle className="h-6 w-6 text-green-600 mr-2" />
+          <MessageCircle className="h-6 w-6 text-green-600 dark:text-green-400 mr-2" />
           <div>
-            <h3 className="font-semibold text-gray-800">
+            <h3 className="font-semibold text-dm-text-primary">
               Envío de Comprobante Electrónico
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-dm-text-secondary">
               Documento: {backendData.document_type_code} {backendData.series}-{backendData.number}
             </p>
             {isFromInvoiceList && (
-              <p className="text-xs text-blue-600 mt-1">
+              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                 Formato: {preferredPdfType === 'a4' ? 'A4 (Corporativo)' : preferredPdfType === 'ticket' ? 'Ticket 80mm (Térmico)' : 'PDF Estándar'}
               </p>
             )}
             {/* Indicador de sucursal del comprobante */}
             {whatsAppInstance.branchOfficeName && (
-              <p className="text-xs text-green-600 mt-1">
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                {whatsAppInstance.branchOfficeName}
               </p>
             )}
@@ -181,7 +181,7 @@ El equipo de ${businessName}`;
 
         {/* Campo de número de teléfono */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-dm-text-secondary mb-2">
             Número de WhatsApp
           </label>
           <Input
@@ -197,18 +197,18 @@ El equipo de ${businessName}`;
             }`}
           />
           {phoneNumber && !isValidPhoneNumber(phoneNumber) && (
-            <p className="text-xs text-red-600 mt-1">
+            <p className="text-xs text-red-600 dark:text-red-400 mt-1">
               Ingresa un número válido (mínimo 9 dígitos)
             </p>
           )}
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-dm-text-muted mt-1">
             Se agregará automáticamente el código de país +51 si no se especifica
           </p>
         </div>
 
         {/* Campo de mensaje personalizado */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-dm-text-secondary mb-2">
             Mensaje (opcional)
           </label>
           <textarea
@@ -217,9 +217,9 @@ El equipo de ${businessName}`;
             placeholder={defaultMessage}
             disabled={isSending}
             rows={8}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-dm-border-primary rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-dm-text-muted mt-1">
             Si dejas vacío, se usará el mensaje predeterminado
           </p>
         </div>
@@ -228,21 +228,21 @@ El equipo de ${businessName}`;
         {sendResult && (
           <div className={`mb-4 p-3 rounded-lg flex items-center ${
             sendResult.success 
-              ? 'bg-green-50 border border-green-200' 
-              : 'bg-red-50 border border-red-200'
+              ? 'bg-green-50 dark:bg-green-950/30 border border-green-200' 
+              : 'bg-red-50 dark:bg-red-950/30 border border-red-200'
           }`}>
             {sendResult.success ? (
               <>
-                <CheckCircle className="h-5 w-5 text-green-600 mr-2 flex-shrink-0" />
-                <div className="text-green-800">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mr-2 flex-shrink-0" />
+                <div className="text-green-800 dark:text-green-300">
                   <p className="font-medium">¡Enviado exitosamente!</p>
                   <p className="text-sm">{sendResult.message}</p>
                 </div>
               </>
             ) : (
               <>
-                <AlertCircle className="h-5 w-5 text-red-600 mr-2 flex-shrink-0" />
-                <div className="text-red-800">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mr-2 flex-shrink-0" />
+                <div className="text-red-800 dark:text-red-300">
                   <p className="font-medium">Error al enviar</p>
                   <p className="text-sm">{sendResult.error}</p>
                 </div>
@@ -265,7 +265,7 @@ El equipo de ${businessName}`;
           <Button
             onClick={handleSend}
             disabled={isSending || !phoneNumber.trim() || !isValidPhoneNumber(phoneNumber) || !whatsAppInstance.effectiveInstanceName}
-            className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-dm-text-muted disabled:cursor-not-allowed"
           >
             {isSending ? (
               <>
@@ -288,17 +288,17 @@ El equipo de ${businessName}`;
 
         {/* Aviso: Usando sucursal alternativa (fallback) */}
         {whatsAppInstance.usingFallback && whatsAppInstance.effectiveInstanceName && (
-          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg">
             <div className="flex items-start">
-              <AlertTriangle className="h-4 w-4 text-amber-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-amber-800 text-xs">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-amber-800 dark:text-amber-300 text-xs">
                 <p className="font-medium mb-1">Usando sucursal alternativa</p>
                 <p>
                   La sucursal <strong>"{whatsAppInstance.branchOfficeName}"</strong> no tiene WhatsApp 
                   {whatsAppInstance.hasInstance && !whatsAppInstance.isConnected ? ' conectado' : ' configurado'}.
                 </p>
                 <p className="mt-1">
-                  Se enviará desde: <strong className="text-amber-900">{whatsAppInstance.effectiveBranchOfficeName}</strong>
+                  Se enviará desde: <strong className="text-amber-900 dark:text-amber-200">{whatsAppInstance.effectiveBranchOfficeName}</strong>
                 </p>
               </div>
             </div>
@@ -307,10 +307,10 @@ El equipo de ${businessName}`;
 
         {/* Advertencia si no hay WhatsApp disponible en ninguna sucursal */}
         {!whatsAppInstance.effectiveInstanceName && !whatsAppInstance.isLoading && !whatsAppInstance.isCheckingConnection && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg">
             <div className="flex items-start">
-              <AlertCircle className="h-4 w-4 text-red-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-red-800 text-xs">
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-red-800 dark:text-red-300 text-xs">
                 <p className="font-medium mb-1">WhatsApp no disponible</p>
                 <p>
                   {whatsAppInstance.error || `No hay ninguna instancia de WhatsApp conectada disponible.`}
@@ -325,20 +325,20 @@ El equipo de ${businessName}`;
 
         {/* Verificando conexión */}
         {whatsAppInstance.isCheckingConnection && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
             <div className="flex items-center">
-              <Spinner size="sm" className="mr-2 text-blue-600" />
-              <span className="text-blue-800 text-xs">Verificando estado de conexión de WhatsApp...</span>
+              <Spinner size="sm" className="mr-2 text-blue-600 dark:text-blue-400" />
+              <span className="text-blue-800 dark:text-blue-300 text-xs">Verificando estado de conexión de WhatsApp...</span>
             </div>
           </div>
         )}
 
         {/* Nota informativa - Solo mostrar si hay WhatsApp disponible y está conectado directamente */}
         {whatsAppInstance.effectiveInstanceName && !whatsAppInstance.usingFallback && !whatsAppInstance.isCheckingConnection && (
-          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg">
             <div className="flex items-start">
-              <MessageCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-              <div className="text-green-800 text-xs">
+              <MessageCircle className="h-4 w-4 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
+              <div className="text-green-800 dark:text-green-300 text-xs">
                 <p className="font-medium mb-1">WhatsApp conectado</p>
                 <ul className="list-disc list-inside space-y-1">
                   <li>Sucursal: <strong>{whatsAppInstance.branchOfficeName}</strong></li>

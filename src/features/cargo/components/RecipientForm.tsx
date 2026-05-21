@@ -85,8 +85,8 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
-      <h3 className="font-semibold text-lg text-gray-800 mb-2 flex items-center gap-2">
+    <div className="bg-dm-bg-primary rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
+      <h3 className="font-semibold text-lg text-dm-text-primary mb-2 flex items-center gap-2">
         <span>Datos del Destinatario</span>
       </h3>
       <div className="flex items-center mb-4">
@@ -96,22 +96,22 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
           name="isSameAsSender"
           checked={recipient.isSameAsSender}
           onChange={handleInputChange}
-          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          className="h-4 w-4 text-blue-600 dark:text-blue-400 border-dm-border-primary rounded focus:ring-blue-500"
           disabled={disabled}
         />
-        <label htmlFor="isSameAsSender" className="ml-2 block text-sm text-gray-900 select-none cursor-pointer">
+        <label htmlFor="isSameAsSender" className="ml-2 block text-sm text-dm-text-primary select-none cursor-pointer">
           El destinatario es el mismo que el remitente
         </label>
       </div>
       {!recipient.isSameAsSender && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de documento *</label>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">Tipo de documento *</label>
             <select
               name="docType"
               value={recipient.docType}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+              className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary"
               disabled={disabled}
               title="Tipo de documento del destinatario"
             >
@@ -121,14 +121,14 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">N° Documento *</label>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">N° Documento *</label>
             <div className="flex gap-2">
               <input
                 type="text"
                 name="docNumber"
                 value={recipient.docNumber}
                 onChange={handleInputChange}
-                className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+                className="flex-1 p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary"
                 placeholder={recipient.docType === SunatDocType.DNI ? '12345678' : '20123456789'}
                 disabled={disabled}
                 maxLength={recipient.docType === SunatDocType.DNI ? 8 : 11}
@@ -158,20 +158,20 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
               )}
             </div>
             {recipient.name && !recipient.isSameAsSender && (
-              <div className="mt-2 flex items-center gap-2 text-green-600 text-sm">
+              <div className="mt-2 flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
                 <CheckCircle className="h-4 w-4" />
                 <span>Datos encontrados</span>
               </div>
             )}
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">Nombre Completo *</label>
             <input
               type="text"
               name="name"
               value={recipient.name}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+              className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary"
               placeholder="Nombre completo o razón social"
               disabled={disabled}
               maxLength={80}
@@ -180,13 +180,13 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
             />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono de Contacto</label>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">Teléfono de Contacto</label>
             <input
               type="tel"
               name="phone"
               value={recipient.phone}
               onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+              className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary"
               placeholder="Número de teléfono (opcional)"
               disabled={disabled}
               maxLength={15}

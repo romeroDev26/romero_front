@@ -125,19 +125,19 @@ export const ReportsPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-md p-4">
           <div className="flex">
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
                 Error al cargar los reportes
               </h3>
-              <div className="mt-2 text-sm text-red-700">
+              <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 No se pudieron cargar los datos de ventas. Por favor, intenta nuevamente.
               </div>
               <div className="mt-4">
                 <button
                   onClick={() => refetch()}
-                  className="bg-red-100 hover:bg-red-200 text-red-800 px-3 py-2 rounded-md text-sm font-medium"
+                  className="bg-red-100 dark:bg-red-900/40 hover:bg-red-200 text-red-800 dark:text-red-300 px-3 py-2 rounded-md text-sm font-medium"
                 >
                   Reintentar
                 </button>
@@ -150,22 +150,22 @@ export const ReportsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-dm-bg-secondary">
       {/* Header minimalista estilo Tremor */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-dm-bg-primary border-b border-dm-border-primary">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                  className="inline-flex items-center text-sm text-dm-text-muted hover:text-dm-text-secondary transition-colors"
                 >
                   <ArrowLeftIcon className="w-4 h-4 mr-1.5" />
                   Dashboard
                 </Link>
-                <div className="h-4 w-px bg-gray-300"></div>
-                <h1 className="text-2xl font-semibold text-gray-900">Reportes</h1>
+                <div className="h-4 w-px bg-dm-border-primary"></div>
+                <h1 className="text-2xl font-semibold text-dm-text-primary">Reportes</h1>
               </div>
             </div>
             
@@ -183,7 +183,7 @@ export const ReportsPage: React.FC = () => {
                 <button
                   onClick={handleExportAccountant}
                   disabled={syncExporting || isLoading}
-                  className="inline-flex items-center px-3 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                  className="inline-flex items-center px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 disabled:bg-dm-text-muted disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 >
                   <DocumentArrowDownIcon className="w-4 h-4 mr-1.5" />
                   {syncExporting ? 'Exportando...' : 'Contable'}
@@ -191,7 +191,7 @@ export const ReportsPage: React.FC = () => {
                 <button
                   onClick={handleExportExcel}
                   disabled={syncExporting || isLoading}
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+                  className="inline-flex items-center px-3 py-2 border border-dm-border-primary bg-dm-bg-primary text-dm-text-secondary rounded-md hover:bg-dm-bg-hover disabled:bg-dm-bg-secondary disabled:cursor-not-allowed text-sm font-medium transition-colors"
                 >
                   <DocumentArrowDownIcon className="w-4 h-4 mr-1.5" />
                   {syncExporting ? 'Exportando...' : 'Detallado'}
@@ -211,26 +211,26 @@ export const ReportsPage: React.FC = () => {
             {/* Skeleton: tarjetas de resumen */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-                  <div className="h-3 bg-slate-200 rounded w-2/3"></div>
-                  <div className="h-7 bg-slate-200 rounded w-1/2"></div>
-                  <div className="h-2 bg-slate-100 rounded w-full"></div>
+                <div key={i} className="bg-dm-bg-primary rounded-xl border border-dm-border-primary p-5 space-y-3">
+                  <div className="h-3 bg-dm-bg-secondary rounded w-2/3"></div>
+                  <div className="h-7 bg-dm-bg-secondary rounded w-1/2"></div>
+                  <div className="h-2 bg-dm-bg-secondary rounded w-full"></div>
                 </div>
               ))}
             </div>
             {/* Skeleton: gráficos principales */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {[...Array(2)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-                  <div className="h-4 bg-slate-200 rounded w-1/3"></div>
-                  <div className="h-48 bg-slate-100 rounded-lg"></div>
+                <div key={i} className="bg-dm-bg-primary rounded-xl border border-dm-border-primary p-6 space-y-4">
+                  <div className="h-4 bg-dm-bg-secondary rounded w-1/3"></div>
+                  <div className="h-48 bg-dm-bg-secondary rounded-lg"></div>
                 </div>
               ))}
             </div>
             {/* Skeleton: gráfico ancho */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
-              <div className="h-4 bg-slate-200 rounded w-1/4"></div>
-              <div className="h-40 bg-slate-100 rounded-lg"></div>
+            <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary p-6 space-y-4">
+              <div className="h-4 bg-dm-bg-secondary rounded w-1/4"></div>
+              <div className="h-40 bg-dm-bg-secondary rounded-lg"></div>
             </div>
           </div>
         )}
@@ -273,7 +273,7 @@ export const ReportsPage: React.FC = () => {
         )}
 
         {/* Botón para cargar Reporte de Ventas por Viaje */}
-        <div className="mt-8 pt-8 border-t border-gray-200">
+        <div className="mt-8 pt-8 border-t border-dm-border-primary">
           {!showTripsReport ? (
             <div className="text-center">
               <button
@@ -285,7 +285,7 @@ export const ReportsPage: React.FC = () => {
                 </svg>
                 Ver Reporte de Ventas por Viaje
               </button>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-dm-text-muted mt-2">
                 Carga el reporte detallado de ventas por viaje con calendario interactivo
               </p>
             </div>
@@ -303,7 +303,7 @@ export const ReportsPage: React.FC = () => {
         maxWidth="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-sm text-dm-text-secondary mb-6">
             Elige el formato en el que deseas descargar el reporte global por sucursal.
           </p>
 
@@ -311,7 +311,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleFormatSelection('excel')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:bg-green-900/40 hover:border-green-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -323,7 +323,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleFormatSelection('pdf')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 hover:border-red-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:bg-red-900/40 hover:border-red-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -333,10 +333,10 @@ export const ReportsPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4 border-t border-dm-border-primary">
             <button
               onClick={() => setShowFormatModal(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-dm-text-secondary hover:text-dm-text-primary hover:bg-dm-bg-hover rounded-md transition-colors"
             >
               Cancelar
             </button>
@@ -352,7 +352,7 @@ export const ReportsPage: React.FC = () => {
         maxWidth="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600 mb-6">
+          <p className="text-sm text-dm-text-secondary mb-6">
             Elige el formato en el que deseas descargar el reporte contable.
           </p>
 
@@ -360,7 +360,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleAccountantFormatSelection('excel')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:bg-green-900/40 hover:border-green-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -372,7 +372,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleAccountantFormatSelection('pdf')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-red-50 border-2 border-red-200 text-red-700 rounded-lg hover:bg-red-100 hover:border-red-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:bg-red-900/40 hover:border-red-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -382,10 +382,10 @@ export const ReportsPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4 border-t border-dm-border-primary">
             <button
               onClick={() => setShowAccountantFormatModal(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-dm-text-secondary hover:text-dm-text-primary hover:bg-dm-bg-hover rounded-md transition-colors"
             >
               Cancelar
             </button>
@@ -399,14 +399,14 @@ export const ReportsPage: React.FC = () => {
           <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">
+                <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
                   Estructura de datos no compatible
                 </h3>
-                <div className="mt-2 text-sm text-yellow-700">
+                <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
                   El backend aún no está retornando la estructura optimizada. 
                   Por favor, verifica que el backend esté actualizado con los endpoints optimizados.
                 </div>
-                <div className="mt-2 text-xs text-yellow-600">
+                <div className="mt-2 text-xs text-yellow-600 dark:text-yellow-400">
                   Se esperaba: report.categorias.metodosPago, report.resumenEjecutivo, etc.
                 </div>
               </div>

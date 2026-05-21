@@ -440,8 +440,8 @@ export const QuickSalePage: React.FC = () => {
               <Zap className="h-6 w-6 text-purple-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">Venta Rápida</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-2xl font-bold text-dm-text-primary">Venta Rápida</h1>
+              <p className="text-sm text-dm-text-secondary">
                 Registre ventas de servicios y productos sin asociar a un viaje específico
               </p>
             </div>
@@ -463,16 +463,16 @@ export const QuickSalePage: React.FC = () => {
             <Zap className="h-6 w-6 text-purple-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Venta Rápida</h1>
-            <p className="text-sm text-gray-600">
+            <h1 className="text-2xl font-bold text-dm-text-primary">Venta Rápida</h1>
+            <p className="text-sm text-dm-text-secondary">
               Registre ventas de servicios y productos sin asociar a un viaje específico
             </p>
           </div>
         </div>
         
         {/* Sucursal actual */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-          <p className="text-sm text-blue-800">
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-3 mt-4">
+          <p className="text-sm text-blue-800 dark:text-blue-300">
             <span className="font-medium">Sucursal:</span> {selectedBranch.name}
           </p>
         </div>
@@ -491,15 +491,15 @@ export const QuickSalePage: React.FC = () => {
           />
 
           {/* Datos del Cliente */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border">
-            <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-              <User className="h-5 w-5 mr-2 text-gray-600" />
+          <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
+            <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
+              <User className="h-5 w-5 mr-2 text-dm-text-secondary" />
               Datos del Cliente (Opcional)
             </h3>
             
             {isRuc && (
-              <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4">
-                <div className="flex items-center gap-2 text-amber-800 text-sm">
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-md p-3 mb-4">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 text-sm">
                   <AlertTriangle className="h-4 w-4" />
                   <span className="font-medium">
                     Los datos del cliente son obligatorios para Facturas
@@ -509,8 +509,8 @@ export const QuickSalePage: React.FC = () => {
             )}
             
             {!isRuc && (
-              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
-                <div className="flex items-center gap-2 text-blue-800 text-sm">
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md p-3 mb-4">
+                <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 text-sm">
                   <span className="text-sm">
                     Si no completa los datos del cliente, se usará un cliente genérico
                   </span>
@@ -527,14 +527,14 @@ export const QuickSalePage: React.FC = () => {
 
           {/* Agregar Destinatario - solo para Encomienda Fluvial */}
           {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
+            <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="font-semibold text-lg text-gray-800 flex items-center">
-                    <User className="h-5 w-5 mr-2 text-gray-600" />
+                  <h3 className="font-semibold text-lg text-dm-text-primary flex items-center">
+                    <User className="h-5 w-5 mr-2 text-dm-text-secondary" />
                     Agregar Destinatario
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-dm-text-muted mt-1">
                     Opcional - Active para registrar datos del destinatario
                   </p>
                 </div>
@@ -545,11 +545,11 @@ export const QuickSalePage: React.FC = () => {
                   onClick={() => setShowRecipientForm(!showRecipientForm)}
                   disabled={isProcessing}
                   className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    showRecipientForm ? 'bg-purple-600' : 'bg-gray-300'
+                    showRecipientForm ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 >
                   <span
-                    className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
+                    className={`inline-block h-6 w-6 transform rounded-full bg-dm-bg-primary shadow-md transition-transform duration-200 ease-in-out ${
                       showRecipientForm ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
@@ -558,8 +558,8 @@ export const QuickSalePage: React.FC = () => {
 
               {showRecipientForm && (
                 <div className="space-y-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                    <p className="text-sm text-blue-800">
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md p-3">
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
                       Complete los datos del destinatario o marque si es el mismo que envía
                     </p>
                   </div>
@@ -607,23 +607,23 @@ export const QuickSalePage: React.FC = () => {
 
         {/* Columna derecha: Resumen y Acción */}
         <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-lg shadow-sm border sticky top-6">
-            <h3 className="font-semibold text-lg text-gray-800 mb-4 flex items-center">
-              <FileText className="h-5 w-5 mr-2 text-gray-600" />
+          <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border sticky top-6">
+            <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
+              <FileText className="h-5 w-5 mr-2 text-dm-text-secondary" />
               Resumen de Venta
             </h3>
 
             {/* Tipo de Comprobante */}
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600 mb-1">Tipo de Comprobante</p>
-              <p className="text-sm font-medium text-gray-800">
+            <div className="mb-4 p-3 bg-dm-bg-secondary rounded-lg">
+              <p className="text-xs text-dm-text-secondary mb-1">Tipo de Comprobante</p>
+              <p className="text-sm font-medium text-dm-text-primary">
                 {isRuc ? 'Factura Electrónica' : 'Boleta de Venta'}
               </p>
             </div>
 
             {/* Serie de Comprobante */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                 Serie *
               </label>
               {isRuc ? (
@@ -631,7 +631,7 @@ export const QuickSalePage: React.FC = () => {
                   value={selectedFacturaSeries}
                   onChange={(e) => handleFacturaSeriesChange(e.target.value)}
                   disabled={isProcessing || isLoadingSeries}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-dm-bg-secondary"
                 >
                   {availableFacturaSeries.map((series) => (
                     <option key={series.id} value={series.series_code}>
@@ -644,7 +644,7 @@ export const QuickSalePage: React.FC = () => {
                   value={selectedBoletaSeries}
                   onChange={(e) => handleBoletaSeriesChange(e.target.value)}
                   disabled={isProcessing || isLoadingSeries}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-gray-100"
+                  className="w-full px-3 py-2 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-dm-bg-secondary"
                 >
                   {availableBoletaSeries.map((series) => (
                     <option key={series.id} value={series.series_code}>
@@ -658,7 +658,7 @@ export const QuickSalePage: React.FC = () => {
             {/* Alerta de contraentrega */}
             {isContraentrega && (
               <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800 font-medium">
+                <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium">
                   Pago pendiente - Se cobrará al entregar
                 </p>
               </div>
@@ -667,7 +667,7 @@ export const QuickSalePage: React.FC = () => {
             {/* Método de Pago - Solo visible cuando NO es contraentrega */}
             {!isContraentrega && (
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                   Método de Pago
                 </label>
                 <SplitPaymentForm
@@ -682,35 +682,35 @@ export const QuickSalePage: React.FC = () => {
 
             {/* Switch de Contraentrega - Solo visible para Encomienda Fluvial */}
             {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
-              <div className="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="mb-4 bg-dm-bg-secondary p-4 rounded-lg border border-dm-border-primary">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Contraentrega</p>
-                    <p className="text-xs text-gray-500">El pago se realizará al entregar</p>
+                    <p className="text-sm font-medium text-dm-text-secondary mb-1">Contraentrega</p>
+                    <p className="text-xs text-dm-text-muted">El pago se realizará al entregar</p>
                   </div>
                   <button
                     type="button"
                     role="switch"
                     aria-checked={isContraentrega}
                     onClick={() => setIsContraentrega(!isContraentrega)}
-                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isContraentrega ? 'bg-purple-600' : 'bg-gray-300'}`}
+                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isContraentrega ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'}`}
                   >
-                    <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
+                    <span className={`inline-block h-6 w-6 transform rounded-full bg-dm-bg-primary shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
                   </button>
                 </div>
               </div>
             )}
 
             {/* Desglose de montos */}
-            <div className="border-t border-gray-200 pt-4 mb-4 space-y-2">
+            <div className="border-t border-dm-border-primary pt-4 mb-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Base:</span>
+                <span className="text-dm-text-secondary">Base:</span>
                 <span className="font-medium">S/ {calculatedAmounts.baseAmount.toFixed(2)}</span>
               </div>
               
               {formData.isIgvGravado && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">IGV (18%):</span>
+                  <span className="text-dm-text-secondary">IGV (18%):</span>
                   <span className="font-medium">S/ {calculatedAmounts.igvAmount.toFixed(2)}</span>
                 </div>
               )}
@@ -725,8 +725,8 @@ export const QuickSalePage: React.FC = () => {
 
             {/* Validaciones */}
             {!isFormValid && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                <div className="flex items-start gap-2 text-red-800 text-sm">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-3 mb-4">
+                <div className="flex items-start gap-2 text-red-800 dark:text-red-300 text-sm">
                   <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-medium">Complete los campos requeridos:</p>
@@ -756,7 +756,7 @@ export const QuickSalePage: React.FC = () => {
             <Button
               onClick={handleOpenConfirmModal}
               disabled={!isFormValid || isProcessing}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:bg-gray-300 dark:bg-gray-600 disabled:cursor-not-allowed"
             >
               {isProcessing ? (
                 <>

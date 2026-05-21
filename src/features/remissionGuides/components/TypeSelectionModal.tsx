@@ -22,26 +22,26 @@ export const TypeSelectionModal: React.FC<TypeSelectionModalProps> = ({
       maxWidth="2xl"
     >
       <div className="space-y-8">
-        <p className="text-gray-600 text-center text-lg">
+        <p className="text-dm-text-secondary text-center text-lg">
           Elija el tipo de guía de remisión que desea crear
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Opción Transportista */}
           <div
-            className="border-2 border-gray-200 rounded-2xl p-8 hover:border-blue-400 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white"
+            className="border-2 border-dm-border-primary rounded-2xl p-8 hover:border-blue-400 hover:shadow-lg transition-all duration-200 cursor-pointer bg-dm-bg-primary"
             onClick={() => onSelectType('transportista')}
           >
             <div className="flex flex-col items-center text-center space-y-6">
-              <div className="flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full">
-                <TruckIcon className="h-10 w-10 text-blue-600" />
+              <div className="flex items-center justify-center w-20 h-20 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+                <TruckIcon className="h-10 w-10 text-blue-600 dark:text-blue-400" />
               </div>
               
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold text-dm-text-primary">
                   Guía del Transportista
                 </h3>
-                <p className="text-gray-600 text-base leading-relaxed">
+                <p className="text-dm-text-secondary text-base leading-relaxed">
                   Para transportar mercancías de encomiendas existentes. Los productos se cargan desde las encomiendas registradas.
                 </p>
               </div>
@@ -57,19 +57,19 @@ export const TypeSelectionModal: React.FC<TypeSelectionModalProps> = ({
 
           {/* Opción Remitente */}
           <div
-            className="border-2 border-gray-200 rounded-2xl p-8 hover:border-green-400 hover:shadow-lg transition-all duration-200 cursor-pointer bg-white"
+            className="border-2 border-dm-border-primary rounded-2xl p-8 hover:border-green-400 hover:shadow-lg transition-all duration-200 cursor-pointer bg-dm-bg-primary"
             onClick={() => onSelectType('remitente')}
           >
             <div className="flex flex-col items-center text-center space-y-6">
-              <div className="flex items-center justify-center w-20 h-20 bg-green-100 rounded-full">
-                <UserIcon className="h-10 w-10 text-green-600" />
+              <div className="flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900/40 rounded-full">
+                <UserIcon className="h-10 w-10 text-green-600 dark:text-green-400" />
               </div>
               
               <div className="space-y-3">
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-xl font-bold text-dm-text-primary">
                   Guía del Remitente
                 </h3>
-                <p className="text-gray-600 text-base leading-relaxed">
+                <p className="text-dm-text-secondary text-base leading-relaxed">
                   Para remitir productos directamente. Los productos se agregan manualmente al formulario.
                 </p>
               </div>
@@ -84,7 +84,7 @@ export const TypeSelectionModal: React.FC<TypeSelectionModalProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-center pt-6 border-t border-gray-200">
+        <div className="flex justify-center pt-6 border-t border-dm-border-primary">
           <Button
             variant="outline"
             onClick={onClose}

@@ -59,11 +59,11 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted" />
           </div>
           <input
             type="text"
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+            className="pl-10 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
             placeholder="Buscar por nombre o email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -72,7 +72,7 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
         
         <button
           onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-          className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+          className="flex items-center justify-center px-4 py-2 border border-dm-border-primary rounded-md shadow-sm text-sm font-medium text-dm-text-secondary bg-dm-bg-primary hover:bg-dm-bg-hover"
         >
           <AdjustmentsHorizontalIcon className="h-5 w-5 mr-2" />
           Filtros
@@ -80,14 +80,14 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
       </div>
       
       {showAdvancedFilters && (
-        <div className="bg-gray-50 p-4 rounded-md border border-gray-200">
+        <div className="bg-dm-bg-secondary p-4 rounded-md border border-dm-border-primary">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Rol
               </label>
               <select
-                className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 value={roleFilter === 'ALL' ? 'ALL' : roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value === 'ALL' ? 'ALL' : Number(e.target.value))}
               >
@@ -101,11 +101,11 @@ export const UserFilters: React.FC<UserFiltersProps> = ({
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Estado
               </label>
               <select
-                className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
               >

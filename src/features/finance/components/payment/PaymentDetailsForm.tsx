@@ -197,12 +197,12 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
     <div className="space-y-4">
       {/* Toggle para activar pago dividido */}
       {totalAmount > 0 && (
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-between p-3 bg-dm-bg-secondary rounded-lg border border-dm-border-primary">
           <div className="flex items-center space-x-2">
-            <SplitIcon className="w-5 h-5 text-gray-600" />
+            <SplitIcon className="w-5 h-5 text-dm-text-secondary" />
             <div>
-              <p className="text-sm font-medium text-gray-700">Pago Dividido</p>
-              <p className="text-xs text-gray-500">Dividir el pago en 2 metodos</p>
+              <p className="text-sm font-medium text-dm-text-secondary">Pago Dividido</p>
+              <p className="text-xs text-dm-text-muted">Dividir el pago en 2 metodos</p>
             </div>
           </div>
           <button
@@ -212,11 +212,11 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
             onClick={handleToggleSplitPayment}
             disabled={disabled}
             className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-              isSplitPayment ? 'bg-blue-600' : 'bg-gray-300'
+              isSplitPayment ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
             }`}
           >
             <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ease-in-out ${
+              className={`inline-block h-5 w-5 transform rounded-full bg-dm-bg-primary shadow-md transition-transform duration-200 ease-in-out ${
                 isSplitPayment ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
@@ -225,22 +225,22 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
       )}
 
       {/* Pago 1 (Principal) */}
-      <div className={`p-4 rounded-lg border ${isSplitPayment ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'}`}>
-        <h4 className="text-sm font-medium text-gray-700 mb-3">
+      <div className={`p-4 rounded-lg border ${isSplitPayment ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200' : 'bg-dm-bg-secondary border-dm-border-primary'}`}>
+        <h4 className="text-sm font-medium text-dm-text-secondary mb-3">
           {isSplitPayment ? 'Pago 1 (Principal)' : 'Metodo de Pago'}
         </h4>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Selector de metodo */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-dm-text-secondary mb-1">
               Metodo *
             </label>
             <select
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value)}
               disabled={disabled}
-              className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
+              className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary disabled:bg-dm-bg-secondary text-sm"
             >
               {PAYMENT_METHOD_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -253,11 +253,11 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
           {/* Monto (solo visible en pago dividido) */}
           {isSplitPayment && (
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-dm-text-secondary mb-1">
                 Monto
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dm-text-muted text-sm">
                   {currencySymbol}
                 </span>
                 <input
@@ -271,7 +271,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
                   onBlur={handleAmount1Blur}
                   onWheel={handleWheel}
                   disabled={disabled}
-                  className="w-full p-2 pl-8 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                  className="w-full p-2 pl-8 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm"
                 />
               </div>
             </div>
@@ -281,7 +281,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
         {/* Codigo de operacion (si aplica) */}
         {paymentMethod !== 'EFE' && (
           <div className="mt-3">
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className="block text-xs font-medium text-dm-text-secondary mb-1">
               Codigo de Operacion {requiresOperationCode(paymentMethod) ? '*' : '(opcional)'}
             </label>
             <input
@@ -294,10 +294,10 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
               }}
               placeholder="Ingrese el codigo..."
               disabled={disabled}
-              className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+              className="w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm"
               maxLength={20}
             />
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-dm-text-muted mt-1">
               {operationCode.length}/20 caracteres
             </div>
           </div>
@@ -306,22 +306,22 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
 
       {/* Pago 2 (Secundario) - Solo visible en pago dividido */}
       {isSplitPayment && (
-        <div className="p-4 rounded-lg border bg-green-50 border-green-200">
-          <h4 className="text-sm font-medium text-gray-700 mb-3">
+        <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/30 border-green-200">
+          <h4 className="text-sm font-medium text-dm-text-secondary mb-3">
             Pago 2 (Secundario)
           </h4>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Selector de metodo */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-dm-text-secondary mb-1">
                 Metodo
               </label>
               <select
                 value={paymentMethod2}
                 onChange={(e) => setPaymentMethod2(e.target.value)}
                 disabled={disabled}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white disabled:bg-gray-100 text-sm"
+                className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary disabled:bg-dm-bg-secondary text-sm"
               >
                 {PAYMENT_METHOD_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -333,11 +333,11 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
 
             {/* Monto */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-dm-text-secondary mb-1">
                 Monto
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dm-text-muted text-sm">
                   {currencySymbol}
                 </span>
                 <input
@@ -351,7 +351,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
                   onBlur={handleAmount2Blur}
                   onWheel={handleWheel}
                   disabled={disabled}
-                  className="w-full p-2 pl-8 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                  className="w-full p-2 pl-8 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm"
                 />
               </div>
             </div>
@@ -360,7 +360,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
           {/* Codigo de operacion (si aplica) */}
           {paymentMethod2 !== 'EFE' && (
             <div className="mt-3">
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label className="block text-xs font-medium text-dm-text-secondary mb-1">
                 Codigo de Operacion {requiresOperationCode(paymentMethod2) ? '*' : '(opcional)'}
               </label>
               <input
@@ -373,10 +373,10 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
                 }}
                 placeholder="Ingrese el codigo..."
                 disabled={disabled}
-                className="w-full p-2 border border-gray-300 rounded-md disabled:bg-gray-100 text-sm"
+                className="w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm"
                 maxLength={20}
               />
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-dm-text-muted mt-1">
                 {operationCode2.length}/20 caracteres
               </div>
             </div>
@@ -386,19 +386,19 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
 
       {/* Resumen de totales (solo en pago dividido) */}
       {isSplitPayment && totalAmount > 0 && (
-        <div className={`p-3 rounded-lg border ${isValidTotal ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-200'}`}>
+        <div className={`p-3 rounded-lg border ${isValidTotal ? 'bg-dm-bg-secondary border-dm-border-primary' : 'bg-red-50 dark:bg-red-950/30 border-red-200'}`}>
           <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-600">Total a pagar:</span>
+            <span className="text-dm-text-secondary">Total a pagar:</span>
             <span className="font-semibold">{currencySymbol} {totalAmount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between items-center text-sm mt-1">
-            <span className="text-gray-600">Suma de pagos:</span>
-            <span className={`font-semibold ${isValidTotal ? 'text-green-600' : 'text-red-600'}`}>
+            <span className="text-dm-text-secondary">Suma de pagos:</span>
+            <span className={`font-semibold ${isValidTotal ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
               {currencySymbol} {totalPaid.toFixed(2)}
             </span>
           </div>
           {!isValidTotal && (
-            <div className="mt-2 text-xs text-red-600">
+            <div className="mt-2 text-xs text-red-600 dark:text-red-400">
               {difference > 0 
                 ? `Faltan ${currencySymbol} ${difference.toFixed(2)} por asignar`
                 : `Excede en ${currencySymbol} ${Math.abs(difference).toFixed(2)}`
@@ -410,7 +410,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
 
       {/* Fecha del Pago */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-dm-text-secondary mb-1">
           Fecha del Pago
         </label>
         <input
@@ -418,16 +418,16 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
           value={paymentDate}
           disabled
           readOnly
-          className="w-full p-2 border border-gray-200 rounded-md bg-gray-50 cursor-not-allowed text-sm"
+          className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-secondary cursor-not-allowed text-sm"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-dm-text-muted mt-1">
           Fecha actual del sistema
         </p>
       </div>
 
       {/* Observaciones opcionales */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-dm-text-secondary mb-1">
           Observaciones (opcional)
         </label>
         <textarea
@@ -438,12 +438,12 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
             }
           }}
           placeholder="Ingrese observaciones adicionales..."
-          className="w-full p-2 border border-gray-300 rounded-md resize-none disabled:bg-gray-100 text-sm"
+          className="w-full p-2 border border-dm-border-primary rounded-md resize-none disabled:bg-dm-bg-secondary text-sm"
           rows={2}
           maxLength={200}
           disabled={disabled}
         />
-        <div className="text-xs text-gray-500 mt-1">
+        <div className="text-xs text-dm-text-muted mt-1">
           {notes.length}/200 caracteres
         </div>
       </div>

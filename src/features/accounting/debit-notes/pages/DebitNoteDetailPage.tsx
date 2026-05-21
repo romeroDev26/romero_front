@@ -47,7 +47,7 @@ export const DebitNoteDetailPage: React.FC = () => {
       case 'SENT':
         return <ClockIcon className="h-6 w-6 text-[#f5a623]" />;
       default:
-        return <XCircleIcon className="h-6 w-6 text-[#828282]" />;
+        return <XCircleIcon className="h-6 w-6 text-dm-text-muted" />;
     }
   };
 
@@ -155,7 +155,7 @@ export const DebitNoteDetailPage: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">
         <Spinner size="md" />
-        <p className="text-[14px] text-[#828282]">Cargando nota de débito...</p>
+        <p className="text-[14px] text-dm-text-muted">Cargando nota de débito...</p>
       </div>
     );
   }
@@ -164,11 +164,11 @@ export const DebitNoteDetailPage: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">
         <XCircleIcon className="h-12 w-12 text-[#cf1322]" />
-        <h2 className="text-[18px] font-medium text-[#202020]">Nota de Débito no encontrada</h2>
-        <p className="text-[14px] text-[#4d4d4d]">La nota de débito solicitada no existe o no tienes permisos para verla.</p>
+        <h2 className="text-[18px] font-medium text-dm-text-primary">Nota de Débito no encontrada</h2>
+        <p className="text-[14px] text-dm-text-secondary">La nota de débito solicitada no existe o no tienes permisos para verla.</p>
         <button
           onClick={() => navigate('/accounting/debit-notes')}
-          className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+          className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary"
         >
           Volver al listado
         </button>
@@ -181,10 +181,10 @@ export const DebitNoteDetailPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-6">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-6">
         <button
           onClick={() => navigate('/accounting/debit-notes')}
-          className="mb-4 rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center"
+          className="mb-4 rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary flex items-center"
         >
           <ArrowLeftIcon className="h-4 w-4 mr-2" />
           Volver
@@ -195,23 +195,23 @@ export const DebitNoteDetailPage: React.FC = () => {
               <DocumentArrowDownIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
             </div>
             <div>
-              <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <h1 className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
                 Nota de Débito {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
               </h1>
-              <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+              <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
                 Emitida el {formatDate(debitNote.issue_date)} • Cliente: {debitNote.client?.name || 'N/A'}
               </p>
               <div className="flex items-center mt-2 gap-3">
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px] font-medium bg-[#f5f5f5] ${
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[12px] font-medium bg-dm-bg-secondary ${
                   currentStatus === 'ACCEPTED' ? 'text-[#10c22b]' :
                   currentStatus === 'REJECTED' ? 'text-[#cf1322]' :
                   currentStatus === 'PENDING' || currentStatus === 'SENT' ? 'text-[#f5a623]' :
-                  'text-[#828282]'
+                  'text-dm-text-muted'
                 }`}>
                   {getSunatStatusIcon(currentStatus)}
                   {getSunatStatusText(currentStatus)}
                 </span>
-                <span className="text-[14px] text-[#828282]">
+                <span className="text-[14px] text-dm-text-muted">
                   Total: {formatCurrency(debitNote.total_payable)}
                 </span>
               </div>
@@ -220,7 +220,7 @@ export const DebitNoteDetailPage: React.FC = () => {
           <div className="flex gap-2">
             {debitNote.pdf_a4_file_path && (
               <a href={debitNote.pdf_a4_file_path} target="_blank" rel="noopener noreferrer">
-                <button className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center">
+                <button className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary flex items-center">
                   <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
                   PDF A4
                 </button>
@@ -228,7 +228,7 @@ export const DebitNoteDetailPage: React.FC = () => {
             )}
             {debitNote.pdf_ticket_file_path && (
               <a href={debitNote.pdf_ticket_file_path} target="_blank" rel="noopener noreferrer">
-                <button className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center">
+                <button className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary flex items-center">
                   <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
                   PDF Ticket
                 </button>
@@ -240,18 +240,18 @@ export const DebitNoteDetailPage: React.FC = () => {
 
       {/* Vista previa del PDF */}
       {(debitNote.pdf_a4_file_path || debitNote.pdf_ticket_file_path) && (
-        <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
-          <div className="border-b border-[#e8e8e8]">
+        <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
+          <div className="border-b border-dm-border-primary">
             <div className="px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <DocumentArrowDownIcon className="h-5 w-5 text-[#1F4690]" />
-                <h2 className="text-[18px] font-medium text-[#202020]">Vista Previa</h2>
+                <h2 className="text-[18px] font-medium text-dm-text-primary">Vista Previa</h2>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handlePrint}
                   disabled={showPdfError}
-                  className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center disabled:opacity-50"
+                  className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary flex items-center disabled:opacity-50"
                 >
                   <PrinterIcon className="h-4 w-4 mr-2" />
                   Imprimir
@@ -268,13 +268,13 @@ export const DebitNoteDetailPage: React.FC = () => {
 
             {debitNote.pdf_ticket_file_path && debitNote.pdf_a4_file_path && (
               <div className="px-6">
-                <div className="flex border-b border-[#e8e8e8]">
+                <div className="flex border-b border-dm-border-primary">
                   <button
                     onClick={() => { setActiveTab('ticket80mm'); setShowPdfError(false); }}
                     className={`px-6 py-3 text-[14px] font-medium transition-colors ${
                       activeTab === 'ticket80mm'
                         ? 'border-b-2 border-[#1F4690] text-[#1F4690]'
-                        : 'text-[#828282] hover:text-[#4d4d4d]'
+                        : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
                     Ticket 80mm
@@ -284,7 +284,7 @@ export const DebitNoteDetailPage: React.FC = () => {
                     className={`px-6 py-3 text-[14px] font-medium transition-colors ${
                       activeTab === 'a4'
                         ? 'border-b-2 border-[#1F4690] text-[#1F4690]'
-                        : 'text-[#828282] hover:text-[#4d4d4d]'
+                        : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
                     Formato A4
@@ -294,11 +294,11 @@ export const DebitNoteDetailPage: React.FC = () => {
             )}
           </div>
 
-          <div className="relative bg-[#f5f5f5]">
+          <div className="relative bg-dm-bg-secondary">
             {showPdfError ? (
               <div className="flex flex-col items-center justify-center py-12 px-4">
                 <ExclamationTriangleIcon className="h-12 w-12 text-[#f5a623] mb-4" />
-                <p className="text-[14px] text-[#4d4d4d] text-center mb-4">
+                <p className="text-[14px] text-dm-text-secondary text-center mb-4">
                   No se pudo cargar el PDF. Puedes descargarlo directamente.
                 </p>
                 <button
@@ -327,55 +327,55 @@ export const DebitNoteDetailPage: React.FC = () => {
         {/* Columna izquierda — Información principal */}
         <div className="lg:col-span-2 space-y-6">
           {/* Información General — consolidada y limpia */}
-          <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-            <h2 className="text-[18px] font-medium text-[#202020] mb-4">Información General</h2>
+          <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+            <h2 className="text-[18px] font-medium text-dm-text-primary mb-4">Información General</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div>
-                <p className="text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">Serie - Número</p>
-                <p className="text-[14px] text-[#202020] font-mono">{debitNote.series}-{String(debitNote.number).padStart(8, '0')}</p>
+                <p className="text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">Serie - Número</p>
+                <p className="text-[14px] text-dm-text-primary font-mono">{debitNote.series}-{String(debitNote.number).padStart(8, '0')}</p>
               </div>
               <div>
-                <p className="text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">Fecha de Emisión</p>
-                <p className="text-[14px] text-[#202020]">{formatDate(debitNote.issue_date)}</p>
+                <p className="text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">Fecha de Emisión</p>
+                <p className="text-[14px] text-dm-text-primary">{formatDate(debitNote.issue_date)}</p>
               </div>
               <div>
-                <p className="text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">Moneda</p>
-                <p className="text-[14px] text-[#202020]">{debitNote.currency_code === 'PEN' ? 'Soles (PEN)' : debitNote.currency_code || 'PEN'}</p>
+                <p className="text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">Moneda</p>
+                <p className="text-[14px] text-dm-text-primary">{debitNote.currency_code === 'PEN' ? 'Soles (PEN)' : debitNote.currency_code || 'PEN'}</p>
               </div>
               <div>
-                <p className="text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">Documento Afectado</p>
-                <p className="text-[14px] text-[#202020]">
+                <p className="text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">Documento Afectado</p>
+                <p className="text-[14px] text-dm-text-primary">
                   {debitNote.affected_document_type_code === '01' ? 'Factura' :
                    debitNote.affected_document_type_code === '03' ? 'Boleta' : 'Otro'}{' '}
                   {debitNote.affected_document_series_number || 'N/A'}
                 </p>
               </div>
               <div>
-                <p className="text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">Cliente</p>
-                <p className="text-[14px] text-[#202020]">{debitNote.client?.name || 'N/A'}</p>
+                <p className="text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">Cliente</p>
+                <p className="text-[14px] text-dm-text-primary">{debitNote.client?.name || 'N/A'}</p>
               </div>
               <div>
-                <p className="text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">Doc. Cliente</p>
-                <p className="text-[14px] text-[#202020]">{debitNote.client?.doc_number || 'N/A'}</p>
+                <p className="text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">Doc. Cliente</p>
+                <p className="text-[14px] text-dm-text-primary">{debitNote.client?.doc_number || 'N/A'}</p>
               </div>
             </div>
           </div>
 
           {/* Motivo */}
-          <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-            <h2 className="text-[18px] font-medium text-[#202020] mb-3">Motivo</h2>
-            <p className="text-[14px] font-medium text-[#202020] mb-1">
+          <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+            <h2 className="text-[18px] font-medium text-dm-text-primary mb-3">Motivo</h2>
+            <p className="text-[14px] font-medium text-dm-text-primary mb-1">
               {DEBIT_NOTE_REASONS_MAP[debitNote.debit_note_type_code] || 'Motivo no especificado'}
             </p>
-            <p className="text-[14px] text-[#4d4d4d]">{debitNote.reason || 'Sin motivo especificado'}</p>
+            <p className="text-[14px] text-dm-text-secondary">{debitNote.reason || 'Sin motivo especificado'}</p>
           </div>
 
           {/* Vista previa del Documento Afectado */}
           {(debitNote as any).affected_invoice && (
             ((debitNote as any).affected_invoice.pdf_ticket_file_path || (debitNote as any).affected_invoice.pdf_a4_file_path) && (
-              <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
-                <div className="px-4 lg:px-5 py-4 border-b border-[#e8e8e8] flex items-center justify-between">
-                  <h2 className="text-[18px] font-medium text-[#202020]">Comprobante Afectado</h2>
+              <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
+                <div className="px-4 lg:px-5 py-4 border-b border-dm-border-primary flex items-center justify-between">
+                  <h2 className="text-[18px] font-medium text-dm-text-primary">Comprobante Afectado</h2>
                   <div className="flex gap-2">
                     {(debitNote as any).affected_invoice.pdf_ticket_file_path && (
                       <button
@@ -383,7 +383,7 @@ export const DebitNoteDetailPage: React.FC = () => {
                         className={`rounded-full px-3 py-1 text-[12px] font-medium transition-colors ${
                           affectedActiveTab === 'ticket80mm'
                             ? 'bg-[#1F4690] text-white'
-                            : 'bg-[#f5f5f5] text-[#202020] hover:bg-[#e8e8e8]'
+                            : 'bg-dm-bg-secondary text-dm-text-primary hover:bg-dm-bg-hover'
                         }`}
                       >
                         Ticket
@@ -395,7 +395,7 @@ export const DebitNoteDetailPage: React.FC = () => {
                         className={`rounded-full px-3 py-1 text-[12px] font-medium transition-colors ${
                           affectedActiveTab === 'a4'
                             ? 'bg-[#1F4690] text-white'
-                            : 'bg-[#f5f5f5] text-[#202020] hover:bg-[#e8e8e8]'
+                            : 'bg-dm-bg-secondary text-dm-text-primary hover:bg-dm-bg-hover'
                         }`}
                       >
                         A4
@@ -403,7 +403,7 @@ export const DebitNoteDetailPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div className="bg-[#f5f5f5]">
+                <div className="bg-dm-bg-secondary">
                   <iframe
                     src={(affectedActiveTab === 'ticket80mm' ? (debitNote as any).affected_invoice.pdf_ticket_file_path : (debitNote as any).affected_invoice.pdf_a4_file_path) || ''}
                     className="w-full"
@@ -417,29 +417,29 @@ export const DebitNoteDetailPage: React.FC = () => {
 
           {/* Detalle de Cargos */}
           {debitNote.items && debitNote.items.length > 0 && (
-            <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+            <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
               <div className="p-4 lg:p-5">
-                <h2 className="text-[18px] font-medium text-[#202020]">Detalle de Cargos</h2>
+                <h2 className="text-[18px] font-medium text-dm-text-primary">Detalle de Cargos</h2>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-[#f0f0f0]">
-                  <thead className="bg-[#fafafa]">
+                  <thead className="bg-dm-bg-secondary">
                     <tr>
-                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-[#4d4d4d] uppercase tracking-wider">Descripción</th>
-                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-[#4d4d4d] uppercase tracking-wider">Cant.</th>
-                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-[#4d4d4d] uppercase tracking-wider">P. Unit.</th>
-                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-[#4d4d4d] uppercase tracking-wider">Total</th>
+                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">Descripción</th>
+                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">Cant.</th>
+                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">P. Unit.</th>
+                      <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">Total</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#f0f0f0]">
                     {debitNote.items.map((item: any, index: number) => (
-                      <tr key={index} className="hover:bg-[#fafafa]/60 transition-colors">
-                        <td className="px-5 py-4 text-[14px] text-[#202020]">
+                      <tr key={index} className="hover:bg-dm-bg-secondary/60 transition-colors">
+                        <td className="px-5 py-4 text-[14px] text-dm-text-primary">
                           {item.product?.name || item.product_name || item.item_description || 'Servicio sin nombre'}
                         </td>
-                        <td className="px-5 py-4 text-[14px] text-[#202020]">{item.quantity}</td>
-                        <td className="px-5 py-4 text-[14px] text-[#202020]">{formatCurrency(item.unit_price)}</td>
-                        <td className="px-5 py-4 text-[14px] font-medium text-[#202020]">{formatCurrency(item.total_line)}</td>
+                        <td className="px-5 py-4 text-[14px] text-dm-text-primary">{item.quantity}</td>
+                        <td className="px-5 py-4 text-[14px] text-dm-text-primary">{formatCurrency(item.unit_price)}</td>
+                        <td className="px-5 py-4 text-[14px] font-medium text-dm-text-primary">{formatCurrency(item.total_line)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -452,32 +452,32 @@ export const DebitNoteDetailPage: React.FC = () => {
         {/* Columna derecha — Panel lateral */}
         <div className="space-y-6">
           {/* Estado SUNAT */}
-          <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-            <h2 className="text-[18px] font-medium text-[#202020] mb-4">Estado SUNAT</h2>
+          <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+            <h2 className="text-[18px] font-medium text-dm-text-primary mb-4">Estado SUNAT</h2>
             {isLoadingStatus ? (
               <div className="flex flex-col items-center justify-center py-4 gap-3">
                 <Spinner size="md" />
-                <span className="text-[14px] text-[#828282]">Consultando estado...</span>
+                <span className="text-[14px] text-dm-text-muted">Consultando estado...</span>
               </div>
             ) : (
               <div>
                 <div className="flex items-center mb-3">
                   {getSunatStatusIcon(currentStatus)}
                   <div className="ml-3">
-                    <p className="text-[14px] font-medium text-[#202020]">{getSunatStatusText(currentStatus)}</p>
-                    <p className="text-[13px] text-[#4d4d4d]">{getStatusMessage(currentStatus)}</p>
+                    <p className="text-[14px] font-medium text-dm-text-primary">{getSunatStatusText(currentStatus)}</p>
+                    <p className="text-[13px] text-dm-text-secondary">{getStatusMessage(currentStatus)}</p>
                   </div>
                 </div>
                 {(sunatStatus?.sunat_response_description || debitNote.sunat_response_description) && (
-                  <div className="mt-3 pt-3 border-t border-[#f0f0f0]">
-                    <p className="text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">Respuesta SUNAT</p>
-                    <p className="text-[14px] text-[#202020]">{sunatStatus?.sunat_response_description ?? debitNote.sunat_response_description}</p>
+                  <div className="mt-3 pt-3 border-t border-dm-border-secondary">
+                    <p className="text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">Respuesta SUNAT</p>
+                    <p className="text-[14px] text-dm-text-primary">{sunatStatus?.sunat_response_description ?? debitNote.sunat_response_description}</p>
                   </div>
                 )}
                 {sunatStatus?.sunat_ticket && (
                   <div className="mt-2">
-                    <p className="text-[14px] text-[#4d4d4d]">
-                      <span className="font-medium text-[#202020]">Ticket:</span> {sunatStatus.sunat_ticket}
+                    <p className="text-[14px] text-dm-text-secondary">
+                      <span className="font-medium text-dm-text-primary">Ticket:</span> {sunatStatus.sunat_ticket}
                     </p>
                   </div>
                 )}
@@ -486,50 +486,50 @@ export const DebitNoteDetailPage: React.FC = () => {
           </div>
 
           {/* Totales */}
-          <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-            <h2 className="text-[18px] font-medium text-[#202020] mb-4">Totales</h2>
+          <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+            <h2 className="text-[18px] font-medium text-dm-text-primary mb-4">Totales</h2>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-[14px] text-[#4d4d4d]">Subtotal:</span>
-                <span className="text-[14px] font-medium text-[#202020]">{formatCurrency(debitNote.total_taxable)}</span>
+                <span className="text-[14px] text-dm-text-secondary">Subtotal:</span>
+                <span className="text-[14px] font-medium text-dm-text-primary">{formatCurrency(debitNote.total_taxable)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[14px] text-[#4d4d4d]">Exonerado:</span>
-                <span className="text-[14px] font-medium text-[#202020]">{formatCurrency(debitNote.total_exonerated)}</span>
+                <span className="text-[14px] text-dm-text-secondary">Exonerado:</span>
+                <span className="text-[14px] font-medium text-dm-text-primary">{formatCurrency(debitNote.total_exonerated)}</span>
               </div>
-              <div className="flex justify-between pt-3 border-t border-[#f0f0f0]">
-                <span className="text-[14px] font-medium text-[#202020]">Total:</span>
+              <div className="flex justify-between pt-3 border-t border-dm-border-secondary">
+                <span className="text-[14px] font-medium text-dm-text-primary">Total:</span>
                 <span className="text-[24px] font-bold text-[#1F4690]">{formatCurrency(debitNote.total_payable)}</span>
               </div>
-              <p className="text-[12px] text-[#828282] text-right">Sin IGV (exonerado)</p>
+              <p className="text-[12px] text-dm-text-muted text-right">Sin IGV (exonerado)</p>
             </div>
           </div>
 
           {/* Archivos Disponibles */}
           {(debitNote.pdf_file_path || debitNote.signed_xml_file_path || debitNote.cdr_file_path || sunatStatus?.xml_file_path || sunatStatus?.cdr_file_path) && (
-            <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-              <h2 className="text-[18px] font-medium text-[#202020] mb-4">Archivos</h2>
+            <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+              <h2 className="text-[18px] font-medium text-dm-text-primary mb-4">Archivos</h2>
               <div className="space-y-2">
                 {debitNote.pdf_file_path && (
-                  <a href={debitNote.pdf_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-[#f5f5f5] transition-colors text-[14px] text-[#202020]">
+                  <a href={debitNote.pdf_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-dm-bg-secondary transition-colors text-[14px] text-dm-text-primary">
                     <DocumentArrowDownIcon className="h-5 w-5 text-[#1F4690] mr-3" />
                     <span>Descargar PDF</span>
                   </a>
                 )}
                 {debitNote.signed_xml_file_path && (
-                  <a href={debitNote.signed_xml_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-[#f5f5f5] transition-colors text-[14px] text-[#202020]">
+                  <a href={debitNote.signed_xml_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-dm-bg-secondary transition-colors text-[14px] text-dm-text-primary">
                     <DocumentArrowDownIcon className="h-5 w-5 text-[#1F4690] mr-3" />
                     <span>XML Firmado</span>
                   </a>
                 )}
                 {(debitNote.cdr_file_path || sunatStatus?.cdr_file_path) && (
-                  <a href={debitNote.cdr_file_path || sunatStatus?.cdr_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-[#f5f5f5] transition-colors text-[14px] text-[#202020]">
+                  <a href={debitNote.cdr_file_path || sunatStatus?.cdr_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-dm-bg-secondary transition-colors text-[14px] text-dm-text-primary">
                     <DocumentArrowDownIcon className="h-5 w-5 text-[#1F4690] mr-3" />
                     <span>CDR (SUNAT)</span>
                   </a>
                 )}
                 {(sunatStatus?.xml_file_path && !debitNote.signed_xml_file_path) && (
-                  <a href={sunatStatus.xml_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-[#f5f5f5] transition-colors text-[14px] text-[#202020]">
+                  <a href={sunatStatus.xml_file_path} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 rounded-[12px] hover:bg-dm-bg-secondary transition-colors text-[14px] text-dm-text-primary">
                     <DocumentArrowDownIcon className="h-5 w-5 text-[#1F4690] mr-3" />
                     <span>XML (desde SUNAT)</span>
                   </a>

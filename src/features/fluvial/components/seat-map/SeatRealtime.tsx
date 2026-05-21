@@ -72,14 +72,14 @@ const getSeatStyles = (
       case 'RESERVED':
         return 'bg-yellow-500 border-yellow-600 text-white cursor-not-allowed';
       case 'BLOCKED':
-        return 'bg-gray-500 border-gray-600 text-white cursor-not-allowed';
+        return 'bg-gray-500 border-gray-600 dark:border-gray-400 text-white cursor-not-allowed';
       default:
-        return 'bg-gray-300 border-gray-400 text-gray-500 cursor-not-allowed';
+        return 'bg-gray-300 dark:bg-gray-700 border-gray-400 dark:border-gray-600 dark:border-gray-400 text-dm-text-muted cursor-not-allowed';
     }
   }
 
   if (isLocked) {
-    return 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed';
+    return 'bg-dm-bg-secondary border-dm-border-primary text-dm-text-muted cursor-not-allowed';
   }
 
   switch (status) {
@@ -89,17 +89,17 @@ const getSeatStyles = (
       if (isWebSocketAvailable && connectionStatus === 'connected') {
         connectionIndicator = 'ring-1 ring-green-300';
       } else if (connectionStatus === 'failed') {
-        connectionIndicator = 'ring-1 ring-gray-300'; // Sin tiempo real, pero funcional
+        connectionIndicator = 'ring-1 ring-dm-border-primary'; // Sin tiempo real, pero funcional
       }
-      return `bg-white border-gray-300 text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:shadow-md ${connectionIndicator}`;
+      return `bg-dm-bg-primary border-dm-border-primary text-dm-text-secondary hover:border-blue-400 hover:bg-blue-50 dark:bg-blue-950/30 hover:shadow-md ${connectionIndicator}`;
     case 'CONFIRMED':
       return 'bg-red-500 border-red-600 text-white cursor-not-allowed';
     case 'RESERVED':
       return 'bg-yellow-500 border-yellow-600 text-white cursor-not-allowed';
     case 'BLOCKED':
-      return 'bg-gray-500 border-gray-600 text-white cursor-not-allowed';
+      return 'bg-gray-500 border-gray-600 dark:border-gray-400 text-white cursor-not-allowed';
     default:
-      return 'bg-gray-300 border-gray-400 text-gray-500 cursor-not-allowed';
+      return 'bg-gray-300 dark:bg-gray-700 border-gray-400 dark:border-gray-600 dark:border-gray-400 text-dm-text-muted cursor-not-allowed';
   }
 };
 
@@ -183,7 +183,7 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
 
         {/* Indicador de modo sin tiempo real */}
         {connectionStatus === 'failed' && (
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-gray-400 rounded-full"></div>
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
         )}
 
         {/* Indicador de selección por otro usuario (solo si WebSocket está disponible) */}

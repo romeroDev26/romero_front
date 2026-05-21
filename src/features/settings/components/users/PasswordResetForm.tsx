@@ -99,12 +99,12 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
       <div>
-        <p className="text-gray-700 mb-4">
+        <p className="text-dm-text-secondary mb-4">
           Establecer nueva contraseña para: <strong>{userName}</strong>
         </p>
         
         {apiError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-300 text-red-700 dark:text-red-300 rounded">
             {apiError}
           </div>
         )}

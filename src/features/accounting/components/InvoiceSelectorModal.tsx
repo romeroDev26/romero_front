@@ -91,8 +91,8 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
           {isLoading ? (
             <div className="flex justify-center p-8"><Spinner /></div>
           ) : voidableInvoices.length === 0 ? (
-            <div className="text-center p-8 border rounded-md bg-gray-50">
-              <p className="text-gray-600">No hay facturas disponibles para dar de baja.</p>
+            <div className="text-center p-8 border rounded-md bg-dm-bg-secondary">
+              <p className="text-dm-text-secondary">No hay facturas disponibles para dar de baja.</p>
             </div>
           ) : (
             <div className="max-h-96 overflow-y-auto border rounded-lg">
@@ -101,17 +101,17 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
                   <div
                     key={inv.id}
                     onClick={() => handleInvoiceClick(inv)}
-                    className="p-3 hover:bg-gray-50 cursor-pointer border rounded-md transition-colors flex justify-between items-start"
+                    className="p-3 hover:bg-dm-bg-hover cursor-pointer border rounded-md transition-colors flex justify-between items-start"
                   >
                     <div className="flex-1">
-                      <div className="font-medium">{inv.series}-{String(inv.number).padStart(8, '0')} <span className="ml-2 text-sm text-gray-500">({inv.document_type_code === '01' ? 'Factura' : 'Boleta'})</span></div>
-                      <div className="text-sm text-gray-600 mt-1">{inv.client_name}</div>
-                      <div className="text-xs text-gray-500 mt-1">Emitida: {format(new Date(inv.issue_date), 'dd/MM/yyyy')}</div>
+                      <div className="font-medium">{inv.series}-{String(inv.number).padStart(8, '0')} <span className="ml-2 text-sm text-dm-text-muted">({inv.document_type_code === '01' ? 'Factura' : 'Boleta'})</span></div>
+                      <div className="text-sm text-dm-text-secondary mt-1">{inv.client_name}</div>
+                      <div className="text-xs text-dm-text-muted mt-1">Emitida: {format(new Date(inv.issue_date), 'dd/MM/yyyy')}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-medium">S/ {inv.total_payable}</div>
                       {redirectToAnnulOnSelect ? (
-                        loadingDetail && <div className="text-xs text-blue-600 mt-1">Cargando detalles...</div>
+                        loadingDetail && <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Cargando detalles...</div>
                       ) : (
                         <input
                           type="checkbox"
@@ -125,7 +125,7 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
                   </div>
                 ))}
                 {voidableInvoices.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-dm-text-muted">
                     <div>No hay facturas disponibles para anular</div>
                   </div>
                 )}
@@ -134,7 +134,7 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
           )}
 
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <div className="text-sm text-yellow-800">
+            <div className="text-sm text-yellow-800 dark:text-yellow-300">
               <strong>Nota:</strong> Solo se muestran facturas que pueden ser afectadas por notas de crédito.
               Al seleccionar una factura, se cargarán automáticamente todos sus datos y productos.
             </div>
@@ -157,22 +157,22 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
           <div className="space-y-4">
             <div>
               <div className="font-medium">{confirmInvoice.series}-{String(confirmInvoice.number).padStart(8, '0')}</div>
-              <div className="text-sm text-gray-600">Cliente: {confirmInvoice.client?.name || confirmInvoice.client_name}</div>
-              <div className="text-sm text-gray-600">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || ''}</div>
+              <div className="text-sm text-dm-text-secondary">Cliente: {confirmInvoice.client?.name || confirmInvoice.client_name}</div>
+              <div className="text-sm text-dm-text-secondary">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || ''}</div>
               {(confirmInvoice.client?.address || confirmInvoice.client_address) && (
-                <div className="text-sm text-gray-600">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
+                <div className="text-sm text-dm-text-secondary">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
               )}
-              <div className="text-sm text-gray-600">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
+              <div className="text-sm text-dm-text-secondary">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
             </div>
 
             {confirmInvoice.items && confirmInvoice.items.length > 0 && (
               <div className="mt-2 border-t pt-2">
-                <div className="text-sm font-medium text-gray-700 mb-1">Servicios / Ítems incluidos</div>
-                <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1">
+                <div className="text-sm font-medium text-dm-text-secondary mb-1">Servicios / Ítems incluidos</div>
+                <ul className="text-sm text-dm-text-secondary list-disc pl-5 space-y-1">
                   {confirmInvoice.items.slice(0,5).map((it: any, idx: number) => (
                     <li key={idx}>{it.item_description || it.product_name || it.description || 'Servicio'} — {it.quantity || it.qty || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
                   ))}
-                  {confirmInvoice.items.length > 5 && <li className="text-xs text-gray-500">+{confirmInvoice.items.length - 5} más</li>}
+                  {confirmInvoice.items.length > 5 && <li className="text-xs text-dm-text-muted">+{confirmInvoice.items.length - 5} más</li>}
                 </ul>
               </div>
             )}

@@ -47,7 +47,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
   if (error) {
     return (
       <div className={`relative ${className}`}>
-        <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 text-red-700 text-sm">
+        <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-sm">
           Error al cargar países. Verifique su conexión.
         </div>
       </div>
@@ -60,15 +60,15 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
       <div
         className={`
           w-full p-2 border rounded-md cursor-pointer flex items-center justify-between
-          ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'}
-          ${loading ? 'bg-gray-100' : ''}
-          border-gray-300
+          ${disabled ? 'bg-dm-bg-secondary cursor-not-allowed' : 'bg-dm-bg-primary hover:border-gray-400 dark:hover:border-gray-500'}
+          ${loading ? 'bg-dm-bg-secondary' : ''}
+          border-dm-border-primary
         `}
         onClick={handleToggle}
       >
         <div className="flex items-center gap-2">
           {loading ? (
-            <span className="text-gray-500">Cargando países...</span>
+            <span className="text-dm-text-muted">Cargando países...</span>
           ) : selectedCountry ? (
             <>
               <img 
@@ -76,31 +76,31 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
                 alt={`Bandera de ${selectedCountry.name.common}`}
                 className="w-5 h-3 object-cover rounded"
               />
-              <span className="text-gray-900">{selectedCountry.name.common}</span>
-              <span className="text-gray-500 text-sm">({selectedCountry.cca2})</span>
+              <span className="text-dm-text-primary">{selectedCountry.name.common}</span>
+              <span className="text-dm-text-muted text-sm">({selectedCountry.cca2})</span>
             </>
           ) : (
-            <span className="text-gray-500">{placeholder}</span>
+            <span className="text-dm-text-muted">{placeholder}</span>
           )}
         </div>
         <ChevronDownIcon 
-          className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 text-dm-text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
       </div>
 
       {/* Dropdown con lista de países */}
       {isOpen && !loading && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 bg-dm-bg-primary border border-dm-border-primary rounded-md shadow-lg max-h-60 overflow-hidden">
           {/* Campo de búsqueda */}
-          <div className="p-2 border-b border-gray-200">
+          <div className="p-2 border-b border-dm-border-primary">
             <div className="relative">
-              <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-2 top-1/2 -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-4 w-4 text-dm-text-muted absolute left-2 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Buscar país..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-8 pr-2 py-1 border border-dm-border-primary rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 autoFocus
               />
             </div>
@@ -112,7 +112,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
               filteredCountries.map(country => (
                 <div
                   key={country.cca3}
-                  className="p-2 hover:bg-gray-50 cursor-pointer flex items-center gap-2 border-b border-gray-100 last:border-b-0"
+                  className="p-2 hover:bg-dm-bg-hover cursor-pointer flex items-center gap-2 border-b border-dm-border-secondary last:border-b-0"
                   onClick={() => handleCountrySelect(country)}
                 >
                   <img 
@@ -121,10 +121,10 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
                     className="w-5 h-3 object-cover rounded"
                   />
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-dm-text-primary">
                       {country.name.common}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-dm-text-muted">
                       {country.cca2} • {country.cca3}
                       {country.idd.root && (
                         <span> • Tel: {country.idd.root}{country.idd.suffixes?.[0] || ''}</span>
@@ -134,7 +134,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
                 </div>
               ))
             ) : (
-              <div className="p-4 text-center text-gray-500 text-sm">
+              <div className="p-4 text-center text-dm-text-muted text-sm">
                 No se encontraron países
               </div>
             )}

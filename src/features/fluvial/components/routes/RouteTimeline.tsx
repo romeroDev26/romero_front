@@ -28,8 +28,8 @@ const StopNode: React.FC<{
   const textColor = isFirst
     ? 'text-[#1F4690] bg-[#1F4690]/5 border-[#1F4690]/20'
     : isLast
-    ? 'text-[#4d4d4d] bg-[#4d4d4d]/5 border-[#4d4d4d]/20'
-    : 'text-[#828282] bg-[#f5f5f5] border-[#e8e8e8]';
+    ? 'text-dm-text-secondary bg-[#4d4d4d]/5 border-[#4d4d4d]/20'
+    : 'text-dm-text-muted bg-dm-bg-secondary border-dm-border-primary';
   const cursor = draggable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer';
 
   return (
@@ -50,7 +50,7 @@ const StopNode: React.FC<{
       </div>
 
       {/* Número de orden */}
-      <div className="absolute -bottom-8 text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded-full border shadow-sm">
+      <div className="absolute -bottom-8 text-xs font-bold text-dm-text-muted bg-dm-bg-primary px-2 py-1 rounded-full border shadow-sm">
         {index + 1}
       </div>
     </div>
@@ -67,8 +67,8 @@ export const RouteTimeline: React.FC<RouteTimelineProps> = ({
 }) => {
   if (!stops || stops.length < 2) {
     return (
-      <div className="text-center text-gray-500 py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <MapPinIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+      <div className="text-center text-dm-text-muted py-8 bg-dm-bg-secondary rounded-lg border-2 border-dashed border-dm-border-primary">
+        <MapPinIcon className="h-12 w-12 mx-auto mb-2 text-dm-text-muted" />
         <p className="text-lg font-medium">Agrega paradas para visualizar la ruta</p>
         <p className="text-sm mt-1">Necesitas al menos 2 paradas para crear una ruta</p>
       </div>
@@ -81,7 +81,7 @@ export const RouteTimeline: React.FC<RouteTimelineProps> = ({
   const minWidth = Math.max(440, sortedStops.length * 200);
 
   return (
-    <div className="w-full bg-[#f5f5f5] rounded-[12px] border border-[#e8e8e8]">
+    <div className="w-full bg-dm-bg-secondary rounded-[12px] border border-dm-border-primary">
       {/* Contenedor con scroll horizontal */}
       <div
         className="overflow-x-auto snap-x snap-mandatory pb-3"
@@ -144,7 +144,7 @@ export const RouteTimeline: React.FC<RouteTimelineProps> = ({
           </div>
 
           {/* Indicadores de dirección */}
-          <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 sm:gap-3 text-[11px] sm:text-[13px] text-[#828282]">
+          <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 sm:gap-3 text-[11px] sm:text-[13px] text-dm-text-muted">
             <div className="flex items-center gap-1">
               <div className="w-2.5 h-2.5 bg-[#1F4690] rounded-full"></div>
               <span>Origen</span>

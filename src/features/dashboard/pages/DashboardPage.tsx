@@ -70,18 +70,18 @@ export const DashboardPage: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-6 shadow-sm">
         <div className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-            <BarChart3 className="h-6 w-6 text-amber-600" />
+            <BarChart3 className="h-6 w-6 text-amber-600 dark:text-amber-400" />
           </div>
-          <h2 className="mb-2 text-lg font-semibold text-gray-900">Acceso restringido</h2>
-          <p className="mb-4 text-sm text-gray-500">
+          <h2 className="mb-2 text-lg font-semibold text-dm-text-primary">Acceso restringido</h2>
+          <p className="mb-4 text-sm text-dm-text-muted">
             El dashboard general está disponible únicamente para administradores del sistema.
           </p>
           <Link
             to="/"
-            className="inline-flex items-center rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+            className="inline-flex items-center rounded-lg bg-gray-900 dark:bg-gray-100 px-4 py-2 text-sm font-medium text-white dark:text-gray-900 transition-colors hover:bg-gray-800 dark:hover:bg-gray-200"
           >
             Volver al inicio
           </Link>
@@ -95,26 +95,26 @@ export const DashboardPage: React.FC = () => {
       {/* Header compacto estilo TailAdmin */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-800">
+          <h1 className="text-2xl font-semibold text-dm-text-primary">
             Resumen general
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-dm-text-muted">
             Métricas consolidadas del negocio ·{' '}
-            <span className="font-medium text-gray-700">{PERIOD_LABELS[period]}</span>
+            <span className="font-medium text-dm-text-secondary">{PERIOD_LABELS[period]}</span>
             {generatedLabel && (
-              <span className="ml-1 text-gray-400">· Actualizado {generatedLabel}</span>
+              <span className="ml-1 text-dm-text-muted">· Actualizado {generatedLabel}</span>
             )}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative min-w-[180px]">
-            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <CalendarDays className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dm-text-muted" />
             <select
               id="global-period"
               value={period}
               onChange={(e) => setPeriod(e.target.value as 'today' | 'week' | 'month' | 'year')}
-              className="w-full appearance-none rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-9 text-sm font-medium text-gray-700 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full appearance-none rounded-lg border border-dm-border-primary bg-dm-bg-primary py-2 pl-10 pr-9 text-sm font-medium text-dm-text-secondary shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               aria-label="Período de métricas"
             >
               <option value="today">Hoy</option>

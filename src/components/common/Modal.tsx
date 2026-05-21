@@ -27,7 +27,6 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = "md",
 }) => {
-  // Se agregaron los tamaños faltantes de la interfaz al objeto de clases
   const maxWidthClasses = {
     sm: "max-w-sm",
     md: "max-w-md",
@@ -68,19 +67,19 @@ export const Modal: React.FC<ModalProps> = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className={`w-full ${maxWidthClasses[maxWidth]} transform max-h-[95vh] overflow-y-auto rounded-lg bg-white text-left align-middle shadow-xl transition-all`}
+                className={`w-full ${maxWidthClasses[maxWidth]} transform max-h-[95vh] overflow-y-auto rounded-lg bg-dm-bg-primary text-left align-middle shadow-xl transition-all`}
               >
                 {title && (
-                  <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">
+                  <div className="flex justify-between items-center border-b border-dm-border-primary px-6 py-4">
                     <Dialog.Title
                       as="h3"
-                      className="text-lg font-semibold text-gray-900"
+                      className="text-lg font-semibold text-dm-text-primary"
                     >
                       {title}
                     </Dialog.Title>
                     <button
                       type="button"
-                      className="text-gray-400 hover:text-gray-500"
+                      className="text-dm-text-muted hover:text-dm-text-secondary transition-colors"
                       onClick={onClose}
                     >
                       <span className="sr-only">Cerrar modal</span>
@@ -88,7 +87,6 @@ export const Modal: React.FC<ModalProps> = ({
                     </button>
                   </div>
                 )}
-                {/* Ajuste para que el padding superior solo se aplique si no hay título */}
                 <div className="p-6">{children}</div>
               </Dialog.Panel>
             </Transition.Child>

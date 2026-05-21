@@ -27,19 +27,19 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   const getStatusConfig = () => {
     switch (status) {
       case 'SCHEDULED':
-        return { label: 'Programado', className: 'text-blue-700 bg-blue-50 ring-blue-600/20' };
+        return { label: 'Programado', className: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 ring-blue-600/20' };
       case 'BOARDING':
-        return { label: 'Embarcando', className: 'text-yellow-700 bg-yellow-50 ring-yellow-600/20' };
+        return { label: 'Embarcando', className: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 ring-yellow-600/20' };
       case 'DEPARTED':
         return { label: 'En Ruta', className: 'text-purple-700 bg-purple-50 ring-purple-600/20' };
       case 'ARRIVED':
-        return { label: 'Arribado', className: 'text-green-700 bg-green-50 ring-green-600/20' };
+        return { label: 'Arribado', className: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30 ring-green-600/20' };
       case 'COMPLETED':
-        return { label: 'Completado', className: 'text-gray-700 bg-gray-50 ring-gray-600/20' };
+        return { label: 'Completado', className: 'text-dm-text-secondary bg-dm-bg-secondary ring-dm-text-muted/20' };
       case 'CANCELLED':
-        return { label: 'Cancelado', className: 'text-red-700 bg-red-50 ring-red-600/20' };
+        return { label: 'Cancelado', className: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 ring-red-600/20' };
       default:
-        return { label: 'Desconocido', className: 'text-gray-700 bg-gray-50 ring-gray-600/20' };
+        return { label: 'Desconocido', className: 'text-dm-text-secondary bg-dm-bg-secondary ring-dm-text-muted/20' };
     }
   };
 
@@ -59,16 +59,16 @@ const AvailabilityBar: React.FC<{ available: number | null; total: number | null
   total,
 }) => {
   if (available === null || total === null || total === 0) {
-    return <span className="text-gray-400 text-sm">N/A</span>;
+    return <span className="text-dm-text-muted text-sm">N/A</span>;
   }
   const pct = Math.round(((total - available) / total) * 100);
   const barColor = pct >= 90 ? 'bg-red-400' : pct >= 60 ? 'bg-yellow-400' : 'bg-green-400';
   return (
     <div className="flex items-center gap-2 min-w-[100px]">
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-dm-bg-secondary rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-gray-600 whitespace-nowrap font-medium">
+      <span className="text-xs text-dm-text-secondary whitespace-nowrap font-medium">
         {available}/{total}
       </span>
     </div>
@@ -113,19 +113,19 @@ const PaginationControls: React.FC<PaginationProps> = ({
   if (totalPages <= 1 && totalItems <= PAGE_SIZE_OPTIONS[0]) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3 bg-white border-t border-gray-100 gap-3">
-      <div className="flex items-center gap-3 text-sm text-gray-600">
+    <div className="flex flex-col sm:flex-row items-center justify-between px-5 py-3 bg-dm-bg-primary border-t border-dm-border-secondary gap-3">
+      <div className="flex items-center gap-3 text-sm text-dm-text-secondary">
         <span>
-          Mostrando <span className="font-semibold text-gray-800">{startItem}–{endItem}</span> de{' '}
-          <span className="font-semibold text-gray-800">{totalItems}</span> viajes
+          Mostrando <span className="font-semibold text-dm-text-primary">{startItem}–{endItem}</span> de{' '}
+          <span className="font-semibold text-dm-text-primary">{totalItems}</span> viajes
         </span>
         <div className="flex items-center gap-1.5">
-          <span className="text-gray-400 hidden sm:inline">|</span>
-          <label className="hidden sm:inline text-gray-500">Por página:</label>
+          <span className="text-dm-text-muted hidden sm:inline">|</span>
+          <label className="hidden sm:inline text-dm-text-muted">Por página:</label>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="pl-2 pr-6 py-1 text-xs border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-gray-700 cursor-pointer"
+            className="pl-2 pr-6 py-1 text-xs border border-dm-border-primary rounded-md bg-dm-bg-secondary focus:outline-none focus:ring-1 focus:ring-indigo-500 text-dm-text-secondary cursor-pointer"
           >
             {PAGE_SIZE_OPTIONS.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -138,14 +138,14 @@ const PaginationControls: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-md border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
 
         {getPageNumbers().map((page, idx) =>
           page === '...' ? (
-            <span key={`ellipsis-${idx}`} className="px-2 text-gray-400 text-sm">…</span>
+            <span key={`ellipsis-${idx}`} className="px-2 text-dm-text-muted text-sm">…</span>
           ) : (
             <button
               key={page}
@@ -153,7 +153,7 @@ const PaginationControls: React.FC<PaginationProps> = ({
               className={`min-w-[32px] h-8 px-2 rounded-md text-sm font-medium transition-colors border ${
                 currentPage === page
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                  : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                  : 'border-dm-border-primary text-dm-text-secondary hover:bg-dm-bg-hover'
               }`}
             >
               {page}
@@ -164,7 +164,7 @@ const PaginationControls: React.FC<PaginationProps> = ({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-1.5 rounded-md border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="p-1.5 rounded-md border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronRightIcon className="h-4 w-4" />
         </button>
@@ -203,7 +203,7 @@ export const TripsTable: React.FC<TripsTableProps> = ({
 
   if (!trips.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+      <div className="flex flex-col items-center justify-center py-16 text-dm-text-muted">
         <InboxStackIcon className="h-12 w-12 mb-3 opacity-30" />
         <p className="text-sm font-medium">No se encontraron viajes</p>
         <p className="text-xs mt-1">Intenta cambiar los filtros o crear un nuevo viaje.</p>
@@ -212,47 +212,47 @@ export const TripsTable: React.FC<TripsTableProps> = ({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-dm-bg-primary rounded-xl border border-dm-border-secondary shadow-sm overflow-hidden">
       {/* ── Mobile Card View ── */}
       <div className="block lg:hidden divide-y divide-gray-100">
         {paginatedTrips.map((trip) => {
           const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
           return (
-            <div key={trip.trip_id} className="p-4 hover:bg-gray-50 transition-colors">
+            <div key={trip.trip_id} className="p-4 hover:bg-dm-bg-hover transition-colors">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 truncate">
+                  <h3 className="text-sm font-semibold text-dm-text-primary truncate">
                     {trip.trip_name || `Viaje #${trip.trip_id}`}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-0.5">{trip.vessel_name}</p>
+                  <p className="text-xs text-dm-text-muted mt-0.5">{trip.vessel_name}</p>
                 </div>
                 <StatusBadge status={trip.status} />
               </div>
 
               <div className="space-y-2 text-sm mb-3">
                 <div>
-                  <span className="text-xs text-gray-400 uppercase tracking-wide">Ruta</span>
-                  <p className="font-medium text-gray-800 mt-0.5">
+                  <span className="text-xs text-dm-text-muted uppercase tracking-wide">Ruta</span>
+                  <p className="font-medium text-dm-text-primary mt-0.5">
                     {trip.origin_port_name || 'N/A'} → {trip.destination_port_name || 'N/A'}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Fecha</span>
-                    <p className="font-medium text-gray-800 mt-0.5">
+                    <span className="text-xs text-dm-text-muted uppercase tracking-wide">Fecha</span>
+                    <p className="font-medium text-dm-text-primary mt-0.5">
                       {format(new Date(trip.departure_datetime), 'dd MMM yyyy', { locale: es })}
                     </p>
                   </div>
                   <div>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Hora</span>
-                    <p className="font-medium text-gray-800 font-mono mt-0.5">
+                    <span className="text-xs text-dm-text-muted uppercase tracking-wide">Hora</span>
+                    <p className="font-medium text-dm-text-primary font-mono mt-0.5">
                       {format(new Date(trip.departure_datetime), 'HH:mm')}
                     </p>
                   </div>
                 </div>
                 {trip.available_seats !== null && trip.total_seats !== null && (
                   <div>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Disponibilidad</span>
+                    <span className="text-xs text-dm-text-muted uppercase tracking-wide">Disponibilidad</span>
                     <div className="mt-1.5">
                       <AvailabilityBar available={trip.available_seats} total={trip.total_seats} />
                     </div>
@@ -260,7 +260,7 @@ export const TripsTable: React.FC<TripsTableProps> = ({
                 )}
               </div>
 
-              <div className="flex flex-col gap-2 pt-3 border-t border-gray-100">
+              <div className="flex flex-col gap-2 pt-3 border-t border-dm-border-secondary">
                 <Button
                   variant={canGenerateManifest ? 'outline' : 'secondary'}
                   onClick={canGenerateManifest ? () => onGenerateManifest?.(trip) : undefined}
@@ -281,7 +281,7 @@ export const TripsTable: React.FC<TripsTableProps> = ({
                   <Button
                     variant="outline"
                     onClick={() => onCancel(trip)}
-                    className="flex items-center justify-center text-sm text-red-600 hover:text-red-800 flex-1"
+                    className="flex items-center justify-center text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:text-red-300 flex-1"
                   >
                     <TrashIcon className="h-4 w-4 mr-1" /> Cancelar
                   </Button>
@@ -296,12 +296,12 @@ export const TripsTable: React.FC<TripsTableProps> = ({
       <div className="hidden lg:block overflow-x-auto">
         <table className="min-w-full">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50">
+            <tr className="border-b border-dm-border-secondary bg-dm-bg-secondary">
               {['Viaje', 'Ruta', 'Salida', 'Disponibilidad', 'Estado', 'Manifiesto', 'Acciones'].map(
                 (header) => (
                   <th
                     key={header}
-                    className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                    className="px-5 py-3 text-left text-xs font-semibold text-dm-text-muted uppercase tracking-wider"
                   >
                     {header}
                   </th>
@@ -313,32 +313,32 @@ export const TripsTable: React.FC<TripsTableProps> = ({
             {paginatedTrips.map((trip) => {
               const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
               return (
-                <tr key={trip.trip_id} className="hover:bg-gray-50/70 transition-colors">
+                <tr key={trip.trip_id} className="hover:bg-dm-bg-hover/70 transition-colors">
                   {/* Viaje */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <p className="font-semibold text-sm text-gray-900">
+                    <p className="font-semibold text-sm text-dm-text-primary">
                       {trip.trip_name || `Viaje #${trip.trip_id}`}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">{trip.vessel_name}</p>
+                    <p className="text-xs text-dm-text-muted mt-0.5">{trip.vessel_name}</p>
                   </td>
 
                   {/* Ruta */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-dm-text-secondary">
                       {trip.origin_port_name || 'N/A'}
                     </span>
-                    <span className="mx-1.5 text-gray-300">→</span>
-                    <span className="text-sm text-gray-700">
+                    <span className="mx-1.5 text-dm-text-muted">→</span>
+                    <span className="text-sm text-dm-text-secondary">
                       {trip.destination_port_name || 'N/A'}
                     </span>
                   </td>
 
                   {/* Salida */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <p className="text-sm font-medium text-gray-800">
+                    <p className="text-sm font-medium text-dm-text-primary">
                       {format(new Date(trip.departure_datetime), 'dd MMM yyyy', { locale: es })}
                     </p>
-                    <p className="text-xs text-gray-400 font-mono mt-0.5">
+                    <p className="text-xs text-dm-text-muted font-mono mt-0.5">
                       {format(new Date(trip.departure_datetime), 'HH:mm')}
                     </p>
                   </td>
@@ -380,14 +380,14 @@ export const TripsTable: React.FC<TripsTableProps> = ({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => onEdit(trip)}
-                        className="p-1.5 rounded-md text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                        className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-950/30 transition-colors"
                         title="Editar viaje"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onCancel(trip)}
-                        className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        className="p-1.5 rounded-md text-dm-text-muted hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/30 transition-colors"
                         title="Cancelar viaje"
                       >
                         <TrashIcon className="h-4 w-4" />

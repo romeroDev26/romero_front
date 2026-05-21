@@ -92,7 +92,7 @@ export const TripSalesReport: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+    <div className="bg-dm-bg-primary rounded-xl shadow-lg border border-dm-border-primary overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -105,10 +105,10 @@ export const TripSalesReport: React.FC = () => {
       </div>
 
       {/* Buscador */}
-      <div className="p-6 border-b border-gray-200 bg-gray-50">
+      <div className="p-6 border-b border-dm-border-primary bg-dm-bg-secondary">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               ID del Viaje
             </label>
             <div className="relative">
@@ -118,7 +118,7 @@ export const TripSalesReport: React.FC = () => {
                 onChange={(e) => setTripId(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Ingresa el ID del viaje (ej: 123)"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                className="w-full px-4 py-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ export const TripSalesReport: React.FC = () => {
             <button
               onClick={handleSearch}
               disabled={!tripId || isLoading}
-              className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-sm"
+              className="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:bg-dm-text-muted disabled:cursor-not-allowed transition-colors shadow-sm"
             >
               {isLoading ? (
                 <ArrowPathIcon className="w-5 h-5 mr-2 animate-spin" />
@@ -144,11 +144,11 @@ export const TripSalesReport: React.FC = () => {
         {/* Estado inicial */}
         {!searchTripId && !error && (
           <div className="text-center py-12">
-            <TruckIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 text-lg">
+            <TruckIcon className="w-16 h-16 mx-auto text-dm-text-muted mb-4" />
+            <p className="text-dm-text-muted text-lg">
               Ingresa un ID de viaje para ver el reporte de ventas
             </p>
-            <p className="text-gray-400 text-sm mt-2">
+            <p className="text-dm-text-muted text-sm mt-2">
               Podrás ver ocupación, ingresos, métodos de pago y comparativas
             </p>
           </div>
@@ -156,17 +156,17 @@ export const TripSalesReport: React.FC = () => {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-4">
             <div className="flex items-start">
-              <ExclamationTriangleIcon className="w-5 h-5 text-red-500 mt-0.5 mr-3" />
+              <ExclamationTriangleIcon className="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5 mr-3" />
               <div>
-                <h4 className="text-red-800 font-medium">Error al cargar el reporte</h4>
-                <p className="text-red-600 text-sm mt-1">
+                <h4 className="text-red-800 dark:text-red-300 font-medium">Error al cargar el reporte</h4>
+                <p className="text-red-600 dark:text-red-400 text-sm mt-1">
                   No se pudo obtener la información del viaje. Verifica que el ID sea correcto.
                 </p>
                 <button
                   onClick={() => refetch()}
-                  className="mt-3 text-red-700 hover:text-red-800 text-sm font-medium"
+                  className="mt-3 text-red-700 dark:text-red-300 hover:text-red-800 dark:text-red-300 text-sm font-medium"
                 >
                   Reintentar
                 </button>
@@ -186,28 +186,28 @@ export const TripSalesReport: React.FC = () => {
         {report && !isLoading && (
           <div className="space-y-6">
             {/* Info del viaje */}
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-5 border border-dm-border-primary">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">{report.trip.trip_name}</h3>
-                  <p className="text-gray-600 mt-1">
+                  <h3 className="text-lg font-bold text-dm-text-primary">{report.trip.trip_name}</h3>
+                  <p className="text-dm-text-secondary mt-1">
                     {report.trip.route.route_name}
                   </p>
-                  <p className="text-gray-500 text-sm mt-1">
+                  <p className="text-dm-text-muted text-sm mt-1">
                     {formatDateTime(report.trip.departure_datetime)}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    report.trip.status === 'PROGRAMADO' ? 'bg-blue-100 text-blue-800' :
-                    report.trip.status === 'EN_CURSO' ? 'bg-yellow-100 text-yellow-800' :
-                    report.trip.status === 'COMPLETADO' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
+                    report.trip.status === 'PROGRAMADO' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300' :
+                    report.trip.status === 'EN_CURSO' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300' :
+                    report.trip.status === 'COMPLETADO' ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' :
+                    'bg-dm-bg-secondary text-dm-text-primary'
                   }`}>
                     {report.trip.status}
                   </span>
                   {report.trip.vessel.changed && (
-                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300">
                       Embarcación cambiada
                     </span>
                   )}
@@ -215,17 +215,17 @@ export const TripSalesReport: React.FC = () => {
               </div>
 
               {/* Embarcación */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-dm-border-primary">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-gray-500">Embarcación programada:</span>
-                    <span className="ml-2 font-medium text-gray-900">
+                    <span className="text-dm-text-muted">Embarcación programada:</span>
+                    <span className="ml-2 font-medium text-dm-text-primary">
                       {report.trip.vessel.scheduled.vessel_name}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Embarcación actual:</span>
-                    <span className={`ml-2 font-medium ${report.trip.vessel.changed ? 'text-orange-600' : 'text-gray-900'}`}>
+                    <span className="text-dm-text-muted">Embarcación actual:</span>
+                    <span className={`ml-2 font-medium ${report.trip.vessel.changed ? 'text-orange-600 dark:text-orange-400' : 'text-dm-text-primary'}`}>
                       {report.trip.vessel.actual.vessel_name}
                     </span>
                   </div>
@@ -236,74 +236,74 @@ export const TripSalesReport: React.FC = () => {
             {/* KPIs principales */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Ocupación */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+              <div className="bg-dm-bg-primary rounded-lg p-4 border border-dm-border-primary shadow-sm">
                 <div className="flex items-center justify-between">
-                  <UserGroupIcon className="w-8 h-8 text-indigo-500" />
+                  <UserGroupIcon className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    report.sales.occupancy_percentage >= 80 ? 'bg-green-100 text-green-700' :
-                    report.sales.occupancy_percentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
+                    report.sales.occupancy_percentage >= 80 ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
+                    report.sales.occupancy_percentage >= 50 ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                    'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
                   }`}>
                     {report.sales.occupancy_percentage >= 80 ? 'Alta' : 
                      report.sales.occupancy_percentage >= 50 ? 'Media' : 'Baja'}
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-gray-900 mt-3">
+                <p className="text-2xl font-bold text-dm-text-primary mt-3">
                   {report.sales.occupancy_percentage.toFixed(1)}%
                 </p>
-                <p className="text-sm text-gray-500">Ocupación</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-sm text-dm-text-muted">Ocupación</p>
+                <p className="text-xs text-dm-text-muted mt-1">
                   {report.sales.sold_seats} / {report.trip.capacity.total_seats} asientos
                 </p>
               </div>
 
               {/* Ingresos */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+              <div className="bg-dm-bg-primary rounded-lg p-4 border border-dm-border-primary shadow-sm">
                 <div className="flex items-center justify-between">
                   <CurrencyDollarIcon className="w-8 h-8 text-green-500" />
                   <CheckCircleIcon className="w-5 h-5 text-green-500" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900 mt-3">
+                <p className="text-2xl font-bold text-dm-text-primary mt-3">
                   {formatCurrency(report.sales.total_revenue)}
                 </p>
-                <p className="text-sm text-gray-500">Ingresos Totales</p>
+                <p className="text-sm text-dm-text-muted">Ingresos Totales</p>
               </div>
 
               {/* Asientos vendidos */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+              <div className="bg-dm-bg-primary rounded-lg p-4 border border-dm-border-primary shadow-sm">
                 <div className="flex items-center justify-between">
                   <ChartBarIcon className="w-8 h-8 text-blue-500" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900 mt-3">
+                <p className="text-2xl font-bold text-dm-text-primary mt-3">
                   {report.sales.sold_seats}
                 </p>
-                <p className="text-sm text-gray-500">Asientos Vendidos</p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-sm text-dm-text-muted">Asientos Vendidos</p>
+                <p className="text-xs text-dm-text-muted mt-1">
                   {report.trip.capacity.confirmed_seats} confirmados
                 </p>
               </div>
 
               {/* Ticket promedio */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+              <div className="bg-dm-bg-primary rounded-lg p-4 border border-dm-border-primary shadow-sm">
                 <div className="flex items-center justify-between">
                   <CurrencyDollarIcon className="w-8 h-8 text-purple-500" />
                 </div>
-                <p className="text-2xl font-bold text-gray-900 mt-3">
+                <p className="text-2xl font-bold text-dm-text-primary mt-3">
                   {formatCurrency(report.sales.average_ticket)}
                 </p>
-                <p className="text-sm text-gray-500">Ticket Promedio</p>
+                <p className="text-sm text-dm-text-muted">Ticket Promedio</p>
               </div>
             </div>
 
             {/* Desglose por Método de Pago */}
             {report.sales.payment_breakdown && report.sales.payment_breakdown.length > 0 && (
-              <div className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-dm-bg-primary rounded-lg p-5 border border-dm-border-primary shadow-sm">
+                <h4 className="text-lg font-semibold text-dm-text-primary mb-4">
                   Desglose por Método de Pago
                 </h4>
                 <div className="space-y-4">
                   {/* Barra de distribución visual */}
-                  <div className="flex h-4 rounded-full overflow-hidden bg-gray-200">
+                  <div className="flex h-4 rounded-full overflow-hidden bg-dm-bg-secondary">
                     {report.sales.payment_breakdown.map((payment) => {
                       const percentage = (payment.amount / report.sales.total_revenue) * 100;
                       return (
@@ -327,21 +327,21 @@ export const TripSalesReport: React.FC = () => {
                       return (
                         <div
                           key={payment.payment_method}
-                          className="bg-gray-50 rounded-lg p-3 border border-gray-100"
+                          className="bg-dm-bg-secondary rounded-lg p-3 border border-dm-border-secondary"
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: getPaymentColor(payment.payment_method) }}
                             />
-                            <span className="text-sm font-medium text-gray-700">
+                            <span className="text-sm font-medium text-dm-text-secondary">
                               {payment.payment_method.replace('_', ' ')}
                             </span>
                           </div>
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className="text-lg font-bold text-dm-text-primary">
                             {formatCurrency(payment.amount)}
                           </p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-dm-text-muted">
                             {percentage.toFixed(1)}% del total
                           </p>
                         </div>
@@ -354,8 +354,8 @@ export const TripSalesReport: React.FC = () => {
 
             {/* Desglose por Servicio */}
             {report.sales.service_breakdown && Object.keys(report.sales.service_breakdown).length > 0 && (
-              <div className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-dm-bg-primary rounded-lg p-5 border border-dm-border-primary shadow-sm">
+                <h4 className="text-lg font-semibold text-dm-text-primary mb-4">
                   Desglose por Tipo de Servicio
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -364,31 +364,31 @@ export const TripSalesReport: React.FC = () => {
                     .map(([serviceType, data]) => {
                     const percentage = (data.revenue / report.sales.total_revenue) * 100;
                     return (
-                      <div key={serviceType} className="bg-gray-50 rounded-lg p-4">
+                      <div key={serviceType} className="bg-dm-bg-secondary rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
-                          <h5 className="font-medium text-gray-900">{serviceType}</h5>
-                          <span className="text-sm text-gray-500">{data.count} items</span>
+                          <h5 className="font-medium text-dm-text-primary">{serviceType}</h5>
+                          <span className="text-sm text-dm-text-muted">{data.count} items</span>
                         </div>
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Ingresos:</span>
-                            <span className="font-semibold text-gray-900">{formatCurrency(data.revenue)}</span>
+                            <span className="text-sm text-dm-text-secondary">Ingresos:</span>
+                            <span className="font-semibold text-dm-text-primary">{formatCurrency(data.revenue)}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-dm-text-secondary">
                               {serviceType === 'PASAJES' ? 'Ticket prom.' : 'Monto prom.'}:
                             </span>
-                            <span className="font-semibold text-gray-900">
+                            <span className="font-semibold text-dm-text-primary">
                               {formatCurrency(data.average_ticket || data.average_item_amount || 0)}
                             </span>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="w-full bg-dm-bg-secondary rounded-full h-2">
                             <div
                               className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
-                          <div className="text-right text-xs text-gray-500">
+                          <div className="text-right text-xs text-dm-text-muted">
                             {percentage.toFixed(1)}% del total
                           </div>
                         </div>
@@ -401,12 +401,12 @@ export const TripSalesReport: React.FC = () => {
 
             {/* Comparativa con otros viajes */}
             {report.comparatives.trips.length > 0 && (
-              <div className="bg-white rounded-lg p-5 border border-gray-200 shadow-sm">
+              <div className="bg-dm-bg-primary rounded-lg p-5 border border-dm-border-primary shadow-sm">
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-semibold text-gray-900">
+                  <h4 className="text-lg font-semibold text-dm-text-primary">
                     Comparativa con Viajes de la Misma Ruta
                   </h4>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-dm-text-muted">
                     {formatDate(report.comparatives.start_date)} - {formatDate(report.comparatives.end_date)}
                   </span>
                 </div>
@@ -421,44 +421,44 @@ export const TripSalesReport: React.FC = () => {
                   
                   return (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-sm text-gray-500">vs Ocupación Promedio</p>
+                      <div className="bg-dm-bg-secondary rounded-lg p-4">
+                        <p className="text-sm text-dm-text-muted">vs Ocupación Promedio</p>
                         <div className="flex items-center mt-1">
-                          <span className={`text-lg font-bold ${occupancyDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <span className={`text-lg font-bold ${occupancyDiff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {occupancyDiff >= 0 ? '+' : ''}{occupancyDiff.toFixed(1)}%
                           </span>
                           {occupancyDiff >= 0 ? (
                             <ArrowTrendingUpIcon className="w-5 h-5 text-green-500 ml-2" />
                           ) : (
-                            <ArrowTrendingDownIcon className="w-5 h-5 text-red-500 ml-2" />
+                            <ArrowTrendingDownIcon className="w-5 h-5 text-red-500 dark:text-red-400 ml-2" />
                           )}
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-dm-text-muted mt-1">
                           Promedio: {stats.avgOccupancy.toFixed(1)}%
                         </p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-sm text-gray-500">vs Ingresos Promedio</p>
+                      <div className="bg-dm-bg-secondary rounded-lg p-4">
+                        <p className="text-sm text-dm-text-muted">vs Ingresos Promedio</p>
                         <div className="flex items-center mt-1">
-                          <span className={`text-lg font-bold ${revenueDiff >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <span className={`text-lg font-bold ${revenueDiff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {revenueDiff >= 0 ? '+' : ''}{formatCurrency(revenueDiff)}
                           </span>
                           {revenueDiff >= 0 ? (
                             <ArrowTrendingUpIcon className="w-5 h-5 text-green-500 ml-2" />
                           ) : (
-                            <ArrowTrendingDownIcon className="w-5 h-5 text-red-500 ml-2" />
+                            <ArrowTrendingDownIcon className="w-5 h-5 text-red-500 dark:text-red-400 ml-2" />
                           )}
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-dm-text-muted mt-1">
                           Promedio: {formatCurrency(stats.avgRevenue)}
                         </p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-sm text-gray-500">Ticket Promedio Ruta</p>
-                        <p className="text-lg font-bold text-gray-900 mt-1">
+                      <div className="bg-dm-bg-secondary rounded-lg p-4">
+                        <p className="text-sm text-dm-text-muted">Ticket Promedio Ruta</p>
+                        <p className="text-lg font-bold text-dm-text-primary mt-1">
                           {formatCurrency(stats.avgTicket)}
                         </p>
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="text-xs text-dm-text-muted mt-1">
                           Basado en {report.comparatives.trips.length} viajes
                         </p>
                       </div>
@@ -469,41 +469,41 @@ export const TripSalesReport: React.FC = () => {
                 {/* Tabla de viajes comparativos */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-dm-bg-secondary">
                       <tr>
-                        <th className="px-4 py-3 text-left font-medium text-gray-600">Fecha</th>
-                        <th className="px-4 py-3 text-center font-medium text-gray-600">Capacidad</th>
-                        <th className="px-4 py-3 text-center font-medium text-gray-600">Vendidos</th>
-                        <th className="px-4 py-3 text-center font-medium text-gray-600">Ocupación</th>
-                        <th className="px-4 py-3 text-right font-medium text-gray-600">Ingresos</th>
-                        <th className="px-4 py-3 text-right font-medium text-gray-600">Ticket Prom.</th>
+                        <th className="px-4 py-3 text-left font-medium text-dm-text-secondary">Fecha</th>
+                        <th className="px-4 py-3 text-center font-medium text-dm-text-secondary">Capacidad</th>
+                        <th className="px-4 py-3 text-center font-medium text-dm-text-secondary">Vendidos</th>
+                        <th className="px-4 py-3 text-center font-medium text-dm-text-secondary">Ocupación</th>
+                        <th className="px-4 py-3 text-right font-medium text-dm-text-secondary">Ingresos</th>
+                        <th className="px-4 py-3 text-right font-medium text-dm-text-secondary">Ticket Prom.</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {report.comparatives.trips.map((trip) => (
-                        <tr key={trip.trip_id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-900">
+                        <tr key={trip.trip_id} className="hover:bg-dm-bg-hover">
+                          <td className="px-4 py-3 text-dm-text-primary">
                             {formatDateTime(trip.departure_datetime)}
                           </td>
-                          <td className="px-4 py-3 text-center text-gray-600">
+                          <td className="px-4 py-3 text-center text-dm-text-secondary">
                             {trip.capacity}
                           </td>
-                          <td className="px-4 py-3 text-center text-gray-600">
+                          <td className="px-4 py-3 text-center text-dm-text-secondary">
                             {trip.sold_seats}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              trip.occupancy_percentage >= 80 ? 'bg-green-100 text-green-700' :
-                              trip.occupancy_percentage >= 50 ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
+                              trip.occupancy_percentage >= 80 ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
+                              trip.occupancy_percentage >= 50 ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                              'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
                             }`}>
                               {trip.occupancy_percentage.toFixed(1)}%
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right font-medium text-gray-900">
+                          <td className="px-4 py-3 text-right font-medium text-dm-text-primary">
                             {formatCurrency(trip.total_revenue)}
                           </td>
-                          <td className="px-4 py-3 text-right text-gray-600">
+                          <td className="px-4 py-3 text-right text-dm-text-secondary">
                             {formatCurrency(trip.average_ticket)}
                           </td>
                         </tr>

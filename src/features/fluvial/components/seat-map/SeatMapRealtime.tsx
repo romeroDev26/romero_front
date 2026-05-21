@@ -108,32 +108,32 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
         return {
           icon: <Wifi className="h-4 w-4" />,
           text: 'Tiempo Real Activo',
-          bgColor: 'bg-green-100',
-          textColor: 'text-green-800',
+          bgColor: 'bg-green-100 dark:bg-green-900/40',
+          textColor: 'text-green-800 dark:text-green-300',
           borderColor: 'border-green-200'
         };
       case 'connecting':
         return {
           icon: <Wifi className="h-4 w-4 animate-pulse" />,
           text: 'Conectando...',
-          bgColor: 'bg-yellow-100',
-          textColor: 'text-yellow-800',
+          bgColor: 'bg-yellow-100 dark:bg-yellow-900/40',
+          textColor: 'text-yellow-800 dark:text-yellow-300',
           borderColor: 'border-yellow-200'
         };
       case 'failed':
         return {
           icon: <AlertTriangle className="h-4 w-4" />,
           text: 'Sin tiempo real - Modo normal activo',
-          bgColor: 'bg-gray-100',
-          textColor: 'text-gray-800',
-          borderColor: 'border-gray-200'
+          bgColor: 'bg-dm-bg-secondary',
+          textColor: 'text-dm-text-primary',
+          borderColor: 'border-dm-border-primary'
         };
       case 'disconnected':
         return {
           icon: <WifiOff className="h-4 w-4" />,
           text: 'Sin conexión en tiempo real',
-          bgColor: 'bg-red-100',
-          textColor: 'text-red-800',
+          bgColor: 'bg-red-100 dark:bg-red-900/40',
+          textColor: 'text-red-800 dark:text-red-300',
           borderColor: 'border-red-200'
         };
     }
@@ -318,7 +318,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
   }
 
   if (!seatLayout.length) {
-    return <div className="text-center text-gray-500 p-8">No se pudo cargar la configuración de asientos.</div>;
+    return <div className="text-center text-dm-text-muted p-8">No se pudo cargar la configuración de asientos.</div>;
   }
 
   //  CORRECCIÓN: Contar vendedores únicos en lugar de asientos
@@ -333,7 +333,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
 
   return (
     <div className="w-full min-h-0">
-      <div className="relative z-10 mb-3 sm:mb-4 overflow-hidden rounded-md bg-white text-center">
+      <div className="relative z-10 mb-3 sm:mb-4 overflow-hidden rounded-md bg-dm-bg-primary text-center">
         <div
           className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-gradient-to-bl from-sky-200/30 via-sky-100/15 to-transparent blur-2xl"
           aria-hidden
@@ -345,7 +345,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
           <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2">
             <ConnectionStatusIndicator status={connectionStatus} />
             {canUseRealtime && totalActiveSelections > 0 && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-orange-50 text-orange-800 border-orange-200/80">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-orange-50 dark:bg-orange-950/30 text-orange-800 dark:text-orange-300 border-orange-200/80">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span className="font-medium leading-tight">
                   {totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}
@@ -353,7 +353,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
               </div>
             )}
             {connectionStatus === 'failed' && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-slate-50 text-slate-700 border-slate-200">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-dm-bg-secondary text-dm-text-secondary border-dm-border-primary">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span className="font-medium leading-tight">Venta normal habilitada</span>
               </div>
@@ -374,22 +374,22 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
         />
         <div className="relative z-10 flex w-full justify-center overflow-x-auto overflow-y-visible touch-pan-x pb-1 pt-4">
         <div className="relative w-max max-w-full mx-auto min-w-0">
-          <div className="overflow-hidden rounded-lg border border-dashed border-gray-300 bg-white shadow-sm ring-1 ring-slate-200/40">
-            <div className="relative px-2 py-2 sm:px-3 sm:py-3 bg-slate-50">
-              <div className="text-center pb-2 mb-1 border-b border-dashed border-gray-300/80">
-              <span className="text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-wide line-clamp-2">
+          <div className="overflow-hidden rounded-lg border border-dashed border-dm-border-primary bg-dm-bg-primary shadow-sm ring-1 ring-slate-200/40">
+            <div className="relative px-2 py-2 sm:px-3 sm:py-3 bg-dm-bg-secondary">
+              <div className="text-center pb-2 mb-1 border-b border-dashed border-dm-border-primary/80">
+              <span className="text-[10px] sm:text-xs font-bold text-dm-text-secondary uppercase tracking-wide line-clamp-2">
                 {vesselName}
               </span>
-              <span className="block text-[9px] text-gray-400 mt-0.5">Proa</span>
+              <span className="block text-[9px] text-dm-text-muted mt-0.5">Proa</span>
               </div>
 
               <div className="space-y-3 sm:space-y-4">
               {seatLayout.map((section, sectionIndex) => (
                 <div
                   key={section.id}
-                  className={sectionIndex > 0 ? 'pt-3 border-t border-gray-200/90' : ''}
+                  className={sectionIndex > 0 ? 'pt-3 border-t border-dm-border-primary/90' : ''}
                 >
-                  <p className="text-center text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                  <p className="text-center text-[10px] sm:text-xs font-semibold text-dm-text-muted uppercase tracking-wider mb-2">
                     {section.title}
                   </p>
                   <div className="space-y-1.5 sm:space-y-2">
@@ -418,7 +418,7 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
                         </div>
                         {section.totalColumns > 2 && (
                           <div className="w-4 sm:w-6 md:w-8 shrink-0 flex items-center justify-center">
-                            <div className="w-px h-5 sm:h-6 md:h-7 bg-gray-300" aria-hidden />
+                            <div className="w-px h-5 sm:h-6 md:h-7 bg-gray-300 dark:bg-gray-700" aria-hidden />
                           </div>
                         )}
                         <div className="flex gap-1 sm:gap-1.5 md:gap-2 shrink-0">
@@ -446,8 +446,8 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
               ))}
               </div>
 
-              <div className="text-center pt-2 mt-2 border-t border-dashed border-gray-300/80">
-                <span className="text-[9px] text-gray-400">Trasera</span>
+              <div className="text-center pt-2 mt-2 border-t border-dashed border-dm-border-primary/80">
+                <span className="text-[9px] text-dm-text-muted">Trasera</span>
               </div>
             </div>
           </div>

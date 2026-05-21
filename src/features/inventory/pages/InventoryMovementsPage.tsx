@@ -118,13 +118,13 @@ export const InventoryMovementsPage: React.FC = () => {
       case 'ADJUSTMENT_IN':
       case 'TRANSFER_IN':
       case 'INITIAL_STOCK':
-        return 'text-green-600';
+        return 'text-green-600 dark:text-green-400';
       case 'SALE_EXIT':
       case 'ADJUSTMENT_OUT':
       case 'TRANSFER_OUT':
-        return 'text-red-600';
+        return 'text-red-600 dark:text-red-400';
       default:
-        return 'text-gray-600';
+        return 'text-dm-text-secondary';
     }
   };
   
@@ -171,7 +171,7 @@ export const InventoryMovementsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Movimientos de Inventario</h1>
+        <h1 className="text-2xl font-bold text-dm-text-primary">Movimientos de Inventario</h1>
         <Button
           onClick={() => navigate('/inventory/movement/new')}
           className="flex items-center"
@@ -182,15 +182,15 @@ export const InventoryMovementsPage: React.FC = () => {
       </div>
       
       {/* Filtros y búsqueda */}
-      <div className="bg-white rounded-lg shadow p-4 space-y-4">
+      <div className="bg-dm-bg-primary rounded-lg shadow p-4 space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted" />
             </div>
             <input
               type="text"
-              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+              className="pl-10 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               placeholder="Buscar por producto o documento..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -198,7 +198,7 @@ export const InventoryMovementsPage: React.FC = () => {
           </div>
           
           <select
-            className="rounded-md border-gray-300 shadow-sm p-2 border"
+            className="rounded-md border-dm-border-primary shadow-sm p-2 border"
             value={warehouseFilter}
             onChange={(e) => setWarehouseFilter(e.target.value)}
           >
@@ -211,7 +211,7 @@ export const InventoryMovementsPage: React.FC = () => {
           </select>
           
           <select
-            className="rounded-md border-gray-300 shadow-sm p-2 border"
+            className="rounded-md border-dm-border-primary shadow-sm p-2 border"
             value={movementTypeFilter}
             onChange={(e) => setMovementTypeFilter(e.target.value)}
           >
@@ -228,11 +228,11 @@ export const InventoryMovementsPage: React.FC = () => {
         
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-gray-400" />
+            <CalendarIcon className="h-5 w-5 text-dm-text-muted" />
             <DatePicker
               selected={startDate}
               onChange={(date) => setStartDate(date)}
-              className="rounded-md border-gray-300 shadow-sm p-2 border"
+              className="rounded-md border-dm-border-primary shadow-sm p-2 border"
               placeholderText="Desde fecha"
               dateFormat="dd/MM/yyyy"
               locale={es}
@@ -240,11 +240,11 @@ export const InventoryMovementsPage: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-gray-400" />
+            <CalendarIcon className="h-5 w-5 text-dm-text-muted" />
             <DatePicker
               selected={endDate}
               onChange={(date) => setEndDate(date)}
-              className="rounded-md border-gray-300 shadow-sm p-2 border"
+              className="rounded-md border-dm-border-primary shadow-sm p-2 border"
               placeholderText="Hasta fecha"
               dateFormat="dd/MM/yyyy"
               locale={es}
@@ -254,51 +254,51 @@ export const InventoryMovementsPage: React.FC = () => {
       </div>
       
       {/* Tabla de movimientos */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-dm-bg-primary rounded-lg shadow-md overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-dm-bg-secondary">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Fecha
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Producto
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Almacén
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Tipo
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Cantidad
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Costo Unit.
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Saldo
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Referencia
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
             {filteredMovements.map((movement) => (
-              <tr key={movement.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <tr key={movement.id} className="hover:bg-dm-bg-secondary">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-dm-text-muted">
                   {new Date(movement.movement_date).toLocaleString('es-PE')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-dm-text-primary">
                     {movement.product.internal_code} - {movement.product.name}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-dm-text-muted">
                     {movement.product.unit_code}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-dm-text-muted">
                   {movement.warehouse.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -308,23 +308,23 @@ export const InventoryMovementsPage: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">
                   <span className={`text-sm font-medium ${
-                    movement.quantity > 0 ? 'text-green-600' : 'text-red-600'
+                    movement.quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                   }`}>
                     {movement.quantity > 0 ? '+' : ''}{movement.quantity}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-dm-text-muted">
                   {movement.unit_cost ? `S/ ${movement.unit_cost.toFixed(2)}` : '-'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   {movement.balance_quantity}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">
+                  <div className="text-sm text-dm-text-primary">
                     {movement.reference_doc_id}
                   </div>
                   {movement.notes && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-dm-text-muted">
                       {movement.notes}
                     </div>
                   )}
@@ -334,7 +334,7 @@ export const InventoryMovementsPage: React.FC = () => {
             
             {filteredMovements.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-4 text-center text-dm-text-muted">
                   No se encontraron movimientos
                 </td>
               </tr>

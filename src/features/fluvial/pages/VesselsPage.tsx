@@ -69,37 +69,37 @@ export const VesselsPage: React.FC = () => {
   }
   
   if (error) {
-    return <div className="text-center py-12 text-red-600">Error al cargar las embarcaciones.</div>;
+    return <div className="text-center py-12 text-red-600 dark:text-red-400">Error al cargar las embarcaciones.</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Embarcaciones</h1>
-          <p className="text-gray-600">Administra la flota de embarcaciones de la compañía.</p>
+          <h1 className="text-2xl font-bold text-dm-text-primary">Gestión de Embarcaciones</h1>
+          <p className="text-dm-text-secondary">Administra la flota de embarcaciones de la compañía.</p>
         </div>
       </div>
 
       {/* Barra de filtros y acciones */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center p-4 bg-white rounded-lg shadow-sm border">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-center p-4 bg-dm-bg-primary rounded-lg shadow-sm border">
         <div className="relative flex-grow w-full sm:w-auto sm:max-w-xs">
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2"
+            className="pl-10 block w-full rounded-md border-dm-border-primary shadow-sm p-2"
             placeholder="Buscar por nombre o matrícula..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-4">
-          <label className="flex items-center whitespace-nowrap text-sm text-gray-700">
+          <label className="flex items-center whitespace-nowrap text-sm text-dm-text-secondary">
             <input
               type="checkbox"
               checked={showOnlyActive}
               onChange={(e) => setShowOnlyActive(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+              className="h-4 w-4 rounded border-dm-border-primary text-blue-600 dark:text-blue-400 focus:ring-blue-500 mr-2"
             />
             Mostrar solo activas
           </label>
@@ -124,10 +124,10 @@ export const VesselsPage: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-white rounded-lg border-dashed border-2 border-gray-300">
-          <PresentationChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No se encontraron embarcaciones</h3>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="text-center py-16 bg-dm-bg-primary rounded-lg border-dashed border-2 border-dm-border-primary">
+          <PresentationChartBarIcon className="mx-auto h-12 w-12 text-dm-text-muted" />
+          <h3 className="mt-2 text-sm font-medium text-dm-text-primary">No se encontraron embarcaciones</h3>
+          <p className="mt-1 text-sm text-dm-text-muted">
             {searchTerm ? 'Prueba con otro término de búsqueda.' : 'Crea una nueva embarcación para empezar.'}
           </p>
         </div>

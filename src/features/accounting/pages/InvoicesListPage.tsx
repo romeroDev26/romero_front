@@ -134,8 +134,8 @@ export const InvoicesListPage: React.FC = () => {
     const hasPrevPage = currentPage > 0;
 
     return (
-      <div className="flex items-center justify-between px-6 py-3.5 bg-[#fafafa] border-t border-[#e8e8e8]">
-        <div className="flex items-center text-[12px] text-[#828282]">
+      <div className="flex items-center justify-between px-6 py-3.5 bg-dm-bg-secondary border-t border-dm-border-primary">
+        <div className="flex items-center text-[12px] text-dm-text-muted">
           <span>
             Página {currentPage + 1} • Mostrando {invoices.length} registros
           </span>
@@ -245,10 +245,10 @@ export const InvoicesListPage: React.FC = () => {
       header: 'Documento',
       accessor: (invoice: Invoice) => (
         <div>
-          <div className="font-medium text-[#202020]">
+          <div className="font-medium text-dm-text-primary">
             {getDocumentTypeLabel(invoice.document_type_code)}
           </div>
-          <div className="text-[12px] text-[#828282]">
+          <div className="text-[12px] text-dm-text-muted">
             {invoice.series}-{String(invoice.number).padStart(8, '0')}
           </div>
         </div>
@@ -261,12 +261,12 @@ export const InvoicesListPage: React.FC = () => {
       accessor: (invoice: Invoice) => (
         <div className="max-w-[160px] xl:max-w-[220px]">
           <div
-            className="font-medium text-[#202020] truncate"
+            className="font-medium text-dm-text-primary truncate"
             title={invoice.client?.name || 'Cliente no disponible'}
           >
             {invoice.client?.name || 'Cliente no disponible'}
           </div>
-          <div className="text-[12px] text-[#828282] truncate" title={invoice.client?.doc_number}>
+          <div className="text-[12px] text-dm-text-muted truncate" title={invoice.client?.doc_number}>
             {invoice.client?.doc_number}
           </div>
         </div>
@@ -276,7 +276,7 @@ export const InvoicesListPage: React.FC = () => {
       key: 'issue_date',
       header: 'Fecha',
       accessor: (invoice: Invoice) => (
-        <div className="text-[13px] text-[#4d4d4d]">
+        <div className="text-[13px] text-dm-text-secondary">
           {format(parseISO(invoice.issue_date), 'dd/MM/yyyy')}
         </div>
       ),
@@ -296,7 +296,7 @@ export const InvoicesListPage: React.FC = () => {
       header: 'Monto',
       accessor: (invoice: Invoice) => (
         <div className="text-right">
-          <div className="font-medium text-[#202020]">
+          <div className="font-medium text-dm-text-primary">
             {getCurrencySymbol(invoice.currency_code)} {invoice.total_payable}
           </div>
         </div>
@@ -312,19 +312,19 @@ export const InvoicesListPage: React.FC = () => {
             <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
               <DocumentTextIcon className="w-5 h-5 text-[#1F4690]" />
             </div>
-            <h1 className="text-[22px] font-semibold text-[#202020] tracking-tight">
+            <h1 className="text-[22px] font-semibold text-dm-text-primary tracking-tight">
               Facturas
             </h1>
           </div>
-          <p className="text-[14px] text-[#828282]">Gestión de comprobantes electrónicos</p>
+          <p className="text-[14px] text-dm-text-muted">Gestión de comprobantes electrónicos</p>
         </div>
       </header>
 
       {/* Filtros */}
-      <div className="bg-white p-5 rounded-[12px] border border-[#e8e8e8] flex flex-col gap-5">
+      <div className="bg-dm-bg-primary p-5 rounded-[12px] border border-dm-border-primary flex flex-col gap-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="w-full md:w-auto">
-            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider mb-2">
               Rango de fechas
             </label>
             <DateRangeFilter
@@ -342,7 +342,7 @@ export const InvoicesListPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleClearFilters}
-                className="text-[#4d4d4d] bg-white hover:bg-[#f5f5f5] border-[#e8e8e8] flex items-center mb-0 md:mt-6 rounded-full px-4"
+                className="text-dm-text-secondary bg-dm-bg-primary hover:bg-dm-bg-secondary border-dm-border-primary flex items-center mb-0 md:mt-6 rounded-full px-4"
               >
                 <XMarkIcon className="w-4 h-4 mr-2" />
                 Limpiar Filtros
@@ -351,25 +351,25 @@ export const InvoicesListPage: React.FC = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-4 border-t border-[#e8e8e8]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-4 border-t border-dm-border-primary">
           <div>
-            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider mb-2">
               Cliente
             </label>
             <div className="relative">
-              <MagnifyingGlassIcon className="h-4 w-4 text-[#828282] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-4 w-4 text-dm-text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
               <Input
                 type="text"
                 placeholder="DNI, RUC o nombre..."
                 value={clientSearch}
                 onChange={(e) => handleClientSearchChange(e.target.value)}
-                className="pl-10 bg-[#f5f5f5] border-[#e8e8e8] focus:bg-white transition-colors rounded-[12px]"
+                className="pl-10 bg-dm-bg-secondary border-dm-border-primary focus:bg-dm-bg-primary transition-colors rounded-[12px]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider mb-2">
               Serie
             </label>
             <Input
@@ -377,12 +377,12 @@ export const InvoicesListPage: React.FC = () => {
               placeholder="Ej: F001, B001..."
               value={series}
               onChange={(e) => handleSeriesChange(e.target.value)}
-              className="bg-[#f5f5f5] border-[#e8e8e8] focus:bg-white transition-colors uppercase rounded-[12px]"
+              className="bg-dm-bg-secondary border-dm-border-primary focus:bg-dm-bg-primary transition-colors uppercase rounded-[12px]"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider mb-2">
               Número
             </label>
             <Input
@@ -390,18 +390,18 @@ export const InvoicesListPage: React.FC = () => {
               placeholder="Número correlativo"
               value={documentNumber}
               onChange={(e) => handleDocumentNumberChange(e.target.value)}
-              className="bg-[#f5f5f5] border-[#e8e8e8] focus:bg-white transition-colors rounded-[12px]"
+              className="bg-dm-bg-secondary border-dm-border-primary focus:bg-dm-bg-primary transition-colors rounded-[12px]"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-semibold text-[#828282] uppercase tracking-wider mb-2">
+            <label className="block text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider mb-2">
               Estado SUNAT
             </label>
             <select
               value={sunatStatusFilter}
               onChange={(e) => handleSunatStatusChange(e.target.value)}
-              className="w-full px-4 py-2.5 border border-[#e8e8e8] rounded-[12px] bg-[#f5f5f5] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors text-[14px] text-[#202020]"
+              className="w-full px-4 py-2.5 border border-dm-border-primary rounded-[12px] bg-dm-bg-secondary focus:bg-dm-bg-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors text-[14px] text-dm-text-primary"
             >
               <option value="">Todos los estados</option>
               <option value="PENDING">Pendiente</option>
@@ -419,7 +419,7 @@ export const InvoicesListPage: React.FC = () => {
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
         <DataTable
           columns={columns}
           data={invoices}
@@ -430,7 +430,7 @@ export const InvoicesListPage: React.FC = () => {
               <button
                 onClick={() => navigate(`/accounting/invoices/${invoice.id}`)}
                 title="Ver detalle"
-                className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
+                className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
               >
                 <EyeIcon className="h-4 w-4" />
               </button>
@@ -439,7 +439,7 @@ export const InvoicesListPage: React.FC = () => {
                 <button
                   onClick={() => handlePreviewSignedXml(invoice)}
                   title="Previsualizar XML y descargar archivo"
-                  className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
+                  className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
                 >
                   <CodeBracketIcon className="h-4 w-4" />
                 </button>
@@ -449,7 +449,7 @@ export const InvoicesListPage: React.FC = () => {
                 <button
                   onClick={() => window.open(invoice.cdr_file_path!, '_blank')}
                   title="Descargar CDR"
-                  className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
+                  className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4" />
                 </button>
@@ -460,7 +460,7 @@ export const InvoicesListPage: React.FC = () => {
                   <button
                     onClick={() => navigate(`/accounting/credit-notes/new?invoice_id=${invoice.id}`)}
                     title="Crear Nota de Crédito"
-                    className="flex items-center justify-center w-8 h-8 rounded-full text-red-500 hover:bg-red-50 transition-colors"
+                    className="flex items-center justify-center w-8 h-8 rounded-full text-red-500 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/30 transition-colors"
                   >
                     <MinusIcon className="h-4 w-4" />
                   </button>
@@ -469,7 +469,7 @@ export const InvoicesListPage: React.FC = () => {
                     <button
                       onClick={() => navigate(`/accounting/debit-notes/new?invoice_id=${invoice.id}`)}
                       title="Crear Nota de Débito"
-                      className="flex items-center justify-center w-8 h-8 rounded-full text-emerald-600 hover:bg-emerald-50 transition-colors"
+                      className="flex items-center justify-center w-8 h-8 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:bg-emerald-950/30 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4" />
                     </button>

@@ -25,35 +25,35 @@ const ACTIONS: ActionItem[] = [
     label: 'Punto de Ventas',
     description: 'Pasajes y gestión',
     Icon: ShoppingCartIcon,
-    accent: 'bg-brand/10 text-brand',
+    accent: 'bg-brand/10 dark:bg-brand/20 text-brand',
   },
   {
     action: 'cargo',
     label: 'Encomiendas',
     description: 'Envíos y paquetería',
     Icon: ArchiveBoxIcon,
-    accent: 'bg-cyan-50 text-cyan-600',
+    accent: 'bg-cyan-50 dark:bg-cyan-950/30 text-cyan-600 dark:text-cyan-400',
   },
   {
     action: 'quick-sale',
     label: 'Venta Rápida',
     description: 'Atención inmediata',
     Icon: BoltIcon,
-    accent: 'bg-amber-50 text-amber-600',
+    accent: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
   },
   {
     action: 'reservations',
     label: 'Reservas',
     description: 'Cupos y separaciones',
     Icon: CalendarDaysIcon,
-    accent: 'bg-indigo-50 text-indigo-600',
+    accent: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400',
   },
   {
     action: 'manifests',
     label: 'Manifiestos',
     description: 'Control de carga',
     Icon: ClipboardDocumentListIcon,
-    accent: 'bg-emerald-50 text-emerald-600',
+    accent: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
   },
 ];
 
@@ -83,7 +83,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
               className={[
                 'group flex items-center gap-3 rounded-xl px-4 py-3 text-left transition-all duration-200',
                 enabled
-                  ? 'hover:bg-[#fafafa] cursor-pointer'
+                  ? 'hover:bg-dm-bg-secondary cursor-pointer'
                   : 'opacity-50 cursor-not-allowed',
               ].join(' ')}
               title={enabled ? label : 'Selecciona una sucursal primero'}
@@ -94,8 +94,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
                 <Icon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-ink leading-tight">{label}</div>
-                <div className="text-xs text-medium-gray leading-tight mt-0.5">{description}</div>
+                <div className="text-sm font-semibold text-dm-text-primary leading-tight">{label}</div>
+                <div className="text-xs text-dm-text-secondary leading-tight mt-0.5">{description}</div>
               </div>
             </button>
           );

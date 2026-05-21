@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import { EvolucionVentasSucursales } from '../../../types/dashboard';
 import { BarChart3 } from 'lucide-react';
+import { useChartTheme } from '../../../hooks/useChartTheme';
 
 const BRANCH_COLORS: Record<string, string> = {
   'Sucursal NAUTA': '#4f46e5',
@@ -63,9 +64,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (total <= 0) return null;
 
   return (
-    <div className="max-w-[260px] rounded-lg border border-gray-200 bg-white px-3 py-2.5 shadow-sm">
-      <p className="mb-2 border-b border-gray-100 pb-1.5 text-xs font-semibold text-gray-500">{label}</p>
-      <p className="mb-2 text-sm font-semibold text-gray-900">
+    <div className="max-w-[260px] rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2.5 shadow-sm">
+      <p className="mb-2 border-b border-dm-border-secondary pb-1.5 text-xs font-semibold text-dm-text-muted">{label}</p>
+      <p className="mb-2 text-sm font-semibold text-dm-text-primary">
         Total: S/ {total.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
       </p>
       <div className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
@@ -76,11 +77,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 className="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-white"
                 style={{ backgroundColor: entry.color }}
               />
-              <span className="truncate text-gray-600" title={entry.name}>
+              <span className="truncate text-dm-text-secondary" title={entry.name}>
                 {shortBranchLabel(String(entry.name))}
               </span>
             </div>
-            <span className="shrink-0 font-semibold tabular-nums text-gray-900">
+            <span className="shrink-0 font-semibold tabular-nums text-dm-text-primary">
               S/ {Number(entry.value).toLocaleString('es-PE', { maximumFractionDigits: 0 })}
             </span>
           </div>
@@ -101,6 +102,7 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
   isLoading = false,
   variant = 'embedded',
 }) => {
+  const chartTheme = useChartTheme();
   const chartData = data?.datos.map((item) => ({
     date: item.fecha_formateada,
     ...item.sucursales,
@@ -131,10 +133,10 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
 
   if (isLoading) {
     return (
-      <div className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm ${embedded ? 'flex h-full min-h-[260px] flex-col' : ''}`}>
+      <div className={`rounded-xl border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm ${embedded ? 'flex h-full min-h-[260px] flex-col' : ''}`}>
         <div className="animate-pulse flex-1 space-y-3">
-          <div className="h-5 w-1/3 rounded bg-gray-100" />
-          <div className={`rounded-lg bg-gray-50 ${embedded ? 'min-h-[200px] flex-1' : 'h-56'}`} />
+          <div className="h-5 w-1/3 rounded bg-dm-bg-secondary" />
+          <div className={`rounded-lg bg-dm-bg-secondary ${embedded ? 'min-h-[200px] flex-1' : 'h-56'}`} />
         </div>
       </div>
     );
@@ -142,39 +144,39 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
 
   if (chartData.length === 0 || branchNamesRaw.length === 0) {
     return (
-      <div className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm ${embedded ? 'flex h-full min-h-[260px] flex-col' : ''}`}>
+      <div className={`rounded-xl border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm ${embedded ? 'flex h-full min-h-[260px] flex-col' : ''}`}>
         <div className="mb-3">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-indigo-600" aria-hidden />
-            <h3 className="text-base font-semibold text-gray-800">Panorama de ventas</h3>
+            <BarChart3 className="h-4 w-4 text-indigo-600 dark:text-indigo-400" aria-hidden />
+            <h3 className="text-base font-semibold text-dm-text-primary">Panorama de ventas</h3>
           </div>
-          <p className="text-xs text-gray-500">Por sucursal en el tiempo</p>
+          <p className="text-xs text-dm-text-muted">Por sucursal en el tiempo</p>
         </div>
         <div className={`flex flex-col items-center justify-center ${embedded ? 'flex-1 py-8' : 'py-12'}`}>
-          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-            <BarChart3 className="h-7 w-7 text-gray-400" />
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-dm-bg-secondary">
+            <BarChart3 className="h-7 w-7 text-dm-text-muted" />
           </div>
-          <p className="text-sm font-medium text-gray-500">Sin datos en este período</p>
+          <p className="text-sm font-medium text-dm-text-muted">Sin datos en este período</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`rounded-xl border border-gray-200 bg-white p-5 shadow-sm ${embedded ? 'flex h-full w-full min-h-0 flex-col overflow-hidden' : 'w-full'}`}>
+    <div className={`rounded-xl border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm ${embedded ? 'flex h-full w-full min-h-0 flex-col overflow-hidden' : 'w-full'}`}>
       {/* Header compacto */}
       <div className="mb-3 flex shrink-0 items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 shrink-0 text-indigo-600" aria-hidden />
-            <h3 className="text-base font-semibold text-gray-800">Panorama de ventas</h3>
+            <BarChart3 className="h-4 w-4 shrink-0 text-indigo-600 dark:text-indigo-400" aria-hidden />
+            <h3 className="text-base font-semibold text-dm-text-primary">Panorama de ventas</h3>
           </div>
-          <p className="text-xs text-gray-500">Cada color es una sucursal · {PERIODO_LABEL[periodo]}</p>
-          <p className="mt-1 text-lg font-bold tabular-nums text-gray-900">
+          <p className="text-xs text-dm-text-muted">Cada color es una sucursal · {PERIODO_LABEL[periodo]}</p>
+          <p className="mt-1 text-lg font-bold tabular-nums text-dm-text-primary">
             S/ {totalPeriod.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </p>
         </div>
-        <span className="shrink-0 rounded-lg bg-gray-100 px-2.5 py-1 text-center text-[11px] font-semibold text-gray-500">
+        <span className="shrink-0 rounded-lg bg-dm-bg-secondary px-2.5 py-1 text-center text-[11px] font-semibold text-dm-text-muted">
           {chartData.length} {unidad}
         </span>
       </div>
@@ -184,17 +186,17 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
         {[...branchNamesSorted].reverse().map((branch) => (
           <div
             key={branch}
-            className="flex max-w-full items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1"
+            className="flex max-w-full items-center gap-1.5 rounded-full border border-dm-border-primary bg-dm-bg-secondary px-2.5 py-1"
             title={branch}
           >
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: getBranchColor(branch) }}
             />
-            <span className="truncate text-[11px] font-semibold text-gray-700">
+            <span className="truncate text-[11px] font-semibold text-dm-text-secondary">
               {shortBranchLabel(branch)}
             </span>
-            <span className="text-[10px] tabular-nums text-gray-400">
+            <span className="text-[10px] tabular-nums text-dm-text-muted">
               S/ {(totalsByBranch[branch] ?? 0).toLocaleString('es-PE', { maximumFractionDigits: 0 })}
             </span>
           </div>
@@ -205,10 +207,10 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
       <div className={embedded ? 'h-[220px] w-full min-w-0 shrink-0 lg:h-auto lg:min-h-[180px] lg:flex-1' : ''}>
         <ResponsiveContainer width="100%" height={embedded ? '100%' : 288}>
           <BarChart data={chartData} margin={{ top: 4, right: 4, left: -12, bottom: 0 }} barCategoryGap="18%">
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
             <XAxis
               dataKey="date"
-              tick={{ fontSize: 10, fill: '#6b7280' }}
+              tick={{ fontSize: 10, fill: chartTheme.axis }}
               axisLine={false}
               tickLine={false}
               dy={8}
@@ -216,13 +218,13 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
               minTickGap={20}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: '#6b7280' }}
+              tick={{ fontSize: 10, fill: chartTheme.axis }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => (v >= 1000 ? `${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `${v}`)}
               width={32}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.06)' }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: chartTheme.cursor }} />
             {branchNamesSorted.map((branch) => (
               <Bar
                 key={branch}

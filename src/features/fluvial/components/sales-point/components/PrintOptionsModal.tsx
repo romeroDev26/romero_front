@@ -71,7 +71,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
       label: 'Vista Previa',
       description: 'Ver comprobantes antes de descargar',
       icon: EyeIcon,
-      color: 'bg-blue-50 border-blue-200 text-blue-700',
+      color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 text-blue-700 dark:text-blue-300',
       recommended: true
     },
     {
@@ -79,7 +79,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
       label: 'Descargar A4',
       description: 'Guardar PDF en formato A4',
       icon: DocumentArrowDownIcon,
-      color: 'bg-green-50 border-green-200 text-green-700',
+      color: 'bg-green-50 dark:bg-green-950/30 border-green-200 text-green-700 dark:text-green-300',
       recommended: true
     },
     {
@@ -87,7 +87,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
       label: 'Descargar Ticket',
       description: 'Guardar PDF en formato ticket',
       icon: DocumentArrowDownIcon,
-      color: 'bg-gray-50 border-gray-200 text-gray-700',
+      color: 'bg-dm-bg-secondary border-dm-border-primary text-dm-text-secondary',
       recommended: false
     }
   ];
@@ -101,14 +101,14 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
     >
       <div className="space-y-6">
         {/* Success message */}
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-4">
           <div className="flex items-center">
-            <CheckCircleIcon className="h-6 w-6 text-green-600 mr-3" />
+            <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400 mr-3" />
             <div>
-              <h3 className="font-semibold text-green-800">
+              <h3 className="font-semibold text-green-800 dark:text-green-300">
                 ¡Venta procesada exitosamente!
               </h3>
-              <p className="text-green-700 text-sm">
+              <p className="text-green-700 dark:text-green-300 text-sm">
                 {documentType}: {invoiceNumber}
               </p>
             </div>
@@ -117,7 +117,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
 
         {/* Action options */}
         <div className="space-y-3">
-          <h4 className="font-medium text-gray-900">Seleccione las acciones que desea realizar:</h4>
+          <h4 className="font-medium text-dm-text-primary">Seleccione las acciones que desea realizar:</h4>
           
           <div className="grid gap-3">
             {actionOptions.map((option) => {
@@ -130,8 +130,8 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
                   className={`
                     relative border-2 rounded-lg p-4 cursor-pointer transition-all
                     ${isSelected 
-                      ? 'border-blue-500 bg-blue-50' 
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' 
+                      : 'border-dm-border-primary hover:border-dm-border-primary'
                     }
                   `}
                   onClick={() => handleActionSelect(option.id)}
@@ -139,29 +139,29 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
                   <div className="flex items-center">
                     <div className={`
                       flex items-center justify-center w-10 h-10 rounded-lg mr-4
-                      ${isSelected ? 'bg-blue-100 text-blue-600' : option.color}
+                      ${isSelected ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400' : option.color}
                     `}>
                       <Icon className="h-5 w-5" />
                     </div>
                     
                     <div className="flex-1">
                       <div className="flex items-center">
-                        <h5 className="font-medium text-gray-900">
+                        <h5 className="font-medium text-dm-text-primary">
                           {option.label}
                         </h5>
                         {option.recommended && (
-                          <span className="ml-2 px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">
+                          <span className="ml-2 px-2 py-1 text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 rounded-full">
                             Recomendado
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-dm-text-secondary mt-1">
                         {option.description}
                       </p>
                     </div>
                     
                     {isSelected && (
-                      <CheckCircleIcon className="h-6 w-6 text-blue-600" />
+                      <CheckCircleIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                     )}
                   </div>
                 </div>
@@ -171,8 +171,8 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
         </div>
 
         {/* Quick actions */}
-        <div className="bg-gray-50 rounded-lg p-4">
-          <h5 className="font-medium text-gray-900 mb-3">Acciones rápidas:</h5>
+        <div className="bg-dm-bg-secondary rounded-lg p-4">
+          <h5 className="font-medium text-dm-text-primary mb-3">Acciones rápidas:</h5>
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
@@ -200,7 +200,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
 
         {/* Action buttons */}
         <div className="flex justify-between items-center pt-4 border-t">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-dm-text-secondary">
             {selectedActions.length > 0 ? 
               `${selectedActions.length} acción(es) seleccionada(s)` :
               'Ninguna acción seleccionada'

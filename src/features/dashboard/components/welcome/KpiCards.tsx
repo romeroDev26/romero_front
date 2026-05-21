@@ -25,10 +25,10 @@ export const KpiCards: React.FC<KpiCardsProps> = ({
     >
       <div className="flex items-center gap-2">
         <ChartBarIcon className="h-5 w-5 text-brand" />
-        <h2 className="text-lg font-semibold text-ink tracking-tight">Resumen de Operaciones</h2>
+        <h2 className="text-lg font-semibold text-dm-text-primary tracking-tight">Resumen de Operaciones</h2>
       </div>
 
-      <div className="overflow-hidden rounded-large bg-[#fafafa]">
+      <div className="overflow-hidden rounded-large bg-dm-bg-secondary">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
           <KpiCell
             label="Ingreso Neto del Día"
@@ -73,19 +73,19 @@ function KpiCell({ label, value, prefix, loading, highlight, last }: KpiCellProp
     <div
       className={[
         'flex flex-col items-start justify-center px-6 py-6 md:py-8',
-        'border-b sm:border-b-0 border-light-gray',
+        'border-b sm:border-b-0 border-dm-border-primary',
         !last ? 'md:border-r' : '',
       ].join(' ')}
     >
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-gray mb-2">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-dm-text-muted mb-2">
         {label}
       </span>
       {loading ? (
-        <div className="h-9 w-32 animate-pulse rounded-lg bg-surface" />
+        <div className="h-9 w-32 animate-pulse rounded-lg bg-dm-bg-secondary" />
       ) : (
         <span
           className={`text-3xl md:text-4xl font-bold tracking-tight ${
-            highlight ? 'text-brand' : 'text-ink'
+            highlight ? 'text-brand' : 'text-dm-text-primary'
           }`}
         >
           <AnimatedCounter

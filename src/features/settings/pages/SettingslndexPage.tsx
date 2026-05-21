@@ -11,7 +11,7 @@ const SettingsIndexPage: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center h-full">
-      <p className="text-gray-500">Redirigiendo...</p>
+      <p className="text-dm-text-muted">Redirigiendo...</p>
     </div>
   );
 };

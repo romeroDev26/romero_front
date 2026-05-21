@@ -119,11 +119,11 @@ export const UsersPage: React.FC = () => {
             <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
               <UsersIcon className="w-5 h-5 text-[#1F4690]" />
             </div>
-            <h1 className="text-[22px] font-semibold text-[#202020] tracking-tight">
+            <h1 className="text-[22px] font-semibold text-dm-text-primary tracking-tight">
               Usuarios del sistema
             </h1>
           </div>
-          <p className="text-[14px] text-[#828282]">
+          <p className="text-[14px] text-dm-text-muted">
             Gestiona los usuarios, roles y permisos de acceso.
           </p>
         </div>
@@ -152,8 +152,8 @@ export const UsersPage: React.FC = () => {
 
       {/* Error */}
       {error && (
-        <div className="rounded-[12px] border border-red-200 bg-red-50/40 p-4">
-          <p className="text-[13px] text-red-700">
+        <div className="rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/30/40 p-4">
+          <p className="text-[13px] text-red-700 dark:text-red-300">
             Error al cargar usuarios. Por favor, intente nuevamente.
           </p>
         </div>
@@ -163,19 +163,19 @@ export const UsersPage: React.FC = () => {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <Spinner size="lg" color="text-[#1F4690]" />
-          <p className="text-[13px] text-[#828282]">Cargando usuarios...</p>
+          <p className="text-[13px] text-dm-text-muted">Cargando usuarios...</p>
         </div>
       ) : (
         /* Tabla */
-        <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+        <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
           {filteredUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-4">
-              <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-[#f5f5f5]">
-                <InboxIcon className="w-8 h-8 text-[#828282]" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-dm-bg-secondary">
+                <InboxIcon className="w-8 h-8 text-dm-text-muted" />
               </div>
               <div className="text-center">
-                <p className="text-[15px] font-medium text-[#202020]">No se encontraron usuarios</p>
-                <p className="text-[13px] text-[#828282] mt-1">
+                <p className="text-[15px] font-medium text-dm-text-primary">No se encontraron usuarios</p>
+                <p className="text-[13px] text-dm-text-muted mt-1">
                   {searchTerm
                     ? `No hay resultados para "${searchTerm}"`
                     : 'Los usuarios aparecerán aquí cuando se creen.'}
@@ -186,30 +186,30 @@ export const UsersPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[#fafafa] border-b border-[#e8e8e8]">
-                    <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                  <tr className="bg-dm-bg-secondary border-b border-dm-border-primary">
+                    <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                       Nombre
                     </th>
-                    <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                       Rol
                     </th>
-                    <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                       Supervisor
                     </th>
-                    <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                       Estado
                     </th>
-                    <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider text-right">
+                    <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider text-right">
                       Acciones
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f5f5f5]">
                   {filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-[#fafafa]/60 transition-colors">
+                    <tr key={user.id} className="hover:bg-dm-bg-secondary/60 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-[#1F4690]/10 flex items-center justify-center text-[#1F4690] font-bold text-[11px] flex-shrink-0">
@@ -220,12 +220,12 @@ export const UsersPage: React.FC = () => {
                               .join('')
                               .toUpperCase()}
                           </div>
-                          <span className="text-[13px] font-medium text-[#202020]">
+                          <span className="text-[13px] font-medium text-dm-text-primary">
                             {user.full_name}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-[13px] text-[#4d4d4d]">
+                      <td className="px-6 py-4 whitespace-nowrap text-[13px] text-dm-text-secondary">
                         {user.email}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -233,11 +233,11 @@ export const UsersPage: React.FC = () => {
                           {user.role_name}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-[13px] text-[#4d4d4d]">
+                      <td className="px-6 py-4 whitespace-nowrap text-[13px] text-dm-text-secondary">
                         {user.supervisor_name ? (
-                          <span className="font-medium text-[#202020]">{user.supervisor_name}</span>
+                          <span className="font-medium text-dm-text-primary">{user.supervisor_name}</span>
                         ) : (
-                          <span className="text-[#c4c4c4] italic">Sin supervisor</span>
+                          <span className="text-dm-text-muted italic">Sin supervisor</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -246,8 +246,8 @@ export const UsersPage: React.FC = () => {
                             onClick={() => handleToggleUserStatus(user)}
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
                               user.is_active
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
-                                : 'bg-red-50 text-red-700 border-red-100 hover:bg-red-100'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-100 hover:bg-emerald-100'
+                                : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-100 hover:bg-red-100 dark:bg-red-900/40'
                             }`}
                           >
                             <span
@@ -261,8 +261,8 @@ export const UsersPage: React.FC = () => {
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
                               user.is_active
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                                : 'bg-red-50 text-red-700 border-red-100'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-100'
+                                : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-100'
                             }`}
                           >
                             <span
@@ -279,21 +279,21 @@ export const UsersPage: React.FC = () => {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleResetPassword(user)}
-                              className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
+                              className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
                               title="Cambiar contraseña"
                             >
                               <KeyIcon className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleEditUser(user)}
-                              className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
+                              className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
                               title="Editar"
                             >
                               <PencilIcon className="h-4 w-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteUser(user)}
-                              className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-red-500 hover:bg-red-50 transition-colors"
+                              className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-red-500 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/30 transition-colors"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -309,8 +309,8 @@ export const UsersPage: React.FC = () => {
           )}
 
           {filteredUsers.length > 0 && (
-            <div className="px-6 py-3.5 bg-[#fafafa] border-t border-[#e8e8e8]">
-              <p className="text-[12px] text-[#828282]">
+            <div className="px-6 py-3.5 bg-dm-bg-secondary border-t border-dm-border-primary">
+              <p className="text-[12px] text-dm-text-muted">
                 Mostrando {filteredUsers.length} usuario{filteredUsers.length !== 1 ? 's' : ''}
               </p>
             </div>
@@ -347,9 +347,9 @@ export const UsersPage: React.FC = () => {
         title="Confirmar eliminación"
       >
         <div className="p-6">
-          <p className="text-[14px] text-[#4d4d4d] mb-6">
+          <p className="text-[14px] text-dm-text-secondary mb-6">
             ¿Está seguro que desea eliminar al usuario{' '}
-            <span className="font-semibold text-[#202020]">{selectedUser?.full_name}</span>?
+            <span className="font-semibold text-dm-text-primary">{selectedUser?.full_name}</span>?
           </p>
           <div className="flex justify-end gap-3">
             <Button

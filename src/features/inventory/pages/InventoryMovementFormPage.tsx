@@ -131,20 +131,20 @@ export const InventoryMovementFormPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Nuevo Movimiento de Inventario</h1>
+        <h1 className="text-2xl font-bold text-dm-text-primary">Nuevo Movimiento de Inventario</h1>
       </div>
       
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-dm-bg-primary rounded-lg shadow-md p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Tipo de Movimiento */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Tipo de Movimiento *
               </label>
               <select
                 {...register('movement_type')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               >
                 <option value="">Seleccione</option>
                 <optgroup label="Entradas">
@@ -160,13 +160,13 @@ export const InventoryMovementFormPage: React.FC = () => {
                 </optgroup>
               </select>
               {errors.movement_type && (
-                <p className="mt-1 text-sm text-red-600">{errors.movement_type.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.movement_type.message}</p>
               )}
             </div>
             
             {/* Fecha */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Fecha *
               </label>
               <Controller
@@ -176,7 +176,7 @@ export const InventoryMovementFormPage: React.FC = () => {
                   <DatePicker
                     selected={field.value}
                     onChange={(date) => field.onChange(date)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                    className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                     dateFormat="dd/MM/yyyy"
                     locale={es}
                     showTimeSelect={true}
@@ -185,18 +185,18 @@ export const InventoryMovementFormPage: React.FC = () => {
                 )}
               />
               {errors.movement_date && (
-                <p className="mt-1 text-sm text-red-600">{errors.movement_date.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.movement_date.message}</p>
               )}
             </div>
             
             {/* Producto */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Producto *
               </label>
               <select
                 {...register('product_id', { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               >
                 <option value="">Seleccione un producto</option>
                 {products.map((product) => (
@@ -206,18 +206,18 @@ export const InventoryMovementFormPage: React.FC = () => {
                 ))}
               </select>
               {errors.product_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.product_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.product_id.message}</p>
               )}
             </div>
             
             {/* Almacén */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Almacén *
               </label>
               <select
                 {...register('warehouse_id', { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               >
                 <option value="">Seleccione un almacén</option>
                 {warehouses.map((warehouse) => (
@@ -227,13 +227,13 @@ export const InventoryMovementFormPage: React.FC = () => {
                 ))}
               </select>
               {errors.warehouse_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.warehouse_id.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.warehouse_id.message}</p>
               )}
             </div>
             
             {/* Cantidad */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Cantidad *
               </label>
               <input
@@ -241,17 +241,17 @@ export const InventoryMovementFormPage: React.FC = () => {
                 step="0.01"
                 min="0.01"
                 {...register('quantity', { valueAsNumber: true })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               />
               {errors.quantity && (
-                <p className="mt-1 text-sm text-red-600">{errors.quantity.message}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.quantity.message}</p>
               )}
             </div>
             
             {/* Costo Unitario */}
             {(movementType === 'PURCHASE_ENTRY' || movementType === 'INITIAL_STOCK') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                   Costo Unitario
                 </label>
                 <input
@@ -259,22 +259,22 @@ export const InventoryMovementFormPage: React.FC = () => {
                   step="0.01"
                   min="0"
                   {...register('unit_cost', { valueAsNumber: true })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 />
                 {errors.unit_cost && (
-                  <p className="mt-1 text-sm text-red-600">{errors.unit_cost.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.unit_cost.message}</p>
                 )}
               </div>
             )}
             
             {/* Tipo de Documento de Referencia */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Tipo de Documento de Referencia
               </label>
               <select
                 {...register('reference_doc_type')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               >
                 <option value="">Seleccione</option>
                 {movementType === 'PURCHASE_ENTRY' && (
@@ -300,26 +300,26 @@ export const InventoryMovementFormPage: React.FC = () => {
             
             {/* Número de Documento de Referencia */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Número de Documento de Referencia
               </label>
               <input
                 type="text"
                 {...register('reference_doc_id')}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder="Ej: F001-00123"
               />
             </div>
             
             {/* Notas */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Notas / Observaciones
               </label>
               <textarea
                 {...register('notes')}
                 rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="mt-1 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 placeholder="Observaciones adicionales del movimiento"
               />
             </div>

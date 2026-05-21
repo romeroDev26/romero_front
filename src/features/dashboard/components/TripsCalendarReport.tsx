@@ -38,9 +38,9 @@ const getOccupancyColor = (percentage: number): string => {
 };
 
 const getOccupancyBgColor = (percentage: number): string => {
-  if (percentage >= 80) return 'bg-green-50 border-green-200';
+  if (percentage >= 80) return 'bg-green-50 dark:bg-green-950/30 border-green-200';
   if (percentage >= 50) return 'bg-yellow-50 border-yellow-200';
-  return 'bg-red-50 border-red-200';
+  return 'bg-red-50 dark:bg-red-950/30 border-red-200';
 };
 
 interface DayTrips {
@@ -199,7 +199,7 @@ export const TripsCalendarReport: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header con filtros */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="bg-dm-bg-primary rounded-xl shadow-lg border border-dm-border-primary overflow-hidden">
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,30 +216,30 @@ export const TripsCalendarReport: React.FC = () => {
       {/* Contenido principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendario */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="lg:col-span-2 bg-dm-bg-primary rounded-xl shadow-lg border border-dm-border-primary overflow-hidden">
           {/* Navegación del mes */}
-          <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4 bg-dm-bg-secondary border-b border-dm-border-primary">
             <button
               onClick={handlePrevMonth}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
             >
-              <ChevronLeftIcon className="w-5 h-5 text-gray-600" />
+              <ChevronLeftIcon className="w-5 h-5 text-dm-text-secondary" />
             </button>
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-dm-text-primary">
               {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
             </h3>
             <button
               onClick={handleNextMonth}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
             >
-              <ChevronRightIcon className="w-5 h-5 text-gray-600" />
+              <ChevronRightIcon className="w-5 h-5 text-dm-text-secondary" />
             </button>
           </div>
 
           {/* Días de la semana */}
-          <div className="grid grid-cols-7 bg-gray-100 border-b border-gray-200">
+          <div className="grid grid-cols-7 bg-dm-bg-secondary border-b border-dm-border-primary">
             {dayNames.map((day) => (
-              <div key={day} className="py-3 text-center text-sm font-medium text-gray-600">
+              <div key={day} className="py-3 text-center text-sm font-medium text-dm-text-secondary">
                 {day}
               </div>
             ))}
@@ -249,7 +249,7 @@ export const TripsCalendarReport: React.FC = () => {
           <div className="grid grid-cols-7">
             {calendarDays.map((date, index) => {
               if (!date) {
-                return <div key={`empty-${index}`} className="h-24 bg-gray-50 border-b border-r border-gray-100" />;
+                return <div key={`empty-${index}`} className="h-24 bg-dm-bg-secondary border-b border-r border-dm-border-secondary" />;
               }
 
               const dateKey = date.toISOString().split('T')[0];
@@ -262,14 +262,14 @@ export const TripsCalendarReport: React.FC = () => {
                 <div
                   key={dateKey}
                   onClick={() => hasTrips && handleDayClick(date)}
-                  className={`h-24 p-2 border-b border-r border-gray-100 transition-all ${
-                    hasTrips ? 'cursor-pointer hover:bg-indigo-50' : ''
-                  } ${isSelected ? 'bg-indigo-100 ring-2 ring-indigo-500' : ''}`}
+                  className={`h-24 p-2 border-b border-r border-dm-border-secondary transition-all ${
+                    hasTrips ? 'cursor-pointer hover:bg-indigo-50 dark:bg-indigo-950/30' : ''
+                  } ${isSelected ? 'bg-indigo-100 dark:bg-indigo-900/40 ring-2 ring-indigo-500' : ''}`}
                 >
                   <div className="flex items-start justify-between">
                     <span className={`text-sm font-medium ${
                       isToday ? 'bg-indigo-600 text-white w-7 h-7 rounded-full flex items-center justify-center' :
-                      'text-gray-700'
+                      'text-dm-text-secondary'
                     }`}>
                       {date.getDate()}
                     </span>
@@ -282,11 +282,11 @@ export const TripsCalendarReport: React.FC = () => {
                   
                   {hasTrips && (
                     <div className="mt-1 space-y-1">
-                      <div className="flex items-center text-xs text-gray-600">
+                      <div className="flex items-center text-xs text-dm-text-secondary">
                         <CurrencyDollarIcon className="w-3 h-3 mr-1" />
                         <span className="truncate">{formatCurrency(dayData.totalRevenue)}</span>
                       </div>
-                      <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-dm-bg-secondary rounded-full overflow-hidden">
                         <div 
                           className={`h-full ${getOccupancyColor(dayData.avgOccupancy)}`}
                           style={{ width: `${dayData.avgOccupancy}%` }}
@@ -300,28 +300,28 @@ export const TripsCalendarReport: React.FC = () => {
           </div>
 
           {/* Leyenda */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+          <div className="px-6 py-4 bg-dm-bg-secondary border-t border-dm-border-primary">
             <div className="flex items-center justify-center gap-6 text-sm">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-green-500 rounded-full" />
-                <span className="text-gray-600">Alta ocupación (≥80%)</span>
+                <span className="text-dm-text-secondary">Alta ocupación (≥80%)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-                <span className="text-gray-600">Media (50-79%)</span>
+                <span className="text-dm-text-secondary">Media (50-79%)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full" />
-                <span className="text-gray-600">Baja (&lt;50%)</span>
+                <span className="text-dm-text-secondary">Baja (&lt;50%)</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Panel lateral - Lista de viajes del día */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">
+        <div className="bg-dm-bg-primary rounded-xl shadow-lg border border-dm-border-primary overflow-hidden">
+          <div className="px-6 py-4 bg-dm-bg-secondary border-b border-dm-border-primary flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-dm-text-primary">
               {selectedDate ? (
                 <>Viajes del {new Date(selectedDate + 'T12:00:00').toLocaleDateString('es-PE', { 
                   day: 'numeric', 
@@ -334,9 +334,9 @@ export const TripsCalendarReport: React.FC = () => {
             {selectedDate && (
               <button
                 onClick={handleBackToTrips}
-                className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
+                className="p-1 hover:bg-dm-bg-hover rounded-lg transition-colors"
               >
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
+                <XMarkIcon className="w-5 h-5 text-dm-text-muted" />
               </button>
             )}
           </div>
@@ -349,8 +349,8 @@ export const TripsCalendarReport: React.FC = () => {
             )}
 
             {!selectedDate && !isLoading && (
-              <div className="text-center py-12 text-gray-500">
-                <svg className="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="text-center py-12 text-dm-text-muted">
+                <svg className="w-12 h-12 mx-auto text-dm-text-muted mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15l3-9h12l3 9m-9-9v9m-6 0h12m-6 0v3m-6-3l-1 3h14l-1-3" />
                 </svg>
                 <p>Haz clic en un día con viajes para ver los detalles</p>
@@ -358,7 +358,7 @@ export const TripsCalendarReport: React.FC = () => {
             )}
 
             {selectedDate && selectedDayTrips.length === 0 && !isLoading && (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-dm-text-muted">
                 <p>No hay viajes para este día</p>
               </div>
             )}
@@ -375,16 +375,16 @@ export const TripsCalendarReport: React.FC = () => {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <ClockIcon className="w-4 h-4 text-gray-500" />
-                        <span className="font-semibold text-gray-900">
+                        <ClockIcon className="w-4 h-4 text-dm-text-muted" />
+                        <span className="font-semibold text-dm-text-primary">
                           {formatTime(item.trip.departure_datetime)}
                         </span>
                       </div>
                       <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        item.trip.status === 'PROGRAMADO' ? 'bg-blue-100 text-blue-700' :
-                        item.trip.status === 'EN_CURSO' ? 'bg-yellow-100 text-yellow-700' :
-                        item.trip.status === 'COMPLETADO' ? 'bg-green-100 text-green-700' :
-                        'bg-gray-100 text-gray-700'
+                        item.trip.status === 'PROGRAMADO' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' :
+                        item.trip.status === 'EN_CURSO' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                        item.trip.status === 'COMPLETADO' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
+                        'bg-dm-bg-secondary text-dm-text-secondary'
                       }`}>
                         {item.trip.status}
                       </span>
@@ -392,46 +392,46 @@ export const TripsCalendarReport: React.FC = () => {
 
                     {/* Nombre del viaje */}
                     {item.trip.trip_name && (
-                      <div className="text-sm font-medium text-indigo-700 mb-1 truncate">
+                      <div className="text-sm font-medium text-indigo-700 dark:text-indigo-300 mb-1 truncate">
                         {item.trip.trip_name}
                       </div>
                     )}
 
-                    <div className="flex items-center gap-1 text-sm text-gray-600 mb-2">
+                    <div className="flex items-center gap-1 text-sm text-dm-text-secondary mb-2">
                       <MapPinIcon className="w-4 h-4 flex-shrink-0" />
                       <span className="truncate">{item.trip.route.origin_port}</span>
                       <ArrowRightIcon className="w-3 h-3 flex-shrink-0" />
                       <span className="truncate">{item.trip.route.destination_port}</span>
                     </div>
 
-                    <div className="text-xs text-gray-500 mb-3">
+                    <div className="text-xs text-dm-text-muted mb-3">
                       {item.trip.vessel.actual.vessel_name || item.trip.vessel.scheduled.vessel_name}
                       {item.trip.vessel.changed && (
-                        <span className="ml-2 text-orange-600">(cambio de embarcación)</span>
+                        <span className="ml-2 text-orange-600 dark:text-orange-400">(cambio de embarcación)</span>
                       )}
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200">
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-dm-border-primary">
                       <div className="text-center">
                         <div className="flex items-center justify-center gap-1">
-                          <UserGroupIcon className="w-4 h-4 text-indigo-500" />
-                          <span className="font-semibold text-gray-900">
+                          <UserGroupIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                          <span className="font-semibold text-dm-text-primary">
                             {item.sales.occupancy_percentage.toFixed(0)}%
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500">Ocupación</p>
+                        <p className="text-xs text-dm-text-muted">Ocupación</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-dm-text-primary">
                           {item.sales.sold_seats}/{item.trip.capacity.total_seats}
                         </p>
-                        <p className="text-xs text-gray-500">Asientos</p>
+                        <p className="text-xs text-dm-text-muted">Asientos</p>
                       </div>
                       <div className="text-center">
-                        <p className="font-semibold text-green-600">
+                        <p className="font-semibold text-green-600 dark:text-green-400">
                           {formatCurrency(item.sales.total_revenue)}
                         </p>
-                        <p className="text-xs text-gray-500">Ingresos</p>
+                        <p className="text-xs text-dm-text-muted">Ingresos</p>
                       </div>
                     </div>
                   </button>

@@ -30,20 +30,20 @@ const getSeatStyles = (
   }
 
   if (isLocked) {
-    return 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed';
+    return 'bg-dm-bg-secondary border-dm-border-primary text-dm-text-muted cursor-not-allowed';
   }
 
   switch (status) {
     case 'AVAILABLE':
-      return 'bg-white border-gray-300 text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:shadow-md';
+      return 'bg-dm-bg-primary border-dm-border-primary text-dm-text-secondary hover:border-blue-400 hover:bg-blue-50 dark:bg-blue-950/30 hover:shadow-md';
     case 'CONFIRMED':
       return 'bg-red-500 border-red-600 text-white cursor-not-allowed';
     case 'RESERVED':
       return 'bg-yellow-500 border-yellow-600 text-white cursor-not-allowed';
     case 'BLOCKED':
-      return 'bg-gray-500 border-gray-600 text-white cursor-not-allowed';
+      return 'bg-gray-500 border-gray-600 dark:border-gray-400 text-white cursor-not-allowed';
     default:
-      return 'bg-gray-300 border-gray-400 text-gray-500 cursor-not-allowed';
+      return 'bg-gray-300 dark:bg-gray-700 border-gray-400 dark:border-gray-600 dark:border-gray-400 text-dm-text-muted cursor-not-allowed';
   }
 };
 

@@ -141,15 +141,15 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ruta <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+            Ruta <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <select
             value={formData.route_id}
             onChange={(e) => handleChange('route_id', parseInt(e.target.value))}
             className={`w-full rounded-md shadow-sm p-2 border ${
-              errors.route_id ? 'border-red-500' : 'border-gray-300'
-            } focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed`}
+              errors.route_id ? 'border-red-500' : 'border-dm-border-primary'
+            } focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-dm-bg-secondary disabled:cursor-not-allowed`}
             disabled={isLoadingRoutes}
           >
             <option value={0}>Seleccione una ruta</option>
@@ -160,19 +160,19 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
             ))}
           </select>
           {errors.route_id && (
-            <p className="mt-1 text-sm text-red-600">{errors.route_id}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.route_id}</p>
           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Día de la Semana
             </label>
             <select
               value={formData.day_of_week}
               onChange={(e) => handleChange('day_of_week', parseInt(e.target.value))}
-              className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-dm-bg-secondary disabled:cursor-not-allowed"
             >
               {DAYS_OF_WEEK.map((day) => (
                 <option key={day.value} value={day.value}>
@@ -192,13 +192,13 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Embarcación {!isEditing && <span className="text-red-500">*</span>}
+          <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+            Embarcación {!isEditing && <span className="text-red-500 dark:text-red-400">*</span>}
           </label>
           <select
             value={formData.vessel_id}
             onChange={(e) => handleChange('vessel_id', parseInt(e.target.value))}
-            className="w-full rounded-md border-gray-300 shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
+            className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
             disabled={isLoadingVessels}
           >
             <option value={0}>Seleccione una embarcación</option>
@@ -209,7 +209,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
             ))}
           </select>
           {errors.vessel_id && (
-            <p className="mt-1 text-sm text-red-600">{errors.vessel_id}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.vessel_id}</p>
           )}
         </div>
 
@@ -231,9 +231,9 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
               type="checkbox"
               checked={formData.is_active}
               onChange={(e) => handleChange('is_active', e.target.checked)}
-              className="rounded border-gray-300 text-primary focus:ring-primary"
+              className="rounded border-dm-border-primary text-primary focus:ring-primary"
             />
-            <span className="ml-2 text-sm text-gray-700">
+            <span className="ml-2 text-sm text-dm-text-secondary">
               Plantilla activa
             </span>
           </label>
@@ -242,17 +242,17 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
               type="checkbox"
               checked={formData.auto_generate_trips}
               onChange={(e) => handleChange('auto_generate_trips', e.target.checked)}
-              className="rounded border-gray-300 text-primary focus:ring-primary"
+              className="rounded border-dm-border-primary text-primary focus:ring-primary"
             />
-            <span className="ml-2 text-sm text-gray-700">
+            <span className="ml-2 text-sm text-dm-text-secondary">
               Generar viajes automáticamente
             </span>
           </label>
         </div>
 
         {!isEditing && (
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-            <p className="text-sm text-blue-800">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md p-3">
+            <p className="text-sm text-blue-800 dark:text-blue-300">
               Los viajes se generarán automáticamente según la configuración establecida.
               Puede modificar o cancelar los viajes individuales después de su creación.
             </p>

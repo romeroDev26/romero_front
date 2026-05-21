@@ -117,10 +117,10 @@ export const CreditNotesListPage: React.FC = () => {
       header: 'Documento',
       accessor: (note) => (
         <div>
-          <div className="text-[14px] font-medium text-[#202020]">
+          <div className="text-[14px] font-medium text-dm-text-primary">
             {note.series}-{String(note.number).padStart(8, '0')}
           </div>
-          <div className="text-[12px] text-[#828282]">Nota de Crédito</div>
+          <div className="text-[12px] text-dm-text-muted">Nota de Crédito</div>
         </div>
       ),
     },
@@ -129,10 +129,10 @@ export const CreditNotesListPage: React.FC = () => {
       header: 'Cliente',
       accessor: (note) => (
         <div>
-          <div className="text-[14px] font-medium text-[#202020]">
+          <div className="text-[14px] font-medium text-dm-text-primary">
             {note.client?.name || (note as any).client_name || 'N/A'}
           </div>
-          <div className="text-[12px] text-[#828282]">
+          <div className="text-[12px] text-dm-text-muted">
             {note.client?.doc_number || (note as any).client_document || ''}
           </div>
         </div>
@@ -143,8 +143,8 @@ export const CreditNotesListPage: React.FC = () => {
       header: 'Doc. Afectado',
       accessor: (note) => (
         <div>
-          <div className="text-[14px] font-medium text-[#202020]">{note.affected_document_series_number}</div>
-          <div className="text-[12px] text-[#828282]">
+          <div className="text-[14px] font-medium text-dm-text-primary">{note.affected_document_series_number}</div>
+          <div className="text-[12px] text-dm-text-muted">
             {note.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
           </div>
         </div>
@@ -154,7 +154,7 @@ export const CreditNotesListPage: React.FC = () => {
       key: 'amount',
       header: 'Monto',
       accessor: (note) => (
-        <span className="text-[14px] font-semibold text-[#202020]">
+        <span className="text-[14px] font-semibold text-dm-text-primary">
           {formatCurrency(note.total_payable)}
         </span>
       ),
@@ -168,7 +168,7 @@ export const CreditNotesListPage: React.FC = () => {
       key: 'issue_date',
       header: 'Fecha',
       accessor: (note) => (
-        <span className="text-[13px] text-[#4d4d4d]">
+        <span className="text-[13px] text-dm-text-secondary">
           {note.issue_date ? formatDate(note.issue_date) : formatDate((note as any).created_at)}
         </span>
       ),
@@ -179,7 +179,7 @@ export const CreditNotesListPage: React.FC = () => {
     <div className="flex items-center gap-1">
       <Link
         to={`/accounting/credit-notes/${note.id}`}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
         title="Ver detalle"
       >
         <EyeIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -189,7 +189,7 @@ export const CreditNotesListPage: React.FC = () => {
           href={note.pdf_a4_file_path}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#cf1322] hover:bg-red-50 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#cf1322] hover:bg-red-50 dark:bg-red-950/30 transition-colors"
           title="Descargar PDF A4"
         >
           <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -200,7 +200,7 @@ export const CreditNotesListPage: React.FC = () => {
           href={note.pdf_ticket_file_path}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#237804] hover:bg-green-50 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#237804] hover:bg-green-50 dark:bg-green-950/30 transition-colors"
           title="Descargar Ticket 80mm"
         >
           <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -223,12 +223,12 @@ export const CreditNotesListPage: React.FC = () => {
           </div>
           <div>
             <h1
-              className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]"
+              className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               Notas de Crédito
             </h1>
-            <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+            <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
               Gestiona las anulaciones y notas de crédito
             </p>
           </div>
@@ -237,7 +237,7 @@ export const CreditNotesListPage: React.FC = () => {
           <button
             onClick={() => refreshStatuses(10)}
             disabled={isRefreshing}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#e8e8e8] rounded-[20px] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] disabled:opacity-50 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary rounded-[20px] text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary disabled:opacity-50 transition-colors"
           >
             <ArrowPathIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={1.5} />
             Actualizar Estados
@@ -253,31 +253,31 @@ export const CreditNotesListPage: React.FC = () => {
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
         <div className="flex items-center gap-2 mb-4">
-          <FunnelIcon className="w-4 h-4 text-[#828282]" strokeWidth={1.5} />
-          <span className="text-[13px] font-semibold text-[#202020]">Filtros</span>
+          <FunnelIcon className="w-4 h-4 text-dm-text-muted" strokeWidth={1.5} />
+          <span className="text-[13px] font-semibold text-dm-text-primary">Filtros</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Serie
             </label>
             <input
               type="text"
               placeholder="FC01, BC01..."
               value={series}
-              className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
+              className="w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
               onChange={(e) => handleSeriesChange(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Estado SUNAT
             </label>
             <select
               value={sunatStatus}
-              className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all appearance-none"
+              className="w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all appearance-none"
               onChange={(e) => handleSunatStatusChange(e.target.value)}
             >
               <option value="">Todos los estados</option>
@@ -288,20 +288,20 @@ export const CreditNotesListPage: React.FC = () => {
             </select>
           </div>
           <div>
-            <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Fecha de Emisión
             </label>
             <input
               type="date"
               value={issueDate}
-              className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
+              className="w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
               onChange={(e) => handleIssueDateChange(e.target.value)}
             />
           </div>
           <div className="flex items-end">
             <button
               onClick={() => refetch()}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#e8e8e8] rounded-[12px] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary rounded-[12px] text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary transition-colors"
             >
               <MagnifyingGlassIcon className="h-4 w-4" strokeWidth={1.5} />
               Buscar
@@ -311,7 +311,7 @@ export const CreditNotesListPage: React.FC = () => {
       </div>
 
       {/* Lista */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
         {/* Desktop */}
         <div className="hidden md:block">
           <DataTable<CreditNote>
@@ -330,10 +330,10 @@ export const CreditNotesListPage: React.FC = () => {
           {isLoading ? (
             <div className="p-10 flex flex-col items-center justify-center gap-3">
               <Spinner size="md" />
-              <p className="text-[14px] text-[#828282]">Cargando notas de crédito...</p>
+              <p className="text-[14px] text-dm-text-muted">Cargando notas de crédito...</p>
             </div>
           ) : creditNotes?.length === 0 ? (
-            <div className="p-10 text-center text-[14px] text-[#828282]">
+            <div className="p-10 text-center text-[14px] text-dm-text-muted">
               No se encontraron notas de crédito
             </div>
           ) : (
@@ -341,19 +341,19 @@ export const CreditNotesListPage: React.FC = () => {
               {creditNotes?.map((note) => (
                 <div
                   key={note.id}
-                  className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden"
+                  className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden"
                 >
                   {/* Header */}
                   <div className="p-4">
                     <div className="flex justify-between items-start gap-3 mb-2">
                       <div>
-                        <span className="text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                        <span className="text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                           {note.series}-{String(note.number).padStart(8, '0')}
                         </span>
-                        <h3 className="text-[15px] font-medium text-[#202020] mt-0.5">
+                        <h3 className="text-[15px] font-medium text-dm-text-primary mt-0.5">
                           {note.client?.name || (note as any).client_name || 'N/A'}
                         </h3>
-                        <p className="text-[13px] text-[#828282] mt-0.5">
+                        <p className="text-[13px] text-dm-text-muted mt-0.5">
                           {(note as any).client_document || note.client?.doc_number || ''}
                         </p>
                       </div>
@@ -362,17 +362,17 @@ export const CreditNotesListPage: React.FC = () => {
 
                     <div className="grid grid-cols-2 gap-3 mt-3">
                       <div>
-                        <span className="text-[11px] text-[#828282]">Doc. Afectado</span>
-                        <p className="text-[13px] font-medium text-[#202020]">
+                        <span className="text-[11px] text-dm-text-muted">Doc. Afectado</span>
+                        <p className="text-[13px] font-medium text-dm-text-primary">
                           {note.affected_document_series_number}
                         </p>
-                        <p className="text-[11px] text-[#828282]">
+                        <p className="text-[11px] text-dm-text-muted">
                           {note.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
                         </p>
                       </div>
                       <div>
-                        <span className="text-[11px] text-[#828282]">Monto</span>
-                        <p className="text-[18px] font-semibold text-[#202020]">
+                        <span className="text-[11px] text-dm-text-muted">Monto</span>
+                        <p className="text-[18px] font-semibold text-dm-text-primary">
                           {formatCurrency(note.total_payable)}
                         </p>
                       </div>
@@ -380,15 +380,15 @@ export const CreditNotesListPage: React.FC = () => {
                   </div>
 
                   {/* Footer */}
-                  <div className="px-4 py-3 border-t border-[#f0f0f0] bg-[#fafafa]">
+                  <div className="px-4 py-3 border-t border-dm-border-secondary bg-dm-bg-secondary">
                     <div className="flex items-center justify-between">
-                      <span className="text-[12px] text-[#828282]">
+                      <span className="text-[12px] text-dm-text-muted">
                         {note.issue_date ? formatDate(note.issue_date) : formatDate((note as any).created_at)}
                       </span>
                       <div className="flex items-center gap-1">
                         <Link
                           to={`/accounting/credit-notes/${note.id}`}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
                           title="Ver detalle"
                         >
                           <EyeIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -398,7 +398,7 @@ export const CreditNotesListPage: React.FC = () => {
                             href={note.pdf_a4_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#cf1322] hover:bg-red-50 transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#cf1322] hover:bg-red-50 dark:bg-red-950/30 transition-colors"
                             title="Descargar PDF A4"
                           >
                             <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -409,7 +409,7 @@ export const CreditNotesListPage: React.FC = () => {
                             href={note.pdf_ticket_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5f5f5] text-[#828282] hover:text-[#237804] hover:bg-green-50 transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#237804] hover:bg-green-50 dark:bg-green-950/30 transition-colors"
                             title="Descargar Ticket 80mm"
                           >
                             <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -426,15 +426,15 @@ export const CreditNotesListPage: React.FC = () => {
 
         {/* Paginación */}
         {!isLoading && creditNotes && creditNotes.length > 0 && (
-          <div className="px-4 py-3 border-t border-[#f0f0f0] flex items-center justify-between">
-            <span className="text-[13px] text-[#828282]">
+          <div className="px-4 py-3 border-t border-dm-border-secondary flex items-center justify-between">
+            <span className="text-[13px] text-dm-text-muted">
               Página {currentPage + 1} • Mostrando {creditNotes.length} registros
             </span>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={!hasPrevPage}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[8px] border border-[#e8e8e8] text-[13px] text-[#4d4d4d] hover:bg-[#f5f5f5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[8px] border border-dm-border-primary text-[13px] text-dm-text-secondary hover:bg-dm-bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeftIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
                 Anterior
@@ -442,7 +442,7 @@ export const CreditNotesListPage: React.FC = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={!hasNextPage}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[8px] border border-[#e8e8e8] text-[13px] text-[#4d4d4d] hover:bg-[#f5f5f5] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-[8px] border border-dm-border-primary text-[13px] text-dm-text-secondary hover:bg-dm-bg-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Siguiente
                 <ChevronRightIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -458,22 +458,22 @@ export const CreditNotesListPage: React.FC = () => {
           <h3 className="text-[13px] font-semibold text-[#1F4690] mb-2">
             Información sobre Estados SUNAT
           </h3>
-          <ul className="space-y-1.5 text-[13px] text-[#4d4d4d]">
+          <ul className="space-y-1.5 text-[13px] text-dm-text-secondary">
             <li className="flex items-start gap-2">
               <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
-              <span><strong className="text-[#202020]">Pendiente:</strong> Documento creado, esperando envío a SUNAT</span>
+              <span><strong className="text-dm-text-primary">Pendiente:</strong> Documento creado, esperando envío a SUNAT</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
-              <span><strong className="text-[#202020]">Enviado:</strong> Documento enviado, esperando respuesta de SUNAT</span>
+              <span><strong className="text-dm-text-primary">Enviado:</strong> Documento enviado, esperando respuesta de SUNAT</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
-              <span><strong className="text-[#202020]">Aceptado:</strong> Documento válido y procesado correctamente</span>
+              <span><strong className="text-dm-text-primary">Aceptado:</strong> Documento válido y procesado correctamente</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
-              <span><strong className="text-[#202020]">Rechazado:</strong> Documento con errores, revisar observaciones</span>
+              <span><strong className="text-dm-text-primary">Rechazado:</strong> Documento con errores, revisar observaciones</span>
             </li>
           </ul>
         </div>

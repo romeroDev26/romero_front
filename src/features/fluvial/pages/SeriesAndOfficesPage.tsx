@@ -197,7 +197,7 @@ const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({
             maxLength={4}
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Puerto Principal (Hub)
             </label>
             <select
@@ -206,7 +206,7 @@ const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({
                 setFormData({ ...formData, port_id: Number(e.target.value) });
                 portSelectChangedRef.current = true;
               }}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-dm-border-primary rounded-md"
               required
             >
               <option value={0}>Seleccione un puerto</option>
@@ -220,27 +220,27 @@ const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Nombre del Puerto
             </label>
             <input
               type="text"
               value={formData.port_name}
               onChange={(e) => setFormData({ ...formData, port_name: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-dm-border-primary rounded-md"
               placeholder="Ej: Puerto Fluvial Masusa"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Dirección del Puerto
             </label>
             <input
               type="text"
               value={formData.port_address}
               onChange={(e) => setFormData({ ...formData, port_address: e.target.value })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-dm-border-primary rounded-md"
               placeholder="Ej: Av. La Marina 1234"
               required
             />
@@ -380,12 +380,12 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({
   if (!isOpen) return null;
 
   const inputBaseClass =
-    'w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
+    'w-full bg-dm-bg-primary border border-dm-border-primary rounded-lg px-3 py-2.5 text-sm text-dm-text-primary placeholder-gray-400 dark:placeholder-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
   const selectBaseClass =
-    'w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
-  const labelBaseClass = 'block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5';
+    'w-full bg-dm-bg-primary border border-dm-border-primary rounded-lg px-3 py-2.5 text-sm text-dm-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
+  const labelBaseClass = 'block text-xs font-semibold text-dm-text-secondary uppercase tracking-wider mb-1.5';
   const checkboxBaseClass =
-    'h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors';
+    'h-4 w-4 rounded border-dm-border-primary text-blue-600 dark:text-blue-400 focus:ring-blue-500 transition-colors';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={isEditing ? 'Editar Serie' : 'Nueva Serie'} maxWidth="lg">
@@ -400,7 +400,7 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({
               id="document_type_code"
               value={formData.document_type_code}
               onChange={(e) => setFormData({ ...formData, document_type_code: e.target.value })}
-              className={`${selectBaseClass} ${isEditing ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
+              className={`${selectBaseClass} ${isEditing ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed' : ''}`}
               required
               disabled={isEditing}
             >
@@ -427,9 +427,9 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({
               placeholder="Ej: F001"
               required
               disabled={isEditing}
-              className={`${inputBaseClass} font-mono ${isEditing ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
+              className={`${inputBaseClass} font-mono ${isEditing ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed' : ''}`}
             />
-            <p className="mt-1 text-xs text-gray-400">4 caracteres alfanuméricos en mayúscula</p>
+            <p className="mt-1 text-xs text-dm-text-muted">4 caracteres alfanuméricos en mayúscula</p>
           </div>
         </div>
 
@@ -486,7 +486,7 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({
               className={checkboxBaseClass}
               disabled={isEditing}
             />
-            <label htmlFor="is_electronic" className="ml-2 text-sm text-gray-700 select-none">
+            <label htmlFor="is_electronic" className="ml-2 text-sm text-dm-text-secondary select-none">
               ¿Es Electrónica?
             </label>
           </div>
@@ -500,7 +500,7 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({
                 onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                 className={checkboxBaseClass}
               />
-              <label htmlFor="is_active_series" className="ml-2 text-sm text-gray-700 select-none">
+              <label htmlFor="is_active_series" className="ml-2 text-sm text-dm-text-secondary select-none">
                 ¿Está Activa?
               </label>
             </div>
@@ -508,7 +508,7 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({
         </div>
 
         {/* Acciones */}
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-gray-100">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-dm-border-secondary">
           <Button type="button" variant="outline" onClick={onClose} className="w-full sm:w-auto justify-center">
             Cancelar
           </Button>
@@ -669,18 +669,18 @@ export const DocumentSeriesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configuración de Sucursales y Series</h1>
-        <p className="text-gray-600">Gestiona las sucursales y las series de documentos de tu compañía.</p>
+        <h1 className="text-2xl font-bold text-dm-text-primary">Configuración de Sucursales y Series</h1>
+        <p className="text-dm-text-secondary">Gestiona las sucursales y las series de documentos de tu compañía.</p>
       </div>
 
-      <div className="border-b border-gray-200 overflow-x-auto">
+      <div className="border-b border-dm-border-primary overflow-x-auto">
         <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max">
           <button
             onClick={() => switchTab('offices')}
             className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${
               activeTab === 'offices'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-dm-text-muted hover:text-dm-text-secondary'
             }`}
           >
             <BuildingStorefrontIcon className="h-5 w-5 mr-2" />
@@ -690,8 +690,8 @@ export const DocumentSeriesPage: React.FC = () => {
             onClick={() => switchTab('series')}
             className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${
               activeTab === 'series'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-dm-text-muted hover:text-dm-text-secondary'
             }`}
           >
             <ClipboardDocumentListIcon className="h-5 w-5 mr-2" />
@@ -709,7 +709,7 @@ export const DocumentSeriesPage: React.FC = () => {
           {/* Search and Action - Offices */}
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
             <div className="relative w-full sm:max-w-md">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 className="pl-10 p-2 border rounded-md w-full"
@@ -730,15 +730,15 @@ export const DocumentSeriesPage: React.FC = () => {
           {/* Mobile Card View - Offices */}
           <div className="block lg:hidden space-y-4">
             {filteredOffices.map((office) => (
-              <div key={office.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div key={office.id} className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-gray-900">{office.name}</h3>
-                    {office.code && <p className="text-sm text-gray-500">Código: {office.code}</p>}
+                    <h3 className="text-base font-semibold text-dm-text-primary">{office.name}</h3>
+                    {office.code && <p className="text-sm text-dm-text-muted">Código: {office.code}</p>}
                   </div>
                   <span
                     className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-                      office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      office.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
                     }`}
                   >
                     {office.is_active ? 'Activa' : 'Inactiva'}
@@ -747,48 +747,48 @@ export const DocumentSeriesPage: React.FC = () => {
 
                 <div className="space-y-2 text-sm mb-3">
                   <div>
-                    <span className="block text-xs text-gray-500">Dirección de la Sucursal</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="block text-xs text-dm-text-muted">Dirección de la Sucursal</span>
+                    <span className="font-medium text-dm-text-primary">
                       {office.address_line || 'Sin dirección'}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Puerto</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="block text-xs text-dm-text-muted">Puerto</span>
+                    <span className="font-medium text-dm-text-primary">
                       {office.port_name && office.port_name.trim() ? office.port_name : 'N/A'}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Dirección del Puerto</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="block text-xs text-dm-text-muted">Dirección del Puerto</span>
+                    <span className="font-medium text-dm-text-primary">
                       {office.port_address && office.port_address.trim()
                         ? office.port_address
                         : 'Sin dirección'}
                     </span>
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Contacto</span>
-                    <span className="font-medium text-gray-900">{office.phone || '-'}</span>
-                    {office.email && <span className="text-gray-500 block">{office.email}</span>}
+                    <span className="block text-xs text-dm-text-muted">Contacto</span>
+                    <span className="font-medium text-dm-text-primary">{office.phone || '-'}</span>
+                    {office.email && <span className="text-dm-text-muted block">{office.email}</span>}
                   </div>
                   {office.is_main_office && (
-                    <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                    <div className="inline-flex items-center px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
                       Sucursal Principal
                     </div>
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                <div className="flex justify-end gap-3 pt-3 border-t border-dm-border-secondary">
                   <button
                     onClick={() => handleOpenModal(office)}
-                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 text-sm font-medium"
                   >
                     <PencilIcon className="h-4 w-4 mr-1" /> Editar
                   </button>
                   {office.is_active && (
                     <button
                       onClick={() => handleDelete(office.id)}
-                      className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
+                      className="flex items-center text-red-600 dark:text-red-400 hover:text-red-800 dark:text-red-300 text-sm font-medium"
                     >
                       <TrashIcon className="h-4 w-4 mr-1" /> Desactivar
                     </button>
@@ -797,17 +797,17 @@ export const DocumentSeriesPage: React.FC = () => {
               </div>
             ))}
             {filteredOffices.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+              <div className="bg-dm-bg-primary rounded-lg shadow-sm p-6 text-center text-dm-text-muted">
                 No se encontraron sucursales.
               </div>
             )}
           </div>
 
           {/* Desktop Table View - Offices */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-x-auto">
+          <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <thead className="bg-dm-bg-secondary">
+                <tr className="text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                   <th className="px-6 py-3">Sucursal</th>
                   <th className="px-6 py-3">Dirección de la Sucursal</th>
                   <th className="px-6 py-3">Puerto</th>
@@ -823,10 +823,10 @@ export const DocumentSeriesPage: React.FC = () => {
                   <tr key={office.id}>
                     <td className="px-6 py-4">
                       <div className="font-medium">{office.name}</div>
-                      <div className="text-sm text-gray-500">{office.code}</div>
+                      <div className="text-sm text-dm-text-muted">{office.code}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-700">
+                      <div className="text-sm text-dm-text-secondary">
                         {office.address_line || 'Sin dirección'}
                       </div>
                     </td>
@@ -836,7 +836,7 @@ export const DocumentSeriesPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-dm-text-muted">
                         {office.port_address && office.port_address.trim()
                           ? office.port_address
                           : 'Sin dirección'}
@@ -844,7 +844,7 @@ export const DocumentSeriesPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm">{office.phone || '-'}</div>
-                      <div className="text-sm text-gray-500">{office.email || '-'}</div>
+                      <div className="text-sm text-dm-text-muted">{office.email || '-'}</div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       {office.is_main_office ? 'Sí' : 'No'}
@@ -853,8 +853,8 @@ export const DocumentSeriesPage: React.FC = () => {
                       <span
                         className={`px-2 py-1 text-xs font-semibold rounded-full ${
                           office.is_active
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+                            : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
                         }`}
                       >
                         {office.is_active ? 'Activa' : 'Inactiva'}
@@ -863,14 +863,14 @@ export const DocumentSeriesPage: React.FC = () => {
                     <td className="px-6 py-4 text-right space-x-2">
                       <button
                         onClick={() => handleOpenModal(office)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900"
                       >
                         <PencilIcon className="h-5 w-5" />
                       </button>
                       {office.is_active && (
                         <button
                           onClick={() => handleDelete(office.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:text-red-200"
                         >
                           <TrashIcon className="h-5 w-5" />
                         </button>
@@ -881,7 +881,7 @@ export const DocumentSeriesPage: React.FC = () => {
               </tbody>
             </table>
             {filteredOffices.length === 0 && (
-              <div className="p-6 text-center text-gray-500">No se encontraron sucursales.</div>
+              <div className="p-6 text-center text-dm-text-muted">No se encontraron sucursales.</div>
             )}
           </div>
         </>
@@ -890,7 +890,7 @@ export const DocumentSeriesPage: React.FC = () => {
           {/* Search - Series Branches View */}
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
             <div className="relative w-full sm:max-w-md">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 className="pl-10 p-2 border rounded-md w-full"
@@ -909,21 +909,21 @@ export const DocumentSeriesPage: React.FC = () => {
                 <div
                   key={office.id}
                   onClick={() => enterBranchDetail(office.id)}
-                  className="cursor-pointer bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-shadow"
+                  className="cursor-pointer bg-dm-bg-primary border border-dm-border-primary rounded-2xl p-5 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                      <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
                         <BuildingStorefrontIcon className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900">{office.name}</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="font-semibold text-dm-text-primary">{office.name}</h3>
+                        <p className="text-sm text-dm-text-muted">
                           {office.address_line || 'Sin dirección'}
                         </p>
                       </div>
                     </div>
-                    <ChevronRightIcon className="h-5 w-5 text-gray-400 shrink-0 mt-2" />
+                    <ChevronRightIcon className="h-5 w-5 text-dm-text-muted shrink-0 mt-2" />
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -933,8 +933,8 @@ export const DocumentSeriesPage: React.FC = () => {
                           key={s.id}
                           className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             s.is_active
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'bg-gray-100 text-gray-500'
+                              ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
+                              : 'bg-dm-bg-secondary text-dm-text-muted'
                           }`}
                         >
                           {DOCUMENT_TYPE_OPTIONS.find((d) => d.code === s.document_type_code)
@@ -942,19 +942,19 @@ export const DocumentSeriesPage: React.FC = () => {
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-gray-400">Sin series configuradas</span>
+                      <span className="text-xs text-dm-text-muted">Sin series configuradas</span>
                     )}
                     {officeSeries.length > 4 && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-dm-bg-secondary text-dm-text-secondary">
                         +{officeSeries.length - 4}
                       </span>
                     )}
                   </div>
 
-                  <div className="mt-3 text-xs text-gray-500">
+                  <div className="mt-3 text-xs text-dm-text-muted">
                     {officeSeries.length} serie{officeSeries.length !== 1 ? 's' : ''}
                     {officeSeries.filter((s) => !s.is_active).length > 0 && (
-                      <span className="ml-2 text-red-500">
+                      <span className="ml-2 text-red-500 dark:text-red-400">
                         ({officeSeries.filter((s) => !s.is_active).length} inactiva
                         {officeSeries.filter((s) => !s.is_active).length !== 1 ? 's' : ''})
                       </span>
@@ -966,9 +966,9 @@ export const DocumentSeriesPage: React.FC = () => {
           </div>
 
           {filteredOfficesForSeries.length === 0 && (
-            <div className="bg-white rounded-lg shadow-sm p-8 text-center text-gray-500 border border-gray-200">
-              <BuildingStorefrontIcon className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-lg font-medium text-gray-700">No se encontraron sucursales</p>
+            <div className="bg-dm-bg-primary rounded-lg shadow-sm p-8 text-center text-dm-text-muted border border-dm-border-primary">
+              <BuildingStorefrontIcon className="h-12 w-12 mx-auto text-dm-text-muted mb-3" />
+              <p className="text-lg font-medium text-dm-text-secondary">No se encontraron sucursales</p>
               <p className="text-sm">Prueba con otro término de búsqueda.</p>
             </div>
           )}
@@ -980,14 +980,14 @@ export const DocumentSeriesPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={goBackToBranches}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
                 title="Volver a sucursales"
               >
-                <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
+                <ArrowLeftIcon className="h-5 w-5 text-dm-text-secondary" />
               </button>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{selectedOffice?.name}</h2>
-                <p className="text-sm text-gray-500">Series de documentos configuradas</p>
+                <h2 className="text-xl font-bold text-dm-text-primary">{selectedOffice?.name}</h2>
+                <p className="text-sm text-dm-text-muted">Series de documentos configuradas</p>
               </div>
             </div>
             <Button
@@ -1003,7 +1003,7 @@ export const DocumentSeriesPage: React.FC = () => {
 
           {/* Search inside branch detail */}
           <div className="relative w-full sm:max-w-md">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               className="pl-10 p-2 border rounded-md w-full"
@@ -1016,18 +1016,18 @@ export const DocumentSeriesPage: React.FC = () => {
           {/* Mobile Card View - Branch Series */}
           <div className="block lg:hidden space-y-4">
             {selectedBranchSeries.map((s) => (
-              <div key={s.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div key={s.id} className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-gray-900">
+                    <h3 className="text-base font-semibold text-dm-text-primary">
                       {DOCUMENT_TYPE_OPTIONS.find((d) => d.code === s.document_type_code)?.name ||
                         s.document_type_code}
                     </h3>
-                    <p className="text-sm text-gray-500 font-mono">Serie: {s.series_code}</p>
+                    <p className="text-sm text-dm-text-muted font-mono">Serie: {s.series_code}</p>
                   </div>
                   <span
                     className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-                      s.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      s.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
                     }`}
                   >
                     {s.is_active ? 'Activo' : 'Inactivo'}
@@ -1036,32 +1036,32 @@ export const DocumentSeriesPage: React.FC = () => {
 
                 <div className="space-y-2 text-sm mb-3">
                   <div>
-                    <span className="block text-xs text-gray-500">Número Actual</span>
-                    <span className="font-mono font-medium text-gray-900">
+                    <span className="block text-xs text-dm-text-muted">Número Actual</span>
+                    <span className="font-mono font-medium text-dm-text-primary">
                       {s.current_number.toString().padStart(8, '0')}
                     </span>
                   </div>
                   <div className="flex items-center gap-4">
                     <div>
-                      <span className="block text-xs text-gray-500">Electrónica</span>
-                      <span className="font-medium text-gray-900">
+                      <span className="block text-xs text-dm-text-muted">Electrónica</span>
+                      <span className="font-medium text-dm-text-primary">
                         {s.is_electronic ? 'Sí' : 'No'}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+                <div className="flex justify-end gap-3 pt-3 border-t border-dm-border-secondary">
                   <button
                     onClick={() => handleOpenModal(s)}
-                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                    className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 text-sm font-medium"
                   >
                     <PencilIcon className="h-4 w-4 mr-1" /> Editar
                   </button>
                   {s.is_active && (
                     <button
                       onClick={() => handleDelete(s.id)}
-                      className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
+                      className="flex items-center text-red-600 dark:text-red-400 hover:text-red-800 dark:text-red-300 text-sm font-medium"
                     >
                       <TrashIcon className="h-4 w-4 mr-1" /> Desactivar
                     </button>
@@ -1070,17 +1070,17 @@ export const DocumentSeriesPage: React.FC = () => {
               </div>
             ))}
             {selectedBranchSeries.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500 border border-gray-200">
+              <div className="bg-dm-bg-primary rounded-lg shadow-sm p-6 text-center text-dm-text-muted border border-dm-border-primary">
                 No se encontraron series en esta sucursal.
               </div>
             )}
           </div>
 
           {/* Desktop Table View - Branch Series */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-x-auto border border-gray-200">
+          <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto border border-dm-border-primary">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <thead className="bg-dm-bg-secondary">
+                <tr className="text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                   <th className="px-6 py-3">Tipo Documento</th>
                   <th className="px-6 py-3">Serie</th>
                   <th className="px-6 py-3">Número Actual</th>
@@ -1089,13 +1089,13 @@ export const DocumentSeriesPage: React.FC = () => {
                   <th className="px-6 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
                 {selectedBranchSeries.map((s) => (
                   <tr key={s.id}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <ClipboardDocumentListIcon className="h-5 w-5 text-gray-400 mr-3" />
-                        <div className="font-medium text-gray-900">
+                        <ClipboardDocumentListIcon className="h-5 w-5 text-dm-text-muted mr-3" />
+                        <div className="font-medium text-dm-text-primary">
                           {DOCUMENT_TYPE_OPTIONS.find((d) => d.code === s.document_type_code)
                             ?.name || s.document_type_code}
                         </div>
@@ -1110,8 +1110,8 @@ export const DocumentSeriesPage: React.FC = () => {
                       <span
                         className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           s.is_active
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+                            : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
                         }`}
                       >
                         {s.is_active ? 'Activo' : 'Inactivo'}
@@ -1120,14 +1120,14 @@ export const DocumentSeriesPage: React.FC = () => {
                     <td className="px-6 py-4 text-right space-x-2">
                       <button
                         onClick={() => handleOpenModal(s)}
-                        className="text-blue-600 hover:text-blue-900"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900"
                       >
                         <PencilIcon className="h-5 w-5" />
                       </button>
                       {s.is_active && (
                         <button
                           onClick={() => handleDelete(s.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 dark:text-red-400 hover:text-red-900 dark:text-red-200"
                         >
                           <TrashIcon className="h-5 w-5" />
                         </button>
@@ -1138,7 +1138,7 @@ export const DocumentSeriesPage: React.FC = () => {
               </tbody>
             </table>
             {selectedBranchSeries.length === 0 && (
-              <div className="p-6 text-center text-gray-500">
+              <div className="p-6 text-center text-dm-text-muted">
                 No se encontraron series en esta sucursal.
               </div>
             )}

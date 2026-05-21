@@ -434,17 +434,17 @@ export const DebitNoteFormPage: React.FC = () => {
             <ArrowLeftIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
           </div>
           <div>
-            <h1 className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <h1 className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Nueva Nota de Débito
             </h1>
-            <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+            <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
               Agregar cargos adicionales a un comprobante existente
             </p>
           </div>
         </div>
         <button
           onClick={() => navigate("/accounting/debit-notes")}
-          className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center"
+          className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary flex items-center"
         >
           <ArrowLeftIcon className="h-5 w-5 mr-2" />
           <span className="hidden sm:inline">Volver</span>
@@ -452,23 +452,23 @@ export const DebitNoteFormPage: React.FC = () => {
       </div>
 
       {!finalAffectedInvoice ? (
-        <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-6">
+        <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-6">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#cf1322]/10 shrink-0">
               <TrashIcon className="h-6 w-6 text-[#cf1322]" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-[15px] font-medium text-[#202020]">
+              <h3 className="text-[15px] font-medium text-dm-text-primary">
                 Error: No se encontró el comprobante
               </h3>
-              <p className="mt-1 text-[14px] text-[#4d4d4d]">
+              <p className="mt-1 text-[14px] text-dm-text-secondary">
                 No se pudo encontrar la información del comprobante para generar la nota de débito. Por favor, regrese a la lista de comprobantes y seleccione uno válido.
               </p>
               <div className="mt-4">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/accounting/debit-notes/new")}
-                  className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+                  className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary"
                 >
                   Seleccionar Comprobante
                 </Button>
@@ -478,29 +478,29 @@ export const DebitNoteFormPage: React.FC = () => {
         </div>
       ) : !getValidClientId(finalAffectedInvoice) ||
         getValidClientId(finalAffectedInvoice) === 0 ? (
-        <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-6">
+        <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-6">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#cf1322]/10 shrink-0">
               <TrashIcon className="h-6 w-6 text-[#cf1322]" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-[15px] font-medium text-[#202020]">
+              <h3 className="text-[15px] font-medium text-dm-text-primary">
                 Error: Cliente no válido
               </h3>
-              <p className="mt-1 text-[14px] text-[#4d4d4d]">
+              <p className="mt-1 text-[14px] text-dm-text-secondary">
                 El comprobante seleccionado no tiene un cliente válido asociado. No se puede generar una nota de débito sin esta información.
               </p>
-              <p className="mt-1 text-[14px] text-[#4d4d4d]">
+              <p className="mt-1 text-[14px] text-dm-text-secondary">
                 Comprobante: {finalAffectedInvoice.series}-{String(finalAffectedInvoice.number).padStart(8, "0")}
               </p>
-              <p className="text-[14px] text-[#4d4d4d]">
+              <p className="text-[14px] text-dm-text-secondary">
                 Cliente detectado: {finalAffectedInvoice.client_name || "No disponible"}
               </p>
               <div className="mt-4">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/accounting/debit-notes/new")}
-                  className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+                  className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary"
                 >
                   Seleccionar Otro Comprobante
                 </Button>
@@ -512,16 +512,16 @@ export const DebitNoteFormPage: React.FC = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Mostrar errores de validación */}
           {Object.keys(errors).length > 0 && (
-            <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+            <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
               <div className="flex items-start gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#cf1322]/10 shrink-0">
                   <TrashIcon className="h-6 w-6 text-[#cf1322]" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-[15px] font-medium text-[#202020]">
+                  <h3 className="text-[15px] font-medium text-dm-text-primary">
                     Error en el formulario
                   </h3>
-                  <div className="mt-2 text-[14px] text-[#4d4d4d]">
+                  <div className="mt-2 text-[14px] text-dm-text-secondary">
                     <ul className="list-disc list-inside space-y-1">
                       {Object.entries(errors).map(([field, error]) => {
                         if (field === 'items' && error?.message) {
@@ -586,46 +586,46 @@ export const DebitNoteFormPage: React.FC = () => {
             <div className="lg:col-span-2 space-y-6">
               {/* Card del comprobante afectado */}
               {finalAffectedInvoice && (
-                <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
+                <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-[18px] font-medium text-[#202020]">
+                    <h2 className="text-[18px] font-medium text-dm-text-primary">
                       Comprobante Afectado
                     </h2>
-                    <span className="rounded-full px-2.5 py-0.5 text-[12px] font-medium bg-[#f5f5f5] text-[#1F4690]">
+                    <span className="rounded-full px-2.5 py-0.5 text-[12px] font-medium bg-dm-bg-secondary text-[#1F4690]">
                       Seleccionado
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                      <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">
                         Número de Documento
                       </label>
-                      <p className="text-[18px] font-semibold text-[#202020]">
+                      <p className="text-[18px] font-semibold text-dm-text-primary">
                         {finalAffectedInvoice.series}-{String(finalAffectedInvoice.number).padStart(8, "0")}
                       </p>
                     </div>
 
                     <div>
-                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                      <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">
                         Cliente
                       </label>
-                      <p className="text-[14px] font-medium text-[#202020]">
+                      <p className="text-[14px] font-medium text-dm-text-primary">
                         {finalAffectedInvoice.client_name}
                       </p>
                     </div>
 
                     <div>
-                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                      <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">
                         Fecha de Emisión
                       </label>
-                      <p className="text-[14px] text-[#202020]">
+                      <p className="text-[14px] text-dm-text-primary">
                         {new Date(finalAffectedInvoice.issue_date).toLocaleDateString("es-PE")}
                       </p>
                     </div>
 
                     <div className="md:col-span-2 lg:col-span-1">
-                      <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1">
+                      <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1">
                         Monto Original
                       </label>
                       <p className="text-[24px] font-semibold text-[#1F4690]">
@@ -642,13 +642,13 @@ export const DebitNoteFormPage: React.FC = () => {
               )}
 
               {/* Sección de información del cargo */}
-              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-                <h2 className="text-[18px] font-medium text-[#202020] mb-4 pb-3 border-b border-[#f0f0f0]">
+              <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+                <h2 className="text-[18px] font-medium text-dm-text-primary mb-4 pb-3 border-b border-dm-border-secondary">
                   Información del Cargo
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                    <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                       Serie ND
                     </label>
                     <Controller
@@ -658,7 +658,7 @@ export const DebitNoteFormPage: React.FC = () => {
                         <div className="relative">
                           <select
                             {...field}
-                            className="peer w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
+                            className="peer w-full appearance-none px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
                             disabled={isLoadingSeries || availableDebitNoteSeries.length === 0}
                           >
                             {availableDebitNoteSeries.length === 0 ? (
@@ -672,7 +672,7 @@ export const DebitNoteFormPage: React.FC = () => {
                               ))
                             )}
                           </select>
-                          <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                          <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
                         </div>
                       )}
                     />
@@ -682,7 +682,7 @@ export const DebitNoteFormPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                    <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                       Motivo
                     </label>
                     <Controller
@@ -692,20 +692,20 @@ export const DebitNoteFormPage: React.FC = () => {
                         <div className="relative">
                           <select
                             {...field}
-                            className="peer w-full appearance-none px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
+                            className="peer w-full appearance-none px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
                           >
                             {DEBIT_NOTE_REASONS.map((r) => (
                               <option key={r.code} value={r.code}>{r.description}</option>
                             ))}
                           </select>
-                          <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282] rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
+                          <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" />
                         </div>
                       )}
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                    <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                       Descripción / Sustento
                     </label>
                     <Controller
@@ -715,7 +715,7 @@ export const DebitNoteFormPage: React.FC = () => {
                         <textarea
                           {...field}
                           rows={3}
-                          className="w-full px-3 py-2.5 bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
+                          className="w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all resize-none"
                           placeholder="Describa el motivo del cargo adicional..."
                         />
                       )}
@@ -723,8 +723,8 @@ export const DebitNoteFormPage: React.FC = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <div className="bg-[#f5f5f5] rounded-[12px] p-4 border border-[#e8e8e8]">
-                      <p className="text-[14px] text-[#4d4d4d]">
+                    <div className="bg-dm-bg-secondary rounded-[12px] p-4 border border-dm-border-primary">
+                      <p className="text-[14px] text-dm-text-secondary">
                         Precio sin IGV (región amazónica exonerada)
                       </p>
                     </div>
@@ -733,9 +733,9 @@ export const DebitNoteFormPage: React.FC = () => {
               </div>
 
               {/* Sección de cargos adicionales */}
-              <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#f0f0f0]">
-                  <h2 className="text-[18px] font-medium text-[#202020]">
+              <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-dm-border-secondary">
+                  <h2 className="text-[18px] font-medium text-dm-text-primary">
                     Cargos Adicionales a Incluir
                   </h2>
                   <button
@@ -745,7 +745,7 @@ export const DebitNoteFormPage: React.FC = () => {
                       e.stopPropagation();
                       append({ ...DEFAULT_ITEM, tax_category_code: "20" });
                     }}
-                    className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex items-center"
+                    className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary flex items-center"
                   >
                     <PlusIcon className="h-4 w-4 mr-2" />
                     Agregar Cargo
@@ -756,14 +756,14 @@ export const DebitNoteFormPage: React.FC = () => {
                   {fields.map((f, idx) => (
                     <div
                       key={f.id}
-                      className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5"
+                      className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5"
                     >
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center justify-center w-6 h-6 bg-[#1F4690] text-white text-[12px] font-medium rounded-full">
                             {idx + 1}
                           </span>
-                          <h3 className="font-medium text-[14px] text-[#202020]">
+                          <h3 className="font-medium text-[14px] text-dm-text-primary">
                             Cargo #{idx + 1}
                           </h3>
                         </div>
@@ -771,7 +771,7 @@ export const DebitNoteFormPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => remove(idx)}
-                            className="flex items-center justify-center h-9 w-9 rounded-full bg-[#f5f5f5] hover:bg-[#e8e8e8] transition-colors"
+                            className="flex items-center justify-center h-9 w-9 rounded-full bg-dm-bg-secondary hover:bg-dm-bg-hover transition-colors"
                             title="Eliminar cargo"
                           >
                             <TrashIcon className="h-4 w-4 text-[#cf1322]" />
@@ -781,7 +781,7 @@ export const DebitNoteFormPage: React.FC = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                         <div className="md:col-span-2 lg:col-span-2">
-                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                          <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                             Servicio <span className="text-[#cf1322]">*</span>
                           </label>
                           <Controller
@@ -813,14 +813,14 @@ export const DebitNoteFormPage: React.FC = () => {
                             )}
                           />
                           {(!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0) && (
-                            <p className="mt-2 text-[13px] text-[#4d4d4d] bg-[#f5f5f5] p-2.5 rounded-[12px] border border-[#e8e8e8]">
+                            <p className="mt-2 text-[13px] text-dm-text-secondary bg-dm-bg-secondary p-2.5 rounded-[12px] border border-dm-border-primary">
                               Selecciona un servicio para habilitar los campos de cantidad y precios
                             </p>
                           )}
                         </div>
 
                         <div>
-                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                          <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                             Cantidad <span className="text-[#cf1322]">*</span>
                           </label>
                           <Controller
@@ -832,14 +832,14 @@ export const DebitNoteFormPage: React.FC = () => {
                                 type="number"
                                 step="0.01"
                                 disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
-                                className={`block w-full px-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] focus:outline-none transition-all ${
+                                className={`block w-full px-3 py-2.5 border rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none transition-all ${
                                   errors.items?.[idx]?.quantity
                                     ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
-                                    : 'border-[#e8e8e8] focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
+                                    : 'border-dm-border-primary focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
                                 } ${
                                   (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
-                                    ? 'bg-[#f5f5f5] cursor-not-allowed'
-                                    : 'bg-[#f5f5f5]'
+                                    ? 'bg-dm-bg-secondary cursor-not-allowed'
+                                    : 'bg-dm-bg-secondary'
                                 }`}
                                 placeholder="1.00"
                                 onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
@@ -852,7 +852,7 @@ export const DebitNoteFormPage: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                          <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                             Código Unidad <span className="text-[#cf1322]">*</span>
                           </label>
                           <Controller
@@ -862,14 +862,14 @@ export const DebitNoteFormPage: React.FC = () => {
                               <input
                                 {...field}
                                 disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
-                                className={`block w-full px-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] focus:outline-none transition-all ${
+                                className={`block w-full px-3 py-2.5 border rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none transition-all ${
                                   errors.items?.[idx]?.unit_code
                                     ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
-                                    : 'border-[#e8e8e8] focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
+                                    : 'border-dm-border-primary focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
                                 } ${
                                   (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
-                                    ? 'bg-[#f5f5f5] cursor-not-allowed'
-                                    : 'bg-[#f5f5f5]'
+                                    ? 'bg-dm-bg-secondary cursor-not-allowed'
+                                    : 'bg-dm-bg-secondary'
                                 }`}
                                 placeholder="ZZ"
                               />
@@ -881,7 +881,7 @@ export const DebitNoteFormPage: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                          <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                             Precio Unitario <span className="text-[#cf1322]">*</span>
                           </label>
                           <Controller
@@ -889,20 +889,20 @@ export const DebitNoteFormPage: React.FC = () => {
                             control={control}
                             render={({ field }) => (
                               <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#828282] text-[14px]">S/</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dm-text-muted text-[14px]">S/</span>
                                 <input
                                   {...field}
                                   type="number"
                                   step="0.01"
                                   disabled={!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0}
-                                  className={`block w-full pl-8 pr-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] focus:outline-none transition-all ${
+                                  className={`block w-full pl-8 pr-3 py-2.5 border rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none transition-all ${
                                     errors.items?.[idx]?.unit_price
                                       ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
-                                      : 'border-[#e8e8e8] focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
+                                      : 'border-dm-border-primary focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690]'
                                   } ${
                                     (!watchedItems[idx]?.product_id || watchedItems[idx]?.product_id === 0)
-                                      ? 'bg-[#f5f5f5] cursor-not-allowed'
-                                      : 'bg-[#f5f5f5]'
+                                      ? 'bg-dm-bg-secondary cursor-not-allowed'
+                                      : 'bg-dm-bg-secondary'
                                   }`}
                                   placeholder="0.00"
                                   onChange={(e) => {
@@ -920,7 +920,7 @@ export const DebitNoteFormPage: React.FC = () => {
                         </div>
 
                         <div>
-                          <label className="block text-[12px] font-semibold text-[#828282] uppercase tracking-wider mb-1.5">
+                          <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
                             Precio Final <span className="text-[#cf1322]">*</span>
                           </label>
                           <Controller
@@ -928,16 +928,16 @@ export const DebitNoteFormPage: React.FC = () => {
                             control={control}
                             render={({ field }) => (
                               <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#828282] text-[14px]">S/</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dm-text-muted text-[14px]">S/</span>
                                 <input
                                   {...field}
                                   type="number"
                                   step="0.01"
                                   readOnly
-                                  className={`block w-full pl-8 pr-3 py-2.5 border rounded-[12px] text-[14px] text-[#202020] bg-[#f5f5f5] cursor-not-allowed focus:outline-none ${
+                                  className={`block w-full pl-8 pr-3 py-2.5 border rounded-[12px] text-[14px] text-dm-text-primary bg-dm-bg-secondary cursor-not-allowed focus:outline-none ${
                                     errors.items?.[idx]?.price_with_tax
                                       ? 'border-[#cf1322] focus:ring-2 focus:ring-[#cf1322]/20 focus:border-[#cf1322]'
-                                      : 'border-[#e8e8e8]'
+                                      : 'border-dm-border-primary'
                                   }`}
                                   placeholder="0.00"
                                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
@@ -970,46 +970,46 @@ export const DebitNoteFormPage: React.FC = () => {
             {/* Columna derecha - Panel de resumen */}
             <div className="space-y-6">
               <div className="lg:sticky lg:top-8 space-y-6">
-                <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4 lg:p-5 space-y-4">
-                  <h3 className="text-[18px] font-medium text-[#202020] pb-3 border-b border-[#f0f0f0]">
+                <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5 space-y-4">
+                  <h3 className="text-[18px] font-medium text-dm-text-primary pb-3 border-b border-dm-border-secondary">
                     Resumen de Totales
                   </h3>
 
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-[14px] text-[#4d4d4d]">Monto Original</span>
-                      <span className="text-[14px] font-medium text-[#202020]">
+                      <span className="text-[14px] text-dm-text-secondary">Monto Original</span>
+                      <span className="text-[14px] font-medium text-dm-text-primary">
                         {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(originalAmount)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[14px] text-[#4d4d4d]">Cargos Adicionales (Base)</span>
-                      <span className="text-[14px] font-medium text-[#202020]">
+                      <span className="text-[14px] text-dm-text-secondary">Cargos Adicionales (Base)</span>
+                      <span className="text-[14px] font-medium text-dm-text-primary">
                         {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(baseAmount)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[14px] text-[#4d4d4d]">Total Cargos Adicionales</span>
+                      <span className="text-[14px] text-dm-text-secondary">Total Cargos Adicionales</span>
                       <span className="text-[18px] font-semibold text-[#1F4690]">
                         {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(additionalTotal)}
                       </span>
                     </div>
-                    <div className="border-t border-[#f0f0f0] pt-3">
+                    <div className="border-t border-dm-border-secondary pt-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-[14px] font-medium text-[#202020]">Nuevo Monto Total</span>
+                        <span className="text-[14px] font-medium text-dm-text-primary">Nuevo Monto Total</span>
                         <span className="text-[24px] font-bold text-[#1F4690]">
                           {new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(newTotal)}
                         </span>
                       </div>
-                      <p className="text-[12px] text-[#828282] mt-1 text-right">Sin IGV (exonerado)</p>
+                      <p className="text-[12px] text-dm-text-muted mt-1 text-right">Sin IGV (exonerado)</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#f0f0f0]">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-dm-border-secondary">
                     <button
                       type="button"
                       onClick={() => navigate("/accounting/debit-notes")}
-                      className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5] flex-1"
+                      className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary flex-1"
                     >
                       Cancelar
                     </button>
@@ -1023,11 +1023,11 @@ export const DebitNoteFormPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
-                  <h4 className="text-[15px] font-medium text-[#202020] mb-2">
+                <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
+                  <h4 className="text-[15px] font-medium text-dm-text-primary mb-2">
                     Información Importante
                   </h4>
-                  <div className="text-[13px] text-[#4d4d4d] space-y-1">
+                  <div className="text-[13px] text-dm-text-secondary space-y-1">
                     <p>• Las notas de débito aumentan el valor de la deuda</p>
                     <p>• Se enviarán a SUNAT automáticamente</p>
                     <p>• Los precios son sin IGV (exonerados)</p>
@@ -1047,23 +1047,23 @@ export const DebitNoteFormPage: React.FC = () => {
           title="Confirmar generación de Nota de Débito"
         >
           <div className="space-y-4">
-            <p className="text-[14px] text-[#4d4d4d]">
+            <p className="text-[14px] text-dm-text-secondary">
               Se generará una Nota de Débito por{" "}
-              <strong className="text-[#202020]">{formattedAdditionalTotal}</strong>
+              <strong className="text-dm-text-primary">{formattedAdditionalTotal}</strong>
               {affectedSeriesNumber
                 ? ` asociada al comprobante ${affectedSeriesNumber}.`
                 : "."}
             </p>
-            <div className="bg-[#f5f5f5] p-3 rounded-[12px] text-[14px] text-[#4d4d4d]">
+            <div className="bg-dm-bg-secondary p-3 rounded-[12px] text-[14px] text-dm-text-secondary">
               <p>
-                <strong className="text-[#202020]">Categoría de impuesto:</strong> Exonerado (20)
+                <strong className="text-dm-text-primary">Categoría de impuesto:</strong> Exonerado (20)
               </p>
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setShowConfirmModal(false)}
-                className="rounded-full px-4 py-2.5 bg-white border border-[#e8e8e8] text-[14px] font-medium text-[#202020] hover:bg-[#f5f5f5]"
+                className="rounded-full px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary"
               >
                 Cancelar
               </button>

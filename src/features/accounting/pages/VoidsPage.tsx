@@ -120,11 +120,11 @@ export const VoidsPage: React.FC = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Comunicaciones de Baja</h1>
-        <p className="text-gray-500">Anulación de facturas informadas a SUNAT.</p>
+        <h1 className="text-2xl font-bold text-dm-text-primary">Comunicaciones de Baja</h1>
+        <p className="text-dm-text-muted">Anulación de facturas informadas a SUNAT.</p>
       </div>
       {/* SECCIÓN PARA CREAR NUEVA COMUNICACIÓN */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border space-y-4">
+      <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border space-y-4">
         <h2 className="text-lg font-semibold">Nueva Comunicación de Baja</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
@@ -144,7 +144,7 @@ export const VoidsPage: React.FC = () => {
         {itemsToVoid.length > 0 && (
           <div className="border-t pt-4">
             <h3 className="text-sm font-medium mb-2">Facturas a anular:</h3>
-            <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+            <ul className="list-disc list-inside text-sm text-dm-text-secondary space-y-1">
               {itemsToVoid.map(item => (
                 <li key={`${item.series}-${item.number}`}>{item.series}-{item.number}</li>
               ))}
@@ -161,7 +161,7 @@ export const VoidsPage: React.FC = () => {
       {/* SECCIÓN PARA LISTAR DOCUMENTOS ANULABLES */}
       <div className="mt-8">
         <h2 className="text-lg font-semibold mb-4">Documentos Disponibles para Anulación</h2>
-        <p className="text-gray-600 mb-4">Lista de documentos aceptados por SUNAT que pueden ser dados de baja.</p>
+        <p className="text-dm-text-secondary mb-4">Lista de documentos aceptados por SUNAT que pueden ser dados de baja.</p>
         <DataTable
           columns={voidableInvoicesColumns}
           data={voidableInvoices}

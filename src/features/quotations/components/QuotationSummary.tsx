@@ -41,27 +41,27 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
   return (
     <div className={className || 'space-y-6'}>
       {/* Tarjeta principal resumen */}
-      <div className={`bg-white rounded-xl border border-slate-200 shadow-sm ${stickySidebar ? 'sticky top-28 max-h-[calc(100vh-120px)] overflow-y-auto' : ''} ${compact ? 'p-4' : 'p-6'}`}>
-        <h3 className={`font-bold text-gray-900 ${compact ? 'text-base mb-4' : 'text-lg mb-6'}`}>Resumen</h3>
+      <div className={`bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm ${stickySidebar ? 'sticky top-28 max-h-[calc(100vh-120px)] overflow-y-auto' : ''} ${compact ? 'p-4' : 'p-6'}`}>
+        <h3 className={`font-bold text-dm-text-primary ${compact ? 'text-base mb-4' : 'text-lg mb-6'}`}>Resumen</h3>
 
         {/* Números */}
         <div className={`text-sm ${compact ? 'space-y-2.5' : 'space-y-4'}`}>
-          <div className="flex justify-between text-slate-500">
+          <div className="flex justify-between text-dm-text-muted">
             <span>Subtotal</span>
-            <span className="text-slate-900 font-medium">{fmt(subtotal)}</span>
+            <span className="text-dm-text-primary font-medium">{fmt(subtotal)}</span>
           </div>
-          <div className="flex justify-between text-slate-500">
+          <div className="flex justify-between text-dm-text-muted">
             <span>Descuentos</span>
-            <span className="text-slate-900 font-medium">-{fmt(totalDiscount)}</span>
+            <span className="text-dm-text-primary font-medium">-{fmt(totalDiscount)}</span>
           </div>
           {includeIGV && (
-            <div className="flex justify-between text-slate-500">
+            <div className="flex justify-between text-dm-text-muted">
               <span>IGV (18%)</span>
-              <span className="text-slate-900 font-medium">{fmt(igv)}</span>
+              <span className="text-dm-text-primary font-medium">{fmt(igv)}</span>
             </div>
           )}
-          <div className={`border-t border-slate-100 flex justify-between items-end ${compact ? 'pt-2' : 'pt-4'}`}>
-            <span className="font-bold text-slate-900">Total Neto</span>
+          <div className={`border-t border-dm-border-secondary flex justify-between items-end ${compact ? 'pt-2' : 'pt-4'}`}>
+            <span className="font-bold text-dm-text-primary">Total Neto</span>
             <span className="text-2xl font-black text-primary">{fmt(total)}</span>
           </div>
         </div>
@@ -85,7 +85,7 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className={`w-full px-4 text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all ${compact ? 'py-3' : 'py-3'}`}
+            className={`w-full px-4 text-sm font-semibold text-dm-text-secondary bg-dm-bg-secondary hover:bg-dm-bg-hover rounded-lg transition-all ${compact ? 'py-3' : 'py-3'}`}
           >
             Cancelar Operación
           </button>
@@ -97,7 +97,7 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
             <ShieldCheckIcon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-primary uppercase tracking-wide">Seguridad</p>
-              <p className="text-[10px] text-slate-500 leading-tight mt-0.5">
+              <p className="text-[10px] text-dm-text-muted leading-tight mt-0.5">
                 Esta cotización cumple con los estándares fiscales vigentes.
               </p>
             </div>

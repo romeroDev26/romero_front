@@ -18,22 +18,22 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">
-        <p className="text-sm font-medium text-gray-900 mb-2">{data.name}</p>
+      <div className="bg-dm-bg-primary px-4 py-3 shadow-lg rounded-lg border border-dm-border-secondary">
+        <p className="text-sm font-medium text-dm-text-primary mb-2">{data.name}</p>
         <div className="flex items-center gap-2 text-sm">
           <div 
             className="w-3 h-3 rounded-full" 
             style={{ backgroundColor: data.color }}
           />
-          <span className="text-gray-600">Monto:</span>
-          <span className="font-semibold text-gray-900">
+          <span className="text-dm-text-secondary">Monto:</span>
+          <span className="font-semibold text-dm-text-primary">
             S/ {Number(data.value).toLocaleString('es-PE', { minimumFractionDigits: 2 })}
           </span>
         </div>
         <div className="flex items-center gap-2 text-sm mt-1">
-          <div className="w-3 h-3 rounded-full bg-gray-300" />
-          <span className="text-gray-600">Transacciones:</span>
-          <span className="font-semibold text-gray-900">{data.count}</span>
+          <div className="w-3 h-3 rounded-full bg-dm-text-muted" />
+          <span className="text-dm-text-secondary">Transacciones:</span>
+          <span className="font-semibold text-dm-text-primary">{data.count}</span>
         </div>
       </div>
     );
@@ -52,10 +52,10 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">
         <div className="animate-pulse">
-          <div className="h-5 bg-gray-200 rounded w-1/3 mb-6"></div>
-          <div className="h-64 bg-gray-100 rounded-lg"></div>
+          <div className="h-5 bg-dm-bg-secondary rounded w-1/3 mb-6"></div>
+          <div className="h-64 bg-dm-bg-secondary rounded-lg"></div>
         </div>
       </div>
     );
@@ -73,12 +73,12 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-base font-semibold text-gray-900">
+        <h3 className="text-base font-semibold text-dm-text-primary">
           Métodos de Pago
         </h3>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-dm-text-muted">
           {chartData.length} métodos
         </span>
       </div>
@@ -133,17 +133,17 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
                     className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: MODERN_COLORS[index % MODERN_COLORS.length] }}
                   />
-                  <span className="font-medium text-gray-700">{item.name}</span>
-                  <span className="text-gray-500">({item.count})</span>
+                  <span className="font-medium text-dm-text-secondary">{item.name}</span>
+                  <span className="text-dm-text-muted">({item.count})</span>
                 </div>
                 <div className="text-right">
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-semibold text-dm-text-primary">
                     S/ {item.value.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>
               {/* Barra de progreso */}
-              <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-dm-bg-secondary rounded-full h-2 overflow-hidden">
                 <div
                   className="h-2 rounded-full transition-all duration-500 ease-out"
                   style={{
@@ -159,10 +159,10 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
       </div>
         
       {/* Total */}
-      <div className="pt-4 mt-4 border-t border-gray-200">
+      <div className="pt-4 mt-4 border-t border-dm-border-primary">
         <div className="flex justify-between items-center">
-          <span className="text-sm font-semibold text-gray-900">Total</span>
-          <span className="text-base font-bold text-gray-900">
+          <span className="text-sm font-semibold text-dm-text-primary">Total</span>
+          <span className="text-base font-bold text-dm-text-primary">
             S/ {total.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>

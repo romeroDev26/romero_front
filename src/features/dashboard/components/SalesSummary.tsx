@@ -14,11 +14,11 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-5">
+          <div key={i} className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-5">
             <div className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-24 mb-3"></div>
-              <div className="h-8 bg-gray-200 rounded w-32 mb-2"></div>
-              <div className="h-3 bg-gray-100 rounded w-16"></div>
+              <div className="h-4 bg-dm-bg-secondary rounded w-24 mb-3"></div>
+              <div className="h-8 bg-dm-bg-secondary rounded w-32 mb-2"></div>
+              <div className="h-3 bg-dm-bg-secondary rounded w-16"></div>
             </div>
           </div>
         ))}
@@ -31,8 +31,8 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
       label: 'Total Documentos',
       value: summary.totalDocumentos,
       icon: FileText,
-      iconColor: 'text-blue-600',
-      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconBg: 'bg-blue-50 dark:bg-blue-950/30',
       subtext: 'documentos emitidos',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -41,8 +41,8 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
       label: 'Ventas Totales',
       value: summary.totalVentas,
       icon: TrendingUp,
-      iconColor: 'text-emerald-600',
-      iconBg: 'bg-emerald-50',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'bg-emerald-50 dark:bg-emerald-950/30',
       subtext: 'ingresos generados',
       prefix: 'S/ ',
       minimumFractionDigits: 2,
@@ -52,8 +52,8 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
       label: 'Descuentos',
       value: summary.totalDescuentos,
       icon: Tag,
-      iconColor: 'text-orange-600',
-      iconBg: 'bg-orange-50',
+      iconColor: 'text-orange-600 dark:text-orange-400',
+      iconBg: 'bg-orange-50 dark:bg-orange-950/30',
       subtext: 'total descuentos',
       prefix: 'S/ ',
       minimumFractionDigits: 2,
@@ -79,10 +79,10 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
         return (
           <div 
             key={index}
-            className="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-all duration-200"
+            className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-5 hover:border-dm-border-primary transition-all duration-200"
           >
             <div className="flex items-start justify-between mb-3">
-              <span className="text-sm font-medium text-gray-600">
+              <span className="text-sm font-medium text-dm-text-secondary">
                 {metric.label}
               </span>
               <div className={`${metric.iconBg} p-2 rounded-md`}>
@@ -90,7 +90,7 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
               </div>
             </div>
             <div className="mt-2">
-              <p className="text-2xl font-semibold text-gray-900">
+              <p className="text-2xl font-semibold text-dm-text-primary">
                 <AnimatedCounter
                   value={metric.value}
                   prefix={metric.prefix}
@@ -98,7 +98,7 @@ export const SalesSummary: React.FC<SalesSummaryProps> = ({ summary, isLoading =
                   maximumFractionDigits={metric.maximumFractionDigits}
                 />
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-dm-text-muted mt-1">
                 {metric.subtext}
               </p>
             </div>

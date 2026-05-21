@@ -189,7 +189,7 @@ export const CreditNotesListPage: React.FC = () => {
           href={note.pdf_a4_file_path}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#cf1322] hover:bg-red-50 dark:bg-red-950/30 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#cf1322] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
           title="Descargar PDF A4"
         >
           <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -200,7 +200,7 @@ export const CreditNotesListPage: React.FC = () => {
           href={note.pdf_ticket_file_path}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#237804] hover:bg-green-50 dark:bg-green-950/30 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#237804] hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
           title="Descargar Ticket 80mm"
         >
           <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -398,7 +398,7 @@ export const CreditNotesListPage: React.FC = () => {
                             href={note.pdf_a4_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#cf1322] hover:bg-red-50 dark:bg-red-950/30 transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#cf1322] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                             title="Descargar PDF A4"
                           >
                             <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -409,7 +409,7 @@ export const CreditNotesListPage: React.FC = () => {
                             href={note.pdf_ticket_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#237804] hover:bg-green-50 dark:bg-green-950/30 transition-colors"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#237804] hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors"
                             title="Descargar Ticket 80mm"
                           >
                             <DocumentTextIcon className="h-4 w-4" strokeWidth={1.5} />

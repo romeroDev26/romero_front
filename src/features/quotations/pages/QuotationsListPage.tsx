@@ -650,7 +650,7 @@ export const QuotationsListPage: React.FC = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => navigate(`/sales/quotations/${quotation.id}`)}
-                            className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-indigo-50 dark:bg-indigo-950/30 hover:text-indigo-600 dark:text-indigo-400"
+                            className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:text-indigo-600 dark:text-indigo-400"
                             title="Ver detalle"
                           >
                             <EyeIcon className="h-4 w-4" />
@@ -658,7 +658,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status !== 'CONVERTED' && (
                             <button
                               onClick={() => navigate(`/sales/quotations/${quotation.id}/edit`)}
-                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-amber-50 dark:bg-amber-950/30 hover:text-amber-600 dark:text-amber-400"
+                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:text-amber-400"
                               title="Editar"
                             >
                               <PencilSquareIcon className="h-4 w-4" />
@@ -667,7 +667,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status === 'DRAFT' && (
                             <button
                               onClick={() => handleDelete(quotation.id)}
-                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-red-50 dark:bg-red-950/30 hover:text-red-600 dark:text-red-400"
+                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:text-red-400"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />

@@ -261,4 +261,4 @@ Antes de dar por terminada cada fase, ejecutar:
 | DatePicker wrappers (`bg-white`, `border-gray-200`) | Convertidos a `dm-*` tokens en todas las features (Fase C–E) |
 | Scrollbar utilities con hex fijos | Variables CSS `--scrollbar-*` en `:root`/`.dark` (Fase F.3) |
 | Colores hex hardcoded (`#e8e8e8`, `#f5f5f5`, `#202020`, etc.) | Mapeados a tokens semánticos `dm-*` en batch + correcciones manuales |
-| Variantes `dark:` duplicadas por script | Limpieza masiva con regex en ~150 archivos |
+| Variantes `dark:` duplicadas por script | Limpieza masiva con regex en ~150 archivos | 

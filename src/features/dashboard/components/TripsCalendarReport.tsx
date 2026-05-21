@@ -263,7 +263,7 @@ export const TripsCalendarReport: React.FC = () => {
                   key={dateKey}
                   onClick={() => hasTrips && handleDayClick(date)}
                   className={`h-24 p-2 border-b border-r border-dm-border-secondary transition-all ${
-                    hasTrips ? 'cursor-pointer hover:bg-indigo-50 dark:bg-indigo-950/30' : ''
+                    hasTrips ? 'cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-950/30' : ''
                   } ${isSelected ? 'bg-indigo-100 dark:bg-indigo-900/40 ring-2 ring-indigo-500' : ''}`}
                 >
                   <div className="flex items-start justify-between">

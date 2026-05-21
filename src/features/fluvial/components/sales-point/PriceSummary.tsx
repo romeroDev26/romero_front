@@ -30,7 +30,7 @@ interface PriceSummaryProps {
 const lbl =
   "block text-dm-text-muted text-[11px] font-medium uppercase tracking-wider mb-1.5 ml-1";
 const fieldShell =
-  "w-full bg-dm-bg-secondary border-0 rounded-lg py-3 px-4 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-50";
+  "w-full bg-dm-bg-secondary border border-dm-border-primary rounded-lg py-3 px-4 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-50";
 
 const stopWheel: React.WheelEventHandler<HTMLInputElement> = (e) => {
   e.currentTarget.blur();
@@ -109,7 +109,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
                 step="0.1"
                 min={0}
                 max={10000}
-                className="w-full rounded-lg border-0 bg-dm-bg-secondary py-4 pl-10 pr-4 text-2xl font-extrabold text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-4 pl-10 pr-4 text-2xl font-extrabold text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                 required
               />
             </div>
@@ -299,7 +299,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
               step="0.1"
               min={0}
               max={maxDiscountAllowed}
-              className="max-w-[7.5rem] rounded-lg border-0 bg-dm-bg-secondary py-2 px-3 text-right text-sm font-medium text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="max-w-[7.5rem] rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2 px-3 text-right text-sm font-medium text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
 

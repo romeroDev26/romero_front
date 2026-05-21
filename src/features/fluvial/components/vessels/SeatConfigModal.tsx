@@ -231,7 +231,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
                   <Button
                     type="button"
                     variant="outline"
-                    className="!p-2.5 text-red-600 dark:text-red-400 border-red-200 hover:bg-red-50 dark:bg-red-950/30"
+                    className="!p-2.5 text-red-600 dark:text-red-400 border-red-200 hover:bg-red-50 dark:hover:bg-red-950/30"
                     onClick={() => handleRemoveRow(index, config.id)}
                     title="Eliminar"
                   >

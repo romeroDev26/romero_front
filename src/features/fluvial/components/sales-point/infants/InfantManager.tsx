@@ -44,7 +44,7 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
         <button
           type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-amber-700 dark:text-amber-300 transition-colors hover:bg-amber-50 dark:bg-amber-950/30/60"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-amber-700 dark:text-amber-300 transition-colors hover:bg-amber-50 dark:hover:bg-amber-950/30/60"
         >
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-amber-100">
             <Baby className="h-4 w-4 text-amber-600 dark:text-amber-400" />
@@ -94,7 +94,7 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowForm(true)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-dm-bg-primary px-3 py-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-300 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 dark:bg-amber-950/30"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-dm-bg-primary px-3 py-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-300 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
                 >
                   <Plus className="h-3 w-3" />
                   Agregar
@@ -132,7 +132,7 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-dm-bg-primary px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 dark:bg-amber-950/30"
+            className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-dm-bg-primary px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
           >
             <Plus className="h-3 w-3" />
             Agregar

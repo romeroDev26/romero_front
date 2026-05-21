@@ -85,6 +85,12 @@
   body {
     @apply font-sans;
     background-color: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-muted);
   }
   #root {
     @apply min-h-screen w-full;

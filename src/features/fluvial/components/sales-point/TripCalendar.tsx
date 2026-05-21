@@ -114,14 +114,14 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
                 relative p-2 h-12 rounded-lg text-center cursor-pointer transition-all
                 ${isPastDate 
                   ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed' 
-                  : 'hover:bg-blue-50 dark:bg-blue-950/30'
+                  : 'hover:bg-blue-50 dark:hover:bg-blue-950/30'
                 }
                 ${isSelected && !isPastDate 
-                  ? 'bg-blue-500 text-white' 
+                  ? 'bg-blue-600 dark:bg-blue-400 text-white shadow-lg shadow-blue-500/30' 
                   : ''
                 }
                 ${isCurrentDay && !isSelected && !isPastDate 
-                  ? 'ring-2 ring-blue-500 ring-inset' 
+                  ? 'ring-2 ring-blue-500 dark:ring-blue-400 ring-inset bg-blue-50 dark:bg-blue-900/30' 
                   : ''
                 }
               `}
@@ -135,7 +135,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
                 <div className={`
                   absolute bottom-1 left-1/2 transform -translate-x-1/2 
                   w-2 h-2 rounded-full
-                  ${isSelected ? 'bg-dm-bg-primary' : 'bg-blue-500'}
+                  ${isSelected ? 'bg-white' : 'bg-blue-500 dark:bg-blue-400'}
                 `} />
               )}
               
@@ -159,7 +159,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
           <span>Viajes disponibles</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 ring-2 ring-blue-500 rounded"></div>
+          <div className="w-3 h-3 ring-2 ring-blue-500 dark:ring-blue-400 rounded"></div>
           <span>Hoy</span>
         </div>
       </div>

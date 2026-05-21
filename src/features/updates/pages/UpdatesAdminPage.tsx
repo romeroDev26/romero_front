@@ -141,7 +141,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
               enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
               leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-xl bg-dm-bg-primary rounded-2xl shadow-2xl overflow-hidden">
+              <Dialog.Panel className="w-full max-w-xl bg-dm-bg-primary rounded-2xl shadow-2xl border border-dm-border-primary overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-dm-border-secondary">
                   <Dialog.Title className="text-base font-bold text-dm-text-primary">

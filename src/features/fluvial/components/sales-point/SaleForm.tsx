@@ -142,8 +142,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
     return (
       <>
         {isProcessingSale && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-dm-bg-primary rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="bg-dm-bg-primary rounded-lg p-8 shadow-2xl border border-dm-border-primary flex flex-col items-center space-y-4">
               <Spinner />
               <div className="text-center">
                 <h3 className="text-xl font-bold text-dm-text-primary mb-2">
@@ -519,7 +519,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                                     ? handleFacturaSeriesChange(e.target.value)
                                     : handleBoletaSeriesChange(e.target.value)
                                 }
-                                className="w-full min-w-0 appearance-none rounded-lg border-0 bg-dm-bg-secondary py-3 pl-4 pr-11 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="w-full min-w-0 appearance-none rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-3 pl-4 pr-11 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
                                 disabled={
                                   (isRuc
                                     ? availableFacturaSeries.length
@@ -565,7 +565,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                               }}
                               placeholder="Ej. Servicio de transporte"
                               rows={2}
-                              className="w-full rounded-lg border-0 bg-dm-bg-secondary py-3 px-4 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[80px]"
+                              className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-3 px-4 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[80px]"
                             />
                             <p className="mt-1 text-[10px] text-dm-text-muted">
                               {(itemDescription || "").length}/500 caracteres
@@ -684,7 +684,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                             setShowRepresentatives(!showRepresentatives)
                           }
                           variant="outline"
-                          className="w-full text-base lg:text-lg py-2.5 lg:py-3 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:bg-blue-950/30"
+                          className="w-full text-base lg:text-lg py-2.5 lg:py-3 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                         >
                           <ClipboardDocumentListIcon className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                           {showRepresentatives ? "Ocultar" : "Gestionar"}{" "}

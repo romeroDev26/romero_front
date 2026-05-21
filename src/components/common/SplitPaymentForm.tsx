@@ -64,19 +64,19 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
   const isBilling = variant === 'billing';
 
   const selectBillingClass =
-    'w-full min-w-0 bg-dm-bg-secondary border-0 rounded-lg py-3 pl-4 pr-11 text-sm text-dm-text-primary appearance-none focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed';
+    'w-full min-w-0 bg-dm-bg-secondary border border-dm-border-primary rounded-lg py-3 pl-4 pr-11 text-sm text-dm-text-primary appearance-none focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed';
   const selectDefaultClass =
     'w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary disabled:bg-dm-bg-secondary text-sm text-dm-text-primary';
   const selectClass = isBilling ? selectBillingClass : selectDefaultClass;
 
   const opInputBillingClass =
-    'w-full py-2.5 px-4 bg-dm-bg-secondary border-0 rounded-lg text-sm text-dm-text-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60';
+    'w-full py-2.5 px-4 bg-dm-bg-secondary border border-dm-border-primary rounded-lg text-sm text-dm-text-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60';
   const opInputDefaultClass =
     'w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm text-dm-text-primary';
   const opInputClass = isBilling ? opInputBillingClass : opInputDefaultClass;
 
   const amountNumClass = isBilling
-    ? 'w-full py-2.5 pl-8 pr-4 bg-dm-bg-secondary border-0 rounded-lg text-sm text-dm-text-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60'
+    ? 'w-full py-2.5 pl-8 pr-4 bg-dm-bg-secondary border border-dm-border-primary rounded-lg text-sm text-dm-text-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:opacity-60'
     : 'w-full p-2 pl-8 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm text-dm-text-primary';
 
   const splitPanel1Class = isBilling

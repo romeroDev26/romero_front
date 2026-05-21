@@ -449,8 +449,8 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-dm-bg-primary rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-dm-bg-primary rounded-lg shadow-xl border border-dm-border-primary max-w-5xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-dm-border-primary">
           <div className="flex items-center gap-3">
@@ -493,8 +493,8 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
 
       {/* Modal de Confirmacion */}
       {showConfirmModal && currentAssignment && selectedSeat && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-60 p-4">
-          <div className="bg-dm-bg-primary rounded-xl shadow-2xl max-w-md w-full">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-dm-bg-primary rounded-xl shadow-2xl border border-dm-border-primary max-w-md w-full">
             {/* Header del modal de confirmacion */}
             <div className="p-6 border-b border-dm-border-primary">
               <div className="flex items-center gap-3">

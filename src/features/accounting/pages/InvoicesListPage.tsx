@@ -460,7 +460,7 @@ export const InvoicesListPage: React.FC = () => {
                   <button
                     onClick={() => navigate(`/accounting/credit-notes/new?invoice_id=${invoice.id}`)}
                     title="Crear Nota de Crédito"
-                    className="flex items-center justify-center w-8 h-8 rounded-full text-red-500 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/30 transition-colors"
+                    className="flex items-center justify-center w-8 h-8 rounded-full text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                   >
                     <MinusIcon className="h-4 w-4" />
                   </button>
@@ -469,7 +469,7 @@ export const InvoicesListPage: React.FC = () => {
                     <button
                       onClick={() => navigate(`/accounting/debit-notes/new?invoice_id=${invoice.id}`)}
                       title="Crear Nota de Débito"
-                      className="flex items-center justify-center w-8 h-8 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:bg-emerald-950/30 transition-colors"
+                      className="flex items-center justify-center w-8 h-8 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4" />
                     </button>

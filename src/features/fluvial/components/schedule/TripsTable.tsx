@@ -380,14 +380,14 @@ export const TripsTable: React.FC<TripsTableProps> = ({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => onEdit(trip)}
-                        className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-950/30 transition-colors"
+                        className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
                         title="Editar viaje"
                       >
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onCancel(trip)}
-                        className="p-1.5 rounded-md text-dm-text-muted hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/30 transition-colors"
+                        className="p-1.5 rounded-md text-dm-text-muted hover:text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                         title="Cancelar viaje"
                       >
                         <TrashIcon className="h-4 w-4" />

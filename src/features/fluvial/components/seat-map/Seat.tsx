@@ -35,7 +35,7 @@ const getSeatStyles = (
 
   switch (status) {
     case 'AVAILABLE':
-      return 'bg-dm-bg-primary border-dm-border-primary text-dm-text-secondary hover:border-blue-400 hover:bg-blue-50 dark:bg-blue-950/30 hover:shadow-md';
+      return 'bg-dm-bg-primary border-dm-border-primary text-dm-text-secondary hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:shadow-md';
     case 'CONFIRMED':
       return 'bg-red-500 border-red-600 text-white cursor-not-allowed';
     case 'RESERVED':

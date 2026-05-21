@@ -35,13 +35,13 @@ const UNIT_OF_MEASURE_OPTIONS = [
 
 /* ── Tokens de diseño (DESIGN.md) ── */
 const COLORS = {
-  midnight: '#202020',
-  canvas: '#ffffff',
-  slateMist: '#efefef',
-  cloudWhisper: '#f5f5f5',
-  darkShale: '#4d4d4d',
-  silverAsh: '#828282',
-  lightPearl: '#e8e8e8',
+  midnight: 'var(--text-primary)',
+  canvas: 'var(--bg-primary)',
+  slateMist: 'var(--bg-secondary)',
+  cloudWhisper: 'var(--bg-secondary)',
+  darkShale: 'var(--text-secondary)',
+  silverAsh: 'var(--text-muted)',
+  lightPearl: 'var(--border-primary)',
   sunset: '#ff682c',
 };
 
@@ -276,7 +276,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
     `w-full rounded-lg border px-3 py-2.5 text-[15px] transition duration-200 outline-none ${FONT.inter} ` +
     (hasError
       ? 'border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-500/20 '
-      : `border-[${COLORS.lightPearl}] focus:border-[${COLORS.midnight}] focus:ring-1 focus:ring-[${COLORS.midnight}]/10 `) +
+      : `border-[${COLORS.lightPearl}] focus:border-primary focus:ring-1 focus:ring-primary/20 `) +
     (locked ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed ' : 'bg-dm-bg-primary text-dm-text-primary ');
 
   const labelClass = `block text-sm font-medium mb-1.5 ${FONT.inter}`;

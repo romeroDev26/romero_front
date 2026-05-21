@@ -109,12 +109,12 @@ export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPrev
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         {/* Fondo del modal */}
         <div 
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
           onClick={onClose}
         />
 
         {/* Contenido del modal */}
-        <div className="inline-block align-bottom bg-dm-bg-primary rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full">
+        <div className="inline-block align-bottom bg-dm-bg-primary rounded-lg text-left overflow-hidden shadow-xl border border-dm-border-primary transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full">
           {/* Header */}
           <div className="bg-dm-bg-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b border-dm-border-primary">
             <div className="flex items-center justify-between">

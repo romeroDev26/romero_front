@@ -53,7 +53,7 @@ export const BranchSelectorForRemission: React.FC<BranchSelectorForRemissionProp
           {branches.map((branch) => (
             <div
               key={branch.id}
-              className="group cursor-pointer bg-dm-bg-secondary hover:bg-blue-50 dark:bg-blue-950/30 border-2 border-dm-border-primary hover:border-blue-300 rounded-xl p-6 transition-all duration-200 hover:shadow-md"
+              className="group cursor-pointer bg-dm-bg-secondary hover:bg-blue-50 dark:hover:bg-blue-950/30 border-2 border-dm-border-primary hover:border-blue-300 rounded-xl p-6 transition-all duration-200 hover:shadow-md"
               onClick={() => onBranchSelect(branch)}
             >
               <div className="flex items-start space-x-4">

@@ -385,7 +385,7 @@ export const InvoiceDetailPage: React.FC = () => {
                 size="sm"
                 onClick={handleRegenerateCurrentPdf}
                 disabled={isRegenerating}
-                className="flex items-center text-amber-600 dark:text-amber-400 border-amber-300 hover:bg-amber-50 dark:bg-amber-950/30"
+                className="flex items-center text-amber-600 dark:text-amber-400 border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
                 title={`Regenerar ticket ${
                   activeTab === 'ticket80mm' ? '80mm' :
                   activeTab === 'a4' ? 'A4' : '100x100'
@@ -406,7 +406,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleWhatsAppClick}
-                  className="flex items-center text-green-600 dark:text-green-400 border-green-300 hover:bg-green-50 dark:bg-green-950/30"
+                  className="flex items-center text-green-600 dark:text-green-400 border-green-300 hover:bg-green-50 dark:hover:bg-green-950/30"
                   title="Enviar por WhatsApp"
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
@@ -420,7 +420,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowEditSeatModal(true)}
-                  className="flex items-center text-blue-600 dark:text-blue-400 border-blue-300 hover:bg-blue-50 dark:bg-blue-950/30"
+                  className="flex items-center text-blue-600 dark:text-blue-400 border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                   title="Editar asiento del pasajero"
                   disabled={!hasPermission('accounting', 'invoices', 'sales')}
                 >

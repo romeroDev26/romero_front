@@ -609,7 +609,7 @@ export const CargoSalePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="w-full rounded-2xl border border-white/10 bg-dm-bg-primary/5 p-4 backdrop-blur xl:max-w-md">
+                  <div className="w-full rounded-2xl border border-dm-border-primary bg-dm-bg-secondary/80 p-4 backdrop-blur xl:max-w-md">
                     <div className="mb-3 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-dm-text-muted">Comprobante</p>
@@ -628,7 +628,7 @@ export const CargoSalePage: React.FC = () => {
                           <select
                             value={selectedSeriesValue}
                             onChange={(e) => isRuc ? handleFacturaSeriesChange(e.target.value) : handleBoletaSeriesChange(e.target.value)}
-                            className="w-full rounded-xl border border-white/10 bg-dm-bg-primary px-3 py-2 text-sm text-dm-text-secondary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            className="w-full rounded-xl border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm text-dm-text-secondary outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                             disabled={availableSeries.length <= 1}
                           >
                             {availableSeries.map((s) => (
@@ -648,7 +648,7 @@ export const CargoSalePage: React.FC = () => {
                               type="text"
                               value={currentSeriesNumber || '...'}
                               disabled
-                              className="w-full rounded-xl border border-white/10 bg-dm-bg-secondary py-2 pl-9 pr-3 text-center text-sm font-semibold text-dm-text-secondary"
+                              className="w-full rounded-xl border border-dm-border-primary bg-dm-bg-secondary py-2 pl-9 pr-3 text-center text-sm font-semibold text-dm-text-secondary"
                             />
                           </div>
                         </div>
@@ -660,7 +660,7 @@ export const CargoSalePage: React.FC = () => {
 
               <div className="border-t border-dm-border-primary bg-dm-bg-secondary/80 px-5 py-5 md:px-8">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-2xl border border-blue-100 bg-blue-50 dark:bg-blue-950/30 p-4">
+                  <div className="rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4">
                     <div className="mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
                       <UserIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Remitente</p>
@@ -669,7 +669,7 @@ export const CargoSalePage: React.FC = () => {
                     <p className="mt-1 text-xs text-dm-text-secondary">{remitter.docType}: {remitter.docNumber}</p>
                   </div>
 
-                  <div className="rounded-2xl border border-emerald-100 bg-emerald-50 dark:bg-emerald-950/30 p-4">
+                  <div className="rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-4">
                     <div className="mb-3 flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
                       <UserIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Destinatario</p>
@@ -680,8 +680,8 @@ export const CargoSalePage: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl border border-violet-100 bg-violet-50 dark:bg-violet-950/30 p-4">
-                    <div className="mb-3 flex items-center gap-2 text-violet-700">
+                  <div className="rounded-2xl border border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/30 p-4">
+                    <div className="mb-3 flex items-center gap-2 text-violet-700 dark:text-violet-300">
                       <PackageIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Viaje</p>
                     </div>
@@ -774,7 +774,7 @@ export const CargoSalePage: React.FC = () => {
                             </div>
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
+                                <span className="rounded-full bg-slate-700 dark:bg-slate-600 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
                                   Encomienda {index + 1}
                                 </span>
                                 <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
@@ -796,7 +796,7 @@ export const CargoSalePage: React.FC = () => {
                             </button>
                             <button
                               onClick={() => setCargoItems(items => items.filter(i => i.id !== item.id))}
-                              className="rounded-xl border border-dm-border-primary p-2.5 text-dm-text-muted transition hover:border-red-300 hover:bg-red-50 dark:bg-red-950/30 hover:text-red-600 dark:text-red-400"
+                              className="rounded-xl border border-dm-border-primary p-2.5 text-dm-text-muted transition hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:text-red-400"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -829,14 +829,14 @@ export const CargoSalePage: React.FC = () => {
 
               <aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
                 <section className="overflow-hidden rounded-[28px] border border-dm-border-primary bg-dm-bg-primary shadow-sm">
-                  <div className="border-b border-dm-border-primary bg-gradient-to-br from-primary/10 via-amber-50 to-white px-6 py-6">
+                  <div className="border-b border-dm-border-primary bg-gradient-to-br from-primary/10 via-amber-50 to-white dark:from-primary/20 dark:via-amber-900/30 dark:to-amber-950/20 px-6 py-6">
                     <p className="text-sm font-semibold text-dm-text-muted">Total a Pagar</p>
                     <p className="mt-2 text-4xl font-black tracking-tight text-dm-text-primary">S/ {totalSaleAmount.toFixed(2)}</p>
                     <p className="mt-2 text-sm text-dm-text-muted">
                       {cargoItems.length} {cargoItems.length === 1 ? 'encomienda registrada' : 'encomiendas registradas'}
                     </p>
                     {isContraentrega && (
-                      <p className="mt-3 rounded-xl bg-amber-100 px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300">
+                      <p className="mt-3 rounded-xl bg-amber-100 dark:bg-amber-900/40 px-3 py-2 text-sm font-medium text-amber-700 dark:text-amber-300">
                         Pago pendiente. Se cobrará al entregar la encomienda.
                       </p>
                     )}
@@ -854,7 +854,7 @@ export const CargoSalePage: React.FC = () => {
                           role="switch"
                           aria-checked={isContraentrega}
                           onClick={() => setIsContraentrega(!isContraentrega)}
-                          className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isContraentrega ? 'bg-primary' : 'bg-slate-300'}`}
+                          className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isContraentrega ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`}
                         >
                           <span className={`inline-block h-6 w-6 transform rounded-full bg-dm-bg-primary shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
                         </button>
@@ -910,8 +910,8 @@ export const CargoSalePage: React.FC = () => {
     <>
       {/* Overlay de carga global durante el procesamiento de venta */}
       {isProcessingSale && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-dm-bg-primary rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-dm-bg-primary rounded-lg p-8 shadow-2xl border border-dm-border-primary flex flex-col items-center space-y-4">
             <Spinner />
             <div className="text-center">
               <h3 className="text-xl font-bold text-dm-text-primary mb-2">

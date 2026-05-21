@@ -107,7 +107,7 @@ export const InfantForm: React.FC<InfantFormProps> = ({
             value={form.full_name}
             onChange={(e) => setForm((p) => ({ ...p, full_name: e.target.value }))}
             placeholder="Nombre y apellidos"
-            className="w-full rounded-lg border-0 bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-amber-300/50"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           />
           {errors.full_name && (
             <p className="mt-1 text-[11px] text-red-500 dark:text-red-400">{errors.full_name}</p>
@@ -129,7 +129,7 @@ export const InfantForm: React.FC<InfantFormProps> = ({
             }
             placeholder="8 dígitos"
             maxLength={8}
-            className="w-full rounded-lg border-0 bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-amber-300/50"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           />
           {errors.document_number && (
             <p className="mt-1 text-[11px] text-red-500 dark:text-red-400">{errors.document_number}</p>
@@ -148,7 +148,7 @@ export const InfantForm: React.FC<InfantFormProps> = ({
             value={form.birth_date}
             max={today}
             onChange={(e) => setForm((p) => ({ ...p, birth_date: e.target.value }))}
-            className="w-full rounded-lg border-0 bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-amber-300/50"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           />
           {errors.birth_date && (
             <p className="mt-1 text-[11px] text-red-500 dark:text-red-400">{errors.birth_date}</p>
@@ -164,7 +164,7 @@ export const InfantForm: React.FC<InfantFormProps> = ({
             onChange={(e) =>
               setForm((p) => ({ ...p, gender: e.target.value as 'M' | 'F' }))
             }
-            className="w-full rounded-lg border-0 bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-amber-300/50"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-amber-300/50"
           >
             <option value="M">Masculino</option>
             <option value="F">Femenino</option>
@@ -185,7 +185,7 @@ export const InfantForm: React.FC<InfantFormProps> = ({
               relationship: e.target.value as InfantRelationship,
             }))
           }
-          className="w-full rounded-lg border-0 bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-amber-300/50"
+          className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary py-2 px-3 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-amber-300/50"
         >
           {Object.entries(INFANT_RELATIONSHIP_LABELS).map(([key, label]) => (
             <option key={key} value={key}>

@@ -88,7 +88,7 @@ const ReservationFilters = ({
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="w-full appearance-none rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full appearance-none rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="">Todos</option>
             <option value="RESERVED">Reservado</option>
@@ -108,7 +108,7 @@ const ReservationFilters = ({
             value={docNumber}
             onChange={(e) => setDocNumber(e.target.value)}
             placeholder="Ingrese documento..."
-            className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
       </div>
@@ -278,14 +278,14 @@ export const ReservationsPage: React.FC = () => {
                   <button
                     onClick={() => handleConfirmReservation(item)}
                     title="Confirmar venta"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-dm-text-muted transition-colors hover:bg-emerald-50 dark:bg-emerald-950/30 hover:text-emerald-600 dark:text-emerald-400"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-dm-text-muted transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-950/30 hover:text-emerald-600 dark:text-emerald-400"
                   >
                     <Check className="h-4 w-4" strokeWidth={2} />
                   </button>
                   <button
                     onClick={() => handleCancelReservation(item)}
                     title="Cancelar reserva"
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-dm-text-muted transition-colors hover:bg-red-50 dark:bg-red-950/30 hover:text-red-600 dark:text-red-400"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-dm-text-muted transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:text-red-400"
                   >
                     <Ban className="h-4 w-4" strokeWidth={2} />
                   </button>

@@ -221,7 +221,7 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
                     relative p-2 h-12 rounded-lg text-center cursor-pointer transition-all
                     ${isPastDate 
                       ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed' 
-                      : 'hover:bg-blue-50 dark:bg-blue-950/30'
+                      : 'hover:bg-blue-50 dark:hover:bg-blue-950/30'
                     }
                     ${isSelected && !isPastDate 
                       ? 'bg-blue-500 text-white' 

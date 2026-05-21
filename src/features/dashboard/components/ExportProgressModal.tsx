@@ -40,12 +40,12 @@ export const ExportProgressModal: React.FC<ExportProgressModalProps> = ({
       <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
         {/* Overlay */}
         <div 
-          className="fixed inset-0 bg-black/50 transition-opacity"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
           onClick={isProcessing ? undefined : onClose}
         />
 
         {/* Modal */}
-        <div className="relative transform overflow-hidden rounded-lg bg-dm-bg-primary text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+        <div className="relative transform overflow-hidden rounded-lg bg-dm-bg-primary text-left shadow-xl border border-dm-border-primary transition-all sm:my-8 sm:w-full sm:max-w-lg">
           <div className="bg-dm-bg-primary px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
             {/* Header */}
             <div className="flex items-start justify-between mb-4">

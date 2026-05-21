@@ -115,7 +115,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             value={passengerData.docType}
             onChange={handleInputChange}
             disabled={disabled}
-            className="w-full appearance-none rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full appearance-none rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {DOCUMENT_TYPES.map(doc => (
               <option key={doc.code} value={doc.code}>{doc.name}</option>
@@ -134,7 +134,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
               onChange={handleInputChange}
               disabled={disabled}
               placeholder="Ingrese el número"
-              className="w-full rounded-l-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+              className="w-full rounded-l-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
             <Button
               onClick={handleSearch}
@@ -159,7 +159,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
           onChange={handleInputChange}
           disabled={disabled}
           placeholder="Nombres y apellidos o Razón Social"
-          className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+          className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
         />
       </div>
 
@@ -175,7 +175,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             value={passengerData.address || ""}
             onChange={handleInputChange}
             disabled={disabled}
-            className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
       )}
@@ -232,7 +232,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             onChange={handleInputChange}
             disabled={disabled}
             placeholder="Número de teléfono"
-            className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
         <div>
@@ -246,7 +246,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
             onChange={handleInputChange}
             disabled={disabled}
             placeholder="Correo electrónico"
-            className="w-full rounded-lg border-0 bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+            className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
           />
         </div>
       </div>

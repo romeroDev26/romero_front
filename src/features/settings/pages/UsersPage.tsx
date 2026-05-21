@@ -293,7 +293,7 @@ export const UsersPage: React.FC = () => {
                             </button>
                             <button
                               onClick={() => handleDeleteUser(user)}
-                              className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-red-500 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/30 transition-colors"
+                              className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />

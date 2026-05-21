@@ -73,7 +73,7 @@ export const CreditNoteDetailPage: React.FC = () => {
 
   const getSunatStatusColor = (status: string) => {
     const colors = {
-      PENDING: 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:text-yellow-300',
+      PENDING: 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300',
       SENT: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 text-blue-800 dark:text-blue-300',
       ACCEPTED: 'bg-green-50 dark:bg-green-950/30 border-green-200 text-green-800 dark:text-green-300',
       REJECTED: 'bg-red-50 dark:bg-red-950/30 border-red-200 text-red-800 dark:text-red-300',
@@ -545,7 +545,7 @@ export const CreditNoteDetailPage: React.FC = () => {
             <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary/80 shadow-sm p-5">
               <h2 className="text-sm font-semibold text-dm-text-primary mb-3">Líneas de la nota</h2>
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-dm-border-primary">
                   <thead className="bg-dm-bg-secondary">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">Producto</th>
@@ -558,7 +558,7 @@ export const CreditNoteDetailPage: React.FC = () => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
+                  <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                     {creditNote.items.map((item, index) => (
                       <tr key={item.id || index} className="hover:bg-dm-bg-hover">
                         <td className="px-4 py-4">

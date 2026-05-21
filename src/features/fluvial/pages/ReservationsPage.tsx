@@ -399,7 +399,7 @@ export const ReservationsPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleCancelReservation(reservation)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 py-2 text-xs font-medium text-red-700 dark:text-red-300 transition-colors hover:bg-red-100 dark:bg-red-900/40"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 py-2 text-xs font-medium text-red-700 dark:text-red-300 transition-colors hover:bg-red-100 dark:hover:bg-red-900/40"
                   >
                     <Ban className="h-3.5 w-3.5" />
                     Cancelar

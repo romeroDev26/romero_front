@@ -189,7 +189,7 @@ export const QuotationFormPage: React.FC = () => {
           <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
             <h3 className="text-lg font-medium mb-4">Items de la Cotización</h3>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-dm-border-primary">
                 <thead>
                   <tr>
                     <th className="px-4 py-2 text-left">Descripción</th>

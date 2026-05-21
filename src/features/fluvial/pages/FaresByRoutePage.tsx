@@ -207,7 +207,7 @@ export const FaresByRoutePage: React.FC = () => {
               Rutas ({filteredRoutes.length})
             </h2>
           </div>
-          <div className="divide-y divide-gray-200 max-h-[300px] lg:max-h-[calc(100vh-300px)] overflow-y-auto">
+          <div className="divide-y divide-dm-border-primary max-h-[300px] lg:max-h-[calc(100vh-300px)] overflow-y-auto">
             {filteredRoutes.length === 0 ? (
               <div className="p-4 text-center text-dm-text-muted">
                 No se encontraron rutas
@@ -368,7 +368,7 @@ export const FaresByRoutePage: React.FC = () => {
 
               {/* Desktop Table View */}
               <div className="hidden lg:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-dm-border-primary">
                   <thead className="bg-dm-bg-secondary">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
@@ -391,7 +391,7 @@ export const FaresByRoutePage: React.FC = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
+                  <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                     {selectedRoute.segments.map((segment) => {
                       const isEditing = editingFare?.segment.stop_order === segment.stop_order;
                       

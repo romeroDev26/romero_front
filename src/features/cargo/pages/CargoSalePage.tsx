@@ -796,7 +796,7 @@ export const CargoSalePage: React.FC = () => {
                             </button>
                             <button
                               onClick={() => setCargoItems(items => items.filter(i => i.id !== item.id))}
-                              className="rounded-xl border border-dm-border-primary p-2.5 text-dm-text-muted transition hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:text-red-400"
+                              className="rounded-xl border border-dm-border-primary p-2.5 text-dm-text-muted transition hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:text-red-400"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />

@@ -805,7 +805,7 @@ export const DocumentSeriesPage: React.FC = () => {
 
           {/* Desktop Table View - Offices */}
           <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-dm-border-primary">
               <thead className="bg-dm-bg-secondary">
                 <tr className="text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                   <th className="px-6 py-3">Sucursal</th>
@@ -818,7 +818,7 @@ export const DocumentSeriesPage: React.FC = () => {
                   <th className="px-6 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-dm-border-primary">
                 {filteredOffices.map((office) => (
                   <tr key={office.id}>
                     <td className="px-6 py-4">
@@ -1078,7 +1078,7 @@ export const DocumentSeriesPage: React.FC = () => {
 
           {/* Desktop Table View - Branch Series */}
           <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto border border-dm-border-primary">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-dm-border-primary">
               <thead className="bg-dm-bg-secondary">
                 <tr className="text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                   <th className="px-6 py-3">Tipo Documento</th>
@@ -1089,7 +1089,7 @@ export const DocumentSeriesPage: React.FC = () => {
                   <th className="px-6 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
+              <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                 {selectedBranchSeries.map((s) => (
                   <tr key={s.id}>
                     <td className="px-6 py-4">

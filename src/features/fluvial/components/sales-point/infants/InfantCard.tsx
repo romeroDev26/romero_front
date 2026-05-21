@@ -44,7 +44,7 @@ export const InfantCard: React.FC<InfantCardProps> = ({ infant, index, onRemove 
         onClick={() => onRemove(index)}
         variant="outline"
         size="sm"
-        className="shrink-0 ml-2 h-8 w-8 p-0 text-red-500 dark:text-red-400 border-dm-border-primary hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-950/30"
+        className="shrink-0 ml-2 h-8 w-8 p-0 text-red-500 dark:text-red-400 border-dm-border-primary hover:border-red-300 dark:hover:border-red-700 hover:bg-red-50 dark:hover:bg-red-950/30"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>

@@ -256,7 +256,7 @@ export const SeatAndFareSelector: React.FC<SeatAndFareSelectorProps> = ({
         const name = typeName.toLowerCase();
         if (name.includes('reclinable')) return { bgColor: 'bg-green-100 dark:bg-green-900/40 border border-green-200', textColor: 'text-green-800 dark:text-green-300' };
         if (name.includes('estático')) return { bgColor: 'bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-200', textColor: 'text-yellow-800 dark:text-yellow-300' };
-        if (name.includes('premium')) return { bgColor: 'bg-purple-100/80 border border-purple-200', textColor: 'text-purple-800' };
+        if (name.includes('premium')) return { bgColor: 'bg-purple-100/80 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-800', textColor: 'text-purple-800' };
         if (name.includes('vip')) return { bgColor: 'bg-indigo-100 dark:bg-indigo-900/40 border border-indigo-200', textColor: 'text-indigo-800 dark:text-indigo-300' };
         if (name.includes('económico') || name.includes('economico')) return { bgColor: 'bg-blue-100 dark:bg-blue-900/40 border border-blue-200', textColor: 'text-blue-800 dark:text-blue-300' };
         

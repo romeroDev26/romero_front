@@ -63,7 +63,7 @@ export const RemissionGuideSunatStatusModal: React.FC<RemissionGuideSunatStatusM
       case 'REJECTED':
         return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border-red-200';
       case 'SENT':
-        return 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 border-yellow-200';
+        return 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800';
       case 'PENDING':
       case 'GENERATED':
       case 'SIGNED':

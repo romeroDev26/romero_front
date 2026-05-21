@@ -198,7 +198,7 @@ export const QuotationPreviewModal: React.FC<QuotationPreviewModalProps> = ({
               variant="outline"
               onClick={() => setShowWhatsAppModal(true)}
               disabled={!pdfUrl}
-              className="flex items-center space-x-2 bg-green-50 dark:bg-green-950/30 border-green-300 text-green-700 dark:text-green-300 hover:bg-green-100 dark:bg-green-900/40"
+              className="flex items-center space-x-2 bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40"
             >
               <MessageCircle className="w-4 h-4" />
               <span>WhatsApp</span>

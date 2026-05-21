@@ -311,7 +311,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleFormatSelection('excel')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:bg-green-900/40 hover:border-green-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 hover:border-green-300 dark:hover:border-green-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -323,7 +323,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleFormatSelection('pdf')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:bg-red-900/40 hover:border-red-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -360,7 +360,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleAccountantFormatSelection('excel')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:bg-green-900/40 hover:border-green-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 hover:border-green-300 dark:hover:border-green-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -372,7 +372,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleAccountantFormatSelection('pdf')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:bg-red-900/40 hover:border-red-300 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -396,7 +396,7 @@ export const ReportsPage: React.FC = () => {
       {/* Mensaje de error si la estructura no es la esperada */}
       {report && !report.categorias && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
             <div className="flex">
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">

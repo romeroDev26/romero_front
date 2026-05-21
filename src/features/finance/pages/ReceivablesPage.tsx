@@ -277,7 +277,7 @@ const ReceivablesPage: React.FC = () => {
                 <div className="h-4 w-px bg-dm-bg-secondary sm:h-5" />
                 <button
                   onClick={handleClearAllFilters}
-                  className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/30 px-2.5 py-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:bg-red-900/40 transition-colors sm:px-3 sm:py-1.5"
+                  className="inline-flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/30 px-2.5 py-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors sm:px-3 sm:py-1.5"
                 >
                   <X className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Limpiar filtros</span>

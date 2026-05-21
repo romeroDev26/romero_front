@@ -43,7 +43,7 @@ const statusColors: Record<QuotationStatus, string> = {
   ACCEPTED: 'bg-emerald-100 text-emerald-700 dark:text-emerald-300',
   REJECTED: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
   EXPIRED: 'bg-amber-100 text-amber-700 dark:text-amber-300',
-  CONVERTED: 'bg-purple-100 text-purple-700',
+  CONVERTED: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
 };
 
 const formatDate = (dateStr: string) => {
@@ -475,7 +475,7 @@ export const QuotationsListPage: React.FC = () => {
                     disabled={!hasActiveFilters}
                     className={`rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm transition-all ${
                       hasActiveFilters
-                        ? 'border-red-300 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:bg-red-900/40'
+                        ? 'border-red-300 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40'
                         : 'border-dm-border-primary bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed'
                     }`}
                   >
@@ -581,7 +581,7 @@ export const QuotationsListPage: React.FC = () => {
                     {quotation.status === 'DRAFT' && (
                       <button
                         onClick={() => handleDelete(quotation.id)}
-                        className="p-2.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:bg-red-900/40 rounded-lg transition-colors"
+                        className="p-2.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors"
                         title="Eliminar"
                       >
                         <TrashIcon className="h-4 w-4" />

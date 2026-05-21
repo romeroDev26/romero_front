@@ -386,7 +386,7 @@ export const DocumentSeriesPage: React.FC = () => {
 
           {/* Desktop Table View - Offices */}
           <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-dm-border-primary">
               <thead className="bg-dm-bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left">Sucursal</th>
@@ -487,7 +487,7 @@ export const DocumentSeriesPage: React.FC = () => {
 
           {/* Desktop Table View - Series */}
           <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-dm-border-primary">
               <thead className="bg-dm-bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left">Tipo Documento</th>
@@ -499,7 +499,7 @@ export const DocumentSeriesPage: React.FC = () => {
                   <th className="px-6 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
+              <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                 {filteredSeries.map((s) => (
                   <tr key={s.id}>
                     <td className="px-6 py-4">

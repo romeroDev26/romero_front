@@ -165,7 +165,7 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
           </h3>
           
           <div className="overflow-x-auto flex justify-center">
-            <table className="min-w-max table-auto mx-auto divide-y divide-gray-200">
+            <table className="min-w-max table-auto mx-auto divide-y divide-dm-border-primary">
               <thead className="bg-dm-bg-secondary">
                 <tr>
                   <th className="px-8 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
@@ -194,7 +194,7 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
+              <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                 {manifest.items
                   .sort((a, b) => a.item_order - b.item_order)
                   .map((item, index) => (
@@ -270,7 +270,7 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
           </h3>
           
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-dm-border-primary">
               <thead className="bg-dm-bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
@@ -290,7 +290,7 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
+              <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                 {manifest.items
                   .map((item, index) => (
                   <tr key={item.parcel_number || index}>

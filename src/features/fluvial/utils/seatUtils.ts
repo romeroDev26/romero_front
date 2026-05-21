@@ -60,16 +60,16 @@ export const getSeatZoneName = (
  * @returns Clases CSS para el color de fondo y borde
  */
 export const getZoneColor = (seatTypeName?: string | null): string => {
-  if (!seatTypeName) return 'bg-gray-100/80 border border-gray-200';
+  if (!seatTypeName) return 'bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700';
   
   const name = seatTypeName.toLowerCase();
-  if (name.includes('reclinable')) return 'bg-green-100/80 border border-green-200';
-  if (name.includes('estático')) return 'bg-yellow-100/80 border border-yellow-200';
-  if (name.includes('premium')) return 'bg-purple-100/80 border border-purple-200';
-  if (name.includes('vip')) return 'bg-indigo-100/80 border border-indigo-200';
-  if (name.includes('económico') || name.includes('economico')) return 'bg-blue-100/80 border border-blue-200';
+  if (name.includes('reclinable')) return 'bg-green-100/80 dark:bg-green-900/40 border border-green-200 dark:border-green-800';
+  if (name.includes('estático')) return 'bg-yellow-100/80 dark:bg-yellow-900/40 border border-yellow-200 dark:border-yellow-800';
+  if (name.includes('premium')) return 'bg-purple-100/80 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-800';
+  if (name.includes('vip')) return 'bg-indigo-100/80 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-800';
+  if (name.includes('económico') || name.includes('economico')) return 'bg-blue-100/80 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800';
   
-  return 'bg-gray-100/80 border border-gray-200';
+  return 'bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700';
 };
 
 /**

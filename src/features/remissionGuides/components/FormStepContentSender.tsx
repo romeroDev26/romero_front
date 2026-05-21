@@ -714,7 +714,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
               {/* Destinatario */}
               <div className="border border-dm-border-primary rounded-xl p-6">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
+                  <div className="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
                     <MapPinIcon className="h-6 w-6 text-purple-600" />
                   </div>
                   <h3 className="text-lg font-semibold text-dm-text-primary">Destinatario</h3>

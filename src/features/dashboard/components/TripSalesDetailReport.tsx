@@ -266,7 +266,7 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                 </p>
                 <button
                   onClick={() => refetch()}
-                  className="mt-3 text-red-700 dark:text-red-300 hover:text-red-800 dark:text-red-300 text-sm font-medium"
+                  className="mt-3 text-red-700 dark:text-red-300 hover:text-red-800 text-sm font-medium"
                 >
                   Reintentar
                 </button>
@@ -286,7 +286,7 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
         {report && !isLoading && (
           <div className="space-y-6">
             {/* Info del viaje */}
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-5 border border-dm-border-primary">
+            <div className="bg-dm-bg-secondary rounded-lg p-5 border border-dm-border-primary">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-bold text-dm-text-primary">{report.trip.trip_name}</h3>
@@ -594,7 +594,7 @@ export const TripSalesDetailReport: React.FC<TripSalesDetailReportProps> = ({ tr
                           <th className="px-4 py-3 text-right font-medium text-dm-text-secondary">Ticket Prom.</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-dm-border-primary">
                         {report.comparatives.trips.map((trip) => (
                           <tr key={trip.trip_id} className="hover:bg-dm-bg-hover">
                             <td className="px-4 py-3 text-dm-text-primary">

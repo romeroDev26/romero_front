@@ -160,7 +160,7 @@ export const CreditNoteNewPage: React.FC = () => {
 						)}
 					</div>
 				) : (
-					<div className="divide-y divide-gray-200">
+					<div className="divide-y divide-dm-border-primary">
 						{filteredInvoices.map((invoice) => {
 							const isCancelled = invoice.business_status === 'CANCELLED';
 							const isIncreased = invoice.business_status === 'INCREASED';

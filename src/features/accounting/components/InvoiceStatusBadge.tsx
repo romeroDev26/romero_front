@@ -21,7 +21,7 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({
       case 'SIGNED':
         return 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 border-indigo-300';
       case 'SENT':
-        return 'bg-purple-100 text-purple-800 border-purple-300';
+        return 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-800';
       case 'ACCEPTED':
       case 'RECEIVED':
         return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-300';

@@ -177,7 +177,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
           color: 'text-green-600 dark:text-green-400',
           bgColor: 'bg-green-50 dark:bg-green-950/30',
           borderColor: 'border-green-200',
-          hoverColor: 'hover:bg-green-100 dark:bg-green-900/40'
+          hoverColor: 'hover:bg-green-100 dark:hover:bg-green-900/40'
         };
   };
 

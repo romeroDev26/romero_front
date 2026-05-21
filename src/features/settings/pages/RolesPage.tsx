@@ -191,7 +191,7 @@ export const RolesPage: React.FC = () => {
       </div>
       
       <div className="bg-dm-bg-primary rounded-lg shadow-sm overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-dm-border-primary">
           <thead className="bg-dm-bg-secondary">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
@@ -211,7 +211,7 @@ export const RolesPage: React.FC = () => {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-dm-bg-primary divide-y divide-gray-200">
+          <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
             {roles?.map((role) => (
               <tr key={role.id} className="hover:bg-dm-bg-hover">
                 <td className="px-6 py-4 whitespace-nowrap">

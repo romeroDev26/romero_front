@@ -436,7 +436,7 @@ export const QuickSalePage: React.FC = () => {
       <div className="p-4 lg:p-6 max-w-7xl mx-auto">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
               <Zap className="h-6 w-6 text-purple-600" />
             </div>
             <div>
@@ -459,7 +459,7 @@ export const QuickSalePage: React.FC = () => {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-purple-100 rounded-lg">
+          <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
             <Zap className="h-6 w-6 text-purple-600" />
           </div>
           <div>

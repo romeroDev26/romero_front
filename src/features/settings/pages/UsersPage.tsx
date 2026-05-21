@@ -247,7 +247,7 @@ export const UsersPage: React.FC = () => {
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
                               user.is_active
                                 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-100 hover:bg-emerald-100'
-                                : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-100 hover:bg-red-100 dark:bg-red-900/40'
+                                : 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-100 hover:bg-red-100 dark:hover:bg-red-900/40'
                             }`}
                           >
                             <span

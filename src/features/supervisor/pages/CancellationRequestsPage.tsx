@@ -403,7 +403,7 @@ const CancellationRequestsPage: React.FC = () => {
                             </button>
                             <button
                               onClick={() => openRejectionModal(request)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-100 rounded-full hover:bg-red-100 dark:bg-red-900/40 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-100 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                             >
                               <XCircleIcon className="w-3.5 h-3.5" />
                               Rechazar

@@ -351,8 +351,8 @@ const UpdatesAdminPage: React.FC = () => {
   const platformBadge = (p: string) => {
     const map: Record<string, string> = {
       WEB: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-      MOBILE: 'bg-violet-100 text-violet-700',
-      ALL: 'bg-dm-bg-secondary text-dm-text-secondary',
+      MOBILE: 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300',
+      ALL: 'bg-dm-bg-secondary text-dm-text-secondary dark:text-dm-text-muted',
     };
     return map[p] ?? 'bg-dm-bg-secondary text-dm-text-secondary';
   };
@@ -378,7 +378,7 @@ const UpdatesAdminPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Tabla */}
+      {/* Contenido: Tabla en desktop, Cards en mobile */}
       <section className="bg-dm-bg-primary rounded-xl border border-dm-border-primary overflow-hidden shadow-sm">
         {isLoading ? (
           <div className="p-12 text-center">
@@ -398,7 +398,8 @@ const UpdatesAdminPage: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Vista Desktop: Tabla */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-dm-border-primary bg-dm-bg-secondary/50">
@@ -410,7 +411,7 @@ const UpdatesAdminPage: React.FC = () => {
                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-dm-border-primary">
                   {updates.map((u) => (
                     <tr key={u.id} className="hover:bg-dm-bg-hover transition-colors">
                       <td className="px-6 py-4">
@@ -462,7 +463,7 @@ const UpdatesAdminPage: React.FC = () => {
                           <button
                             onClick={() => handleDelete(u.id)}
                             disabled={deletingId === u.id}
-                            className="text-dm-text-muted hover:text-rose-600 dark:text-rose-400 transition-colors disabled:opacity-40"
+                            className="text-dm-text-muted hover:text-rose-600 dark:hover:text-rose-400 transition-colors disabled:opacity-40"
                             title="Eliminar"
                           >
                             <TrashIcon className="w-4 h-4" />
@@ -473,6 +474,75 @@ const UpdatesAdminPage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Vista Mobile: Cards */}
+            <div className="md:hidden divide-y divide-dm-border-primary">
+              {updates.map((u) => (
+                <div key={u.id} className="p-4 space-y-3">
+                  {/* Fila superior: versión + plataforma + fecha */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-bold text-primary bg-primary/5 px-2 py-1 rounded">
+                      {u.version}
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${platformBadge(u.platform)}`}>
+                      {u.platform}
+                    </span>
+                  </div>
+
+                  {/* Título y descripción */}
+                  <div>
+                    <h3 className="text-sm font-bold text-dm-text-primary">{u.title}</h3>
+                    <p className="text-xs text-dm-text-muted mt-1 line-clamp-2">{u.description}</p>
+                  </div>
+
+                  {/* Fecha */}
+                  <p className="text-xs text-dm-text-muted">{u.release_date}</p>
+
+                  {/* Footer de la card: estado + acciones */}
+                  <div className="flex items-center justify-between pt-2 border-t border-dm-border-secondary">
+                    <button
+                      onClick={() => toggleActiveMutation.mutate({ id: u.id, is_active: !u.is_active })}
+                      disabled={toggleActiveMutation.isPending}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        u.is_active
+                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-dm-bg-secondary text-dm-text-muted'
+                      }`}
+                    >
+                      {u.is_active ? (
+                        <>
+                          <CheckCircleIcon className="w-3.5 h-3.5" />
+                          Activa
+                        </>
+                      ) : (
+                        <>
+                          <XCircleIcon className="w-3.5 h-3.5" />
+                          Inactiva
+                        </>
+                      )}
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => openEdit(u)}
+                        className="p-2.5 rounded-lg text-dm-text-muted hover:text-primary hover:bg-dm-bg-hover transition-colors"
+                        title="Editar"
+                      >
+                        <PencilSquareIcon className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(u.id)}
+                        disabled={deletingId === u.id}
+                        className="p-2.5 rounded-lg text-dm-text-muted hover:text-rose-600 dark:hover:text-rose-400 hover:bg-dm-bg-hover transition-colors disabled:opacity-40"
+                        title="Eliminar"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Footer */}

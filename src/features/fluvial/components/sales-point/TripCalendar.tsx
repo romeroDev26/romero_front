@@ -67,7 +67,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         
-        <h3 className="text-lg font-semibold capitalize">
+        <h3 className="text-lg font-semibold capitalize text-dm-text-primary">
           {format(currentMonth, 'MMMM yyyy', { locale: es })}
         </h3>
         
@@ -117,11 +117,11 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
                   : 'hover:bg-blue-50 dark:hover:bg-blue-950/30'
                 }
                 ${isSelected && !isPastDate 
-                  ? 'bg-blue-600 dark:bg-blue-400 text-white shadow-lg shadow-blue-500/30' 
+                  ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-lg shadow-blue-500/30 dark:shadow-none dark:ring-2 dark:ring-white/40 dark:ring-inset' 
                   : ''
                 }
                 ${isCurrentDay && !isSelected && !isPastDate 
-                  ? 'ring-2 ring-blue-500 dark:ring-blue-400 ring-inset bg-blue-50 dark:bg-blue-900/30' 
+                  ? 'ring-2 ring-blue-500 dark:ring-blue-400 ring-inset bg-blue-50 dark:bg-blue-800/60' 
                   : ''
                 }
               `}

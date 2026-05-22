@@ -151,7 +151,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                 </div>
 
                 <div className="flex flex-col md:flex-row min-h-[620px]">
-                  <div className="relative md:w-4/12 bg-gradient-to-br from-primary/15 via-sky-100 to-indigo-100 border-b md:border-b-0 md:border-r border-dm-border-primary p-8">
+                  <div className="relative md:w-4/12 bg-gradient-to-br from-primary/15 via-blue-100/50 to-indigo-100/50 dark:from-primary/10 dark:via-blue-900/20 dark:to-indigo-900/20 border-b md:border-b-0 md:border-r border-dm-border-primary p-6 md:p-8">
                     <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-primary/10" />
                     <div className="absolute -bottom-16 -left-10 w-56 h-56 rounded-full bg-sky-200/40" />
 
@@ -189,7 +189,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                               className={`rounded-full transition-all duration-200 focus:outline-none ${
                                 idx === currentIndex
                                   ? 'w-7 h-2.5 bg-primary'
-                                  : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
+                                  : 'w-2.5 h-2.5 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500'
                               }`}
                             />
                           ))}

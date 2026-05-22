@@ -245,7 +245,7 @@ export const SuppliersListPage: React.FC = () => {
                   {hasPermission('inventory', 'suppliers', 'warehouse') && (
                     <button
                       onClick={() => handleDelete(supplier.id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:text-red-200"
+                      className="text-red-600 hover:text-red-900 dark:text-red-200"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>

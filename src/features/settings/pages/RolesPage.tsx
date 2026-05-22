@@ -1,7 +1,7 @@
 // src/features/settings/pages/RolesPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { toast } from '@/utils/sileo-toast';
 
 import { Spinner } from '../../../components/common/Spinner';
@@ -190,7 +190,8 @@ export const RolesPage: React.FC = () => {
         </div>
       </div>
       
-      <div className="bg-dm-bg-primary rounded-lg shadow-sm overflow-x-auto">
+      {/* Desktop Table */}
+      <div className="hidden md:block bg-dm-bg-primary rounded-lg shadow-sm overflow-x-auto">
         <table className="min-w-full divide-y divide-dm-border-primary">
           <thead className="bg-dm-bg-secondary">
             <tr>
@@ -241,7 +242,7 @@ export const RolesPage: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handleOpenDeleteModal(role)}
-                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:text-red-200"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"
                         disabled={!role.is_active}
                       >
                         <TrashIcon className="h-5 w-5" />
@@ -251,7 +252,7 @@ export const RolesPage: React.FC = () => {
                 </td>
               </tr>
             ))}
-            
+
             {(!roles || roles.length === 0) && (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-dm-text-muted">
@@ -261,6 +262,60 @@ export const RolesPage: React.FC = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {roles?.map((role) => (
+          <div
+            key={role.id}
+            className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary p-4 transition-all hover:shadow-md"
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-lg bg-dm-bg-secondary flex items-center justify-center text-dm-text-muted shrink-0">
+                  <UserGroupIcon className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-dm-text-primary truncate">{role.name}</h3>
+                  <p className="text-xs text-dm-text-muted truncate">{role.description || 'Sin descripción'}</p>
+                </div>
+              </div>
+              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full shrink-0 self-center ${
+                role.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
+              }`}>
+                {role.is_active ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+
+            {hasPermission('settings', 'roles', 'admin') && (
+              <div className="flex items-center justify-end gap-2 border-t border-dm-border-primary pt-3">
+                <button
+                  onClick={() => handleOpenEditModal(role)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleOpenDeleteModal(role)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                  disabled={!role.is_active}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  Desactivar
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {(!roles || roles.length === 0) && (
+          <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary py-14 text-center">
+            <UserGroupIcon className="w-12 h-12 text-dm-text-muted mx-auto mb-4" />
+            <p className="text-dm-text-muted">No hay roles disponibles</p>
+          </div>
+        )}
       </div>
       
       {/* Modal para crear rol */}

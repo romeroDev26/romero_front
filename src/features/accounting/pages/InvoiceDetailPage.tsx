@@ -494,8 +494,8 @@ export const InvoiceDetailPage: React.FC = () => {
                  - Para facturas normales: siempre se muestran 80mm y A4
                    (aunque el PDF no exista aún, para que el usuario pueda regenerarlo)
                  - Sticker 100x100: solo si es encomienda */}
-            <div className="px-6 pt-4">
-              <div className="flex border-b border-dm-border-primary">
+            <div className="px-4 sm:px-6 pt-4">
+              <div className="flex border-b border-dm-border-primary overflow-x-auto">
                 {/* Tab 80mm: siempre visible para facturas/boletas normales */}
                 {!isCargoInvoice && (
                   <button
@@ -503,13 +503,14 @@ export const InvoiceDetailPage: React.FC = () => {
                       setActiveTab('ticket80mm');
                       setShowPdfError(false);
                     }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                    className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                       activeTab === 'ticket80mm'
                         ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
                         : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
-                    Ticket 80mm (Térmico)
+                    <span className="hidden sm:inline">Ticket 80mm (Térmico)</span>
+                    <span className="sm:hidden">80mm</span>
                   </button>
                 )}
                 {/* Tab 80mm para encomiendas (solo si existe) */}
@@ -519,13 +520,14 @@ export const InvoiceDetailPage: React.FC = () => {
                       setActiveTab('ticket80mm');
                       setShowPdfError(false);
                     }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                    className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                       activeTab === 'ticket80mm'
                         ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
                         : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
-                    Ticket 80mm (Térmico)
+                    <span className="hidden sm:inline">Ticket 80mm (Térmico)</span>
+                    <span className="sm:hidden">80mm</span>
                   </button>
                 )}
                 {/* Tab A4: siempre visible para facturas/boletas normales */}
@@ -535,13 +537,14 @@ export const InvoiceDetailPage: React.FC = () => {
                       setActiveTab('a4');
                       setShowPdfError(false);
                     }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                    className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                       activeTab === 'a4'
                         ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
                         : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
-                    Ticket A4 (Corporativo)
+                    <span className="hidden sm:inline">Ticket A4 (Corporativo)</span>
+                    <span className="sm:hidden">A4</span>
                   </button>
                 )}
                 {/* Tab A4 para encomiendas (solo si existe) */}
@@ -551,13 +554,14 @@ export const InvoiceDetailPage: React.FC = () => {
                       setActiveTab('a4');
                       setShowPdfError(false);
                     }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors ${
+                    className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                       activeTab === 'a4'
                         ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
                         : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
-                    Ticket A4 (Corporativo)
+                    <span className="hidden sm:inline">Ticket A4 (Corporativo)</span>
+                    <span className="sm:hidden">A4</span>
                   </button>
                 )}
                 {isCargoInvoice && (
@@ -566,36 +570,51 @@ export const InvoiceDetailPage: React.FC = () => {
                       setActiveTab('sticker100x100');
                       setShowPdfError(false);
                     }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors flex items-center gap-1 ${
+                    className={`px-4 sm:px-6 py-3 text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap shrink-0 ${
                       activeTab === 'sticker100x100'
                         ? 'border-b-2 border-orange-500 text-orange-600 dark:text-orange-400'
                         : 'text-dm-text-muted hover:text-dm-text-secondary'
                     }`}
                   >
-                    <Tag className="h-3.5 w-3.5" />
-                    Sticker 100x100
+                    <Tag className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Sticker 100x100</span>
+                    <span className="sm:hidden">100x100</span>
                   </button>
                 )}
               </div>
             </div>
 
             {/* Visor PDF */}
-            <div className="p-6">
-              <div className="relative bg-dm-bg-secondary rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
+            <div className="p-4 sm:p-6">
+              <div className="relative bg-dm-bg-secondary rounded-lg overflow-hidden min-h-[300px] md:min-h-[600px]">
                 {!showPdfError && hasCurrentPdf ? (
-                  <iframe
-                    ref={pdfIframeRef}
-                    key={`${activeTab}-${cacheBuster}`}
-                    src={`${currentPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
-                    className="w-full h-full border-0"
-                    style={{ minHeight: '600px' }}
-                    title={`Ticket ${
-                      activeTab === 'ticket80mm' ? '80mm' : activeTab === 'a4' ? 'A4' : 'Sticker 100x100'
-                    } ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
-                    onError={() => setShowPdfError(true)}
-                  />
+                  activeTab === 'sticker100x100' ? (
+                    <div className="flex justify-center p-3 sm:p-4">
+                      <div className="w-full max-w-[420px]">
+                        <iframe
+                          ref={pdfIframeRef}
+                          key={`${activeTab}-${cacheBuster}`}
+                          src={`${currentPdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                          className="w-full border-0 rounded-lg shadow-sm min-h-[300px] md:min-h-[420px]"
+                          title={`Sticker 100x100 ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
+                          onError={() => setShowPdfError(true)}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      ref={pdfIframeRef}
+                      key={`${activeTab}-${cacheBuster}`}
+                      src={`${currentPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                      className="w-full h-full border-0 min-h-[350px] md:min-h-[600px]"
+                      title={`Ticket ${
+                        activeTab === 'ticket80mm' ? '80mm' : 'A4'
+                      } ${invoice.series}-${String(invoice.number).padStart(8, '0')}`}
+                      onError={() => setShowPdfError(true)}
+                    />
+                  )
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-96 text-dm-text-muted">
+                  <div className="flex flex-col items-center justify-center min-h-[300px] md:min-h-[600px] text-dm-text-muted">
                     <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-amber-400" />
                     <h3 className="text-lg font-medium mb-2 text-dm-text-primary">
                       {activeTab === 'sticker100x100'

@@ -289,14 +289,14 @@ export const CreditNoteDetailPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <div className="mt-4 flex border-b border-dm-border-primary">
+          <div className="mt-4 flex border-b border-dm-border-primary overflow-x-auto">
             <button
               type="button"
               onClick={() => {
                 setNcPdfTab('ticket80mm');
                 setShowPdfError(false);
               }}
-              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                 ncPdfTab === 'ticket80mm'
                   ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 -mb-px'
                   : 'text-dm-text-muted hover:text-dm-text-secondary'
@@ -310,7 +310,7 @@ export const CreditNoteDetailPage: React.FC = () => {
                 setNcPdfTab('a4');
                 setShowPdfError(false);
               }}
-              className={`px-4 py-2.5 text-sm font-medium transition-colors ${
+              className={`px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
                 ncPdfTab === 'a4'
                   ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 -mb-px'
                   : 'text-dm-text-muted hover:text-dm-text-secondary'
@@ -359,7 +359,7 @@ export const CreditNoteDetailPage: React.FC = () => {
             <iframe
               ref={pdfIframeRef}
               src={ncPdfSrc}
-              className="w-full min-h-[520px] h-[62vh] max-h-[760px]"
+              className="w-full min-h-[350px] sm:min-h-[520px] h-[50vh] sm:h-[62vh] max-h-[760px]"
               title="Vista previa del PDF de la nota de crédito"
               onError={() => setShowPdfError(true)}
             />
@@ -495,12 +495,12 @@ export const CreditNoteDetailPage: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="text-xs font-medium text-dm-text-muted">Vista previa del documento original</span>
-                      <div className="flex rounded-lg border border-dm-border-primary p-0.5 bg-dm-bg-secondary">
+                      <div className="flex rounded-lg border border-dm-border-primary p-0.5 bg-dm-bg-secondary overflow-x-auto">
                         {(creditNote as any).affected_invoice.pdf_ticket_file_path && (
                           <button
                             type="button"
                             onClick={() => setAffectedPdfTab('ticket80mm')}
-                            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
                               affectedPdfTab === 'ticket80mm'
                                 ? 'bg-dm-bg-primary text-dm-text-primary shadow-sm'
                                 : 'text-dm-text-muted hover:text-dm-text-secondary'
@@ -513,7 +513,7 @@ export const CreditNoteDetailPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setAffectedPdfTab('a4')}
-                            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+                            className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 ${
                               affectedPdfTab === 'a4'
                                 ? 'bg-dm-bg-primary text-dm-text-primary shadow-sm'
                                 : 'text-dm-text-muted hover:text-dm-text-secondary'

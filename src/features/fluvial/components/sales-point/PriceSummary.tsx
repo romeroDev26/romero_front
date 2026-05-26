@@ -70,12 +70,12 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   return (
     <section className="overflow-hidden rounded-xl border border-dm-border-primary/80 bg-dm-bg-primary shadow-sm">
       {isManualPriceMode && (
-        <div className="flex items-center gap-2 border-b border-orange-200/40 bg-[#ffdcc4] px-5 py-3">
+        <div className="flex items-center gap-2 border-b border-orange-200/40 bg-orange-100 dark:bg-orange-950/40 px-5 py-3">
           <AlertTriangle
             className="h-5 w-5 shrink-0 text-amber-900 dark:text-amber-200"
             aria-hidden
           />
-          <span className="text-xs font-semibold text-amber-950">
+          <span className="text-xs font-semibold text-amber-950 dark:text-amber-200">
             Requiere revisión manual de precios
           </span>
         </div>
@@ -321,8 +321,8 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         </div>
 
         <div className="border-t border-dashed border-dm-border-primary/80 pt-4">
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-[#dbe1ff] p-4">
-            <span className="text-sm font-medium text-[#00174d]/90">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-[#dbe1ff] dark:bg-blue-900/40 p-4">
+            <span className="text-sm font-medium text-[#00174d] dark:text-blue-100/90">
               Total a cobrar
             </span>
             <span className="text-2xl font-extrabold tracking-tight text-[#00174d] tabular-nums">

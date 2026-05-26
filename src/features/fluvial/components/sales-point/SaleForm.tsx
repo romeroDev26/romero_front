@@ -491,7 +491,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                   <>
                     <section className="space-y-4 rounded-xl border border-dm-border-primary/80 bg-dm-bg-primary p-5 shadow-sm sm:p-6">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dbe1ff]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dbe1ff] dark:bg-blue-900/40">
                           <ClipboardDocumentListIcon className="h-5 w-5 text-primary" />
                         </div>
                         <h2 className="text-lg font-bold tracking-tight text-dm-text-primary">
@@ -693,9 +693,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-dm-border-primary/80 bg-gradient-to-br from-slate-50/90 to-white p-4 shadow-sm">
+                    <div className="rounded-xl border border-dm-border-primary/80 bg-gradient-to-br from-slate-50/90 to-white dark:from-slate-800/90 dark:to-slate-900 p-4 shadow-sm">
                       <div className="flex gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#dbe1ff]/90">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#dbe1ff] dark:bg-blue-900/40/90">
                           <Info
                             className="h-5 w-5 text-primary"
                             aria-hidden

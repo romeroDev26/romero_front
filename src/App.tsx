@@ -351,16 +351,11 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         
-        <Toaster 
-          position="top-right" 
+        <Toaster
+          position="top-right"
           theme={resolvedTheme}
           options={{
             duration: 4000,
-            fill: resolvedTheme === 'dark' ? '#171717' : '#ffffff',
-            styles: {
-              title: resolvedTheme === 'dark' ? '!text-white' : '!text-gray-900',
-              description: resolvedTheme === 'dark' ? '!text-gray-300' : '!text-gray-600',
-            },
           }}
         />
       </Router>

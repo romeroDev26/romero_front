@@ -96,7 +96,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#dbe1ff]">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#dbe1ff] dark:bg-blue-900/40">
           <User className="h-5 w-5 text-primary" />
         </div>
         <h3 className="text-base font-bold tracking-tight text-dm-text-primary">

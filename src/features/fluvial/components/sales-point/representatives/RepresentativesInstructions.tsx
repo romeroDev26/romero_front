@@ -3,13 +3,13 @@ import { Info, CreditCard, Users, FileCheck } from 'lucide-react';
 
 export function RepresentativesInstructions() {
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5">
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-5">
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0 p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
           <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />
         </div>
         <div className="flex-1">
-          <h4 className="font-semibold text-blue-900 mb-3 text-base">
+          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 text-base">
             Sistema de Facturación Empresarial
           </h4>
           
@@ -39,7 +39,7 @@ export function RepresentativesInstructions() {
             </div>
           </div>
           
-          <div className="flex items-center justify-center space-x-6 text-xs text-blue-700 dark:text-blue-300 bg-dm-bg-primary bg-opacity-60 rounded-lg py-3 px-4">
+          <div className="flex items-center justify-center space-x-6 text-xs text-blue-700 dark:text-blue-300 bg-dm-bg-primary/60 rounded-lg py-3 px-4">
             <div className="flex items-center space-x-2">
               <CreditCard className="h-4 w-4" />
               <span className="font-medium">Una factura unificada</span>

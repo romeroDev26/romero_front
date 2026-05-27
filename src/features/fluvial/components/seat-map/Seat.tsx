@@ -1,7 +1,7 @@
 // src/features/fluvial/components/seat-map/Seat.tsx
 
 import React from 'react';
-import { SeatMapItem, SeatStatus } from '../../../../types';
+import { SeatMapItem, SeatStatus, SeatOccupantInfo } from '../../../../types';
 import { getSeatTypeName } from '../../utils/seatUtils';
 
 interface SeatProps {
@@ -47,23 +47,85 @@ const getSeatStyles = (
   }
 };
 
+const OccupantTooltip: React.FC<{ occupant: SeatOccupantInfo; status: SeatStatus }> = ({ occupant, status }) => {
+  const statusLabel = status === 'CONFIRMED' ? 'VENDIDO' : 'RESERVADO';
+  const statusColor = status === 'CONFIRMED' ? 'text-red-300 dark:text-red-600' : 'text-yellow-300 dark:text-yellow-600';
+  const mutedText = 'text-gray-300 dark:text-gray-600';
+  const dimText = 'text-gray-400 dark:text-gray-500';
+
+  return (
+    <div className="text-left">
+      <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${statusColor}`}>
+        {statusLabel}
+      </div>
+      <div className="font-semibold text-sm mb-0.5 leading-tight">{occupant.passenger_name}</div>
+      {occupant.document_number && (
+        <div className={`${mutedText} text-[11px] mb-0.5`}>Doc: {occupant.document_number}</div>
+      )}
+      <div className={`text-[11px] ${mutedText} mb-0.5`}>
+        {occupant.origin_stop_name} <span className={dimText}>→</span> {occupant.destination_stop_name}
+      </div>
+      <div className="text-sm font-bold text-green-400 dark:text-green-600">
+        {occupant.currency_code} {occupant.amount_paid.toFixed(2)}
+      </div>
+      {occupant.status_detail && (
+        <div className={`text-[10px] ${dimText} mt-0.5`}>{occupant.status_detail}</div>
+      )}
+    </div>
+  );
+};
+
+const SeatTooltipContent: React.FC<{
+  seat: SeatMapItem;
+  isPendingBlocked?: boolean;
+}> = ({ seat, isPendingBlocked }) => {
+  const seatTypeName = getSeatTypeName(seat.seat_type?.name);
+
+  // Si tiene ocupante (CONFIRMED o RESERVED con datos del backend)
+  if (seat.occupant && (seat.status === 'CONFIRMED' || seat.status === 'RESERVED')) {
+    return <OccupantTooltip occupant={seat.occupant} status={seat.status} />;
+  }
+
+  // Tooltip por defecto
+  const displayStatus = isPendingBlocked ? 'PENDIENTE (otra asignación)' : seat.status;
+  return (
+    <div className="text-left">
+      <div className="font-semibold text-sm">Asiento {seat.seat_number}</div>
+      <div className="text-xs text-gray-300 dark:text-gray-600">Tipo: {seatTypeName}</div>
+      <div className="text-xs text-gray-400 dark:text-gray-500">Estado: {displayStatus}</div>
+    </div>
+  );
+};
+
 export const Seat: React.FC<SeatProps> = ({ seat, isSelected, onClick, isLocked = false, isPendingBlocked = false }) => {
   const isClickable = !isLocked && !isPendingBlocked && seat.status === 'AVAILABLE';
 
   return (
-    <button
-      onClick={() => isClickable && onClick(seat)}
-      disabled={!isClickable}
-      className={`
-        w-14 h-14 rounded-lg border-2 transition-all duration-200
-        flex items-center justify-center text-sm font-bold
-        ${getSeatStyles(seat.status, isSelected, isLocked, isPendingBlocked)}
-      `}
-      title={`Asiento: ${seat.seat_number} - Tipo: ${getSeatTypeName(seat.seat_type?.name)} - Estado: ${
-        isPendingBlocked ? 'PENDIENTE (otra asignación)' : seat.status
-      }`}
-    >
-      {seat.seat_number}
-    </button>
+    <div className="relative group">
+      <button
+        onClick={() => isClickable && onClick(seat)}
+        disabled={!isClickable}
+        className={`
+          w-14 h-14 rounded-lg border-2 transition-all duration-200
+          flex items-center justify-center text-sm font-bold
+          ${getSeatStyles(seat.status, isSelected, isLocked, isPendingBlocked)}
+        `}
+      >
+        {seat.seat_number}
+      </button>
+
+      {/* Tooltip custom */}
+      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2
+                      invisible group-hover:visible opacity-0 group-hover:opacity-100
+                      transition-all duration-200 z-50 pointer-events-none">
+        <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-300 min-w-[160px] max-w-[220px]">
+          <SeatTooltipContent seat={seat} isPendingBlocked={isPendingBlocked} />
+          {/* Flecha */}
+          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px">
+            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-100 border-r border-b border-gray-700 dark:border-gray-300 transform rotate-45"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

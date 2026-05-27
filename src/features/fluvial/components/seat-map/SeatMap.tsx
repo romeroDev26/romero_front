@@ -21,8 +21,8 @@ type SeatRow = SeatMapItem[];
 
 const getZoneColor = (seatTypeName: string): string => {
   const name = (seatTypeName || '').toLowerCase();
-  if (name.includes('reclinable')) return 'bg-green-100 dark:bg-green-900/40 border border-green-200';
-  if (name.includes('estático')) return 'bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-200';
+  if (name.includes('reclinable')) return 'bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800';
+  if (name.includes('estático')) return 'bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-200 dark:border-yellow-800';
   return 'bg-dm-bg-secondary/80 border border-dm-border-primary';
 };
 
@@ -92,7 +92,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+    <div className="min-h-screen bg-dm-bg-primary p-4">
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-dm-text-primary mb-2">Selección de Asientos</h1>
@@ -100,7 +100,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
         </div>
         <div className="bg-dm-bg-primary rounded-2xl shadow-xl border border-dm-border-primary p-4">
           <div className="relative">
-            <div className="border border-dashed border-gray-400 dark:border-gray-600 dark:border-gray-400 rounded-2xl px-2 py-4 relative">
+            <div className="border border-dashed border-gray-400 dark:border-gray-600 rounded-2xl px-2 py-4 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                 <div className="w-auto px-4 h-8 border border-dashed border-gray-400 dark:border-gray-600 dark:border-gray-400 rounded-t-2xl bg-dm-bg-primary flex items-center justify-center shadow-sm">
                   <span className="text-xs font-bold text-dm-text-secondary uppercase">{vesselName}</span>
@@ -156,7 +156,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                   ))}
                 </div>
               </div>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-dm-bg-primary border border-dashed border-gray-400 dark:border-gray-600 dark:border-gray-400 rounded-b-xl flex items-center justify-center">
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-dm-bg-primary border border-dashed border-gray-400 dark:border-gray-600 rounded-b-xl flex items-center justify-center">
                 <span className="text-xs font-bold text-dm-text-secondary">TRASERA</span>
               </div>
             </div>

@@ -24,83 +24,6 @@ interface SeatMapRealtimeProps {
 
 type SeatRow = SeatMapItem[];
 
-const NOISE_TILE =
-  "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
-
-/**
- * Fondo tipo mesh / aurora: azul corporativo y teal un poco más presentes,
- * más cobertura en márgenes y zonas blancas (z-0, detrás del mapa).
- */
-const SeatMapAuroraBackdrop: React.FC = () => (
-  <div
-    className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none"
-    aria-hidden
-  >
-    <div
-      className="absolute inset-0"
-      style={{
-        background:
-          'linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0.9) 10%, rgba(241, 245, 249, 0.35) 32%, rgba(240, 249, 255, 0.45) 58%, rgba(241, 245, 249, 0.8) 100%)',
-      }}
-    />
-
-    <div
-      className="absolute -left-[38%] top-[-12%] h-[min(40rem,95vh)] w-[min(34rem,100vw)] rounded-full blur-3xl"
-      style={{
-        background:
-          'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(56, 189, 248, 0.38) 0%, rgba(186, 230, 253, 0.55) 28%, rgba(0, 68, 113, 0.2) 55%, rgba(0, 68, 113, 0.06) 72%, transparent 88%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 100%)',
-        maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 100%)',
-      }}
-    />
-    <div
-      className="absolute -right-[32%] top-[8%] h-[min(34rem,82vh)] w-[min(30rem,90vw)] rounded-full blur-3xl"
-      style={{
-        background:
-          'radial-gradient(ellipse 64% 54% at 40% 50%, rgba(34, 211, 238, 0.32) 0%, rgba(207, 250, 254, 0.5) 30%, rgba(0, 106, 104, 0.16) 52%, rgba(0, 106, 104, 0.05) 70%, transparent 86%)',
-        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 100%)',
-        maskImage: 'linear-gradient(to bottom, transparent 0%, black 14%, black 100%)',
-      }}
-    />
-    <div
-      className="absolute left-[5%] -bottom-[26%] h-[min(36rem,72vh)] w-[min(40rem,96vw)] rounded-full blur-3xl"
-      style={{
-        background:
-          'radial-gradient(ellipse 74% 52% at 48% 36%, rgba(226, 232, 240, 0.95) 0%, rgba(148, 163, 184, 0.28) 42%, rgba(0, 68, 113, 0.12) 58%, transparent 84%)',
-      }}
-    />
-
-    <div
-      className="absolute left-1/2 top-[28%] h-[min(28rem,55vh)] w-[min(88%,42rem)] -translate-x-1/2 rounded-full blur-3xl opacity-80"
-      style={{
-        background:
-          'radial-gradient(ellipse 55% 70% at 50% 50%, rgba(241, 245, 249, 0.55) 0%, rgba(125, 211, 252, 0.22) 45%, rgba(0, 68, 113, 0.07) 65%, transparent 82%)',
-      }}
-    />
-
-    <div
-      className="absolute inset-[-50%] opacity-[0.62]"
-      style={{
-        background:
-          'linear-gradient(118deg, transparent 0%, transparent 32%, rgba(255, 255, 255, 0.75) 44%, rgba(186, 230, 253, 0.55) 50%, rgba(224, 242, 254, 0.4) 54%, transparent 64%, transparent 100%)',
-        transform: 'rotate(32deg)',
-        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 12%, black 100%)',
-        maskImage: 'linear-gradient(to bottom, transparent 0%, black 12%, black 100%)',
-      }}
-    />
-
-    <div
-      className="absolute inset-0 opacity-[0.14] mix-blend-soft-light"
-      style={{
-        backgroundImage: NOISE_TILE,
-        backgroundSize: '100px 100px',
-        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
-        maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 100%)',
-      }}
-    />
-  </div>
-);
-
 const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' | 'disconnected' | 'failed' }> = ({ status }) => {
   const getStatusConfig = () => {
     switch (status) {
@@ -110,7 +33,7 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
           text: 'Tiempo Real Activo',
           bgColor: 'bg-green-100 dark:bg-green-900/40',
           textColor: 'text-green-800 dark:text-green-300',
-          borderColor: 'border-green-200'
+          borderColor: 'border-green-200 dark:border-green-800/50'
         };
       case 'connecting':
         return {
@@ -118,7 +41,7 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
           text: 'Conectando...',
           bgColor: 'bg-yellow-100 dark:bg-yellow-900/40',
           textColor: 'text-yellow-800 dark:text-yellow-300',
-          borderColor: 'border-yellow-200'
+          borderColor: 'border-yellow-200 dark:border-yellow-800/50'
         };
       case 'failed':
         return {
@@ -134,7 +57,7 @@ const ConnectionStatusIndicator: React.FC<{ status: 'connecting' | 'connected' |
           text: 'Sin conexión en tiempo real',
           bgColor: 'bg-red-100 dark:bg-red-900/40',
           textColor: 'text-red-800 dark:text-red-300',
-          borderColor: 'border-red-200'
+          borderColor: 'border-red-200 dark:border-red-800/50'
         };
     }
   };
@@ -334,18 +257,14 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
   return (
     <div className="w-full min-h-0">
       <div className="relative z-10 mb-3 sm:mb-4 overflow-hidden rounded-md bg-dm-bg-primary text-center">
-        <div
-          className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-gradient-to-bl from-sky-200/30 via-sky-100/15 to-transparent blur-2xl"
-          aria-hidden
-        />
         <div className="relative">
-          <h2 className="text-base sm:text-lg font-bold text-primary-dark tracking-tight">
+          <h2 className="text-base sm:text-lg font-bold text-dm-text-primary tracking-tight">
             Mapa de asientos
           </h2>
           <div className="mt-2 flex w-full flex-wrap items-center justify-center gap-2">
             <ConnectionStatusIndicator status={connectionStatus} />
             {canUseRealtime && totalActiveSelections > 0 && (
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-orange-50 dark:bg-orange-950/30 text-orange-800 dark:text-orange-300 border-orange-200/80">
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs border bg-orange-50 dark:bg-orange-950/30 text-orange-800 dark:text-orange-300 border-orange-200/80 dark:border-orange-800/50">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span className="font-medium leading-tight">
                   {totalActiveSelections} vendedor{totalActiveSelections > 1 ? 'es' : ''} activo{totalActiveSelections > 1 ? 's' : ''}
@@ -363,19 +282,10 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
       </div>
 
       <div className="relative isolate -mt-4 w-full min-h-0">
-        <SeatMapAuroraBackdrop />
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-32 sm:h-40"
-          style={{
-            background:
-              'linear-gradient(to bottom, #ffffff 0%, rgba(255, 255, 255, 0.75) 22%, rgba(255, 255, 255, 0.35) 48%, transparent 100%)',
-          }}
-          aria-hidden
-        />
         <div className="relative z-10 flex w-full justify-center overflow-x-auto overflow-y-visible touch-pan-x pb-1 pt-4">
         <div className="relative w-max max-w-full mx-auto min-w-0">
-          <div className="overflow-hidden rounded-lg border border-dashed border-dm-border-primary bg-dm-bg-primary shadow-sm ring-1 ring-slate-200/40">
-            <div className="relative px-2 py-2 sm:px-3 sm:py-3 bg-dm-bg-secondary">
+          <div className="overflow-visible rounded-lg border border-dashed border-dm-border-primary bg-dm-bg-primary shadow-sm ring-1 ring-slate-200/40 dark:ring-slate-700/40">
+            <div className="relative px-5 py-2 sm:px-8 sm:py-3 bg-dm-bg-secondary">
               <div className="text-center pb-2 mb-1 border-b border-dashed border-dm-border-primary/80">
               <span className="text-[10px] sm:text-xs font-bold text-dm-text-secondary uppercase tracking-wide line-clamp-2">
                 {vesselName}

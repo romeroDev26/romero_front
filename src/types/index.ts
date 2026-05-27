@@ -1314,6 +1314,16 @@ export interface BranchOffice {
 // ========================================
 export type SeatStatus = "AVAILABLE" | "RESERVED" | "CONFIRMED" | "CANCELLED" | "EXPIRED" | "BLOCKED";
 
+export interface SeatOccupantInfo {
+    passenger_name: string;
+    origin_stop_name: string;
+    destination_stop_name: string;
+    amount_paid: number;
+    currency_code: string;
+    document_number?: string;
+    status_detail?: string;
+}
+
 export interface SeatMapItem {
     id: number;
     trip_id: number;
@@ -1327,4 +1337,5 @@ export interface SeatMapItem {
         code: string;
         price_multiplier: number;
     };
+    occupant?: SeatOccupantInfo;
 }

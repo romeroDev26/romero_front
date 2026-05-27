@@ -20,7 +20,7 @@ export const SeatMapLegend: React.FC<SeatMapLegendProps> = ({ showPendingBlock =
         <div className="bg-dm-bg-primary rounded-lg p-3 shadow-sm border">
             <h3 className="font-bold text-dm-text-primary mb-2 text-sm">Zonas</h3>
             <div className="grid grid-cols-2 gap-2 text-xs">
-                <LegendItem color="bg-green-50 dark:bg-green-950/30 border-green-200" label="Reclinable" />
+                <LegendItem color="bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800" label="Reclinable" />
                 <LegendItem color="bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800" label="Estatico" />
             </div>
         </div>

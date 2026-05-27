@@ -45,7 +45,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
             onClick={() => onCurrencyChange('PEN')}
             className={`px-3 sm:px-4 py-1.5 rounded-full text-xs transition-all ${
               selectedCurrency === 'PEN'
-                ? 'bg-dm-bg-primary text-primary font-bold shadow-sm'
+                ? 'bg-dm-bg-primary text-primary font-bold shadow-sm dark:bg-blue-600 dark:text-white'
                 : 'text-dm-text-muted font-medium hover:text-dm-text-secondary'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
@@ -57,7 +57,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
             onClick={() => onCurrencyChange('USD')}
             className={`px-3 sm:px-4 py-1.5 rounded-full text-xs transition-all ${
               selectedCurrency === 'USD'
-                ? 'bg-dm-bg-primary text-primary font-bold shadow-sm'
+                ? 'bg-dm-bg-primary text-primary font-bold shadow-sm dark:bg-blue-600 dark:text-white'
                 : 'text-dm-text-muted font-medium hover:text-dm-text-secondary'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >

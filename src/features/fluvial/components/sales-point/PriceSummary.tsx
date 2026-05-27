@@ -321,11 +321,11 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         </div>
 
         <div className="border-t border-dashed border-dm-border-primary/80 pt-4">
-          <div className="flex items-center justify-between gap-3 rounded-xl bg-[#dbe1ff] dark:bg-blue-900/40 p-4">
-            <span className="text-sm font-medium text-[#00174d] dark:text-blue-100/90">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-[#dbe1ff] dark:bg-blue-700 p-4">
+            <span className="text-sm font-medium text-[#00174d] dark:text-white">
               Total a cobrar
             </span>
-            <span className="text-2xl font-extrabold tracking-tight text-[#00174d] tabular-nums">
+            <span className="text-2xl font-extrabold tracking-tight text-[#00174d] dark:text-white tabular-nums">
               {currencySymbol} {finalTotal.toFixed(2)}
             </span>
           </div>

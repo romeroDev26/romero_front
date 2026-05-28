@@ -1,6 +1,6 @@
 // src/features/fluvial/hooks/useSeatMapRealtime.ts
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { SeatMapItem } from '../../../types';
+import { SeatMapItem, SeatOccupantInfo } from '../../../types';
 import { useSeatMap } from './useSeatMap';
 import { useWebSocketConnection } from './useWebSocketConnection';
 import { useSeatSelections } from './useSeatSelections';
@@ -67,11 +67,11 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
 
   // Debouncing para actualizaciones del mapa de asientos
   const seatUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const pendingSeatUpdatesRef = useRef<Map<number, string>>(new Map());
+  const pendingSeatUpdatesRef = useRef<Map<number, { status: string; occupant?: SeatOccupantInfo }>>(new Map());
 
-  const debouncedSeatMapUpdate = useCallback((seatId: number, status: string) => {
-    // Acumular actualizaciones pendientes
-    pendingSeatUpdatesRef.current.set(seatId, status);
+  const debouncedSeatMapUpdate = useCallback((seatId: number, status: string, occupant?: SeatOccupantInfo) => {
+    // Acumular actualizaciones pendientes (incluyendo occupant si viene del WS)
+    pendingSeatUpdatesRef.current.set(seatId, { status, occupant });
     
     // Limpiar timeout anterior
     if (seatUpdateTimeoutRef.current) {
@@ -86,9 +86,10 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
       setSeatMap(prevMap => {
         let hasChanges = false;
         const newMap = prevMap.map(seat => {
-          if (updates.has(seat.id)) {
+          const update = updates.get(seat.id);
+          if (update) {
             hasChanges = true;
-            return { ...seat, status: updates.get(seat.id) as any };
+            return { ...seat, status: update.status as any, occupant: update.occupant ?? seat.occupant };
           }
           return seat;
         });
@@ -112,8 +113,8 @@ export const useSeatMapRealtime = (options: SeatMapRealtimeOptions) => {
   // Handler de mensajes WebSocket - Memoizado para evitar recreaciones
   const messageHandler = useMemo(() => {
     return new WebSocketMessageHandler(userId, {
-      onSeatMapUpdate: (seatId: number, status: string) => {
-        debouncedSeatMapUpdateRef.current(seatId, status);
+      onSeatMapUpdate: (seatId: number, status: string, occupant?: SeatOccupantInfo) => {
+        debouncedSeatMapUpdateRef.current(seatId, status, occupant);
       },
       onSelectionUpdate: (selection: SeatSelection) => {
         addSelectionRef.current(selection);

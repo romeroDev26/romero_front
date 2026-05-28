@@ -1,4 +1,5 @@
 // src/features/fluvial/types/websocket.types.ts
+import { SeatOccupantInfo } from '../../../types';
 
 // Interfaces específicas para el INITIAL_STATE mejorado
 export interface SelectionSeat {
@@ -44,6 +45,8 @@ export interface SeatUpdateMessage {
   ttl?: number;
   success?: boolean;
   error?: string;
+  // NUEVO: Diccionario de occupants indexado por seatId (string) para SEATS_OCCUPIED
+  occupants?: Record<string, SeatOccupantInfo>;
 }
 
 export interface SeatSelection {

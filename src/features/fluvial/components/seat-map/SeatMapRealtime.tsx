@@ -281,8 +281,8 @@ export const SeatMapRealtime: React.FC<SeatMapRealtimeProps> = React.memo(({
         </div>
       </div>
 
-      <div className="relative isolate -mt-4 w-full min-h-0">
-        <div className="relative z-10 flex w-full justify-center overflow-x-auto overflow-y-visible touch-pan-x pb-1 pt-4">
+      <div className="relative z-20 -mt-4 w-full min-h-0">
+        <div className="relative flex w-full justify-center overflow-x-auto overflow-y-visible touch-pan-x pb-1 pt-4">
         <div className="relative w-max max-w-full mx-auto min-w-0">
           <div className="overflow-visible rounded-lg border border-dashed border-dm-border-primary bg-dm-bg-primary shadow-sm ring-1 ring-slate-200/40 dark:ring-slate-700/40">
             <div className="relative px-5 py-2 sm:px-8 sm:py-3 bg-dm-bg-secondary">

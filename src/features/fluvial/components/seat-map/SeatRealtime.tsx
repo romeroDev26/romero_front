@@ -1,5 +1,5 @@
 // src/features/fluvial/components/seat-map/SeatRealtime.tsx
-import React from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { SeatMapItem, SeatStatus, SeatOccupantInfo } from '../../../../types';
 import { getSeatTypeName } from '../../utils/seatUtils';
 
@@ -209,6 +209,29 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
   isWebSocketAvailable = true,
   isOccupiedByRepresentative = false
 }) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+
+  const showTooltip = useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setTooltipStyle({
+        position: 'fixed',
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2,
+        transform: 'translate(-50%, -100%)',
+        zIndex: 9999,
+        pointerEvents: 'none',
+      });
+      setTooltipVisible(true);
+    }
+  }, []);
+
+  const hideTooltip = useCallback(() => {
+    setTooltipVisible(false);
+  }, []);
+
   // Un asiento no es clickeable si está bloqueado, su estado no es 'AVAILABLE',
   // está ocupado por un representante, o está siendo seleccionado por otro usuario (solo si WebSocket está disponible)
   const isClickable = !isLocked && seat.status === 'AVAILABLE' &&
@@ -216,8 +239,9 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
     !(activeSelection && isWebSocketAvailable && !isSelected);
 
   return (
-    <div className="relative group">
+    <div className="relative" onMouseEnter={showTooltip} onMouseLeave={hideTooltip}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => isClickable && onClick(seat)}
         disabled={!isClickable}
@@ -258,22 +282,22 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
         )}
       </button>
 
-      {/* Tooltip custom */}
-      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2
-                      invisible group-hover:visible opacity-0 group-hover:opacity-100
-                      transition-all duration-200 z-50 pointer-events-none">
-        <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-300 min-w-[160px] max-w-[220px]">
-          <SeatTooltipContent
-            seat={seat}
-            activeSelection={activeSelection}
-            isOccupiedByRepresentative={isOccupiedByRepresentative}
-          />
-          {/* Flecha */}
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px">
-            <div className="w-2 h-2 bg-gray-900 dark:bg-gray-100 border-r border-b border-gray-700 dark:border-gray-300 transform rotate-45"></div>
+      {/* Tooltip fixed — sale de todos los contenedores para no ser cortado */}
+      {tooltipVisible && (
+        <div style={tooltipStyle}>
+          <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-300 min-w-[160px] max-w-[220px]">
+            <SeatTooltipContent
+              seat={seat}
+              activeSelection={activeSelection}
+              isOccupiedByRepresentative={isOccupiedByRepresentative}
+            />
+            {/* Flecha */}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px">
+              <div className="w-2 h-2 bg-gray-900 dark:bg-gray-100 border-r border-b border-gray-700 dark:border-gray-300 transform rotate-45"></div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

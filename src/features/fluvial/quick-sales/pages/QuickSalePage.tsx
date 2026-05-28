@@ -491,7 +491,7 @@ export const QuickSalePage: React.FC = () => {
           />
 
           {/* Datos del Cliente */}
-          <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
+          <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
             <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
               <User className="h-5 w-5 mr-2 text-dm-text-secondary" />
               Datos del Cliente (Opcional)
@@ -527,7 +527,7 @@ export const QuickSalePage: React.FC = () => {
 
           {/* Agregar Destinatario - solo para Encomienda Fluvial */}
           {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
-            <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
+            <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-semibold text-lg text-dm-text-primary flex items-center">
@@ -607,7 +607,7 @@ export const QuickSalePage: React.FC = () => {
 
         {/* Columna derecha: Resumen y Acción */}
         <div className="lg:col-span-1">
-          <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border sticky top-6">
+          <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary sticky top-6">
             <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
               <FileText className="h-5 w-5 mr-2 text-dm-text-secondary" />
               Resumen de Venta
@@ -715,7 +715,7 @@ export const QuickSalePage: React.FC = () => {
                 </div>
               )}
               
-              <div className="flex justify-between text-lg font-bold border-t pt-2">
+              <div className="flex justify-between text-lg font-bold border-t border-dm-border-primary pt-2">
                 <span>Total:</span>
                 <span className="text-purple-600">
                   S/ {calculatedAmounts.totalAmount.toFixed(2)}

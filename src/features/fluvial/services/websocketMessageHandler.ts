@@ -64,6 +64,10 @@ export class WebSocketMessageHandler {
         this.handleSeatMapUpdate(message);
         break;
 
+      case 'SEAT_RESERVED':
+        this.handleSeatReserved(message);
+        break;
+
       case 'PONG':
         break;
 
@@ -269,6 +273,15 @@ export class WebSocketMessageHandler {
         this.confirmedSeats.add(message.seatId);
       }
       this.onSeatMapUpdate(message.seatId, message.status);
+      this.onSelectionRemove(message.seatId);
+    }
+  }
+
+  private handleSeatReserved(message: SeatUpdateMessage): void {
+    // Procesar reserva confirmada en tiempo real
+    // Payload: { type: 'SEAT_RESERVED', tripId, seatId, seatNumber, reservationId, customerId, quantity, seatTypeId, timestamp }
+    if (message.seatId !== undefined) {
+      this.onSeatMapUpdate(message.seatId, 'RESERVED');
       this.onSelectionRemove(message.seatId);
     }
   }

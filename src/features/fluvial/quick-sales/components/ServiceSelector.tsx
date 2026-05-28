@@ -36,7 +36,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
+      <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
         <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
         </div>
@@ -45,7 +45,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
   }
 
   return (
-    <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
+    <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
       <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
         <Package className="h-5 w-5 mr-2 text-dm-text-secondary" />
         Seleccione el Servicio o Producto *

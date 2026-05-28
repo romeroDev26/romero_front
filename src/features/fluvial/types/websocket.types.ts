@@ -23,7 +23,7 @@ export interface SeatUpdateMessage {
   type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG'
         | 'SEAT_TEMP_RESERVE' | 'SEAT_TEMP_RELEASE' | 'SEAT_TEMP_RESERVE_RESPONSE'
         | 'SEAT_TEMP_RESERVED' | 'SEAT_TEMP_RELEASED' | 'SEAT_TEMP_RELEASE_ALL'
-        | 'SEATS_OCCUPIED' | 'SEAT_MAP_UPDATE';
+        | 'SEATS_OCCUPIED' | 'SEAT_MAP_UPDATE' | 'SEAT_RESERVED';
   tripId: number;
   seatId?: number;
   seatIds?: number[];

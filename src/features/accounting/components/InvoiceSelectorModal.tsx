@@ -133,7 +133,7 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
             </div>
           )}
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
             <div className="text-sm text-yellow-800 dark:text-yellow-300">
               <strong>Nota:</strong> Solo se muestran facturas que pueden ser afectadas por notas de crédito.
               Al seleccionar una factura, se cargarán automáticamente todos sus datos y productos.

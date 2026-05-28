@@ -98,7 +98,7 @@ export const RemissionGuideActions: React.FC<RemissionGuideActionsProps> = ({
             size={size}
             onClick={handleProcessSunat}
             disabled={isLoading}
-            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/30"
             title="Enviar a SUNAT"
           >
             <PaperAirplaneIcon className="h-4 w-4" />

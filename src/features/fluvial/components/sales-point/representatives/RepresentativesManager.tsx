@@ -154,7 +154,7 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       
                       {/* ← NUEVO: Mostrar notas especiales si existen */}
                       {rep.item_description && (
-                        <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 dark:bg-blue-950/30 p-2">
+                        <div className="mt-2 rounded-md border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30 p-2">
                           <div className="mb-1 text-xs font-medium text-blue-700 dark:text-blue-300">Descripción del ítem:</div>
                           <div className="text-xs text-dm-text-primary">{rep.item_description}</div>
                         </div>
@@ -207,7 +207,7 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
         {/* Add Representative Form */}
         {showAddForm && (
           <div className="border-t border-dm-border-primary pt-4">
-            <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 p-3">
+            <div className="mb-3 rounded-lg border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30 p-3">
               <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
                 <Plus className="h-4 w-4" />
                 <span className="font-medium">Agregando nuevo representante</span>

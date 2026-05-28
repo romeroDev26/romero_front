@@ -251,7 +251,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
         </div>
 
         {!isEditing && (
-          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md p-3">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md p-3">
             <p className="text-sm text-blue-800 dark:text-blue-300">
               Los viajes se generarán automáticamente según la configuración establecida.
               Puede modificar o cancelar los viajes individuales después de su creación.

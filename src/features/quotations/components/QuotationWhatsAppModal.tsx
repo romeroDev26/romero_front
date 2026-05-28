@@ -183,8 +183,8 @@ El equipo de ${businessName}`;
         {sendResult && (
           <div className={`mb-4 p-3 rounded-lg flex items-center ${
             sendResult.success 
-              ? 'bg-green-50 dark:bg-green-950/30 border border-green-200' 
-              : 'bg-red-50 dark:bg-red-950/30 border border-red-200'
+              ? 'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50' 
+              : 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50'
           }`}>
             {sendResult.success ? (
               <>
@@ -238,7 +238,7 @@ El equipo de ${businessName}`;
 
         {/* Advertencia si no hay WhatsApp configurado para la sucursal */}
         {!whatsAppInstance.hasInstance && !whatsAppInstance.isLoading && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg">
             <div className="flex items-start">
               <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-yellow-800 dark:text-yellow-300 text-xs">
@@ -256,7 +256,7 @@ El equipo de ${businessName}`;
 
         {/* Nota informativa - Solo mostrar si hay WhatsApp configurado */}
         {whatsAppInstance.hasInstance && (
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
             <div className="flex items-start">
               <MessageCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-blue-800 dark:text-blue-300 text-xs">

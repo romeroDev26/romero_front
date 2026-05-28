@@ -228,8 +228,8 @@ El equipo de ${businessName}`;
         {sendResult && (
           <div className={`mb-4 p-3 rounded-lg flex items-center ${
             sendResult.success 
-              ? 'bg-green-50 dark:bg-green-950/30 border border-green-200' 
-              : 'bg-red-50 dark:bg-red-950/30 border border-red-200'
+              ? 'bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50' 
+              : 'bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50'
           }`}>
             {sendResult.success ? (
               <>
@@ -307,7 +307,7 @@ El equipo de ${businessName}`;
 
         {/* Advertencia si no hay WhatsApp disponible en ninguna sucursal */}
         {!whatsAppInstance.effectiveInstanceName && !whatsAppInstance.isLoading && !whatsAppInstance.isCheckingConnection && (
-          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg">
+          <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
             <div className="flex items-start">
               <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-red-800 dark:text-red-300 text-xs">
@@ -325,7 +325,7 @@ El equipo de ${businessName}`;
 
         {/* Verificando conexión */}
         {whatsAppInstance.isCheckingConnection && (
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
             <div className="flex items-center">
               <Spinner size="sm" className="mr-2 text-blue-600 dark:text-blue-400" />
               <span className="text-blue-800 dark:text-blue-300 text-xs">Verificando estado de conexión de WhatsApp...</span>
@@ -335,7 +335,7 @@ El equipo de ${businessName}`;
 
         {/* Nota informativa - Solo mostrar si hay WhatsApp disponible y está conectado directamente */}
         {whatsAppInstance.effectiveInstanceName && !whatsAppInstance.usingFallback && !whatsAppInstance.isCheckingConnection && (
-          <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg">
+          <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg">
             <div className="flex items-start">
               <MessageCircle className="h-4 w-4 text-green-600 dark:text-green-400 mr-2 mt-0.5 flex-shrink-0" />
               <div className="text-green-800 dark:text-green-300 text-xs">

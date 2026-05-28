@@ -85,7 +85,7 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
   };
 
   return (
-    <div className="bg-dm-bg-primary rounded-lg shadow-sm border p-4 md:p-6 space-y-6">
+    <div className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-4 md:p-6 space-y-6">
       <h3 className="font-semibold text-lg text-dm-text-primary mb-2 flex items-center gap-2">
         <span>Datos del Destinatario</span>
       </h3>

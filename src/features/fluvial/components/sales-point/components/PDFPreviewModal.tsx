@@ -152,7 +152,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             </div>
 
             {/* PDF Preview */}
-            <div className="border rounded-lg overflow-hidden bg-dm-bg-primary">
+            <div className="border border-dm-border-primary rounded-lg overflow-hidden bg-dm-bg-primary">
               {currentUrl ? (
                 <iframe
                   src={currentUrl}

@@ -225,7 +225,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
       )}
 
       {/* Pago 1 (Principal) */}
-      <div className={`p-4 rounded-lg border ${isSplitPayment ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200' : 'bg-dm-bg-secondary border-dm-border-primary'}`}>
+      <div className={`p-4 rounded-lg border ${isSplitPayment ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50' : 'bg-dm-bg-secondary border-dm-border-primary'}`}>
         <h4 className="text-sm font-medium text-dm-text-secondary mb-3">
           {isSplitPayment ? 'Pago 1 (Principal)' : 'Metodo de Pago'}
         </h4>
@@ -306,7 +306,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
 
       {/* Pago 2 (Secundario) - Solo visible en pago dividido */}
       {isSplitPayment && (
-        <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/30 border-green-200">
+        <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/50">
           <h4 className="text-sm font-medium text-dm-text-secondary mb-3">
             Pago 2 (Secundario)
           </h4>
@@ -386,7 +386,7 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
 
       {/* Resumen de totales (solo en pago dividido) */}
       {isSplitPayment && totalAmount > 0 && (
-        <div className={`p-3 rounded-lg border ${isValidTotal ? 'bg-dm-bg-secondary border-dm-border-primary' : 'bg-red-50 dark:bg-red-950/30 border-red-200'}`}>
+        <div className={`p-3 rounded-lg border ${isValidTotal ? 'bg-dm-bg-secondary border-dm-border-primary' : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50'}`}>
           <div className="flex justify-between items-center text-sm">
             <span className="text-dm-text-secondary">Total a pagar:</span>
             <span className="font-semibold">{currencySymbol} {totalAmount.toFixed(2)}</span>

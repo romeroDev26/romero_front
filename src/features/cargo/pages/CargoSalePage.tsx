@@ -525,7 +525,7 @@ export const CargoSalePage: React.FC = () => {
         return (
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Datos del Remitente */}
-            <div className="bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border">
+            <div className="bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border border-dm-border-primary">
               <h2 className="text-xl font-semibold text-dm-text-primary mb-6">Datos del Remitente</h2>
               <p className="text-dm-text-muted mb-6">Complete la información de la persona o empresa que realiza el envío.</p>
               <PassengerDataForm passengerData={remitter} setPassengerData={setRemitter} />
@@ -543,7 +543,7 @@ export const CargoSalePage: React.FC = () => {
 
       case 'tripSelection':
         return (
-          <div className="bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border">
+          <div className="bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border border-dm-border-primary">
             <p className="text-dm-text-muted mb-6 text-center">Seleccione el viaje en el que se transportará la encomienda.</p>
             <TripSelection 
               branch={selectedBranch}
@@ -569,7 +569,7 @@ export const CargoSalePage: React.FC = () => {
         );
       case 'tripSegmentSelection':
         return (
-          <div className="max-w-4xl mx-auto bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border">
+          <div className="max-w-4xl mx-auto bg-dm-bg-primary p-4 md:p-8 rounded-lg shadow-sm border border-dm-border-primary">
             <p className="text-dm-text-muted mb-6 text-center">Seleccione el tramo específico para la encomienda.</p>
             {selectedTrip && (
               <CargoTripSelector
@@ -689,7 +689,7 @@ export const CargoSalePage: React.FC = () => {
                     <p className="mt-1 text-xs text-dm-text-secondary">Sucursal: {selectedBranch.name}</p>
                   </div>
 
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50 dark:bg-amber-950/30 p-4">
+                  <div className="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/30 p-4">
                     <div className="mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300">
                       <MapPinIcon className="h-4 w-4" />
                       <p className="text-xs font-semibold uppercase tracking-[0.2em]">Tramo</p>

@@ -70,7 +70,7 @@ const SellerCancellationRequestModal: React.FC<SellerCancellationRequestModalPro
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-6">
             {/* Info de solicitud */}
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+            <div className="bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-yellow-400 dark:border-yellow-700/50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">

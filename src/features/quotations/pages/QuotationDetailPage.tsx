@@ -31,10 +31,10 @@ const statusLabels: Record<QuotationStatus, string> = {
 
 const statusColors: Record<QuotationStatus, string> = {
   DRAFT: 'bg-dm-bg-secondary text-dm-text-secondary border-dm-border-primary',
-  SENT: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200',
-  ACCEPTED: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200',
-  REJECTED: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200',
-  EXPIRED: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200',
+  SENT: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/50',
+  ACCEPTED: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800/50',
+  REJECTED: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50',
+  EXPIRED: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800/50',
   CONVERTED: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
 };
 
@@ -239,7 +239,7 @@ export const QuotationDetailPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-md p-4">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-md p-4">
           <div className="text-red-800 dark:text-red-300">Error: {error}</div>
         </div>
         <Button 
@@ -383,7 +383,7 @@ export const QuotationDetailPage: React.FC = () => {
                       {statusLabels[quotation.status]}
                     </span>
                     {isExpired && quotation.status !== 'CONVERTED' && (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/50">
                         Expirada
                       </span>
                     )}

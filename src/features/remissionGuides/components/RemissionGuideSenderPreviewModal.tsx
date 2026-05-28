@@ -140,7 +140,7 @@ export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPrev
           {/* Contenido */}
           <div className="bg-dm-bg-primary px-4 pt-5 pb-4 sm:p-6">
             {/* Información de la guía */}
-            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg p-4 mb-6">
               <div className="flex items-center">
                 <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2" />
                 <div className="text-sm">

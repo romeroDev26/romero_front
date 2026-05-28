@@ -180,7 +180,7 @@ export const UsersPage: React.FC = () => {
 
       {/* Error */}
       {error && (
-        <div className="rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/40 p-4">
+        <div className="rounded-[12px] border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/40 p-4">
           <p className="text-[13px] text-red-700 dark:text-red-300">
             Error al cargar usuarios. Por favor, intente nuevamente.
           </p>

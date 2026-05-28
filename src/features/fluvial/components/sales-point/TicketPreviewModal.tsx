@@ -264,7 +264,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
          invoiceData.items[0].parcel_number && 
          (invoiceData.items[0].product_name?.toLowerCase().includes('encomienda') || 
           invoiceData.items[0].item_description?.toLowerCase().includes('encomienda')) && (
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
             <p className="text-sm text-blue-800 dark:text-blue-300">
               Numero de Encomienda: <span className="font-bold">
                 {invoiceData.items[0].parcel_number}
@@ -318,7 +318,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
 
         {/* Vista previa del PDF */}
         <div className="mb-4">
-          <div className="border rounded-lg overflow-hidden bg-dm-bg-secondary" style={{ height: '500px' }}>
+          <div className="border border-dm-border-primary rounded-lg overflow-hidden bg-dm-bg-secondary" style={{ height: '500px' }}>
             {(isGenerating || (activeFormat === 'sticker100x100' && isGeneratingSticker)) ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">

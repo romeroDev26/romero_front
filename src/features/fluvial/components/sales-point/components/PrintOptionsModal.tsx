@@ -71,7 +71,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
       label: 'Vista Previa',
       description: 'Ver comprobantes antes de descargar',
       icon: EyeIcon,
-      color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 text-blue-700 dark:text-blue-300',
+      color: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50 text-blue-700 dark:text-blue-300',
       recommended: true
     },
     {
@@ -79,7 +79,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
       label: 'Descargar A4',
       description: 'Guardar PDF en formato A4',
       icon: DocumentArrowDownIcon,
-      color: 'bg-green-50 dark:bg-green-950/30 border-green-200 text-green-700 dark:text-green-300',
+      color: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/50 text-green-700 dark:text-green-300',
       recommended: true
     },
     {
@@ -101,7 +101,7 @@ export const PrintOptionsModal: React.FC<PrintOptionsModalProps> = ({
     >
       <div className="space-y-6">
         {/* Success message */}
-        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg p-4">
           <div className="flex items-center">
             <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400 mr-3" />
             <div>

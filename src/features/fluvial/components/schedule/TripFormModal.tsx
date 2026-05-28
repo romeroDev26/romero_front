@@ -309,7 +309,7 @@ export const TripFormModal: React.FC<Props> = ({
             </span>
           </label>
           {!trip && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+            <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-md p-3">
               <p className="text-sm text-yellow-800 dark:text-yellow-300">
                 Este viaje se creará como un viaje único (no recurrente). Para viajes que se repiten
                 semanalmente, use las plantillas de viaje.

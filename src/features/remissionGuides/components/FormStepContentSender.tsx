@@ -349,7 +349,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* Información del viaje seleccionado o mensaje alternativo */}
         {selectedTrip ? (
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 dark:border-green-800/50 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-lg">
@@ -380,7 +380,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 dark:border-blue-800/50 rounded-xl p-6">
             <div className="flex items-center justify-center">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
@@ -508,7 +508,7 @@ export const FormStepContentSender: React.FC<FormStepContentSenderProps> = ({
             ))}
 
             {errors.items && typeof errors.items.message === 'string' && (
-              <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg">
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
                 <p className="text-red-600 dark:text-red-400 text-sm">{errors.items.message}</p>
               </div>
             )}

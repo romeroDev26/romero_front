@@ -74,9 +74,9 @@ export const CreditNoteDetailPage: React.FC = () => {
   const getSunatStatusColor = (status: string) => {
     const colors = {
       PENDING: 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300',
-      SENT: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 text-blue-800 dark:text-blue-300',
-      ACCEPTED: 'bg-green-50 dark:bg-green-950/30 border-green-200 text-green-800 dark:text-green-300',
-      REJECTED: 'bg-red-50 dark:bg-red-950/30 border-red-200 text-red-800 dark:text-red-300',
+      SENT: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50 text-blue-800 dark:text-blue-300',
+      ACCEPTED: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/50 text-green-800 dark:text-green-300',
+      REJECTED: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50 text-red-800 dark:text-red-300',
       ERROR: 'bg-dm-bg-secondary border-dm-border-primary text-dm-text-primary',
     };
     return colors[status as keyof typeof colors] || colors.ERROR;

@@ -183,7 +183,7 @@ export const ProductsServicesPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-md p-4">
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-md p-4">
         <p className="text-red-600 dark:text-red-400">Error al cargar productos y servicios</p>
         <Button
           onClick={() => refetch()}

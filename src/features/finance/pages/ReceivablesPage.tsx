@@ -340,7 +340,7 @@ const ReceivablesPage: React.FC = () => {
                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-dm-border-secondary">
                   {items.map((item) => (
                     <tr key={item.invoice_item_id} className="hover:bg-dm-bg-hover transition-colors">
                       <td className="px-6 py-4 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
@@ -400,7 +400,7 @@ const ReceivablesPage: React.FC = () => {
             </div>
 
             {/* Mobile: Cards */}
-            <div className="divide-y divide-gray-100 lg:hidden">
+            <div className="divide-y divide-dm-border-secondary lg:hidden">
               {items.map((item) => (
                 <div key={item.invoice_item_id} className="space-y-3 p-4">
                   {/* Header: ID + Estado + Acción */}

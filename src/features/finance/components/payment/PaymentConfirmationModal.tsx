@@ -274,7 +274,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
 
           {/* Error de validación */}
           {validationError && (
-            <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 p-3">
+            <div className="flex items-start gap-2 rounded-lg border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 p-3">
               <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-500 dark:text-red-400" />
               <p className="text-sm font-medium text-red-700 dark:text-red-300">{validationError}</p>
             </div>

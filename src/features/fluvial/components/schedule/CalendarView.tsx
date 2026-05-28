@@ -48,15 +48,15 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
   const getTripStatusColor = (trip: AvailableTrip) => {
     switch (trip.sales_status) {
       case 'DISPONIBLE':
-        return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200';
+        return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800/50';
       case 'URGENTE':
         return 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 border-orange-200';
       case 'AGOTADO':
-        return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200';
+        return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800/50';
       case 'CERRADO':
         return 'bg-dm-bg-secondary text-dm-text-primary border-dm-border-primary';
       default:
-        return 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200';
+        return 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800/50';
     }
   };
 
@@ -157,7 +157,7 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
       {/* Leyenda */}
       <div className="mt-4 flex flex-wrap gap-2 text-xs">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-green-100 dark:bg-green-900/40 border border-green-200 rounded"></div>
+          <div className="w-3 h-3 bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800/50 rounded"></div>
           <span>Disponible</span>
         </div>
         <div className="flex items-center gap-1">
@@ -165,7 +165,7 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
           <span>Urgente</span>
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 bg-red-100 dark:bg-red-900/40 border border-red-200 rounded"></div>
+          <div className="w-3 h-3 bg-red-100 dark:bg-red-900/40 border border-red-200 dark:border-red-800/50 rounded"></div>
           <span>Agotado</span>
         </div>
         <div className="flex items-center gap-1">

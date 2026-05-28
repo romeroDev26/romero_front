@@ -17,7 +17,7 @@ import { BranchSelector } from '../components/sales-point/BranchSelector';
 const STATUS_CONFIG: Record<string, { label: string; classes: string }> = {
   RESERVED: {
     label: 'Reservado',
-    classes: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-100',
+    classes: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900/40',
   },
   CONFIRMED: {
     label: 'Confirmado',
@@ -304,7 +304,7 @@ export const ReservationsPage: React.FC = () => {
           </div>
         )}
         {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 dark:bg-red-950/30 p-8 text-center text-sm text-red-600 dark:text-red-400">
+          <div className="rounded-xl border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 p-8 text-center text-sm text-red-600 dark:text-red-400">
             Error al cargar reservas
           </div>
         )}
@@ -399,7 +399,7 @@ export const ReservationsPage: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleCancelReservation(reservation)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 py-2 text-xs font-medium text-red-700 dark:text-red-300 transition-colors hover:bg-red-100 dark:hover:bg-red-900/40"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 py-2 text-xs font-medium text-red-700 dark:text-red-300 transition-colors hover:bg-red-100 dark:hover:bg-red-900/40"
                   >
                     <Ban className="h-3.5 w-3.5" />
                     Cancelar

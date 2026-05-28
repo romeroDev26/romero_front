@@ -46,7 +46,7 @@ export const QuotationBranchStep: React.FC<QuotationBranchStepProps> = ({ onBran
         )}
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-4 text-red-800 dark:text-red-300 text-sm">
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-4 text-red-800 dark:text-red-300 text-sm">
             Error al cargar las sucursales: {error.message}
           </div>
         )}

@@ -87,7 +87,7 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
       </div>
 
       {/* Body: Pasajeros + Carga */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[#f0f0f0]">
+      <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-dm-border-secondary">
         {/* Pasajeros */}
         <ManifestSection
           title="Pasajeros"

@@ -216,7 +216,7 @@ export const SalesPointSelector: React.FC = () => {
               </div>
             )}
           </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
+          <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
             <div className="text-2xl font-bold text-purple-600 mb-1">
               {statisticsLoading ? (
                 <div className="animate-pulse h-8 bg-purple-200 rounded"></div>
@@ -235,7 +235,7 @@ export const SalesPointSelector: React.FC = () => {
 
         {/* Error message */}
         {statisticsError && !statisticsLoading && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg">
             <div className="text-yellow-800 dark:text-yellow-300 text-sm text-center">
               No se pudieron cargar todas las estadísticas. Las métricas mostradas pueden estar incompletas.
             </div>

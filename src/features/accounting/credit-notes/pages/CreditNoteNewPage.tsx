@@ -230,7 +230,7 @@ export const CreditNoteNewPage: React.FC = () => {
 			</div>
 
 			{/* Información adicional */}
-			<div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-4">
+			<div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4">
 				<div className="flex">
 					<div className="ml-3">
 						<h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">

@@ -91,7 +91,7 @@ export const CreditNoteItemsSection: React.FC<CreditNoteItemsSectionProps> = ({
 				
 				<div className="space-y-4">
 					{fields.map((field, index) => (
-						<div key={field.id} className="border rounded-lg p-4">
+						<div key={field.id} className="border border-dm-border-primary rounded-lg p-4">
 							<div className="flex justify-between items-start mb-3">
 								<h3 className="font-medium text-dm-text-primary">Item #{index + 1}</h3>
 								{fields.length > 1 && (

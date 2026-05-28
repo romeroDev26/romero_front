@@ -148,7 +148,7 @@ export const FaresByRoutePage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 text-red-600 dark:text-red-400 px-4 py-3 rounded-md">
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 px-4 py-3 rounded-md">
         <div className="flex items-center">
           <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
           Error al cargar las tarifas: {error}

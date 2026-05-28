@@ -18,7 +18,7 @@ export const InfantCard: React.FC<InfantCardProps> = ({ infant, index, onRemove 
     : '-';
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-amber-100 bg-dm-bg-primary p-3 shadow-sm">
+    <div className="flex items-center justify-between rounded-xl border border-amber-100 dark:border-amber-900/40 bg-dm-bg-primary p-3 shadow-sm">
       <div className="flex items-center gap-3 min-w-0">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
           <Baby className="h-4 w-4 text-amber-600 dark:text-amber-400" />

@@ -74,7 +74,7 @@ export const CargoTripSelector: React.FC<CargoTripSelectorProps> = ({
       </div>
 
       {selectedOriginId && selectedDestinationId && (
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 p-4 rounded-lg">
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 p-4 rounded-lg">
           <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Tramo Seleccionado:</h3>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">

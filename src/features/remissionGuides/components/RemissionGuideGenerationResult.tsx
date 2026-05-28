@@ -45,7 +45,7 @@ export const RemissionGuideGenerationResult: React.FC<RemissionGuideGenerationRe
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header de éxito */}
-      <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-xl p-6 mb-8">
+      <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-xl p-6 mb-8">
         <div className="flex items-center">
           <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-full mr-4">
             <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -80,7 +80,7 @@ export const RemissionGuideGenerationResult: React.FC<RemissionGuideGenerationRe
               </div>
               <div className="text-sm text-green-800 dark:text-green-300">Destinos Procesados</div>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
+            <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">
                 {generationResult.total_packages}
               </div>

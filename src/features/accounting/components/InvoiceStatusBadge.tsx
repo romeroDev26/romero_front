@@ -68,8 +68,8 @@ export const InvoiceStatusBadge: React.FC<InvoiceStatusBadgeProps> = ({
   // Si el documento está cancelado o aumentado, mostramos ambos estados en línea
   if (businessStatus === 'CANCELLED' || businessStatus === 'INCREASED') {
     const businessStatusColor = businessStatus === 'CANCELLED' 
-      ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200'
-      : 'bg-yellow-50 text-yellow-700 dark:text-yellow-300 border-yellow-200';
+      ? 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50'
+      : 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800/50';
     const businessStatusText = businessStatus === 'CANCELLED' ? 'Cancelado' : 'Aumentado';
     
     return (

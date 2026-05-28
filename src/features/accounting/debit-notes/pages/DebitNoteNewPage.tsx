@@ -170,7 +170,7 @@ export const DebitNoteNewPage: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="divide-y divide-[#f0f0f0]">
+          <div className="divide-y divide-dm-border-secondary">
             {filteredInvoices.map((invoice) => {
               const isCancelled = invoice.business_status === 'CANCELLED';
               const isIncreased = invoice.business_status === 'INCREASED';

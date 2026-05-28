@@ -174,7 +174,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
   };
 
   return (
-    <div className={`bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-4 mb-6 ${className}`}>
+    <div className={`bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-6 ${className}`}>
       {/* Header de confirmación de reserva */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
 
       {/* Alertas y notificaciones */}
       {!isReservationValid && (
-        <div className="mt-4 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded p-3 text-sm text-red-800 dark:text-red-300">
+        <div className="mt-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded p-3 text-sm text-red-800 dark:text-red-300">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             <span className="font-medium">Reserva no válida para confirmación</span>
@@ -265,7 +265,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
       )}
 
       {isReservationValid && reservationData.remainingAmount > 0 && (
-        <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800 dark:text-yellow-300">
+        <div className="mt-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded p-3 text-sm text-yellow-800 dark:text-yellow-300">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             <span className="font-medium">Pago pendiente</span>

@@ -158,7 +158,7 @@ export const DebitNotesListPage: React.FC = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-[#f0f0f0]">
+              <table className="min-w-full divide-y divide-dm-border-secondary">
                 <thead className="bg-dm-bg-secondary">
                   <tr>
                     <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
@@ -187,7 +187,7 @@ export const DebitNotesListPage: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#f0f0f0]">
+                <tbody className="divide-y divide-dm-border-secondary">
                   {debitNotes?.map((debitNote: DebitNote) => (
                     <tr key={debitNote.id} className="hover:bg-dm-bg-secondary/60 transition-colors">
                       <td className="px-5 py-4 whitespace-nowrap">

@@ -240,7 +240,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
             Seguridad
           </h3>
           {!isCreate && (
-            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
               <p className="text-xs text-blue-700 dark:text-blue-300">
                 Deje los campos en blanco para mantener la contraseña actual
               </p>

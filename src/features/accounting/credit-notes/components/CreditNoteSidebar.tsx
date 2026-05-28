@@ -82,7 +82,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 			<div className="bg-dm-bg-primary rounded-lg shadow p-6">
 				<h2 className="text-lg font-semibold text-dm-text-primary mb-4">Información Importante</h2>
 				<div className="space-y-3 text-sm text-dm-text-secondary">
-					<div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-3">
+					<div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg p-3">
 						<p className="font-medium text-blue-800 dark:text-blue-300 mb-1">Información</p>
 						<ul className="space-y-1 text-blue-700 dark:text-blue-300">
 							<li>• Las notas de crédito reducen la deuda del cliente</li>
@@ -94,7 +94,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 
 					{/* Ayuda específica para tipo 09 - Disminución en el valor */}
 					{creditNoteTypeCode === '09' && (
-						<div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+						<div className="mt-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
 							<p className="font-medium text-yellow-800 dark:text-yellow-300 mb-2">Disminución en el valor (Tipo 09)</p>
 							<p className="text-sm text-yellow-700 dark:text-yellow-300 mb-2">Puedes aplicar una disminución global o editar por ítem en una ventana aparte.</p>
 							<div className="flex items-center space-x-2">
@@ -115,7 +115,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 
 					{/* Ayuda específica para tipo 04 - Descuento global */}
 					{creditNoteTypeCode === '04' && (
-						<div className="mt-4 bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-3">
+						<div className="mt-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg p-3">
 							<p className="font-medium text-green-800 dark:text-green-300 mb-2">Descuento global (Tipo 04)</p>
 							<p className="text-sm text-green-700 dark:text-green-300 mb-2">Ingrese el monto total de descuento y seleccione cómo aplicarlo.</p>
 							<div className="space-y-2">

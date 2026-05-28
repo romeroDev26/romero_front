@@ -626,7 +626,7 @@ export const WhatsAppConfigPage: React.FC = () => {
         maxWidth="lg"
       >
         <div className="text-center space-y-4">
-          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-4 mb-4">
+          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg p-4 mb-4">
             <p className="text-sm text-green-800 dark:text-green-300">
               <strong>Instrucciones:</strong> Abre WhatsApp en tu teléfono → Configuración → Dispositivos vinculados → Vincular un dispositivo
             </p>
@@ -704,7 +704,7 @@ export const WhatsAppConfigPage: React.FC = () => {
             de la sucursal <strong>{selectedBranch?.name}</strong>?
           </p>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
             <p className="text-xs text-yellow-800 dark:text-yellow-300">
               <strong>Nota:</strong> El teléfono actual perderá acceso inmediatamente. Tendrás que escanear el nuevo QR con el dispositivo que deseas vincular.
             </p>

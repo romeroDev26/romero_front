@@ -36,7 +36,7 @@ export const BranchSelector: React.FC<BranchSelectorProps> = ({ onBranchSelect }
             <button
               key={branch.id}
               onClick={() => onBranchSelect(branch)}
-              className="p-5 lg:p-6 rounded-lg border-2 text-center transition-all bg-dm-bg-primary hover:border-blue-500 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-5 lg:p-6 rounded-lg border-2 border-dm-border-primary text-center transition-all bg-dm-bg-primary hover:border-blue-500 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <MapPin className="h-8 w-8 lg:h-10 lg:w-10 mx-auto mb-2 lg:mb-3 text-blue-600 dark:text-blue-400" />
               <h3 className="font-semibold text-base lg:text-lg">{branch.name}</h3>

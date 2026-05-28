@@ -185,7 +185,7 @@ export const QuotationsListPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-4 text-red-800 dark:text-red-300">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-4 text-red-800 dark:text-red-300">
           Error: {error.message}
         </div>
       </div>

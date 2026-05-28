@@ -53,7 +53,7 @@ export const CreditNoteReasonSection: React.FC<CreditNoteReasonSectionProps> = (
 					
 					{/* Ayuda contextual */}
 					{watch('credit_note_type_code') && (
-						<div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+						<div className="mt-2 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
 							<p className="text-sm text-blue-800 dark:text-blue-300">
 								<strong>ℹ️ Información:</strong> {CREDIT_NOTE_REASONS.find(r => r.code === watch('credit_note_type_code'))?.help}
 							</p>

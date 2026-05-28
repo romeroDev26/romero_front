@@ -471,7 +471,7 @@ export const QuickSalePage: React.FC = () => {
         </div>
         
         {/* Sucursal actual */}
-        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-3 mt-4">
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg p-3 mt-4">
           <p className="text-sm text-blue-800 dark:text-blue-300">
             <span className="font-medium">Sucursal:</span> {selectedBranch.name}
           </p>
@@ -509,7 +509,7 @@ export const QuickSalePage: React.FC = () => {
             )}
             
             {!isRuc && (
-              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md p-3 mb-4">
+              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md p-3 mb-4">
                 <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 text-sm">
                   <span className="text-sm">
                     Si no completa los datos del cliente, se usará un cliente genérico
@@ -558,7 +558,7 @@ export const QuickSalePage: React.FC = () => {
 
               {showRecipientForm && (
                 <div className="space-y-4">
-                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md p-3">
+                  <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md p-3">
                     <p className="text-sm text-blue-800 dark:text-blue-300">
                       Complete los datos del destinatario o marque si es el mismo que envía
                     </p>
@@ -657,7 +657,7 @@ export const QuickSalePage: React.FC = () => {
 
             {/* Alerta de contraentrega */}
             {isContraentrega && (
-              <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="mb-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
                 <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium">
                   Pago pendiente - Se cobrará al entregar
                 </p>
@@ -725,7 +725,7 @@ export const QuickSalePage: React.FC = () => {
 
             {/* Validaciones */}
             {!isFormValid && (
-              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-3 mb-4">
+              <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-3 mb-4">
                 <div className="flex items-start gap-2 text-red-800 dark:text-red-300 text-sm">
                   <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                   <div>

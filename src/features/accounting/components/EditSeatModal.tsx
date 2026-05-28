@@ -402,7 +402,7 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
                   <SeatMapLegend showPendingBlock={isMultiple} />
 
                   {selectedSeat && (
-                    <div className="p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 rounded">
+                    <div className="p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded">
                       <p className="text-sm font-medium text-green-800 dark:text-green-300">
                         Asiento seleccionado:
                       </p>
@@ -547,7 +547,7 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="flex items-start gap-2 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
                 <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>

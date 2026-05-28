@@ -148,7 +148,7 @@ const CancellationRequestsPage: React.FC = () => {
     switch (status) {
       case 'PENDING':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-100">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900/40">
             <ClockIcon className="w-3 h-3" />
             Pendiente
           </span>
@@ -297,7 +297,7 @@ const CancellationRequestsPage: React.FC = () => {
 
       {/* ── Error ── */}
       {error && (
-        <div className="rounded-[12px] border border-red-200 bg-red-50 dark:bg-red-950/40 p-4">
+        <div className="rounded-[12px] border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/40 p-4">
           <p className="text-[13px] text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}

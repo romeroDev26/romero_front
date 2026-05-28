@@ -320,7 +320,7 @@ export const InvoiceDetailPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-dm-bg-secondary">
       {/* Header con información básica */}
-      <div className="bg-dm-bg-primary shadow-sm border-b">
+      <div className="bg-dm-bg-primary shadow-sm border-b border-dm-border-primary">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
@@ -476,9 +476,9 @@ export const InvoiceDetailPage: React.FC = () => {
              - Siempre se muestra para facturas que no son 100% encomienda
              - También se muestra si hay cualquier PDF disponible */}
         {(!isCargoInvoice || hasTicketPdf || hasA4Pdf || hasStickerPdf) ? (
-          <div className="bg-dm-bg-primary rounded-lg shadow-sm border">
+          <div className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary">
             {/* Header del visor PDF */}
-            <div className="px-6 py-4 border-b bg-dm-bg-secondary rounded-t-lg">
+            <div className="px-6 py-4 border-b border-dm-border-primary bg-dm-bg-secondary rounded-t-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
@@ -632,7 +632,7 @@ export const InvoiceDetailPage: React.FC = () => {
           </div>
         ) : (
           // Fallback: mostrar información básica si no hay PDF
-          <div className="bg-dm-bg-primary rounded-lg shadow-sm border p-6">
+          <div className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-6">
             <div className="text-center py-12">
               <DocumentTextIcon className="h-16 w-16 text-dm-text-muted mx-auto mb-4" />
               <h3 className="text-lg font-medium text-dm-text-primary mb-2">

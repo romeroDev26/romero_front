@@ -59,15 +59,15 @@ export const RemissionGuideSunatStatusModal: React.FC<RemissionGuideSunatStatusM
     switch (status) {
       case 'ACCEPTED':
       case 'RECEIVED':
-        return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30 border-green-200';
+        return 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/50';
       case 'REJECTED':
-        return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border-red-200';
+        return 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50';
       case 'SENT':
         return 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800';
       case 'PENDING':
       case 'GENERATED':
       case 'SIGNED':
-        return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 border-blue-200';
+        return 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50';
       default:
         return 'text-dm-text-secondary bg-dm-bg-secondary border-dm-border-primary';
     }

@@ -128,7 +128,7 @@ export const RouteSection: React.FC<RouteSectionProps> = ({
       </div>
       
       {origin.trim() && destination.trim() && (
-        <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 rounded-lg">
           <p className="text-sm text-purple-800">
             <span className="font-medium">Ruta seleccionada:</span>{' '}
             {origin.trim()} {'>'} {destination.trim()}

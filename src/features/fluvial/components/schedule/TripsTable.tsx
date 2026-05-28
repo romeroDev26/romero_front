@@ -31,7 +31,7 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
       case 'BOARDING':
         return { label: 'Embarcando', className: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 ring-yellow-600/20' };
       case 'DEPARTED':
-        return { label: 'En Ruta', className: 'text-purple-700 bg-purple-50 ring-purple-600/20' };
+        return { label: 'En Ruta', className: 'text-purple-700 bg-purple-50 dark:bg-purple-950/30 ring-purple-600/20' };
       case 'ARRIVED':
         return { label: 'Arribado', className: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30 ring-green-600/20' };
       case 'COMPLETED':
@@ -214,7 +214,7 @@ export const TripsTable: React.FC<TripsTableProps> = ({
   return (
     <div className="bg-dm-bg-primary rounded-xl border border-dm-border-secondary shadow-sm overflow-hidden">
       {/* ── Mobile Card View ── */}
-      <div className="block lg:hidden divide-y divide-gray-100">
+      <div className="block lg:hidden divide-y divide-dm-border-secondary">
         {paginatedTrips.map((trip) => {
           const canGenerateManifest = ['SCHEDULED', 'BOARDING'].includes(trip.status);
           return (
@@ -380,7 +380,7 @@ export const TripsTable: React.FC<TripsTableProps> = ({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => onEdit(trip)}
-                        className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+                        className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/30 transition-colors"
                         title="Editar viaje"
                       >
                         <PencilIcon className="h-4 w-4" />

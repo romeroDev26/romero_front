@@ -111,7 +111,7 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
   return (
     <div className="rounded-xl border border-dm-border-secondary overflow-hidden">
       {/* Mobile Card View */}
-      <div className="block lg:hidden divide-y divide-gray-100">
+      <div className="block lg:hidden divide-y divide-dm-border-secondary">
         {paginatedTemplates.map((template) => (
           <div key={template.id} className="p-4 hover:bg-dm-bg-hover transition-colors">
             <div className="flex justify-between items-start mb-3">
@@ -228,7 +228,7 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => onEdit(template)}
-                      className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
+                      className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/30 transition-colors"
                       title="Editar plantilla"
                     >
                       <PencilIcon className="h-4 w-4" />

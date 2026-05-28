@@ -97,7 +97,7 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 
 			{/* Información de la factura seleccionada */}
 			{selectedInvoiceDetail && (
-				<div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg">
+				<div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
 					<h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Información de la Factura</h4>
 					<div className="grid grid-cols-2 gap-4 text-sm">
 						<div>
@@ -194,7 +194,7 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 						)}
 					</div>
 					
-					<div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+					<div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
 						<div className="text-sm text-yellow-800 dark:text-yellow-300">
 							<strong>Nota:</strong> Solo se muestran facturas que pueden ser afectadas por notas de crédito.
 							Al seleccionar una factura, se cargarán automáticamente todos sus datos y productos.

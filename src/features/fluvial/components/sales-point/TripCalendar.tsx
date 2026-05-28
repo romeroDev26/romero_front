@@ -135,7 +135,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
                 <div className={`
                   absolute bottom-1 left-1/2 transform -translate-x-1/2 
                   w-2 h-2 rounded-full
-                  ${isSelected ? 'bg-white' : 'bg-blue-500 dark:bg-blue-400'}
+                  ${isSelected ? 'bg-white dark:bg-gray-200' : 'bg-blue-500 dark:bg-blue-400'}
                 `} />
               )}
               

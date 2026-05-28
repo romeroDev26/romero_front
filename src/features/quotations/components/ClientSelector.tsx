@@ -254,7 +254,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           <h3 className="font-semibold text-lg text-dm-text-primary mb-4">Completar Datos del Cliente</h3>
           
           {/* Mostrar info del documento encontrado */}
-          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md p-3 mb-4">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md p-3 mb-4">
             <div className="flex items-center gap-2">
               <User className="text-blue-600 dark:text-blue-400 w-4 h-4" />
               <span className="text-sm font-medium text-blue-800 dark:text-blue-300">

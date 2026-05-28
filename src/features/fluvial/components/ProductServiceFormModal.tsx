@@ -180,7 +180,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
         </div>
 
         {isEditMode && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-yellow-800 dark:text-yellow-300 text-sm rounded mb-2">
+          <div className="bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-yellow-400 dark:border-yellow-700/50 p-3 text-yellow-800 dark:text-yellow-300 text-sm rounded mb-2">
             Solo puedes modificar el <b>Nombre</b>, <b>Descripción</b> y <b>Afectación IGV (SUNAT)</b>. Para cambiar el Código Interno, Tipo o Categoría de Servicio, comunícate con el equipo de soporte.
           </div>
         )}

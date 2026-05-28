@@ -494,7 +494,7 @@ export const ClientsListPage: React.FC = () => {
       {/* Tabla de clientes (Desktop) */}
       <div className="hidden lg:block bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-[#f0f0f0]">
+          <table className="min-w-full divide-y divide-dm-border-secondary">
             <thead className="bg-dm-bg-secondary">
               <tr>
                 <th scope="col" className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
@@ -523,7 +523,7 @@ export const ClientsListPage: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#f0f0f0]">
+            <tbody className="divide-y divide-dm-border-secondary">
               {paginatedClients.map((client) => (
                 <tr key={client.id} className="hover:bg-dm-bg-secondary/60 transition-colors">
                   <td className="px-5 py-4 whitespace-nowrap">

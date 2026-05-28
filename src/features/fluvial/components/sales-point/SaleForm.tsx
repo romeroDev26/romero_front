@@ -184,7 +184,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
             </Button>
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 p-3 rounded-lg mb-4 lg:mb-6">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 p-3 rounded-lg mb-4 lg:mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm">
               <div className="flex items-center gap-2 flex-1">
                 <Ship className="h-5 w-5 text-blue-700 dark:text-blue-300 shrink-0" />
@@ -269,9 +269,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                 </>
               )}
 
-              <div className="bg-dm-bg-primary p-4 lg:p-6 rounded-lg shadow-sm border">
+              <div className="bg-dm-bg-primary p-4 lg:p-6 rounded-lg shadow-sm border border-dm-border-primary">
                 {showAddForm && (
-                  <div className="mb-4 p-2.5 lg:p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-md">
+                  <div className="mb-4 p-2.5 lg:p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md">
                     <div className="text-xs lg:text-sm font-medium text-blue-800 dark:text-blue-300">
                       Modo: Selección de asiento para representante
                     </div>
@@ -319,7 +319,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                     currentRepresentativeIndex={representatives.length}
                   />
                 ) : (
-                  <div className="bg-dm-bg-primary p-4 lg:p-6 rounded-lg shadow-sm border">
+                  <div className="bg-dm-bg-primary p-4 lg:p-6 rounded-lg shadow-sm border border-dm-border-primary">
                     <h3 className="font-semibold text-base lg:text-lg text-dm-text-primary mb-3 lg:mb-4 flex items-center">
                       <Ship className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-dm-text-muted" />
                       Tramo y Asiento
@@ -374,7 +374,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       />
                     </div>
 
-                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 p-4 rounded-lg text-center">
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 p-4 rounded-lg text-center">
                       <div className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-300">
                         <Ship className="h-5 w-5" />
                         <span className="font-medium">
@@ -408,7 +408,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                           primero:
                         </p>
                       </div>
-                      <div className="text-left bg-dm-bg-primary p-4 rounded-lg border space-y-3">
+                      <div className="text-left bg-dm-bg-primary p-4 rounded-lg border border-dm-border-primary space-y-3">
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -727,7 +727,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
                     {isManualPriceMode &&
                       (!manualPrice || manualPrice === 0) && (
-                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200">
+                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200 dark:border-red-800/50">
                           <AlertTriangle className="h-4 w-4" />
                           <span className="font-medium">
                             Ingrese un precio manual para continuar con la
@@ -737,7 +737,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       )}
 
                     {finalTicketPrice === 0 && (basePrice || manualPrice) && (
-                      <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200">
+                      <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200 dark:border-red-800/50">
                         <AlertTriangle className="h-4 w-4" />
                         <span className="font-medium">
                           El monto total no puede ser S/ 0.00. Ajuste el precio
@@ -748,7 +748,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
                     {splitPaymentData.isSplitPayment &&
                       !isSplitPaymentValid && (
-                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200">
+                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200 dark:border-red-800/50">
                           <AlertTriangle className="h-4 w-4" />
                           <span className="font-medium">
                             Los montos del pago dividido deben sumar exactamente

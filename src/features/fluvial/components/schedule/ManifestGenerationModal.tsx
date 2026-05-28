@@ -167,7 +167,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
           description: 'Genera un manifiesto con la lista oficial de todos los pasajeros del viaje, incluyendo sus datos personales y asientos asignados.',
           color: 'text-blue-600 dark:text-blue-400',
           bgColor: 'bg-blue-50 dark:bg-blue-950/30',
-          borderColor: 'border-blue-200',
+          borderColor: 'border-blue-200 dark:border-blue-800/50',
           hoverColor: 'hover:bg-blue-100 dark:bg-blue-900/40'
         }
       : {
@@ -176,7 +176,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
           description: 'Genera un manifiesto con la lista oficial de toda la carga y encomiendas transportadas en el viaje.',
           color: 'text-green-600 dark:text-green-400',
           bgColor: 'bg-green-50 dark:bg-green-950/30',
-          borderColor: 'border-green-200',
+          borderColor: 'border-green-200 dark:border-green-800/50',
           hoverColor: 'hover:bg-green-100 dark:hover:bg-green-900/40'
         };
   };
@@ -211,7 +211,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
         </div>
 
         {/* Información del viaje compacta */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg p-4 border border-blue-100 dark:border-blue-800/50">
           <div className="grid grid-cols-2 gap-6">
             {/* Columna izquierda */}
             <div className="space-y-3">

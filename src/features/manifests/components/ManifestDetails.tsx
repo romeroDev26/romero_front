@@ -44,11 +44,11 @@ const ManifestDetails: React.FC<ManifestDetailsProps> = ({ manifest, onClose }) 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'GENERATED':
-        return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200';
+        return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800/50';
       case 'DRAFT':
-        return 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-200';
+        return 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800/50';
       case 'CANCELLED':
-        return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200';
+        return 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800/50';
       default:
         return 'bg-dm-bg-secondary text-dm-text-primary border-dm-border-primary';
     }

@@ -101,7 +101,7 @@ const ManifestForm: React.FC<ManifestFormProps> = ({
           description: 'Incluye la lista de todos los pasajeros del viaje con sus datos personales y asientos asignados.',
           color: 'text-blue-600 dark:text-blue-400',
           bgColor: 'bg-blue-50 dark:bg-blue-950/30',
-          borderColor: 'border-blue-200'
+          borderColor: 'border-blue-200 dark:border-blue-800/50'
         }
       : {
           icon: CubeIcon,
@@ -109,14 +109,14 @@ const ManifestForm: React.FC<ManifestFormProps> = ({
           description: 'Incluye la lista de toda la carga y encomiendas transportadas en el viaje.',
           color: 'text-green-600 dark:text-green-400',
           bgColor: 'bg-green-50 dark:bg-green-950/30',
-          borderColor: 'border-green-200'
+          borderColor: 'border-green-200 dark:border-green-800/50'
         };
   };
 
   if (tripsError) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-4">
           <h3 className="text-red-800 dark:text-red-300 font-medium">Error al cargar viajes</h3>
           <p className="text-red-600 dark:text-red-400 text-sm mt-1">
             No se pudieron cargar los viajes disponibles.
@@ -136,7 +136,7 @@ const ManifestForm: React.FC<ManifestFormProps> = ({
         {isLoadingTrips ? (
           <div className="animate-pulse h-10 bg-dm-bg-secondary rounded-lg"></div>
         ) : availableTrips.length === 0 ? (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-4">
             <div className="flex items-start">
               <InformationCircleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2 flex-shrink-0" />
               <div>
@@ -209,7 +209,7 @@ const ManifestForm: React.FC<ManifestFormProps> = ({
 
         {/* Indicador de manifiesto existente */}
         {checkingExisting && (
-          <div className="mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg p-4">
+          <div className="mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4">
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
               <span className="ml-2 text-blue-800 dark:text-blue-300 text-sm">Verificando manifiesto existente...</span>

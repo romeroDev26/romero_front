@@ -38,9 +38,9 @@ const getOccupancyColor = (percentage: number): string => {
 };
 
 const getOccupancyBgColor = (percentage: number): string => {
-  if (percentage >= 80) return 'bg-green-50 dark:bg-green-950/30 border-green-200';
+  if (percentage >= 80) return 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/50';
   if (percentage >= 50) return 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800';
-  return 'bg-red-50 dark:bg-red-950/30 border-red-200';
+  return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50';
 };
 
 interface DayTrips {

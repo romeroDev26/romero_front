@@ -107,7 +107,7 @@ export const ExportProgressModal: React.FC<ExportProgressModalProps> = ({
 
               {/* Completed Info */}
               {isCompleted && status && (
-                <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-lg p-4 mb-4">
+                <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg p-4 mb-4">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-dm-text-secondary">Archivo:</span>
@@ -135,7 +135,7 @@ export const ExportProgressModal: React.FC<ExportProgressModalProps> = ({
 
               {/* Error Info */}
               {isFailed && (
-                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg p-4 mb-4">
+                <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-4 mb-4">
                   <p className="text-sm text-red-800 dark:text-red-300">
                     {error?.message || status?.error?.message || 'Ocurrió un error desconocido'}
                   </p>

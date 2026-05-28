@@ -125,7 +125,7 @@ export const ReportsPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-md p-4">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-md p-4">
           <div className="flex">
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
@@ -323,7 +323,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleFormatSelection('pdf')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800/50 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -372,7 +372,7 @@ export const ReportsPage: React.FC = () => {
             <button
               onClick={() => handleAccountantFormatSelection('pdf')}
               disabled={syncExporting}
-              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center px-6 py-4 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-800/50 dark:border-red-800 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 hover:border-red-300 dark:hover:border-red-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">

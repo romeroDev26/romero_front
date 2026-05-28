@@ -21,9 +21,9 @@ type SeatRow = SeatMapItem[];
 
 const getZoneColor = (seatTypeName: string): string => {
   const name = (seatTypeName || '').toLowerCase();
-  if (name.includes('reclinable')) return 'bg-green-100/80 border border-green-200';
-  if (name.includes('estático')) return 'bg-yellow-100/80 border border-yellow-200';
-  return 'bg-gray-100/80 border border-gray-200';
+  if (name.includes('reclinable')) return 'bg-green-100 dark:bg-green-900/40 border border-green-200 dark:border-green-800';
+  if (name.includes('estático')) return 'bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-200 dark:border-yellow-800';
+  return 'bg-dm-bg-secondary/80 border border-dm-border-primary';
 };
 
 const getZoneTitle = (seatTypeName: string): string => {
@@ -88,22 +88,22 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
   }
 
   if (!seatLayout.length) {
-    return <div className="text-center text-gray-500 p-8">No se pudo cargar la configuración de asientos.</div>;
+    return <div className="text-center text-dm-text-muted p-8">No se pudo cargar la configuración de asientos.</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+    <div className="min-h-screen bg-dm-bg-primary p-4">
       <div className="max-w-lg mx-auto">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Selección de Asientos</h1>
-          <p className="text-gray-600 text-sm">Sistema de reserva empresarial</p>
+          <h1 className="text-3xl font-bold text-dm-text-primary mb-2">Selección de Asientos</h1>
+          <p className="text-dm-text-secondary text-sm">Sistema de reserva empresarial</p>
         </div>
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-4">
+        <div className="bg-dm-bg-primary rounded-2xl shadow-xl border border-dm-border-primary p-4">
           <div className="relative">
-            <div className="border border-dashed border-gray-400 rounded-2xl px-2 py-4 relative">
+            <div className="border border-dashed border-gray-400 dark:border-gray-600 rounded-2xl px-2 py-4 relative">
               <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <div className="w-auto px-4 h-8 border border-dashed border-gray-400 rounded-t-2xl bg-white flex items-center justify-center shadow-sm">
-                  <span className="text-xs font-bold text-gray-700 uppercase">{vesselName}</span>
+                <div className="w-auto px-4 h-8 border border-dashed border-gray-400 dark:border-gray-600 dark:border-gray-400 rounded-t-2xl bg-dm-bg-primary flex items-center justify-center shadow-sm">
+                  <span className="text-xs font-bold text-dm-text-secondary uppercase">{vesselName}</span>
                 </div>
               </div>
               <div className="mt-2">
@@ -111,13 +111,13 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                   {seatLayout.map(section => (
                     <div key={section.id} className={`${section.bgColor} rounded-xl p-4 mb-4`}>
                       <div className="text-center mb-4">
-                        <h3 className="text-sm font-bold text-gray-700 bg-white px-3 py-1 rounded-full shadow-sm border inline-block">
+                        <h3 className="text-sm font-bold text-dm-text-secondary bg-dm-bg-primary px-3 py-1 rounded-full shadow-sm border inline-block">
                           {section.title}
                         </h3>
                       </div>
                       <div className="space-y-3">
                         {section.rows.map((row, rowIndex) => (
-                          <div key={`${section.id}-row-${rowIndex}`} className="bg-white/40 rounded-lg p-3">
+                          <div key={`${section.id}-row-${rowIndex}`} className="bg-dm-bg-primary/40 rounded-lg p-3">
                             <div className="flex justify-center gap-6">
                               <div className="flex gap-3">
                                 {row.slice(Math.ceil(row.length / 2)).reverse().map(seat => (
@@ -133,7 +133,7 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                               </div>
                               {section.totalColumns > 2 && (
                                 <div className="w-16 flex items-center justify-center">
-                                  <div className="w-0.5 h-8 bg-gray-300 rounded-full"></div>
+                                  <div className="w-0.5 h-8 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
                                 </div>
                               )}
                               <div className="flex gap-3">
@@ -156,8 +156,8 @@ export const SeatMap: React.FC<SeatMapProps> = ({ tripId, vesselName, selectedSe
                   ))}
                 </div>
               </div>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-white border border-dashed border-gray-400 rounded-b-xl flex items-center justify-center">
-                <span className="text-xs font-bold text-gray-600">TRASERA</span>
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-24 h-4 bg-dm-bg-primary border border-dashed border-gray-400 dark:border-gray-600 rounded-b-xl flex items-center justify-center">
+                <span className="text-xs font-bold text-dm-text-secondary">TRASERA</span>
               </div>
             </div>
           </div>

@@ -38,12 +38,12 @@ const statusLabels: Record<QuotationStatus, string> = {
 };
 
 const statusColors: Record<QuotationStatus, string> = {
-  DRAFT: 'bg-gray-100 text-gray-700',
-  SENT: 'bg-blue-100 text-blue-700',
-  ACCEPTED: 'bg-emerald-100 text-emerald-700',
-  REJECTED: 'bg-red-100 text-red-700',
-  EXPIRED: 'bg-amber-100 text-amber-700',
-  CONVERTED: 'bg-purple-100 text-purple-700',
+  DRAFT: 'bg-dm-bg-secondary text-dm-text-secondary',
+  SENT: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+  ACCEPTED: 'bg-emerald-100 text-emerald-700 dark:text-emerald-300',
+  REJECTED: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
+  EXPIRED: 'bg-amber-100 text-amber-700 dark:text-amber-300',
+  CONVERTED: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
 };
 
 const formatDate = (dateStr: string) => {
@@ -185,7 +185,7 @@ export const QuotationsListPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-4 text-red-800 dark:text-red-300">
           Error: {error.message}
         </div>
       </div>
@@ -203,40 +203,40 @@ export const QuotationsListPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col h-screen lg:h-auto bg-gray-50 lg:bg-white lg:rounded-xl lg:shadow-sm lg:border lg:border-gray-100">
+    <div className="flex flex-col h-screen lg:h-auto bg-dm-bg-secondary lg:bg-dm-bg-primary lg:rounded-xl lg:shadow-sm lg:border lg:border-dm-border-secondary">
       {/* Header Sticky para móvil */}
-      <header className="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm lg:hidden">
+      <header className="sticky top-0 z-20 bg-dm-bg-primary border-b border-dm-border-primary shadow-sm lg:hidden">
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <DocumentTextIcon className="h-6 w-6 text-primary" />
-            <h1 className="text-lg font-bold text-gray-900">Cotizaciones</h1>
+            <h1 className="text-lg font-bold text-dm-text-primary">Cotizaciones</h1>
           </div>
           <button
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
             title="Filtros avanzados"
           >
-            <FunnelIcon className="h-5 w-5 text-gray-600" />
+            <FunnelIcon className="h-5 w-5 text-dm-text-secondary" />
           </button>
         </div>
 
         {/* Barra de búsqueda compacta */}
         <div className="px-4 pb-3">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted" />
             <input
               type="text"
               value={filters.client_search}
               onChange={(e) => handleFilterChange('client_search', e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Buscar por cliente..."
-              className="w-full pl-9 pr-4 py-2.5 bg-gray-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/50"
+              className="w-full pl-9 pr-4 py-2.5 bg-dm-bg-secondary border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/50"
             />
           </div>
         </div>
 
         {/* Tabs de estado */}
-        <div className="overflow-x-auto border-t border-gray-200">
+        <div className="overflow-x-auto border-t border-dm-border-primary">
           <div className="flex px-4 gap-2 py-2" style={{ scrollbarWidth: 'none' }}>
             {statusTabs.map(tab => (
               <button
@@ -249,7 +249,7 @@ export const QuotationsListPage: React.FC = () => {
                 className={`px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                   filters.status === tab.value
                     ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-dm-bg-secondary text-dm-text-secondary hover:bg-dm-bg-hover'
                 }`}
               >
                 {tab.label}
@@ -261,24 +261,24 @@ export const QuotationsListPage: React.FC = () => {
 
       {/* Filtros avanzados modal móvil */}
       {showAdvancedFilters && (
-        <div className="lg:hidden bg-white border-b border-gray-200 p-4 space-y-4">
+        <div className="lg:hidden bg-dm-bg-primary border-b border-dm-border-primary p-4 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Serie</label>
+            <label className="block text-xs font-medium text-dm-text-muted mb-1.5">Serie</label>
             <input
               type="text"
               value={filters.series}
               onChange={(e) => handleFilterChange('series', e.target.value)}
               placeholder="Todas las series"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full border border-dm-border-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Rango de Fechas</label>
+            <label className="block text-xs font-medium text-dm-text-muted mb-1.5">Rango de Fechas</label>
             <button
               type="button"
               onClick={() => setShowRangePicker(!showRangePicker)}
-              className="w-full flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+              className="w-full flex items-center justify-between px-3 py-2 border border-dm-border-primary rounded-lg text-sm text-dm-text-secondary hover:bg-dm-bg-hover"
             >
               <span>{formatRange()}</span>
               <ChevronDownIcon className={`h-4 w-4 transition-transform ${showRangePicker ? 'rotate-180' : ''}`} />
@@ -291,7 +291,7 @@ export const QuotationsListPage: React.FC = () => {
                 handleClearFilters();
                 setShowAdvancedFilters(false);
               }}
-              className="flex-1 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="flex-1 px-3 py-2 text-sm text-dm-text-secondary border border-dm-border-primary rounded-lg hover:bg-dm-bg-hover"
             >
               Limpiar
             </button>
@@ -311,7 +311,7 @@ export const QuotationsListPage: React.FC = () => {
 
       {/* Picker de fechas dropdown mobile */}
       {showRangePicker && (
-        <div className="absolute top-full left-4 right-4 z-50 mt-2 rounded-xl border border-gray-200 bg-white p-4 shadow-2xl">
+        <div className="absolute top-full left-4 right-4 z-50 mt-2 rounded-xl border border-dm-border-primary bg-dm-bg-primary p-4 shadow-2xl">
           <DatePicker
             selected={startDate}
             onChange={handleDateSelect}
@@ -324,11 +324,11 @@ export const QuotationsListPage: React.FC = () => {
             maxDate={new Date()}
             calendarClassName="custom-datepicker"
           />
-          <div className="mt-3 flex justify-between border-t border-gray-200 pt-3">
+          <div className="mt-3 flex justify-between border-t border-dm-border-primary pt-3">
             <button
               type="button"
               onClick={handleClearDates}
-              className="text-xs font-medium text-gray-500 hover:text-gray-700"
+              className="text-xs font-medium text-dm-text-muted hover:text-dm-text-secondary"
             >
               Limpiar
             </button>
@@ -347,8 +347,8 @@ export const QuotationsListPage: React.FC = () => {
         {/* Título + Acciones */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800">Cotizaciones</h1>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <h1 className="text-2xl font-semibold text-dm-text-primary">Cotizaciones</h1>
+            <p className="mt-0.5 text-sm text-dm-text-muted">
               {pagination.total} cotizaciones registradas
             </p>
           </div>
@@ -362,39 +362,39 @@ export const QuotationsListPage: React.FC = () => {
         </div>
 
         {/* Filtros en una fila */}
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-4 shadow-sm">
           <div className="flex flex-wrap items-center gap-3">
             {/* Serie */}
             <div className="min-w-[120px]">
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Serie</label>
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-dm-text-muted">Serie</label>
               <input
                 type="text"
                 value={filters.series}
                 onChange={(e) => handleFilterChange('series', e.target.value)}
                 placeholder="Todas"
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               />
             </div>
 
             {/* Cliente */}
             <div className="min-w-[180px] flex-1">
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Cliente</label>
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-dm-text-muted">Cliente</label>
               <input
                 type="text"
                 value={filters.client_search}
                 onChange={(e) => handleFilterChange('client_search', e.target.value)}
                 placeholder="Nombre o RUC..."
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               />
             </div>
 
             {/* Estado */}
             <div className="min-w-[140px]">
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Estado</label>
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-dm-text-muted">Estado</label>
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               >
                 <option value="">Todos</option>
                 {Object.entries(statusLabels).map(([status, label]) => (
@@ -407,18 +407,18 @@ export const QuotationsListPage: React.FC = () => {
 
             {/* Fechas */}
             <div className="min-w-[160px]">
-              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-gray-500">Fechas</label>
+              <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-dm-text-muted">Fechas</label>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setShowRangePicker(!showRangePicker)}
-                  className="inline-flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                  className="inline-flex w-full items-center justify-between rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm font-medium text-dm-text-secondary shadow-sm hover:bg-dm-bg-hover"
                 >
                   <span className="truncate">{formatRange()}</span>
                   <ChevronDownIcon className={`ml-2 h-4 w-4 shrink-0 transition-transform ${showRangePicker ? 'rotate-180' : ''}`} />
                 </button>
                 {showRangePicker && (
-                  <div className="absolute left-0 top-full z-50 mt-2 rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
+                  <div className="absolute left-0 top-full z-50 mt-2 rounded-xl border border-dm-border-primary bg-dm-bg-primary p-3 shadow-lg">
                     <DatePicker
                       selected={startDate}
                       onChange={handleDateSelect}
@@ -436,15 +436,15 @@ export const QuotationsListPage: React.FC = () => {
                           (endDate && date.toDateString() === endDate.toDateString());
                         const isInRange = startDate && endDate && date > startDate && date < endDate;
                         if (isSelected) return 'bg-indigo-600 text-white rounded-full';
-                        if (isInRange) return 'bg-indigo-100 text-indigo-800';
+                        if (isInRange) return 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300';
                         return '';
                       }}
                     />
-                    <div className="mt-3 flex justify-between border-t border-gray-200 pt-3">
+                    <div className="mt-3 flex justify-between border-t border-dm-border-primary pt-3">
                       <button
                         type="button"
                         onClick={handleClearDates}
-                        className="text-xs font-medium text-gray-500 hover:text-gray-700"
+                        className="text-xs font-medium text-dm-text-muted hover:text-dm-text-secondary"
                       >
                         Limpiar
                       </button>
@@ -475,8 +475,8 @@ export const QuotationsListPage: React.FC = () => {
                     disabled={!hasActiveFilters}
                     className={`rounded-lg border px-3 py-2 text-xs font-semibold shadow-sm transition-all ${
                       hasActiveFilters
-                        ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
-                        : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                        ? 'border-red-300 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40'
+                        : 'border-dm-border-primary bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed'
                     }`}
                   >
                     Limpiar
@@ -504,8 +504,8 @@ export const QuotationsListPage: React.FC = () => {
           </div>
         ) : quotations.length === 0 ? (
           <div className="text-center py-12 lg:py-16">
-            <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-            <p className="text-sm text-gray-500">No hay cotizaciones para mostrar</p>
+            <DocumentTextIcon className="mx-auto h-12 w-12 text-dm-text-muted mb-3" />
+            <p className="text-sm text-dm-text-muted">No hay cotizaciones para mostrar</p>
           </div>
         ) : (
           <>
@@ -514,13 +514,13 @@ export const QuotationsListPage: React.FC = () => {
               {quotations.map((quotation) => (
                 <div
                   key={quotation.id}
-                  className="bg-white rounded-xl border border-gray-200 p-4 hover:border-primary/30 hover:shadow-md transition-all"
+                  className="bg-dm-bg-primary rounded-xl border border-dm-border-primary p-4 hover:border-primary/30 hover:shadow-md transition-all"
                 >
                   {/* Encabezado tarjeta: Folio + Estado */}
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <p className="text-xs text-gray-400">ID Cotización</p>
-                      <p className="text-sm font-bold text-gray-900">
+                      <p className="text-xs text-dm-text-muted">ID Cotización</p>
+                      <p className="text-sm font-bold text-dm-text-primary">
                         {quotation.series}-{quotation.number.toString().padStart(6, '0')}
                       </p>
                     </div>
@@ -530,28 +530,28 @@ export const QuotationsListPage: React.FC = () => {
                   </div>
 
                   {/* Cliente */}
-                  <div className="mb-3 pb-3 border-b border-gray-100">
-                    <p className="text-xs text-gray-500 mb-0.5">Cliente</p>
-                    <p className="text-sm font-medium text-gray-900">{quotation.client.name}</p>
-                    <p className="text-xs text-gray-400">{quotation.client.doc_type}: {quotation.client.doc_number}</p>
+                  <div className="mb-3 pb-3 border-b border-dm-border-secondary">
+                    <p className="text-xs text-dm-text-muted mb-0.5">Cliente</p>
+                    <p className="text-sm font-medium text-dm-text-primary">{quotation.client.name}</p>
+                    <p className="text-xs text-dm-text-muted">{quotation.client.doc_type}: {quotation.client.doc_number}</p>
                   </div>
 
                   {/* Fecha y Monto */}
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <div>
-                      <p className="text-xs text-gray-500 mb-0.5">Emisión</p>
-                      <p className="text-sm font-medium text-gray-900">{formatDate(quotation.issue_date)}</p>
+                      <p className="text-xs text-dm-text-muted mb-0.5">Emisión</p>
+                      <p className="text-sm font-medium text-dm-text-primary">{formatDate(quotation.issue_date)}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 mb-0.5">Vigencia</p>
-                      <p className="text-sm font-medium text-gray-900">{formatDate(quotation.valid_until)}</p>
+                      <p className="text-xs text-dm-text-muted mb-0.5">Vigencia</p>
+                      <p className="text-sm font-medium text-dm-text-primary">{formatDate(quotation.valid_until)}</p>
                     </div>
                   </div>
 
                   {/* Monto Total - Destacado */}
                   <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-3 mb-4">
-                    <p className="text-xs text-gray-600 mb-1">Monto Total</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className="text-xs text-dm-text-secondary mb-1">Monto Total</p>
+                    <p className="text-lg font-bold text-dm-text-primary">
                       {quotation.currency_code === 'PEN' ? 'S/' : quotation.currency_code}{' '}
                       {parseFloat(quotation.total_payable).toLocaleString('es-PE', {
                         minimumFractionDigits: 2,
@@ -564,7 +564,7 @@ export const QuotationsListPage: React.FC = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => navigate(`/sales/quotations/${quotation.id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:bg-blue-900/40 rounded-lg text-sm font-medium transition-colors"
                     >
                       <EyeIcon className="h-4 w-4" />
                       Ver
@@ -572,7 +572,7 @@ export const QuotationsListPage: React.FC = () => {
                     {quotation.status !== 'CONVERTED' && (
                       <button
                         onClick={() => navigate(`/sales/quotations/${quotation.id}/edit`)}
-                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-lg text-sm font-medium transition-colors"
+                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 hover:bg-amber-100 rounded-lg text-sm font-medium transition-colors"
                       >
                         <PencilSquareIcon className="h-4 w-4" />
                         Editar
@@ -581,7 +581,7 @@ export const QuotationsListPage: React.FC = () => {
                     {quotation.status === 'DRAFT' && (
                       <button
                         onClick={() => handleDelete(quotation.id)}
-                        className="p-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        className="p-2.5 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors"
                         title="Eliminar"
                       >
                         <TrashIcon className="h-4 w-4" />
@@ -593,46 +593,46 @@ export const QuotationsListPage: React.FC = () => {
             </div>
 
             {/* VISTA DESKTOP: Tabla */}
-            <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="hidden lg:block bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-secondary overflow-hidden">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <tr className="bg-dm-bg-secondary border-b border-dm-border-secondary">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-dm-text-muted uppercase tracking-wider">
                       ID Cotización
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-dm-text-muted uppercase tracking-wider">
                       Cliente
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-dm-text-muted uppercase tracking-wider">
                       Fecha
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-dm-text-muted uppercase tracking-wider">
                       Monto Total
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-dm-text-muted uppercase tracking-wider">
                       Estado
                     </th>
-                    <th className="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-dm-text-muted uppercase tracking-wider">
                       Acciones
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {quotations.map((quotation) => (
-                    <tr key={quotation.id} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                    <tr key={quotation.id} className="hover:bg-dm-bg-hover/60 transition-colors">
+                      <td className="px-6 py-4 text-sm font-semibold text-dm-text-primary">
                         {quotation.series}-{quotation.number.toString().padStart(6, '0')}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{quotation.client.name}</div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-sm font-medium text-dm-text-primary">{quotation.client.name}</div>
+                        <div className="text-xs text-dm-text-muted">
                           {quotation.client.doc_type}: {quotation.client.doc_number}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-dm-text-secondary">
                         {formatDate(quotation.issue_date)}
                       </td>
-                      <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                      <td className="px-6 py-4 text-sm font-semibold text-dm-text-primary">
                         {quotation.currency_code === 'PEN' ? 'S/' : quotation.currency_code}{' '}
                         {parseFloat(quotation.total_payable).toLocaleString('es-PE', {
                           minimumFractionDigits: 2,
@@ -650,7 +650,7 @@ export const QuotationsListPage: React.FC = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => navigate(`/sales/quotations/${quotation.id}`)}
-                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600"
+                            className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:text-indigo-600 dark:text-indigo-400"
                             title="Ver detalle"
                           >
                             <EyeIcon className="h-4 w-4" />
@@ -658,7 +658,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status !== 'CONVERTED' && (
                             <button
                               onClick={() => navigate(`/sales/quotations/${quotation.id}/edit`)}
-                              className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-amber-50 hover:text-amber-600"
+                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:text-amber-400"
                               title="Editar"
                             >
                               <PencilSquareIcon className="h-4 w-4" />
@@ -667,7 +667,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status === 'DRAFT' && (
                             <button
                               onClick={() => handleDelete(quotation.id)}
-                              className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:text-red-400"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -686,25 +686,25 @@ export const QuotationsListPage: React.FC = () => {
 
       {/* Footer Paginación */}
       {!isLoading && pagination.total > 0 && (
-        <div className="bg-white border-t border-gray-200 px-4 lg:px-6 py-3 flex items-center justify-between text-sm">
-          <span className="text-gray-600">
+        <div className="bg-dm-bg-primary border-t border-dm-border-primary px-4 lg:px-6 py-3 flex items-center justify-between text-sm">
+          <span className="text-dm-text-secondary">
             Mostrando {startItem}-{endItem} de {pagination.total} cotizaciones
           </span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={pagination.page <= 1 || isLoading}
-              className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronLeftIcon className="h-4 w-4" />
             </button>
-            <span className="text-xs text-gray-500 px-2">
+            <span className="text-xs text-dm-text-muted px-2">
               Página {pagination.page} de {Math.max(1, pagination.total_pages)}
             </span>
             <button
               onClick={() => setCurrentPage(p => Math.min(pagination.total_pages, p + 1))}
               disabled={pagination.page >= pagination.total_pages || isLoading}
-              className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-1.5 rounded-lg border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               <ChevronRightIcon className="h-4 w-4" />
             </button>

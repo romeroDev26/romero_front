@@ -23,8 +23,8 @@ export const AffectedDocumentSection: React.FC<AffectedDocumentSectionProps> = (
 	redirectToAnnulOnSelect = false,
 }) => {
 	return (
-		<div className="bg-white rounded-lg shadow p-6">
-			<h2 className="text-lg font-semibold text-gray-900 mb-4">Documento Afectado</h2>
+		<div className="bg-dm-bg-primary rounded-lg shadow p-6">
+			<h2 className="text-lg font-semibold text-dm-text-primary mb-4">Documento Afectado</h2>
 			
 			{/* Selector de Factura */}
 			<InvoiceSelector
@@ -37,12 +37,12 @@ export const AffectedDocumentSection: React.FC<AffectedDocumentSectionProps> = (
 			{/* Campos autocompletados (readonly) */}
 			<div className="grid grid-cols-2 gap-4">
 				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-1">Tipo*</label>
+					<label className="block text-sm font-medium text-dm-text-secondary mb-1">Tipo*</label>
 					<Controller
 						name="affected_document_type_code"
 						control={control}
 						render={({ field }) => (
-							<select {...field} disabled className="w-full p-2 border border-gray-300 rounded-md bg-gray-50">
+							<select {...field} disabled className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-secondary">
 								<option value="01">01 - Factura</option>
 								<option value="03">03 - Boleta</option>
 							</select>
@@ -50,7 +50,7 @@ export const AffectedDocumentSection: React.FC<AffectedDocumentSectionProps> = (
 					/>
 				</div>
 				<div>
-					<label className="block text-sm font-medium text-gray-700 mb-1">Serie-Número*</label>
+					<label className="block text-sm font-medium text-dm-text-secondary mb-1">Serie-Número*</label>
 					<Controller
 						name="affected_document_series_number"
 						control={control}
@@ -59,12 +59,12 @@ export const AffectedDocumentSection: React.FC<AffectedDocumentSectionProps> = (
 								{...field} 
 								placeholder="Seleccione una factura"
 								disabled
-								className="w-full p-2 border border-gray-300 rounded-md bg-gray-50" 
+								className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-secondary" 
 							/>
 						)}
 					/>
 					{errors.affected_document_series_number && (
-						<p className="text-sm text-red-600 mt-1">{errors.affected_document_series_number.message?.toString()}</p>
+						<p className="text-sm text-red-600 dark:text-red-400 mt-1">{errors.affected_document_series_number.message?.toString()}</p>
 					)}
 				</div>
 			</div>

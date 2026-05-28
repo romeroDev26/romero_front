@@ -120,31 +120,31 @@ export const QuotationPreviewModal: React.FC<QuotationPreviewModalProps> = ({
     <Modal isOpen={isOpen} onClose={handleClose} title="" maxWidth="6xl">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-gray-200">
+        <div className="flex items-start justify-between pb-4 border-b border-dm-border-primary">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-dm-text-primary">
               Vista Previa - Cotización
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-dm-text-secondary mt-1">
               N° {quotation.series}-{quotation.number.toString().padStart(6, '0')}
             </p>
           </div>
           
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           >
-            <XMarkIcon className="w-5 h-5 text-gray-500" />
+            <XMarkIcon className="w-5 h-5 text-dm-text-muted" />
           </button>
         </div>
 
         {/* PDF Viewer */}
-        <div className="bg-gray-50 rounded-lg" style={{ height: '70vh' }}>
+        <div className="bg-dm-bg-secondary rounded-lg" style={{ height: '70vh' }}>
           {isGeneratingPDF ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Generando previsualización del PDF...</p>
+                <p className="text-dm-text-secondary">Generando previsualización del PDF...</p>
               </div>
             </div>
           ) : pdfUrl ? (
@@ -155,14 +155,14 @@ export const QuotationPreviewModal: React.FC<QuotationPreviewModalProps> = ({
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">Error al generar la previsualización</p>
+              <p className="text-dm-text-muted">Error al generar la previsualización</p>
             </div>
           )}
         </div>
 
         {/* Botones de acción */}
-        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
+        <div className="flex justify-between items-center pt-4 border-t border-dm-border-primary">
+          <div className="text-sm text-dm-text-secondary">
             Total: {quotation.currency_code} {parseFloat(quotation.total_payable).toFixed(2)}
           </div>
           
@@ -198,7 +198,7 @@ export const QuotationPreviewModal: React.FC<QuotationPreviewModalProps> = ({
               variant="outline"
               onClick={() => setShowWhatsAppModal(true)}
               disabled={!pdfUrl}
-              className="flex items-center space-x-2 bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+              className="flex items-center space-x-2 bg-green-50 dark:bg-green-950/30 border-green-300 dark:border-green-700 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/40"
             >
               <MessageCircle className="w-4 h-4" />
               <span>WhatsApp</span>

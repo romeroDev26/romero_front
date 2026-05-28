@@ -14,13 +14,13 @@ const toneIconClass: Record<DashboardStatTone, string> = {
 };
 
 const toneBgSoft: Record<DashboardStatTone, string> = {
-  indigo: 'bg-indigo-50 text-indigo-600',
-  rose: 'bg-rose-50 text-rose-600',
-  emerald: 'bg-emerald-50 text-emerald-600',
-  amber: 'bg-amber-50 text-amber-600',
-  blue: 'bg-blue-50 text-blue-600',
-  violet: 'bg-violet-50 text-violet-600',
-  cyan: 'bg-cyan-50 text-cyan-600',
+  indigo: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400',
+  rose: 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400',
+  emerald: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
+  amber: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
+  blue: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
+  violet: 'bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400',
+  cyan: 'bg-cyan-50 dark:bg-cyan-950/30 text-cyan-600 dark:text-cyan-400',
 };
 
 export interface TrendData {
@@ -47,7 +47,7 @@ export const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
   hint,
 }) => {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:shadow-md">
+    <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         {/* Icono a la izquierda */}
         <div
@@ -58,22 +58,22 @@ export const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
 
         {/* Contenido a la derecha */}
         <div className="min-w-0 flex-1">
-          <p className="text-2xl font-bold tracking-tight text-gray-900 tabular-nums">{children}</p>
-          <p className="mt-0.5 text-sm font-medium text-gray-500">{label}</p>
+          <p className="text-2xl font-bold tracking-tight text-dm-text-primary tabular-nums">{children}</p>
+          <p className="mt-0.5 text-sm font-medium text-dm-text-muted">{label}</p>
         </div>
       </div>
 
       {/* Tendencia / hint en la parte inferior */}
       {(trend || hint) && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-dm-border-secondary">
           {trend ? (
             <p
               className={`flex items-center gap-1.5 text-xs font-semibold ${
                 trend.tendencia === 'up'
-                  ? 'text-emerald-600'
+                  ? 'text-emerald-600 dark:text-emerald-400'
                   : trend.tendencia === 'down'
-                    ? 'text-rose-600'
-                    : 'text-gray-500'
+                    ? 'text-rose-600 dark:text-rose-400'
+                    : 'text-dm-text-muted'
               }`}
             >
               {trend.tendencia === 'up' && <TrendingUp className="h-3.5 w-3.5" />}
@@ -85,7 +85,7 @@ export const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
               </span>
             </p>
           ) : hint ? (
-            <div className="text-xs font-medium text-gray-500">{hint}</div>
+            <div className="text-xs font-medium text-dm-text-muted">{hint}</div>
           ) : null}
         </div>
       )}

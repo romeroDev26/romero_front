@@ -23,7 +23,7 @@ const getRankBadge = (position: number) => {
   }
   if (position === 2) {
     return {
-      wrapper: 'bg-slate-400 text-white',
+      wrapper: 'bg-slate-400 dark:bg-slate-500 text-white',
       icon: <Medal className="h-3.5 w-3.5" />,
     };
   }
@@ -41,7 +41,7 @@ const RankBadge: React.FC<{ position: number }> = ({ position }) => {
 
   if (!badge) {
     return (
-      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500">
+      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-dm-border-primary bg-dm-bg-secondary text-[11px] font-bold text-dm-text-muted">
         {position}
       </span>
     );
@@ -65,21 +65,21 @@ const getProgressBarColors = (position: number) => {
 };
 
 const getPercentageColor = (position: number) => {
-  if (position === 1) return 'text-yellow-600';
-  if (position === 2) return 'text-slate-600';
-  if (position === 3) return 'text-orange-600';
-  return 'text-blue-600';
+  if (position === 1) return 'text-yellow-600 dark:text-yellow-400';
+  if (position === 2) return 'text-dm-text-secondary';
+  if (position === 3) return 'text-orange-600 dark:text-orange-400';
+  return 'text-blue-600 dark:text-blue-400';
 };
 
 const getTopCardStyles = (position: number) => {
   if (position === 1) {
-    return 'bg-amber-50/40 border-l-2 border-amber-400';
+    return 'bg-amber-50 dark:bg-amber-950/40 border-l-2 border-amber-400';
   }
   if (position === 2) {
-    return 'bg-slate-50/60 border-l-2 border-slate-400';
+    return 'bg-dm-bg-secondary/60 border-l-2 border-slate-400 dark:border-slate-500';
   }
   if (position === 3) {
-    return 'bg-orange-50/40 border-l-2 border-orange-400';
+    return 'bg-orange-50 dark:bg-orange-950/40 border-l-2 border-orange-400';
   }
   return '';
 };
@@ -94,7 +94,7 @@ const TopRankBackground: React.FC<{ position: number }> = ({ position }) => {
       transition={{ duration: 0.4 }}
     >
       <motion.div
-        className="absolute -inset-full top-0 h-full w-[200%] bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12"
+        className="absolute -inset-full top-0 h-full w-[200%] bg-gradient-to-r from-transparent via-white/25 dark:via-white/10 to-transparent skew-x-12"
         initial={{ x: '-100%' }}
         animate={{ x: '100%' }}
         transition={{ duration: 1.8, ease: 'easeInOut', delay: 0.6 }}
@@ -111,8 +111,8 @@ export const SellerRanking: React.FC = () => {
     <div className="shrink-0 p-6">
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ChartBarIcon className="h-5 w-5 text-slate-500" />
-          <h2 className="text-lg font-extrabold text-slate-900">Ranking de Vendedores</h2>
+          <ChartBarIcon className="h-5 w-5 text-dm-text-muted" />
+          <h2 className="text-lg font-extrabold text-dm-text-primary">Ranking de Vendedores</h2>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ export const SellerRanking: React.FC = () => {
             className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
               selectedPeriod === period
                 ? 'bg-primary text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                : 'bg-dm-bg-secondary text-dm-text-secondary hover:bg-dm-bg-hover'
             }`}
           >
             {periodLabels[period]}
@@ -167,7 +167,7 @@ export const SellerRanking: React.FC = () => {
     return (
       <section className="flex h-full flex-col overflow-hidden">
         {header}
-        <div className="flex flex-grow items-center justify-center py-8 text-center text-sm text-red-500">
+        <div className="flex flex-grow items-center justify-center py-8 text-center text-sm text-red-500 dark:text-red-400">
           Error al cargar el ranking de vendedores
         </div>
       </section>
@@ -178,7 +178,7 @@ export const SellerRanking: React.FC = () => {
     return (
       <section className="flex h-full flex-col overflow-hidden">
         {header}
-        <div className="flex flex-grow items-center justify-center py-8 text-center text-sm text-slate-500">
+        <div className="flex flex-grow items-center justify-center py-8 text-center text-sm text-dm-text-muted">
           No hay datos disponibles para el período seleccionado
         </div>
       </section>
@@ -199,7 +199,7 @@ export const SellerRanking: React.FC = () => {
       >
         {branchGroups.map((sucursal) => (
           <div key={sucursal.sucursal_id} className="space-y-3">
-            <h3 className="pb-2 text-[13px] font-extrabold uppercase tracking-wide text-slate-700">
+            <h3 className="pb-2 text-[13px] font-extrabold uppercase tracking-wide text-dm-text-secondary">
               {sucursal.sucursal_nombre}
             </h3>
 
@@ -224,18 +224,18 @@ export const SellerRanking: React.FC = () => {
                   <div className="relative z-10 mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <RankBadge position={vendedor.posicion_ranking} />
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-dm-text-primary">
                         {vendedor.vendedor_nombre}
                       </p>
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-dm-text-muted">
                       {vendedor.total_facturas} facturas · {vendedor.total_pasajeros} pasajeros
                     </p>
                   </div>
 
                   <div
                     className={`relative z-10 h-1.5 w-full overflow-hidden rounded-full ${
-                      vendedor.posicion_ranking === 1 ? 'bg-amber-100/60' : 'bg-slate-100'
+                      vendedor.posicion_ranking === 1 ? 'bg-amber-100/60 dark:bg-amber-900/30' : 'bg-dm-bg-secondary'
                     }`}
                   >
                     <motion.div
@@ -247,7 +247,7 @@ export const SellerRanking: React.FC = () => {
                   </div>
 
                   <div className="relative z-10 mt-2 text-right">
-                    <p className="text-xs font-bold text-slate-500">
+                    <p className="text-xs font-bold text-dm-text-muted">
                       {vendedor.porcentaje_relativo.toFixed(1)}%
                     </p>
                   </div>

@@ -6,13 +6,15 @@ import {
   BuildingOffice2Icon,
   QrCodeIcon,
   CheckCircleIcon,
-  XCircleIcon,
   ArrowPathIcon,
   PlusIcon,
   PhoneIcon,
   ExclamationTriangleIcon,
   SignalIcon,
   SignalSlashIcon,
+  ShieldCheckIcon,
+  ArrowsRightLeftIcon,
+  LinkSlashIcon,
   DevicePhoneMobileIcon,
 } from '@heroicons/react/24/outline';
 import { useBranchOffices } from '../../../hooks/useBranchOffices';
@@ -280,28 +282,28 @@ export const WhatsAppConfigPage: React.FC = () => {
     switch (state) {
       case 'open':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
             <SignalIcon className="w-3 h-3 mr-1" />
             Conectado
           </span>
         );
       case 'connecting':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300">
             <ArrowPathIcon className="w-3 h-3 mr-1 animate-spin" />
             Conectando
           </span>
         );
       case 'close':
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300">
             <SignalSlashIcon className="w-3 h-3 mr-1" />
             Desconectado
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-dm-bg-secondary text-dm-text-primary">
             <ExclamationTriangleIcon className="w-3 h-3 mr-1" />
             Sin verificar
           </span>
@@ -317,7 +319,7 @@ export const WhatsAppConfigPage: React.FC = () => {
     if (!branch.whatsapp_instance_name) {
       return {
         label: 'Sin instancia',
-        badgeClass: 'bg-slate-100 text-slate-700',
+        badgeClass: 'bg-dm-bg-secondary text-dm-text-secondary',
         dotClass: 'bg-slate-400',
       };
     }
@@ -325,7 +327,7 @@ export const WhatsAppConfigPage: React.FC = () => {
     if (isChecking) {
       return {
         label: 'Verificando',
-        badgeClass: 'bg-blue-100 text-blue-700',
+        badgeClass: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
         dotClass: 'bg-blue-500',
       };
     }
@@ -335,25 +337,25 @@ export const WhatsAppConfigPage: React.FC = () => {
       case 'open':
         return {
           label: 'Conectado',
-          badgeClass: 'bg-green-100 text-green-800',
+          badgeClass: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
           dotClass: 'bg-green-500',
         };
       case 'connecting':
         return {
           label: 'Conectando',
-          badgeClass: 'bg-yellow-100 text-yellow-800',
+          badgeClass: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300',
           dotClass: 'bg-yellow-500',
         };
       case 'close':
         return {
           label: 'Desconectado',
-          badgeClass: 'bg-slate-100 text-slate-700',
+          badgeClass: 'bg-dm-bg-secondary text-dm-text-secondary',
           dotClass: 'bg-slate-500',
         };
       default:
         return {
           label: 'Sin verificar',
-          badgeClass: 'bg-red-100 text-red-700',
+          badgeClass: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
           dotClass: 'bg-red-500',
         };
     }
@@ -368,30 +370,15 @@ export const WhatsAppConfigPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-slate-50 min-h-screen">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto bg-dm-bg-secondary min-h-screen">
+      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-10">
         <div className="flex-1">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-dm-text-primary">
             Configuración de WhatsApp
           </h1>
-          <p className="text-slate-500 text-lg max-w-2xl leading-relaxed">
-            Gestiona las conexiones de WhatsApp para todas tus sucursales de forma centralizada. Vincula nuevas instancias y monitorea el estado de conexión en tiempo real.
-          </p>
         </div>
-        <div className="flex shrink-0 gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              refetchBranches();
-              checkConnectionStates();
-            }}
-            disabled={isCheckingAll}
-            className="flex items-center gap-2"
-          >
-            <ArrowPathIcon className={`w-4 h-4 ${isCheckingAll ? 'animate-spin' : ''}`} />
-            <span>{isCheckingAll ? 'Verificando...' : 'Actualizar'}</span>
-          </Button>
-          <Button onClick={handleOpenCreateFromHeader} className="flex items-center gap-2">
+        <div className="flex shrink-0">
+          <Button onClick={handleOpenCreateFromHeader} className="flex items-center justify-center gap-2 w-full sm:w-auto">
             <PlusIcon className="w-4 h-4" />
             <span>Crear Instancia</span>
           </Button>
@@ -399,44 +386,40 @@ export const WhatsAppConfigPage: React.FC = () => {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-5">
+        <div className="bg-dm-bg-primary p-6 rounded-xl shadow-sm border border-dm-border-primary flex items-center gap-5">
           <div className="bg-primary/10 text-primary p-3 rounded-lg">
             <BuildingOffice2Icon className="w-7 h-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Sucursales</p>
-            <p className="text-3xl font-bold text-slate-900">{branchOffices.length}</p>
+            <p className="text-sm font-medium text-dm-text-muted uppercase tracking-wider">Total Sucursales</p>
+            <p className="text-3xl font-bold text-dm-text-primary">{branchOffices.length}</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-5">
-          <div className="bg-green-100 text-green-600 p-3 rounded-lg">
+        <div className="bg-dm-bg-primary p-6 rounded-xl shadow-sm border border-dm-border-primary flex items-center gap-5">
+          <div className="bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 p-3 rounded-lg">
             <PhoneIcon className="w-7 h-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Con WhatsApp</p>
-            <p className="text-3xl font-bold text-slate-900">{branchesWithInstance.length}</p>
+            <p className="text-sm font-medium text-dm-text-muted uppercase tracking-wider">Con WhatsApp</p>
+            <p className="text-3xl font-bold text-dm-text-primary">{branchesWithInstance.length}</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex items-center gap-5">
-          <div className="bg-blue-100 text-blue-600 p-3 rounded-lg">
+        <div className="bg-dm-bg-primary p-6 rounded-xl shadow-sm border border-dm-border-primary flex items-center gap-5">
+          <div className="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 p-3 rounded-lg">
             <CheckCircleIcon className="w-7 h-7" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">Conectadas</p>
-            <p className="text-3xl font-bold text-slate-900">{connectedCount}</p>
+            <p className="text-sm font-medium text-dm-text-muted uppercase tracking-wider">Conectadas</p>
+            <p className="text-3xl font-bold text-dm-text-primary">{connectedCount}</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between px-2">
-          <h2 className="text-2xl font-bold text-slate-900">Listado de Sucursales</h2>
-          <div className="flex items-center gap-2 text-slate-500 text-sm">
-            <SignalIcon className="w-4 h-4" />
-            Estado de conexión
-          </div>
+        <div className="px-2">
+          <h2 className="text-2xl font-bold text-dm-text-primary">Listado de Sucursales</h2>
         </div>
 
         {branchOffices.map((branch) => {
@@ -448,44 +431,41 @@ export const WhatsAppConfigPage: React.FC = () => {
           return (
             <div
               key={branch.id}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden transition-all hover:shadow-md"
+              className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary overflow-hidden transition-all hover:shadow-md"
             >
-              <div className="p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="h-14 w-14 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500 shrink-0">
-                    <BuildingOffice2Icon className="w-8 h-8" />
+              <div className="p-4 sm:p-5 lg:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
+                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                  <div className="h-12 w-12 sm:h-14 sm:w-14 bg-dm-bg-secondary rounded-lg flex items-center justify-center text-dm-text-muted shrink-0">
+                    <BuildingOffice2Icon className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="text-lg font-bold text-slate-900 truncate">{branch.name}</h3>
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMeta.badgeClass}`}>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3">
+                      <h3 className="text-base sm:text-lg font-bold text-dm-text-primary truncate">{branch.name}</h3>
+                      <span className={`inline-flex items-center self-start sm:self-auto px-2.5 py-0.5 rounded-full text-xs font-medium ${statusMeta.badgeClass}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${statusMeta.dotClass} mr-1.5`} />
                         {statusMeta.label}
                       </span>
                     </div>
-                    <p className="text-slate-500 text-sm flex items-center gap-1 mt-1 truncate">
-                      <BuildingOffice2Icon className="w-4 h-4" />
-                      {branch.port_name || branch.address_line || 'Sin dirección'}
+                    <p className="text-dm-text-muted text-sm flex items-center gap-1 mt-1 truncate">
+                      <BuildingOffice2Icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{branch.port_name || branch.address_line || 'Sin dirección'}</span>
                     </p>
-                    {instanceName && (
-                      <p className="text-xs text-blue-600 font-mono mt-1 truncate">{instanceName}</p>
-                    )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 sm:gap-6 border-t lg:border-t-0 pt-4 lg:pt-0 w-full lg:w-auto justify-end">
+                <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 lg:gap-6 border-t lg:border-t-0 pt-3 sm:pt-4 lg:pt-0 w-full lg:w-auto">
                   {instanceName ? (
                     <>
                       <button
                         onClick={() => checkSingleInstanceStatus(instanceName)}
                         disabled={isCheckingThis}
-                        className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors group disabled:opacity-60"
+                        className="flex flex-col items-center gap-1 text-dm-text-secondary hover:text-primary transition-colors group disabled:opacity-60 min-w-[4rem]"
                         title="Verificar"
                       >
-                        <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10">
-                          <SignalIcon className={`w-5 h-5 ${isCheckingThis ? 'animate-pulse' : ''}`} />
+                        <div className="h-10 w-10 rounded-full bg-dm-bg-secondary flex items-center justify-center group-hover:bg-primary/10">
+                          <ShieldCheckIcon className={`w-5 h-5 ${isCheckingThis ? 'animate-pulse' : ''}`} />
                         </div>
-                        <span className="text-xs font-semibold">Verificar</span>
+                        <span className="text-xs font-semibold text-center leading-tight">Verificar</span>
                       </button>
 
                       {connectionState !== 'open' && (
@@ -511,23 +491,23 @@ export const WhatsAppConfigPage: React.FC = () => {
                               setSelectedBranch({ ...branch, connectionState });
                               setShowChangePhoneModal(true);
                             }}
-                            className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors group"
+                            className="flex flex-col items-center gap-1 text-dm-text-secondary hover:text-primary transition-colors group min-w-[4rem]"
                           >
-                            <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10">
-                              <DevicePhoneMobileIcon className="w-5 h-5" />
+                            <div className="h-10 w-10 rounded-full bg-dm-bg-secondary flex items-center justify-center group-hover:bg-primary/10">
+                              <ArrowsRightLeftIcon className="w-5 h-5" />
                             </div>
-                            <span className="text-xs font-semibold">Cambiar</span>
+                            <span className="text-xs font-semibold text-center leading-tight">Cambiar</span>
                           </button>
 
                           <button
                             onClick={() => handleLogout(instanceName)}
                             disabled={logoutMutation.isPending}
-                            className="flex flex-col items-center gap-1 text-slate-600 hover:text-orange-500 transition-colors group disabled:opacity-60"
+                            className="flex flex-col items-center gap-1 text-dm-text-secondary hover:text-orange-500 transition-colors group disabled:opacity-60 min-w-[4rem]"
                           >
-                            <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-orange-100">
-                              <XCircleIcon className="w-5 h-5" />
+                            <div className="h-10 w-10 rounded-full bg-dm-bg-secondary flex items-center justify-center group-hover:bg-orange-100 dark:group-hover:bg-orange-900/40">
+                              <LinkSlashIcon className="w-5 h-5" />
                             </div>
-                            <span className="text-xs font-semibold">Desconectar</span>
+                            <span className="text-xs font-semibold text-center leading-tight">Desconectar</span>
                           </button>
                         </>
                       )}
@@ -535,13 +515,13 @@ export const WhatsAppConfigPage: React.FC = () => {
                       <button
                         onClick={() => handleRestart(instanceName)}
                         disabled={restartMutation.isPending}
-                        className="flex flex-col items-center gap-1 text-slate-600 hover:text-primary transition-colors group disabled:opacity-60"
+                        className="flex flex-col items-center gap-1 text-dm-text-secondary hover:text-primary transition-colors group disabled:opacity-60 min-w-[4rem]"
                         title="Reiniciar"
                       >
-                        <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary/10">
+                        <div className="h-10 w-10 rounded-full bg-dm-bg-secondary flex items-center justify-center group-hover:bg-primary/10">
                           <ArrowPathIcon className={`w-5 h-5 ${restartMutation.isPending ? 'animate-spin' : ''}`} />
                         </div>
-                        <span className="text-xs font-semibold">Reiniciar</span>
+                        <span className="text-xs font-semibold text-center leading-tight">Reiniciar</span>
                       </button>
                     </>
                   ) : (
@@ -565,9 +545,9 @@ export const WhatsAppConfigPage: React.FC = () => {
         })}
 
         {branchOffices.length === 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 py-14 text-center">
-            <BuildingOffice2Icon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No hay sucursales configuradas</p>
+          <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary py-14 text-center">
+            <BuildingOffice2Icon className="w-12 h-12 text-dm-text-muted mx-auto mb-4" />
+            <p className="text-dm-text-muted">No hay sucursales configuradas</p>
           </div>
         )}
       </div>
@@ -583,23 +563,23 @@ export const WhatsAppConfigPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-dm-text-secondary mb-4">
               Crear una instancia de WhatsApp para la sucursal: <strong>{selectedBranch?.name}</strong>
             </p>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Nombre de la Instancia
             </label>
             <input
               type="text"
               value={newInstanceName}
               onChange={(e) => setNewInstanceName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_'))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono"
+              className="w-full px-3 py-2 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 font-mono"
               placeholder="ej: [EMPRESA]_IQUITOS"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-dm-text-muted mt-1">
               Solo letras mayúsculas, números y guiones bajos
             </p>
           </div>
@@ -646,14 +626,14 @@ export const WhatsAppConfigPage: React.FC = () => {
         maxWidth="lg"
       >
         <div className="text-center space-y-4">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-            <p className="text-sm text-green-800">
+          <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg p-4 mb-4">
+            <p className="text-sm text-green-800 dark:text-green-300">
               <strong>Instrucciones:</strong> Abre WhatsApp en tu teléfono → Configuración → Dispositivos vinculados → Vincular un dispositivo
             </p>
           </div>
           
           {qrCode ? (
-            <div className="flex justify-center p-4 bg-white rounded-lg border-2 border-gray-200">
+            <div className="flex justify-center p-4 bg-dm-bg-primary rounded-lg border-2 border-dm-border-primary">
               <img
                 src={qrCode}
                 alt="QR Code"
@@ -665,13 +645,13 @@ export const WhatsAppConfigPage: React.FC = () => {
               <Spinner size="lg" />
             </div>
           ) : (
-            <div className="flex justify-center items-center h-72 text-gray-500">
+            <div className="flex justify-center items-center h-72 text-dm-text-muted">
               <p>Error al cargar el código QR</p>
             </div>
           )}
 
           {eventPolling.isPolling && (
-            <div className="flex items-center justify-center space-x-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+            <div className="flex items-center justify-center space-x-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 p-3 rounded-lg">
               <ArrowPathIcon className="w-4 h-4 animate-spin" />
               <span>Esperando que escanees el código QR...</span>
             </div>
@@ -711,21 +691,21 @@ export const WhatsAppConfigPage: React.FC = () => {
         title="Cambiar de Teléfono"
       >
         <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-4 bg-blue-50 rounded-lg">
-            <DevicePhoneMobileIcon className="w-6 h-6 text-blue-600 flex-shrink-0" />
-            <p className="text-sm text-blue-700">
+          <div className="flex items-center space-x-3 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+            <DevicePhoneMobileIcon className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+            <p className="text-sm text-blue-700 dark:text-blue-300">
               Esta acción desvinculará el teléfono actual y generará un nuevo código QR para vincular otro dispositivo.
             </p>
           </div>
           
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-dm-text-secondary">
             ¿Deseas cambiar el teléfono vinculado a la instancia{' '}
-            <strong className="font-mono text-blue-600">{selectedBranch?.whatsapp_instance_name}</strong>{' '}
+            <strong className="font-mono text-blue-600 dark:text-blue-400">{selectedBranch?.whatsapp_instance_name}</strong>{' '}
             de la sucursal <strong>{selectedBranch?.name}</strong>?
           </p>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-xs text-yellow-800">
+          <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
+            <p className="text-xs text-yellow-800 dark:text-yellow-300">
               <strong>Nota:</strong> El teléfono actual perderá acceso inmediatamente. Tendrás que escanear el nuevo QR con el dispositivo que deseas vincular.
             </p>
           </div>

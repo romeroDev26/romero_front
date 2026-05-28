@@ -61,23 +61,23 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#202020]/30 backdrop-blur-[2px] transition-opacity"
+        className="fixed inset-0 bg-black/30 backdrop-blur-[2px] transition-opacity"
         onClick={!isLoading ? onClose : undefined}
       />
 
       {/* Panel */}
-      <div className="relative z-10 flex flex-col w-full max-w-2xl max-h-[90vh] bg-white rounded-[20px] border border-[#e8e8e8] overflow-hidden">
+      <div className="relative z-10 flex flex-col w-full max-w-2xl max-h-[90vh] bg-dm-bg-primary rounded-[20px] border border-dm-border-primary overflow-hidden">
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-8 py-5 border-b border-[#e8e8e8]">
+        <div className="flex items-center justify-between px-8 py-5 border-b border-dm-border-primary">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
               <ShieldExclamationIcon className="w-5 h-5 text-[#1F4690]" />
             </div>
             <div>
-              <h2 className="text-[15px] font-semibold text-[#202020] tracking-tight">
+              <h2 className="text-[15px] font-semibold text-dm-text-primary tracking-tight">
                 Solicitar aprobación de anulación
               </h2>
-              <p className="text-[12px] text-[#828282]">
+              <p className="text-[12px] text-dm-text-muted">
                 {invoiceSeries}-{String(invoiceNumber).padStart(8, '0')}
               </p>
             </div>
@@ -85,7 +85,7 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#202020] hover:bg-[#f5f5f5] transition-colors disabled:opacity-50"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-dm-text-primary hover:bg-dm-bg-secondary transition-colors disabled:opacity-50"
           >
             <XMarkIcon className="w-5 h-5" />
           </button>
@@ -95,18 +95,18 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="px-8 py-6 space-y-6">
             {/* Alerta: viaje ya partido */}
-            <div className="rounded-[12px] border border-amber-200/60 bg-amber-50/40 p-5">
+            <div className="rounded-[12px] border border-amber-200/60 bg-amber-50 dark:bg-amber-950/40 p-5">
               <div className="flex items-start gap-3.5">
                 <div className="flex-shrink-0 w-8 h-8 rounded-[8px] bg-amber-100 flex items-center justify-center">
-                  <ClockIcon className="w-4.5 h-4.5 text-amber-600" />
+                  <ClockIcon className="w-4.5 h-4.5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[13px] font-semibold text-[#202020]">
+                  <h3 className="text-[13px] font-semibold text-dm-text-primary">
                     El viaje ya ha partido
                   </h3>
-                  <p className="mt-1 text-[13px] text-[#4d4d4d] leading-relaxed">
+                  <p className="mt-1 text-[13px] text-dm-text-secondary leading-relaxed">
                     No puedes anular directamente el comprobante{' '}
-                    <span className="font-semibold text-[#202020]">
+                    <span className="font-semibold text-dm-text-primary">
                       {invoiceSeries}-{invoiceNumber}
                     </span>{' '}
                     porque el viaje ya salió. Debes solicitar la aprobación de un supervisor.
@@ -119,10 +119,10 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
             <div>
               <label
                 htmlFor="requestReason"
-                className="block text-[13px] font-medium text-[#202020] mb-2"
+                className="block text-[13px] font-medium text-dm-text-primary mb-2"
               >
                 Motivo de la solicitud
-                <span className="text-red-500 ml-0.5">*</span>
+                <span className="text-red-500 dark:text-red-400 ml-0.5">*</span>
               </label>
               <textarea
                 id="requestReason"
@@ -130,20 +130,20 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
                 onChange={(e) => setRequestReason(e.target.value)}
                 rows={5}
                 disabled={isLoading}
-                className="w-full px-4 py-3 text-[14px] text-[#202020] bg-white border border-[#e8e8e8] rounded-[12px] placeholder:text-[#828282] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors resize-none"
+                className="w-full px-4 py-3 text-[14px] text-dm-text-primary bg-dm-bg-primary border border-dm-border-primary rounded-[12px] placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors resize-none"
                 placeholder="Ej: El pasajero tuvo un accidente camino a la embarcación y está en agencia solicitando la devolución. Se encuentra hospitalizado y tiene certificado médico."
                 required
               />
-              <p className="mt-2 text-[12px] text-[#828282]">
+              <p className="mt-2 text-[12px] text-dm-text-muted">
                 Explica detalladamente por qué necesitas anular este comprobante. El supervisor revisará tu solicitud.
               </p>
             </div>
 
             {/* Instrucciones */}
-            <div className="rounded-[12px] border border-[#e8e8e8] bg-[#fafafa] p-5">
+            <div className="rounded-[12px] border border-dm-border-primary bg-dm-bg-secondary p-5">
               <div className="flex items-center gap-2 mb-3">
                 <InformationCircleIcon className="w-4 h-4 text-[#1F4690]" />
-                <h4 className="text-[13px] font-semibold text-[#202020]">
+                <h4 className="text-[13px] font-semibold text-dm-text-primary">
                   ¿Qué sucederá después?
                 </h4>
               </div>
@@ -154,7 +154,7 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
                   'Si se aprueba, se generará automáticamente la Nota de Crédito',
                   'Recibirás una notificación con la decisión del supervisor',
                 ].map((text, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-[13px] text-[#4d4d4d]">
+                  <li key={idx} className="flex items-start gap-2.5 text-[13px] text-dm-text-secondary">
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#1F4690]/10 text-[#1F4690] text-[11px] font-bold flex items-center justify-center mt-0.5">
                       {idx + 1}
                     </span>
@@ -166,12 +166,12 @@ const RequestCancellationModal: React.FC<RequestCancellationModalProps> = ({
           </div>
 
           {/* ── Footer ── */}
-          <div className="flex items-center justify-end gap-3 px-8 py-4 border-t border-[#e8e8e8] bg-[#fafafa]">
+          <div className="flex items-center justify-end gap-3 px-8 py-4 border-t border-dm-border-primary bg-dm-bg-secondary">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-5 py-2.5 text-[13px] font-medium text-[#4d4d4d] hover:text-[#202020] hover:bg-[#f5f5f5] rounded-full transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 text-[13px] font-medium text-dm-text-secondary hover:text-dm-text-primary hover:bg-dm-bg-secondary rounded-full transition-colors disabled:opacity-50"
             >
               Cancelar
             </button>

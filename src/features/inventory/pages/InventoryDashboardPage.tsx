@@ -85,7 +85,7 @@ export const InventoryDashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Panel de Inventario</h1>
+        <h1 className="text-2xl font-bold text-dm-text-primary">Panel de Inventario</h1>
         <Button
           onClick={() => navigate('/inventory/movement/new')}
           className="flex items-center"
@@ -98,13 +98,13 @@ export const InventoryDashboardPage: React.FC = () => {
       {/* Tarjetas de estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {/* Total de productos */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-dm-bg-primary rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-primary/10 text-primary">
               <CubeIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Total de Productos</h2>
+              <h2 className="text-dm-text-muted text-sm">Total de Productos</h2>
               <p className="text-2xl font-semibold">{dashboardData.totalProducts}</p>
             </div>
           </div>
@@ -119,13 +119,13 @@ export const InventoryDashboardPage: React.FC = () => {
         </div>
         
         {/* Almacenes */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-dm-bg-primary rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-secondary/10 text-secondary">
               <BuildingOfficeIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Almacenes Activos</h2>
+              <h2 className="text-dm-text-muted text-sm">Almacenes Activos</h2>
               <p className="text-2xl font-semibold">{dashboardData.totalWarehouses}</p>
             </div>
           </div>
@@ -140,13 +140,13 @@ export const InventoryDashboardPage: React.FC = () => {
         </div>
         
         {/* Productos con stock bajo */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-dm-bg-primary rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-warning/10 text-warning">
               <ExclamationTriangleIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Stock Bajo</h2>
+              <h2 className="text-dm-text-muted text-sm">Stock Bajo</h2>
               <p className="text-2xl font-semibold">{dashboardData.lowStockItems}</p>
             </div>
           </div>
@@ -161,13 +161,13 @@ export const InventoryDashboardPage: React.FC = () => {
         </div>
         
         {/* Valor del inventario */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-dm-bg-primary rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="p-3 rounded-full bg-success/10 text-success">
               <CubeIcon className="h-8 w-8" />
             </div>
             <div className="ml-4">
-              <h2 className="text-gray-500 text-sm">Valor del Inventario</h2>
+              <h2 className="text-dm-text-muted text-sm">Valor del Inventario</h2>
               <p className="text-2xl font-semibold">
                 S/ {dashboardData.stockValue.toLocaleString('es-PE')}
               </p>
@@ -186,8 +186,8 @@ export const InventoryDashboardPage: React.FC = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Movimientos recientes */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <div className="bg-dm-bg-primary rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-dm-border-primary flex justify-between items-center">
             <h2 className="text-lg font-medium">Movimientos Recientes</h2>
             <button
               onClick={() => navigate('/inventory/movements')}
@@ -197,44 +197,44 @@ export const InventoryDashboardPage: React.FC = () => {
             </button>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-dm-border-primary">
+              <thead className="bg-dm-bg-secondary">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                     Producto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                     Tipo
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                     Cantidad
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                     Almacén
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                     Fecha
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                 {dashboardData.recentMovements.map((movement) => (
-                  <tr key={movement.id} className="hover:bg-gray-50">
+                  <tr key={movement.id} className="hover:bg-dm-bg-secondary">
                     <td className="px-6 py-4 whitespace-nowrap">{movement.product}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dm-text-muted">
                       {getMovementTypeDisplay(movement.type)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`font-medium ${
-                        movement.quantity > 0 ? 'text-green-600' : 'text-red-600'
+                        movement.quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                       }`}>
                         {movement.quantity > 0 ? '+' : ''}{movement.quantity}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dm-text-muted">
                       {movement.warehouse}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dm-text-muted">
                       {movement.date}
                     </td>
                   </tr>
@@ -245,8 +245,8 @@ export const InventoryDashboardPage: React.FC = () => {
         </div>
         
         {/* Productos más movidos */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
+        <div className="bg-dm-bg-primary rounded-lg shadow">
+          <div className="px-6 py-4 border-b border-dm-border-primary">
             <h2 className="text-lg font-medium">Productos Más Movidos</h2>
           </div>
           <div className="p-6">
@@ -254,16 +254,16 @@ export const InventoryDashboardPage: React.FC = () => {
               {dashboardData.topMovedProducts.map((item, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-600">
+                    <div className="w-8 h-8 bg-dm-bg-secondary rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-dm-text-secondary">
                         {index + 1}
                       </span>
                     </div>
-                    <span className="ml-3 text-sm font-medium text-gray-900">
+                    <span className="ml-3 text-sm font-medium text-dm-text-primary">
                       {item.product}
                     </span>
                   </div>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-dm-text-muted">
                     {item.totalMovements} movimientos
                   </span>
                 </div>

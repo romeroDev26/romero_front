@@ -216,18 +216,18 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
     <div className="max-w-4xl mx-auto">
       <div className="space-y-8">
         {/* Información del viaje seleccionado */}
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl p-6">
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 dark:border-green-800/50 rounded-xl p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-                <CheckCircleIcon className="h-6 w-6 text-green-600" />
+              <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-lg">
+                <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-gray-900">
+                <h4 className="text-lg font-semibold text-dm-text-primary">
                   Viaje Seleccionado: {selectedTrip?.trip_name || tripDetails?.trip_name || `ID: ${selectedTrip.id}`}
                 </h4>
                 {(selectedTrip?.vessel_name || tripDetails?.vessel?.name) && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-dm-text-secondary">
                     <TruckIcon className="h-4 w-4 inline mr-1" />
                     Embarcación: {selectedTrip?.vessel_name || tripDetails?.vessel?.name}
                   </p>
@@ -249,17 +249,17 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
 
         {/* Indicador de paradas del viaje */}
         {tripDetails?.stops && tripDetails.stops.length > 1 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
-                  <MapPinIcon className="h-6 w-6 text-blue-600" />
+                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
+                  <MapPinIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900">
+                  <h4 className="text-lg font-semibold text-dm-text-primary">
                     Viaje Multi-Parada Detectado
                   </h4>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-dm-text-secondary">
                     {tripDetails.stops.length} destinos encontrados. Se generarán guías automáticamente para cada destino.
                   </p>
                 </div>
@@ -269,44 +269,44 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
         )}
 
         {/* Render condicional basado en el modo de generación */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
-              <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4">
-                <DocumentTextIcon className="h-8 w-8 text-blue-600" />
+              <div className="flex items-center justify-center w-16 h-16 bg-blue-100 dark:bg-blue-900/40 rounded-full mx-auto mb-4">
+                <DocumentTextIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Generación Automática de Guías</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg font-semibold text-dm-text-primary mb-2">Generación Automática de Guías</h3>
+              <p className="text-dm-text-secondary">
                 Se generarán guías automáticamente para cada destino del viaje seleccionado.
                 Solo necesitas proporcionar los datos del conductor.
               </p>
             </div>
 
             {/* Conductor - solo para auto generación */}
-            <div className="border border-gray-200 rounded-xl p-6 max-w-2xl mx-auto">
+            <div className="border border-dm-border-primary rounded-xl p-6 max-w-2xl mx-auto">
               <div className="flex items-center space-x-3 mb-6">
-                <div className="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-lg">
-                  <UserIcon className="h-6 w-6 text-orange-600" />
+                <div className="flex items-center justify-center w-10 h-10 bg-orange-100 dark:bg-orange-900/40 rounded-lg">
+                  <UserIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900">Datos del Conductor</h3>
+                <h3 className="text-lg font-semibold text-dm-text-primary">Datos del Conductor</h3>
               </div>
               
               {/* Selector de Serie */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                   <DocumentTextIcon className="h-4 w-4 inline mr-1" />
                   Serie de Guía de Remisión*
                 </label>
                 {isLoadingSeries ? (
                   <div className="flex items-center space-x-2">
                     <Spinner size="sm" />
-                    <span className="text-sm text-gray-500">Cargando series...</span>
+                    <span className="text-sm text-dm-text-muted">Cargando series...</span>
                   </div>
                 ) : (
                   <select
                     value={selectedSeries}
                     onChange={(e) => setSelectedSeries(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="w-full p-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     disabled={availableSeries.length === 0}
                   >
                     <option value="">
@@ -320,7 +320,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
                   </select>
                 )}
                 {availableSeries.length === 0 && !isLoadingSeries && (
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-dm-text-muted mt-1">
                     No se encontraron series activas para guías de remisión en esta sucursal.
                   </p>
                 )}
@@ -340,14 +340,14 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
                 />
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo Doc*</label>
+                  <label className="block text-sm font-medium text-dm-text-secondary mb-2">Tipo Doc*</label>
                   <Controller
                     name="driver_doc_type"
                     control={control}
                     render={({ field }) => (
                       <select 
                         {...field}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        className="w-full p-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                       >
                         {DOCUMENT_TYPES.map(docType => (
                           <option key={docType.code} value={docType.code}>
@@ -358,7 +358,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
                     )}
                   />
                   {errors.driver_doc_type && (
-                    <p className="text-red-500 text-xs mt-1">{errors.driver_doc_type.message}</p>
+                    <p className="text-red-500 dark:text-red-400 text-xs mt-1">{errors.driver_doc_type.message}</p>
                   )}
                 </div>
                 
@@ -372,7 +372,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
           </div>
 
           {/* Botones de acción para auto-generación */}
-          <div className="bg-gray-50 px-8 py-6 border-t border-gray-200">
+          <div className="bg-dm-bg-secondary px-8 py-6 border-t border-dm-border-primary">
             <div className="flex items-center justify-end space-x-4">
               <Button 
                 type="button" 
@@ -387,7 +387,7 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
                 type="button"
                 onClick={handleAutoGenerate}
                 disabled={isLoadingTrip || isSubmitting || !tripDetails?.stops || tripDetails.stops.length < 2 || !selectedSeries || availableSeries.length === 0}
-                className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg flex items-center transition-colors"
+                className="px-8 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-dm-text-muted text-white font-medium rounded-lg flex items-center transition-colors"
               >
                 {isSubmitting ? (
                   <>

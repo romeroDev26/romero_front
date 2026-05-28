@@ -99,8 +99,8 @@ export const RemissionGuideFormPage: React.FC = () => {
                   Volver
                 </Button>
               </div>
-              <h1 className="text-3xl font-bold text-gray-900">Nueva Guía de Remisión</h1>
-              <p className="text-gray-600 mt-1">Cree una nueva guía de remisión</p>
+              <h1 className="text-3xl font-bold text-dm-text-primary">Nueva Guía de Remisión</h1>
+              <p className="text-dm-text-secondary mt-1">Cree una nueva guía de remisión</p>
             </div>
             
             <div className="flex items-center space-x-3">

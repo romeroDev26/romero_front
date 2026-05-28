@@ -33,21 +33,21 @@ export const ViewTicketModal: React.FC<ViewTicketModalProps> = ({
       <div className="space-y-4">
         {/* PDF */}
         {pdfUrl ? (
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2">
+          <div className="overflow-hidden rounded-xl border border-dm-border-primary bg-dm-bg-primary shadow-sm">
+            <div className="flex items-center justify-between border-b border-dm-border-primary bg-dm-bg-secondary px-4 py-2">
               <div className="flex items-center gap-2">
-                <Receipt className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-semibold text-gray-700">
+                <Receipt className="h-4 w-4 text-dm-text-muted" />
+                <span className="text-sm font-semibold text-dm-text-secondary">
                   Ticket de Pago
                 </span>
                 {ticketType && (
-                  <span className="rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-bold text-gray-600">
+                  <span className="rounded-full bg-dm-bg-secondary px-2 py-0.5 text-[10px] font-bold text-dm-text-secondary">
                     {ticketType}
                   </span>
                 )}
               </div>
             </div>
-            <div className="h-[600px] bg-gray-50">
+            <div className="h-[600px] bg-dm-bg-secondary">
               <iframe
                 src={pdfUrl}
                 className="h-full w-full border-0"
@@ -56,10 +56,10 @@ export const ViewTicketModal: React.FC<ViewTicketModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 py-16">
-            <FileText className="mb-3 h-14 w-14 text-gray-300" />
-            <p className="text-sm font-medium text-gray-400">Ticket no disponible</p>
-            <p className="text-xs text-gray-400">El comprobante no se pudo cargar</p>
+          <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-dm-border-primary bg-dm-bg-secondary py-16">
+            <FileText className="mb-3 h-14 w-14 text-dm-text-muted" />
+            <p className="text-sm font-medium text-dm-text-muted">Ticket no disponible</p>
+            <p className="text-xs text-dm-text-muted">El comprobante no se pudo cargar</p>
           </div>
         )}
       </div>

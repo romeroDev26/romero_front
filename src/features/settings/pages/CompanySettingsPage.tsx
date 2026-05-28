@@ -41,9 +41,9 @@ const companySchema = z.object({
 type CompanyFormData = z.infer<typeof companySchema>;
 
 const fieldClass =
-  'w-full rounded-[12px] border border-[#e8e8e8] bg-white text-[14px] px-4 py-2.5 text-[#202020] placeholder:text-[#828282] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors';
+  'w-full rounded-[12px] border border-dm-border-primary bg-dm-bg-primary text-[14px] px-4 py-2.5 text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors';
 
-const labelClass = 'text-[11px] font-semibold text-[#828282] uppercase tracking-wider';
+const labelClass = 'text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider';
 
 export const CompanySettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -190,14 +190,14 @@ export const CompanySettingsPage: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-3">
         <Spinner size="lg" color="text-[#1F4690]" />
-        <p className="text-[13px] text-[#828282]">Cargando configuración...</p>
+        <p className="text-[13px] text-dm-text-muted">Cargando configuración...</p>
       </div>
     );
 
   if (error)
     return (
-      <div className="rounded-[12px] border border-red-200 bg-red-50/40 p-5 text-center">
-        <p className="text-[13px] text-red-700">Error al cargar la información de la empresa.</p>
+      <div className="rounded-[12px] border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/40 p-5 text-center">
+        <p className="text-[13px] text-red-700 dark:text-red-300">Error al cargar la información de la empresa.</p>
       </div>
     );
 
@@ -209,35 +209,35 @@ export const CompanySettingsPage: React.FC = () => {
           <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
             <BuildingOfficeIcon className="w-5 h-5 text-[#1F4690]" />
           </div>
-          <h1 className="text-[22px] font-semibold text-[#202020] tracking-tight">
+          <h1 className="text-[22px] font-semibold text-dm-text-primary tracking-tight">
             Configuración de empresa
           </h1>
         </div>
-        <p className="text-[14px] text-[#828282]">
+        <p className="text-[14px] text-dm-text-muted">
           Administre la identidad y credenciales de su organización
         </p>
       </header>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* ── Datos Generales ── */}
-        <section className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#e8e8e8] flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-[6px] bg-[#f5f5f5] flex items-center justify-center">
+        <section className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
+          <div className="px-6 py-4 border-b border-dm-border-primary flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-[6px] bg-dm-bg-secondary flex items-center justify-center">
               <InformationCircleIcon className="h-4 w-4 text-[#1F4690]" />
             </div>
-            <h2 className="text-[15px] font-semibold text-[#202020]">Datos generales</h2>
+            <h2 className="text-[15px] font-semibold text-dm-text-primary">Datos generales</h2>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <div className="space-y-1.5">
               <label className={labelClass}>RUC *</label>
               <input className={fieldClass} {...register('ruc')} />
-              {errors.ruc && <p className="text-[12px] text-red-600">{errors.ruc.message}</p>}
+              {errors.ruc && <p className="text-[12px] text-red-600 dark:text-red-400">{errors.ruc.message}</p>}
             </div>
             <div className="space-y-1.5 lg:col-span-2">
               <label className={labelClass}>Razón social *</label>
               <input className={fieldClass} {...register('business_name')} />
               {errors.business_name && (
-                <p className="text-[12px] text-red-600">{errors.business_name.message}</p>
+                <p className="text-[12px] text-red-600 dark:text-red-400">{errors.business_name.message}</p>
               )}
             </div>
             <div className="space-y-1.5 lg:col-span-2">
@@ -252,18 +252,18 @@ export const CompanySettingsPage: React.FC = () => {
               <label className={labelClass}>Dirección fiscal *</label>
               <input className={fieldClass} {...register('address')} />
               {errors.address && (
-                <p className="text-[12px] text-red-600">{errors.address.message}</p>
+                <p className="text-[12px] text-red-600 dark:text-red-400">{errors.address.message}</p>
               )}
             </div>
             <div className="space-y-1.5">
               <label className={labelClass}>Ubigeo *</label>
               <input className={fieldClass} {...register('ubigeo')} />
-              {errors.ubigeo && <p className="text-[12px] text-red-600">{errors.ubigeo.message}</p>}
+              {errors.ubigeo && <p className="text-[12px] text-red-600 dark:text-red-400">{errors.ubigeo.message}</p>}
             </div>
             <div className="space-y-1.5">
               <label className={labelClass}>Email</label>
               <input type="email" className={fieldClass} {...register('email')} />
-              {errors.email && <p className="text-[12px] text-red-600">{errors.email.message}</p>}
+              {errors.email && <p className="text-[12px] text-red-600 dark:text-red-400">{errors.email.message}</p>}
             </div>
             <div className="space-y-1.5 lg:col-span-2">
               <label className={labelClass}>Cuenta de detracción</label>
@@ -275,16 +275,16 @@ export const CompanySettingsPage: React.FC = () => {
         {/* ── Two-column row ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Configuración SUNAT */}
-          <section className="bg-white rounded-[12px] border border-[#e8e8e8] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#e8e8e8] flex items-center justify-between">
+          <section className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-dm-border-primary flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-[6px] bg-[#f5f5f5] flex items-center justify-center">
+                <div className="w-7 h-7 rounded-[6px] bg-dm-bg-secondary flex items-center justify-center">
                   <KeyIcon className="h-4 w-4 text-[#1F4690]" />
                 </div>
-                <h2 className="text-[15px] font-semibold text-[#202020]">Configuración SUNAT</h2>
+                <h2 className="text-[15px] font-semibold text-dm-text-primary">Configuración SUNAT</h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-medium text-[#828282]">Modo beta</span>
+                <span className="text-[11px] font-medium text-dm-text-muted">Modo beta</span>
                 <Controller
                   name="beta_mode"
                   control={control}
@@ -298,7 +298,7 @@ export const CompanySettingsPage: React.FC = () => {
                         onBlur={field.onBlur}
                         ref={field.ref}
                       />
-                      <div className="w-9 h-5 bg-[#e8e8e8] rounded-full peer relative peer-checked:bg-[#1F4690] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
+                      <div className="w-9 h-5 bg-[#e8e8e8] rounded-full peer relative peer-checked:bg-[#1F4690] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-dm-bg-primary after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
                     </label>
                   )}
                 />
@@ -308,17 +308,17 @@ export const CompanySettingsPage: React.FC = () => {
               <div className="space-y-1.5">
                 <label className={labelClass}>Usuario SOL *</label>
                 <div className="relative">
-                  <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282]" />
+                  <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted" />
                   <input className={`${fieldClass} pl-10`} {...register('sunat_username')} />
                 </div>
                 {errors.sunat_username && (
-                  <p className="text-[12px] text-red-600">{errors.sunat_username.message}</p>
+                  <p className="text-[12px] text-red-600 dark:text-red-400">{errors.sunat_username.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
                 <label className={labelClass}>Contraseña SOL (dejar en blanco para no cambiar)</label>
                 <div className="relative">
-                  <LockClosedIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#828282]" />
+                  <LockClosedIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted" />
                   <input
                     type={showSunatPassword ? 'text' : 'password'}
                     className={`${fieldClass} pl-10 pr-10`}
@@ -327,7 +327,7 @@ export const CompanySettingsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowSunatPassword(!showSunatPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#828282] hover:text-[#202020] transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-dm-text-muted hover:text-dm-text-primary transition-colors"
                     tabIndex={-1}
                   >
                     {showSunatPassword ? (
@@ -339,7 +339,7 @@ export const CompanySettingsPage: React.FC = () => {
                 </div>
               </div>
               <div className="p-3.5 rounded-[8px] border border-[#1F4690]/10 bg-[#1F4690]/[0.02]">
-                <p className="text-[11px] leading-relaxed text-[#4d4d4d]">
+                <p className="text-[11px] leading-relaxed text-dm-text-secondary">
                   <span className="font-semibold text-[#1F4690] uppercase">Importante:</span>{' '}
                   Estas credenciales son necesarias para la emisión de comprobantes electrónicos a
                   través del sistema OSE/PSE.
@@ -349,17 +349,17 @@ export const CompanySettingsPage: React.FC = () => {
           </section>
 
           {/* Archivos Digitales */}
-          <section className="bg-white rounded-[12px] border border-[#e8e8e8] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b border-[#e8e8e8] flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-[6px] bg-[#f5f5f5] flex items-center justify-center">
+          <section className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b border-dm-border-primary flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-[6px] bg-dm-bg-secondary flex items-center justify-center">
                 <FolderOpenIcon className="h-4 w-4 text-[#1F4690]" />
               </div>
-              <h2 className="text-[15px] font-semibold text-[#202020]">Archivos digitales</h2>
+              <h2 className="text-[15px] font-semibold text-dm-text-primary">Archivos digitales</h2>
             </div>
             <div className="p-6 space-y-6 flex-1">
               {/* Logo */}
               <div className="flex items-center gap-5">
-                <div className="relative w-20 h-20 shrink-0 bg-[#f5f5f5] rounded-[12px] border-2 border-dashed border-[#e8e8e8] flex items-center justify-center overflow-hidden">
+                <div className="relative w-20 h-20 shrink-0 bg-dm-bg-secondary rounded-[12px] border-2 border-dashed border-dm-border-primary flex items-center justify-center overflow-hidden">
                   {company?.logo_url ? (
                     <img src={company.logo_url} alt="Logo" className="w-full h-full object-contain" />
                   ) : (
@@ -368,14 +368,14 @@ export const CompanySettingsPage: React.FC = () => {
                     </div>
                   )}
                   {isUploadingLogo && (
-                    <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-dm-bg-primary/80 flex items-center justify-center">
                       <Spinner size="sm" />
                     </div>
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-[13px] font-semibold text-[#202020]">Logo de la empresa</p>
-                  <p className="text-[11px] text-[#828282]">
+                  <p className="text-[13px] font-semibold text-dm-text-primary">Logo de la empresa</p>
+                  <p className="text-[11px] text-dm-text-muted">
                     Recomendado: SVG, PNG o WEBP (400×400 px)
                   </p>
                   <button
@@ -396,18 +396,18 @@ export const CompanySettingsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="border-t border-[#e8e8e8]" />
+              <div className="border-t border-dm-border-primary" />
 
               {/* Certificate */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-[8px] bg-emerald-50 flex items-center justify-center">
-                      <ShieldCheckIcon className="h-4 w-4 text-emerald-600" />
+                    <div className="w-8 h-8 rounded-[8px] bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
+                      <ShieldCheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-[13px] font-semibold text-[#202020]">Certificado digital</p>
-                      <p className="text-[11px] text-[#828282]">
+                      <p className="text-[13px] font-semibold text-dm-text-primary">Certificado digital</p>
+                      <p className="text-[11px] text-dm-text-muted">
                         {company?.certificate_path
                           ? 'Certificado cargado'
                           : 'No se ha cargado un certificado'}
@@ -451,7 +451,7 @@ export const CompanySettingsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowCertPassword(!showCertPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#828282] hover:text-[#202020] transition-colors"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-dm-text-muted hover:text-dm-text-primary transition-colors"
                       tabIndex={-1}
                     >
                       {showCertPassword ? (

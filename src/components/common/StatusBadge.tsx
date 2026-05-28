@@ -17,13 +17,13 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[13px] font-medium leading-none ${
         isActive
-          ? 'bg-[#e6f7e6] text-[#237804]'
-          : 'bg-[#fff1f0] text-[#cf1322]'
+          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+          : 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
       } ${className}`}
     >
       <span
         className={`w-1.5 h-1.5 rounded-full ${
-          isActive ? 'bg-[#237804]' : 'bg-[#cf1322]'
+          isActive ? 'bg-emerald-600 dark:bg-emerald-400' : 'bg-red-500 dark:bg-red-400'
         }`}
       />
       {isActive ? activeLabel : inactiveLabel}

@@ -6,11 +6,26 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/utils/sileo-toast';
+import {
+  ArrowLeftIcon,
+  UserCircleIcon,
+  MapPinIcon,
+  ShieldCheckIcon,
+  DocumentTextIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  IdentificationIcon,
+  BuildingOffice2Icon,
+  HashtagIcon,
+  HomeIcon,
+  GlobeAltIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+} from '@heroicons/react/24/outline';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
-import { Input } from '../../../components/common/Input';
-import { LocationSelector } from '../../../components/common/LocationSelector'; // Assuming this is correct
+import { LocationSelector } from '../../../components/common/LocationSelector';
 import { clientsService, CreateClientData } from '../../../services/clients.service';
 import { DocType } from '../../../types';
 import { useLocation } from '../../../hooks/useLocation';
@@ -25,14 +40,14 @@ const clientSchema = z.object({
   name: z.string()
     .min(1, 'Nombre es requerido')
     .max(255, 'Nombre debe tener máximo 255 caracteres'),
-  
+
   // Campos de dirección actualizados
   address_line: z.string().max(255, 'Dirección muy larga').optional(),
   department: z.string().max(50, 'Departamento muy largo').optional(),
   province: z.string().max(50, 'Provincia muy larga').optional(),
   district: z.string().max(50, 'Distrito muy largo').optional(),
   country_code: z.string().max(5, 'Código de país muy largo').optional(),
-  
+
   ubigeo: z.string()
     .length(6, 'Ubigeo debe tener 6 caracteres')
     .regex(/^\d{6}$/, 'Ubigeo debe ser numérico')
@@ -42,7 +57,7 @@ const clientSchema = z.object({
   phone: z.string().max(50, 'Teléfono muy largo').optional(),
   is_active: z.boolean(),
 });
-type UpdateClientData = CreateClientData; // Assuming UpdateClientData is the same as CreateClientData for now
+type UpdateClientData = CreateClientData;
 
 type ClientFormData = z.infer<typeof clientSchema>;
 
@@ -58,40 +73,33 @@ const getDocTypeDisplay = (type: DocType): string => {
   }
 };
 
-// Funciones helper para manejar los cambios de ubicación
-const handleLocationChange = (setValue: any) => ({
-  onCountryChange: (countryCode: string) => {
-    setValue('country_code', countryCode);
-  },
-  onDepartmentChange: (department: string) => {
-    setValue('department', department);
-  },
-  onProvinceChange: (province: string) => {
-    setValue('province', province);
-  },
-  onDistrictChange: (district: string) => {
-    setValue('district', district);
-  },
-});
+// Opciones de tipo de documento para el select
+const DOC_TYPE_OPTIONS: { value: DocType; label: string }[] = [
+  { value: '6', label: 'RUC' },
+  { value: '1', label: 'DNI' },
+  { value: '4', label: 'Carnet de Extranjería' },
+  { value: '7', label: 'Pasaporte' },
+  { value: '0', label: 'Otros' },
+];
 
 export const ClientFormPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isEditing = !!id && id !== 'new';
-  
+
   // Query para obtener datos del cliente (solo si estamos editando)
-  const { 
-    data: client, 
+  const {
+    data: client,
     isLoading: isLoadingClient,
-    error: clientError 
+    error: clientError
   } = useQuery({
     queryKey: ['client', id],
     queryFn: () => clientsService.getById(Number(id)),
     enabled: isEditing,
     retry: 1,
   });
-  
+
   const {
     register,
     handleSubmit,
@@ -102,14 +110,14 @@ export const ClientFormPage: React.FC = () => {
   } = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
-      doc_type: '6', // Por defecto RUC para empresa de transporte
-      country_code: 'PE', // Por defecto Perú
+      doc_type: '6',
+      country_code: 'PE',
       is_active: true,
     },
   });
-  
+
   // Hook personalizado para manejo de ubicación
-  const { handleLocationChange } = useLocation({ 
+  const { handleLocationChange } = useLocation({
     setValue,
     initialData: isEditing && client ? {
       country_code: client.country_code,
@@ -118,7 +126,7 @@ export const ClientFormPage: React.FC = () => {
       district: client.district,
     } : undefined
   });
-  
+
   // Mutación para crear cliente
   const createClientMutation = useMutation({
     mutationFn: (data: CreateClientData) => clientsService.create(data),
@@ -132,7 +140,7 @@ export const ClientFormPage: React.FC = () => {
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail;
         if (Array.isArray(detail)) {
-          const message = detail.map(err => err.msg).join(', ');
+          const message = detail.map((err: any) => err.msg).join(', ');
           toast.error(message);
         } else {
           toast.error('Error de validación en los datos');
@@ -142,10 +150,10 @@ export const ClientFormPage: React.FC = () => {
       }
     }
   });
-  
+
   // Mutación para actualizar cliente
   const updateClientMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateClientData }) => 
+    mutationFn: ({ id, data }: { id: number; data: UpdateClientData }) =>
       clientsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['clients'] });
@@ -158,7 +166,7 @@ export const ClientFormPage: React.FC = () => {
       if (error.response?.status === 422) {
         const detail = error.response.data?.detail;
         if (Array.isArray(detail)) {
-          const message = detail.map(err => err.msg).join(', ');
+          const message = detail.map((err: any) => err.msg).join(', ');
           toast.error(message);
         } else {
           toast.error('Error de validación en los datos');
@@ -170,7 +178,7 @@ export const ClientFormPage: React.FC = () => {
       }
     }
   });
-  
+
   // Cargar datos para edición
   useEffect(() => {
     if (isEditing && client) {
@@ -190,16 +198,17 @@ export const ClientFormPage: React.FC = () => {
       });
     }
   }, [isEditing, client, reset]);
-  
-  // Observar cambios en el tipo de documento para ajustar validaciones dinámicamente
+
+  // Observar cambios en el tipo de documento
   const docType = watch('doc_type');
-  
+  const isActive = watch('is_active');
+
   // Validar número de documento según el tipo
   useEffect(() => {
     const subscription = watch((value, { name }) => {
       if (name === 'doc_number' && value.doc_number) {
         const docNumber = value.doc_number;
-        
+
         switch (docType) {
           case '1': // DNI
             if (docNumber.length > 8) {
@@ -221,13 +230,12 @@ export const ClientFormPage: React.FC = () => {
         }
       }
     });
-    
+
     return () => subscription.unsubscribe();
   }, [docType, setValue, watch]);
-  
+
   // Enviar formulario
   const onSubmit = (data: ClientFormData) => {
-    // Limpiar campos vacíos
     const cleanData = {
       ...data,
       address_line: data.address_line || undefined,
@@ -239,40 +247,59 @@ export const ClientFormPage: React.FC = () => {
       email: data.email || undefined,
       phone: data.phone || undefined,
     };
-    
+
     if (isEditing && id) {
-      updateClientMutation.mutate({ 
-        id: Number(id), 
-        data: cleanData 
+      updateClientMutation.mutate({
+        id: Number(id),
+        data: cleanData
       });
     } else {
       createClientMutation.mutate(cleanData);
     }
   };
-  
-  // Manejo de errores
+
+  // Clases reutilizables para inputs y selects
+  const inputBaseClass =
+    'mt-1 block w-full rounded-lg border bg-dm-bg-primary text-dm-text-primary ' +
+    'placeholder:text-dm-text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 ' +
+    'transition-all duration-200 py-2.5 px-3.5 text-sm';
+
+  const selectBaseClass =
+    'mt-1 block w-full rounded-lg border bg-dm-bg-primary text-dm-text-primary ' +
+    'focus:border-primary focus:ring-2 focus:ring-primary/20 ' +
+    'transition-all duration-200 py-2.5 px-3.5 text-sm appearance-none';
+
+  const errorClass = 'border-red-500 focus:border-red-500 focus:ring-red-500/20';
+  const normalClass = 'border-dm-border-primary';
+
+  // Sección de estado (error o loading)
   if (clientError) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/clients')}
+            className="p-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
+            title="Volver"
+          >
+            <ArrowLeftIcon className="w-5 h-5 text-dm-text-secondary" />
+          </button>
+          <h1 className="text-2xl font-bold text-dm-text-primary">
             {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
           </h1>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl p-6">
+          <div className="flex items-start gap-3">
+            <XCircleIcon className="w-6 h-6 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-base font-semibold text-red-800 dark:text-red-300">
                 Error al cargar cliente
               </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>No se pudo cargar la información del cliente.</p>
-              </div>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                No se pudo cargar la información del cliente.
+              </p>
               <div className="mt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/clients')}
-                >
+                <Button variant="outline" onClick={() => navigate('/clients')}>
                   Volver a la lista
                 </Button>
               </div>
@@ -282,67 +309,142 @@ export const ClientFormPage: React.FC = () => {
       </div>
     );
   }
-  
-  // Mostrar loading si se están cargando datos
+
   if (isLoadingClient) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/clients')}
+            className="p-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
+            title="Volver"
+          >
+            <ArrowLeftIcon className="w-5 h-5 text-dm-text-secondary" />
+          </button>
+          <h1 className="text-2xl font-bold text-dm-text-primary">
             {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
           </h1>
         </div>
-        <div className="flex justify-center py-8">
-          <Spinner />
+        <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm p-12 flex items-center justify-center">
+          <Spinner size="lg" />
         </div>
       </div>
     );
   }
-  
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
-        </h1>
+    <div className="max-w-4xl mx-auto space-y-6 pb-10">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate('/clients')}
+            className="p-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
+            title="Volver"
+          >
+            <ArrowLeftIcon className="w-5 h-5 text-dm-text-secondary" />
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-dm-text-primary">
+              {isEditing ? 'Editar Cliente' : 'Nuevo Cliente'}
+            </h1>
+            <p className="text-sm text-dm-text-muted mt-0.5">
+              {isEditing
+                ? 'Actualiza la información del cliente existente'
+                : 'Completa los datos para registrar un nuevo cliente'}
+            </p>
+          </div>
+        </div>
+
+        {/* Toggle Activo */}
+        <button
+          type="button"
+          onClick={() => setValue('is_active', !isActive)}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+            isActive
+              ? 'bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+              : 'bg-dm-bg-secondary text-dm-text-muted border border-dm-border-primary'
+          }`}
+        >
+          {isActive ? (
+            <>
+              <CheckCircleIcon className="w-4 h-4" />
+              Cliente Activo
+            </>
+          ) : (
+            <>
+              <XCircleIcon className="w-4 h-4" />
+              Cliente Inactivo
+            </>
+          )}
+        </button>
       </div>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Información básica */}
-          <div className="border-b border-gray-200 pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Información Básica</h3>
-            
+
+      {/* Formulario */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Card: Información Básica */}
+        <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-dm-border-primary bg-dm-bg-secondary/50">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/40">
+                <UserCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-dm-text-primary">Información Básica</h2>
+                <p className="text-xs text-dm-text-muted">Datos de identificación y contacto</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Tipo de Documento */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tipo de Documento *
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                  <span className="inline-flex items-center gap-1.5">
+                    <DocumentTextIcon className="w-3.5 h-3.5 text-dm-text-muted" />
+                    Tipo de Documento
+                  </span>
+                  <span className="text-red-500 ml-0.5">*</span>
                 </label>
-                <select
-                  {...register('doc_type')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
-                >
-                  <option value="6">RUC</option>
-                  <option value="1">DNI</option>
-                  <option value="4">Carnet de Extranjería</option>
-                  <option value="7">Pasaporte</option>
-                  <option value="0">Otros</option>
-                </select>
+                <div className="relative">
+                  <select
+                    {...register('doc_type')}
+                    className={`${selectBaseClass} ${errors.doc_type ? errorClass : normalClass}`}
+                  >
+                    {DOC_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-dm-text-muted">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
                 {errors.doc_type && (
-                  <p className="mt-1 text-sm text-red-600">{errors.doc_type.message}</p>
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircleIcon className="w-3.5 h-3.5" />
+                    {errors.doc_type.message}
+                  </p>
                 )}
               </div>
-              
+
               {/* Número de Documento */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Número de Documento *
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                  <span className="inline-flex items-center gap-1.5">
+                    <IdentificationIcon className="w-3.5 h-3.5 text-dm-text-muted" />
+                    Número de Documento
+                  </span>
+                  <span className="text-red-500 ml-0.5">*</span>
                 </label>
                 <input
                   type="text"
                   {...register('doc_number')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  className={`${inputBaseClass} ${errors.doc_number ? errorClass : normalClass}`}
                   placeholder={
                     docType === '1' ? 'Ingrese 8 dígitos' :
                     docType === '6' ? 'Ingrese 11 dígitos' :
@@ -355,66 +457,100 @@ export const ClientFormPage: React.FC = () => {
                   }
                 />
                 {errors.doc_number && (
-                  <p className="mt-1 text-sm text-red-600">{errors.doc_number.message}</p>
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircleIcon className="w-3.5 h-3.5" />
+                    {errors.doc_number.message}
+                  </p>
                 )}
               </div>
-              
+
               {/* Nombre o Razón Social */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {docType === '6' ? 'Razón Social' : 'Nombre Completo'} *
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                  <span className="inline-flex items-center gap-1.5">
+                    <BuildingOffice2Icon className="w-3.5 h-3.5 text-dm-text-muted" />
+                    {docType === '6' ? 'Razón Social' : 'Nombre Completo'}
+                  </span>
+                  <span className="text-red-500 ml-0.5">*</span>
                 </label>
                 <input
                   type="text"
                   {...register('name')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  className={`${inputBaseClass} ${errors.name ? errorClass : normalClass}`}
                   placeholder={
                     docType === '6' ? 'Ingrese razón social' : 'Ingrese nombre completo'
                   }
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircleIcon className="w-3.5 h-3.5" />
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
-              
+
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                  <span className="inline-flex items-center gap-1.5">
+                    <EnvelopeIcon className="w-3.5 h-3.5 text-dm-text-muted" />
+                    Correo Electrónico
+                  </span>
                 </label>
                 <input
                   type="email"
                   {...register('email')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  className={`${inputBaseClass} ${errors.email ? errorClass : normalClass}`}
                   placeholder="correo@ejemplo.com"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircleIcon className="w-3.5 h-3.5" />
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
-              
+
               {/* Teléfono */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Teléfono
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                  <span className="inline-flex items-center gap-1.5">
+                    <PhoneIcon className="w-3.5 h-3.5 text-dm-text-muted" />
+                    Teléfono
+                  </span>
                 </label>
                 <input
                   type="text"
                   {...register('phone')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  className={`${inputBaseClass} ${errors.phone ? errorClass : normalClass}`}
                   placeholder="Ingrese teléfono"
                 />
                 {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircleIcon className="w-3.5 h-3.5" />
+                    {errors.phone.message}
+                  </p>
                 )}
               </div>
             </div>
           </div>
-          
-          {/* Información de Dirección */}
-          <div className="border-b border-gray-200 pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Información de Dirección</h3>
-            
+        </div>
+
+        {/* Card: Dirección */}
+        <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-dm-border-primary bg-dm-bg-secondary/50">
+            <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 dark:bg-indigo-900/40">
+                <MapPinIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-dm-text-primary">Información de Dirección</h2>
+                <p className="text-xs text-dm-text-muted">Ubicación geográfica del cliente</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-6">
             {/* Selector de Ubicación Dinámico */}
             <LocationSelector
               countryCode={watch('country_code')}
@@ -429,82 +565,82 @@ export const ClientFormPage: React.FC = () => {
                 district: errors.district?.message,
               }}
             />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              {/* Ubigeo - mantener el campo manual para casos especiales */}
+              {/* Ubigeo */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ubigeo (Opcional)
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                  <span className="inline-flex items-center gap-1.5">
+                    <HashtagIcon className="w-3.5 h-3.5 text-dm-text-muted" />
+                    Código UBIGEO
+                  </span>
+                  <span className="text-dm-text-muted ml-1 font-normal">(Opcional)</span>
                 </label>
                 <input
                   type="text"
                   {...register('ubigeo')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  className={`${inputBaseClass} ${errors.ubigeo ? errorClass : normalClass}`}
                   placeholder="Código de 6 dígitos"
                   maxLength={6}
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1.5 text-xs text-dm-text-muted">
                   Código UBIGEO si se conoce específicamente
                 </p>
                 {errors.ubigeo && (
-                  <p className="mt-1 text-sm text-red-600">{errors.ubigeo.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircleIcon className="w-3.5 h-3.5" />
+                    {errors.ubigeo.message}
+                  </p>
                 )}
               </div>
-              
+
               {/* Dirección Específica */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Dirección Completa
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+                  <span className="inline-flex items-center gap-1.5">
+                    <HomeIcon className="w-3.5 h-3.5 text-dm-text-muted" />
+                    Dirección Completa
+                  </span>
                 </label>
                 <input
                   type="text"
                   {...register('address_line')}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                  className={`${inputBaseClass} ${errors.address_line ? errorClass : normalClass}`}
                   placeholder="Av/Jr/Calle, número, referencia, interior, etc."
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1.5 text-xs text-dm-text-muted">
                   Dirección específica: calle, número, interior, referencias
                 </p>
                 {errors.address_line && (
-                  <p className="mt-1 text-sm text-red-600">{errors.address_line.message}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <XCircleIcon className="w-3.5 h-3.5" />
+                    {errors.address_line.message}
+                  </p>
                 )}
               </div>
             </div>
           </div>
-          
-          {/* Estado */}
-          <div>
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="is_active"
-                {...register('is_active')}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <label htmlFor="is_active" className="text-sm text-gray-700">
-                Cliente Activo
-              </label>
-            </div>
-          </div>
-          
-          {/* Botones de acción */}
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => navigate('/clients')}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              isLoading={isSubmitting || createClientMutation.isPending || updateClientMutation.isPending}
-            >
-              {isEditing ? 'Actualizar' : 'Guardar'}
-            </Button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/clients')}
+            className="w-full sm:w-auto"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            isLoading={isSubmitting || createClientMutation.isPending || updateClientMutation.isPending}
+            className="w-full sm:w-auto"
+          >
+            {isEditing ? 'Actualizar Cliente' : 'Guardar Cliente'}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

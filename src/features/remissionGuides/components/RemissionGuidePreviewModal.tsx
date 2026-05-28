@@ -164,27 +164,27 @@ export const RemissionGuidePreviewModal: React.FC<RemissionGuidePreviewModalProp
     <Modal isOpen={isOpen} onClose={handleClose} title="" maxWidth="6xl">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-gray-200">
+        <div className="flex items-start justify-between pb-4 border-b border-dm-border-primary">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2 className="text-xl font-semibold text-dm-text-primary">
               Vista Previa - Guías de Remisión Generadas
             </h2>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-dm-text-secondary mt-1">
               {generationResult.guides_generated.length} guías para "{generationResult.trip_name}"
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           >
-            <XMarkIcon className="w-5 h-5 text-gray-500" />
+            <XMarkIcon className="w-5 h-5 text-dm-text-muted" />
           </button>
         </div>
 
         {/* Selector de guías */}
         {generationResult.guides_generated.length > 1 && (
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 mb-3">Seleccionar Guía:</h3>
+          <div className="bg-dm-bg-secondary rounded-lg p-4">
+            <h3 className="font-medium text-dm-text-primary mb-3">Seleccionar Guía:</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {generationResult.guides_generated.map((guide, index) => (
                 <button
@@ -192,26 +192,26 @@ export const RemissionGuidePreviewModal: React.FC<RemissionGuidePreviewModalProp
                   onClick={() => setCurrentGuideIndex(index)}
                   className={`p-3 rounded-lg border text-left transition-colors ${
                     currentGuideIndex === index
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+                      : 'border-dm-border-primary hover:border-dm-border-primary'
                   }`}
                 >
                   <div className="font-medium text-sm">{guide.document_number}</div>
-                  <div className="text-xs text-gray-600">
+                  <div className="text-xs text-dm-text-secondary">
                     {guide.destination_port_name}
                   </div>
                   <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-dm-text-muted">
                       {guide.recipient_name.split(' ')[0]}...
                     </span>
                     {uploadStatus[guide.guide_id] === 'success' && (
-                      <span className="text-xs text-green-600">✓ Subido</span>
+                      <span className="text-xs text-green-600 dark:text-green-400">✓ Subido</span>
                     )}
                     {uploadStatus[guide.guide_id] === 'uploading' && (
-                      <span className="text-xs text-blue-600">↑ Subiendo...</span>
+                      <span className="text-xs text-blue-600 dark:text-blue-400">↑ Subiendo...</span>
                     )}
                     {uploadStatus[guide.guide_id] === 'error' && (
-                      <span className="text-xs text-red-600">✗ Error</span>
+                      <span className="text-xs text-red-600 dark:text-red-400">✗ Error</span>
                     )}
                   </div>
                 </button>
@@ -222,28 +222,28 @@ export const RemissionGuidePreviewModal: React.FC<RemissionGuidePreviewModalProp
 
         {/* Información de la guía actual */}
         {currentGuide && (
-          <div className="bg-white border rounded-lg p-4">
+          <div className="bg-dm-bg-primary border rounded-lg p-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
               <div>
-                <span className="font-medium text-gray-700">Guía:</span> {currentGuide.document_number}
+                <span className="font-medium text-dm-text-secondary">Guía:</span> {currentGuide.document_number}
               </div>
               <div>
-                <span className="font-medium text-gray-700">Destino:</span> {currentGuide.destination_port_name}
+                <span className="font-medium text-dm-text-secondary">Destino:</span> {currentGuide.destination_port_name}
               </div>
               <div>
-                <span className="font-medium text-gray-700">Destinatario:</span> {currentGuide.recipient_name}
+                <span className="font-medium text-dm-text-secondary">Destinatario:</span> {currentGuide.recipient_name}
               </div>
             </div>
           </div>
         )}
 
         {/* Visor PDF */}
-        <div className="bg-gray-50 rounded-lg" style={{ height: '70vh' }}>
+        <div className="bg-dm-bg-secondary rounded-lg" style={{ height: '70vh' }}>
           {isGeneratingPDFs ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-                <p className="text-gray-600">
+                <p className="text-dm-text-secondary">
                   Generando PDFs y subiendo al sistema...
                 </p>
               </div>
@@ -256,7 +256,7 @@ export const RemissionGuidePreviewModal: React.FC<RemissionGuidePreviewModalProp
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-500">
+              <p className="text-dm-text-muted">
                 Error al generar la previsualización
               </p>
             </div>
@@ -267,19 +267,19 @@ export const RemissionGuidePreviewModal: React.FC<RemissionGuidePreviewModalProp
         {currentUploadStatus && (
           <div className="text-center text-sm">
             {currentUploadStatus === 'success' && (
-              <span className="text-green-600">✓ PDF subido automáticamente al sistema</span>
+              <span className="text-green-600 dark:text-green-400">✓ PDF subido automáticamente al sistema</span>
             )}
             {currentUploadStatus === 'uploading' && (
-              <span className="text-blue-600">↑ Subiendo PDF al sistema...</span>
+              <span className="text-blue-600 dark:text-blue-400">↑ Subiendo PDF al sistema...</span>
             )}
             {currentUploadStatus === 'error' && (
-              <span className="text-red-600">✗ Error al subir PDF automáticamente</span>
+              <span className="text-red-600 dark:text-red-400">✗ Error al subir PDF automáticamente</span>
             )}
           </div>
         )}
 
         {/* Botones de acción */}
-        <div className="flex justify-between pt-4 border-t border-gray-200">
+        <div className="flex justify-between pt-4 border-t border-dm-border-primary">
           <div className="flex space-x-3">
             <Button variant="secondary" onClick={handleClose}>
               Cerrar

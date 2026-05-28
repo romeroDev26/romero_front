@@ -7,12 +7,12 @@ export const WelcomeFooter: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut', delay: 0.32 }}
-      className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 pt-6 border-t border-light-gray"
+      className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 pt-6 border-t border-dm-border-primary"
     >
-      <p className="text-sm font-semibold tracking-tight text-ink">
+      <p className="text-sm font-semibold tracking-tight text-dm-text-primary">
         Centro de Control Fluvial
       </p>
-      <p className="text-xs font-medium text-muted-gray">
+      <p className="text-xs font-medium text-dm-text-muted">
         Sistema de Transportes {new Date().getFullYear()} • BUGBUSTERS
       </p>
     </motion.footer>

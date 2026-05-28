@@ -25,31 +25,31 @@ const TripCard: React.FC<{
   disabled: boolean;
 }> = ({ trip, onSelect, disabled }) => (
   <div className={`
-    bg-white rounded-lg border p-4 transition-all
+    bg-dm-bg-primary rounded-lg border p-4 transition-all
     ${disabled 
-      ? 'border-gray-200 bg-gray-50 opacity-60' 
-      : 'border-gray-200 hover:shadow-md hover:border-blue-300'
+      ? 'border-dm-border-primary bg-dm-bg-secondary opacity-60' 
+      : 'border-dm-border-primary hover:shadow-md hover:border-blue-300'
     }
   `}>
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <div className={`p-3 rounded-lg ${disabled ? 'bg-gray-200' : 'bg-blue-100'}`}>
-          <TruckIcon className={`h-6 w-6 ${disabled ? 'text-gray-400' : 'text-blue-700'}`} />
+        <div className={`p-3 rounded-lg ${disabled ? 'bg-dm-bg-secondary' : 'bg-blue-100 dark:bg-blue-900/40'}`}>
+          <TruckIcon className={`h-6 w-6 ${disabled ? 'text-dm-text-muted' : 'text-blue-700 dark:text-blue-300'}`} />
         </div>
         <div>
-          <h3 className={`font-semibold ${disabled ? 'text-gray-500' : 'text-gray-900'}`}>
+          <h3 className={`font-semibold ${disabled ? 'text-dm-text-muted' : 'text-dm-text-primary'}`}>
             {trip.trip_name}
           </h3>
-          <p className={`text-sm ${disabled ? 'text-gray-400' : 'text-gray-600'}`}>
+          <p className={`text-sm ${disabled ? 'text-dm-text-muted' : 'text-dm-text-secondary'}`}>
             {trip.vessel_name}
           </p>
-          <p className={`text-sm ${disabled ? 'text-gray-400' : 'text-gray-500'}`}>
+          <p className={`text-sm ${disabled ? 'text-dm-text-muted' : 'text-dm-text-muted'}`}>
             Salida: {format(new Date(trip.estimated_departure_time), 'hh:mm a')}
           </p>
           {trip.used_for_remission && (
             <div className="flex items-center gap-1 mt-1">
-              <CheckCircleIcon className="h-4 w-4 text-green-600" />
-              <span className="text-xs text-green-600">
+              <CheckCircleIcon className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <span className="text-xs text-green-600 dark:text-green-400">
                 {trip.remission_guide_count || 1} guía(s) asociada(s)
               </span>
             </div>
@@ -59,7 +59,7 @@ const TripCard: React.FC<{
       
       <div className="flex flex-col gap-2">
         {disabled ? (
-          <span className="px-3 py-2 text-sm text-gray-500 bg-gray-100 rounded-lg">
+          <span className="px-3 py-2 text-sm text-dm-text-muted bg-dm-bg-secondary rounded-lg">
             Ya utilizado
           </span>
         ) : (
@@ -154,10 +154,10 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-dm-text-primary">
             Seleccionar Viaje - {branch.name}
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-dm-text-secondary">
             {branch.port?.city?.name || 'Ciudad'}, {branch.port?.name || 'Puerto'}
           </p>
         </div>
@@ -165,12 +165,12 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Calendario */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-4">
           {/* Header del calendario */}
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={handlePrevMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
               type="button"
             >
               <ChevronLeftIcon className="h-5 w-5" />
@@ -182,7 +182,7 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
             
             <button
               onClick={handleNextMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
               type="button"
             >
               <ChevronRightIcon className="h-5 w-5" />
@@ -192,7 +192,7 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {weekDays.map((day) => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-gray-600">
+              <div key={day} className="p-2 text-center text-sm font-medium text-dm-text-secondary">
                 {day}
               </div>
             ))}
@@ -220,8 +220,8 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
                   className={`
                     relative p-2 h-12 rounded-lg text-center cursor-pointer transition-all
                     ${isPastDate 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                      : 'hover:bg-blue-50'
+                      ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed' 
+                      : 'hover:bg-blue-50 dark:hover:bg-blue-950/30'
                     }
                     ${isSelected && !isPastDate 
                       ? 'bg-blue-500 text-white' 
@@ -241,10 +241,10 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
                   {hasTrips && !isPastDate && (
                     <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
                       {hasAvailableTrips && (
-                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-white' : 'bg-green-500'}`} />
+                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-dm-bg-primary' : 'bg-green-500'}`} />
                       )}
                       {dayTrips.some((trip: TripForRemissionGuide) => trip.used_for_remission) && (
-                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-gray-300' : 'bg-gray-500'}`} />
+                        <div className={`w-2 h-2 rounded-full ${isSelected ? 'bg-gray-300 dark:bg-gray-600' : 'bg-gray-500'}`} />
                       )}
                     </div>
                   )}
@@ -254,7 +254,7 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
           </div>
 
           {/* Leyenda */}
-          <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
+          <div className="mt-4 flex flex-wrap gap-4 text-xs text-dm-text-secondary">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               <span>Viajes disponibles</span>
@@ -273,10 +273,10 @@ export const RemissionGuideTripSelector: React.FC<RemissionGuideTripSelectorProp
         {/* Lista de viajes para la fecha seleccionada */}
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-dm-text-primary mb-2">
               Viajes para {format(new Date(selectedDate), 'dd \'de\' MMMM', { locale: es })}
             </h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-dm-text-secondary mb-4">
               {isLoading 
                 ? 'Cargando viajes...'
                 : tripsWithRemissionInfo.length === 0 

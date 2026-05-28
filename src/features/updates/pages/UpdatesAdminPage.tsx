@@ -141,14 +141,14 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
               enter="ease-out duration-200" enterFrom="opacity-0 scale-95" enterTo="opacity-100 scale-100"
               leave="ease-in duration-150" leaveFrom="opacity-100 scale-100" leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+              <Dialog.Panel className="w-full max-w-xl bg-dm-bg-primary rounded-2xl shadow-2xl border border-dm-border-primary overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                  <Dialog.Title className="text-base font-bold text-slate-900">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-dm-border-secondary">
+                  <Dialog.Title className="text-base font-bold text-dm-text-primary">
                     {editing ? 'Editar Novedad' : 'Nueva Novedad'}
                   </Dialog.Title>
-                  <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
-                    <XMarkIcon className="w-5 h-5 text-slate-400" />
+                  <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dm-bg-hover transition-colors">
+                    <XMarkIcon className="w-5 h-5 text-dm-text-muted" />
                   </button>
                 </div>
 
@@ -156,7 +156,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                      <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
                         Versión *
                       </label>
                       <input
@@ -164,17 +164,17 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                         value={form.version}
                         onChange={(e) => set('version', e.target.value)}
                         placeholder="v3.1.0"
-                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                      <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
                         Plataforma
                       </label>
                       <select
                         value={form.platform}
                         onChange={(e) => set('platform', e.target.value as PlatformOption)}
-                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                       >
                         {PLATFORMS.map((p) => (
                           <option key={p} value={p}>{p}</option>
@@ -184,19 +184,19 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                    <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
                       Fecha de Lanzamiento *
                     </label>
                     <input
                       type="date"
                       value={form.release_date}
                       onChange={(e) => set('release_date', e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                    <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
                       Título *
                     </label>
                     <input
@@ -204,12 +204,12 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                       value={form.title}
                       onChange={(e) => set('title', e.target.value)}
                       placeholder="Nuevo módulo de cotizaciones"
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                    <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
                       Descripción *
                     </label>
                     <textarea
@@ -217,12 +217,12 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                       onChange={(e) => set('description', e.target.value)}
                       rows={3}
                       placeholder="Describe brevemente la novedad..."
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                      className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                    <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
                       URL de Video (YouTube o MP4)
                     </label>
                     <input
@@ -230,12 +230,12 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                       value={form.video_url ?? ''}
                       onChange={(e) => set('video_url', e.target.value)}
                       placeholder="https://youtu.be/... o https://cdn.ejemplo.com/video.mp4"
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+                    <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
                       Enlace "Más información" (opcional)
                     </label>
                     <input
@@ -243,7 +243,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                       value={form.learn_more_url ?? ''}
                       onChange={(e) => set('learn_more_url', e.target.value)}
                       placeholder="https://docs.tusistema.com/..."
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
 
@@ -256,7 +256,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                         onChange={(e) => set('is_active', e.target.checked)}
                         className="w-4 h-4 accent-primary rounded"
                       />
-                      <span className="text-sm font-medium text-slate-700">Activa</span>
+                      <span className="text-sm font-medium text-dm-text-secondary">Activa</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input
@@ -265,17 +265,17 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                         onChange={(e) => set('is_mandatory', e.target.checked)}
                         className="w-4 h-4 accent-primary rounded"
                       />
-                      <span className="text-sm font-medium text-slate-700">Obligatoria</span>
+                      <span className="text-sm font-medium text-dm-text-secondary">Obligatoria</span>
                     </label>
                   </div>
 
                   {/* Acciones */}
-                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <div className="flex justify-end gap-2 pt-2 border-t border-dm-border-secondary">
                     <button
                       type="button"
                       onClick={onClose}
                       disabled={isBusy}
-                      className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                      className="px-4 py-2 text-sm font-medium text-dm-text-secondary hover:bg-dm-bg-hover rounded-lg transition-colors"
                     >
                       Cancelar
                     </button>
@@ -350,11 +350,11 @@ const UpdatesAdminPage: React.FC = () => {
 
   const platformBadge = (p: string) => {
     const map: Record<string, string> = {
-      WEB: 'bg-blue-100 text-blue-700',
-      MOBILE: 'bg-violet-100 text-violet-700',
-      ALL: 'bg-slate-100 text-slate-600',
+      WEB: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+      MOBILE: 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300',
+      ALL: 'bg-dm-bg-secondary text-dm-text-secondary dark:text-dm-text-muted',
     };
-    return map[p] ?? 'bg-slate-100 text-slate-600';
+    return map[p] ?? 'bg-dm-bg-secondary text-dm-text-secondary';
   };
 
   return (
@@ -363,8 +363,8 @@ const UpdatesAdminPage: React.FC = () => {
       <header className="mb-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">Novedades del Sistema</h1>
-            <p className="text-slate-500 mt-1 text-sm">
+            <h1 className="text-3xl font-black tracking-tight text-dm-text-primary">Novedades del Sistema</h1>
+            <p className="text-dm-text-muted mt-1 text-sm">
               Crea y gestiona los anuncios de actualización que verán los usuarios.
             </p>
           </div>
@@ -378,17 +378,17 @@ const UpdatesAdminPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Tabla */}
-      <section className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+      {/* Contenido: Tabla en desktop, Cards en mobile */}
+      <section className="bg-dm-bg-primary rounded-xl border border-dm-border-primary overflow-hidden shadow-sm">
         {isLoading ? (
           <div className="p-12 text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-sm text-slate-500">Cargando novedades...</p>
+            <p className="text-sm text-dm-text-muted">Cargando novedades...</p>
           </div>
         ) : updates.length === 0 ? (
           <div className="p-12 text-center">
-            <SparklesIcon className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-            <p className="text-slate-500">No hay novedades registradas aún.</p>
+            <SparklesIcon className="w-12 h-12 mx-auto mb-4 text-dm-text-muted" />
+            <p className="text-dm-text-muted">No hay novedades registradas aún.</p>
             <button
               onClick={openCreate}
               className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
@@ -398,36 +398,37 @@ const UpdatesAdminPage: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Vista Desktop: Tabla */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/50">
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Versión</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Título</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Plataforma</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Fecha</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Estado</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Acciones</th>
+                  <tr className="border-b border-dm-border-primary bg-dm-bg-secondary/50">
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Versión</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Título</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Plataforma</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Fecha</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Estado</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-dm-border-primary">
                   {updates.map((u) => (
-                    <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={u.id} className="hover:bg-dm-bg-hover transition-colors">
                       <td className="px-6 py-4">
                         <span className="font-mono text-xs font-bold text-primary bg-primary/5 px-2 py-1 rounded">
                           {u.version}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-slate-900">{u.title}</div>
-                        <div className="text-xs text-slate-400 line-clamp-1 max-w-xs">{u.description}</div>
+                        <div className="text-sm font-semibold text-dm-text-primary">{u.title}</div>
+                        <div className="text-xs text-dm-text-muted line-clamp-1 max-w-xs">{u.description}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${platformBadge(u.platform)}`}>
                           {u.platform}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500">
+                      <td className="px-6 py-4 text-sm text-dm-text-muted">
                         {u.release_date}
                       </td>
                       <td className="px-6 py-4">
@@ -440,12 +441,12 @@ const UpdatesAdminPage: React.FC = () => {
                           {u.is_active ? (
                             <>
                               <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
-                              <span className="text-emerald-700">Activa</span>
+                              <span className="text-emerald-700 dark:text-emerald-300">Activa</span>
                             </>
                           ) : (
                             <>
-                              <XCircleIcon className="w-4 h-4 text-slate-400" />
-                              <span className="text-slate-500">Inactiva</span>
+                              <XCircleIcon className="w-4 h-4 text-dm-text-muted" />
+                              <span className="text-dm-text-muted">Inactiva</span>
                             </>
                           )}
                         </button>
@@ -454,7 +455,7 @@ const UpdatesAdminPage: React.FC = () => {
                         <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => openEdit(u)}
-                            className="text-slate-500 hover:text-primary transition-colors"
+                            className="text-dm-text-muted hover:text-primary transition-colors"
                             title="Editar"
                           >
                             <PencilSquareIcon className="w-4 h-4" />
@@ -462,7 +463,7 @@ const UpdatesAdminPage: React.FC = () => {
                           <button
                             onClick={() => handleDelete(u.id)}
                             disabled={deletingId === u.id}
-                            className="text-slate-400 hover:text-rose-600 transition-colors disabled:opacity-40"
+                            className="text-dm-text-muted hover:text-rose-600 dark:hover:text-rose-400 transition-colors disabled:opacity-40"
                             title="Eliminar"
                           >
                             <TrashIcon className="w-4 h-4" />
@@ -475,9 +476,78 @@ const UpdatesAdminPage: React.FC = () => {
               </table>
             </div>
 
+            {/* Vista Mobile: Cards */}
+            <div className="md:hidden divide-y divide-dm-border-primary">
+              {updates.map((u) => (
+                <div key={u.id} className="p-4 space-y-3">
+                  {/* Fila superior: versión + plataforma + fecha */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-bold text-primary bg-primary/5 px-2 py-1 rounded">
+                      {u.version}
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${platformBadge(u.platform)}`}>
+                      {u.platform}
+                    </span>
+                  </div>
+
+                  {/* Título y descripción */}
+                  <div>
+                    <h3 className="text-sm font-bold text-dm-text-primary">{u.title}</h3>
+                    <p className="text-xs text-dm-text-muted mt-1 line-clamp-2">{u.description}</p>
+                  </div>
+
+                  {/* Fecha */}
+                  <p className="text-xs text-dm-text-muted">{u.release_date}</p>
+
+                  {/* Footer de la card: estado + acciones */}
+                  <div className="flex items-center justify-between pt-2 border-t border-dm-border-secondary">
+                    <button
+                      onClick={() => toggleActiveMutation.mutate({ id: u.id, is_active: !u.is_active })}
+                      disabled={toggleActiveMutation.isPending}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        u.is_active
+                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300'
+                          : 'bg-dm-bg-secondary text-dm-text-muted'
+                      }`}
+                    >
+                      {u.is_active ? (
+                        <>
+                          <CheckCircleIcon className="w-3.5 h-3.5" />
+                          Activa
+                        </>
+                      ) : (
+                        <>
+                          <XCircleIcon className="w-3.5 h-3.5" />
+                          Inactiva
+                        </>
+                      )}
+                    </button>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => openEdit(u)}
+                        className="p-2.5 rounded-lg text-dm-text-muted hover:text-primary hover:bg-dm-bg-hover transition-colors"
+                        title="Editar"
+                      >
+                        <PencilSquareIcon className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(u.id)}
+                        disabled={deletingId === u.id}
+                        className="p-2.5 rounded-lg text-dm-text-muted hover:text-rose-600 dark:hover:text-rose-400 hover:bg-dm-bg-hover transition-colors disabled:opacity-40"
+                        title="Eliminar"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Footer */}
-            <div className="px-6 py-3 bg-slate-50 border-t border-slate-100">
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-tight">
+            <div className="px-6 py-3 bg-dm-bg-secondary border-t border-dm-border-secondary">
+              <span className="text-xs font-medium text-dm-text-muted uppercase tracking-tight">
                 {updates.length} novedad{updates.length !== 1 ? 'es' : ''} registrada{updates.length !== 1 ? 's' : ''}
               </span>
             </div>

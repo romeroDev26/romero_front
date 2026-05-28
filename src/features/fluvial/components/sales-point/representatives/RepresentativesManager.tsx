@@ -63,25 +63,25 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary shadow-sm">
       {/* Header */}
-      <div className="border-b border-gray-200 px-4 py-3 sm:px-5">
+      <div className="border-b border-dm-border-primary px-4 py-3 sm:px-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-100 p-2">
-              <Users className="h-5 w-5 text-blue-700" />
+            <div className="rounded-lg bg-blue-100 dark:bg-blue-900/40 p-2">
+              <Users className="h-5 w-5 text-blue-700 dark:text-blue-300" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[#211922] sm:text-lg">
+              <h3 className="text-base font-semibold text-dm-text-primary sm:text-lg">
                 Gestión de Representantes
               </h3>
-              <p className="text-xs text-[#62625b] sm:text-sm">
+              <p className="text-xs text-dm-text-secondary sm:text-sm">
                 Administre los representantes empresariales para esta factura
               </p>
             </div>
           </div>
           <div className="flex items-center text-sm">
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700 sm:text-sm">
+            <span className="rounded-full bg-dm-bg-secondary px-3 py-1 text-xs font-semibold text-dm-text-secondary sm:text-sm">
               {representatives.length} registrados
             </span>
           </div>
@@ -94,11 +94,11 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-[#62625b]" />
-              <h4 className="text-sm font-semibold text-[#211922]">
+              <UserCheck className="h-5 w-5 text-dm-text-secondary" />
+              <h4 className="text-sm font-semibold text-dm-text-primary">
                 Representantes Registrados
               </h4>
-              <span className="text-xs text-[#62625b]">
+              <span className="text-xs text-dm-text-secondary">
                 ({representatives.length} registrados)
               </span>
             </div>
@@ -117,33 +117,33 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
           {representatives.length > 0 ? (
             <div className="grid gap-3">
               {representatives.map((rep, index) => (
-                <div key={index} className="rounded-lg border border-[#e5e5e0] bg-white p-3 transition-shadow hover:shadow-sm">
+                <div key={index} className="rounded-lg border border-dm-border-primary bg-dm-bg-primary p-3 transition-shadow hover:shadow-sm">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100">
-                          <span className="text-sm font-semibold text-blue-700">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/40">
+                          <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
                             {index + 1}
                           </span>
                         </div>
                         <div>
-                          <h5 className="text-sm font-semibold text-[#211922]">
+                          <h5 className="text-sm font-semibold text-dm-text-primary">
                             {rep.name}
                           </h5>
-                          <p className="text-xs text-[#62625b]">
+                          <p className="text-xs text-dm-text-secondary">
                             {rep.document_type}: {rep.document_number}
                           </p>
                         </div>
                       </div>
                       
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#4b4550]">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-dm-text-secondary">
                         {rep.phone && (
                           <span>Teléfono: {rep.phone}</span>
                         )}
                         {rep.email && (
                           <span>Email: {rep.email}</span>
                         )}
-                        <span className="inline-flex items-center rounded-full bg-[#fff1f5] px-2 py-1 text-xs font-medium text-[#e60023]">
+                        <span className="inline-flex items-center rounded-full bg-rose-50 dark:bg-rose-950/30 px-2 py-1 text-xs font-medium text-red-600 dark:text-red-400">
                           {rep.seat_number === "Elección libre" ? (
                             "Elección libre"
                           ) : (
@@ -154,9 +154,9 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       
                       {/* ← NUEVO: Mostrar notas especiales si existen */}
                       {rep.item_description && (
-                        <div className="mt-2 rounded-md border border-blue-200 bg-blue-50 p-2">
-                          <div className="mb-1 text-xs font-medium text-blue-700">Descripción del ítem:</div>
-                          <div className="text-xs text-[#211922]">{rep.item_description}</div>
+                        <div className="mt-2 rounded-md border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30 p-2">
+                          <div className="mb-1 text-xs font-medium text-blue-700 dark:text-blue-300">Descripción del ítem:</div>
+                          <div className="text-xs text-dm-text-primary">{rep.item_description}</div>
                         </div>
                       )}
                     </div>
@@ -165,7 +165,7 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                       onClick={() => onRemoveRepresentative(index)}
                       variant="outline"
                       size="sm"
-                      className="border-red-300 text-red-600 hover:border-red-400 hover:bg-red-50"
+                      className="border-red-300 text-red-600 dark:text-red-400 hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -192,12 +192,12 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
               ))}
             </div>
           ) : (
-            <div className="rounded-lg border-2 border-dashed border-[#d9d9d3] bg-[#f9f9f7] py-7 text-center">
-              <Users className="mx-auto mb-3 h-8 w-8 text-[#9a9a93]" />
-              <p className="text-sm text-[#62625b]">
+            <div className="rounded-lg border-2 border-dashed border-dm-border-secondary bg-dm-bg-secondary py-7 text-center">
+              <Users className="mx-auto mb-3 h-8 w-8 text-dm-text-muted" />
+              <p className="text-sm text-dm-text-secondary">
                 No hay representantes registrados
               </p>
-              <p className="mt-2 text-xs text-[#8b8b85]">
+              <p className="mt-2 text-xs text-dm-text-muted">
                 Use el botón "Agregar Representante" para comenzar
               </p>
             </div>
@@ -206,13 +206,13 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
 
         {/* Add Representative Form */}
         {showAddForm && (
-          <div className="border-t border-gray-200 pt-4">
-            <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
-              <div className="flex items-center gap-2 text-sm text-blue-800">
+          <div className="border-t border-dm-border-primary pt-4">
+            <div className="mb-3 rounded-lg border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30 p-3">
+              <div className="flex items-center gap-2 text-sm text-blue-800 dark:text-blue-300">
                 <Plus className="h-4 w-4" />
                 <span className="font-medium">Agregando nuevo representante</span>
               </div>
-              <p className="mt-1 text-xs text-blue-600">
+              <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
                 Complete los datos del representante y seleccione su asiento en el mapa
               </p>
             </div>

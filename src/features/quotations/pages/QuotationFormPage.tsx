@@ -98,13 +98,13 @@ export const QuotationFormPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">
+      <h1 className="text-2xl font-bold text-dm-text-primary">
         {isEditing ? 'Editar Cotización' : 'Nueva Cotización'}
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Información básica */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium mb-4">Información Básica</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input
@@ -131,13 +131,13 @@ export const QuotationFormPage: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Moneda
               </label>
               <select
                 value={formData.currency_code}
                 onChange={(e) => setFormData(prev => ({ ...prev, currency_code: e.target.value }))}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2"
                 required
               >
                 <option value="PEN">Soles (PEN)</option>
@@ -154,7 +154,7 @@ export const QuotationFormPage: React.FC = () => {
         </div>
 
         {/* Agregar items */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium mb-4">Agregar Item</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Input
@@ -186,10 +186,10 @@ export const QuotationFormPage: React.FC = () => {
 
         {/* Lista de items */}
         {formData.items.length > 0 && (
-          <div className="bg-white p-6 rounded-lg shadow">
+          <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
             <h3 className="text-lg font-medium mb-4">Items de la Cotización</h3>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-dm-border-primary">
                 <thead>
                   <tr>
                     <th className="px-4 py-2 text-left">Descripción</th>
@@ -214,7 +214,7 @@ export const QuotationFormPage: React.FC = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => removeItem(index)}
-                          className="text-red-600"
+                          className="text-red-600 dark:text-red-400"
                         >
                           Eliminar
                         </Button>
@@ -228,30 +228,30 @@ export const QuotationFormPage: React.FC = () => {
         )}
 
         {/* Notas */}
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
           <h3 className="text-lg font-medium mb-4">Notas</h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Notas para el Cliente
               </label>
               <textarea
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 rows={3}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2"
                 placeholder="Notas que aparecerán en la cotización"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Notas Internas
               </label>
               <textarea
                 value={formData.internal_notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, internal_notes: e.target.value }))}
                 rows={3}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2"
                 placeholder="Notas internas (no aparecen en la cotización)"
               />
             </div>

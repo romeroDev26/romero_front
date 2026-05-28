@@ -102,18 +102,18 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
     return (
       <div className="flex items-center space-x-2">
         <Spinner size="sm" />
-        <span className="text-gray-500">Cargando roles...</span>
+        <span className="text-dm-text-muted">Cargando roles...</span>
       </div>
     );
   }
   
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-dm-text-secondary mb-1">
         Rol *
       </label>
       {hasError && (
-        <div className="text-xs text-amber-600 mb-1">
+        <div className="text-xs text-amber-600 dark:text-amber-400 mb-1">
           Usando información de roles almacenada localmente
         </div>
       )}
@@ -122,8 +122,8 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
         onChange={(e) => onChange(Number(e.target.value))}
         disabled={disabled}
         className={`mt-1 block w-full rounded-md shadow-sm p-2 pr-8 border ${
-          error ? 'border-red-500' : 'border-gray-300'
-        } ${disabled ? 'bg-gray-100' : ''} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
+          error ? 'border-red-500' : 'border-dm-border-primary'
+        } ${disabled ? 'bg-dm-bg-secondary' : ''} focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
       >
         <option value="">Seleccione un rol</option>
         {roles.map((role) => (
@@ -132,7 +132,7 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({
           </option>
         ))}
       </select>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 };

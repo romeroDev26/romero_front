@@ -16,7 +16,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
 }) => {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-dm-text-secondary mb-2">
         Tipo de Servicio *
       </label>
       <select
@@ -26,7 +26,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
           if (selected) onServiceSelect(selected);
         }}
         disabled={loading}
-        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary disabled:cursor-not-allowed"
       >
         <option value="">
           {loading ? 'Cargando servicios...' : 'Seleccionar servicio...'}
@@ -38,7 +38,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
         ))}
       </select>
       {selectedService && (
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-dm-text-muted">
           Código: {selectedService.internal_code || 'N/A'} | 
           Unidad: {selectedService.unit_code}
         </p>

@@ -9,17 +9,18 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { SellerMetric } from '../../../types/reports';
+import { useChartTheme } from '../../../hooks/useChartTheme';
 
 // Tooltip personalizado elegante
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white px-4 py-3 shadow-lg rounded-lg border border-gray-100">
-        <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+      <div className="bg-dm-bg-primary px-4 py-3 shadow-lg rounded-lg border border-dm-border-secondary">
+        <p className="text-sm font-medium text-dm-text-primary mb-2">{label}</p>
         <div className="flex items-center gap-2 text-sm">
           <div className="w-3 h-3 rounded-full bg-indigo-500" />
-          <span className="text-gray-600">Ventas:</span>
-          <span className="font-semibold text-gray-900">
+          <span className="text-dm-text-secondary">Ventas:</span>
+          <span className="font-semibold text-dm-text-primary">
             S/ {Number(payload[0].value).toLocaleString('es-PE', { minimumFractionDigits: 2 })}
           </span>
         </div>
@@ -38,14 +39,15 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
   sellers,
   isLoading = false 
 }) => {
+  const chartTheme = useChartTheme();
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">
         <div className="animate-pulse">
-          <div className="h-5 bg-gray-200 rounded w-1/4 mb-6"></div>
+          <div className="h-5 bg-dm-bg-secondary rounded w-1/4 mb-6"></div>
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-100 rounded"></div>
+              <div key={i} className="h-12 bg-dm-bg-secondary rounded"></div>
             ))}
           </div>
         </div>
@@ -75,17 +77,17 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
   })).reverse(); // Invertir para que el mayor esté arriba
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">
+          <h3 className="text-base font-semibold text-dm-text-primary">
             Rendimiento de Vendedores
           </h3>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-dm-text-muted mt-1">
             Top {top10Sellers.length} por volumen de ventas
           </p>
         </div>
-        <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-md">
+        <span className="text-xs text-dm-text-muted bg-dm-bg-secondary px-2.5 py-1 rounded-md">
           S/ {totalSales.toLocaleString('es-PE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
         </span>
       </div>
@@ -105,11 +107,11 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
           <CartesianGrid 
             strokeDasharray="3 3" 
             horizontal={false}
-            stroke="#f0f0f0"
+            stroke={chartTheme.grid}
           />
           <XAxis 
             type="number"
-            tick={{ fontSize: 11, fill: '#6b7280' }}
+            tick={{ fontSize: 11, fill: chartTheme.axis }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}
@@ -117,12 +119,12 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
           <YAxis 
             type="category"
             dataKey="name"
-            tick={{ fontSize: 11, fill: '#6b7280' }}
+            tick={{ fontSize: 11, fill: chartTheme.axis }}
             axisLine={false}
             tickLine={false}
             width={95}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: chartTheme.barHover }} />
           <Bar 
             dataKey="value" 
             fill="url(#sellersGradient)"

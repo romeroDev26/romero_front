@@ -28,7 +28,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
         </div>
         <div className="flex flex-col">
           <span className={`text-sm font-semibold ${
-            ['branch', 'trip', 'form'].includes(currentStep) ? 'text-green-600' : 'text-blue-600'
+            ['branch', 'trip', 'form'].includes(currentStep) ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'
           }`}>
             Paso 1
           </span>
@@ -42,7 +42,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
 
       {/* Línea conectora 1 */}
       <div className={`h-1 w-16 rounded-full transition-all duration-300 ${
-        ['trip', 'form'].includes(currentStep) ? 'bg-green-600' : 'bg-gray-300'
+        ['trip', 'form'].includes(currentStep) ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
       }`}></div>
 
       {/* Paso 2: Sucursal */}
@@ -52,7 +52,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
             ? 'bg-green-600 text-white shadow-lg' 
             : currentStep === 'branch' 
               ? 'bg-blue-600 text-white shadow-lg' 
-              : 'bg-gray-300 text-gray-500'
+              : 'bg-gray-300 dark:bg-gray-600 text-dm-text-muted'
         }`}>
           {['trip', 'form'].includes(currentStep) ? (
             <CheckCircleIcon className="h-6 w-6" />
@@ -62,12 +62,12 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
         </div>
         <div className="flex flex-col">
           <span className={`text-sm font-semibold ${
-            ['trip', 'form'].includes(currentStep) ? 'text-green-600' : currentStep === 'branch' ? 'text-blue-600' : 'text-gray-500'
+            ['trip', 'form'].includes(currentStep) ? 'text-green-600 dark:text-green-400' : currentStep === 'branch' ? 'text-blue-600 dark:text-blue-400' : 'text-dm-text-muted'
           }`}>
             Paso 2
           </span>
           <span className={`text-xs ${
-            ['trip', 'form'].includes(currentStep) ? 'text-green-500' : currentStep === 'branch' ? 'text-blue-500' : 'text-gray-400'
+            ['trip', 'form'].includes(currentStep) ? 'text-green-500' : currentStep === 'branch' ? 'text-blue-500' : 'text-dm-text-muted'
           }`}>
             Sucursal
           </span>
@@ -76,7 +76,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
 
       {/* Línea conectora 2 */}
       <div className={`h-1 w-16 rounded-full transition-all duration-300 ${
-        currentStep === 'form' ? 'bg-green-600' : 'bg-gray-300'
+        currentStep === 'form' ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
       }`}></div>
 
       {/* Paso 3: Viaje */}
@@ -86,7 +86,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
             ? 'bg-green-600 text-white shadow-lg' 
             : currentStep === 'trip' 
               ? 'bg-blue-600 text-white shadow-lg' 
-              : 'bg-gray-300 text-gray-500'
+              : 'bg-gray-300 dark:bg-gray-600 text-dm-text-muted'
         }`}>
           {currentStep === 'form' ? (
             <CheckCircleIcon className="h-6 w-6" />
@@ -96,12 +96,12 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
         </div>
         <div className="flex flex-col">
           <span className={`text-sm font-semibold ${
-            currentStep === 'form' ? 'text-green-600' : currentStep === 'trip' ? 'text-blue-600' : 'text-gray-500'
+            currentStep === 'form' ? 'text-green-600 dark:text-green-400' : currentStep === 'trip' ? 'text-blue-600 dark:text-blue-400' : 'text-dm-text-muted'
           }`}>
             Paso 3
           </span>
           <span className={`text-xs ${
-            currentStep === 'form' ? 'text-green-500' : currentStep === 'trip' ? 'text-blue-500' : 'text-gray-400'
+            currentStep === 'form' ? 'text-green-500' : currentStep === 'trip' ? 'text-blue-500' : 'text-dm-text-muted'
           }`}>
             Viaje
           </span>
@@ -110,7 +110,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
 
       {/* Línea conectora 3 */}
       <div className={`h-1 w-16 rounded-full transition-all duration-300 ${
-        currentStep === 'form' ? 'bg-green-600' : 'bg-gray-300'
+        currentStep === 'form' ? 'bg-green-600' : 'bg-gray-300 dark:bg-gray-600'
       }`}></div>
 
       {/* Paso 4: Formulario */}
@@ -118,18 +118,18 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
         <div className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
           currentStep === 'form' 
             ? 'bg-blue-600 text-white shadow-lg' 
-            : 'bg-gray-300 text-gray-500'
+            : 'bg-gray-300 dark:bg-gray-600 text-dm-text-muted'
         }`}>
           <DocumentTextIcon className="h-6 w-6" />
         </div>
         <div className="flex flex-col">
           <span className={`text-sm font-semibold ${
-            currentStep === 'form' ? 'text-blue-600' : 'text-gray-500'
+            currentStep === 'form' ? 'text-blue-600 dark:text-blue-400' : 'text-dm-text-muted'
           }`}>
             Paso 4
           </span>
           <span className={`text-xs ${
-            currentStep === 'form' ? 'text-blue-500' : 'text-gray-400'
+            currentStep === 'form' ? 'text-blue-500' : 'text-dm-text-muted'
           }`}>
             Datos
           </span>

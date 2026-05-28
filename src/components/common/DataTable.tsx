@@ -38,8 +38,8 @@ export function DataTable<T>({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3">
-        <Spinner size="lg" color="text-[#1F4690]" />
-        <p className="text-[13px] text-[#828282]">Cargando...</p>
+        <Spinner size="lg" color="text-primary" />
+        <p className="text-[13px] text-dm-text-muted">Cargando...</p>
       </div>
     );
   }
@@ -47,12 +47,12 @@ export function DataTable<T>({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
-        <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-red-50">
+        <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-red-500/10">
           <InboxIcon className="w-8 h-8 text-red-400" />
         </div>
         <div className="text-center">
-          <p className="text-[15px] font-medium text-[#202020]">Error al cargar los datos</p>
-          <p className="text-[13px] text-[#828282] mt-1">
+          <p className="text-[15px] font-medium text-dm-text-primary">Error al cargar los datos</p>
+          <p className="text-[13px] text-dm-text-muted mt-1">
             {typeof error.message === 'string' ? error.message : 'Ocurrió un error inesperado'}
           </p>
         </div>
@@ -63,11 +63,11 @@ export function DataTable<T>({
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-4">
-        <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-[#f5f5f5]">
-          <InboxIcon className="w-8 h-8 text-[#828282]" />
+        <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-dm-bg-secondary">
+          <InboxIcon className="w-8 h-8 text-dm-text-muted" />
         </div>
         <div className="text-center">
-          <p className="text-[15px] font-medium text-[#202020]">{emptyMessage}</p>
+          <p className="text-[15px] font-medium text-dm-text-primary">{emptyMessage}</p>
         </div>
       </div>
     );
@@ -78,12 +78,12 @@ export function DataTable<T>({
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full">
-        <thead className="bg-[#fafafa] border-b border-[#e8e8e8]">
+        <thead className="bg-dm-bg-secondary border-b border-dm-border-primary">
           <tr>
             {columns.map((column) => (
               <th
                 key={column.key}
-                className={`px-6 py-3.5 text-left text-[11px] font-semibold text-[#828282] uppercase tracking-wider ${
+                className={`px-6 py-3.5 text-left text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider ${
                   column.className || ''
                 }`}
               >
@@ -91,24 +91,24 @@ export function DataTable<T>({
               </th>
             ))}
             {hasActions && (
-              <th className="px-6 py-3.5 text-right text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+              <th className="px-6 py-3.5 text-right text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                 Acciones
               </th>
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#f5f5f5]">
+        <tbody className="divide-y divide-dm-border-secondary">
           {data.map((item, index) => {
             const rowKey = keyExtractor(item) ?? `row-${index}`;
 
             return (
-              <tr key={rowKey} className="hover:bg-[#fafafa]/60 transition-colors">
+              <tr key={rowKey} className="hover:bg-dm-bg-secondary/60 transition-colors">
                 {columns.map((column) => {
                   const cellKey = `${rowKey}-${column.key}`;
                   return (
                     <td
                       key={cellKey}
-                      className={`px-6 py-4 whitespace-nowrap text-[13px] text-[#202020] ${column.className || ''}`}
+                      className={`px-6 py-4 whitespace-nowrap text-[13px] text-dm-text-primary ${column.className || ''}`}
                     >
                       {column.accessor(item)}
                     </td>
@@ -120,7 +120,7 @@ export function DataTable<T>({
                       {onEdit && (
                         <button
                           onClick={() => onEdit(item)}
-                          className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors"
+                          className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-primary hover:bg-primary/10 transition-colors"
                           title="Editar"
                         >
                           <PencilIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -129,7 +129,7 @@ export function DataTable<T>({
                       {onDelete && (
                         <button
                           onClick={() => onDelete(item)}
-                          className="flex items-center justify-center w-8 h-8 rounded-full text-[#828282] hover:text-red-500 hover:bg-red-50 transition-colors"
+                          className="flex items-center justify-center w-8 h-8 rounded-full text-dm-text-muted hover:text-red-500 hover:bg-red-500/10 transition-colors"
                           title="Desactivar"
                         >
                           <TrashIcon className="h-4 w-4" strokeWidth={1.5} />

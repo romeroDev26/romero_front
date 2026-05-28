@@ -1,9 +1,10 @@
 // src/features/fluvial/services/websocketMessageHandler.ts
 import { SeatUpdateMessage, SeatSelection, SelectionSeat, OccupiedSeat } from '../types/websocket.types';
+import { SeatOccupantInfo } from '../../../types';
 
 export class WebSocketMessageHandler {
   private userId: string;
-  private onSeatMapUpdate: (seatId: number, status: string) => void;
+  private onSeatMapUpdate: (seatId: number, status: string, occupant?: SeatOccupantInfo) => void;
   private onSelectionUpdate: (selection: SeatSelection) => void;
   private onSelectionRemove: (seatId: number, sourceUserId?: string) => void;
   private onInitialState: (selections: SeatSelection[]) => void;
@@ -12,7 +13,7 @@ export class WebSocketMessageHandler {
   constructor(
     userId: string,
     callbacks: {
-      onSeatMapUpdate: (seatId: number, status: string) => void;
+      onSeatMapUpdate: (seatId: number, status: string, occupant?: SeatOccupantInfo) => void;
       onSelectionUpdate: (selection: SeatSelection) => void;
       onSelectionRemove: (seatId: number, sourceUserId?: string) => void;
       onInitialState: (selections: SeatSelection[]) => void;
@@ -99,8 +100,10 @@ export class WebSocketMessageHandler {
         if (occupiedSeat.seatId) {
           // Agregar al conjunto de asientos confirmados
           this.confirmedSeats.add(occupiedSeat.seatId);
+          // Extraer occupant si existe en el payload
+          const occupant = message.occupants?.[String(occupiedSeat.seatId)];
           // Actualizar el estado del asiento a CONFIRMED (rojo) para asientos vendidos
-          this.onSeatMapUpdate(occupiedSeat.seatId, 'CONFIRMED');
+          this.onSeatMapUpdate(occupiedSeat.seatId, 'CONFIRMED', occupant);
         }
       });
     }
@@ -232,8 +235,10 @@ export class WebSocketMessageHandler {
       message.seatIds.forEach((seatId: number) => {
         // Agregar al conjunto de asientos confirmados
         this.confirmedSeats.add(seatId);
-        // Actualizar el estado del asiento a CONFIRMED (rojo)
-        this.onSeatMapUpdate(seatId, 'CONFIRMED');
+        // Extraer occupant del payload si existe (indexado por seatId como string)
+        const occupant = message.occupants?.[String(seatId)];
+        // Actualizar el estado del asiento a CONFIRMED (rojo) + datos del pasajero
+        this.onSeatMapUpdate(seatId, 'CONFIRMED', occupant);
         // Remover cualquier seleccion temporal de este asiento
         this.onSelectionRemove(seatId);
       });

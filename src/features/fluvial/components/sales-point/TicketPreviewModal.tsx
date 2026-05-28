@@ -264,8 +264,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
          invoiceData.items[0].parcel_number && 
          (invoiceData.items[0].product_name?.toLowerCase().includes('encomienda') || 
           invoiceData.items[0].item_description?.toLowerCase().includes('encomienda')) && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
+            <p className="text-sm text-blue-800 dark:text-blue-300">
               Numero de Encomienda: <span className="font-bold">
                 {invoiceData.items[0].parcel_number}
               </span>
@@ -276,13 +276,13 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         {/* Tabs para seleccionar formato */}
         {(!showOnly80mm || isCargoInvoice) && (
           <div className="mb-4">
-            <div className="flex border-b border-gray-200">
+            <div className="flex border-b border-dm-border-primary">
               <button
                 onClick={() => handleFormatChange('ticket80mm')}
                 className={`px-4 py-2 text-sm font-medium transition-colors ${
                   activeFormat === 'ticket80mm'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+                    : 'text-dm-text-muted hover:text-dm-text-secondary'
                 }`}
               >
                 Ticket 80mm (Termico)
@@ -292,8 +292,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                   onClick={() => handleFormatChange('a4')}
                   className={`px-4 py-2 text-sm font-medium transition-colors ${
                     activeFormat === 'a4'
-                      ? 'border-b-2 border-blue-600 text-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+                      : 'text-dm-text-muted hover:text-dm-text-secondary'
                   }`}
                 >
                   Ticket A4 (Corporativo)
@@ -304,8 +304,8 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
                   onClick={() => handleFormatChange('sticker100x100')}
                   className={`px-4 py-2 text-sm font-medium transition-colors flex items-center gap-1 ${
                     activeFormat === 'sticker100x100'
-                      ? 'border-b-2 border-orange-500 text-orange-600'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'border-b-2 border-orange-500 text-orange-600 dark:text-orange-400'
+                      : 'text-dm-text-muted hover:text-dm-text-secondary'
                   }`}
                 >
                   <Tag className="h-3.5 w-3.5" />
@@ -318,17 +318,17 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
 
         {/* Vista previa del PDF */}
         <div className="mb-4">
-          <div className="border rounded-lg overflow-hidden bg-gray-100" style={{ height: '500px' }}>
+          <div className="border border-dm-border-primary rounded-lg overflow-hidden bg-dm-bg-secondary" style={{ height: '500px' }}>
             {(isGenerating || (activeFormat === 'sticker100x100' && isGeneratingSticker)) ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                   <Spinner size="lg" className="mb-4" />
-                  <p className="text-gray-600">
+                  <p className="text-dm-text-secondary">
                     {activeFormat === 'sticker100x100'
                       ? 'Generando sticker 100x100...'
                       : 'Generando tickets...'}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-dm-text-muted">
                     {activeFormat === 'sticker100x100'
                       ? 'Creando el sticker y subiendo a la nube...'
                       : 'Generando PDFs (80mm y A4) y subiendo a la nube. Esto puede tomar unos segundos...'}
@@ -355,7 +355,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
               />
             ) : (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center text-gray-500">
+                <div className="text-center text-dm-text-muted">
                   <Eye className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>No se pudo cargar la vista previa</p>
                   <Button

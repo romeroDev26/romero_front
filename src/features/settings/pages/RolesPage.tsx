@@ -1,7 +1,7 @@
 // src/features/settings/pages/RolesPage.tsx
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 import { toast } from '@/utils/sileo-toast';
 
 import { Spinner } from '../../../components/common/Spinner';
@@ -166,16 +166,16 @@ export const RolesPage: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600">Error al cargar los roles. Por favor, intente nuevamente.</p>
+        <p className="text-red-600 dark:text-red-400">Error al cargar los roles. Por favor, intente nuevamente.</p>
       </div>
     );
   }
   
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+      <div className="bg-dm-bg-primary rounded-lg shadow-sm p-4 lg:p-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Roles del Sistema</h1>
+          <h1 className="text-2xl font-bold text-dm-text-primary">Roles del Sistema</h1>
           {hasPermission('settings', 'roles', 'admin') && (
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
@@ -190,42 +190,43 @@ export const RolesPage: React.FC = () => {
         </div>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      {/* Desktop Table */}
+      <div className="hidden md:block bg-dm-bg-primary rounded-lg shadow-sm overflow-x-auto">
+        <table className="min-w-full divide-y divide-dm-border-primary">
+          <thead className="bg-dm-bg-secondary">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 ID
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Nombre
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Descripción
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Estado
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
             {roles?.map((role) => (
-              <tr key={role.id} className="hover:bg-gray-50">
+              <tr key={role.id} className="hover:bg-dm-bg-hover">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{role.id}</div>
+                  <div className="text-sm text-dm-text-primary">{role.id}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium text-gray-900">{role.name}</div>
+                  <div className="font-medium text-dm-text-primary">{role.name}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{role.description || '-'}</div>
+                  <div className="text-sm text-dm-text-muted">{role.description || '-'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    role.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    role.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
                   }`}>
                     {role.is_active ? 'Activo' : 'Inactivo'}
                   </span>
@@ -241,7 +242,7 @@ export const RolesPage: React.FC = () => {
                       </button>
                       <button
                         onClick={() => handleOpenDeleteModal(role)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200"
                         disabled={!role.is_active}
                       >
                         <TrashIcon className="h-5 w-5" />
@@ -251,16 +252,70 @@ export const RolesPage: React.FC = () => {
                 </td>
               </tr>
             ))}
-            
+
             {(!roles || roles.length === 0) && (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-dm-text-muted">
                   No hay roles disponibles
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {roles?.map((role) => (
+          <div
+            key={role.id}
+            className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary p-4 transition-all hover:shadow-md"
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-lg bg-dm-bg-secondary flex items-center justify-center text-dm-text-muted shrink-0">
+                  <UserGroupIcon className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-dm-text-primary truncate">{role.name}</h3>
+                  <p className="text-xs text-dm-text-muted truncate">{role.description || 'Sin descripción'}</p>
+                </div>
+              </div>
+              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full shrink-0 self-center ${
+                role.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
+              }`}>
+                {role.is_active ? 'Activo' : 'Inactivo'}
+              </span>
+            </div>
+
+            {hasPermission('settings', 'roles', 'admin') && (
+              <div className="flex items-center justify-end gap-2 border-t border-dm-border-primary pt-3">
+                <button
+                  onClick={() => handleOpenEditModal(role)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                >
+                  <PencilIcon className="h-4 w-4" />
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleOpenDeleteModal(role)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                  disabled={!role.is_active}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  Desactivar
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {(!roles || roles.length === 0) && (
+          <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary py-14 text-center">
+            <UserGroupIcon className="w-12 h-12 text-dm-text-muted mx-auto mb-4" />
+            <p className="text-dm-text-muted">No hay roles disponibles</p>
+          </div>
+        )}
       </div>
       
       {/* Modal para crear rol */}
@@ -284,22 +339,22 @@ export const RolesPage: React.FC = () => {
                 error={roleNameError}
                 placeholder="ej. admin, vendedor, almacenero"
               />
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-dm-text-muted">
                 El nombre se convertirá automáticamente a minúsculas y los espacios se reemplazarán por guiones bajos (_)
               </p>
               {roleName && roleName !== formatRoleName(roleName) && (
-                <p className="mt-1 text-sm text-blue-600">
+                <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
                   Se guardará como: {formatRoleName(roleName)}
                 </p>
               )}
             </div>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Descripción
               </label>
               <textarea
-                className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 value={roleDescription}
                 onChange={(e) => setRoleDescription(e.target.value)}
                 rows={3}
@@ -313,9 +368,9 @@ export const RolesPage: React.FC = () => {
                 id="is_active_create"
                 checked={roleIsActive}
                 onChange={(e) => setRoleIsActive(e.target.checked)}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
+                className="rounded border-dm-border-primary text-primary focus:ring-primary"
               />
-              <label htmlFor="is_active_create" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="is_active_create" className="ml-2 text-sm text-dm-text-secondary">
                 Rol Activo
               </label>
             </div>
@@ -361,22 +416,22 @@ export const RolesPage: React.FC = () => {
                 error={roleNameError}
                 placeholder="ej. admin, vendedor, almacenero"
               />
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-dm-text-muted">
                 El nombre se convertirá automáticamente a minúsculas y los espacios se reemplazarán por guiones bajos (_)
               </p>
               {roleName && roleName !== formatRoleName(roleName) && (
-                <p className="mt-1 text-sm text-blue-600">
+                <p className="mt-1 text-sm text-blue-600 dark:text-blue-400">
                   Se guardará como: {formatRoleName(roleName)}
                 </p>
               )}
             </div>
             
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Descripción
               </label>
               <textarea
-                className="block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+                className="block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
                 value={roleDescription}
                 onChange={(e) => setRoleDescription(e.target.value)}
                 rows={3}
@@ -390,9 +445,9 @@ export const RolesPage: React.FC = () => {
                 id="is_active_edit"
                 checked={roleIsActive}
                 onChange={(e) => setRoleIsActive(e.target.checked)}
-                className="rounded border-gray-300 text-primary focus:ring-primary"
+                className="rounded border-dm-border-primary text-primary focus:ring-primary"
               />
-              <label htmlFor="is_active_edit" className="ml-2 text-sm text-gray-700">
+              <label htmlFor="is_active_edit" className="ml-2 text-sm text-dm-text-secondary">
                 Rol Activo
               </label>
             </div>

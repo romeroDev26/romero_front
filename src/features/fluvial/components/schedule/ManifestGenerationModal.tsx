@@ -165,19 +165,19 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
           icon: UsersIcon,
           title: 'Manifiesto de Pasajeros',
           description: 'Genera un manifiesto con la lista oficial de todos los pasajeros del viaje, incluyendo sus datos personales y asientos asignados.',
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-200',
-          hoverColor: 'hover:bg-blue-100'
+          color: 'text-blue-600 dark:text-blue-400',
+          bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+          borderColor: 'border-blue-200 dark:border-blue-800/50',
+          hoverColor: 'hover:bg-blue-100 dark:bg-blue-900/40'
         }
       : {
           icon: CubeIcon,
           title: 'Manifiesto de Carga',
           description: 'Genera un manifiesto con la lista oficial de toda la carga y encomiendas transportadas en el viaje.',
-          color: 'text-green-600',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200',
-          hoverColor: 'hover:bg-green-100'
+          color: 'text-green-600 dark:text-green-400',
+          bgColor: 'bg-green-50 dark:bg-green-950/30',
+          borderColor: 'border-green-200 dark:border-green-800/50',
+          hoverColor: 'hover:bg-green-100 dark:hover:bg-green-900/40'
         };
   };
 
@@ -185,16 +185,16 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
     <Modal isOpen={isOpen} onClose={handleClose} title="" maxWidth="2xl">
       <div className="space-y-6">
         {/* Header personalizado */}
-        <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+        <div className="flex items-center justify-between pb-4 border-b border-dm-border-primary">
           <div className="flex items-center space-x-4">
-            <div className="p-3 bg-blue-100 rounded-xl">
-              <DocumentTextIcon className="w-8 h-8 text-blue-600" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-xl">
+              <DocumentTextIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-dm-text-primary">
                 Generar Manifiesto
               </h2>
-              <p className="text-gray-600 mt-1">
+              <p className="text-dm-text-secondary mt-1">
                 {trip.vessel_name} - {new Date(trip.departure_datetime).toLocaleDateString('es-ES')}
               </p>
             </div>
@@ -203,29 +203,29 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
           {!isGenerating && (
             <button
               onClick={handleClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
             >
-              <XMarkIcon className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+              <XMarkIcon className="w-6 h-6 text-dm-text-muted hover:text-dm-text-secondary" />
             </button>
           )}
         </div>
 
         {/* Información del viaje compacta */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg p-4 border border-blue-100 dark:border-blue-800/50">
           <div className="grid grid-cols-2 gap-6">
             {/* Columna izquierda */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-700">Ruta:</span>
-                <span className="text-sm font-medium text-gray-800">
+                <span className="text-sm font-medium text-dm-text-secondary">Ruta:</span>
+                <span className="text-sm font-medium text-dm-text-primary">
                   {trip.origin_port_name || 'N/A'} → {trip.destination_port_name || 'N/A'}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-700">Fecha:</span>
-                <span className="text-sm font-medium text-gray-800">
+                <span className="text-sm font-medium text-dm-text-secondary">Fecha:</span>
+                <span className="text-sm font-medium text-dm-text-primary">
                   {new Date(trip.departure_datetime).toLocaleDateString('es-ES')}
                 </span>
               </div>
@@ -235,8 +235,8 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-700">Hora:</span>
-                <span className="text-sm font-medium text-gray-800">
+                <span className="text-sm font-medium text-dm-text-secondary">Hora:</span>
+                <span className="text-sm font-medium text-dm-text-primary">
                   {new Date(trip.departure_datetime).toLocaleTimeString('es-ES', {
                     hour: '2-digit',
                     minute: '2-digit'
@@ -245,8 +245,8 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-700">Estado:</span>
-                <span className="text-sm font-medium text-gray-800">{trip.status}</span>
+                <span className="text-sm font-medium text-dm-text-secondary">Estado:</span>
+                <span className="text-sm font-medium text-dm-text-primary">{trip.status}</span>
               </div>
             </div>
           </div>
@@ -254,7 +254,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
 
         {/* Selección de tipo de manifiesto más elegante */}
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Tipo de Manifiesto</h3>
+          <h3 className="text-lg font-semibold text-dm-text-primary mb-4">Tipo de Manifiesto</h3>
           <div className="grid grid-cols-2 gap-6">
             {(['PASSENGER', 'CARGO'] as const).map((type) => {
               const info = getManifestTypeInfo(type);
@@ -277,23 +277,23 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
                     className={`block cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 ${
                       selectedType === type
                         ? `${info.borderColor} ${info.bgColor} shadow-lg transform scale-105`
-                        : `border-gray-200 bg-white hover:border-gray-300 hover:shadow-md`
+                        : `border-dm-border-primary bg-dm-bg-primary hover:border-dm-border-primary hover:shadow-md`
                     } ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="text-center">
                       <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${
-                        selectedType === type ? info.bgColor : 'bg-gray-100'
+                        selectedType === type ? info.bgColor : 'bg-dm-bg-secondary'
                       }`}>
                         <Icon className={`w-8 h-8 ${
-                          selectedType === type ? info.color : 'text-gray-400'
+                          selectedType === type ? info.color : 'text-dm-text-muted'
                         }`} />
                       </div>
                       <h3 className={`text-lg font-semibold mb-2 ${
-                        selectedType === type ? info.color : 'text-gray-700'
+                        selectedType === type ? info.color : 'text-dm-text-secondary'
                       }`}>
                         {type === 'PASSENGER' ? 'Manifiesto de Pasajeros' : 'Manifiesto de Carga'}
                       </h3>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-sm text-dm-text-secondary mb-2">
                         {type === 'PASSENGER' 
                           ? 'Lista oficial de pasajeros y asientos' 
                           : 'Lista oficial de carga y encomiendas'
@@ -304,8 +304,8 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
                       {type === 'CARGO' && cargoValidationStatus.isValidated && (
                         <div className={`flex items-center space-x-2 text-xs ${
                           cargoValidationStatus.canGenerate 
-                            ? 'text-green-600' 
-                            : 'text-red-600'
+                            ? 'text-green-600 dark:text-green-400' 
+                            : 'text-red-600 dark:text-red-400'
                         }`}>
                           <div className={`w-2 h-2 rounded-full ${
                             cargoValidationStatus.canGenerate 
@@ -333,7 +333,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
 
         {/* Observaciones más elegantes */}
         <div>
-          <label className="block text-lg font-semibold text-gray-800 mb-4">
+          <label className="block text-lg font-semibold text-dm-text-primary mb-4">
             Observaciones (Opcional)
           </label>
           <div className="relative">
@@ -341,19 +341,19 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
               rows={4}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-gray-700 placeholder-gray-400"
+              className="w-full px-4 py-3 border-2 border-dm-border-primary rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-dm-text-secondary placeholder-gray-400 dark:placeholder-gray-500"
               placeholder="Ingrese observaciones adicionales sobre el manifiesto..."
               disabled={isGenerating}
               maxLength={500}
             />
-            <div className="absolute bottom-3 right-3 text-xs text-gray-400">
+            <div className="absolute bottom-3 right-3 text-xs text-dm-text-muted">
               {observations.length}/500
             </div>
           </div>
         </div>
 
         {/* Botones de acción más elegantes */}
-        <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+        <div className="flex justify-end space-x-4 pt-6 border-t border-dm-border-primary">
           <Button
             type="button"
             variant="secondary"

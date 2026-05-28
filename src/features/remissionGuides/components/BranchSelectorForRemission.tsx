@@ -19,7 +19,7 @@ export const BranchSelectorForRemission: React.FC<BranchSelectorForRemissionProp
     return (
       <div className="flex justify-center items-center py-12">
         <Spinner size="lg" />
-        <span className="ml-3 text-gray-600">Cargando sucursales...</span>
+        <span className="ml-3 text-dm-text-secondary">Cargando sucursales...</span>
       </div>
     );
   }
@@ -27,18 +27,18 @@ export const BranchSelectorForRemission: React.FC<BranchSelectorForRemissionProp
   if (!branches || branches.length === 0) {
     return (
       <div className="text-center py-12">
-        <BuildingOfficeIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay sucursales disponibles</h3>
-        <p className="text-gray-600">No se encontraron sucursales para mostrar.</p>
+        <BuildingOfficeIcon className="h-16 w-16 text-dm-text-muted mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-dm-text-primary mb-2">No hay sucursales disponibles</h3>
+        <p className="text-dm-text-secondary">No se encontraron sucursales para mostrar.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+    <div className="bg-dm-bg-primary rounded-2xl shadow-xl border border-dm-border-primary overflow-hidden">
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-12 h-12 bg-white bg-opacity-20 rounded-lg">
+          <div className="flex items-center justify-center w-12 h-12 bg-dm-bg-primary bg-opacity-20 rounded-lg">
             <BuildingOfficeIcon className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -53,36 +53,36 @@ export const BranchSelectorForRemission: React.FC<BranchSelectorForRemissionProp
           {branches.map((branch) => (
             <div
               key={branch.id}
-              className="group cursor-pointer bg-gray-50 hover:bg-blue-50 border-2 border-gray-200 hover:border-blue-300 rounded-xl p-6 transition-all duration-200 hover:shadow-md"
+              className="group cursor-pointer bg-dm-bg-secondary hover:bg-blue-50 dark:hover:bg-blue-950/30 border-2 border-dm-border-primary hover:border-blue-300 rounded-xl p-6 transition-all duration-200 hover:shadow-md"
               onClick={() => onBranchSelect(branch)}
             >
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
-                  <div className="flex items-center justify-center w-12 h-12 bg-blue-100 group-hover:bg-blue-200 rounded-lg transition-colors duration-200">
-                    <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
+                  <div className="flex items-center justify-center w-12 h-12 bg-blue-100 dark:bg-blue-900/40 group-hover:bg-blue-200 rounded-lg transition-colors duration-200">
+                    <BuildingOfficeIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-900 truncate">
+                  <h3 className="text-lg font-semibold text-dm-text-primary group-hover:text-blue-900 truncate">
                     {branch.name}
                   </h3>
                   
                   {branch.address_line && (
-                    <div className="flex items-center mt-2 text-sm text-gray-600 group-hover:text-blue-700">
+                    <div className="flex items-center mt-2 text-sm text-dm-text-secondary group-hover:text-blue-700 dark:text-blue-300">
                       <MapPinIcon className="h-4 w-4 mr-1 flex-shrink-0" />
                       <span className="truncate">{branch.address_line}</span>
                     </div>
                   )}
                   
                   {(branch.district || branch.province || branch.department) && (
-                    <div className="mt-1 text-xs text-gray-500 group-hover:text-blue-600">
+                    <div className="mt-1 text-xs text-dm-text-muted group-hover:text-blue-600 dark:text-blue-400">
                       {[branch.district, branch.province, branch.department].filter(Boolean).join(', ')}
                     </div>
                   )}
 
                   {branch.port && (
-                    <div className="mt-2 text-xs text-blue-600 bg-blue-100 group-hover:bg-blue-200 px-2 py-1 rounded-full inline-block">
+                    <div className="mt-2 text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 group-hover:bg-blue-200 px-2 py-1 rounded-full inline-block">
                       Puerto: {branch.port.name}
                     </div>
                   )}
@@ -93,7 +93,7 @@ export const BranchSelectorForRemission: React.FC<BranchSelectorForRemissionProp
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="w-full group-hover:border-blue-400 group-hover:text-blue-600"
+                  className="w-full group-hover:border-blue-400 group-hover:text-blue-600 dark:text-blue-400"
                 >
                   Seleccionar
                 </Button>

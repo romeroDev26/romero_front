@@ -242,19 +242,19 @@ export const ScheduleTripsPage: React.FC = () => {
 
       {/* ── Encabezado de pagina ─────────────────────────────────────────── */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Programar Viajes</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <h1 className="text-2xl font-bold text-dm-text-primary">Programar Viajes</h1>
+        <p className="text-sm text-dm-text-muted mt-1">
           Gestione las plantillas de viajes recurrentes y los viajes programados
         </p>
       </div>
 
       {/* ── Seccion: Plantillas de Viajes Recurrentes ────────────────────── */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
+      <div className="bg-dm-bg-primary rounded-xl border border-dm-border-secondary shadow-sm overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-dm-border-secondary">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Plantillas de Viajes Recurrentes</h2>
+            <h2 className="text-base font-semibold text-dm-text-primary">Plantillas de Viajes Recurrentes</h2>
             {!isLoadingTemplates && (
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-dm-text-muted mt-0.5">
                 {scheduledTemplates?.length ?? 0}{' '}
                 {(scheduledTemplates?.length ?? 0) === 1 ? 'plantilla configurada' : 'plantillas configuradas'}
               </p>
@@ -284,15 +284,15 @@ export const ScheduleTripsPage: React.FC = () => {
       </div>
 
       {/* ── Seccion: Viajes Programados ──────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-dm-bg-primary rounded-xl border border-dm-border-secondary shadow-sm overflow-hidden">
         {/* Header de la seccion */}
-        <div className="px-5 py-4 border-b border-gray-100">
+        <div className="px-5 py-4 border-b border-dm-border-secondary">
           <div className="flex flex-col lg:flex-row lg:items-center gap-4">
             {/* Titulo + contador */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-base font-semibold text-gray-900">Viajes Programados</h2>
+              <h2 className="text-base font-semibold text-dm-text-primary">Viajes Programados</h2>
               {!isLoadingTrips && (
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-dm-text-muted mt-0.5">
                   {trips.length} {trips.length === 1 ? 'viaje encontrado' : 'viajes encontrados'}
                 </p>
               )}
@@ -301,13 +301,13 @@ export const ScheduleTripsPage: React.FC = () => {
             {/* Controles de accion */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               {/* Toggle tabla / calendario */}
-              <div className="flex bg-gray-100 rounded-lg p-1 self-start sm:self-auto">
+              <div className="flex bg-dm-bg-secondary rounded-lg p-1 self-start sm:self-auto">
                 <button
                   onClick={() => setViewMode('table')}
                   className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                     viewMode === 'table'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-dm-bg-primary text-dm-text-primary shadow-sm'
+                      : 'text-dm-text-muted hover:text-dm-text-secondary'
                   }`}
                 >
                   Tabla
@@ -316,8 +316,8 @@ export const ScheduleTripsPage: React.FC = () => {
                   onClick={() => setViewMode('calendar')}
                   className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1.5 whitespace-nowrap ${
                     viewMode === 'calendar'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-dm-bg-primary text-dm-text-primary shadow-sm'
+                      : 'text-dm-text-muted hover:text-dm-text-secondary'
                   }`}
                 >
                   <CalendarIcon className="h-4 w-4" />
@@ -347,15 +347,15 @@ export const ScheduleTripsPage: React.FC = () => {
           </div>
 
           {/* Tabs de modo de vista */}
-          <div className="mt-4 flex gap-1 p-1 bg-gray-100 rounded-xl w-full sm:w-fit">
+          <div className="mt-4 flex gap-1 p-1 bg-dm-bg-secondary rounded-xl w-full sm:w-fit">
             {(Object.keys(VIEW_FILTER_LABELS) as ViewFilterMode[]).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewFilter(mode)}
                 className={`flex-1 sm:flex-initial px-4 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
                   viewFilter === mode
-                    ? 'bg-white text-indigo-700 shadow-sm font-semibold'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-dm-bg-primary text-indigo-700 dark:text-indigo-300 shadow-sm font-semibold'
+                    : 'text-dm-text-muted hover:text-dm-text-secondary'
                 }`}
               >
                 {VIEW_FILTER_LABELS[mode]}
@@ -365,7 +365,7 @@ export const ScheduleTripsPage: React.FC = () => {
         </div>
 
         {/* Filtros */}
-        <div className="px-5 py-4 border-b border-gray-100">
+        <div className="px-5 py-4 border-b border-dm-border-secondary">
           <TripFilters
             currentDate={weekDate}
             onDateChange={setWeekDate}

@@ -231,12 +231,12 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
   const renderListView = () => (
     <div className="p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-dm-text-secondary">
           Esta factura tiene <strong>{assignments?.length}</strong> asientos asignados.
           Selecciona cada asiento que deseas cambiar y luego guarda todos los cambios de una sola vez.
         </p>
         {hasPendingChanges && (
-          <span className="flex-shrink-0 text-xs font-semibold text-orange-700 bg-orange-100 border border-orange-300 rounded-full px-2 py-0.5">
+          <span className="flex-shrink-0 text-xs font-semibold text-orange-700 bg-orange-100 dark:bg-orange-900/40 border border-orange-300 rounded-full px-2 py-0.5">
             {pendingChanges.size} pendiente{pendingChanges.size > 1 ? 's' : ''}
           </span>
         )}
@@ -251,34 +251,34 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
               key={assignment.id}
               className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
                 pending
-                  ? 'bg-orange-50 border-orange-300'
-                  : 'bg-white border-gray-200 hover:border-blue-300'
+                  ? 'bg-orange-50 dark:bg-orange-950/30 border-orange-300'
+                  : 'bg-dm-bg-primary border-dm-border-primary hover:border-blue-300'
               }`}
             >
               <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-dm-bg-secondary flex items-center justify-center text-sm font-bold text-dm-text-secondary">
                   {index + 1}
                 </div>
                 <div>
                   {/* Asiento actual -> nuevo asiento (si hay cambio pendiente) */}
                   {pending ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-500 line-through">{seatLabel}</span>
+                      <span className="text-sm font-semibold text-dm-text-muted line-through">{seatLabel}</span>
                       <svg className="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
                       <span className="text-lg font-bold text-orange-700">{pending.newSeatLabel}</span>
-                      <span className="text-xs text-orange-600 font-medium">(pendiente)</span>
+                      <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">(pendiente)</span>
                     </div>
                   ) : (
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-dm-text-primary">
                       Asiento actual:{' '}
-                      <span className="text-lg font-bold text-blue-700">
+                      <span className="text-lg font-bold text-blue-700 dark:text-blue-300">
                         {seatLabel}
                       </span>
                     </p>
                   )}
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-dm-text-muted mt-0.5">
                     Item ID: {assignment.invoice_item_id} &mdash; Estado: {assignment.status}
                   </p>
                 </div>
@@ -298,11 +298,11 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
       </div>
 
       {/* Acciones del listado */}
-      <div className="pt-4 border-t border-gray-200 flex items-center justify-between gap-3">
+      <div className="pt-4 border-t border-dm-border-primary flex items-center justify-between gap-3">
         <button
           onClick={onClose}
           disabled={isSavingAll}
-          className="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+          className="px-5 py-2.5 text-dm-text-secondary bg-dm-bg-primary border border-dm-border-primary rounded-lg hover:bg-dm-bg-hover transition-colors font-medium disabled:opacity-50"
         >
           Cancelar
         </button>
@@ -338,7 +338,7 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
         {isMultiple && (
           <button
             onClick={handleBackToList}
-            className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 font-medium"
+            className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 font-medium"
             disabled={reassignMutation.isPending}
           >
             <ChevronLeftIcon className="w-4 h-4" />
@@ -347,7 +347,7 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
         )}
 
         {/* Información del asiento seleccionado para editar */}
-        <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
+        <div className="bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-400 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -355,10 +355,10 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
               </svg>
             </div>
             <div className="ml-3 flex-1">
-              <h3 className="text-sm font-medium text-blue-800">
+              <h3 className="text-sm font-medium text-blue-800 dark:text-blue-300">
                 Informacion del pasajero / asignacion
               </h3>
-              <div className="mt-2 text-sm text-blue-700 grid grid-cols-2 gap-4">
+              <div className="mt-2 text-sm text-blue-700 dark:text-blue-300 grid grid-cols-2 gap-4">
                 <div>
                   <p><strong>Nombre:</strong> {currentAssignment.passenger_name}</p>
                   <p><strong>Documento:</strong> {currentAssignment.passenger_doc_number}</p>
@@ -366,7 +366,7 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
                 <div>
                   <p><strong>Asiento actual:</strong> <span className="font-bold text-lg">{currentSeatLabel}</span></p>
                   {selectedSeat && (
-                    <p><strong>Nuevo asiento:</strong> <span className="font-bold text-lg text-green-600">{selectedSeat.seat_number}</span></p>
+                    <p><strong>Nuevo asiento:</strong> <span className="font-bold text-lg text-green-600 dark:text-green-400">{selectedSeat.seat_number}</span></p>
                   )}
                 </div>
               </div>
@@ -381,12 +381,12 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
           </div>
         ) : seatMapData && tripId ? (
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-lg font-semibold text-dm-text-primary mb-4">
               Seleccionar nuevo asiento
             </h3>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="bg-dm-bg-secondary rounded-lg p-4 border border-dm-border-primary">
                   <SeatMap
                     tripId={tripId}
                     vesselName=""
@@ -398,22 +398,22 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
                 </div>
               </div>
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-4">
+                <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-4 space-y-4">
                   <SeatMapLegend showPendingBlock={isMultiple} />
 
                   {selectedSeat && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded">
-                      <p className="text-sm font-medium text-green-800">
+                    <div className="p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded">
+                      <p className="text-sm font-medium text-green-800 dark:text-green-300">
                         Asiento seleccionado:
                       </p>
-                      <p className="text-2xl font-bold text-green-600 mt-1">
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">
                         {selectedSeat.seat_number}
                       </p>
                     </div>
                   )}
 
                   {/* Botones de accion */}
-                  <div className="pt-4 border-t border-gray-200 space-y-3">
+                  <div className="pt-4 border-t border-dm-border-primary space-y-3">
                     <button
                       onClick={handleSubmit}
                       className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
@@ -433,7 +433,7 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
                     </button>
                     <button
                       onClick={isMultiple ? handleBackToList : onClose}
-                      className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      className="w-full px-4 py-3 text-dm-text-secondary bg-dm-bg-primary border border-dm-border-primary rounded-lg hover:bg-dm-bg-hover transition-colors font-medium"
                       disabled={reassignMutation.isPending}
                     >
                       {isMultiple ? 'Volver al listado' : 'Cancelar'}
@@ -449,22 +449,22 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div className="bg-dm-bg-primary rounded-lg shadow-xl border border-dm-border-primary max-w-5xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-dm-border-primary">
           <div className="flex items-center gap-3">
             <ArrowPathIcon className="w-8 h-8 text-blue-500" />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Editar Asiento</h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <h2 className="text-2xl font-bold text-dm-text-primary">Editar Asiento</h2>
+              <p className="text-sm text-dm-text-muted mt-1">
                 Factura/Boleta: {invoiceSeries}-{String(invoiceNumber).padStart(8, '0')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-dm-text-muted hover:text-dm-text-secondary transition-colors"
             disabled={reassignMutation.isPending}
           >
             <XMarkIcon className="w-6 h-6" />
@@ -478,11 +478,11 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
           </div>
         ) : assignmentsError ? (
           <div className="p-6 text-center">
-            <p className="text-red-600">Error al cargar la informacion del ticket</p>
+            <p className="text-red-600 dark:text-red-400">Error al cargar la informacion del ticket</p>
           </div>
         ) : !assignments || assignments.length === 0 ? (
           <div className="p-6 text-center">
-            <p className="text-gray-600">No se encontraron asignaciones para este ticket</p>
+            <p className="text-dm-text-secondary">No se encontraron asignaciones para este ticket</p>
           </div>
         ) : view === 'list' ? (
           renderListView()
@@ -493,19 +493,19 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
 
       {/* Modal de Confirmacion */}
       {showConfirmModal && currentAssignment && selectedSeat && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-60 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-dm-bg-primary rounded-xl shadow-2xl border border-dm-border-primary max-w-md w-full">
             {/* Header del modal de confirmacion */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-dm-border-primary">
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="flex-shrink-0 w-12 h-12 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Confirmar cambio de asiento</h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <h3 className="text-xl font-bold text-dm-text-primary">Confirmar cambio de asiento</h3>
+                  <p className="text-sm text-dm-text-muted mt-1">
                     {isMultiple ? 'El cambio se agregara al listado pendiente' : 'Esta accion modificara el ticket'}
                   </p>
                 </div>
@@ -514,31 +514,31 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
 
             {/* Contenido del modal de confirmacion */}
             <div className="p-6 space-y-4">
-              <p className="text-gray-700">
+              <p className="text-dm-text-secondary">
                 Esta seguro de que deseas cambiar el asiento?
               </p>
 
               <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-500 p-4 rounded-lg">
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-gray-600 font-medium">Asignacion</p>
-                    <p className="text-sm font-semibold text-gray-900">{currentAssignment.passenger_name}</p>
+                    <p className="text-xs text-dm-text-secondary font-medium">Asignacion</p>
+                    <p className="text-sm font-semibold text-dm-text-primary">{currentAssignment.passenger_name}</p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                  <div className="grid grid-cols-2 gap-4 pt-2 border-t border-dm-border-primary">
                     <div className="text-center">
-                      <p className="text-xs text-gray-600 font-medium mb-1">Asiento actual</p>
-                      <div className="bg-red-100 border-2 border-red-300 rounded-lg py-2 px-3">
-                        <p className="text-2xl font-bold text-red-700">
+                      <p className="text-xs text-dm-text-secondary font-medium mb-1">Asiento actual</p>
+                      <div className="bg-red-100 dark:bg-red-900/40 border-2 border-red-300 rounded-lg py-2 px-3">
+                        <p className="text-2xl font-bold text-red-700 dark:text-red-300">
                           {currentAssignment.current_seat_label || currentAssignment.seat_number || 'N/A'}
                         </p>
                       </div>
                     </div>
 
                     <div className="text-center">
-                      <p className="text-xs text-gray-600 font-medium mb-1">Nuevo asiento</p>
-                      <div className="bg-green-100 border-2 border-green-300 rounded-lg py-2 px-3">
-                        <p className="text-2xl font-bold text-green-700">
+                      <p className="text-xs text-dm-text-secondary font-medium mb-1">Nuevo asiento</p>
+                      <div className="bg-green-100 dark:bg-green-900/40 border-2 border-green-300 rounded-lg py-2 px-3">
+                        <p className="text-2xl font-bold text-green-700 dark:text-green-300">
                           {selectedSeat.seat_number}
                         </p>
                       </div>
@@ -547,11 +547,11 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <svg className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="flex items-start gap-2 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
+                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-xs text-yellow-800">
+                <p className="text-xs text-yellow-800 dark:text-yellow-300">
                   {isMultiple
                     ? 'Este cambio se guardara en el listado. El ticket se regenera una sola vez al presionar "Guardar todos los cambios".'
                     : 'El sistema regenerara automaticamente el ticket con el nuevo asiento.'}
@@ -560,10 +560,10 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
             </div>
 
             {/* Footer del modal de confirmacion */}
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-dm-border-primary bg-dm-bg-secondary rounded-b-xl">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-5 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all hover:shadow-sm font-medium"
+                className="px-5 py-2.5 text-dm-text-secondary bg-dm-bg-primary border border-dm-border-primary rounded-lg hover:bg-dm-bg-hover transition-all hover:shadow-sm font-medium"
                 disabled={reassignMutation.isPending}
               >
                 Cancelar

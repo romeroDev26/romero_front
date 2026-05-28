@@ -112,8 +112,8 @@ export const ProductsServicesPage: React.FC = () => {
       accessor: (item) => (
         <span className={`px-2 py-1 text-xs rounded-full ${
           item.item_type === 'SERVICE'
-            ? 'bg-blue-100 text-blue-800'
-            : 'bg-green-100 text-green-800'
+            ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
+            : 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
         }`}>
           {item.item_type === 'SERVICE' ? 'Servicio' : 'Producto'}
         </span>
@@ -139,8 +139,8 @@ export const ProductsServicesPage: React.FC = () => {
       accessor: (item) => (
         <span className={`px-2 py-1 text-xs rounded-full ${
           item.is_active
-            ? 'bg-green-100 text-green-800'
-            : 'bg-red-100 text-red-800'
+            ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+            : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
         }`}>
           {item.is_active ? 'Activo' : 'Inactivo'}
         </span>
@@ -154,14 +154,14 @@ export const ProductsServicesPage: React.FC = () => {
         <div className="flex space-x-2">
           <button
             onClick={() => { setSelectedItem(item); setShowViewModal(true); }}
-            className="text-gray-500 hover:text-blue-700"
+            className="text-dm-text-muted hover:text-blue-700 dark:text-blue-300"
             title="Ver"
           >
             <EyeIcon className="w-5 h-5" />
           </button>
           <button
             onClick={() => openEditModal(item)}
-            className="text-gray-500 hover:text-yellow-700"
+            className="text-dm-text-muted hover:text-yellow-700 dark:text-yellow-300"
             title="Editar"
           >
             <PencilIcon className="w-5 h-5" />
@@ -183,8 +183,8 @@ export const ProductsServicesPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <p className="text-red-600">Error al cargar productos y servicios</p>
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-md p-4">
+        <p className="text-red-600 dark:text-red-400">Error al cargar productos y servicios</p>
         <Button
           onClick={() => refetch()}
           variant="outline"
@@ -202,8 +202,8 @@ export const ProductsServicesPage: React.FC = () => {
       {/* Header - Responsive */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Productos y Servicios</h1>
-          <p className="text-gray-600">Gestiona los productos y servicios disponibles</p>
+          <h1 className="text-2xl font-bold text-dm-text-primary">Productos y Servicios</h1>
+          <p className="text-dm-text-secondary">Gestiona los productos y servicios disponibles</p>
         </div>
         <Button onClick={openCreateModal} className="flex items-center gap-2 w-full sm:w-auto justify-center">
           <PlusIcon className="w-4 h-4" />
@@ -212,12 +212,12 @@ export const ProductsServicesPage: React.FC = () => {
       </div>
 
       {/* Search and Filters - Responsive */}
-      <div className="bg-white p-4 rounded-lg shadow space-y-4">
+      <div className="bg-dm-bg-primary p-4 rounded-lg shadow space-y-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:justify-between">
           <div className="flex-1 w-full sm:max-w-md">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-4 w-4 text-gray-500" />
+                <MagnifyingGlassIcon className="h-4 w-4 text-dm-text-muted" />
               </div>
               <Input
                 placeholder="Buscar productos/servicios..."
@@ -238,15 +238,15 @@ export const ProductsServicesPage: React.FC = () => {
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-dm-border-primary">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Tipo
               </label>
               <select
                 value={filters.item_type}
                 onChange={(e) => handleFilterChange('item_type', e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm"
               >
                 <option value="">Todos</option>
                 {ITEM_TYPE_OPTIONS.map(option => (
@@ -258,13 +258,13 @@ export const ProductsServicesPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Categoría
               </label>
               <select
                 value={filters.service_category}
                 onChange={(e) => handleFilterChange('service_category', e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm"
               >
                 <option value="">Todas</option>
                 {SERVICE_CATEGORY_OPTIONS.map(option => (
@@ -276,13 +276,13 @@ export const ProductsServicesPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 Estado
               </label>
               <select
                 value={filters.is_active ? 'true' : 'false'}
                 onChange={(e) => handleFilterChange('is_active', e.target.value === 'true')}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm"
               >
                 <option value="true">Activos</option>
                 <option value="false">Inactivos</option>
@@ -295,27 +295,27 @@ export const ProductsServicesPage: React.FC = () => {
       {/* Mobile Card View */}
       <div className="block lg:hidden space-y-4">
         {(productsServices || []).map((item) => (
-          <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div key={item.id} className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-4">
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h3 className="text-base font-semibold text-gray-900">{item.name}</h3>
+                  <h3 className="text-base font-semibold text-dm-text-primary">{item.name}</h3>
                   <span className={`px-2 py-0.5 text-xs rounded-full ${
                     item.item_type === 'SERVICE'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-green-100 text-green-800'
+                      ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
+                      : 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
                   }`}>
                     {item.item_type === 'SERVICE' ? 'Servicio' : 'Producto'}
                   </span>
                 </div>
                 {item.internal_code && (
-                  <p className="text-sm text-gray-500">Código: {item.internal_code}</p>
+                  <p className="text-sm text-dm-text-muted">Código: {item.internal_code}</p>
                 )}
               </div>
               <span className={`px-2 py-0.5 text-xs rounded-full ${
                 item.is_active
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-100 text-red-800'
+                  ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+                  : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
               }`}>
                 {item.is_active ? 'Activo' : 'Inactivo'}
               </span>
@@ -323,29 +323,29 @@ export const ProductsServicesPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-3 text-sm mb-3">
               <div>
-                <span className="block text-xs text-gray-500">Precio Venta</span>
-                <span className="font-medium text-gray-900">
+                <span className="block text-xs text-dm-text-muted">Precio Venta</span>
+                <span className="font-medium text-dm-text-primary">
                   {item.currency_code} {Number(item.sale_price).toFixed(2)}
                 </span>
               </div>
               <div>
-                <span className="block text-xs text-gray-500">IGV</span>
-                <span className="font-medium text-gray-900">
+                <span className="block text-xs text-dm-text-muted">IGV</span>
+                <span className="font-medium text-dm-text-primary">
                   {getTaxCategoryLabel(item.tax_category_code)}
                 </span>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+            <div className="flex justify-end gap-3 pt-3 border-t border-dm-border-secondary">
               <button
                 onClick={() => { setSelectedItem(item); setShowViewModal(true); }}
-                className="flex items-center text-gray-600 hover:text-blue-800 text-sm font-medium"
+                className="flex items-center text-dm-text-secondary hover:text-blue-800 dark:text-blue-300 text-sm font-medium"
               >
                 <EyeIcon className="h-4 w-4 mr-1" /> Ver
               </button>
               <button
                 onClick={() => openEditModal(item)}
-                className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 text-sm font-medium"
               >
                 <PencilIcon className="h-4 w-4 mr-1" /> Editar
               </button>
@@ -354,14 +354,14 @@ export const ProductsServicesPage: React.FC = () => {
         ))}
         
         {(!productsServices || productsServices.length === 0) && (
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+          <div className="bg-dm-bg-primary rounded-lg shadow-sm p-6 text-center text-dm-text-muted">
             No se encontraron productos o servicios.
           </div>
         )}
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden lg:block bg-white rounded-lg shadow overflow-x-auto">
+      <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow overflow-x-auto">
         <DataTable
           data={productsServices || []}
           columns={columns}
@@ -393,45 +393,45 @@ export const ProductsServicesPage: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Código Interno</label>
-                <p className="text-sm text-gray-900">{selectedItem.internal_code || '-'}</p>
+                <label className="block text-sm font-medium text-dm-text-secondary">Código Interno</label>
+                <p className="text-sm text-dm-text-primary">{selectedItem.internal_code || '-'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Tipo</label>
-                <p className="text-sm text-gray-900">
+                <label className="block text-sm font-medium text-dm-text-secondary">Tipo</label>
+                <p className="text-sm text-dm-text-primary">
                   {selectedItem.item_type === 'SERVICE' ? 'Servicio' : 'Producto'}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Nombre</label>
-                <p className="text-sm text-gray-900">{selectedItem.name}</p>
+                <label className="block text-sm font-medium text-dm-text-secondary">Nombre</label>
+                <p className="text-sm text-dm-text-primary">{selectedItem.name}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Categoría</label>
-                <p className="text-sm text-gray-900">{selectedItem.service_category || '-'}</p>
+                <label className="block text-sm font-medium text-dm-text-secondary">Categoría</label>
+                <p className="text-sm text-dm-text-primary">{selectedItem.service_category || '-'}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Precio de Compra</label>
-                <p className="text-sm text-gray-900">
+                <label className="block text-sm font-medium text-dm-text-secondary">Precio de Compra</label>
+                <p className="text-sm text-dm-text-primary">
                   {selectedItem.currency_code} {Number(selectedItem.purchase_price).toFixed(2)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Precio de Venta</label>
-                <p className="text-sm text-gray-900">
+                <label className="block text-sm font-medium text-dm-text-secondary">Precio de Venta</label>
+                <p className="text-sm text-dm-text-primary">
                   {selectedItem.currency_code} {Number(selectedItem.sale_price).toFixed(2)}
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Afectación IGV</label>
-                <p className="text-sm text-gray-900">
+                <label className="block text-sm font-medium text-dm-text-secondary">Afectación IGV</label>
+                <p className="text-sm text-dm-text-primary">
                   {getTaxCategoryLabel(selectedItem.tax_category_code)}
                 </p>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Descripción</label>
-              <p className="text-sm text-gray-900">{selectedItem.description || '-'}</p>
+              <label className="block text-sm font-medium text-dm-text-secondary">Descripción</label>
+              <p className="text-sm text-dm-text-primary">{selectedItem.description || '-'}</p>
             </div>
             <div className="flex justify-end">
               <Button variant="outline" onClick={() => setShowViewModal(false)}>

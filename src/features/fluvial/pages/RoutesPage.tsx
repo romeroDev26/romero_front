@@ -207,7 +207,7 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
               options={portOptions}
               placeholder="Buscar puerto de origen..."
             />
-            {errors.origin_port_id && <p className="text-sm text-red-500 mt-1">{errors.origin_port_id}</p>}
+            {errors.origin_port_id && <p className="text-sm text-red-500 dark:text-red-400 mt-1">{errors.origin_port_id}</p>}
           </div>
           <div>
             <SearchableSelect
@@ -217,11 +217,11 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
               options={destinationPortOptions}
               placeholder="Buscar puerto de destino..."
             />
-            {errors.destination_port_id && <p className="text-sm text-red-500 mt-1">{errors.destination_port_id}</p>}
+            {errors.destination_port_id && <p className="text-sm text-red-500 dark:text-red-400 mt-1">{errors.destination_port_id}</p>}
           </div>
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">Tipo de Ruta</label>
+          <label className="block text-sm font-medium text-dm-text-secondary">Tipo de Ruta</label>
           <div className="flex items-center space-x-4">
             <label className="flex items-center">
               <input
@@ -230,9 +230,9 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
                 value="CARGO"
                 checked={formData.type === 'CARGO'}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                className="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 border-dm-border-primary"
               />
-              <span className="ml-2 text-sm text-gray-900">CARGO</span>
+              <span className="ml-2 text-sm text-dm-text-primary">CARGO</span>
             </label>
             <label className="flex items-center">
               <input
@@ -241,21 +241,21 @@ const RouteFormModal: React.FC<RouteFormProps> = ({ isOpen, onClose, route, rout
                 value="EXPRESS"
                 checked={formData.type === 'EXPRESS'}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as 'CARGO' | 'EXPRESS' })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                className="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 border-dm-border-primary"
               />
-              <span className="ml-2 text-sm text-gray-900">EXPRESS</span>
+              <span className="ml-2 text-sm text-dm-text-primary">EXPRESS</span>
             </label>
           </div>
-          {errors.type && <p className="text-sm text-red-500 mt-1">{errors.type}</p>}
+          {errors.type && <p className="text-sm text-red-500 dark:text-red-400 mt-1">{errors.type}</p>}
         </div>
-        <div className="p-3 bg-gray-50 rounded-md">
-          <p className="text-sm text-gray-600 mb-1">Previsualización del nombre completo:</p>
-          <p className="text-sm font-medium text-gray-900">{getFullRouteName() || 'Seleccione origen, destino y tipo'}</p>
+        <div className="p-3 bg-dm-bg-secondary rounded-md">
+          <p className="text-sm text-dm-text-secondary mb-1">Previsualización del nombre completo:</p>
+          <p className="text-sm font-medium text-dm-text-primary">{getFullRouteName() || 'Seleccione origen, destino y tipo'}</p>
         </div>
         <Input label="Duración Estimada (horas)" type="number" name="estimated_duration_hours" step="0.5" value={formData.estimated_duration_hours || ''} onChange={(e) => setFormData({ ...formData, estimated_duration_hours: parseFloat(e.target.value) || 0 })} error={errors.estimated_duration_hours} min="0.5"/>
         <div className="flex items-center">
-          <input id="is_active" type="checkbox" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-          <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">Ruta activa</label>
+          <input id="is_active" type="checkbox" checked={formData.is_active} onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })} className="h-4 w-4 rounded border-dm-border-primary text-blue-600 dark:text-blue-400 focus:ring-blue-500" />
+          <label htmlFor="is_active" className="ml-2 block text-sm text-dm-text-primary">Ruta activa</label>
         </div>
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
@@ -352,8 +352,8 @@ export const RoutesPage: React.FC = () => {
       header: 'Ruta', 
       accessor: (r) => (
         <div className="flex items-center gap-2.5">
-          <MapPinIcon className="h-4 w-4 text-[#828282] shrink-0" strokeWidth={1.5} />
-          <span className="font-medium text-[#202020]">{r.name}</span>
+          <MapPinIcon className="h-4 w-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
+          <span className="font-medium text-dm-text-primary">{r.name}</span>
         </div>
       ) 
     },
@@ -361,7 +361,7 @@ export const RoutesPage: React.FC = () => {
       key: 'origin_destination', 
       header: 'Origen → Destino', 
       accessor: (r) => (
-        <span className="text-[14px] text-[#4d4d4d]">
+        <span className="text-[14px] text-dm-text-secondary">
           {r.origin_port?.name || 'N/A'} → {r.destination_port?.name || 'N/A'}
         </span>
       ) 
@@ -370,8 +370,8 @@ export const RoutesPage: React.FC = () => {
       key: 'duration', 
       header: 'Duración', 
       accessor: (r) => ( 
-        <div className="flex items-center text-[14px] text-[#4d4d4d]">
-          <ClockIcon className="h-4 w-4 mr-1.5 text-[#828282]" strokeWidth={1.5} />
+        <div className="flex items-center text-[14px] text-dm-text-secondary">
+          <ClockIcon className="h-4 w-4 mr-1.5 text-dm-text-muted" strokeWidth={1.5} />
           {`${routeHelpers.isoStringToHours(r.estimated_duration).toFixed(1)}h`}
         </div> 
       )
@@ -380,7 +380,7 @@ export const RoutesPage: React.FC = () => {
       key: 'stops', 
       header: 'Paradas', 
       accessor: (r) => (
-        <span className="text-[14px] text-[#828282]">{r.stops?.length || 0} paradas</span>
+        <span className="text-[14px] text-dm-text-muted">{r.stops?.length || 0} paradas</span>
       ) 
     },
     { 
@@ -396,12 +396,12 @@ export const RoutesPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1
-            className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]"
+            className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
             Rutas Fluviales
           </h1>
-          <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+          <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
             Crea, edita y gestiona las rutas y sus paradas.
           </p>
         </div>
@@ -427,9 +427,9 @@ export const RoutesPage: React.FC = () => {
             type="checkbox"
             checked={showOnlyActive}
             onChange={(e) => setShowOnlyActive(e.target.checked)}
-            className="h-4 w-4 rounded border-[#e8e8e8] text-[#1F4690] focus:ring-[#1F4690]/20 mr-2"
+            className="h-4 w-4 rounded border-dm-border-primary text-[#1F4690] focus:ring-[#1F4690]/20 mr-2"
           />
-          <span className="text-[14px] text-[#4d4d4d]">Mostrar solo activas</span>
+          <span className="text-[14px] text-dm-text-secondary">Mostrar solo activas</span>
         </label>
       </div>
 
@@ -438,19 +438,19 @@ export const RoutesPage: React.FC = () => {
         {filteredRoutes.map((route) => (
           <div
             key={route.id}
-            className="bg-white rounded-[12px] border border-[#e8e8e8] p-5"
+            className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-5"
           >
             <div className="flex justify-between items-start mb-3 gap-3">
               <div className="min-w-0">
-                <h3 className="text-[15px] font-medium text-[#202020] truncate">{route.name}</h3>
-                <p className="text-[13px] text-[#4d4d4d] mt-0.5">
+                <h3 className="text-[15px] font-medium text-dm-text-primary truncate">{route.name}</h3>
+                <p className="text-[13px] text-dm-text-secondary mt-0.5">
                   {route.origin_port?.name || 'N/A'} → {route.destination_port?.name || 'N/A'}
                 </p>
               </div>
               <StatusBadge isActive={route.is_active} />
             </div>
 
-            <div className="flex items-center gap-4 text-[13px] text-[#828282] mb-4">
+            <div className="flex items-center gap-4 text-[13px] text-dm-text-muted mb-4">
               <div className="flex items-center gap-1.5">
                 <ClockIcon className="h-4 w-4" strokeWidth={1.5} />
                 <span>{routeHelpers.isoStringToHours(route.estimated_duration).toFixed(1)}h</span>
@@ -461,7 +461,7 @@ export const RoutesPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-[#f0f0f0]">
+            <div className="flex flex-wrap justify-end gap-2 pt-3 border-t border-dm-border-secondary">
               <button
                 onClick={() => handleConfigureStops(route)}
                 className="inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-[#1F4690] bg-[#1F4690]/5 border border-[#1F4690]/10 rounded-[10px] hover:bg-[#1F4690]/10 transition-colors"
@@ -472,20 +472,20 @@ export const RoutesPage: React.FC = () => {
               <button
                 onClick={() => handleSyncTripStops(route)}
                 disabled={syncingRouteId === route.id}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-[#4d4d4d] bg-[#f5f5f5] border border-[#e8e8e8] rounded-[10px] hover:bg-[#e8e8e8] disabled:opacity-50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-[13px] font-medium text-dm-text-secondary bg-dm-bg-secondary border border-dm-border-primary rounded-[10px] hover:bg-dm-bg-hover disabled:opacity-50 transition-colors"
               >
                 <ArrowPathIcon className={`h-4 w-4 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} strokeWidth={1.5} />
                 {syncingRouteId === route.id ? 'Sincronizando...' : 'Sincronizar'}
               </button>
               <button
                 onClick={() => handleEditRoute(route)}
-                className="p-2 text-[#828282] hover:text-[#1F4690] transition-colors"
+                className="p-2 text-dm-text-muted hover:text-[#1F4690] transition-colors"
               >
                 <PencilIcon className="h-4 w-4" strokeWidth={1.5} />
               </button>
               <button
                 onClick={() => handleDelete(route)}
-                className="p-2 text-[#828282] hover:text-[#cf1322] transition-colors"
+                className="p-2 text-dm-text-muted hover:text-[#cf1322] transition-colors"
               >
                 <TrashIcon className="h-4 w-4" strokeWidth={1.5} />
               </button>
@@ -494,8 +494,8 @@ export const RoutesPage: React.FC = () => {
         ))}
 
         {filteredRoutes.length === 0 && (
-          <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-8 text-center">
-            <p className="text-[15px] text-[#828282]">No se encontraron rutas que coincidan con los filtros.</p>
+          <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-8 text-center">
+            <p className="text-[15px] text-dm-text-muted">No se encontraron rutas que coincidan con los filtros.</p>
           </div>
         )}
       </div>
@@ -516,7 +516,7 @@ export const RoutesPage: React.FC = () => {
             <div className="flex items-center justify-end gap-3">
               <button
                 onClick={() => handleConfigureStops(route)}
-                className="text-[#828282] hover:text-[#1F4690] transition-colors"
+                className="text-dm-text-muted hover:text-[#1F4690] transition-colors"
                 title="Gestionar paradas en el mapa"
               >
                 <MapIcon className="h-4 w-4" strokeWidth={1.5} />
@@ -524,7 +524,7 @@ export const RoutesPage: React.FC = () => {
               <button
                 onClick={() => handleSyncTripStops(route)}
                 disabled={syncingRouteId === route.id}
-                className="text-[#828282] hover:text-[#1F4690] transition-colors disabled:opacity-40"
+                className="text-dm-text-muted hover:text-[#1F4690] transition-colors disabled:opacity-40"
                 title="Sincronizar paradas de viajes con la ruta"
               >
                 <ArrowPathIcon className={`h-4 w-4 ${syncingRouteId === route.id ? 'animate-spin' : ''}`} strokeWidth={1.5} />

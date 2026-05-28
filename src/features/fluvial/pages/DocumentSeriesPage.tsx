@@ -100,8 +100,8 @@ const BranchOfficeFormModal: React.FC<BranchOfficeFormModalProps> = ({ isOpen, o
         <div className="grid grid-cols-2 gap-4">
           <Input label="Código (Opcional, 4 chars)" value={formData.code} onChange={(e) => setFormData({ ...formData, code: e.target.value })} maxLength={4} />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Puerto Principal (Hub)</label>
-            <select value={formData.port_id} onChange={(e) => setFormData({ ...formData, port_id: Number(e.target.value) })} className="w-full p-2 border border-gray-300 rounded-md" required>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">Puerto Principal (Hub)</label>
+            <select value={formData.port_id} onChange={(e) => setFormData({ ...formData, port_id: Number(e.target.value) })} className="w-full p-2 border border-dm-border-primary rounded-md" required>
               <option value={0}>Seleccione un puerto</option>
               {ports.map((port) => (
                 <option key={port.id} value={port.id}>
@@ -193,8 +193,8 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({ isOpen, onClose, onSu
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Documento</label>
-            <select value={formData.document_type_code} onChange={(e) => setFormData({ ...formData, document_type_code: e.target.value })} className="w-full p-2 border border-gray-300 rounded-md" required disabled={isEditing}>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">Tipo de Documento</label>
+            <select value={formData.document_type_code} onChange={(e) => setFormData({ ...formData, document_type_code: e.target.value })} className="w-full p-2 border border-dm-border-primary rounded-md" required disabled={isEditing}>
               {DOCUMENT_TYPE_OPTIONS.map((doc) => (
                 <option key={doc.code} value={doc.code}>
                   {doc.name}
@@ -206,8 +206,8 @@ const SeriesFormModal: React.FC<SeriesFormModalProps> = ({ isOpen, onClose, onSu
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sucursal</label>
-            <select value={formData.branch_office_id} onChange={(e) => setFormData({ ...formData, branch_office_id: Number(e.target.value) })} className="w-full p-2 border border-gray-300 rounded-md" required>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">Sucursal</label>
+            <select value={formData.branch_office_id} onChange={(e) => setFormData({ ...formData, branch_office_id: Number(e.target.value) })} className="w-full p-2 border border-dm-border-primary rounded-md" required>
               <option value={0}>Seleccione una sucursal</option>
               {branchOffices.map((office) => (
                 <option key={office.id} value={office.id}>
@@ -300,17 +300,17 @@ export const DocumentSeriesPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header - Responsive */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Configuración de Sucursales y Series</h1>
-        <p className="text-gray-600">Gestiona las sucursales y las series de documentos de tu compañía.</p>
+        <h1 className="text-2xl font-bold text-dm-text-primary">Configuración de Sucursales y Series</h1>
+        <p className="text-dm-text-secondary">Gestiona las sucursales y las series de documentos de tu compañía.</p>
       </div>
 
       {/* Tabs - Responsive */}
-      <div className="border-b border-gray-200 overflow-x-auto">
+      <div className="border-b border-dm-border-primary overflow-x-auto">
         <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max">
-          <button onClick={() => setActiveTab('offices')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${activeTab === 'offices' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+          <button onClick={() => setActiveTab('offices')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${activeTab === 'offices' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-dm-text-muted hover:text-dm-text-secondary'}`}>
             <BuildingStorefrontIcon className="h-5 w-5 mr-2" /> Sucursales ({offices.length})
           </button>
-          <button onClick={() => setActiveTab('series')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${activeTab === 'series' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+          <button onClick={() => setActiveTab('series')} className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center whitespace-nowrap ${activeTab === 'series' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-dm-text-muted hover:text-dm-text-secondary'}`}>
             <ClipboardDocumentListIcon className="h-5 w-5 mr-2" /> Series ({series.length})
           </button>
         </nav>
@@ -319,7 +319,7 @@ export const DocumentSeriesPage: React.FC = () => {
       {/* Search and Action - Responsive */}
       <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
         <div className="relative w-full sm:max-w-md">
-          <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input type="text" className="pl-10 p-2 border rounded-md w-full" placeholder={`Buscar en ${activeTab === 'offices' ? 'sucursales' : 'series'}...`} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
         <Button onClick={() => handleOpenModal()} className="flex items-center justify-center w-full sm:w-auto">
@@ -336,41 +336,41 @@ export const DocumentSeriesPage: React.FC = () => {
           {/* Mobile Card View - Offices */}
           <div className="block lg:hidden space-y-4">
             {filteredOffices.map((office) => (
-              <div key={office.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div key={office.id} className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-gray-900">{office.name}</h3>
-                    {office.code && <p className="text-sm text-gray-500">Código: {office.code}</p>}
+                    <h3 className="text-base font-semibold text-dm-text-primary">{office.name}</h3>
+                    {office.code && <p className="text-sm text-dm-text-muted">Código: {office.code}</p>}
                   </div>
-                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'}`}>
                     {office.is_active ? 'Activa' : 'Inactiva'}
                   </span>
                 </div>
 
                 <div className="space-y-2 text-sm mb-3">
                   <div>
-                    <span className="block text-xs text-gray-500">Puerto Asociado</span>
-                    <span className="font-medium text-gray-900">{office.port?.name || 'N/A'}</span>
-                    {office.port?.city?.name && <span className="text-gray-500 ml-1">- {office.port.city.name}</span>}
+                    <span className="block text-xs text-dm-text-muted">Puerto Asociado</span>
+                    <span className="font-medium text-dm-text-primary">{office.port?.name || 'N/A'}</span>
+                    {office.port?.city?.name && <span className="text-dm-text-muted ml-1">- {office.port.city.name}</span>}
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Contacto</span>
-                    <span className="font-medium text-gray-900">{office.phone}</span>
-                    {office.email && <span className="text-gray-500 block">{office.email}</span>}
+                    <span className="block text-xs text-dm-text-muted">Contacto</span>
+                    <span className="font-medium text-dm-text-primary">{office.phone}</span>
+                    {office.email && <span className="text-dm-text-muted block">{office.email}</span>}
                   </div>
                   {office.is_main_office && (
-                    <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                    <div className="inline-flex items-center px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
                       Sucursal Principal
                     </div>
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
-                  <button onClick={() => handleOpenModal(office)} className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                <div className="flex justify-end gap-3 pt-3 border-t border-dm-border-secondary">
+                  <button onClick={() => handleOpenModal(office)} className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 text-sm font-medium">
                     <PencilIcon className="h-4 w-4 mr-1" /> Editar
                   </button>
                   {office.is_active && hasPermission('accounting', 'series', 'accountant') && (
-                    <button onClick={() => handleDelete(office.id)} className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium">
+                    <button onClick={() => handleDelete(office.id)} className="flex items-center text-red-600 dark:text-red-400 hover:text-red-800 dark:text-red-300 text-sm font-medium">
                       <TrashIcon className="h-4 w-4 mr-1" /> Desactivar
                     </button>
                   )}
@@ -378,16 +378,16 @@ export const DocumentSeriesPage: React.FC = () => {
               </div>
             ))}
             {filteredOffices.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+              <div className="bg-dm-bg-primary rounded-lg shadow-sm p-6 text-center text-dm-text-muted">
                 No se encontraron sucursales.
               </div>
             )}
           </div>
 
           {/* Desktop Table View - Offices */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto">
+            <table className="min-w-full divide-y divide-dm-border-primary">
+              <thead className="bg-dm-bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left">Sucursal</th>
                   <th className="px-6 py-3 text-left">Puerto Asociado</th>
@@ -402,26 +402,26 @@ export const DocumentSeriesPage: React.FC = () => {
                   <tr key={office.id}>
                     <td className="px-6 py-4">
                       <div className="font-medium">{office.name}</div>
-                      <div className="text-sm text-gray-500">{office.code}</div>
+                      <div className="text-sm text-dm-text-muted">{office.code}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm">{office.port?.name || 'N/A'}</div>
-                      <div className="text-sm text-gray-500">{office.port?.city?.name || 'Sin ciudad'}</div>
+                      <div className="text-sm text-dm-text-muted">{office.port?.city?.name || 'Sin ciudad'}</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm">{office.phone}</div>
-                      <div className="text-sm text-gray-500">{office.email}</div>
+                      <div className="text-sm text-dm-text-muted">{office.email}</div>
                     </td>
                     <td className="px-6 py-4 text-center">{office.is_main_office ? 'Sí' : 'No'}</td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{office.is_active ? 'Activa' : 'Inactiva'}</span>
+                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${office.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'}`}>{office.is_active ? 'Activa' : 'Inactiva'}</span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <button onClick={() => handleOpenModal(office)} className="text-blue-600 hover:text-blue-900">
+                      <button onClick={() => handleOpenModal(office)} className="text-blue-600 dark:text-blue-400 hover:text-blue-900">
                         <PencilIcon className="h-5 w-5" />
                       </button>
                       {office.is_active && hasPermission('accounting', 'series', 'accountant') && (
-                        <button onClick={() => handleDelete(office.id)} className="text-red-600 hover:text-red-900">
+                        <button onClick={() => handleDelete(office.id)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:text-red-200">
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       )}
@@ -437,41 +437,41 @@ export const DocumentSeriesPage: React.FC = () => {
           {/* Mobile Card View - Series */}
           <div className="block lg:hidden space-y-4">
             {filteredSeries.map((s) => (
-              <div key={s.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <div key={s.id} className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
-                    <h3 className="text-base font-semibold text-gray-900">
+                    <h3 className="text-base font-semibold text-dm-text-primary">
                       {DOCUMENT_TYPE_OPTIONS.find((d) => d.code === s.document_type_code)?.name || s.document_type_code}
                     </h3>
-                    <p className="text-sm text-gray-500 font-mono">Serie: {s.series_code}</p>
+                    <p className="text-sm text-dm-text-muted font-mono">Serie: {s.series_code}</p>
                   </div>
-                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${s.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${s.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'}`}>
                     {s.is_active ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
 
                 <div className="space-y-2 text-sm mb-3">
                   <div>
-                    <span className="block text-xs text-gray-500">Número Actual</span>
-                    <span className="font-medium text-gray-900 font-mono">{s.current_number.toString().padStart(8, '0')}</span>
+                    <span className="block text-xs text-dm-text-muted">Número Actual</span>
+                    <span className="font-medium text-dm-text-primary font-mono">{s.current_number.toString().padStart(8, '0')}</span>
                   </div>
                   <div>
-                    <span className="block text-xs text-gray-500">Sucursal Asignada</span>
-                    <span className="font-medium text-gray-900">{offices.find((o) => o.id === s.branch_office_id)?.name || 'N/A'}</span>
+                    <span className="block text-xs text-dm-text-muted">Sucursal Asignada</span>
+                    <span className="font-medium text-dm-text-primary">{offices.find((o) => o.id === s.branch_office_id)?.name || 'N/A'}</span>
                   </div>
                   {s.is_electronic && (
-                    <div className="inline-flex items-center px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                    <div className="inline-flex items-center px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded text-xs font-medium">
                       Electrónica
                     </div>
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
-                  <button onClick={() => handleOpenModal(s)} className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium">
+                <div className="flex justify-end gap-3 pt-3 border-t border-dm-border-secondary">
+                  <button onClick={() => handleOpenModal(s)} className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 text-sm font-medium">
                     <PencilIcon className="h-4 w-4 mr-1" /> Editar
                   </button>
                   {s.is_active && hasPermission('accounting', 'series', 'accountant') && (
-                    <button onClick={() => handleDelete(s.id)} className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium">
+                    <button onClick={() => handleDelete(s.id)} className="flex items-center text-red-600 dark:text-red-400 hover:text-red-800 dark:text-red-300 text-sm font-medium">
                       <TrashIcon className="h-4 w-4 mr-1" /> Desactivar
                     </button>
                   )}
@@ -479,16 +479,16 @@ export const DocumentSeriesPage: React.FC = () => {
               </div>
             ))}
             {filteredSeries.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+              <div className="bg-dm-bg-primary rounded-lg shadow-sm p-6 text-center text-dm-text-muted">
                 No se encontraron series.
               </div>
             )}
           </div>
 
           {/* Desktop Table View - Series */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-md overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+          <div className="hidden lg:block bg-dm-bg-primary rounded-lg shadow-md overflow-x-auto">
+            <table className="min-w-full divide-y divide-dm-border-primary">
+              <thead className="bg-dm-bg-secondary">
                 <tr>
                   <th className="px-6 py-3 text-left">Tipo Documento</th>
                   <th className="px-6 py-3 text-left">Serie</th>
@@ -499,13 +499,13 @@ export const DocumentSeriesPage: React.FC = () => {
                   <th className="px-6 py-3 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
                 {filteredSeries.map((s) => (
                   <tr key={s.id}>
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <ClipboardDocumentListIcon className="h-5 w-5 text-gray-400 mr-3" />
-                        <div className="font-medium text-gray-900">{DOCUMENT_TYPE_OPTIONS.find((d) => d.code === s.document_type_code)?.name || s.document_type_code}</div>
+                        <ClipboardDocumentListIcon className="h-5 w-5 text-dm-text-muted mr-3" />
+                        <div className="font-medium text-dm-text-primary">{DOCUMENT_TYPE_OPTIONS.find((d) => d.code === s.document_type_code)?.name || s.document_type_code}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 font-mono">{s.series_code}</td>
@@ -513,14 +513,14 @@ export const DocumentSeriesPage: React.FC = () => {
                     <td className="px-6 py-4">{offices.find((o) => o.id === s.branch_office_id)?.name || 'N/A'}</td>
                     <td className="px-6 py-4 text-center">{s.is_electronic ? 'Sí' : 'No'}</td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${s.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{s.is_active ? 'Activo' : 'Inactivo'}</span>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${s.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'}`}>{s.is_active ? 'Activo' : 'Inactivo'}</span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <button onClick={() => handleOpenModal(s)} className="text-blue-600 hover:text-blue-900">
+                      <button onClick={() => handleOpenModal(s)} className="text-blue-600 dark:text-blue-400 hover:text-blue-900">
                         <PencilIcon className="h-5 w-5" />
                       </button>
                       {s.is_active && hasPermission('accounting', 'series', 'accountant') && (
-                        <button onClick={() => handleDelete(s.id)} className="text-red-600 hover:text-red-900">
+                        <button onClick={() => handleDelete(s.id)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:text-red-200">
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       )}

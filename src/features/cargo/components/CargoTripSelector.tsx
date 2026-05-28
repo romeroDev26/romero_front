@@ -37,15 +37,15 @@ export const CargoTripSelector: React.FC<CargoTripSelectorProps> = ({
   if (isLoadingTrip) {
     return (
       <div className="flex justify-center items-center h-40">
-        <Spinner /><span className="ml-2 text-gray-600">Cargando detalles del viaje...</span>
+        <Spinner /><span className="ml-2 text-dm-text-secondary">Cargando detalles del viaje...</span>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-gray-800">Seleccionar Tramo</h2>
-      <p className="text-sm text-gray-600 mb-4">
+      <h2 className="text-lg font-semibold text-dm-text-primary">Seleccionar Tramo</h2>
+      <p className="text-sm text-dm-text-secondary mb-4">
         Seleccione el punto de origen y destino para la encomienda
       </p>
       
@@ -74,20 +74,20 @@ export const CargoTripSelector: React.FC<CargoTripSelectorProps> = ({
       </div>
 
       {selectedOriginId && selectedDestinationId && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-          <h3 className="font-semibold text-blue-800 mb-2">Tramo Seleccionado:</h3>
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 p-4 rounded-lg">
+          <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Tramo Seleccionado:</h3>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="text-center">
-                <p className="text-sm text-gray-600">Origen</p>
-                <p className="font-semibold text-blue-700">
+                <p className="text-sm text-dm-text-secondary">Origen</p>
+                <p className="font-semibold text-blue-700 dark:text-blue-300">
                   {tripDetails?.stops?.find(s => s.port_id === selectedOriginId)?.port?.name}
                 </p>
               </div>
               <div className="text-blue-400">→</div>
               <div className="text-center">
-                <p className="text-sm text-gray-600">Destino</p>
-                <p className="font-semibold text-blue-700">
+                <p className="text-sm text-dm-text-secondary">Destino</p>
+                <p className="font-semibold text-blue-700 dark:text-blue-300">
                   {tripDetails?.stops?.find(s => s.port_id === selectedDestinationId)?.port?.name}
                 </p>
               </div>

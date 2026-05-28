@@ -142,17 +142,17 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
     return (
       <>
         {isProcessingSale && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-white rounded-lg p-8 shadow-2xl flex flex-col items-center space-y-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="bg-dm-bg-primary rounded-lg p-8 shadow-2xl border border-dm-border-primary flex flex-col items-center space-y-4">
               <Spinner />
               <div className="text-center">
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
+                <h3 className="text-xl font-bold text-dm-text-primary mb-2">
                   Procesando Venta...
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-dm-text-secondary">
                   Por favor espere mientras se genera el comprobante
                 </p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-dm-text-muted mt-2">
                   No cierre esta ventana ni realice otras acciones
                 </p>
               </div>
@@ -163,10 +163,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
         <div className="w-full p-4 pb-8 lg:p-6 lg:pb-10">
           <div className="flex flex-col sm:flex-row items-start justify-between gap-3 mb-4 lg:mb-6 pb-4 border-b">
             <div className="flex-1">
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-800">
+              <h1 className="text-xl lg:text-2xl font-bold text-dm-text-primary">
                 Registrar Venta de Pasaje
               </h1>
-              <p className="text-sm lg:text-base text-gray-600">
+              <p className="text-sm lg:text-base text-dm-text-secondary">
                 Desde: <span className="font-semibold">{branch.name}</span>
               </p>
             </div>
@@ -184,16 +184,16 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
             </Button>
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 lg:mb-6">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 p-3 rounded-lg mb-4 lg:mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-sm">
               <div className="flex items-center gap-2 flex-1">
-                <Ship className="h-5 w-5 text-blue-700 shrink-0" />
+                <Ship className="h-5 w-5 text-blue-700 dark:text-blue-300 shrink-0" />
                 <span className="font-semibold">
                   {trip.trip_name} ({trip.vessel_name})
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-700 shrink-0" />
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-blue-700 dark:text-blue-300 shrink-0" />
                 <span>
                   {format(
                     new Date(trip.estimated_departure_time),
@@ -219,7 +219,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
           <div className="grid lg:grid-cols-5 gap-4 lg:gap-8">
             <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-              <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4 lg:p-5">
+              <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-3 shadow-sm sm:p-4 lg:p-5">
                 <PassengerDataForm
                   passengerData={passengerData}
                   setPassengerData={setPassengerData}
@@ -269,13 +269,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                 </>
               )}
 
-              <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
+              <div className="bg-dm-bg-primary p-4 lg:p-6 rounded-lg shadow-sm border border-dm-border-primary">
                 {showAddForm && (
-                  <div className="mb-4 p-2.5 lg:p-3 bg-blue-50 border border-blue-200 rounded-md">
-                    <div className="text-xs lg:text-sm font-medium text-blue-800">
+                  <div className="mb-4 p-2.5 lg:p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md">
+                    <div className="text-xs lg:text-sm font-medium text-blue-800 dark:text-blue-300">
                       Modo: Selección de asiento para representante
                     </div>
-                    <div className="text-xs text-blue-600">
+                    <div className="text-xs text-blue-600 dark:text-blue-400">
                       Haga clic en un asiento del mapa para asignarlo al
                       representante
                     </div>
@@ -319,9 +319,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                     currentRepresentativeIndex={representatives.length}
                   />
                 ) : (
-                  <div className="bg-white p-4 lg:p-6 rounded-lg shadow-sm border">
-                    <h3 className="font-semibold text-base lg:text-lg text-gray-800 mb-3 lg:mb-4 flex items-center">
-                      <Ship className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-gray-500" />
+                  <div className="bg-dm-bg-primary p-4 lg:p-6 rounded-lg shadow-sm border border-dm-border-primary">
+                    <h3 className="font-semibold text-base lg:text-lg text-dm-text-primary mb-3 lg:mb-4 flex items-center">
+                      <Ship className="h-5 w-5 lg:h-6 lg:w-6 mr-2 text-dm-text-muted" />
                       Tramo y Asiento
                     </h3>
 
@@ -374,14 +374,14 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       />
                     </div>
 
-                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">
-                      <div className="flex items-center justify-center gap-2 text-blue-700">
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 p-4 rounded-lg text-center">
+                      <div className="flex items-center justify-center gap-2 text-blue-700 dark:text-blue-300">
                         <Ship className="h-5 w-5" />
                         <span className="font-medium">
                           Embarcación sin asientos numerados
                         </span>
                       </div>
-                      <p className="text-sm text-blue-600 mt-1">
+                      <p className="text-sm text-blue-600 dark:text-blue-400 mt-1">
                         Esta embarcación utiliza sistema de elección libre de
                         asientos
                       </p>
@@ -394,28 +394,28 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
             <div className="lg:col-span-2">
               <div className="lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100vh-1rem)] overflow-y-auto lg:pr-2 space-y-4 lg:space-y-6 pb-4 lg:pb-56 lg:scroll-pb-64">
                 {!canShowPriceSidebar ? (
-                  <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                  <div className="bg-dm-bg-secondary p-6 rounded-lg border border-dm-border-primary">
                     <div className="text-center space-y-4">
-                      <div className="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
-                        <Ship className="h-8 w-8 text-gray-400" />
+                      <div className="w-16 h-16 mx-auto bg-dm-bg-secondary rounded-full flex items-center justify-center">
+                        <Ship className="h-8 w-8 text-dm-text-muted" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-lg text-gray-700 mb-2">
+                        <h3 className="font-semibold text-lg text-dm-text-secondary mb-2">
                           Complete los pasos anteriores
                         </h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-dm-text-muted">
                           Para ver el resumen de venta y generar el comprobante,
                           primero:
                         </p>
                       </div>
-                      <div className="text-left bg-white p-4 rounded-lg border space-y-3">
+                      <div className="text-left bg-dm-bg-primary p-4 rounded-lg border border-dm-border-primary space-y-3">
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                               passengerData.docNumber.trim() &&
                               passengerData.name.trim()
                                 ? "bg-green-500 text-white"
-                                : "bg-gray-300 text-gray-600"
+                                : "bg-gray-300 dark:bg-gray-600 text-dm-text-secondary"
                             }`}
                           >
                             {passengerData.docNumber.trim() &&
@@ -427,8 +427,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                             className={`text-sm ${
                               passengerData.docNumber.trim() &&
                               passengerData.name.trim()
-                                ? "text-green-700 font-medium"
-                                : "text-gray-600"
+                                ? "text-green-700 dark:text-green-300 font-medium"
+                                : "text-dm-text-secondary"
                             }`}
                           >
                             Ingrese los datos del pasajero
@@ -439,7 +439,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                               selectedBoardingStopId
                                 ? "bg-green-500 text-white"
-                                : "bg-gray-300 text-gray-600"
+                                : "bg-gray-300 dark:bg-gray-600 text-dm-text-secondary"
                             }`}
                           >
                             {selectedBoardingStopId ? "✓" : "2"}
@@ -447,8 +447,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                           <span
                             className={`text-sm ${
                               selectedBoardingStopId
-                                ? "text-green-700 font-medium"
-                                : "text-gray-600"
+                                ? "text-green-700 dark:text-green-300 font-medium"
+                                : "text-dm-text-secondary"
                             }`}
                           >
                             Seleccione el origen (embarque)
@@ -467,8 +467,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                           <span
                             className={`text-sm ${
                               selectedDisembarkingStopId
-                                ? "text-green-700 font-medium"
-                                : "text-blue-700 font-medium"
+                                ? "text-green-700 dark:text-green-300 font-medium"
+                                : "text-blue-700 dark:text-blue-300 font-medium"
                             }`}
                           >
                             Seleccione el destino (desembarque)
@@ -476,10 +476,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                         </div>
                         {showSeatMap && !isRuc && (
                           <div className="flex items-center gap-3">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-gray-300 text-gray-600">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-gray-300 dark:bg-gray-600 text-dm-text-secondary">
                               4
                             </div>
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-dm-text-secondary">
                               Seleccione un asiento
                             </span>
                           </div>
@@ -489,12 +489,12 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                   </div>
                 ) : (
                   <>
-                    <section className="space-y-4 rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-6">
+                    <section className="space-y-4 rounded-xl border border-dm-border-primary/80 bg-dm-bg-primary p-5 shadow-sm sm:p-6">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dbe1ff]">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#dbe1ff] dark:bg-blue-900/40">
                           <ClipboardDocumentListIcon className="h-5 w-5 text-primary" />
                         </div>
-                        <h2 className="text-lg font-bold tracking-tight text-gray-900">
+                        <h2 className="text-lg font-bold tracking-tight text-dm-text-primary">
                           Comprobante
                         </h2>
                       </div>
@@ -504,7 +504,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                           <Spinner />
                         ) : (
                           <div>
-                            <label className="mb-1.5 ml-1 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                            <label className="mb-1.5 ml-1 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
                               Serie del documento
                             </label>
                             <div className="relative isolate">
@@ -519,7 +519,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                                     ? handleFacturaSeriesChange(e.target.value)
                                     : handleBoletaSeriesChange(e.target.value)
                                 }
-                                className="w-full min-w-0 appearance-none rounded-lg border-0 bg-gray-100 py-3 pl-4 pr-11 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="w-full min-w-0 appearance-none rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-3 pl-4 pr-11 text-sm text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
                                 disabled={
                                   (isRuc
                                     ? availableFacturaSeries.length
@@ -539,13 +539,13 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                                 ))}
                               </select>
                               <span
-                                className="pointer-events-none absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg border-l border-gray-200/60 bg-gray-100/95"
+                                className="pointer-events-none absolute inset-y-0 right-0 flex w-11 items-center justify-center rounded-r-lg border-l border-dm-border-primary/60 bg-dm-bg-secondary/95"
                                 aria-hidden
                               >
-                                <ChevronDown className="h-4 w-4 shrink-0 text-gray-500" />
+                                <ChevronDown className="h-4 w-4 shrink-0 text-dm-text-muted" />
                               </span>
                             </div>
-                            <p className="ml-1 mt-1.5 text-[10px] text-gray-500">
+                            <p className="ml-1 mt-1.5 text-[10px] text-dm-text-muted">
                               Correlativo asignado automáticamente al emitir
                             </p>
                           </div>
@@ -553,7 +553,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
                         {!isRuc && (
                           <div>
-                            <label className="mb-1.5 ml-1 block text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                            <label className="mb-1.5 ml-1 block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted">
                               Descripción
                             </label>
                             <textarea
@@ -565,9 +565,9 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                               }}
                               placeholder="Ej. Servicio de transporte"
                               rows={2}
-                              className="w-full rounded-lg border-0 bg-gray-100 py-3 px-4 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[80px]"
+                              className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-3 px-4 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y min-h-[80px]"
                             />
-                            <p className="mt-1 text-[10px] text-gray-500">
+                            <p className="mt-1 text-[10px] text-dm-text-muted">
                               {(itemDescription || "").length}/500 caracteres
                             </p>
                           </div>
@@ -609,8 +609,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       currencySymbol={getCurrencySymbol()}
                     />
 
-                    <section className="space-y-4 rounded-xl border border-gray-200/80 bg-white p-5 shadow-sm sm:p-6">
-                      <h2 className="text-lg font-bold tracking-tight text-gray-900">
+                    <section className="space-y-4 rounded-xl border border-dm-border-primary/80 bg-dm-bg-primary p-5 shadow-sm sm:p-6">
+                      <h2 className="text-lg font-bold tracking-tight text-dm-text-primary">
                         Método de Pago
                       </h2>
                       <SplitPaymentForm
@@ -623,8 +623,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       />
                     </section>
 
-                    <div className="space-y-2.5 rounded-xl border border-gray-200/80 bg-white p-4 shadow-sm lg:space-y-3">
-                      <h3 className="text-center text-sm font-semibold text-gray-700 lg:text-base">
+                    <div className="space-y-2.5 rounded-xl border border-dm-border-primary/80 bg-dm-bg-primary p-4 shadow-sm lg:space-y-3">
+                      <h3 className="text-center text-sm font-semibold text-dm-text-secondary lg:text-base">
                         Acciones
                       </h3>
 
@@ -633,7 +633,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                         className={`w-full text-base lg:text-lg py-2.5 lg:py-3 ${
                           areActionsEnabled && !isProcessingSale
                             ? "bg-green-600 hover:bg-green-700"
-                            : "bg-gray-400 cursor-not-allowed"
+                            : "bg-gray-400 dark:bg-gray-600 cursor-not-allowed"
                         }`}
                         isLoading={
                           isProcessingClient ||
@@ -684,7 +684,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                             setShowRepresentatives(!showRepresentatives)
                           }
                           variant="outline"
-                          className="w-full text-base lg:text-lg py-2.5 lg:py-3 border-blue-600 text-blue-600 hover:bg-blue-50"
+                          className="w-full text-base lg:text-lg py-2.5 lg:py-3 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30"
                         >
                           <ClipboardDocumentListIcon className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                           {showRepresentatives ? "Ocultar" : "Gestionar"}{" "}
@@ -693,23 +693,23 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-gray-200/80 bg-gradient-to-br from-slate-50/90 to-white p-4 shadow-sm">
+                    <div className="rounded-xl border border-dm-border-primary/80 bg-gradient-to-br from-slate-50/90 to-white dark:from-slate-700 dark:to-slate-800 p-4 shadow-sm">
                       <div className="flex gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#dbe1ff]/90">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#dbe1ff]/90 dark:bg-blue-900/40">
                           <Info
                             className="h-5 w-5 text-primary"
                             aria-hidden
                           />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-gray-900">
+                          <p className="text-xs font-semibold text-dm-text-primary">
                             Información
                           </p>
-                          <p className="mt-1 text-[11px] leading-snug text-gray-600">
+                          <p className="mt-1 text-[11px] leading-snug text-dm-text-secondary">
                             Verifique pasajero, tramo y total antes de cobrar.
                             El comprobante usará la serie indicada y el
                             correlativo se asignará al confirmar. Viaje:{" "}
-                            <span className="font-medium text-gray-800">
+                            <span className="font-medium text-dm-text-primary">
                               {trip.trip_name}
                             </span>
                             .
@@ -719,7 +719,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                     </div>
 
                     {!basePrice && !isManualPriceMode && (
-                      <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-3 rounded-md">
+                      <div className="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/30 p-3 rounded-md">
                         <AlertTriangle className="h-4 w-4" />
                         <span>Seleccione un destino para ver el precio.</span>
                       </div>
@@ -727,7 +727,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
                     {isManualPriceMode &&
                       (!manualPrice || manualPrice === 0) && (
-                        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200 dark:border-red-800/50">
                           <AlertTriangle className="h-4 w-4" />
                           <span className="font-medium">
                             Ingrese un precio manual para continuar con la
@@ -737,7 +737,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       )}
 
                     {finalTicketPrice === 0 && (basePrice || manualPrice) && (
-                      <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                      <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200 dark:border-red-800/50">
                         <AlertTriangle className="h-4 w-4" />
                         <span className="font-medium">
                           El monto total no puede ser S/ 0.00. Ajuste el precio
@@ -748,7 +748,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
 
                     {splitPaymentData.isSplitPayment &&
                       !isSplitPaymentValid && (
-                        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200 dark:border-red-800/50">
                           <AlertTriangle className="h-4 w-4" />
                           <span className="font-medium">
                             Los montos del pago dividido deben sumar exactamente

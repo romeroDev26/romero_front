@@ -195,21 +195,21 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Cliente *</label>
+      <label className="block text-sm font-medium text-dm-text-secondary mb-2">Cliente *</label>
       
       {/* Formulario de búsqueda */}
       {!selectedClient && !showClientForm && (
-        <div className="bg-white p-4 rounded-lg border">
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">Datos del Cliente</h3>
+        <div className="bg-dm-bg-primary p-4 rounded-lg border">
+          <h3 className="font-semibold text-lg text-dm-text-primary mb-4">Datos del Cliente</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo Doc.</label>
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">Tipo Doc.</label>
               <select
                 name="docType"
                 value={docType}
                 onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary"
               >
                 {DOCUMENT_TYPES.map(doc => (
                   <option key={doc.code} value={doc.code}>{doc.name}</option>
@@ -218,14 +218,14 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             </div>
             
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Número de Documento</label>
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">Número de Documento</label>
               <div className="flex">
                 <input
                   type="text"
                   name="docNumber"
                   value={docNumber}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-l-md"
+                  className="w-full p-2 border border-dm-border-primary rounded-l-md"
                   placeholder="Ingrese el número"
                 />
                 <Button
@@ -239,7 +239,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             </div>
           </div>
           
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-dm-text-muted">
             {isSearchable 
               ? 'El sistema buscará primero en la base de datos interna, luego en registros públicos'
               : 'Complete el número de documento para buscar'
@@ -250,17 +250,17 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
       {/* Formulario de datos del cliente - IGUAL QUE SALEFORM */}
       {showClientForm && (
-        <div className="bg-white p-4 rounded-lg border">
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">Completar Datos del Cliente</h3>
+        <div className="bg-dm-bg-primary p-4 rounded-lg border">
+          <h3 className="font-semibold text-lg text-dm-text-primary mb-4">Completar Datos del Cliente</h3>
           
           {/* Mostrar info del documento encontrado */}
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md p-3 mb-4">
             <div className="flex items-center gap-2">
-              <User className="text-blue-600 w-4 h-4" />
-              <span className="text-sm font-medium text-blue-800">
+              <User className="text-blue-600 dark:text-blue-400 w-4 h-4" />
+              <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
                 {DOCUMENT_TYPES.find(d => d.code === docType)?.name}: {docNumber}
               </span>
-              <span className="text-xs text-blue-600">
+              <span className="text-xs text-blue-600 dark:text-blue-400">
                 {clientData.name ? '(Datos encontrados)' : '(Complete manualmente)'}
               </span>
             </div>
@@ -268,7 +268,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 {docType === '6' ? 'Razón Social *' : 'Nombres Completos *'}
               </label>
               <input
@@ -276,20 +276,20 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                 name="name"
                 value={clientData.name}
                 onChange={handleClientDataChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder={docType === '6' ? 'Razón Social de la empresa' : 'Nombres y apellidos'}
               />
             </div>
             
             {docType === '6' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Dirección Fiscal</label>
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">Dirección Fiscal</label>
                 <input
                   type="text"
                   name="address"
                   value={clientData.address}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Dirección fiscal de la empresa"
                 />
               </div>
@@ -298,14 +298,14 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             {/* Selector de país para documentos no peruanos - IGUAL QUE SALEFORM */}
             {docType !== '1' && docType !== '6' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                   País de Procedencia
                 </label>
                 <select
                   name="countryCode"
                   value={clientData.countryCode}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Seleccionar país de procedencia...</option>
                   <option value="PE">Perú</option>
@@ -318,7 +318,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   <option value="CL">Chile</option>
                 </select>
                 {clientData.countryCode && (
-                  <div className="mt-1 text-xs text-gray-500">
+                  <div className="mt-1 text-xs text-dm-text-muted">
                     Código de país: <span className="font-mono font-semibold">{clientData.countryCode}</span>
                   </div>
                 )}
@@ -328,41 +328,41 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             {/* Mostrar país fijo para documentos peruanos - IGUAL QUE SALEFORM */}
             {(docType === '1' || docType === '6') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                   País
                 </label>
-                <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-300 rounded-md">
+                <div className="flex items-center gap-2 p-2 bg-dm-bg-secondary border border-dm-border-primary rounded-md">
                   <img 
                     src="https://flagcdn.com/pe.svg" 
                     alt="Bandera de Perú"
                     className="w-5 h-3 object-cover rounded"
                   />
-                  <span className="text-gray-900">Peru</span>
-                  <span className="text-gray-500 text-sm">(PE)</span>
+                  <span className="text-dm-text-primary">Peru</span>
+                  <span className="text-dm-text-muted text-sm">(PE)</span>
                 </div>
               </div>
             )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">Teléfono</label>
                 <input
                   type="tel"
                   name="phone"
                   value={clientData.phone}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Número de teléfono"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={clientData.email}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Correo electrónico"
                 />
               </div>
@@ -390,9 +390,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
       {/* Cliente seleccionado con campos EDITABLES como SaleForm */}
       {selectedClient && (
-        <div className="bg-white p-4 rounded-lg border">
+        <div className="bg-dm-bg-primary p-4 rounded-lg border">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-lg text-gray-800">Datos del Cliente</h3>
+            <h3 className="font-semibold text-lg text-dm-text-primary">Datos del Cliente</h3>
             <Button
               type="button"
               onClick={() => {
@@ -414,18 +414,18 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           </div>
 
           {/* Información del documento */}
-          <div className="bg-gray-50 border border-gray-200 rounded-md p-3 mb-4">
+          <div className="bg-dm-bg-secondary border border-dm-border-primary rounded-md p-3 mb-4">
             <div className="flex items-center gap-3">
-              <User className="text-gray-600 w-4 h-4" />
-              <span className="text-sm font-medium text-gray-800">
+              <User className="text-dm-text-secondary w-4 h-4" />
+              <span className="text-sm font-medium text-dm-text-primary">
                 {DOCUMENT_TYPES.find(d => d.code === selectedClient.doc_type)?.name}: {selectedClient.doc_number}
               </span>
               {selectedClient.id === 0 ? (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300">
                   Nuevo Cliente
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                   Cliente Existente
                 </span>
               )}
@@ -435,7 +435,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           {/* Formulario editable igual que SaleForm */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                 {selectedClient.doc_type === '6' ? 'Razón Social' : 'Nombres Completos'}
               </label>
               <input
@@ -447,7 +447,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                     name: e.target.value
                   });
                 }}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder={selectedClient.doc_type === '6' ? 'Razón Social de la empresa' : 'Nombres y apellidos'}
               />
             </div>
@@ -455,17 +455,17 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             {/* Mostrar país fijo para documentos peruanos */}
             {(selectedClient.doc_type === '1' || selectedClient.doc_type === '6') && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">
                   País
                 </label>
-                <div className="flex items-center gap-2 p-2 bg-gray-50 border border-gray-300 rounded-md">
+                <div className="flex items-center gap-2 p-2 bg-dm-bg-secondary border border-dm-border-primary rounded-md">
                   <img 
                     src="https://flagcdn.com/pe.svg" 
                     alt="Bandera de Perú"
                     className="w-5 h-3 object-cover rounded"
                   />
-                  <span className="text-gray-900">Peru</span>
-                  <span className="text-gray-500 text-sm">(PE)</span>
+                  <span className="text-dm-text-primary">Peru</span>
+                  <span className="text-dm-text-muted text-sm">(PE)</span>
                 </div>
               </div>
             )}
@@ -473,7 +473,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             {/* Campos de contacto EDITABLES */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">Teléfono</label>
                 <input
                   type="tel"
                   value={selectedClient.phone || ''}
@@ -483,12 +483,12 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                       phone: e.target.value
                     });
                   }}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Número de teléfono"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-dm-text-secondary mb-1">Email</label>
                 <input
                   type="email"
                   value={selectedClient.email || ''}
@@ -498,7 +498,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                       email: e.target.value
                     });
                   }}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Correo electrónico"
                 />
               </div>

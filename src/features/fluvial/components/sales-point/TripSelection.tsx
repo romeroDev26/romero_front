@@ -18,15 +18,15 @@ interface TripSelectionProps {
 
 // Componente para una tarjeta de viaje individual
 const TripCard: React.FC<{ trip: AvailableTripByPort, onSelect: () => void }> = ({ trip, onSelect }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+  <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-4 hover:shadow-md transition-shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
     <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-      <div className="bg-blue-100 p-2.5 sm:p-3 rounded-lg shrink-0">
-        <Ship className="h-5 w-5 sm:h-6 sm:w-6 text-blue-700" />
+      <div className="bg-blue-100 dark:bg-blue-900/40 p-2.5 sm:p-3 rounded-lg shrink-0">
+        <Ship className="h-5 w-5 sm:h-6 sm:w-6 text-blue-700 dark:text-blue-300" />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">{trip.trip_name}</h3>
-        <p className="text-xs sm:text-sm text-gray-600 truncate">{trip.vessel_name}</p>
-        <p className="text-xs sm:text-sm text-gray-500">
+        <h3 className="font-semibold text-sm sm:text-base text-dm-text-primary truncate">{trip.trip_name}</h3>
+        <p className="text-xs sm:text-sm text-dm-text-secondary truncate">{trip.vessel_name}</p>
+        <p className="text-xs sm:text-sm text-dm-text-muted">
           Salida estimada: {format(parseISO(trip.estimated_departure_time), 'hh:mm a')}
         </p>
       </div>
@@ -59,8 +59,8 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
       {/* Header de la sección */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 lg:mb-6 pb-4 border-b">
         <div className="flex-1">
-          <h1 className="text-xl lg:text-2xl font-bold text-gray-800">Seleccionar Viaje</h1>
-          <p className="text-sm lg:text-base text-gray-600">
+          <h1 className="text-xl lg:text-2xl font-bold text-dm-text-primary">Seleccionar Viaje</h1>
+          <p className="text-sm lg:text-base text-dm-text-secondary">
             Sucursal: <span className="font-semibold">{branch.name}</span>
           </p>
         </div>
@@ -73,7 +73,7 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {/* Calendario */}
         <div>
-          <h2 className="text-base lg:text-lg font-semibold text-gray-800 mb-3 lg:mb-4">Seleccionar Fecha</h2>
+          <h2 className="text-base lg:text-lg font-semibold text-dm-text-primary mb-3 lg:mb-4">Seleccionar Fecha</h2>
           <TripCalendar
             currentMonth={currentMonth}
             onMonthChange={setCurrentMonth}
@@ -87,11 +87,11 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
         {/* Lista de Viajes */}
         <div>
           <div className="flex items-center justify-between mb-3 lg:mb-4">
-            <h2 className="text-base lg:text-lg font-semibold text-gray-800">
+            <h2 className="text-base lg:text-lg font-semibold text-dm-text-primary">
               Viajes para {format(parseISO(selectedDate), 'dd/MM/yyyy')}
             </h2>
             {trips.length > 0 && (
-              <span className="text-xs lg:text-sm text-gray-600 bg-blue-100 px-2 py-1 rounded-full whitespace-nowrap">
+              <span className="text-xs lg:text-sm text-dm-text-secondary bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded-full whitespace-nowrap">
                 {trips.length} viaje{trips.length !== 1 ? 's' : ''} disponible{trips.length !== 1 ? 's' : ''}
               </span>
             )}
@@ -101,18 +101,18 @@ export const TripSelection: React.FC<TripSelectionProps> = ({ branch, onTripSele
             {isLoading && (
               <div className="flex justify-center items-center py-12 lg:py-16">
                 <Spinner />
-                <p className="ml-4 text-sm lg:text-base text-gray-600">Buscando viajes...</p>
+                <p className="ml-4 text-sm lg:text-base text-dm-text-secondary">Buscando viajes...</p>
               </div>
             )}
 
             {!isLoading && error && (
-              <div className="text-center text-sm lg:text-base text-red-500 bg-red-50 p-4 rounded-lg">
+              <div className="text-center text-sm lg:text-base text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-4 rounded-lg">
                 Error al cargar los viajes: {error.message}
               </div>
             )}
 
             {!isLoading && !error && trips.length === 0 && (
-              <div className="text-center text-gray-500 bg-gray-50 p-6 lg:p-8 rounded-lg">
+              <div className="text-center text-dm-text-muted bg-dm-bg-secondary p-6 lg:p-8 rounded-lg">
                 <h3 className="font-semibold text-base lg:text-lg">No hay viajes disponibles</h3>
                 <p className="text-sm lg:text-base">No se encontraron viajes programados desde "{branch.port?.name}" para la fecha seleccionada.</p>
               </div>

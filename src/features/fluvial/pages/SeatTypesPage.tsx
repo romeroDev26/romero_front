@@ -142,7 +142,7 @@ const SeatTypeFormModal: React.FC<SeatTypeFormProps> = ({ isOpen, onClose, seatT
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Multiplicador de Precio *
             </label>
             <input
@@ -153,21 +153,21 @@ const SeatTypeFormModal: React.FC<SeatTypeFormProps> = ({ isOpen, onClose, seatT
               value={formData.price_multiplier}
               onChange={(e) => setFormData({ ...formData, price_multiplier: parseFloat(e.target.value) || 1.0 })}
               className={`w-full p-2 border rounded-md ${
-                errors.price_multiplier ? 'border-red-500' : 'border-gray-300'
+                errors.price_multiplier ? 'border-red-500' : 'border-dm-border-primary'
               }`}
               placeholder="1.0"
               required
             />
             {errors.price_multiplier && (
-              <p className="mt-1 text-sm text-red-600">{errors.price_multiplier}</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.price_multiplier}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-dm-text-muted mt-1">
               Factor que se multiplica por la tarifa base (1.0 = precio normal, 1.5 = 50% más caro, 0.8 = 20% descuento)
             </p>
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">
               Orden de Visualización *
             </label>
             <input
@@ -176,14 +176,14 @@ const SeatTypeFormModal: React.FC<SeatTypeFormProps> = ({ isOpen, onClose, seatT
               value={formData.display_order}
               onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 1 })}
               className={`w-full p-2 border rounded-md ${
-                errors.display_order ? 'border-red-500' : 'border-gray-300'
+                errors.display_order ? 'border-red-500' : 'border-dm-border-primary'
               }`}
               required
             />
             {errors.display_order && (
-              <p className="mt-1 text-sm text-red-600">{errors.display_order}</p>
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.display_order}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-dm-text-muted mt-1">
               Orden en que aparece en las listas
             </p>
           </div>
@@ -195,9 +195,9 @@ const SeatTypeFormModal: React.FC<SeatTypeFormProps> = ({ isOpen, onClose, seatT
             type="checkbox"
             checked={formData.is_active}
             onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+            className="h-4 w-4 text-blue-600 dark:text-blue-400 border-dm-border-primary rounded"
           />
-          <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+          <label htmlFor="is_active" className="ml-2 block text-sm text-dm-text-secondary">
             Tipo de asiento activo
           </label>
         </div>
@@ -226,15 +226,15 @@ const PricePreview: React.FC<{ multiplier: number; basePrice?: number }> = ({ mu
   const discount = basePrice - finalPrice;
   
   return (
-    <div className="text-xs text-gray-600">
+    <div className="text-xs text-dm-text-secondary">
       {multiplier === 1.0 ? (
         <span>Precio normal</span>
       ) : multiplier > 1.0 ? (
-        <span className="text-red-600">+S/ {(finalPrice - basePrice).toFixed(2)} (+{((multiplier - 1) * 100).toFixed(0)}%)</span>
+        <span className="text-red-600 dark:text-red-400">+S/ {(finalPrice - basePrice).toFixed(2)} (+{((multiplier - 1) * 100).toFixed(0)}%)</span>
       ) : (
-        <span className="text-green-600">-S/ {Math.abs(discount).toFixed(2)} (-{((1 - multiplier) * 100).toFixed(0)}%)</span>
+        <span className="text-green-600 dark:text-green-400">-S/ {Math.abs(discount).toFixed(2)} (-{((1 - multiplier) * 100).toFixed(0)}%)</span>
       )}
-      <div className="text-gray-500">
+      <div className="text-dm-text-muted">
         Base S/ {basePrice.toFixed(2)} → Final S/ {finalPrice.toFixed(2)}
       </div>
     </div>
@@ -333,12 +333,12 @@ export const SeatTypesPage: React.FC = () => {
       header: 'Orden',
       accessor: (seatType) => (
         <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-900">{seatType.display_order}</span>
+          <span className="font-medium text-dm-text-primary">{seatType.display_order}</span>
           <div className="flex flex-col gap-1">
             <button
               onClick={() => handleMoveOrder(seatType.id, 'up')}
               disabled={filteredSeatTypes.findIndex(st => st.id === seatType.id) === 0}
-              className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+              className="text-dm-text-muted hover:text-dm-text-secondary disabled:opacity-50"
               title="Mover arriba"
             >
               <ArrowUpIcon className="h-3 w-3" />
@@ -346,7 +346,7 @@ export const SeatTypesPage: React.FC = () => {
             <button
               onClick={() => handleMoveOrder(seatType.id, 'down')}
               disabled={filteredSeatTypes.findIndex(st => st.id === seatType.id) === filteredSeatTypes.length - 1}
-              className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
+              className="text-dm-text-muted hover:text-dm-text-secondary disabled:opacity-50"
               title="Mover abajo"
             >
               <ArrowDownIcon className="h-3 w-3" />
@@ -360,9 +360,9 @@ export const SeatTypesPage: React.FC = () => {
       header: 'Tipo de Asiento',
       accessor: (seatType) => (
         <div>
-          <div className="font-medium text-gray-900">{seatType.name}</div>
+          <div className="font-medium text-dm-text-primary">{seatType.name}</div>
           {seatType.description && (
-            <div className="text-sm text-gray-500">{seatType.description}</div>
+            <div className="text-sm text-dm-text-muted">{seatType.description}</div>
           )}
         </div>
       ),
@@ -371,7 +371,7 @@ export const SeatTypesPage: React.FC = () => {
       key: 'code',
       header: 'Código',
       accessor: (seatType) => (
-        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
           {seatType.code}
         </span>
       ),
@@ -380,7 +380,7 @@ export const SeatTypesPage: React.FC = () => {
       key: 'multiplier',
       header: 'Multiplicador',
       accessor: (seatType) => (
-        <div className="font-medium text-gray-900">
+        <div className="font-medium text-dm-text-primary">
           x{seatType.price_multiplier.toFixed(1)}
         </div>
       ),
@@ -398,8 +398,8 @@ export const SeatTypesPage: React.FC = () => {
           onClick={() => handleToggleStatus(seatType)}
           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
             seatType.is_active 
-              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-              : 'bg-red-100 text-red-800 hover:bg-red-200'
+              ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 hover:bg-green-200' 
+              : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 hover:bg-red-200'
           }`}
         >
           {seatType.is_active ? 'Activo' : 'Inactivo'}
@@ -412,8 +412,8 @@ export const SeatTypesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tipos de Asiento</h1>
-          <p className="text-gray-600">Gestiona los tipos de asiento y sus multiplicadores de precio</p>
+          <h1 className="text-2xl font-bold text-dm-text-primary">Tipos de Asiento</h1>
+          <p className="text-dm-text-secondary">Gestiona los tipos de asiento y sus multiplicadores de precio</p>
         </div>
       </div>
 
@@ -422,11 +422,11 @@ export const SeatTypesPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-grow w-full sm:w-auto">
           <div className="relative flex-grow w-full sm:max-w-md">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+              <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted" />
             </div>
             <input
               type="text"
-              className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+              className="pl-10 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
               placeholder="Buscar tipos de asiento..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -458,48 +458,48 @@ export const SeatTypesPage: React.FC = () => {
 
       {/* Resumen de estadísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
           <div className="flex items-center">
             <AdjustmentsHorizontalIcon className="h-8 w-8 text-blue-500" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Tipos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-sm font-medium text-dm-text-secondary">Total Tipos</p>
+              <p className="text-2xl font-bold text-dm-text-primary">{stats.total}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
           <div className="flex items-center">
             <AdjustmentsHorizontalIcon className="h-8 w-8 text-green-500" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Activos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+              <p className="text-sm font-medium text-dm-text-secondary">Activos</p>
+              <p className="text-2xl font-bold text-dm-text-primary">{stats.active}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
           <div className="flex items-center">
-            <AdjustmentsHorizontalIcon className="h-8 w-8 text-gray-500" />
+            <AdjustmentsHorizontalIcon className="h-8 w-8 text-dm-text-muted" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Inactivos</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.inactive}</p>
+              <p className="text-sm font-medium text-dm-text-secondary">Inactivos</p>
+              <p className="text-2xl font-bold text-dm-text-primary">{stats.inactive}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
           <div className="flex items-center">
-            <AdjustmentsHorizontalIcon className="h-8 w-8 text-green-600" />
+            <AdjustmentsHorizontalIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Con Descuento</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.withDiscount}</p>
+              <p className="text-sm font-medium text-dm-text-secondary">Con Descuento</p>
+              <p className="text-2xl font-bold text-dm-text-primary">{stats.withDiscount}</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
           <div className="flex items-center">
-            <AdjustmentsHorizontalIcon className="h-8 w-8 text-red-500" />
+            <AdjustmentsHorizontalIcon className="h-8 w-8 text-red-500 dark:text-red-400" />
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Con Recargo</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.withSurcharge}</p>
+              <p className="text-sm font-medium text-dm-text-secondary">Con Recargo</p>
+              <p className="text-2xl font-bold text-dm-text-primary">{stats.withSurcharge}</p>
             </div>
           </div>
         </div>
@@ -508,25 +508,25 @@ export const SeatTypesPage: React.FC = () => {
       {/* Mobile Card View */}
       <div className="block lg:hidden space-y-4">
         {filteredSeatTypes.map((seatType) => (
-          <div key={seatType.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div key={seatType.id} className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary p-4">
             <div className="flex justify-between items-start mb-3">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold text-gray-900">{seatType.name}</h3>
-                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                  <h3 className="text-base font-semibold text-dm-text-primary">{seatType.name}</h3>
+                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
                     {seatType.code}
                   </span>
                 </div>
                 {seatType.description && (
-                  <p className="text-sm text-gray-500 mt-1">{seatType.description}</p>
+                  <p className="text-sm text-dm-text-muted mt-1">{seatType.description}</p>
                 )}
               </div>
               <button
                 onClick={() => handleToggleStatus(seatType)}
                 className={`px-2 py-0.5 text-xs font-semibold rounded-full cursor-pointer ${
                   seatType.is_active 
-                    ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                    : 'bg-red-100 text-red-800 hover:bg-red-200'
+                    ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 hover:bg-green-200' 
+                    : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 hover:bg-red-200'
                 }`}
               >
                 {seatType.is_active ? 'Activo' : 'Inactivo'}
@@ -535,25 +535,25 @@ export const SeatTypesPage: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4 text-sm mb-4">
               <div>
-                <span className="block text-xs text-gray-500">Multiplicador</span>
-                <span className="font-medium text-gray-900">x{seatType.price_multiplier.toFixed(1)}</span>
+                <span className="block text-xs text-dm-text-muted">Multiplicador</span>
+                <span className="font-medium text-dm-text-primary">x{seatType.price_multiplier.toFixed(1)}</span>
               </div>
               <div>
-                <span className="block text-xs text-gray-500">Orden</span>
+                <span className="block text-xs text-dm-text-muted">Orden</span>
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">{seatType.display_order}</span>
+                  <span className="font-medium text-dm-text-primary">{seatType.display_order}</span>
                   <div className="flex gap-1">
                     <button
                       onClick={() => handleMoveOrder(seatType.id, 'up')}
                       disabled={filteredSeatTypes.findIndex(st => st.id === seatType.id) === 0}
-                      className="text-gray-400 hover:text-gray-600 disabled:opacity-50 p-1"
+                      className="text-dm-text-muted hover:text-dm-text-secondary disabled:opacity-50 p-1"
                     >
                       <ArrowUpIcon className="h-3 w-3" />
                     </button>
                     <button
                       onClick={() => handleMoveOrder(seatType.id, 'down')}
                       disabled={filteredSeatTypes.findIndex(st => st.id === seatType.id) === filteredSeatTypes.length - 1}
-                      className="text-gray-400 hover:text-gray-600 disabled:opacity-50 p-1"
+                      className="text-dm-text-muted hover:text-dm-text-secondary disabled:opacity-50 p-1"
                     >
                       <ArrowDownIcon className="h-3 w-3" />
                     </button>
@@ -562,24 +562,24 @@ export const SeatTypesPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="mb-4 p-2 bg-gray-50 rounded text-xs">
-              <span className="block text-gray-500 mb-1">Impacto en Precio:</span>
+            <div className="mb-4 p-2 bg-dm-bg-secondary rounded text-xs">
+              <span className="block text-dm-text-muted mb-1">Impacto en Precio:</span>
               <PricePreview multiplier={seatType.price_multiplier} />
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-gray-100">
+            <div className="flex justify-end gap-3 pt-3 border-t border-dm-border-secondary">
               <button
                 onClick={() => {
                   setEditingSeatType(seatType);
                   setShowSeatTypeModal(true);
                 }}
-                className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 text-sm font-medium"
               >
                 <PencilIcon className="h-4 w-4 mr-1" /> Editar
               </button>
               <button
                 onClick={() => handleDeleteSeatType(seatType)}
-                className="flex items-center text-red-600 hover:text-red-800 text-sm font-medium"
+                className="flex items-center text-red-600 dark:text-red-400 hover:text-red-800 dark:text-red-300 text-sm font-medium"
               >
                 <TrashIcon className="h-4 w-4 mr-1" /> Eliminar
               </button>
@@ -588,7 +588,7 @@ export const SeatTypesPage: React.FC = () => {
         ))}
         
         {filteredSeatTypes.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
+          <div className="bg-dm-bg-primary rounded-lg shadow-sm p-6 text-center text-dm-text-muted">
             No se encontraron tipos de asiento.
           </div>
         )}

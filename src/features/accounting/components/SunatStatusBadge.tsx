@@ -24,44 +24,44 @@ export const SunatStatusBadge: React.FC<SunatStatusBadgeProps> = ({
       case 'ACCEPTED':
         return {
           icon: CheckCircleIcon,
-          color: 'bg-green-100 text-green-800',
+          color: 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300',
           text: 'Aceptado',
           iconColor: 'text-green-500'
         };
       case 'REJECTED':
         return {
           icon: XCircleIcon,
-          color: 'bg-red-100 text-red-800',
+          color: 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300',
           text: 'Rechazado',
-          iconColor: 'text-red-500'
+          iconColor: 'text-red-500 dark:text-red-400'
         };
       case 'PENDING':
         return {
           icon: ClockIcon,
-          color: 'bg-yellow-100 text-yellow-800',
+          color: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300',
           text: 'Procesando',
           iconColor: 'text-yellow-500'
         };
       case 'SENT':
         return {
           icon: ExclamationTriangleIcon,
-          color: 'bg-blue-100 text-blue-800',
+          color: 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300',
           text: 'Enviado',
           iconColor: 'text-blue-500'
         };
       case 'OBSERVED':
         return {
           icon: ExclamationTriangleIcon,
-          color: 'bg-orange-100 text-orange-800',
+          color: 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300',
           text: 'Observado',
           iconColor: 'text-orange-500'
         };
       default:
         return {
           icon: ClockIcon,
-          color: 'bg-gray-100 text-gray-800',
+          color: 'bg-dm-bg-secondary text-dm-text-primary',
           text: status,
-          iconColor: 'text-gray-500'
+          iconColor: 'text-dm-text-muted'
         };
     }
   };

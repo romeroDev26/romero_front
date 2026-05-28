@@ -259,7 +259,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* País */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-dm-text-primary mb-1">
           País
         </label>
         <div className="relative">
@@ -267,9 +267,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
             value={countryCode || ''}
             onChange={handleCountryChange}
             disabled={disabled || loadingCountries}
-            className={`mt-1 block w-full rounded-md shadow-sm p-2 border ${
-              errors.country_code ? 'border-red-500' : 'border-gray-300'
-            } ${disabled ? 'bg-gray-100' : ''}`}
+            className={`mt-1 block w-full rounded-md shadow-sm p-2 border bg-dm-bg-primary text-dm-text-primary ${
+              errors.country_code ? 'border-red-500' : 'border-dm-border-primary'
+            } ${disabled ? 'bg-dm-bg-secondary' : ''}`}
           >
             <option value="">Seleccione un país</option>
             {countries.map((country) => (
@@ -291,7 +291,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
       
       {/* Departamento/Estado */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-dm-text-primary mb-1">
           {countryCode === 'PE' ? 'Departamento' : 'Estado/Región'}
         </label>
         <div className="relative">
@@ -299,9 +299,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
             value={department || ''}
             onChange={handleDepartmentChange}
             disabled={disabled || loadingDepartments || !countryCode}
-            className={`mt-1 block w-full rounded-md shadow-sm p-2 border ${
-              errors.department ? 'border-red-500' : 'border-gray-300'
-            } ${disabled || !countryCode ? 'bg-gray-100' : ''}`}
+            className={`mt-1 block w-full rounded-md shadow-sm p-2 border bg-dm-bg-primary text-dm-text-primary ${
+              errors.department ? 'border-red-500' : 'border-dm-border-primary'
+            } ${disabled || !countryCode ? 'bg-dm-bg-secondary' : ''}`}
           >
             <option value="">
               {!countryCode 
@@ -328,7 +328,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
       
       {/* Provincia */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-dm-text-primary mb-1">
           Provincia
         </label>
         <div className="relative">
@@ -336,9 +336,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
             value={province || ''}
             onChange={handleProvinceChange}
             disabled={disabled || loadingProvinces || !selectedDepartmentId}
-            className={`mt-1 block w-full rounded-md shadow-sm p-2 border ${
-              errors.province ? 'border-red-500' : 'border-gray-300'
-            } ${disabled || !selectedDepartmentId ? 'bg-gray-100' : ''}`}
+            className={`mt-1 block w-full rounded-md shadow-sm p-2 border bg-dm-bg-primary text-dm-text-primary ${
+              errors.province ? 'border-red-500' : 'border-dm-border-primary'
+            } ${disabled || !selectedDepartmentId ? 'bg-dm-bg-secondary' : ''}`}
           >
             <option value="">
               {!selectedDepartmentId 
@@ -365,7 +365,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
       
       {/* Distrito/Ciudad */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-dm-text-primary mb-1">
           {countryCode === 'PE' ? 'Distrito' : 'Ciudad'}
         </label>
         <div className="relative">
@@ -373,9 +373,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
             value={district || ''}
             onChange={handleDistrictChange}
             disabled={disabled || loadingDistricts || !selectedProvinceId}
-            className={`mt-1 block w-full rounded-md shadow-sm p-2 border ${
-              errors.district ? 'border-red-500' : 'border-gray-300'
-            } ${disabled || !selectedProvinceId ? 'bg-gray-100' : ''}`}
+            className={`mt-1 block w-full rounded-md shadow-sm p-2 border bg-dm-bg-primary text-dm-text-primary ${
+              errors.district ? 'border-red-500' : 'border-dm-border-primary'
+            } ${disabled || !selectedProvinceId ? 'bg-dm-bg-secondary' : ''}`}
           >
             <option value="">
               {!selectedProvinceId 
@@ -387,7 +387,7 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
               <option key={dist.geonameId} value={dist.name}>
                 {dist.name} 
                 {dist.population > 0 && (
-                  <span className="text-gray-500"> ({dist.population.toLocaleString()} hab.)</span>
+                  <span className="text-dm-text-muted"> ({dist.population.toLocaleString()} hab.)</span>
                 )}
               </option>
             ))}

@@ -30,12 +30,12 @@ const statusLabels: Record<QuotationStatus, string> = {
 };
 
 const statusColors: Record<QuotationStatus, string> = {
-  DRAFT: 'bg-gray-100 text-gray-700 border-gray-200',
-  SENT: 'bg-blue-100 text-blue-700 border-blue-200',
-  ACCEPTED: 'bg-green-100 text-green-700 border-green-200',
-  REJECTED: 'bg-red-100 text-red-700 border-red-200',
-  EXPIRED: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  CONVERTED: 'bg-purple-100 text-purple-700 border-purple-200'
+  DRAFT: 'bg-dm-bg-secondary text-dm-text-secondary border-dm-border-primary',
+  SENT: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/50',
+  ACCEPTED: 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800/50',
+  REJECTED: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800/50',
+  EXPIRED: 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800/50',
+  CONVERTED: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
 };
 
 export const QuotationDetailPage: React.FC = () => {
@@ -239,8 +239,8 @@ export const QuotationDetailPage: React.FC = () => {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="text-red-800">Error: {error}</div>
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-md p-4">
+          <div className="text-red-800 dark:text-red-300">Error: {error}</div>
         </div>
         <Button 
           variant="outline" 
@@ -256,7 +256,7 @@ export const QuotationDetailPage: React.FC = () => {
   if (!quotation) {
     return (
       <div className="p-6">
-        <div className="text-center text-gray-500">
+        <div className="text-center text-dm-text-muted">
           <p>Cotización no encontrada</p>
         </div>
         <Button 
@@ -276,10 +276,10 @@ export const QuotationDetailPage: React.FC = () => {
 
   return (
     <div className="-mx-6 -mt-6">
-      <header className="bg-white border-b border-slate-200 px-6 py-4 mb-8">
+      <header className="bg-dm-bg-primary border-b border-dm-border-primary px-6 py-4 mb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <nav className="flex text-sm font-medium text-slate-500 mb-2">
+            <nav className="flex text-sm font-medium text-dm-text-muted mb-2">
               <button
                 onClick={() => navigate('/sales/quotations')}
                 className="hover:text-primary transition-colors"
@@ -287,7 +287,7 @@ export const QuotationDetailPage: React.FC = () => {
                 Cotizaciones
               </button>
               <span className="mx-2">/</span>
-              <span className="text-slate-900">Detalle de Cotizacion</span>
+              <span className="text-dm-text-primary">Detalle de Cotizacion</span>
             </nav>
 
             <div className="flex items-center gap-3">
@@ -295,10 +295,10 @@ export const QuotationDetailPage: React.FC = () => {
                 <DocumentTextIcon className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-2xl font-black tracking-tight text-slate-900">
+                <h1 className="text-2xl font-black tracking-tight text-dm-text-primary">
                   Cotizacion #{quotation.series}{quotation.number.toString().padStart(6, '0')}
                 </h1>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-slate-600 mt-0.5">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-dm-text-secondary mt-0.5">
                   <div className="flex items-center gap-1.5 text-sm">
                     <UserIcon className="h-3.5 w-3.5" />
                     <span className="font-medium">{quotation.client.name}</span>
@@ -321,7 +321,7 @@ export const QuotationDetailPage: React.FC = () => {
           <div className="flex gap-3 shrink-0">
             <button
               onClick={() => navigate('/sales/quotations')}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-white border border-slate-200 rounded-lg text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-bold bg-dm-bg-primary border border-dm-border-primary rounded-lg text-dm-text-secondary hover:bg-dm-bg-hover transition-all shadow-sm"
             >
               <ArrowLeftIcon className="h-4 w-4" />
               Volver
@@ -347,43 +347,43 @@ export const QuotationDetailPage: React.FC = () => {
       <div className="px-6 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <aside className="lg:col-span-4 space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-6">
+            <div className="bg-dm-bg-primary p-6 rounded-xl shadow-sm border border-dm-border-primary">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-dm-text-muted mb-6">
                 Detalles del Documento
               </h3>
               <div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Nro de Cotizacion</span>
-                  <span className="text-sm font-bold text-slate-900">{quotation.series}-{quotation.number.toString().padStart(6, '0')}</span>
+                <div className="flex justify-between items-center py-3 border-b border-dm-border-secondary">
+                  <span className="text-sm text-dm-text-muted">Nro de Cotizacion</span>
+                  <span className="text-sm font-bold text-dm-text-primary">{quotation.series}-{quotation.number.toString().padStart(6, '0')}</span>
                 </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Fecha Emision</span>
-                  <span className="text-sm font-semibold text-slate-900">{new Date(quotation.issue_date).toLocaleDateString('es-PE')}</span>
+                <div className="flex justify-between items-center py-3 border-b border-dm-border-secondary">
+                  <span className="text-sm text-dm-text-muted">Fecha Emision</span>
+                  <span className="text-sm font-semibold text-dm-text-primary">{new Date(quotation.issue_date).toLocaleDateString('es-PE')}</span>
                 </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Valida hasta</span>
-                  <span className="text-sm font-semibold text-slate-900">{new Date(quotation.valid_until).toLocaleDateString('es-PE')}</span>
+                <div className="flex justify-between items-center py-3 border-b border-dm-border-secondary">
+                  <span className="text-sm text-dm-text-muted">Valida hasta</span>
+                  <span className="text-sm font-semibold text-dm-text-primary">{new Date(quotation.valid_until).toLocaleDateString('es-PE')}</span>
                 </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Cliente</span>
-                  <span className="text-sm font-semibold text-slate-900 text-right max-w-[55%] truncate">{quotation.client.doc_number}</span>
+                <div className="flex justify-between items-center py-3 border-b border-dm-border-secondary">
+                  <span className="text-sm text-dm-text-muted">Cliente</span>
+                  <span className="text-sm font-semibold text-dm-text-primary text-right max-w-[55%] truncate">{quotation.client.doc_number}</span>
                 </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Vendedor</span>
-                  <span className="text-sm font-semibold text-slate-900 text-right max-w-[55%] truncate">{quotation.seller.full_name}</span>
+                <div className="flex justify-between items-center py-3 border-b border-dm-border-secondary">
+                  <span className="text-sm text-dm-text-muted">Vendedor</span>
+                  <span className="text-sm font-semibold text-dm-text-primary text-right max-w-[55%] truncate">{quotation.seller.full_name}</span>
                 </div>
-                <div className="flex justify-between items-center py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Total</span>
-                  <span className="text-sm font-bold text-slate-900">{formatCurrency(quotation.total_payable)}</span>
+                <div className="flex justify-between items-center py-3 border-b border-dm-border-secondary">
+                  <span className="text-sm text-dm-text-muted">Total</span>
+                  <span className="text-sm font-bold text-dm-text-primary">{formatCurrency(quotation.total_payable)}</span>
                 </div>
                 <div className="flex justify-between items-center py-3">
-                  <span className="text-sm text-slate-500">Estado</span>
+                  <span className="text-sm text-dm-text-muted">Estado</span>
                   <div className="flex items-center gap-2">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${statusColors[quotation.status]}`}>
                       {statusLabels[quotation.status]}
                     </span>
                     {isExpired && quotation.status !== 'CONVERTED' && (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                      <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/50">
                         Expirada
                       </span>
                     )}
@@ -392,10 +392,10 @@ export const QuotationDetailPage: React.FC = () => {
               </div>
 
               {(quotation.notes || quotation.internal_notes) && (
-                <div className="mt-4 pt-4 border-t border-slate-100">
-                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Observaciones</p>
-                  {quotation.notes && <p className="text-sm text-slate-600 leading-relaxed">{quotation.notes}</p>}
-                  {quotation.internal_notes && <p className="text-sm text-slate-500 leading-relaxed mt-1">{quotation.internal_notes}</p>}
+                <div className="mt-4 pt-4 border-t border-dm-border-secondary">
+                  <p className="text-xs font-bold uppercase tracking-wider text-dm-text-muted mb-2">Observaciones</p>
+                  {quotation.notes && <p className="text-sm text-dm-text-secondary leading-relaxed">{quotation.notes}</p>}
+                  {quotation.internal_notes && <p className="text-sm text-dm-text-muted leading-relaxed mt-1">{quotation.internal_notes}</p>}
                 </div>
               )}
             </div>
@@ -407,13 +407,13 @@ export const QuotationDetailPage: React.FC = () => {
                 </div>
                 <h3 className="text-sm font-bold text-primary">Previsualizacion</h3>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed mb-4">
+              <p className="text-xs text-dm-text-secondary leading-relaxed mb-4">
                 Revise la cotizacion antes de compartirla. Puede abrir el PDF completo, refrescar el estado o enviarlo por WhatsApp.
               </p>
               <div className="space-y-2">
                 <button
                   onClick={handleRefreshPDF}
-                  className="w-full py-2.5 text-sm font-bold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 transition-all"
+                  className="w-full py-2.5 text-sm font-bold text-dm-text-secondary border border-dm-border-primary rounded-lg hover:bg-dm-bg-hover transition-all"
                 >
                   Refrescar estado PDF
                 </button>
@@ -433,7 +433,7 @@ export const QuotationDetailPage: React.FC = () => {
                     </button>
                   </>
                 ) : (
-                  <p className="text-xs text-slate-500">Aun no hay PDF disponible.</p>
+                  <p className="text-xs text-dm-text-muted">Aun no hay PDF disponible.</p>
                 )}
 
                 {quotation.status === 'ACCEPTED' && (
@@ -446,13 +446,13 @@ export const QuotationDetailPage: React.FC = () => {
           </aside>
 
           <div className="lg:col-span-8 flex flex-col gap-6">
-            <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
+            <div className="flex bg-dm-bg-primary p-1 rounded-xl shadow-sm border border-dm-border-primary">
               <button
                 onClick={() => setActiveView('preview')}
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-bold rounded-lg transition-all ${
                   activeView === 'preview'
                     ? 'bg-primary text-white shadow-md'
-                    : 'text-slate-500 hover:bg-slate-50'
+                    : 'text-dm-text-muted hover:bg-dm-bg-hover'
                 }`}
               >
                 <EyeIcon className="h-4 w-4" />
@@ -463,13 +463,13 @@ export const QuotationDetailPage: React.FC = () => {
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 text-sm font-bold rounded-lg transition-all ${
                   activeView === 'details'
                     ? 'bg-primary text-white shadow-md'
-                    : 'text-slate-500 hover:bg-slate-50'
+                    : 'text-dm-text-muted hover:bg-dm-bg-hover'
                 }`}
               >
                 <ClipboardDocumentListIcon className="h-4 w-4" />
                 Detalle de Items
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                  activeView === 'details' ? 'bg-white/20 text-white' : 'bg-blue-100 text-blue-700'
+                  activeView === 'details' ? 'bg-dm-bg-primary/20 text-white' : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
                 }`}>
                   {quotation.items?.length ?? 0}
                 </span>
@@ -479,7 +479,7 @@ export const QuotationDetailPage: React.FC = () => {
             {activeView === 'preview' ? (
               pdfExists && pdfUrl ? (
                 <div
-                  className="bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden flex-1"
+                  className="bg-dm-bg-primary rounded-xl shadow-xl border border-dm-border-primary overflow-hidden flex-1"
                   style={{ minHeight: '700px' }}
                 >
                   <iframe
@@ -491,45 +491,45 @@ export const QuotationDetailPage: React.FC = () => {
                 </div>
               ) : (
                 <div
-                  className="bg-white rounded-xl border-2 border-dashed border-slate-200 flex items-center justify-center"
+                  className="bg-dm-bg-primary rounded-xl border-2 border-dashed border-dm-border-primary flex items-center justify-center"
                   style={{ minHeight: '500px' }}
                 >
                   <div className="text-center p-8">
-                    <DocumentTextIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-base font-semibold text-slate-600 mb-1">PDF no disponible</h3>
-                    <p className="text-sm text-slate-400">Use "Generar PDF" para crear la previsualizacion.</p>
+                    <DocumentTextIcon className="h-12 w-12 text-dm-text-muted mx-auto mb-4" />
+                    <h3 className="text-base font-semibold text-dm-text-secondary mb-1">PDF no disponible</h3>
+                    <p className="text-sm text-dm-text-muted">Use "Generar PDF" para crear la previsualizacion.</p>
                   </div>
                 </div>
               )
             ) : (
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
+              <div className="bg-dm-bg-primary p-6 rounded-xl shadow-sm border border-dm-border-primary">
+                <h3 className="text-sm font-bold text-dm-text-secondary mb-4 flex items-center gap-2">
                   <ClipboardDocumentListIcon className="h-4 w-4" />
                   Items de la Cotizacion
                 </h3>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-50">
+                    <thead className="bg-dm-bg-secondary">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">N</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Descripcion</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Cantidad</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">P. Unitario</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Descuento</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-slate-500">Subtotal</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">N</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">Descripcion</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">Cantidad</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">P. Unitario</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">Descuento</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">Subtotal</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-slate-100">
+                    <tbody className="bg-dm-bg-primary divide-y divide-slate-100">
                       {quotation.items?.map((item, index) => {
                         const subtotal = Number(item.quantity) * Number(item.unit_price) - Number(item.discount || 0);
                         return (
                           <tr key={`${quotation.id}-${index}`}>
-                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">{index + 1}</td>
-                            <td className="px-4 py-3 text-sm text-slate-700">{item.item_description}</td>
-                            <td className="px-4 py-3 text-sm text-slate-700">{item.quantity}</td>
-                            <td className="px-4 py-3 text-sm text-slate-700">{formatCurrency(item.unit_price)}</td>
-                            <td className="px-4 py-3 text-sm text-slate-700">{formatCurrency(item.discount || 0)}</td>
-                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">{formatCurrency(subtotal)}</td>
+                            <td className="px-4 py-3 text-sm font-semibold text-dm-text-primary">{index + 1}</td>
+                            <td className="px-4 py-3 text-sm text-dm-text-secondary">{item.item_description}</td>
+                            <td className="px-4 py-3 text-sm text-dm-text-secondary">{item.quantity}</td>
+                            <td className="px-4 py-3 text-sm text-dm-text-secondary">{formatCurrency(item.unit_price)}</td>
+                            <td className="px-4 py-3 text-sm text-dm-text-secondary">{formatCurrency(item.discount || 0)}</td>
+                            <td className="px-4 py-3 text-sm font-semibold text-dm-text-primary">{formatCurrency(subtotal)}</td>
                           </tr>
                         );
                       })}
@@ -537,18 +537,18 @@ export const QuotationDetailPage: React.FC = () => {
                   </table>
                 </div>
 
-                <div className="mt-6 bg-slate-50 rounded-xl p-4 border border-slate-200">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
+                <div className="mt-6 bg-dm-bg-secondary rounded-xl p-4 border border-dm-border-primary">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-dm-text-muted mb-3 flex items-center gap-2">
                     <CurrencyDollarIcon className="h-4 w-4" />
                     Resumen de Totales
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    <p className="text-slate-600">Subtotal gravado: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_taxable)}</span></p>
-                    <p className="text-slate-600">Exonerado: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_exonerated)}</span></p>
-                    <p className="text-slate-600">IGV: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_igv)}</span></p>
-                    <p className="text-slate-600">Descuento: <span className="font-semibold text-slate-900">{formatCurrency(quotation.total_discount)}</span></p>
-                    <p className="md:col-span-2 text-base text-slate-700">Total a pagar: <span className="font-bold text-slate-900">{formatCurrency(quotation.total_payable)}</span></p>
-                    <p className="md:col-span-2 text-xs text-slate-500">{quotation.total_in_words}</p>
+                    <p className="text-dm-text-secondary">Subtotal gravado: <span className="font-semibold text-dm-text-primary">{formatCurrency(quotation.total_taxable)}</span></p>
+                    <p className="text-dm-text-secondary">Exonerado: <span className="font-semibold text-dm-text-primary">{formatCurrency(quotation.total_exonerated)}</span></p>
+                    <p className="text-dm-text-secondary">IGV: <span className="font-semibold text-dm-text-primary">{formatCurrency(quotation.total_igv)}</span></p>
+                    <p className="text-dm-text-secondary">Descuento: <span className="font-semibold text-dm-text-primary">{formatCurrency(quotation.total_discount)}</span></p>
+                    <p className="md:col-span-2 text-base text-dm-text-secondary">Total a pagar: <span className="font-bold text-dm-text-primary">{formatCurrency(quotation.total_payable)}</span></p>
+                    <p className="md:col-span-2 text-xs text-dm-text-muted">{quotation.total_in_words}</p>
                   </div>
                 </div>
               </div>

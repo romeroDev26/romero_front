@@ -167,7 +167,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
       {/* Información Básica */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-dm-text-secondary mb-4 pb-2 border-b border-dm-border-primary">
           Información Básica
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,7 +191,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
 
       {/* Asignaciones y Permisos */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+        <h3 className="text-sm font-semibold text-dm-text-secondary mb-4 pb-2 border-b border-dm-border-primary">
           Asignaciones y Permisos
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -218,14 +218,14 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
           
           {/* Estado - Ocupa toda la fila si es creación */}
           <div className={`flex items-center ${isCreate ? 'md:col-span-2' : ''}`}>
-            <div className="flex items-center h-11 space-x-3 px-3 py-2 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center h-11 space-x-3 px-3 py-2 bg-dm-bg-secondary rounded-lg border border-dm-border-primary">
               <input
                 type="checkbox"
                 id="is_active"
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                className="w-4 h-4 rounded border-dm-border-primary text-blue-600 dark:text-blue-400 focus:ring-2 focus:ring-blue-500"
                 {...register('is_active')}
               />
-              <label htmlFor="is_active" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+              <label htmlFor="is_active" className="text-sm font-medium text-dm-text-secondary cursor-pointer select-none">
                 Usuario Activo
               </label>
             </div>
@@ -236,12 +236,12 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
       {/* Seguridad */}
       {(isCreate || true) && (
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200">
+          <h3 className="text-sm font-semibold text-dm-text-secondary mb-4 pb-2 border-b border-dm-border-primary">
             Seguridad
           </h3>
           {!isCreate && (
-            <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs text-blue-700">
+            <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg">
+              <p className="text-xs text-blue-700 dark:text-blue-300">
                 Deje los campos en blanco para mantener la contraseña actual
               </p>
             </div>
@@ -269,7 +269,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
       )}
       
       {/* Botones de Acción */}
-      <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end space-x-3">
+      <div className="mt-8 pt-6 border-t border-dm-border-primary flex justify-end space-x-3">
         <Button
           type="button"
           variant="outline"

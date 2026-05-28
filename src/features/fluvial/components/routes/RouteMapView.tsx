@@ -58,16 +58,16 @@ export const RouteMapView: React.FC<RouteMapViewProps> = ({
   const [showLegend, setShowLegend] = React.useState(true);
 
   return (
-    <div className="h-full bg-white relative overflow-auto">
+    <div className="h-full bg-dm-bg-primary relative overflow-auto">
       {/* Leyenda / info - collapsible on mobile */}
       {showLegend && (
-        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-white rounded-[10px] sm:rounded-[12px] border border-[#e8e8e8] p-3 sm:p-4 shadow-sm z-10 max-w-[160px] sm:max-w-none">
-          <div className="text-[11px] sm:text-[12px] text-[#828282] space-y-1.5">
+        <div className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-dm-bg-primary rounded-[10px] sm:rounded-[12px] border border-dm-border-primary p-3 sm:p-4 shadow-sm z-10 max-w-[160px] sm:max-w-none">
+          <div className="text-[11px] sm:text-[12px] text-dm-text-muted space-y-1.5">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-medium text-[#202020]">Leyenda</span>
+              <span className="font-medium text-dm-text-primary">Leyenda</span>
               <button
                 onClick={() => setShowLegend(false)}
-                className="text-[#c4c4c4] hover:text-[#202020] transition-colors"
+                className="text-dm-text-muted hover:text-dm-text-primary transition-colors"
               >
                 ×
               </button>
@@ -84,7 +84,7 @@ export const RouteMapView: React.FC<RouteMapViewProps> = ({
               <span className="w-2.5 h-2.5 rounded-full bg-[#828282]" />
               <span>Intermedia</span>
             </div>
-            <div className="pt-1.5 border-t border-[#f0f0f0] space-y-1 hidden sm:block">
+            <div className="pt-1.5 border-t border-dm-border-secondary space-y-1 hidden sm:block">
               <div className="flex items-center gap-1.5">
                 <CursorArrowRaysIcon className="h-3 w-3" strokeWidth={1.5} />
                 <span>Scroll: Zoom</span>
@@ -104,34 +104,34 @@ export const RouteMapView: React.FC<RouteMapViewProps> = ({
       {!showLegend && (
         <button
           onClick={() => setShowLegend(true)}
-          className="absolute top-3 left-3 z-10 w-8 h-8 bg-white rounded-lg border border-[#e8e8e8] shadow-sm flex items-center justify-center text-[#828282] hover:text-[#202020] transition-colors"
+          className="absolute top-3 left-3 z-10 w-8 h-8 bg-dm-bg-primary rounded-lg border border-dm-border-primary shadow-sm flex items-center justify-center text-dm-text-muted hover:text-dm-text-primary transition-colors"
         >
           ?
         </button>
       )}
 
       {/* Controles de zoom */}
-      <div className="absolute top-4 right-4 flex items-center gap-1 bg-white rounded-[12px] border border-[#e8e8e8] p-1 shadow-sm z-10">
+      <div className="absolute top-4 right-4 flex items-center gap-1 bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-1 shadow-sm z-10">
         <button
           onClick={onZoomOut}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#4d4d4d] hover:bg-[#f5f5f5] transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-dm-text-secondary hover:bg-dm-bg-secondary transition-colors"
           title="Alejar"
         >
           <MinusIcon className="h-4 w-4" strokeWidth={1.5} />
         </button>
-        <span className="px-2 text-[12px] font-medium text-[#202020] min-w-[48px] text-center">
+        <span className="px-2 text-[12px] font-medium text-dm-text-primary min-w-[48px] text-center">
           {Math.round(zoomLevel * 100)}%
         </span>
         <button
           onClick={onZoomIn}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#4d4d4d] hover:bg-[#f5f5f5] transition-colors"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-dm-text-secondary hover:bg-dm-bg-secondary transition-colors"
           title="Acercar"
         >
           <PlusIcon className="h-4 w-4" strokeWidth={1.5} />
         </button>
         <button
           onClick={onResetView}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors border-l border-[#e8e8e8] ml-1"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-[#1F4690] hover:bg-[#1F4690]/5 transition-colors border-l border-dm-border-primary ml-1"
           title="Centrar"
         >
           <HomeIcon className="h-4 w-4" strokeWidth={1.5} />

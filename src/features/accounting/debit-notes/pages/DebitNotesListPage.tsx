@@ -4,15 +4,18 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   MagnifyingGlassIcon,
-  ArrowPathIcon,
   DocumentArrowDownIcon,
   PlusIcon,
   XCircleIcon,
   EyeIcon,
+  ChevronRightIcon,
+  FunnelIcon,
+  ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
+import { Spinner } from '../../../../components/common/Spinner';
 import { SunatStatusBadge } from '../../components/SunatStatusBadge';
-import { useDebitNotes, useRefreshDebitNotePendingStatuses } from '../hooks/useDebitNotes';
+import { useDebitNotes } from '../hooks/useDebitNotes';
 import { DebitNotesListParams } from '../../types';
 import { DebitNote } from '../../../../types';
 
@@ -25,7 +28,6 @@ export const DebitNotesListPage: React.FC = () => {
   });
 
   const { data: debitNotes, isLoading, refetch } = useDebitNotes(filters);
-  const { mutate: refreshStatuses, isPending: isRefreshing } = useRefreshDebitNotePendingStatuses();
 
   // Polling automático cada 2 minutos para documentos pendientes
   useEffect(() => {
@@ -59,179 +61,314 @@ export const DebitNotesListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+        <div className="flex items-start gap-4">
+          <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-[12px] bg-[#1F4690]/10">
+            <ClipboardDocumentListIcon className="h-6 w-6 text-[#1F4690]" strokeWidth={1.5} />
+          </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Notas de Débito</h1>
-            <p className="text-gray-600">Gestiona los cargos adicionales y notas de débito</p>
+            <h1 className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]" style={{ fontFamily: "'Inter', sans-serif" }}>
+              Notas de Débito
+            </h1>
+            <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
+              Gestiona los cargos adicionales y notas de débito
+            </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              onClick={() => refreshStatuses(10)}
-              isLoading={isRefreshing}
-              className="flex items-center justify-center"
-            >
-              <ArrowPathIcon className="h-4 w-4 mr-2" />
-              Actualizar Estados
+        </div>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Link to="/accounting/debit-notes/new" className="w-full sm:w-auto">
+            <Button className="rounded-full bg-[#1F4690] hover:bg-[#163672] flex items-center justify-center w-full flex-1 sm:flex-none">
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Nueva Nota de Débito
             </Button>
-            <Link to="/accounting/debit-notes/new" className="w-full sm:w-auto">
-              <Button className="flex items-center justify-center w-full">
-                <PlusIcon className="h-4 w-4 mr-2" />
-                Nueva Nota de Débito
-              </Button>
-            </Link>
-          </div>
+          </Link>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-lg shadow p-4 lg:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4 lg:p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <FunnelIcon className="w-4 h-4 text-dm-text-muted" strokeWidth={1.5} />
+          <span className="text-[13px] font-semibold text-dm-text-primary">Filtros</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Serie
             </label>
             <input
               type="text"
               placeholder="FD01, BD01..."
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="block w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
               onChange={(e) => handleFilterChange('series', e.target.value || undefined)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Estado SUNAT
             </label>
-            <select
-              className="w-full p-2 border border-gray-300 rounded-md"
-              onChange={(e) => handleFilterChange('sunat_status', e.target.value || undefined)}
-            >
-              <option value="">Todos los estados</option>
-              <option value="PENDING">Pendiente</option>
-              <option value="SENT">Enviado</option>
-              <option value="ACCEPTED">Aceptado</option>
-              <option value="REJECTED">Rechazado</option>
-            </select>
+            <div className="relative">
+              <select
+                className="peer block w-full appearance-none px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all pr-10"
+                onChange={(e) => handleFilterChange('sunat_status', e.target.value || undefined)}
+              >
+                <option value="">Todos los estados</option>
+                <option value="PENDING">Pendiente</option>
+                <option value="SENT">Enviado</option>
+                <option value="ACCEPTED">Aceptado</option>
+                <option value="REJECTED">Rechazado</option>
+              </select>
+              <ChevronRightIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dm-text-muted rotate-90 pointer-events-none transition-transform duration-200 peer-focus:-rotate-90" strokeWidth={1.5} />
+            </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-[12px] font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
               Fecha de Emisión
             </label>
             <input
               type="date"
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="block w-full px-3 py-2.5 bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] text-[14px] text-dm-text-primary focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-all"
               onChange={(e) => handleFilterChange('issue_date', e.target.value || undefined)}
             />
           </div>
           <div className="flex items-end">
-            <Button
-              variant="outline"
-              className="flex items-center"
+            <button
               onClick={() => refetch()}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary rounded-[12px] text-[14px] font-medium text-dm-text-primary hover:bg-dm-bg-secondary transition-colors"
             >
-              <MagnifyingGlassIcon className="h-4 w-4 mr-2" />
+              <MagnifyingGlassIcon className="h-4 w-4" strokeWidth={1.5} />
               Buscar
-            </Button>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Tabla */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Cargando notas de débito...</p>
-          </div>
-        ) : debitNotes?.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-gray-600">No se encontraron notas de débito</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Documento
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cliente
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Documento Afectado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Motivo
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Monto
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado SUNAT
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Fecha
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Acciones
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {debitNotes?.map((debitNote: DebitNote) => (
-                  <tr key={debitNote.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
+      {/* Lista */}
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
+        {/* Desktop */}
+        <div className="hidden md:block">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Spinner size="md" />
+              <p className="text-[14px] text-dm-text-muted">Cargando notas de débito...</p>
+            </div>
+          ) : debitNotes?.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-[14px] text-dm-text-muted">No se encontraron notas de débito</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-dm-border-secondary">
+                <thead className="bg-dm-bg-secondary">
+                  <tr>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Documento
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Documento Afectado
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Motivo
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Monto
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Estado SUNAT
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Fecha
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-[13px] font-medium text-dm-text-secondary uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-dm-border-secondary">
+                  {debitNotes?.map((debitNote: DebitNote) => (
+                    <tr key={debitNote.id} className="hover:bg-dm-bg-secondary/60 transition-colors">
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="text-[14px] font-medium text-dm-text-primary">
+                          {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
+                        </div>
+                        <div className="text-[13px] text-dm-text-muted">ND</div>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="text-[14px] text-dm-text-primary">{debitNote.client?.name}</div>
+                        <div className="text-[13px] text-dm-text-muted">{debitNote.client?.doc_number}</div>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="text-[14px] text-dm-text-primary">
+                          {debitNote.affected_document_series_number}
+                        </div>
+                        <div className="text-[13px] text-dm-text-muted">
+                          {debitNote.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="text-[14px] text-dm-text-primary max-w-xs truncate">
+                          {debitNote.reason}
+                        </div>
+                        <div className="text-[13px] text-dm-text-muted">
+                          Tipo: {debitNote.debit_note_type_code}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap text-[14px] text-dm-text-primary">
+                        {formatCurrency(debitNote.total_payable)}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <SunatStatusBadge status={debitNote.sunat_status} />
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap text-[13px] text-dm-text-muted">
+                        {formatDate(debitNote.issue_date)}
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            to={`/accounting/debit-notes/${debitNote.id}`}
+                            className="flex items-center justify-center h-9 w-9 rounded-full bg-dm-bg-secondary hover:bg-dm-bg-hover transition-colors"
+                            title="Ver detalle"
+                          >
+                            <EyeIcon className="h-4 w-4 text-dm-text-secondary" strokeWidth={1.5} />
+                          </Link>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              console.log('Botón anular clicked - debitNote:', debitNote);
+                              if (debitNote.sunat_status !== 'ACCEPTED') {
+                                console.warn('Nota de débito no está ACCEPTED, status:', debitNote.sunat_status);
+                                return;
+                              }
+                              navigate(`/accounting/debit-notes/annul`, { 
+                                state: { 
+                                  debitNote: debitNote
+                                } 
+                              });
+                            }}
+                            className={`flex items-center justify-center h-9 w-9 rounded-full transition-colors ${
+                              debitNote.sunat_status !== 'ACCEPTED'
+                                ? 'bg-dm-bg-secondary cursor-not-allowed'
+                                : 'bg-dm-bg-secondary hover:bg-dm-bg-hover'
+                            }`}
+                            title={
+                              debitNote.sunat_status !== 'ACCEPTED'
+                                ? 'Solo se pueden anular notas de débito ACEPTADAS'
+                                : 'Anular nota de débito (genera nota de crédito)'
+                            }
+                            disabled={debitNote.sunat_status !== 'ACCEPTED'}
+                          >
+                            <XCircleIcon className={`h-4 w-4 ${
+                              debitNote.sunat_status !== 'ACCEPTED'
+                                ? 'text-dm-text-muted'
+                                : 'text-[#cf1322]'
+                            }`} strokeWidth={1.5} />
+                          </button>
+                          {debitNote.pdf_file_path && (
+                            <a
+                              href={debitNote.pdf_file_path}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center h-9 w-9 rounded-full bg-dm-bg-secondary hover:bg-dm-bg-hover transition-colors"
+                              title="Descargar PDF"
+                            >
+                              <DocumentArrowDownIcon className="h-4 w-4 text-dm-text-secondary" strokeWidth={1.5} />
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden">
+          {isLoading ? (
+            <div className="p-10 flex flex-col items-center justify-center gap-3">
+              <Spinner size="md" />
+              <p className="text-[14px] text-dm-text-muted">Cargando notas de débito...</p>
+            </div>
+          ) : debitNotes?.length === 0 ? (
+            <div className="p-10 text-center text-[14px] text-dm-text-muted">
+              No se encontraron notas de débito
+            </div>
+          ) : (
+            <div className="p-4 space-y-3">
+              {debitNotes?.map((debitNote) => (
+                <div
+                  key={debitNote.id}
+                  className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden"
+                >
+                  {/* Header */}
+                  <div className="p-4">
+                    <div className="flex justify-between items-start gap-3 mb-2">
+                      <div>
+                        <span className="text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
+                          {debitNote.series}-{String(debitNote.number).padStart(8, '0')}
+                        </span>
+                        <h3 className="text-[15px] font-medium text-dm-text-primary mt-0.5">
+                          {debitNote.client?.name}
+                        </h3>
+                        <p className="text-[13px] text-dm-text-muted mt-0.5">
+                          {debitNote.client?.doc_number}
+                        </p>
                       </div>
-                      <div className="text-sm text-gray-500">ND</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{debitNote.client?.name}</div>
-                      <div className="text-sm text-gray-500">{debitNote.client?.doc_number}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {debitNote.affected_document_series_number}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {debitNote.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
-                        {debitNote.reason}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Tipo: {debitNote.debit_note_type_code}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(debitNote.total_payable)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
                       <SunatStatusBadge status={debitNote.sunat_status} />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(debitNote.issue_date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-2">
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mt-3">
+                      <div>
+                        <span className="text-[11px] text-dm-text-muted">Doc. Afectado</span>
+                        <p className="text-[13px] font-medium text-dm-text-primary">
+                          {debitNote.affected_document_series_number}
+                        </p>
+                        <p className="text-[11px] text-dm-text-muted">
+                          {debitNote.affected_document_type_code === '01' ? 'Factura' : 'Boleta'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-dm-text-muted">Monto</span>
+                        <p className="text-[18px] font-semibold text-dm-text-primary">
+                          {formatCurrency(debitNote.total_payable)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3">
+                      <span className="text-[11px] text-dm-text-muted">Motivo</span>
+                      <p className="text-[13px] font-medium text-dm-text-primary truncate">
+                        {debitNote.reason}
+                      </p>
+                      <p className="text-[11px] text-dm-text-muted">
+                        Tipo: {debitNote.debit_note_type_code}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-4 py-3 border-t border-dm-border-secondary bg-dm-bg-secondary">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-dm-text-muted">
+                        {formatDate(debitNote.issue_date)}
+                      </span>
+                      <div className="flex items-center gap-1">
                         <Link
                           to={`/accounting/debit-notes/${debitNote.id}`}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
                           title="Ver detalle"
                         >
-                          <EyeIcon className="h-4 w-4" />
+                          <EyeIcon className="h-4 w-4" strokeWidth={1.5} />
                         </Link>
                         <button
                           onClick={(e) => {
                             e.preventDefault();
-                            console.log('Botón anular clicked - debitNote:', debitNote);
                             if (debitNote.sunat_status !== 'ACCEPTED') {
-                              console.warn('Nota de débito no está ACCEPTED, status:', debitNote.sunat_status);
                               return;
                             }
                             navigate(`/accounting/debit-notes/annul`, { 
@@ -240,10 +377,10 @@ export const DebitNotesListPage: React.FC = () => {
                               } 
                             });
                           }}
-                          className={`${
+                          className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
                             debitNote.sunat_status !== 'ACCEPTED'
-                              ? 'text-gray-400 cursor-not-allowed'
-                              : 'text-red-600 hover:text-red-900'
+                              ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed'
+                              : 'bg-dm-bg-secondary text-dm-text-muted hover:text-[#cf1322] hover:bg-red-50 dark:hover:bg-red-950/30'
                           }`}
                           title={
                             debitNote.sunat_status !== 'ACCEPTED'
@@ -252,47 +389,53 @@ export const DebitNotesListPage: React.FC = () => {
                           }
                           disabled={debitNote.sunat_status !== 'ACCEPTED'}
                         >
-                          <XCircleIcon className="h-4 w-4" />
+                          <XCircleIcon className="h-4 w-4" strokeWidth={1.5} />
                         </button>
                         {debitNote.pdf_file_path && (
                           <a
                             href={debitNote.pdf_file_path}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-green-600 hover:text-green-900"
+                            className="flex h-8 w-8 items-center justify-center rounded-full bg-dm-bg-secondary text-dm-text-muted hover:text-[#1F4690] hover:bg-[#1F4690]/10 transition-colors"
                             title="Descargar PDF"
                           >
-                            <DocumentArrowDownIcon className="h-4 w-4" />
+                            <DocumentArrowDownIcon className="h-4 w-4" strokeWidth={1.5} />
                           </a>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Información adicional */}
       {debitNotes && debitNotes.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-amber-800">
-                Información sobre Notas de Débito
-              </h3>
-              <div className="mt-2 text-sm text-amber-700">
-                <ul className="list-disc pl-5 space-y-1">
-                  <li><strong>Pendiente:</strong> Documento creado, esperando envío a SUNAT</li>
-                  <li><strong>Enviado:</strong> Documento enviado, esperando respuesta de SUNAT</li>
-                  <li><strong>Aceptado:</strong> Documento válido y procesado correctamente</li>
-                  <li><strong>Rechazado:</strong> Documento con errores, revisar observaciones</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        <div className="bg-[#1F4690]/5 border border-[#1F4690]/10 rounded-[12px] p-5">
+          <h3 className="text-[13px] font-semibold text-[#1F4690] mb-2">
+            Información sobre Estados SUNAT
+          </h3>
+          <ul className="space-y-1.5 text-[13px] text-dm-text-secondary">
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-dm-text-primary">Pendiente:</strong> Documento creado, esperando envío a SUNAT</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-dm-text-primary">Enviado:</strong> Documento enviado, esperando respuesta de SUNAT</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-dm-text-primary">Aceptado:</strong> Documento válido y procesado correctamente</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-1 h-1 rounded-full bg-[#1F4690] mt-1.5 shrink-0" />
+              <span><strong className="text-dm-text-primary">Rechazado:</strong> Documento con errores, revisar observaciones</span>
+            </li>
+          </ul>
         </div>
       )}
     </div>

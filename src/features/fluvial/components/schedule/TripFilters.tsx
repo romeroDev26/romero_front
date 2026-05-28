@@ -72,7 +72,7 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
   const cityOptions = cities.map((city: any) => ({ value: city.id, label: city.name }));
 
   const inputBaseClass =
-    'w-full px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm text-gray-700 placeholder-gray-400';
+    'w-full px-3 py-2.5 border border-dm-border-primary rounded-lg bg-dm-bg-secondary focus:bg-dm-bg-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm text-dm-text-secondary placeholder-gray-400 dark:placeholder-gray-500';
 
   return (
     <div className="space-y-4">
@@ -80,27 +80,27 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Navegador semanal (solo en modo semana) */}
         {viewMode === 'week' ? (
-          <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg self-start">
+          <div className="flex items-center gap-1 bg-dm-bg-secondary border border-dm-border-primary rounded-lg self-start">
             <button
               onClick={handlePrevWeek}
-              className="p-2 text-gray-500 hover:bg-gray-100 rounded-l-lg transition-colors"
+              className="p-2 text-dm-text-muted hover:bg-dm-bg-hover rounded-l-lg transition-colors"
               title="Semana anterior"
             >
               <ChevronLeftIcon className="h-4 w-4" />
             </button>
-            <span className="px-3 py-2 text-sm font-semibold text-gray-700 min-w-[220px] sm:min-w-[240px] text-center">
+            <span className="px-3 py-2 text-sm font-semibold text-dm-text-secondary min-w-[220px] sm:min-w-[240px] text-center">
               {weekRangeLabel}
             </span>
             <button
               onClick={handleNextWeek}
-              className="p-2 text-gray-500 hover:bg-gray-100 rounded-r-lg transition-colors"
+              className="p-2 text-dm-text-muted hover:bg-dm-bg-hover rounded-r-lg transition-colors"
               title="Semana siguiente"
             >
               <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-dm-text-muted">
             {viewMode === 'upcoming' && 'Mostrando todos los proximos viajes programados.'}
             {viewMode === 'history' && 'Mostrando historial de viajes del ultimo ano.'}
           </p>
@@ -112,7 +112,7 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
             variant="outline"
             size="sm"
             onClick={clearFilters}
-            className="text-gray-500 bg-white hover:bg-gray-50 border-gray-200 shadow-sm flex items-center gap-1.5 self-start sm:self-auto w-fit"
+            className="text-dm-text-muted bg-dm-bg-primary hover:bg-dm-bg-hover border-dm-border-primary shadow-sm flex items-center gap-1.5 self-start sm:self-auto w-fit"
           >
             <XMarkIcon className="w-4 h-4" />
             Limpiar filtros
@@ -121,15 +121,15 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
       </div>
 
       {/* Grid de filtros */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-gray-100">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-dm-border-secondary">
 
         {/* Busqueda libre */}
         <div className="sm:col-span-2 lg:col-span-1">
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
             Busqueda
           </label>
           <div className="relative">
-            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <MagnifyingGlassIcon className="h-4 w-4 text-dm-text-muted absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={filters.search || ''}
@@ -142,7 +142,7 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
 
         {/* Estado */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
             Estado
           </label>
           <select
@@ -161,11 +161,11 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
 
         {/* Ciudad Origen */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
             Ciudad Origen
           </label>
           {isLoadingCities ? (
-            <div className="w-full h-10 bg-gray-100 rounded-lg animate-pulse" />
+            <div className="w-full h-10 bg-dm-bg-secondary rounded-lg animate-pulse" />
           ) : (
             <SearchableSelect
               value={filters.origin_city_id ?? null}
@@ -181,11 +181,11 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
 
         {/* Ciudad Destino */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-semibold text-dm-text-muted uppercase tracking-wider mb-1.5">
             Ciudad Destino
           </label>
           {isLoadingCities ? (
-            <div className="w-full h-10 bg-gray-100 rounded-lg animate-pulse" />
+            <div className="w-full h-10 bg-dm-bg-secondary rounded-lg animate-pulse" />
           ) : (
             <SearchableSelect
               value={filters.destination_city_id ?? null}

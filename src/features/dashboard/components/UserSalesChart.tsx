@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { useLast7DaysStatistics, useLast12MonthsStatistics } from '../../../hooks/useUserStatistics';
 import { parseLocalDate } from '../../../utils/dateUtils';
+import { useChartTheme } from '../../../hooks/useChartTheme';
 
 type ChartPeriod = '7days' | '12months';
 
@@ -30,16 +31,16 @@ interface ChartData {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-lg">
-        <p className="mb-2 text-sm font-semibold text-slate-900">{label}</p>
+      <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary px-4 py-3 shadow-lg">
+        <p className="mb-2 text-sm font-semibold text-dm-text-primary">{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center gap-2 text-sm">
             <div
               className="h-3 w-3 rounded-full"
               style={{ backgroundColor: entry.stroke || entry.color }}
             />
-            <span className="text-slate-600">{entry.name}:</span>
-            <span className="font-semibold text-slate-900">
+            <span className="text-dm-text-secondary">{entry.name}:</span>
+            <span className="font-semibold text-dm-text-primary">
               S/ {Number(entry.value).toLocaleString('es-PE')}
             </span>
           </div>
@@ -51,6 +52,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const UserSalesChart: React.FC = () => {
+  const chartTheme = useChartTheme();
   const [period, setPeriod] = useState<ChartPeriod>('7days');
 
   // Hooks para obtener datos
@@ -103,8 +105,8 @@ const UserSalesChart: React.FC = () => {
     return (
       <div className="py-8">
         <div className="animate-pulse space-y-4">
-          <div className="mb-4 h-6 w-1/3 rounded bg-slate-200" />
-          <div className="h-64 rounded-xl bg-slate-100" />
+          <div className="mb-4 h-6 w-1/3 rounded bg-dm-bg-secondary" />
+          <div className="h-64 rounded-xl bg-dm-bg-secondary" />
         </div>
       </div>
     );
@@ -112,7 +114,7 @@ const UserSalesChart: React.FC = () => {
 
   if (error) {
     return (
-      <div className="py-8 text-center text-red-500">
+      <div className="py-8 text-center text-red-500 dark:text-red-400">
         <div className="mb-2">Error al cargar estadísticas</div>
         <div className="text-sm text-red-400">
           {error.message || 'No se pudieron obtener los datos'}
@@ -123,7 +125,7 @@ const UserSalesChart: React.FC = () => {
 
   if (!chartData || chartData.length === 0) {
     return (
-      <div className="py-8 text-center text-slate-500">
+      <div className="py-8 text-center text-dm-text-muted">
         <div className="mb-2">No hay datos de ventas disponibles</div>
         <div className="text-sm">
           {period === '7days'
@@ -146,8 +148,8 @@ const UserSalesChart: React.FC = () => {
       {/* Header con título y controles */}
       <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Mi Rendimiento de Ventas</h2>
-          <p className="text-sm text-slate-500">Evolución histórica de métricas clave</p>
+          <h2 className="text-xl font-bold text-dm-text-primary">Mi Rendimiento de Ventas</h2>
+          <p className="text-sm text-dm-text-muted">Evolución histórica de métricas clave</p>
         </div>
 
         {/* Period Toggle Buttons */}
@@ -157,7 +159,7 @@ const UserSalesChart: React.FC = () => {
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               period === '7days'
                 ? 'bg-primary text-white shadow-sm'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-dm-bg-secondary text-dm-text-secondary hover:bg-dm-bg-hover'
             }`}
           >
             7 Días
@@ -167,7 +169,7 @@ const UserSalesChart: React.FC = () => {
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               period === '12months'
                 ? 'bg-primary text-white shadow-sm'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-dm-bg-secondary text-dm-text-secondary hover:bg-dm-bg-hover'
             }`}
           >
             12 Meses
@@ -185,30 +187,30 @@ const UserSalesChart: React.FC = () => {
           <defs>
             {/* Gradiente para Ingresos Totales */}
             <linearGradient id="gradientRevenue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity={0.3} />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity={0.05} />
+              <stop offset="0%" stopColor="#6366f1" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity={0.08} />
             </linearGradient>
             {/* Gradiente para Ventas por Pasajes */}
             <linearGradient id="gradientTickets" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.05} />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.08} />
             </linearGradient>
             {/* Gradiente para Encomiendas */}
             <linearGradient id="gradientCargo" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.05} />
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.08} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartTheme.grid} />
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 12, fill: '#64748b' }}
+            tick={{ fontSize: 12, fill: chartTheme.axis }}
             axisLine={false}
             tickLine={false}
             dy={10}
           />
           <YAxis
-            tick={{ fontSize: 12, fill: '#64748b' }}
+            tick={{ fontSize: 12, fill: chartTheme.axis }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(value) => value >= 1000 ? `${(value/1000).toFixed(0)}k` : value}
@@ -225,7 +227,7 @@ const UserSalesChart: React.FC = () => {
             strokeWidth={2.2}
             fill="url(#gradientRevenue)"
             dot={false}
-            activeDot={{ r: 6, fill: '#4f46e5', stroke: '#fff', strokeWidth: 2 }}
+            activeDot={{ r: 6, fill: '#4f46e5', stroke: chartTheme.dotStroke, strokeWidth: 2 }}
           />
 
           {/* Área de Ventas por Pasajes */}
@@ -237,7 +239,7 @@ const UserSalesChart: React.FC = () => {
             strokeWidth={2.2}
             fill="url(#gradientTickets)"
             dot={false}
-            activeDot={{ r: 5, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
+            activeDot={{ r: 5, fill: '#3b82f6', stroke: chartTheme.dotStroke, strokeWidth: 2 }}
           />
 
           {/* Área de Encomiendas */}
@@ -249,16 +251,16 @@ const UserSalesChart: React.FC = () => {
             strokeWidth={2.2}
             fill="url(#gradientCargo)"
             dot={false}
-            activeDot={{ r: 5, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
+            activeDot={{ r: 5, fill: '#f59e0b', stroke: chartTheme.dotStroke, strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
 
         <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] sm:grid-cols-4">
-          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Ventas: {totalSales.toLocaleString('es-PE')}</div>
-          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Ingresos: S/ {totalRevenue.toLocaleString('es-PE')}</div>
-          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Pasajes: S/ {totalTickets.toLocaleString('es-PE')}</div>
-          <div className="rounded bg-white/90 px-2 py-1 text-slate-600">Encomiendas: S/ {totalCargo.toLocaleString('es-PE')}</div>
+          <div className="rounded bg-dm-bg-primary/90 px-2 py-1 text-dm-text-secondary">Ventas: {totalSales.toLocaleString('es-PE')}</div>
+          <div className="rounded bg-dm-bg-primary/90 px-2 py-1 text-dm-text-secondary">Ingresos: S/ {totalRevenue.toLocaleString('es-PE')}</div>
+          <div className="rounded bg-dm-bg-primary/90 px-2 py-1 text-dm-text-secondary">Pasajes: S/ {totalTickets.toLocaleString('es-PE')}</div>
+          <div className="rounded bg-dm-bg-primary/90 px-2 py-1 text-dm-text-secondary">Encomiendas: S/ {totalCargo.toLocaleString('es-PE')}</div>
         </div>
       </div>
 
@@ -266,15 +268,15 @@ const UserSalesChart: React.FC = () => {
       <div className="mt-6 flex flex-wrap gap-6 pt-4">
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-indigo-500" />
-          <span className="text-xs font-medium text-slate-600">Ingresos Totales</span>
+          <span className="text-xs font-medium text-dm-text-secondary">Ingresos Totales</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-blue-500" />
-          <span className="text-xs font-medium text-slate-600">Ventas por Pasajes</span>
+          <span className="text-xs font-medium text-dm-text-secondary">Ventas por Pasajes</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded-full bg-amber-500" />
-          <span className="text-xs font-medium text-slate-600">Encomiendas</span>
+          <span className="text-xs font-medium text-dm-text-secondary">Encomiendas</span>
         </div>
       </div>
     </section>

@@ -120,9 +120,9 @@ const CityFormModal: React.FC<{
               type="checkbox"
               checked={formData.is_active}
               onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-blue-600 dark:text-blue-400 focus:ring-blue-500 border-dm-border-primary rounded"
             />
-            <span className="ml-2 text-sm font-medium text-gray-700">Ciudad activa</span>
+            <span className="ml-2 text-sm font-medium text-dm-text-secondary">Ciudad activa</span>
           </label>
         </div>
         <div className="flex justify-end gap-3">
@@ -202,11 +202,11 @@ const PortFormModal: React.FC<{
             maxLength={6}
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Puerto</label>
+            <label className="block text-sm font-medium text-dm-text-secondary mb-1">Tipo de Puerto</label>
             <select
               value={formData.port_type}
               onChange={(e) => setFormData({ ...formData, port_type: e.target.value as PortType })}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-dm-border-primary rounded-md"
               required
             >
               {Object.entries(PORT_TYPE_LABELS).map(([value, label]) => (
@@ -218,11 +218,11 @@ const PortFormModal: React.FC<{
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+          <label className="block text-sm font-medium text-dm-text-secondary mb-1">Ciudad</label>
           <select
             value={formData.city_id}
             onChange={(e) => setFormData({ ...formData, city_id: parseInt(e.target.value) })}
-            className="w-full p-2 border border-gray-300 rounded-md"
+            className="w-full p-2 border border-dm-border-primary rounded-md"
             required
           >
             <option value={0}>Seleccione una ciudad</option>
@@ -364,7 +364,7 @@ export const CitiesPortsPage: React.FC = () => {
       header: 'Ciudad',
       accessor: (city) => (
         <div className="flex items-center gap-2.5">
-          <MapPinIcon className="h-4 w-4 text-[#828282] shrink-0" strokeWidth={1.5} />
+          <MapPinIcon className="h-4 w-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
           <span className="font-medium">{city.name}</span>
         </div>
       ),
@@ -399,7 +399,7 @@ export const CitiesPortsPage: React.FC = () => {
       header: 'Puerto',
       accessor: (port) => (
         <div className="flex items-center gap-2.5">
-          <MapPinIcon className="h-4 w-4 text-[#828282] shrink-0" strokeWidth={1.5} />
+          <MapPinIcon className="h-4 w-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
           <span className="font-medium">{port.name}</span>
         </div>
       ),
@@ -438,25 +438,25 @@ export const CitiesPortsPage: React.FC = () => {
       {/* Header */}
       <div className="mb-8">
         <h1
-          className="text-[32px] font-medium text-[#202020] tracking-[-0.64px] leading-[1.19]"
+          className="text-[32px] font-medium text-dm-text-primary tracking-[-0.64px] leading-[1.19]"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
           Ciudades y Puertos
         </h1>
-        <p className="mt-1 text-[15px] text-[#4d4d4d] leading-[1.33]">
+        <p className="mt-1 text-[15px] text-dm-text-secondary leading-[1.33]">
           Gestión de ubicaciones geográficas del sistema fluvial
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[#e8e8e8]">
+      <div className="border-b border-dm-border-primary">
         <nav className="flex gap-8">
           <button
             onClick={() => setActiveTab('cities')}
             className={`pb-3 text-[15px] font-medium transition-colors border-b-2 ${
               activeTab === 'cities'
-                ? 'text-[#202020] border-[#1F4690]'
-                : 'text-[#828282] border-transparent hover:text-[#4d4d4d]'
+                ? 'text-dm-text-primary border-[#1F4690]'
+                : 'text-dm-text-muted border-transparent hover:text-dm-text-secondary'
             }`}
           >
             Ciudades
@@ -464,7 +464,7 @@ export const CitiesPortsPage: React.FC = () => {
               className={`ml-2 px-2 py-0.5 rounded-full text-[12px] font-medium ${
                 activeTab === 'cities'
                   ? 'bg-[#1F4690]/10 text-[#1F4690]'
-                  : 'bg-[#f5f5f5] text-[#828282]'
+                  : 'bg-dm-bg-secondary text-dm-text-muted'
               }`}
             >
               {cities.length}
@@ -474,8 +474,8 @@ export const CitiesPortsPage: React.FC = () => {
             onClick={() => setActiveTab('ports')}
             className={`pb-3 text-[15px] font-medium transition-colors border-b-2 ${
               activeTab === 'ports'
-                ? 'text-[#202020] border-[#1F4690]'
-                : 'text-[#828282] border-transparent hover:text-[#4d4d4d]'
+                ? 'text-dm-text-primary border-[#1F4690]'
+                : 'text-dm-text-muted border-transparent hover:text-dm-text-secondary'
             }`}
           >
             Puertos
@@ -483,7 +483,7 @@ export const CitiesPortsPage: React.FC = () => {
               className={`ml-2 px-2 py-0.5 rounded-full text-[12px] font-medium ${
                 activeTab === 'ports'
                   ? 'bg-[#1F4690]/10 text-[#1F4690]'
-                  : 'bg-[#f5f5f5] text-[#828282]'
+                  : 'bg-dm-bg-secondary text-dm-text-muted'
               }`}
             >
               {ports.length}

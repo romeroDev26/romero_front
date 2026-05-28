@@ -39,25 +39,25 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
   // -------------------------------------------------------
   if (collapsible) {
     return (
-      <div className="mt-4 border-t border-gray-100 pt-3">
+      <div className="mt-4 border-t border-dm-border-secondary pt-3">
         {/* Botón trigger */}
         <button
           type="button"
           onClick={() => setIsExpanded((prev) => !prev)}
-          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-amber-700 transition-colors hover:bg-amber-50/60"
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm font-medium text-amber-700 dark:text-amber-300 transition-colors hover:bg-amber-50 dark:hover:bg-amber-950/40"
         >
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-amber-100">
-            <Baby className="h-4 w-4 text-amber-600" />
+            <Baby className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </div>
           <span className="flex-1">
             Infantes acompañantes
           </span>
           {infants.length > 0 && (
-            <span className="mr-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+            <span className="mr-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
               {infants.length}
             </span>
           )}
-          <span className="shrink-0 text-amber-600">
+          <span className="shrink-0 text-amber-600 dark:text-amber-400">
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </span>
         </button>
@@ -87,14 +87,14 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
             ) : (
               <div className="flex items-center justify-between">
                 {infants.length === 0 && (
-                  <span className="text-[11px] text-gray-400 italic">
+                  <span className="text-[11px] text-dm-text-muted italic">
                     Sin infantes registrados
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={() => setShowForm(true)}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-[11px] font-medium text-amber-700 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-dm-bg-primary px-3 py-1.5 text-[11px] font-medium text-amber-700 dark:text-amber-300 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
                 >
                   <Plus className="h-3 w-3" />
                   Agregar
@@ -111,17 +111,17 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
   // Modo inline — para cada card de representante (factura)
   // -------------------------------------------------------
   return (
-    <div className="mt-3 border-t border-gray-100 pt-3 space-y-2">
+    <div className="mt-3 border-t border-dm-border-secondary pt-3 space-y-2">
       {/* Cabecera de la sección */}
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2 text-xs font-semibold text-amber-700">
+        <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-100">
-            <Baby className="h-3.5 w-3.5 text-amber-600" />
+            <Baby className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
           </div>
           <span>
             Infantes a cargo
             {infants.length > 0 && (
-              <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800">
+              <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
                 {infants.length}
               </span>
             )}
@@ -132,7 +132,7 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
           <button
             type="button"
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white px-2.5 py-1 text-[11px] font-medium text-amber-700 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50"
+            className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-dm-bg-primary px-2.5 py-1 text-[11px] font-medium text-amber-700 dark:text-amber-300 shadow-sm transition-colors hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
           >
             <Plus className="h-3 w-3" />
             Agregar
@@ -164,7 +164,7 @@ export const InfantManager: React.FC<InfantManagerProps> = ({
       )}
 
       {infants.length === 0 && !showForm && (
-        <p className="text-[11px] text-gray-400 italic px-1">Sin infantes registrados</p>
+        <p className="text-[11px] text-dm-text-muted italic px-1">Sin infantes registrados</p>
       )}
     </div>
   );

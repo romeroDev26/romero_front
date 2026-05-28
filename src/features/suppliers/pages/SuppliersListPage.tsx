@@ -128,7 +128,7 @@ export const SuppliersListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Proveedores</h1>
+        <h1 className="text-2xl font-bold text-dm-text-primary">Proveedores</h1>
         <Button
           onClick={() => navigate('/suppliers/new')}
           className="flex items-center"
@@ -142,11 +142,11 @@ export const SuppliersListPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-grow">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            <MagnifyingGlassIcon className="h-5 w-5 text-dm-text-muted" />
           </div>
           <input
             type="text"
-            className="pl-10 block w-full rounded-md border-gray-300 shadow-sm p-2 border"
+            className="pl-10 block w-full rounded-md border-dm-border-primary shadow-sm p-2 border"
             placeholder="Buscar por nombre, documento, email o teléfono..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -155,7 +155,7 @@ export const SuppliersListPage: React.FC = () => {
         
         <div className="flex gap-2">
           <select
-            className="rounded-md border-gray-300 shadow-sm p-2 border"
+            className="rounded-md border-dm-border-primary shadow-sm p-2 border"
             value={filterDocType}
             onChange={(e) => setFilterDocType(e.target.value as DocType | 'ALL')}
           >
@@ -168,7 +168,7 @@ export const SuppliersListPage: React.FC = () => {
           </select>
           
           <select
-            className="rounded-md border-gray-300 shadow-sm p-2 border"
+            className="rounded-md border-dm-border-primary shadow-sm p-2 border"
             value={filterActive}
             onChange={(e) => setFilterActive(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
           >
@@ -180,36 +180,36 @@ export const SuppliersListPage: React.FC = () => {
       </div>
       
       {/* Tabla de proveedores */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="bg-dm-bg-primary rounded-lg shadow-md overflow-hidden">
+        <table className="min-w-full divide-y divide-dm-border-primary">
+          <thead className="bg-dm-bg-secondary">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Tipo Doc.
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Número Doc.
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Nombre / Razón Social
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Email
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Teléfono
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Estado
               </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-dm-text-muted uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
             {filteredSuppliers.map((supplier) => (
-              <tr key={supplier.id} className="hover:bg-gray-50">
+              <tr key={supplier.id} className="hover:bg-dm-bg-secondary">
                 <td className="px-6 py-4 whitespace-nowrap">
                   {getDocTypeDisplay(supplier.doc_type as DocType)}
                 </td>
@@ -217,9 +217,9 @@ export const SuppliersListPage: React.FC = () => {
                   {supplier.doc_number}
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-gray-900">{supplier.name}</div>
+                  <div className="text-dm-text-primary">{supplier.name}</div>
                   {supplier.address && (
-                    <div className="text-gray-500 text-sm">{supplier.address}</div>
+                    <div className="text-dm-text-muted text-sm">{supplier.address}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -230,7 +230,7 @@ export const SuppliersListPage: React.FC = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    supplier.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    supplier.is_active ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
                   }`}>
                     {supplier.is_active ? 'Activo' : 'Inactivo'}
                   </span>
@@ -245,7 +245,7 @@ export const SuppliersListPage: React.FC = () => {
                   {hasPermission('inventory', 'suppliers', 'warehouse') && (
                     <button
                       onClick={() => handleDelete(supplier.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 dark:text-red-200"
                     >
                       <TrashIcon className="h-5 w-5" />
                     </button>
@@ -256,7 +256,7 @@ export const SuppliersListPage: React.FC = () => {
             
             {filteredSuppliers.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={7} className="px-6 py-4 text-center text-dm-text-muted">
                   No se encontraron proveedores
                 </td>
               </tr>

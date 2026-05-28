@@ -147,8 +147,8 @@ export const WelcomeContent: React.FC = () => {
         chart={(
           <div className="space-y-4">
             <UserSalesChart />
-            <div className="mx-auto w-full max-w-xl flex flex-col items-center gap-3 text-center pt-4 border-t border-light-gray">
-              <p className="text-sm text-medium-gray max-w-lg">
+            <div className="mx-auto w-full max-w-xl flex flex-col items-center gap-3 text-center pt-4 border-t border-dm-border-primary">
+              <p className="text-sm text-dm-text-secondary max-w-lg">
                 Exporta tu rendimiento de ventas en formato Excel para seguimiento y análisis.
               </p>
               <button
@@ -175,7 +175,7 @@ export const WelcomeContent: React.FC = () => {
         maxWidth="4xl"
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-dm-text-secondary">
             Selecciona el rango de fechas y el formato para exportar el reporte.
           </p>
           <DateRangeFilter
@@ -192,7 +192,7 @@ export const WelcomeContent: React.FC = () => {
             <button
               onClick={() => handleFormatSelection('excel')}
               disabled={syncExporting || !canExportDates}
-              className="flex items-center justify-center w-full max-w-md px-6 py-4 bg-green-50 border-2 border-green-200 text-green-700 rounded-lg hover:bg-green-100 hover:border-green-300 disabled:bg-gray-50 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 group"
+              className="flex items-center justify-center w-full max-w-md px-6 py-4 bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 hover:border-green-300 dark:hover:border-green-700 disabled:bg-dm-bg-secondary disabled:border-dm-border-primary disabled:text-dm-text-muted disabled:cursor-not-allowed transition-all duration-200 group"
             >
               <DocumentArrowDownIcon className="w-6 h-6 mr-3 group-hover:scale-110 transition-transform" />
               <div className="text-left">
@@ -204,7 +204,7 @@ export const WelcomeContent: React.FC = () => {
               </div>
             </button>
           </div>
-          <div className="flex justify-end pt-4 border-t border-gray-200">
+          <div className="flex justify-end pt-4 border-t border-dm-border-primary">
             <Button onClick={() => setShowFormatModal(false)} variant="secondary">
               Cancelar
             </Button>

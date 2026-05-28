@@ -78,7 +78,7 @@ export const RemissionGuidesListPage: React.FC = () => {
             <DocumentTextIcon className="w-5 h-5 text-[#1F4690]" strokeWidth={1.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[14px] font-semibold text-[#202020] truncate">
+            <div className="text-[14px] font-semibold text-dm-text-primary truncate">
               {item.series}-{String(item.number).padStart(8, '0')}
             </div>
           </div>
@@ -90,8 +90,8 @@ export const RemissionGuidesListPage: React.FC = () => {
       header: 'Fecha Emisión',
       accessor: (item) => (
         <div className="flex items-center gap-2">
-          <CalendarIcon className="w-4 h-4 text-[#828282]" strokeWidth={1.5} />
-          <span className="text-[14px] text-[#202020]">
+          <CalendarIcon className="w-4 h-4 text-dm-text-muted" strokeWidth={1.5} />
+          <span className="text-[14px] text-dm-text-primary">
             {format(parseISO(item.issue_date), 'dd/MM/yyyy')}
           </span>
         </div>
@@ -102,8 +102,8 @@ export const RemissionGuidesListPage: React.FC = () => {
       header: 'Destinatario',
       accessor: (item) => (
         <div className="flex items-center gap-2 min-w-0">
-          <UserIcon className="w-4 h-4 text-[#828282] shrink-0" strokeWidth={1.5} />
-          <span className="text-[14px] text-[#202020] truncate max-w-[200px]">
+          <UserIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
+          <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
             {((item as any).recipient_name || '').length > 25
               ? ((item as any).recipient_name || '').substring(0, 25) + '...'
               : (item as any).recipient_name || ''}
@@ -116,8 +116,8 @@ export const RemissionGuidesListPage: React.FC = () => {
       header: 'Destino',
       accessor: (item) => (
         <div className="flex items-center gap-2 min-w-0">
-          <MapPinIcon className="w-4 h-4 text-[#828282] shrink-0" strokeWidth={1.5} />
-          <span className="text-[14px] text-[#202020] truncate max-w-[200px]">
+          <MapPinIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
+          <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
             {((item as any).destination_address || '').length > 25
               ? ((item as any).destination_address || '').substring(0, 25) + '...'
               : (item as any).destination_address || ''}
@@ -130,10 +130,10 @@ export const RemissionGuidesListPage: React.FC = () => {
       header: 'Conductor',
       accessor: (item) => (
         <div className="min-w-0">
-          <div className="text-[14px] font-medium text-[#202020] truncate">
+          <div className="text-[14px] font-medium text-dm-text-primary truncate">
             {item.driver_name || 'N/A'}
           </div>
-          <div className="text-[12px] text-[#828282] truncate">Lic: {item.driver_license || 'N/A'}</div>
+          <div className="text-[12px] text-dm-text-muted truncate">Lic: {item.driver_license || 'N/A'}</div>
         </div>
       ),
     },
@@ -166,7 +166,7 @@ export const RemissionGuidesListPage: React.FC = () => {
             <DocumentTextIcon className="w-5 h-5 text-[#33c758]" strokeWidth={1.5} />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-[14px] font-semibold text-[#202020] truncate">
+            <div className="text-[14px] font-semibold text-dm-text-primary truncate">
               {item.series}-{String(item.number).padStart(8, '0')}
             </div>
           </div>
@@ -178,8 +178,8 @@ export const RemissionGuidesListPage: React.FC = () => {
       header: 'Fecha Emisión',
       accessor: (item) => (
         <div className="flex items-center gap-2">
-          <CalendarIcon className="w-4 h-4 text-[#828282]" strokeWidth={1.5} />
-          <span className="text-[14px] text-[#202020]">
+          <CalendarIcon className="w-4 h-4 text-dm-text-muted" strokeWidth={1.5} />
+          <span className="text-[14px] text-dm-text-primary">
             {format(parseISO(item.issue_date), 'dd/MM/yyyy')}
           </span>
         </div>
@@ -190,8 +190,8 @@ export const RemissionGuidesListPage: React.FC = () => {
       header: 'Destinatario',
       accessor: (item) => (
         <div className="flex items-center gap-2 min-w-0">
-          <UserIcon className="w-4 h-4 text-[#828282] shrink-0" strokeWidth={1.5} />
-          <span className="text-[14px] text-[#202020] truncate max-w-[200px]">
+          <UserIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
+          <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
             {(item as any).recipient_name || ''}
           </span>
         </div>
@@ -202,8 +202,8 @@ export const RemissionGuidesListPage: React.FC = () => {
       header: 'Destino',
       accessor: (item) => (
         <div className="flex items-center gap-2 min-w-0">
-          <MapPinIcon className="w-4 h-4 text-[#828282] shrink-0" strokeWidth={1.5} />
-          <span className="text-[14px] text-[#202020] truncate max-w-[200px]">
+          <MapPinIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
+          <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
             {(item as any).destination_address || ''}
           </span>
         </div>
@@ -254,12 +254,12 @@ export const RemissionGuidesListPage: React.FC = () => {
           </div>
           <div>
             <h1
-              className="text-[28px] font-medium text-[#202020] tracking-[-0.56px] leading-[1.19]"
+              className="text-[28px] font-medium text-dm-text-primary tracking-[-0.56px] leading-[1.19]"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               Guías de Remisión Electrónicas
             </h1>
-            <p className="text-[14px] text-[#4d4d4d]">
+            <p className="text-[14px] text-dm-text-secondary">
               Gestiona y administra todas tus guías de remisión electrónicas
             </p>
           </div>
@@ -276,44 +276,44 @@ export const RemissionGuidesListPage: React.FC = () => {
 
       {/* ── Stats Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white rounded-2xl border border-[#e8e8e8] p-5 flex items-center gap-4">
+        <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-[#1F4690]/10 rounded-xl flex items-center justify-center shrink-0">
             <TruckIcon className="w-6 h-6 text-[#1F4690]" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-[13px] text-[#828282]">Transportista</p>
-            <p className="text-[24px] font-bold text-[#202020] leading-tight">{statsTransportista.total}</p>
+            <p className="text-[13px] text-dm-text-muted">Transportista</p>
+            <p className="text-[24px] font-bold text-dm-text-primary leading-tight">{statsTransportista.total}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#e8e8e8] p-5 flex items-center gap-4">
+        <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-[#33c758]/10 rounded-xl flex items-center justify-center shrink-0">
             <DocumentTextIcon className="w-6 h-6 text-[#33c758]" strokeWidth={1.5} />
           </div>
           <div>
-            <p className="text-[13px] text-[#828282]">Remitente</p>
-            <p className="text-[24px] font-bold text-[#202020] leading-tight">{statsRemitente.total}</p>
+            <p className="text-[13px] text-dm-text-muted">Remitente</p>
+            <p className="text-[24px] font-bold text-dm-text-primary leading-tight">{statsRemitente.total}</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#e8e8e8] p-5 flex items-center gap-4">
+        <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-[#ffa600]/10 rounded-xl flex items-center justify-center shrink-0">
             <div className="w-3 h-3 rounded-full bg-[#ffa600]" />
           </div>
           <div>
-            <p className="text-[13px] text-[#828282]">Total Pendientes</p>
+            <p className="text-[13px] text-dm-text-muted">Total Pendientes</p>
             <p className="text-[24px] font-bold text-[#ffa600] leading-tight">
               {statsTransportista.pending + statsRemitente.pending}
             </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#e8e8e8] p-5 flex items-center gap-4">
+        <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-5 flex items-center gap-4">
           <div className="w-12 h-12 bg-[#33c758]/10 rounded-xl flex items-center justify-center shrink-0">
             <div className="w-3 h-3 rounded-full bg-[#33c758]" />
           </div>
           <div>
-            <p className="text-[13px] text-[#828282]">Total Aceptadas</p>
+            <p className="text-[13px] text-dm-text-muted">Total Aceptadas</p>
             <p className="text-[24px] font-bold text-[#33c758] leading-tight">
               {statsTransportista.accepted + statsRemitente.accepted}
             </p>
@@ -322,20 +322,20 @@ export const RemissionGuidesListPage: React.FC = () => {
       </div>
 
       {/* ── Filtros ── */}
-      <div className="bg-white rounded-2xl border border-[#e8e8e8] p-5 sm:p-6">
+      <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-4">
-          <FunnelIcon className="w-4 h-4 text-[#828282]" strokeWidth={1.5} />
-          <h3 className="text-[15px] font-semibold text-[#202020]">Filtros</h3>
+          <FunnelIcon className="w-4 h-4 text-dm-text-muted" strokeWidth={1.5} />
+          <h3 className="text-[15px] font-semibold text-dm-text-primary">Filtros</h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
-            <label className="block text-[13px] font-medium text-[#4d4d4d] mb-1.5">
+            <label className="block text-[13px] font-medium text-dm-text-secondary mb-1.5">
               Sucursal Activa
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <BuildingOfficeIcon className="w-4 h-4 text-[#828282]" strokeWidth={1.5} />
+                <BuildingOfficeIcon className="w-4 h-4 text-dm-text-muted" strokeWidth={1.5} />
               </div>
               <select
                 value={activeBranch?.id || ''}
@@ -346,28 +346,28 @@ export const RemissionGuidesListPage: React.FC = () => {
                     localStorage.setItem('selectedSalesBranch', JSON.stringify(newBranch));
                   }
                 }}
-                className="w-full pl-10 pr-8 py-2.5 bg-white border border-[#e8e8e8] rounded-xl text-[14px] text-[#202020] appearance-none focus:outline-none focus:ring-2 focus:ring-[#918df6]/30 focus:border-[#918df6] transition-colors"
+                className="w-full pl-10 pr-8 py-2.5 bg-dm-bg-primary border border-dm-border-primary rounded-xl text-[14px] text-dm-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-[#918df6]/30 focus:border-[#918df6] transition-colors"
                 disabled={isLoadingBranches}
               >
                 {branches?.map(branch => (
                   <option key={branch.id} value={branch.id}>{branch.name}</option>
                 ))}
               </select>
-              <ChevronDownIcon className="absolute inset-y-0 right-0 w-4 h-4 text-[#828282] mr-3 my-auto pointer-events-none" strokeWidth={2} />
+              <ChevronDownIcon className="absolute inset-y-0 right-0 w-4 h-4 text-dm-text-muted mr-3 my-auto pointer-events-none" strokeWidth={2} />
             </div>
           </div>
 
           <div>
-            <label className="block text-[13px] font-medium text-[#4d4d4d] mb-1.5">
+            <label className="block text-[13px] font-medium text-dm-text-secondary mb-1.5">
               Buscar
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="w-4 h-4 text-[#828282]" strokeWidth={1.5} />
+                <MagnifyingGlassIcon className="w-4 h-4 text-dm-text-muted" strokeWidth={1.5} />
               </div>
               <input
                 type="text"
-                className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#e8e8e8] rounded-xl text-[14px] text-[#202020] placeholder:text-[#c4c4c4] focus:outline-none focus:ring-2 focus:ring-[#918df6]/30 focus:border-[#918df6] transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-dm-bg-primary border border-dm-border-primary rounded-xl text-[14px] text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-[#918df6]/30 focus:border-[#918df6] transition-colors"
                 placeholder="Buscar por destinatario, número..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -376,14 +376,14 @@ export const RemissionGuidesListPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-[13px] font-medium text-[#4d4d4d] mb-1.5">
+            <label className="block text-[13px] font-medium text-dm-text-secondary mb-1.5">
               Estado SUNAT
             </label>
             <div className="relative">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-4 pr-8 py-2.5 bg-white border border-[#e8e8e8] rounded-xl text-[14px] text-[#202020] appearance-none focus:outline-none focus:ring-2 focus:ring-[#918df6]/30 focus:border-[#918df6] transition-colors"
+                className="w-full px-4 pr-8 py-2.5 bg-dm-bg-primary border border-dm-border-primary rounded-xl text-[14px] text-dm-text-primary appearance-none focus:outline-none focus:ring-2 focus:ring-[#918df6]/30 focus:border-[#918df6] transition-colors"
               >
                 <option value="">Todos los estados</option>
                 <option value="PENDING">Pendiente</option>
@@ -393,7 +393,7 @@ export const RemissionGuidesListPage: React.FC = () => {
                 <option value="GENERATED">Generado</option>
                 <option value="SIGNED">Firmado</option>
               </select>
-              <ChevronDownIcon className="absolute inset-y-0 right-0 w-4 h-4 text-[#828282] mr-3 my-auto pointer-events-none" strokeWidth={2} />
+              <ChevronDownIcon className="absolute inset-y-0 right-0 w-4 h-4 text-dm-text-muted mr-3 my-auto pointer-events-none" strokeWidth={2} />
             </div>
           </div>
         </div>
@@ -408,16 +408,16 @@ export const RemissionGuidesListPage: React.FC = () => {
               <TruckIcon className="w-4 h-4 text-[#1F4690]" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-[16px] font-semibold text-[#202020]">
+              <h3 className="text-[16px] font-semibold text-dm-text-primary">
                 Guías de Remisión — Transportista
               </h3>
-              <p className="text-[12px] text-[#828282]">Document Type Code: 31 · {filteredTransportistaGuides.length} registros</p>
+              <p className="text-[12px] text-dm-text-muted">Document Type Code: 31 · {filteredTransportistaGuides.length} registros</p>
             </div>
           </div>
         </div>
 
         {/* Desktop: tabla con scrollbar visible */}
-        <div className="hidden lg:block bg-white rounded-2xl border border-[#e8e8e8] overflow-hidden">
+        <div className="hidden lg:block bg-dm-bg-primary rounded-2xl border border-dm-border-primary overflow-hidden">
           <div
             className="overflow-x-auto"
             style={{ scrollbarWidth: 'thin', scrollbarColor: '#c4c4c4 #f5f5f5' }}
@@ -434,29 +434,29 @@ export const RemissionGuidesListPage: React.FC = () => {
         {/* Mobile/Tablet: cards */}
         <div className="lg:hidden space-y-3">
           {filteredTransportistaGuides.length === 0 && !isLoadingGuides && (
-            <div className="bg-white rounded-2xl border border-[#e8e8e8] p-8 text-center">
-              <DocumentTextIcon className="w-8 h-8 text-[#c4c4c4] mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-[14px] text-[#828282]">No se encontraron guías de transportista</p>
+            <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-8 text-center">
+              <DocumentTextIcon className="w-8 h-8 text-dm-text-muted mx-auto mb-3" strokeWidth={1.5} />
+              <p className="text-[14px] text-dm-text-muted">No se encontraron guías de transportista</p>
             </div>
           )}
           {isLoadingGuides && (
-            <div className="bg-white rounded-2xl border border-[#e8e8e8] p-8 text-center">
+            <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1F4690] mx-auto" />
-              <p className="text-[14px] text-[#828282] mt-3">Cargando guías...</p>
+              <p className="text-[14px] text-dm-text-muted mt-3">Cargando guías...</p>
             </div>
           )}
           {filteredTransportistaGuides.map((guide) => (
-            <div key={guide.id} className="bg-white rounded-2xl border border-[#e8e8e8] p-4 space-y-3">
+            <div key={guide.id} className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-4 space-y-3">
               {/* Header de card */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#1F4690]/10 flex items-center justify-center shrink-0">
                   <DocumentTextIcon className="w-5 h-5 text-[#1F4690]" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-[#202020] truncate">
+                  <p className="text-[14px] font-semibold text-dm-text-primary truncate">
                     {guide.series}-{String(guide.number).padStart(8, '0')}
                   </p>
-                  <p className="text-[12px] text-[#828282]">
+                  <p className="text-[12px] text-dm-text-muted">
                     {format(parseISO(guide.issue_date), 'dd/MM/yyyy')}
                   </p>
                 </div>
@@ -464,27 +464,27 @@ export const RemissionGuidesListPage: React.FC = () => {
               </div>
 
               {/* Detalles */}
-              <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
+              <div className="space-y-2 pt-2 border-t border-dm-border-secondary">
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-[#828282]">Destinatario</span>
-                  <span className="text-[#202020] text-right truncate max-w-[55%]">
+                  <span className="text-dm-text-muted">Destinatario</span>
+                  <span className="text-dm-text-primary text-right truncate max-w-[55%]">
                     {(guide as any).recipient_name || '—'}
                   </span>
                 </div>
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-[#828282]">Destino</span>
-                  <span className="text-[#202020] text-right truncate max-w-[55%]">
+                  <span className="text-dm-text-muted">Destino</span>
+                  <span className="text-dm-text-primary text-right truncate max-w-[55%]">
                     {(guide as any).destination_address || '—'}
                   </span>
                 </div>
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-[#828282]">Conductor</span>
-                  <span className="text-[#202020]">{guide.driver_name || 'N/A'}</span>
+                  <span className="text-dm-text-muted">Conductor</span>
+                  <span className="text-dm-text-primary">{guide.driver_name || 'N/A'}</span>
                 </div>
               </div>
 
               {/* Acciones */}
-              <div className="pt-2 border-t border-[#f0f0f0] flex items-center justify-between">
+              <div className="pt-2 border-t border-dm-border-secondary flex items-center justify-between">
                 <RemissionGuideActions
                   guide={guide}
                   companyId={activeBranch?.company_id || 0}
@@ -506,16 +506,16 @@ export const RemissionGuidesListPage: React.FC = () => {
               <DocumentTextIcon className="w-4 h-4 text-[#33c758]" strokeWidth={1.5} />
             </div>
             <div>
-              <h3 className="text-[16px] font-semibold text-[#202020]">
+              <h3 className="text-[16px] font-semibold text-dm-text-primary">
                 Guías de Remisión — Remitente
               </h3>
-              <p className="text-[12px] text-[#828282]">Document Type Code: 09 · {filteredRemitenteGuides.length} registros</p>
+              <p className="text-[12px] text-dm-text-muted">Document Type Code: 09 · {filteredRemitenteGuides.length} registros</p>
             </div>
           </div>
         </div>
 
         {/* Desktop: tabla con scrollbar visible */}
-        <div className="hidden lg:block bg-white rounded-2xl border border-[#e8e8e8] overflow-hidden">
+        <div className="hidden lg:block bg-dm-bg-primary rounded-2xl border border-dm-border-primary overflow-hidden">
           <div
             className="overflow-x-auto"
             style={{ scrollbarWidth: 'thin', scrollbarColor: '#c4c4c4 #f5f5f5' }}
@@ -532,29 +532,29 @@ export const RemissionGuidesListPage: React.FC = () => {
         {/* Mobile/Tablet: cards */}
         <div className="lg:hidden space-y-3">
           {filteredRemitenteGuides.length === 0 && !isLoadingGuides && (
-            <div className="bg-white rounded-2xl border border-[#e8e8e8] p-8 text-center">
-              <DocumentTextIcon className="w-8 h-8 text-[#c4c4c4] mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-[14px] text-[#828282]">No se encontraron guías de remitente</p>
+            <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-8 text-center">
+              <DocumentTextIcon className="w-8 h-8 text-dm-text-muted mx-auto mb-3" strokeWidth={1.5} />
+              <p className="text-[14px] text-dm-text-muted">No se encontraron guías de remitente</p>
             </div>
           )}
           {isLoadingGuides && (
-            <div className="bg-white rounded-2xl border border-[#e8e8e8] p-8 text-center">
+            <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#33c758] mx-auto" />
-              <p className="text-[14px] text-[#828282] mt-3">Cargando guías...</p>
+              <p className="text-[14px] text-dm-text-muted mt-3">Cargando guías...</p>
             </div>
           )}
           {filteredRemitenteGuides.map((guide) => (
-            <div key={guide.id} className="bg-white rounded-2xl border border-[#e8e8e8] p-4 space-y-3">
+            <div key={guide.id} className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary p-4 space-y-3">
               {/* Header de card */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#33c758]/10 flex items-center justify-center shrink-0">
                   <DocumentTextIcon className="w-5 h-5 text-[#33c758]" strokeWidth={1.5} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold text-[#202020] truncate">
+                  <p className="text-[14px] font-semibold text-dm-text-primary truncate">
                     {guide.series}-{String(guide.number).padStart(8, '0')}
                   </p>
-                  <p className="text-[12px] text-[#828282]">
+                  <p className="text-[12px] text-dm-text-muted">
                     {format(parseISO(guide.issue_date), 'dd/MM/yyyy')}
                   </p>
                 </div>
@@ -562,23 +562,23 @@ export const RemissionGuidesListPage: React.FC = () => {
               </div>
 
               {/* Detalles */}
-              <div className="space-y-2 pt-2 border-t border-[#f0f0f0]">
+              <div className="space-y-2 pt-2 border-t border-dm-border-secondary">
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-[#828282]">Destinatario</span>
-                  <span className="text-[#202020] text-right truncate max-w-[55%]">
+                  <span className="text-dm-text-muted">Destinatario</span>
+                  <span className="text-dm-text-primary text-right truncate max-w-[55%]">
                     {(guide as any).recipient_name || '—'}
                   </span>
                 </div>
                 <div className="flex justify-between text-[13px]">
-                  <span className="text-[#828282]">Destino</span>
-                  <span className="text-[#202020] text-right truncate max-w-[55%]">
+                  <span className="text-dm-text-muted">Destino</span>
+                  <span className="text-dm-text-primary text-right truncate max-w-[55%]">
                     {(guide as any).destination_address || '—'}
                   </span>
                 </div>
               </div>
 
               {/* Acciones */}
-              <div className="pt-2 border-t border-[#f0f0f0] flex items-center justify-between">
+              <div className="pt-2 border-t border-dm-border-secondary flex items-center justify-between">
                 <RemissionGuideSenderActions
                   guide={guide}
                   companyId={activeBranch?.company_id || 0}

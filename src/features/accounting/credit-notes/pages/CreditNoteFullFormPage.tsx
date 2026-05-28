@@ -294,14 +294,14 @@ export const CreditNoteFullFormPage: React.FC = () => {
 						<ArrowLeftIcon className="h-4 w-4" />
 					</Button>
 					<div>
-						<h1 className="text-3xl font-bold text-gray-900">Nueva Nota de Crédito</h1>
-						<p className="text-gray-600">Crear una nota de crédito detallada con items</p>
+						<h1 className="text-3xl font-bold text-dm-text-primary">Nueva Nota de Crédito</h1>
+						<p className="text-dm-text-secondary">Crear una nota de crédito detallada con items</p>
 					</div>
 				</div>
 			</div>
 
 			{/* Alerta informativa sobre series */}
-			<div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+			<div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg p-4">
 				<div className="flex">
 					<div className="flex-shrink-0">
 						<svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
@@ -309,10 +309,10 @@ export const CreditNoteFullFormPage: React.FC = () => {
 						</svg>
 					</div>
 					<div className="ml-3">
-						<h3 className="text-sm font-medium text-amber-800">
+						<h3 className="text-sm font-medium text-amber-800 dark:text-amber-300">
 							Requisito importante de SUNAT
 						</h3>
-						<div className="mt-2 text-sm text-amber-700">
+						<div className="mt-2 text-sm text-amber-700 dark:text-amber-300">
 							<p>
 								Según normativa SUNAT, <strong>la serie de la nota de crédito debe ser la misma que la serie del comprobante que afecta</strong>.
 							</p>

@@ -45,16 +45,16 @@ export const RemissionGuideGenerationResult: React.FC<RemissionGuideGenerationRe
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header de éxito */}
-      <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-8">
+      <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-xl p-6 mb-8">
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mr-4">
-            <CheckCircleIcon className="h-6 w-6 text-green-600" />
+          <div className="flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-full mr-4">
+            <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-green-900">
               ¡Guías Generadas Exitosamente!
             </h3>
-            <p className="text-green-700 mt-1">
+            <p className="text-green-700 dark:text-green-300 mt-1">
               Se generaron {generationResult.guides_generated.length} guías de remisión para el viaje "{generationResult.trip_name}"
             </p>
           </div>
@@ -62,45 +62,45 @@ export const RemissionGuideGenerationResult: React.FC<RemissionGuideGenerationRe
       </div>
 
       {/* Información del resultado */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h4 className="font-semibold text-gray-900">Resumen de Generación</h4>
+      <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary mb-8">
+        <div className="border-b border-dm-border-primary px-6 py-4">
+          <h4 className="font-semibold text-dm-text-primary">Resumen de Generación</h4>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {generationResult.guides_generated.length}
               </div>
-              <div className="text-sm text-blue-800">Guías Generadas</div>
+              <div className="text-sm text-blue-800 dark:text-blue-300">Guías Generadas</div>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {generationResult.destinations_processed}
               </div>
-              <div className="text-sm text-green-800">Destinos Procesados</div>
+              <div className="text-sm text-green-800 dark:text-green-300">Destinos Procesados</div>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
+            <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
               <div className="text-2xl font-bold text-purple-600">
                 {generationResult.total_packages}
               </div>
               <div className="text-sm text-purple-800">Total Paquetes</div>
             </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
+            <div className="text-center p-4 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {generationResult.total_weight} kg
               </div>
-              <div className="text-sm text-orange-800">Peso Total</div>
+              <div className="text-sm text-orange-800 dark:text-orange-300">Peso Total</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Opciones de PDF */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-8">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h4 className="font-semibold text-gray-900">Descargar PDFs de Guías</h4>
-          <p className="text-sm text-gray-600 mt-1">
+      <div className="bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-primary mb-8">
+        <div className="border-b border-dm-border-primary px-6 py-4">
+          <h4 className="font-semibold text-dm-text-primary">Descargar PDFs de Guías</h4>
+          <p className="text-sm text-dm-text-secondary mt-1">
             Genere e imprima los PDFs A4 de todas las guías de remisión creadas
           </p>
         </div>
@@ -136,16 +136,16 @@ export const RemissionGuideGenerationResult: React.FC<RemissionGuideGenerationRe
 
           {/* Opciones individuales */}
           {showPDFOptions && (
-            <div className="border-t border-gray-200 pt-6">
-              <h5 className="font-medium text-gray-900 mb-4">Guías Individuales</h5>
+            <div className="border-t border-dm-border-primary pt-6">
+              <h5 className="font-medium text-dm-text-primary mb-4">Guías Individuales</h5>
               <div className="space-y-3">
                 {generationResult.guides_generated.map((guide) => (
-                  <div key={guide.guide_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={guide.guide_id} className="flex items-center justify-between p-4 bg-dm-bg-secondary rounded-lg">
                     <div className="flex-1">
-                      <div className="font-medium text-sm text-gray-900">
+                      <div className="font-medium text-sm text-dm-text-primary">
                         Guía #{guide.document_number}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-dm-text-secondary">
                         Destino: {guide.destination_port_name} | 
                         Destinatario: {guide.recipient_name} |
                         {guide.package_items.length} paquete(s)
@@ -204,7 +204,7 @@ export const RemissionGuideGenerationResult: React.FC<RemissionGuideGenerationRe
       </div>
 
       {/* Información adicional */}
-      <div className="mt-8 text-center text-sm text-gray-500">
+      <div className="mt-8 text-center text-sm text-dm-text-muted">
         <p>
           Generado el {new Date(generationResult.generated_at).toLocaleString('es-PE')}
         </p>

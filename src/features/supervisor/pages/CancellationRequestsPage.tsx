@@ -148,21 +148,21 @@ const CancellationRequestsPage: React.FC = () => {
     switch (status) {
       case 'PENDING':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-100">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900/40">
             <ClockIcon className="w-3 h-3" />
             Pendiente
           </span>
         );
       case 'APPROVED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-100">
             <CheckCircleIcon className="w-3 h-3" />
             Aprobada
           </span>
         );
       case 'REJECTED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 text-red-700 border border-red-100">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border border-red-100">
             <XCircleIcon className="w-3 h-3" />
             Rechazada
           </span>
@@ -204,67 +204,67 @@ const CancellationRequestsPage: React.FC = () => {
           <div className="flex items-center justify-center w-9 h-9 rounded-[8px] bg-[#1F4690]/10">
             <ShieldCheckIcon className="w-5 h-5 text-[#1F4690]" />
           </div>
-          <h1 className="text-[22px] font-semibold text-[#202020] tracking-tight">
+          <h1 className="text-[22px] font-semibold text-dm-text-primary tracking-tight">
             Solicitudes de anulación
           </h1>
         </div>
-        <p className="text-[14px] text-[#828282] max-w-2xl">
+        <p className="text-[14px] text-dm-text-muted max-w-2xl">
           Gestiona y revisa el estado de las solicitudes de anulación enviadas por los vendedores.
         </p>
       </header>
 
       {/* ── Stats ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-[12px] border border-[#e8e8e8] flex flex-col gap-2">
+        <div className="bg-dm-bg-primary p-5 rounded-[12px] border border-dm-border-primary flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-medium text-[#828282] uppercase tracking-wider">
+            <span className="text-[12px] font-medium text-dm-text-muted uppercase tracking-wider">
               Pendientes
             </span>
-            <div className="w-8 h-8 rounded-[8px] bg-amber-50 flex items-center justify-center">
-              <ClockIcon className="w-4 h-4 text-amber-600" />
+            <div className="w-8 h-8 rounded-[8px] bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
+              <ClockIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[28px] font-bold text-[#202020] leading-none">{pendingCount}</span>
+            <span className="text-[28px] font-bold text-dm-text-primary leading-none">{pendingCount}</span>
             {pendingCount > 0 && (
-              <span className="text-[12px] font-medium text-amber-600">requieren atención</span>
+              <span className="text-[12px] font-medium text-amber-600 dark:text-amber-400">requieren atención</span>
             )}
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-[12px] border border-[#e8e8e8] flex flex-col gap-2">
+        <div className="bg-dm-bg-primary p-5 rounded-[12px] border border-dm-border-primary flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-medium text-[#828282] uppercase tracking-wider">
+            <span className="text-[12px] font-medium text-dm-text-muted uppercase tracking-wider">
               Aprobadas
             </span>
-            <div className="w-8 h-8 rounded-[8px] bg-emerald-50 flex items-center justify-center">
-              <CheckCircleIcon className="w-4 h-4 text-emerald-600" />
+            <div className="w-8 h-8 rounded-[8px] bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
+              <CheckCircleIcon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[28px] font-bold text-[#202020] leading-none">{approvedCount}</span>
-            <span className="text-[12px] text-[#828282]">total</span>
+            <span className="text-[28px] font-bold text-dm-text-primary leading-none">{approvedCount}</span>
+            <span className="text-[12px] text-dm-text-muted">total</span>
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-[12px] border border-[#e8e8e8] flex flex-col gap-2">
+        <div className="bg-dm-bg-primary p-5 rounded-[12px] border border-dm-border-primary flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-medium text-[#828282] uppercase tracking-wider">
+            <span className="text-[12px] font-medium text-dm-text-muted uppercase tracking-wider">
               Rechazadas
             </span>
-            <div className="w-8 h-8 rounded-[8px] bg-red-50 flex items-center justify-center">
-              <XCircleIcon className="w-4 h-4 text-red-500" />
+            <div className="w-8 h-8 rounded-[8px] bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+              <XCircleIcon className="w-4 h-4 text-red-500 dark:text-red-400" />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-[28px] font-bold text-[#202020] leading-none">{rejectedCount}</span>
-            <span className="text-[12px] text-[#828282]">total</span>
+            <span className="text-[28px] font-bold text-dm-text-primary leading-none">{rejectedCount}</span>
+            <span className="text-[12px] text-dm-text-muted">total</span>
           </div>
         </div>
       </div>
 
       {/* ── Filtros y búsqueda ── */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] p-4">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
             {FILTERS.map(({ value, label }) => (
@@ -274,7 +274,7 @@ const CancellationRequestsPage: React.FC = () => {
                 className={`px-4 py-2 rounded-full text-[13px] font-medium transition-colors ${
                   statusFilter === value
                     ? 'bg-[#1F4690] text-white'
-                    : 'bg-[#f5f5f5] text-[#4d4d4d] hover:bg-[#e8e8e8]'
+                    : 'bg-dm-bg-secondary text-dm-text-secondary hover:bg-dm-bg-hover'
                 }`}
               >
                 {label}
@@ -283,13 +283,13 @@ const CancellationRequestsPage: React.FC = () => {
           </div>
 
           <div className="relative w-full md:w-80">
-            <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#828282]" />
+            <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-dm-text-muted" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por vendedor o comprobante..."
-              className="w-full pl-10 pr-4 py-2.5 text-[13px] text-[#202020] bg-[#f5f5f5] border border-[#e8e8e8] rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 text-[13px] text-dm-text-primary bg-dm-bg-secondary border border-dm-border-primary rounded-[12px] focus:outline-none focus:ring-2 focus:ring-[#1F4690]/20 focus:border-[#1F4690] transition-colors"
             />
           </div>
         </div>
@@ -297,28 +297,28 @@ const CancellationRequestsPage: React.FC = () => {
 
       {/* ── Error ── */}
       {error && (
-        <div className="rounded-[12px] border border-red-200 bg-red-50/40 p-4">
-          <p className="text-[13px] text-red-700">{error}</p>
+        <div className="rounded-[12px] border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/40 p-4">
+          <p className="text-[13px] text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}
 
       {/* ── Tabla ── */}
-      <div className="bg-white rounded-[12px] border border-[#e8e8e8] overflow-hidden">
+      <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary overflow-hidden">
         {isLoading && filteredRequests.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <Spinner size="lg" color="text-[#1F4690]" />
-            <p className="text-[13px] text-[#828282]">Cargando solicitudes...</p>
+            <p className="text-[13px] text-dm-text-muted">Cargando solicitudes...</p>
           </div>
         ) : filteredRequests.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
-            <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-[#f5f5f5]">
-              <InboxIcon className="w-8 h-8 text-[#828282]" />
+            <div className="flex items-center justify-center w-16 h-16 rounded-[20px] bg-dm-bg-secondary">
+              <InboxIcon className="w-8 h-8 text-dm-text-muted" />
             </div>
             <div className="text-center">
-              <p className="text-[15px] font-medium text-[#202020]">
+              <p className="text-[15px] font-medium text-dm-text-primary">
                 No hay solicitudes para mostrar
               </p>
-              <p className="text-[13px] text-[#828282] mt-1">
+              <p className="text-[13px] text-dm-text-muted mt-1">
                 {searchQuery
                   ? `No se encontraron resultados para "${searchQuery}"`
                   : 'Las solicitudes aparecerán aquí cuando los vendedores las envíen.'}
@@ -329,26 +329,26 @@ const CancellationRequestsPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#fafafa] border-b border-[#e8e8e8]">
-                  <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                <tr className="bg-dm-bg-secondary border-b border-dm-border-primary">
+                  <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                     Vendedor
                   </th>
-                  <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                  <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                     Comprobante
                   </th>
-                  <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                  <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                     Pasajero
                   </th>
-                  <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                  <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                     Motivo
                   </th>
-                  <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                  <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                     Fecha
                   </th>
-                  <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider">
+                  <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider">
                     Estado
                   </th>
-                  <th className="px-6 py-3.5 text-[11px] font-semibold text-[#828282] uppercase tracking-wider text-right">
+                  <th className="px-6 py-3.5 text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider text-right">
                     Acciones
                   </th>
                 </tr>
@@ -357,13 +357,13 @@ const CancellationRequestsPage: React.FC = () => {
                 {filteredRequests.map((request) => {
                   const { date, time } = formatDate(request.created_at);
                   return (
-                    <tr key={request.id} className="hover:bg-[#fafafa]/60 transition-colors">
+                    <tr key={request.id} className="hover:bg-dm-bg-secondary/60 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-[#1F4690]/10 flex items-center justify-center text-[#1F4690] font-bold text-[11px] flex-shrink-0">
                             {getInitials(request.requester_name)}
                           </div>
-                          <span className="text-[13px] font-medium text-[#202020]">
+                          <span className="text-[13px] font-medium text-dm-text-primary">
                             {request.requester_name}
                           </span>
                         </div>
@@ -373,22 +373,22 @@ const CancellationRequestsPage: React.FC = () => {
                           {request.series}-{request.number}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-[13px] text-[#4d4d4d]">
+                      <td className="px-6 py-4 text-[13px] text-dm-text-secondary">
                         {request.passenger_name || (
-                          <span className="text-[#c4c4c4]">—</span>
+                          <span className="text-dm-text-muted">—</span>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         <p
-                          className="text-[13px] text-[#4d4d4d] max-w-xs truncate"
+                          className="text-[13px] text-dm-text-secondary max-w-xs truncate"
                           title={request.request_reason}
                         >
                           {request.request_reason}
                         </p>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-[13px] text-[#4d4d4d]">{date}</span>
-                        <div className="text-[11px] text-[#828282]">{time}</div>
+                        <span className="text-[13px] text-dm-text-secondary">{date}</span>
+                        <div className="text-[11px] text-dm-text-muted">{time}</div>
                       </td>
                       <td className="px-6 py-4">{getStatusBadge(request.status)}</td>
                       <td className="px-6 py-4 text-right">
@@ -396,21 +396,21 @@ const CancellationRequestsPage: React.FC = () => {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openApprovalModal(request)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full hover:bg-emerald-100 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 rounded-full hover:bg-emerald-100 transition-colors"
                             >
                               <CheckCircleIcon className="w-3.5 h-3.5" />
                               Aprobar
                             </button>
                             <button
                               onClick={() => openRejectionModal(request)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-red-700 bg-red-50 border border-red-100 rounded-full hover:bg-red-100 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-100 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                             >
                               <XCircleIcon className="w-3.5 h-3.5" />
                               Rechazar
                             </button>
                           </div>
                         ) : (
-                          <span className="text-[13px] text-[#c4c4c4]">—</span>
+                          <span className="text-[13px] text-dm-text-muted">—</span>
                         )}
                       </td>
                     </tr>
@@ -423,8 +423,8 @@ const CancellationRequestsPage: React.FC = () => {
 
         {/* Footer de tabla */}
         {filteredRequests.length > 0 && (
-          <div className="px-6 py-3.5 bg-[#fafafa] border-t border-[#e8e8e8]">
-            <p className="text-[12px] text-[#828282]">
+          <div className="px-6 py-3.5 bg-dm-bg-secondary border-t border-dm-border-primary">
+            <p className="text-[12px] text-dm-text-muted">
               Mostrando {filteredRequests.length} resultado
               {filteredRequests.length !== 1 ? 's' : ''}
               {searchQuery && ` para "${searchQuery}"`}

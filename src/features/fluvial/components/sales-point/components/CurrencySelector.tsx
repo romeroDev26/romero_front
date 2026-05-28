@@ -37,16 +37,16 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   if (variant === 'pills') {
     return (
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-1">
-        <span className="text-sm font-medium text-gray-900">Moneda de Pago</span>
-        <div className="inline-flex w-fit max-w-full bg-gray-100 p-1 rounded-full gap-1">
+        <span className="text-sm font-medium text-dm-text-primary">Moneda de Pago</span>
+        <div className="inline-flex w-fit max-w-full bg-dm-bg-secondary p-1 rounded-full gap-1">
           <button
             type="button"
             disabled={disabled}
             onClick={() => onCurrencyChange('PEN')}
             className={`px-3 sm:px-4 py-1.5 rounded-full text-xs transition-all ${
               selectedCurrency === 'PEN'
-                ? 'bg-white text-primary font-bold shadow-sm'
-                : 'text-gray-500 font-medium hover:text-gray-700'
+                ? 'bg-dm-bg-primary text-primary font-bold shadow-sm dark:bg-blue-600 dark:text-white'
+                : 'text-dm-text-muted font-medium hover:text-dm-text-secondary'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Soles
@@ -57,8 +57,8 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
             onClick={() => onCurrencyChange('USD')}
             className={`px-3 sm:px-4 py-1.5 rounded-full text-xs transition-all ${
               selectedCurrency === 'USD'
-                ? 'bg-white text-primary font-bold shadow-sm'
-                : 'text-gray-500 font-medium hover:text-gray-700'
+                ? 'bg-dm-bg-primary text-primary font-bold shadow-sm dark:bg-blue-600 dark:text-white'
+                : 'text-dm-text-muted font-medium hover:text-dm-text-secondary'
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             Dólares
@@ -85,7 +85,7 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
     >
       <span
         className={`
-          inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform
+          inline-block h-3.5 w-3.5 transform rounded-full bg-dm-bg-primary shadow transition-transform
           ${isPEN ? 'translate-x-0.5' : 'translate-x-[18px]'}
         `}
       />
@@ -95,11 +95,11 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
   if (compact) {
     return (
       <div className="flex items-center gap-1.5">
-        <span className={`text-xs font-semibold transition-colors ${isPEN ? 'text-blue-600' : 'text-gray-400'}`}>
+        <span className={`text-xs font-semibold transition-colors ${isPEN ? 'text-blue-600 dark:text-blue-400' : 'text-dm-text-muted'}`}>
           {CURRENCIES.PEN.symbol} PEN
         </span>
         {toggle}
-        <span className={`text-xs font-semibold transition-colors ${!isPEN ? 'text-green-600' : 'text-gray-400'}`}>
+        <span className={`text-xs font-semibold transition-colors ${!isPEN ? 'text-green-600 dark:text-green-400' : 'text-dm-text-muted'}`}>
           {CURRENCIES.USD.symbol} USD
         </span>
       </div>
@@ -108,13 +108,13 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-dm-text-secondary mb-2">
         Tipo de Moneda
       </label>
 
-      <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border border-gray-200">
+      <div className="flex items-center justify-between bg-dm-bg-secondary rounded-lg p-3 border border-dm-border-primary">
         <div className="flex items-center space-x-3">
-          <div className={`flex items-center space-x-1.5 transition-colors ${isPEN ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>
+          <div className={`flex items-center space-x-1.5 transition-colors ${isPEN ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-dm-text-muted'}`}>
             <span className="text-base">{CURRENCIES.PEN.symbol}</span>
             <span className="text-sm">{CURRENCIES.PEN.name}</span>
           </div>
@@ -135,13 +135,13 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
           >
             <span
               className={`
-                inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform
+                inline-block h-5 w-5 transform rounded-full bg-dm-bg-primary shadow-lg transition-transform
                 ${isPEN ? 'translate-x-1' : 'translate-x-6'}
               `}
             />
           </button>
 
-          <div className={`flex items-center space-x-1.5 transition-colors ${!isPEN ? 'text-green-600 font-semibold' : 'text-gray-400'}`}>
+          <div className={`flex items-center space-x-1.5 transition-colors ${!isPEN ? 'text-green-600 dark:text-green-400 font-semibold' : 'text-dm-text-muted'}`}>
             <span className="text-base">{CURRENCIES.USD.symbol}</span>
             <span className="text-sm">{CURRENCIES.USD.name}</span>
           </div>
@@ -149,14 +149,14 @@ export const CurrencySelector: React.FC<CurrencySelectorProps> = ({
       </div>
 
       <div className="mt-2">
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-dm-text-secondary">
           {isPEN ? (
             <>
-              <span className="font-medium text-blue-600">Soles:</span> Precios automáticos desde tarifas
+              <span className="font-medium text-blue-600 dark:text-blue-400">Soles:</span> Precios automáticos desde tarifas
             </>
           ) : (
             <>
-              <span className="font-medium text-green-600">Dólares:</span> Ingreso manual de precios
+              <span className="font-medium text-green-600 dark:text-green-400">Dólares:</span> Ingreso manual de precios
             </>
           )}
         </p>

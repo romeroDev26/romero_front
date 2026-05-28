@@ -174,23 +174,23 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
   };
 
   return (
-    <div className={`bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 ${className}`}>
+    <div className={`bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-lg p-4 mb-6 ${className}`}>
       {/* Header de confirmación de reserva */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {isReservationValid ? (
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
           ) : (
-            <AlertCircle className="h-5 w-5 text-red-600" />
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
           )}
-          <h3 className="font-semibold text-blue-800">
+          <h3 className="font-semibold text-blue-800 dark:text-blue-300">
             {isReservationValid ? 'Confirmando Reserva' : 'Reserva Inválida'}
           </h3>
           <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded">
             #{reservationData.id}
           </span>
         </div>
-        <div className="text-xs text-blue-600">
+        <div className="text-xs text-blue-600 dark:text-blue-400">
           Estado: <span className="font-semibold">{reservationData.status}</span>
         </div>
       </div>
@@ -199,7 +199,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         {/* Datos del cliente */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-blue-700 font-medium">
+          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-medium">
             <User className="h-4 w-4" />
             <span>Datos del Cliente</span>
           </div>
@@ -221,7 +221,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
 
         {/* Detalles del viaje */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-blue-700 font-medium">
+          <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300 font-medium">
             <Clock className="h-4 w-4" />
             <span>Detalles de la Reserva</span>
           </div>
@@ -244,7 +244,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
             <div>
               <span className="font-medium">Por Cobrar:</span> S/ {reservationData.remainingAmount.toFixed(2)}
             </div>
-            <div className="text-xs text-gray-600">
+            <div className="text-xs text-dm-text-secondary">
               <span className="font-medium">Reservado:</span> {formatReservedDate()}
             </div>
           </div>
@@ -253,7 +253,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
 
       {/* Alertas y notificaciones */}
       {!isReservationValid && (
-        <div className="mt-4 bg-red-50 border border-red-200 rounded p-3 text-sm text-red-800">
+        <div className="mt-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded p-3 text-sm text-red-800 dark:text-red-300">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             <span className="font-medium">Reserva no válida para confirmación</span>
@@ -265,7 +265,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
       )}
 
       {isReservationValid && reservationData.remainingAmount > 0 && (
-        <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
+        <div className="mt-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded p-3 text-sm text-yellow-800 dark:text-yellow-300">
           <div className="flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             <span className="font-medium">Pago pendiente</span>
@@ -276,7 +276,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
         </div>
       )}
 
-      <div className="mt-4 text-xs text-blue-600 bg-blue-100 p-2 rounded">
+      <div className="mt-4 text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 p-2 rounded">
         <span className="font-medium">Nota:</span> Los datos del cliente están prellenados y bloqueados para garantizar la consistencia con la reserva original. 
         Solo se puede modificar información de contacto adicional si es necesario.
       </div>

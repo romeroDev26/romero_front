@@ -139,11 +139,11 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="relative w-full max-w-7xl bg-slate-50 rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
+              <Dialog.Panel className="relative w-full max-w-7xl bg-dm-bg-secondary rounded-2xl shadow-2xl overflow-hidden border border-dm-border-primary">
                 <div className="absolute right-4 top-4 z-20">
                   <button
                     onClick={handleClose}
-                    className="p-2 rounded-full bg-white/90 hover:bg-white text-slate-500 hover:text-slate-700 transition-colors shadow-sm"
+                    className="p-2 rounded-full bg-dm-bg-primary/90 hover:bg-dm-bg-primary text-dm-text-muted hover:text-dm-text-secondary transition-colors shadow-sm"
                     aria-label="Cerrar"
                   >
                     <XMarkIcon className="w-4 h-4" />
@@ -151,33 +151,33 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                 </div>
 
                 <div className="flex flex-col md:flex-row min-h-[620px]">
-                  <div className="relative md:w-4/12 bg-gradient-to-br from-primary/15 via-sky-100 to-indigo-100 border-b md:border-b-0 md:border-r border-slate-200 p-8">
+                  <div className="relative md:w-4/12 bg-gradient-to-br from-primary/15 via-blue-100/50 to-indigo-100/50 dark:from-primary/10 dark:via-blue-900/20 dark:to-indigo-900/20 border-b md:border-b-0 md:border-r border-dm-border-primary p-6 md:p-8">
                     <div className="absolute -top-12 -right-10 w-40 h-40 rounded-full bg-primary/10" />
                     <div className="absolute -bottom-16 -left-10 w-56 h-56 rounded-full bg-sky-200/40" />
 
                     <div className="relative z-10 h-full flex flex-col justify-between">
                       <div>
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-primary/20 text-primary text-xs font-bold tracking-wide uppercase">
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-dm-bg-primary/80 border border-primary/20 text-primary text-xs font-bold tracking-wide uppercase">
                           <SparklesIcon className="w-4 h-4" />
                           Actualizacion
                         </span>
 
-                        <div className="mt-8 w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center">
+                        <div className="mt-8 w-20 h-20 rounded-full bg-dm-bg-primary shadow-lg flex items-center justify-center">
                           <ShieldCheckIcon className="w-10 h-10 text-primary" />
                         </div>
 
-                        <Dialog.Title className="mt-6 text-2xl font-extrabold tracking-tight text-slate-900 leading-tight">
+                        <Dialog.Title className="mt-6 text-2xl font-extrabold tracking-tight text-dm-text-primary leading-tight">
                           {current.title}
                         </Dialog.Title>
 
-                        <p className="mt-4 text-sm text-slate-700 leading-relaxed">
+                        <p className="mt-4 text-sm text-dm-text-secondary leading-relaxed">
                           {current.description}
                         </p>
                       </div>
 
-                      <div className="mt-8 p-4 rounded-xl bg-white/80 border border-slate-200">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Progreso</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-800">
+                      <div className="mt-8 p-4 rounded-xl bg-dm-bg-primary/80 border border-dm-border-primary">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-dm-text-muted">Progreso</p>
+                        <p className="mt-1 text-sm font-semibold text-dm-text-primary">
                           Novedad {currentIndex + 1} de {total}
                         </p>
                         <div className="mt-3 flex items-center gap-2">
@@ -189,7 +189,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                               className={`rounded-full transition-all duration-200 focus:outline-none ${
                                 idx === currentIndex
                                   ? 'w-7 h-2.5 bg-primary'
-                                  : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
+                                  : 'w-2.5 h-2.5 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500'
                               }`}
                             />
                           ))}
@@ -204,7 +204,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                         {current.version}
                       </span>
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1 text-xs text-slate-500">
+                        <span className="inline-flex items-center gap-1 text-xs text-dm-text-muted">
                           <CalendarDaysIcon className="w-4 h-4" />
                           {current.release_date}
                         </span>
@@ -213,7 +213,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                             <button
                               onClick={goPrev}
                               disabled={currentIndex === 0}
-                              className="p-1.5 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              className="p-1.5 rounded-full border border-dm-border-primary bg-dm-bg-primary text-dm-text-secondary hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                               aria-label="Anterior"
                             >
                               <ChevronLeftIcon className="w-4 h-4" />
@@ -221,7 +221,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                             <button
                               onClick={goNext}
                               disabled={currentIndex === total - 1}
-                              className="p-1.5 rounded-full border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                              className="p-1.5 rounded-full border border-dm-border-primary bg-dm-bg-primary text-dm-text-secondary hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                               aria-label="Siguiente"
                             >
                               <ChevronRightIcon className="w-4 h-4" />
@@ -231,7 +231,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                       </div>
                     </div>
 
-                    <div className="mt-5 rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-black">
+                    <div className="mt-5 rounded-xl overflow-hidden border border-dm-border-primary shadow-sm bg-black">
                       {renderVideo(current.video_url as string)}
                     </div>
 
@@ -256,7 +256,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                           href={current.learn_more_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 border border-slate-300 bg-white text-slate-700 text-base font-semibold transition-all hover:bg-slate-100"
+                          className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 border border-dm-border-primary bg-dm-bg-primary text-dm-text-secondary text-base font-semibold transition-all hover:bg-dm-bg-hover"
                         >
                           Mas detalles
                         </a>

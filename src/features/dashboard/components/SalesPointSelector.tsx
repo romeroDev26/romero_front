@@ -85,28 +85,28 @@ export const SalesPointSelector: React.FC = () => {
   return (
     <>
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        <h2 className="text-2xl font-bold text-dm-text-primary mb-4">
           Punto de Venta
         </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-dm-text-secondary max-w-2xl mx-auto">
           Selecciona tu sucursal para comenzar a trabajar y ver tus estadísticas de ventas
         </p>
       </div>
 
       {/* Branch Office Selector */}
       <div className="max-w-md mx-auto mb-8">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-dm-text-secondary mb-2">
           Seleccionar Sucursal
         </label>
         {branchesLoading ? (
-          <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
-            <div className="animate-pulse h-5 bg-gray-200 rounded"></div>
+          <div className="w-full px-4 py-3 border border-dm-border-primary rounded-lg bg-dm-bg-secondary">
+            <div className="animate-pulse h-5 bg-dm-bg-secondary rounded"></div>
           </div>
         ) : (
           <select 
             value={selectedBranch} 
             onChange={(e) => handleBranchChange(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Seleccione una sucursal...</option>
             {branches?.map((branch) => (
@@ -122,7 +122,7 @@ export const SalesPointSelector: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <button 
           onClick={() => handleQuickAction('sales-point')}
-          className="flex items-center justify-center px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:bg-gray-400"
+          className="flex items-center justify-center px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:bg-dm-text-muted"
           disabled={!selectedBranch}
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,7 +132,7 @@ export const SalesPointSelector: React.FC = () => {
         </button>
         <button 
           onClick={() => handleQuickAction('cargo')}
-          className="flex items-center justify-center px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md disabled:bg-gray-400"
+          className="flex items-center justify-center px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md disabled:bg-dm-text-muted"
           disabled={!selectedBranch}
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@ export const SalesPointSelector: React.FC = () => {
         </button>
         <button 
           onClick={() => handleQuickAction('reservations')}
-          className="flex items-center justify-center px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md disabled:bg-gray-400"
+          className="flex items-center justify-center px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-md disabled:bg-dm-text-muted"
           disabled={!selectedBranch}
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,7 +155,7 @@ export const SalesPointSelector: React.FC = () => {
       {/* Sales Statistics */}
       <div className="border-t pt-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-dm-text-primary">
             Mis Estadísticas de Ventas
           </h3>
           <button
@@ -168,8 +168,8 @@ export const SalesPointSelector: React.FC = () => {
           </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-2xl font-bold text-blue-600 mb-1">
+          <div className="text-center p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
               {statisticsLoading ? (
                 <div className="animate-pulse h-8 bg-blue-200 rounded"></div>
               ) : (
@@ -181,10 +181,10 @@ export const SalesPointSelector: React.FC = () => {
                 />
               )}
             </div>
-            <div className="text-sm text-gray-600">Ventas Hoy</div>
+            <div className="text-sm text-dm-text-secondary">Ventas Hoy</div>
           </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-2xl font-bold text-green-600 mb-1">
+          <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
               {statisticsLoading ? (
                 <div className="animate-pulse h-8 bg-green-200 rounded"></div>
               ) : (
@@ -197,26 +197,26 @@ export const SalesPointSelector: React.FC = () => {
                 />
               )}
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-dm-text-secondary">
               Ingresos Hoy {todayHasAdjustments && '(Neto)'}
             </div>
             {todayHasAdjustments && today.data && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-dm-text-muted mt-1">
                 {today.data.total_credit_notes !== 0 && (
-                  <span className="text-red-600">
+                  <span className="text-red-600 dark:text-red-400">
                     NC: S/ {Math.abs(today.data.total_credit_notes || 0).toFixed(2)}
                   </span>
                 )}
                 {today.data.total_credit_notes !== 0 && today.data.total_debit_notes !== 0 && ' | '}
                 {today.data.total_debit_notes !== 0 && (
-                  <span className="text-green-600">
+                  <span className="text-green-600 dark:text-green-400">
                     ND: +S/ {(today.data.total_debit_notes || 0).toFixed(2)}
                   </span>
                 )}
               </div>
             )}
           </div>
-          <div className="text-center p-4 bg-purple-50 rounded-lg">
+          <div className="text-center p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
             <div className="text-2xl font-bold text-purple-600 mb-1">
               {statisticsLoading ? (
                 <div className="animate-pulse h-8 bg-purple-200 rounded"></div>
@@ -229,14 +229,14 @@ export const SalesPointSelector: React.FC = () => {
                 />
               )}
             </div>
-            <div className="text-sm text-gray-600">Ventas Este Mes</div>
+            <div className="text-sm text-dm-text-secondary">Ventas Este Mes</div>
           </div>
         </div>
 
         {/* Error message */}
         {statisticsError && !statisticsLoading && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="text-yellow-800 text-sm text-center">
+          <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg">
+            <div className="text-yellow-800 dark:text-yellow-300 text-sm text-center">
               No se pudieron cargar todas las estadísticas. Las métricas mostradas pueden estar incompletas.
             </div>
           </div>

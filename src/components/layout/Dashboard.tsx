@@ -11,7 +11,9 @@ import {
   BellAlertIcon,
   ChatBubbleLeftRightIcon,
   BriefcaseIcon,
-  SparklesIcon
+  SparklesIcon,
+  SunIcon,
+  MoonIcon
 } from '@heroicons/react/24/outline';
 import { authService } from '../../services/auth.service';
 import { toast } from '@/utils/sileo-toast';
@@ -22,6 +24,10 @@ import SellerNotificationsModal from '../common/SellerNotificationsModal';
 import { CancellationRequestListItem } from '../../features/accounting/types/cancellationRequests';
 import { useSystemUpdates } from '../../features/updates/hooks/useSystemUpdates';
 import SystemUpdatesModal from '../../features/updates/components/SystemUpdatesModal';
+import { useServiceStatus } from '../../hooks/useServiceStatus';
+import ServiceStatusBanner from '../common/ServiceStatusBanner';
+import { useSystemStatusStore } from '@/stores/systemStatus.store';
+import { useThemeTransition } from '@/hooks/useThemeTransition';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -34,55 +40,55 @@ const quickAccessItems = [
     name: 'Punto de Venta',
     path: '/fluvial/operations/sales-point',
     icon: TicketIcon,
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100 dark:bg-blue-900/40',
+    iconColor: 'text-blue-600 dark:text-blue-400',
     activeBorder: 'border-blue-500',
-    activeText: 'text-blue-700',
-    activeBg: 'bg-blue-50',
+    activeText: 'text-blue-700 dark:text-blue-400',
+    activeBg: 'bg-blue-50 dark:bg-blue-900/20',
     dot: 'bg-blue-500',
   },
   {
     name: 'Encomiendas',
     path: '/fluvial/operations/cargo-sale',
     icon: CubeIcon,
-    iconBg: 'bg-emerald-100',
-    iconColor: 'text-emerald-600',
+    iconBg: 'bg-emerald-100 dark:bg-emerald-900/40',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
     activeBorder: 'border-emerald-500',
-    activeText: 'text-emerald-700',
-    activeBg: 'bg-emerald-50',
+    activeText: 'text-emerald-700 dark:text-emerald-400',
+    activeBg: 'bg-emerald-50 dark:bg-emerald-900/20',
     dot: 'bg-emerald-500',
   },
   {
     name: 'Venta Rápida',
     path: '/fluvial/operations/quick-sales',
     icon: BriefcaseIcon,
-    iconBg: 'bg-violet-100',
-    iconColor: 'text-violet-600',
+    iconBg: 'bg-violet-100 dark:bg-violet-900/40',
+    iconColor: 'text-violet-600 dark:text-violet-400',
     activeBorder: 'border-violet-500',
-    activeText: 'text-violet-700',
-    activeBg: 'bg-violet-50',
+    activeText: 'text-violet-700 dark:text-violet-400',
+    activeBg: 'bg-violet-50 dark:bg-violet-900/20',
     dot: 'bg-violet-500',
   },
   {
     name: 'Reservas',
     path: '/fluvial/operations/reservations',
     icon: ClipboardDocumentListIcon,
-    iconBg: 'bg-indigo-100',
-    iconColor: 'text-indigo-600',
+    iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
     activeBorder: 'border-indigo-500',
-    activeText: 'text-indigo-700',
-    activeBg: 'bg-indigo-50',
+    activeText: 'text-indigo-700 dark:text-indigo-400',
+    activeBg: 'bg-indigo-50 dark:bg-indigo-900/20',
     dot: 'bg-indigo-500',
   },
   {
     name: 'Manifiestos',
     path: '/fluvial/operations/manifests',
     icon: DocumentTextIcon,
-    iconBg: 'bg-orange-100',
-    iconColor: 'text-orange-600',
+    iconBg: 'bg-orange-100 dark:bg-orange-900/40',
+    iconColor: 'text-orange-600 dark:text-orange-400',
     activeBorder: 'border-orange-500',
-    activeText: 'text-orange-700',
-    activeBg: 'bg-orange-50',
+    activeText: 'text-orange-700 dark:text-orange-400',
+    activeBg: 'bg-orange-50 dark:bg-orange-900/20',
     dot: 'bg-orange-500',
   },
 ];
@@ -91,6 +97,12 @@ const quickAccessItems = [
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Inicializar monitoreo proactivo de estado del backend (polling /health)
+  useServiceStatus();
+
+  const isSystemDown = useSystemStatusStore((s) => s.isReachable === false);
+  const { resolvedTheme, toggleTheme } = useThemeTransition();
 
   // Estado para el sidebar móvil
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -387,7 +399,7 @@ const Dashboard: React.FC = () => {
     isSalesPointRoute || isCargoSaleRoute || isRemissionGuidesRoute || isCreditNoteAnnulRoute || isSettingsRoute;
 
   return (
-    <div className="flex h-screen bg-gray-100 p-5">
+    <div className="flex h-screen bg-dm-bg-secondary p-5">
       {/* Sidebar móvil: array (no Fragment) para AnimatePresence; closeMobileSidebar desactiva pointer-events antes del exit */}
       <AnimatePresence>
         {sidebarOpen
@@ -395,7 +407,7 @@ const Dashboard: React.FC = () => {
               <motion.div
                 key="mobile-sidebar-backdrop"
                 ref={mobileBackdropRef}
-                className="fixed inset-0 z-40 xl:hidden bg-gray-600/75"
+                className="fixed inset-0 z-40 xl:hidden bg-black/60"
                 role="presentation"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -442,110 +454,153 @@ const Dashboard: React.FC = () => {
       {/* Contenido principal */}
       <div className={`flex flex-col flex-1 overflow-hidden transition-all duration-300 ${!sidebarHidden && 'lg:ml-5'}`}>
         {/* Barra superior */}
-        <header className="bg-white rounded-xl mb-3 lg:mb-5 border border-slate-200 shadow-sm overflow-hidden">
+        <header className="bg-dm-bg-primary rounded-xl mb-3 lg:mb-5 border border-dm-border-primary shadow-sm overflow-hidden">
           {/* Fila superior: saludo + banner notificaciones + seller */}
           <div className="flex flex-wrap lg:flex-nowrap items-center justify-between px-3 sm:px-4 lg:px-6 py-2.5 lg:py-4 gap-2 lg:gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={toggleSidebar}
-                className="p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 transition-colors flex-shrink-0"
-                title={sidebarHidden ? "Mostrar menú" : "Ocultar menú"}
-              >
-                <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600" />
-              </button>
-
-              <div>
-                {isLoading ? (
-                  <div className="space-y-1.5">
-                    <div className="animate-pulse h-4 bg-slate-200 rounded w-36"></div>
-                    <div className="animate-pulse h-3 bg-slate-100 rounded w-48"></div>
-                  </div>
-                ) : currentUser ? (
-                  <>
-                    <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
-                      ¡Hola, {currentUser.first_name || currentUser.full_name}!
-                    </h2>
-                    <p className="hidden sm:block text-xs text-slate-500">Bienvenido al panel de control de transporte.</p>
-                  </>
-                ) : null}
-              </div>
-            </div>
-
-            {/* Banner de solicitudes de anulación (supervisores) */}
-            {isSupervisor && (
-              <div className="hidden lg:block flex-1 max-w-md">
-                <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 w-9 h-9 bg-primary text-white rounded-lg flex items-center justify-center shadow-md shadow-primary/20">
-                      <BellAlertIcon className="w-5 h-5" />
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wider">Solicitudes de Anulación</p>
-                      <p className="text-sm text-slate-700 font-medium truncate">
-                        {pendingCount > 0
-                          ? `${pendingCount} revisión${pendingCount > 1 ? 'es' : ''} pendiente${pendingCount > 1 ? 's' : ''} hoy`
-                          : 'Sin pendientes por el momento'}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate('/supervisor/cancellation-requests')}
-                    className="flex-shrink-0 bg-primary hover:bg-primary/90 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-1.5"
-                  >
-                    Ver
-                    {pendingCount > 0 && (
-                      <span className="bg-white text-primary text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
-                        {pendingCount > 99 ? '99+' : pendingCount}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Botón de Novedades (visible para todos) */}
+            {/* Botón del sidebar: siempre visible */}
             <button
-              onClick={() => { setShowUpdatesModal(true); }}
-              className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-slate-100 transition-colors relative"
-              title="Ver novedades del sistema"
+              onClick={toggleSidebar}
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-dm-bg-hover transition-colors flex-shrink-0"
+              title={sidebarHidden ? "Mostrar menú" : "Ocultar menú"}
             >
-              <span className="text-sm font-medium text-slate-700 hidden sm:inline">Novedades</span>
-              <div className="relative">
-                <SparklesIcon className="w-5 h-5 text-amber-500" />
-                {hasNew && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white animate-pulse" />
-                )}
-              </div>
+              <Bars3Icon className="w-5 h-5 sm:w-6 sm:h-6 text-dm-text-secondary" />
             </button>
 
-            {/* Separador */}
-            <div className="hidden lg:block w-px h-6 bg-slate-200 mx-1" />
+            {/* Contenido dinámico: banner de estado o controles normales */}
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <AnimatePresence mode="wait">
+                {isSystemDown ? (
+                  <motion.div
+                    key="system-down"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <ServiceStatusBanner compact />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="normal-header"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex flex-wrap lg:flex-nowrap items-center justify-between gap-2 lg:gap-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div>
+                        {isLoading ? (
+                          <div className="space-y-1.5">
+                            <div className="animate-pulse h-4 bg-dm-border-primary rounded w-36"></div>
+                            <div className="animate-pulse h-3 bg-dm-border-secondary rounded w-48"></div>
+                          </div>
+                        ) : currentUser ? (
+                          <>
+                            <h2 className="text-sm sm:text-base font-bold text-dm-text-primary leading-tight">
+                              ¡Hola, {currentUser.first_name || currentUser.full_name}!
+                            </h2>
+                            <p className="hidden sm:block text-xs text-dm-text-muted">Bienvenido al panel de control de transporte.</p>
+                          </>
+                        ) : null}
+                      </div>
+                    </div>
 
-            {/* Respuestas del vendedor */}
-            {isSeller && (
-              <button
-                onClick={handleOpenSellerModal}
-                className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-slate-100 transition-colors"
-                title="Ver respuestas a tus solicitudes de anulación"
-              >
-                <span className="text-sm font-medium text-slate-700 hidden sm:inline">Mis Respuestas</span>
-                <div className="relative">
-                  <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-500" />
-                  {sellerResponsesCount > 0 && (
-                    <>
-                      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
-                        {sellerResponsesCount > 99 ? '99+' : sellerResponsesCount}
+                    {/* Banner de solicitudes de anulación (supervisores) */}
+                    {isSupervisor && (
+                      <div className="hidden lg:block flex-1 max-w-md">
+                        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-9 h-9 bg-primary text-white rounded-lg flex items-center justify-center shadow-md shadow-primary/20">
+                              <BellAlertIcon className="w-5 h-5" />
+                            </div>
+                            <div className="overflow-hidden">
+                              <p className="text-xs font-semibold text-primary uppercase tracking-wider">Solicitudes de Anulación</p>
+                              <p className="text-sm text-dm-text-secondary font-medium truncate">
+                                {pendingCount > 0
+                                  ? `${pendingCount} revisión${pendingCount > 1 ? 'es' : ''} pendiente${pendingCount > 1 ? 's' : ''} hoy`
+                                  : 'Sin pendientes por el momento'}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => navigate('/supervisor/cancellation-requests')}
+                            className="flex-shrink-0 bg-primary hover:bg-primary/90 text-white text-xs font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-1.5"
+                          >
+                            Ver
+                            {pendingCount > 0 && (
+                              <span className="bg-white text-primary text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
+                                {pendingCount > 99 ? '99+' : pendingCount}
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Botón de Novedades (visible para todos) */}
+                    <button
+                      onClick={() => { setShowUpdatesModal(true); }}
+                      className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors relative"
+                      title="Ver novedades del sistema"
+                    >
+                      <span className="text-sm font-medium text-dm-text-secondary hidden sm:inline">Novedades</span>
+                      <div className="relative">
+                        <SparklesIcon className="w-5 h-5 text-amber-500" />
+                        {hasNew && (
+                          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-dm-bg-primary animate-pulse" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Separador */}
+                    <div className="hidden lg:block w-px h-6 bg-dm-border-primary mx-1" />
+
+                    {/* Respuestas del vendedor */}
+                    {isSeller && (
+                      <button
+                        onClick={handleOpenSellerModal}
+                        className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
+                        title="Ver respuestas a tus solicitudes de anulación"
+                      >
+                        <span className="text-sm font-medium text-dm-text-secondary hidden sm:inline">Mis Respuestas</span>
+                        <div className="relative">
+                          <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-500" />
+                          {sellerResponsesCount > 0 && (
+                            <>
+                              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+                                {sellerResponsesCount > 99 ? '99+' : sellerResponsesCount}
+                              </span>
+                              <span className="absolute -top-1 -right-1 inline-flex w-5 h-5 rounded-full bg-blue-400 opacity-75 animate-ping"></span>
+                            </>
+                          )}
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Toggle de tema (visible para todos) */}
+                    <button
+                      onClick={toggleTheme}
+                      className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors"
+                      title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+                    >
+                      <span className="text-sm font-medium text-dm-text-secondary hidden sm:inline">
+                        {resolvedTheme === 'dark' ? 'Claro' : 'Oscuro'}
                       </span>
-                      <span className="absolute -top-1 -right-1 inline-flex w-5 h-5 rounded-full bg-blue-400 opacity-75 animate-ping"></span>
-                    </>
-                  )}
-                </div>
-              </button>
-            )}
+                      {resolvedTheme === 'dark' ? (
+                        <SunIcon className="w-5 h-5 text-amber-400" />
+                      ) : (
+                        <MoonIcon className="w-5 h-5 text-slate-500" />
+                      )}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Navegación de accesos rápidos (tabs estilo log.md) */}
-          <nav className="border-t border-slate-200 bg-slate-50/50 px-2 sm:px-4 lg:px-6">
+          <nav className="border-t border-dm-border-primary bg-dm-bg-secondary/50 px-2 sm:px-4 lg:px-6">
             <div className="flex items-center overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
               {quickAccessItems.map((item) => {
                 const isActive = location.pathname.startsWith(item.path);
@@ -556,7 +611,7 @@ const Dashboard: React.FC = () => {
                     className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive
                         ? `${item.activeText}`
-                        : 'text-slate-500 hover:text-slate-800'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
                     {isActive && (
@@ -580,7 +635,7 @@ const Dashboard: React.FC = () => {
         {/* Área de contenido */}
         <main
           className={`relative flex-1 overflow-y-auto rounded-xl shadow-sm ${
-            isGrayFullBleedRoute ? 'bg-[#f5f5f5]' : isDashboardOrReports ? 'bg-slate-50' : 'bg-white'
+            isGrayFullBleedRoute ? 'bg-dm-bg-secondary' : isDashboardOrReports ? 'bg-dm-bg-secondary' : 'bg-dm-bg-primary'
           }`}
         >
           {location.pathname === '/' && (

@@ -17,8 +17,8 @@ export const TripSelector: React.FC<TripSelectorProps> = ({ onTripSelect }) => {
   };
   
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border mb-6">
-        <label htmlFor="trip-selector" className="block text-sm font-medium text-gray-700 mb-2">
+    <div className="bg-dm-bg-primary p-4 rounded-lg shadow-sm border mb-6">
+        <label htmlFor="trip-selector" className="block text-sm font-medium text-dm-text-secondary mb-2">
             Seleccionar un Viaje para ver sus Reservas
         </label>
         <div className="flex gap-4">
@@ -27,12 +27,12 @@ export const TripSelector: React.FC<TripSelectorProps> = ({ onTripSelect }) => {
                 placeholder="Buscar por nombre de viaje..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-md"
+                className="w-full p-2 border border-dm-border-primary rounded-md"
              />
              <select
                 id="trip-selector"
                 onChange={handleSelect}
-                className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary"
                 disabled={isLoading}
              >
                 <option value="">{isLoading ? 'Cargando viajes...' : 'Seleccione un viaje'}</option>

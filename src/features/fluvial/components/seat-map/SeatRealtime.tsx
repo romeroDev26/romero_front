@@ -1,6 +1,6 @@
 // src/features/fluvial/components/seat-map/SeatRealtime.tsx
-import React from 'react';
-import { SeatMapItem, SeatStatus } from '../../../../types';
+import React, { useRef, useState, useCallback } from 'react';
+import { SeatMapItem, SeatStatus, SeatOccupantInfo } from '../../../../types';
 import { getSeatTypeName } from '../../utils/seatUtils';
 
 interface SeatSelection {
@@ -72,14 +72,14 @@ const getSeatStyles = (
       case 'RESERVED':
         return 'bg-yellow-500 border-yellow-600 text-white cursor-not-allowed';
       case 'BLOCKED':
-        return 'bg-gray-500 border-gray-600 text-white cursor-not-allowed';
+        return 'bg-gray-500 border-gray-600 dark:border-gray-400 text-white cursor-not-allowed';
       default:
-        return 'bg-gray-300 border-gray-400 text-gray-500 cursor-not-allowed';
+        return 'bg-gray-300 dark:bg-gray-700 border-gray-400 dark:border-gray-600 dark:border-gray-400 text-dm-text-muted cursor-not-allowed';
     }
   }
 
   if (isLocked) {
-    return 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed';
+    return 'bg-dm-bg-secondary border-dm-border-primary text-dm-text-muted cursor-not-allowed';
   }
 
   switch (status) {
@@ -87,47 +87,116 @@ const getSeatStyles = (
       // Diferentes indicadores según el estado de conexión
       let connectionIndicator = '';
       if (isWebSocketAvailable && connectionStatus === 'connected') {
-        connectionIndicator = 'ring-1 ring-green-300';
+        connectionIndicator = 'ring-1 ring-green-300 dark:ring-green-700';
       } else if (connectionStatus === 'failed') {
-        connectionIndicator = 'ring-1 ring-gray-300'; // Sin tiempo real, pero funcional
+        connectionIndicator = 'ring-1 ring-dm-border-primary'; // Sin tiempo real, pero funcional
       }
-      return `bg-white border-gray-300 text-gray-700 hover:border-blue-400 hover:bg-blue-50 hover:shadow-md ${connectionIndicator}`;
+      return `bg-dm-bg-primary border-dm-border-primary text-dm-text-secondary hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:shadow-md ${connectionIndicator}`;
     case 'CONFIRMED':
       return 'bg-red-500 border-red-600 text-white cursor-not-allowed';
     case 'RESERVED':
       return 'bg-yellow-500 border-yellow-600 text-white cursor-not-allowed';
     case 'BLOCKED':
-      return 'bg-gray-500 border-gray-600 text-white cursor-not-allowed';
+      return 'bg-gray-500 border-gray-600 dark:border-gray-400 text-white cursor-not-allowed';
     default:
-      return 'bg-gray-300 border-gray-400 text-gray-500 cursor-not-allowed';
+      return 'bg-gray-300 dark:bg-gray-700 border-gray-400 dark:border-gray-600 dark:border-gray-400 text-dm-text-muted cursor-not-allowed';
   }
 };
 
-const getTooltipText = (seat: SeatMapItem, activeSelection?: SeatSelection, isOccupiedByRepresentative?: boolean): string => {
+const OccupantTooltip: React.FC<{ occupant: SeatOccupantInfo; status: SeatStatus }> = ({ occupant, status }) => {
+  const statusLabel = status === 'CONFIRMED' ? 'VENDIDO' : 'RESERVADO';
+  const statusColor = status === 'CONFIRMED' ? 'text-red-300 dark:text-red-600' : 'text-yellow-300 dark:text-yellow-600';
+  const mutedText = 'text-gray-300 dark:text-gray-600';
+  const dimText = 'text-gray-400 dark:text-gray-500';
+
+  return (
+    <div className="text-left">
+      <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${statusColor}`}>
+        {statusLabel}
+      </div>
+      <div className="font-semibold text-sm mb-0.5 leading-tight">{occupant.passenger_name}</div>
+      {occupant.document_number && (
+        <div className={`${mutedText} text-[11px] mb-0.5`}>Doc: {occupant.document_number}</div>
+      )}
+      <div className={`text-[11px] ${mutedText} mb-0.5`}>
+        {occupant.origin_stop_name} <span className={dimText}>→</span> {occupant.destination_stop_name}
+      </div>
+      <div className="text-sm font-bold text-green-400 dark:text-green-600">
+        {occupant.currency_code} {occupant.amount_paid.toFixed(2)}
+      </div>
+      {occupant.status_detail && (
+        <div className={`text-[10px] ${dimText} mt-0.5`}>{occupant.status_detail}</div>
+      )}
+    </div>
+  );
+};
+
+const SeatTooltipContent: React.FC<{
+  seat: SeatMapItem;
+  activeSelection?: SeatSelection;
+  isOccupiedByRepresentative?: boolean;
+}> = ({ seat, activeSelection, isOccupiedByRepresentative }) => {
   const seatTypeName = getSeatTypeName(seat.seat_type?.name);
-  const baseInfo = `Asiento: ${seat.seat_number} - Tipo: ${seatTypeName} - Estado: ${seat.status}`;
 
+  // Si tiene ocupante (CONFIRMED o RESERVED con datos del backend)
+  if (seat.occupant && (seat.status === 'CONFIRMED' || seat.status === 'RESERVED')) {
+    return <OccupantTooltip occupant={seat.occupant} status={seat.status} />;
+  }
+
+  // Si está ocupado por representante
   if (isOccupiedByRepresentative) {
-    return `${baseInfo} - Ocupado por representante de la empresa`;
+    return (
+      <div className="text-left">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-purple-300 dark:text-purple-600 mb-1">REPRESENTANTE</div>
+        <div className="font-semibold text-sm">Asiento {seat.seat_number}</div>
+        <div className="text-xs text-gray-300 dark:text-gray-600">Ocupado por representante de la empresa</div>
+      </div>
+    );
   }
 
+  // Si hay una selección activa de otro usuario
   if (activeSelection) {
-    // Diferentes mensajes según el tipo de selección
     if (activeSelection.type === 'representative') {
-      const companyInfo = activeSelection.companyName ? ` (${activeSelection.companyName})` : '';
-      const repInfo = activeSelection.representativeName ? ` - Rep: ${activeSelection.representativeName}` : '';
-      return `${baseInfo} - Reservado para representante${companyInfo}${repInfo}`;
+      const companyInfo = activeSelection.companyName || 'Empresa';
+      const repInfo = activeSelection.representativeName || '';
+      return (
+        <div className="text-left">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-purple-300 dark:text-purple-600 mb-1">SELECCIONANDO</div>
+          <div className="font-semibold text-sm">Asiento {seat.seat_number}</div>
+          <div className="text-xs text-gray-300 dark:text-gray-600">Reservado para: {companyInfo}</div>
+          {repInfo && <div className="text-xs text-gray-400 dark:text-gray-500">Rep: {repInfo}</div>}
+        </div>
+      );
     }
-    // Manejo de reservas temporales del backend
     if (activeSelection.type === 'temp_reserved') {
-      const companyInfo = activeSelection.companyName ? ` (${activeSelection.companyName})` : '';
-      const ttlInfo = activeSelection.ttl ? ` - Expira en ${Math.round(activeSelection.ttl / 60)} min` : '';
-      return `${baseInfo} - Reserva temporal${companyInfo}${ttlInfo}`;
+      const companyInfo = activeSelection.companyName || 'Empresa';
+      const ttlInfo = activeSelection.ttl ? `Expira en ${Math.round(activeSelection.ttl / 60)} min` : '';
+      return (
+        <div className="text-left">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-purple-300 dark:text-purple-600 mb-1">RESERVA TEMPORAL</div>
+          <div className="font-semibold text-sm">Asiento {seat.seat_number}</div>
+          <div className="text-xs text-gray-300 dark:text-gray-600">{companyInfo}</div>
+          {ttlInfo && <div className="text-xs text-orange-400 dark:text-orange-600 mt-1">{ttlInfo}</div>}
+        </div>
+      );
     }
-    return `${baseInfo} - Siendo seleccionado por: ${activeSelection.userName}`;
+    return (
+      <div className="text-left">
+        <div className="text-[10px] font-bold uppercase tracking-wider text-orange-300 dark:text-orange-600 mb-1">SELECCIONANDO</div>
+        <div className="font-semibold text-sm">Asiento {seat.seat_number}</div>
+        <div className="text-xs text-gray-300 dark:text-gray-600">Por: {activeSelection.userName}</div>
+      </div>
+    );
   }
 
-  return baseInfo;
+  // Tooltip por defecto
+  return (
+    <div className="text-left">
+      <div className="font-semibold text-sm">Asiento {seat.seat_number}</div>
+      <div className="text-xs text-gray-300 dark:text-gray-600">Tipo: {seatTypeName}</div>
+      <div className="text-xs text-gray-400 dark:text-gray-500">Estado: {seat.status}</div>
+    </div>
+  );
 };
 
 export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
@@ -140,20 +209,28 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
   isWebSocketAvailable = true,
   isOccupiedByRepresentative = false
 }) => {
-  // Log del estado del asiento
-  React.useEffect(() => {
-    if (seat.status !== 'AVAILABLE') {
-      // Logging removed for production
-    }
-  }, [seat.status, seat.seat_number, isSelected, isLocked, activeSelection, isOccupiedByRepresentative, connectionStatus, isWebSocketAvailable]);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
 
-  // Log de estilos aplicados
-  const appliedStyles = getSeatStyles(seat.status, isSelected, isLocked, activeSelection, connectionStatus, isWebSocketAvailable, isOccupiedByRepresentative);
-  React.useEffect(() => {
-    if (seat.status === 'RESERVED') {
-      // Logging removed for production
+  const showTooltip = useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setTooltipStyle({
+        position: 'fixed',
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2,
+        transform: 'translate(-50%, -100%)',
+        zIndex: 9999,
+        pointerEvents: 'none',
+      });
+      setTooltipVisible(true);
     }
-  }, [seat.status, seat.seat_number, appliedStyles, isSelected, isLocked, activeSelection, connectionStatus, isWebSocketAvailable]);
+  }, []);
+
+  const hideTooltip = useCallback(() => {
+    setTooltipVisible(false);
+  }, []);
 
   // Un asiento no es clickeable si está bloqueado, su estado no es 'AVAILABLE',
   // está ocupado por un representante, o está siendo seleccionado por otro usuario (solo si WebSocket está disponible)
@@ -162,8 +239,9 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
     !(activeSelection && isWebSocketAvailable && !isSelected);
 
   return (
-    <div className="relative">
+    <div className="relative" onMouseEnter={showTooltip} onMouseLeave={hideTooltip}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => isClickable && onClick(seat)}
         disabled={!isClickable}
@@ -172,7 +250,6 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
           flex items-center justify-center text-xs sm:text-sm font-bold relative
           ${getSeatStyles(seat.status, isSelected, isLocked, activeSelection, connectionStatus, isWebSocketAvailable, isOccupiedByRepresentative)}
         `}
-        title={getTooltipText(seat, activeSelection, isOccupiedByRepresentative)}
       >
         {seat.seat_number}
 
@@ -183,7 +260,7 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
 
         {/* Indicador de modo sin tiempo real */}
         {connectionStatus === 'failed' && (
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-gray-400 rounded-full"></div>
+          <div className="absolute -top-1 -right-1 w-2 h-2 bg-gray-400 dark:bg-gray-600 rounded-full"></div>
         )}
 
         {/* Indicador de selección por otro usuario (solo si WebSocket está disponible) */}
@@ -204,6 +281,23 @@ export const SeatRealtime: React.FC<SeatRealtimeProps> = ({
           </div>
         )}
       </button>
+
+      {/* Tooltip fixed — sale de todos los contenedores para no ser cortado */}
+      {tooltipVisible && (
+        <div style={tooltipStyle}>
+          <div className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-xs rounded-lg py-2 px-3 shadow-2xl border border-gray-700 dark:border-gray-300 min-w-[160px] max-w-[220px]">
+            <SeatTooltipContent
+              seat={seat}
+              activeSelection={activeSelection}
+              isOccupiedByRepresentative={isOccupiedByRepresentative}
+            />
+            {/* Flecha */}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-px">
+              <div className="w-2 h-2 bg-gray-900 dark:bg-gray-100 border-r border-b border-gray-700 dark:border-gray-300 transform rotate-45"></div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

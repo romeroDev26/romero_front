@@ -100,7 +100,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <Spinner size="lg" />
-              <p className="mt-4 text-gray-600">Generando comprobantes PDF...</p>
+              <p className="mt-4 text-dm-text-secondary">Generando comprobantes PDF...</p>
             </div>
           </div>
         )}
@@ -109,7 +109,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         {!isGenerating && (pdfA4Blob || pdfTicketBlob) && (
           <>
             {/* Format selector */}
-            <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+            <div className="flex items-center justify-between bg-dm-bg-secondary p-4 rounded-lg">
               <div className="flex space-x-2">
                 <Button
                   variant={previewMode === 'a4' ? 'primary' : 'outline'}
@@ -152,7 +152,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
             </div>
 
             {/* PDF Preview */}
-            <div className="border rounded-lg overflow-hidden bg-white">
+            <div className="border border-dm-border-primary rounded-lg overflow-hidden bg-dm-bg-primary">
               {currentUrl ? (
                 <iframe
                   src={currentUrl}
@@ -160,9 +160,9 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
                   title={`Vista previa ${previewMode.toUpperCase()}`}
                 />
               ) : (
-                <div className="flex items-center justify-center h-96 text-gray-500">
+                <div className="flex items-center justify-center h-96 text-dm-text-muted">
                   <div className="text-center">
-                    <DocumentArrowDownIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                    <DocumentArrowDownIcon className="h-12 w-12 mx-auto mb-4 text-dm-text-muted" />
                     <p>PDF no disponible en formato {previewMode.toUpperCase()}</p>
                   </div>
                 </div>
@@ -171,7 +171,7 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
 
             {/* Quick action buttons */}
             <div className="flex justify-between items-center pt-4 border-t">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-dm-text-secondary">
                 {previewMode === 'a4' ? 
                   'Formato estándar para archivo e impresión en hoja A4' : 
                   'Formato compacto para impresoras térmicas'
@@ -207,8 +207,8 @@ export const PDFPreviewModal: React.FC<PDFPreviewModalProps> = ({
         {/* Error state */}
         {!isGenerating && !pdfA4Blob && !pdfTicketBlob && (
           <div className="flex items-center justify-center py-12">
-            <div className="text-center text-gray-500">
-              <XMarkIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <div className="text-center text-dm-text-muted">
+              <XMarkIcon className="h-12 w-12 mx-auto mb-4 text-dm-text-muted" />
               <p>No hay comprobantes disponibles para mostrar</p>
               <Button
                 variant="outline"

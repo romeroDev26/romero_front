@@ -46,48 +46,48 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
       <div className="space-y-6">
         {/* Encabezado con icono de advertencia */}
         <div className="flex items-center gap-4">
-          <div className="flex-shrink-0 w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-            <AlertTriangle className="h-6 w-6 text-yellow-600" />
+          <div className="flex-shrink-0 w-12 h-12 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center">
+            <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-dm-text-primary">
               Confirmar {getSaleTypeLabel()}
             </h3>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-dm-text-muted mt-1">
               Revise los detalles antes de continuar
             </p>
           </div>
         </div>
 
         {/* Detalles de la venta */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+        <div className="bg-dm-bg-secondary rounded-lg p-4 space-y-3">
           {/* Cliente */}
           <div className="flex items-center gap-3">
-            <User className="h-5 w-5 text-gray-400" />
+            <User className="h-5 w-5 text-dm-text-muted" />
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Cliente</p>
-              <p className="font-medium text-gray-900">{passengerName}</p>
+              <p className="text-xs text-dm-text-muted">Cliente</p>
+              <p className="font-medium text-dm-text-primary">{passengerName}</p>
             </div>
           </div>
 
           {/* Viaje (si aplica) */}
           {tripName && (
-            <div className="flex items-center gap-3 pt-3 border-t border-gray-200">
-              <Ship className="h-5 w-5 text-gray-400" />
+            <div className="flex items-center gap-3 pt-3 border-t border-dm-border-primary">
+              <Ship className="h-5 w-5 text-dm-text-muted" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500">Viaje</p>
-                <p className="font-medium text-gray-900">{tripName}</p>
+                <p className="text-xs text-dm-text-muted">Viaje</p>
+                <p className="font-medium text-dm-text-primary">{tripName}</p>
               </div>
             </div>
           )}
 
           {/* Representantes (si aplica) */}
           {saleType === "company" && representativesCount > 0 && (
-            <div className="flex items-center gap-3 pt-3 border-t border-gray-200">
-              <User className="h-5 w-5 text-gray-400" />
+            <div className="flex items-center gap-3 pt-3 border-t border-dm-border-primary">
+              <User className="h-5 w-5 text-dm-text-muted" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500">Representantes</p>
-                <p className="font-medium text-gray-900">
+                <p className="text-xs text-dm-text-muted">Representantes</p>
+                <p className="font-medium text-dm-text-primary">
                   {representativesCount} representante(s)
                 </p>
               </div>
@@ -95,20 +95,20 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
           )}
 
           {/* Total destacado */}
-          <div className="pt-3 border-t border-gray-200">
+          <div className="pt-3 border-t border-dm-border-primary">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <CreditCard className="h-5 w-5 text-gray-400" />
-                <p className="text-sm font-medium text-gray-700">
+                <CreditCard className="h-5 w-5 text-dm-text-muted" />
+                <p className="text-sm font-medium text-dm-text-secondary">
                   Total a cobrar
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {currencySymbol} {totalAmount.toFixed(2)}
                 </p>
                 {hasDecimals && (
-                  <p className="text-xs text-orange-600 font-medium mt-1">
+                  <p className="text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
                     ⚠ Incluye decimales
                   </p>
                 )}
@@ -119,11 +119,11 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
 
         {/* Advertencia de decimales */}
         {hasDecimals && (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+          <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 rounded-lg p-3">
             <div className="flex gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-orange-800">
+                <p className="text-sm font-medium text-orange-800 dark:text-orange-300">
                   Verifique el monto con decimales
                 </p>
                 <p className="text-xs text-orange-700 mt-1">
@@ -140,10 +140,10 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
 
         {/* Pregunta de confirmación */}
         <div className="text-center py-2">
-          <p className="text-lg font-semibold text-gray-800">
+          <p className="text-lg font-semibold text-dm-text-primary">
             ¿Está seguro de realizar esta venta?
           </p>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-dm-text-muted mt-1">
             Esta acción generará el comprobante correspondiente
           </p>
         </div>

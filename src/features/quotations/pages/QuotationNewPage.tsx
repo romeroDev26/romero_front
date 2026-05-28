@@ -270,17 +270,17 @@ export const QuotationNewPage: React.FC = () => {
     <div className="max-w-[1200px] mx-auto">
       <div className="-mx-4 md:-mx-6 -mt-6">
         {/* Page header — sticky */}
-        <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 py-2.5 md:py-4 mb-4 md:mb-8">
+        <header className="sticky top-0 z-10 bg-dm-bg-primary/90 backdrop-blur-md border-b border-dm-border-primary px-4 md:px-6 py-2.5 md:py-4 mb-4 md:mb-8">
         <div className="flex items-start md:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
             <div className="bg-primary p-1.5 md:p-2 rounded-lg text-white shrink-0">
               <DocumentTextIcon className="h-4 w-4 md:h-5 md:w-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base md:text-xl font-bold tracking-tight text-gray-900">Nueva Cotización</h1>
+              <h1 className="text-base md:text-xl font-bold tracking-tight text-dm-text-primary">Nueva Cotización</h1>
               {selectedTrip && (
-                <p className="text-xs md:text-sm text-slate-500 flex items-center gap-1.5 mt-0.5 truncate">
-                  <span className="text-slate-400">Paso 3 de 3 —</span>
+                <p className="text-xs md:text-sm text-dm-text-muted flex items-center gap-1.5 mt-0.5 truncate">
+                  <span className="text-dm-text-muted">Paso 3 de 3 —</span>
                   <span className="text-primary font-medium truncate hidden sm:inline">
                     {selectedTrip.trip_name} · {selectedTrip.vessel_name}
                   </span>
@@ -293,7 +293,7 @@ export const QuotationNewPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleChangeTrip}
-                className="inline-flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-dm-text-secondary border border-dm-border-primary hover:bg-dm-bg-hover rounded-lg transition-colors"
               >
                 Cambiar viaje
               </button>
@@ -301,7 +301,7 @@ export const QuotationNewPage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/sales/quotations')}
-              className="px-2.5 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              className="px-2.5 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-semibold text-dm-text-secondary hover:bg-dm-bg-hover rounded-lg transition-colors"
             >
               Cancelar
             </button>
@@ -312,13 +312,13 @@ export const QuotationNewPage: React.FC = () => {
       <div className="px-4 lg:px-8 pb-8 space-y-6">
         {/* Alert de error */}
         {servicesError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
+          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg p-4 flex gap-3">
             <svg className="h-5 w-5 text-red-400 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
             <div>
-              <h3 className="text-sm font-medium text-red-800">Error al cargar servicios</h3>
-              <p className="mt-1 text-sm text-red-700">{servicesError}</p>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-300">Error al cargar servicios</h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">{servicesError}</p>
             </div>
           </div>
         )}
@@ -330,9 +330,9 @@ export const QuotationNewPage: React.FC = () => {
             <div className="space-y-8">
 
               {/* Información Básica */}
-              <section className="bg-white rounded-xl border border-slate-200 shadow-sm">
-                <div className="bg-slate-50 px-4 md:px-6 py-3 border-b border-slate-100">
-                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-900">
+              <section className="bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm">
+                <div className="bg-dm-bg-secondary px-4 md:px-6 py-3 border-b border-dm-border-secondary">
+                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-dm-text-primary">
                     <InformationCircleIcon className="h-5 w-5 text-primary" />
                     Información Básica
                   </h3>
@@ -354,16 +354,16 @@ export const QuotationNewPage: React.FC = () => {
                     loading={servicesLoading}
                   />
                   <div className="flex flex-col justify-center relative" ref={datePickerRef}>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                       Fecha de Vencimiento
                     </label>
                     {/* Trigger button */}
                     <button
                       type="button"
                       onClick={() => setShowDatePicker(!showDatePicker)}
-                      className="inline-flex items-center w-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
+                      className="inline-flex items-center w-full px-4 py-2 bg-dm-bg-primary border border-dm-border-primary rounded-lg text-sm font-medium text-dm-text-secondary hover:bg-dm-bg-hover transition-colors shadow-sm cursor-pointer"
                     >
-                      <CalendarDaysIcon className="w-5 h-5 mr-2 text-indigo-600 shrink-0" />
+                      <CalendarDaysIcon className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span className="flex-1 text-left">
                         {validUntil
                           ? validUntil.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -373,7 +373,7 @@ export const QuotationNewPage: React.FC = () => {
                     </button>
                     {/* Dropdown calendar panel — mismo estilo que DateRangeFilter */}
                     {showDatePicker && (
-                      <div className="absolute top-full left-0 z-50 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4">
+                      <div className="absolute top-full left-0 z-50 mt-2 bg-dm-bg-primary rounded-xl shadow-2xl border border-dm-border-primary p-4">
                         <div className="custom-datepicker-wrapper">
                           <DatePicker
                             selected={validUntil}
@@ -399,22 +399,22 @@ export const QuotationNewPage: React.FC = () => {
                   </div>
                   {/* IGV toggle — card style */}
                   <div
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer h-full"
+                    className="flex items-center justify-between p-4 bg-dm-bg-secondary rounded-lg border border-dm-border-primary cursor-pointer h-full"
                     onClick={() => setIncludeIGV(!includeIGV)}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-slate-400 font-semibold text-base">%</span>
-                      <span className="text-sm font-medium text-slate-700">Aplicar IGV (18%)</span>
+                      <span className="text-dm-text-muted font-semibold text-base">%</span>
+                      <span className="text-sm font-medium text-dm-text-secondary">Aplicar IGV (18%)</span>
                     </div>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setIncludeIGV(!includeIGV); }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                        includeIGV ? 'bg-primary' : 'bg-slate-200'
+                        includeIGV ? 'bg-primary' : 'bg-dm-bg-secondary'
                       }`}
                     >
                       <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white border border-gray-300 transition-transform ${
+                        className={`inline-block h-5 w-5 transform rounded-full bg-dm-bg-primary border border-dm-border-primary transition-transform ${
                           includeIGV ? 'translate-x-5' : 'translate-x-0.5'
                         }`}
                       />
@@ -425,9 +425,9 @@ export const QuotationNewPage: React.FC = () => {
               </section>
 
               {/* Datos del Cliente */}
-              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-slate-50 px-4 md:px-6 py-3 border-b border-slate-100">
-                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-900">
+              <section className="bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm overflow-hidden">
+                <div className="bg-dm-bg-secondary px-4 md:px-6 py-3 border-b border-dm-border-secondary">
+                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-dm-text-primary">
                     <UserGroupIcon className="h-5 w-5 text-primary" />
                     Datos del Cliente
                   </h3>
@@ -445,7 +445,7 @@ export const QuotationNewPage: React.FC = () => {
                 <ShieldCheckIcon className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div>
                   <p className="text-xs font-bold text-primary uppercase tracking-wide">Seguridad</p>
-                  <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                  <p className="text-[11px] text-dm-text-secondary leading-relaxed mt-0.5">
                     Esta cotización cumple con los estándares fiscales vigentes.
                   </p>
                 </div>
@@ -459,9 +459,9 @@ export const QuotationNewPage: React.FC = () => {
               />
 
               {/* Observaciones */}
-              <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-slate-50 px-4 md:px-6 py-3 border-b border-slate-100">
-                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-gray-900">
+              <section className="bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm overflow-hidden">
+                <div className="bg-dm-bg-secondary px-4 md:px-6 py-3 border-b border-dm-border-secondary">
+                  <h3 className="flex items-center gap-2 text-base md:text-lg font-semibold text-dm-text-primary">
                     <Bars3BottomLeftIcon className="h-5 w-5 text-primary" />
                     Observaciones
                   </h3>
@@ -471,7 +471,7 @@ export const QuotationNewPage: React.FC = () => {
                     value={observations}
                     onChange={(e) => setObservations(e.target.value)}
                     rows={4}
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-gray-700 placeholder-slate-400 bg-gray-50 focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                    className="w-full border border-dm-border-primary rounded-lg px-3 py-2.5 text-sm text-dm-text-secondary placeholder-slate-400 bg-dm-bg-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
                     placeholder="Escriba aquí notas adicionales, términos o condiciones..."
                   />
                 </div>

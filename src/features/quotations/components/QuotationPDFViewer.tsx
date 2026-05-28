@@ -21,17 +21,17 @@ export const QuotationPDFViewer: React.FC<QuotationPDFViewerProps> = ({
   const [showPdfError, setShowPdfError] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border">
+    <div className="bg-dm-bg-primary rounded-lg shadow-sm border">
       {/* Header del visor PDF */}
-      <div className="px-6 py-4 border-b bg-gray-50 rounded-t-lg">
+      <div className="px-6 py-4 border-b bg-dm-bg-secondary rounded-t-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <DocumentTextIcon className="h-5 w-5 text-blue-600" />
-            <h2 className="font-semibold text-gray-900">
+            <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <h2 className="font-semibold text-dm-text-primary">
               Cotización {quotation.series}-{quotation.number.toString().padStart(6, '0')}
             </h2>
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-dm-text-muted">
             Cliente: {quotation.client.name}
           </div>
         </div>
@@ -39,7 +39,7 @@ export const QuotationPDFViewer: React.FC<QuotationPDFViewerProps> = ({
 
       {/* Visor PDF */}
       <div className="p-6">
-        <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
+        <div className="relative bg-dm-bg-secondary rounded-lg overflow-hidden" style={{ minHeight: '600px' }}>
           {!showPdfError ? (
             <iframe
               src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
@@ -60,8 +60,8 @@ export const QuotationPDFViewer: React.FC<QuotationPDFViewerProps> = ({
               }}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-96 text-gray-500">
-              <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-gray-400" />
+            <div className="flex flex-col items-center justify-center h-96 text-dm-text-muted">
+              <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-dm-text-muted" />
               <h3 className="text-lg font-medium mb-2">No se pudo cargar la cotización</h3>
               <p className="text-sm text-center mb-4">
                 El PDF no se puede mostrar en el navegador. 

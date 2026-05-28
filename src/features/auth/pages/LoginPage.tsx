@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Ship, Lock, Eye, EyeOff, AtSign } from 'lucide-react'
+import { Ship, Lock, Eye, EyeOff, AtSign, Sun, Moon } from 'lucide-react'
 import { authNotify } from '@/utils/sileo-toast'
 import { useLockoutCountdown } from '@/hooks/useLockoutCountdown'
+import { useThemeTransition } from '@/hooks/useThemeTransition'
 import { authService } from '../../../services/auth.service'
 
 // Esquema de validación con el campo opcional 'rememberMe'
@@ -26,6 +27,7 @@ export const LoginPage: React.FC = () => {
   const [loginError, setLoginError] = useState<string | null>(null)
   const [lockoutMessage, setLockoutMessage] = useState<string>('Demasiados intentos fallidos. Cuenta bloqueada temporalmente.')
   const { isLocked, formattedTime, lockFromSeconds, clearLock } = useLockoutCountdown()
+  const { toggleTheme, resolvedTheme } = useThemeTransition()
   const navigate = useNavigate()
 
   const extractLockoutInfo = (err: any): { message: string; retryAfter: number } | null => {
@@ -242,8 +244,19 @@ export const LoginPage: React.FC = () => {
               <Ship className="text-white w-6 h-6" />
             </div>
 
-            {/* Títulos */}
-            <h2 className="text-3xl font-bold text-white mb-2 tracking-wide">Bienvenido</h2>
+            {/* Títulos + Toggle Tema */}
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-3xl font-bold text-white tracking-wide">Bienvenido</h2>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 text-white transition-colors"
+                aria-label="Cambiar tema"
+                title={resolvedTheme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+              >
+                {resolvedTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </button>
+            </div>
             <p className="text-[#A4B5D6] text-sm mb-10 font-light">Ingrese sus credenciales para continuar</p>
 
             {/* Formulario */}
@@ -298,8 +311,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type="email"
                   autoComplete="email"
-                  disabled={isLocked}
-                  className="block w-full pl-12 pr-4 py-4 bg-dm-bg-primary border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="block w-full pl-12 pr-4 py-4 bg-dm-bg-primary border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm"
                   placeholder="Correo electrónico"
                   {...register('email')}
                 />
@@ -316,8 +328,7 @@ export const LoginPage: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  disabled={isLocked}
-                  className="block w-full pl-12 pr-12 py-4 bg-dm-bg-primary border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="block w-full pl-12 pr-12 py-4 bg-dm-bg-primary border border-transparent rounded-xl text-sm placeholder-[#94A3B8] text-[#1E293B] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent transition-all shadow-sm"
                   placeholder="Contraseña"
                   {...register('password')}
                 />
@@ -366,10 +377,10 @@ export const LoginPage: React.FC = () => {
               {/* Botón Login */}
               <button
                 type="submit"
-                disabled={isLoading || isLocked}
+                disabled={isLoading}
                 className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-900/20 text-sm font-semibold text-white bg-[#2A65E6] hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#11245E] focus:ring-[#2A65E6] transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Iniciando sesión...' : isLocked ? `Bloqueado (${formattedTime})` : 'Iniciar Sesión'}
+                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </button>
             </form>
 

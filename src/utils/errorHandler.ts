@@ -16,6 +16,11 @@ export const getErrorMessage = (error: any, fallbackMessage: string = 'Ha ocurri
     return data.detail;
   }
 
+  // Para errores 409 (Conflict), mostrar el mensaje específico de concurrencia del backend
+  if (status === 409 && data?.detail) {
+    return data.detail;
+  }
+
   // Para errores de validación (normalmente 422), buscar en el array de errores
   if (data?.detail && Array.isArray(data.detail) && data.detail.length > 0) {
     return data.detail[0]?.msg || fallbackMessage;

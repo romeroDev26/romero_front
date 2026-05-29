@@ -60,8 +60,16 @@ export class WebSocketMessageHandler {
         this.handleSeatsOccupied(message);
         break;
 
+      case 'SEATS_RELEASED':
+        this.handleSeatsReleased(message);
+        break;
+
       case 'SEAT_MAP_UPDATE':
         this.handleSeatMapUpdate(message);
+        break;
+
+      case 'SEAT_RESERVED':
+        this.handleSeatReserved(message);
         break;
 
       case 'PONG':
@@ -73,7 +81,31 @@ export class WebSocketMessageHandler {
   }
 
   private handleInitialState(message: SeatUpdateMessage): void {
-    // Procesar selecciones temporales usando el nuevo formato selecctionSeats
+    // NUEVO: Formato oficial del backend — seatMap completo con estados actualizados
+    if (message.seatMap && message.seatMap.length > 0) {
+      message.seatMap.forEach((seat) => {
+        if (seat.id) {
+          const statusUpper = (seat.status || 'AVAILABLE').toUpperCase();
+          // Proteger asientos vendidos/ocupados
+          const confirmedStatuses = ['SOLD', 'CONFIRMED', 'OCCUPIED'];
+          if (confirmedStatuses.includes(statusUpper)) {
+            this.confirmedSeats.add(seat.id);
+          }
+          // Actualizar el estado del asiento en el mapa local
+          this.onSeatMapUpdate(seat.id, seat.status, seat.occupant);
+
+          // Si el asiento está marcado como SEAT_SELECTION por otro usuario,
+          // agregarlo a las selecciones activas
+          if (statusUpper === 'SEAT_SELECTION') {
+            // No sabemos el userId exacto del otro vendedor desde seatMap,
+            // así que no lo agregamos a activeSelections desde aquí.
+            // El backend debería enviar selecctionSeats para eso.
+          }
+        }
+      });
+    }
+
+    // Procesar selecciones temporales usando el formato legacy selecctionSeats
     if (message.selecctionSeats && message.selecctionSeats.length > 0) {
       const initialSelections: SeatSelection[] = message.selecctionSeats
         .filter((selection: SelectionSeat) => {
@@ -94,7 +126,7 @@ export class WebSocketMessageHandler {
       }
     }
 
-    // Procesar asientos ocupados/vendidos usando el nuevo formato occupiedSeats
+    // Procesar asientos ocupados/vendidos usando el formato legacy occupiedSeats
     if (message.occupiedSeats && message.occupiedSeats.length > 0) {
       message.occupiedSeats.forEach((occupiedSeat: OccupiedSeat) => {
         if (occupiedSeat.seatId) {
@@ -269,6 +301,30 @@ export class WebSocketMessageHandler {
         this.confirmedSeats.add(message.seatId);
       }
       this.onSeatMapUpdate(message.seatId, message.status);
+      this.onSelectionRemove(message.seatId);
+    }
+  }
+
+  private handleSeatsReleased(message: SeatUpdateMessage): void {
+    // Procesar liberación masiva de asientos (anulación, timeout, cancelación)
+    // Payload: { type: 'SEATS_RELEASED', tripId, seatIds, reason, timestamp }
+    if (message.seatIds && Array.isArray(message.seatIds)) {
+      message.seatIds.forEach((seatId: number) => {
+        // Remover de asientos confirmados si estaba vendido
+        this.confirmedSeats.delete(seatId);
+        // Actualizar estado a AVAILABLE
+        this.onSeatMapUpdate(seatId, 'AVAILABLE');
+        // Remover cualquier selección temporal de este asiento
+        this.onSelectionRemove(seatId);
+      });
+    }
+  }
+
+  private handleSeatReserved(message: SeatUpdateMessage): void {
+    // Procesar reserva confirmada en tiempo real
+    // Payload según backend: { type: 'SEAT_RESERVED', tripId, seatTypeId, reservationId, customerId, quantity, seatId, seatNumber, timestamp }
+    if (message.seatId !== undefined) {
+      this.onSeatMapUpdate(message.seatId, 'RESERVED');
       this.onSelectionRemove(message.seatId);
     }
   }

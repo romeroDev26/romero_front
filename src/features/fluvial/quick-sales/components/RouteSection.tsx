@@ -59,7 +59,7 @@ export const RouteSection: React.FC<RouteSectionProps> = ({
   };
 
   return (
-    <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border">
+    <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
       <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
         <FileText className="h-5 w-5 mr-2 text-dm-text-secondary" />
         Ruta (Opcional)

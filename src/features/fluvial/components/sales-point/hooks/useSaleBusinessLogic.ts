@@ -289,9 +289,35 @@ export const useSaleBusinessLogic = ({
       onSuccess(result);
 
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.detail ||
-        "Ocurrió un error al crear la factura empresarial."
+      // Liberar reservas de representantes en caso de error
+      if (seatMap && seatMap.length > 0) {
+        representatives.forEach(rep => {
+          if (rep.seat_number && rep.seat_number !== "Elección libre") {
+            const seat = seatMap.find(s => s.seat_number === rep.seat_number);
+            if (seat) {
+              seatValidation.releaseSeatReservation({
+                tripId,
+                seatId: seat.id,
+                userId: currentUser?.id || 'unknown'
+              }).catch(() => { /* silenciar errores de liberación */ });
+            }
+          }
+        });
+      }
+
+      const status = error.response?.status;
+      if (status === 400 || status === 422 || status === 409) {
+        const detail = error.response?.data?.detail;
+        saleNotify.error(
+          'No se puede completar la venta',
+          detail || 'El asiento seleccionado se encuentra reservado por otro usuario o no está disponible.'
+        );
+        return;
+      }
+
+      saleNotify.error(
+        'Error en la venta',
+        error.response?.data?.detail || 'Ocurrió un error inesperado. Intente de nuevo.'
       );
     }
   }, [createCompanyInvoiceWithRepresentatives, passengerService, saleValidationService]);
@@ -477,14 +503,16 @@ export const useSaleBusinessLogic = ({
         });
       }
       
-      if (error.response?.status === 409) {
+      const status = error.response?.status;
+      if (status === 400 || status === 422 || status === 409) {
+        const detail = error.response?.data?.detail;
         saleNotify.error(
           'Asiento no disponible',
-          'El asiento seleccionado acaba de ser vendido por otro vendedor. Seleccione otro.'
+          detail || 'El asiento seleccionado acaba de ser vendido o reservado por otro vendedor. Seleccione otro.'
         );
         return;
       }
-      
+
       saleNotify.error(
         'Error en la venta',
         error.response?.data?.detail || 'Ocurrió un error inesperado. Intente de nuevo.'

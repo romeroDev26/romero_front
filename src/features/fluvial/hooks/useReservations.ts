@@ -46,8 +46,13 @@ export const useCreateReservation = () => {
       queryClient.invalidateQueries({ queryKey: ['reservations', newReservation.trip_id] });
     },
     onError: (error: any) => {
-      const message = getErrorMessage(error, "Error al crear la reserva.");
-      toast.error(message);
+      if (error?.response?.status === 409) {
+        const detail = error.response?.data?.detail;
+        toast.error(detail || "El asiento ya no está disponible. Seleccione otro asiento.");
+      } else {
+        const message = getErrorMessage(error, "Error al crear la reserva.");
+        toast.error(message);
+      }
     },
   });
 };
@@ -66,8 +71,13 @@ export const useUpdateReservation = () => {
       queryClient.invalidateQueries({ queryKey: ['reservations'] }); // Invalidar la lista general también
     },
     onError: (error: any) => {
-      const message = getErrorMessage(error, "Error al actualizar la reserva.");
-      toast.error(message);
+      if (error?.response?.status === 409) {
+        const detail = error.response?.data?.detail;
+        toast.error(detail || "No se puede modificar esta reserva porque ya fue vendida o está bloqueada.");
+      } else {
+        const message = getErrorMessage(error, "Error al actualizar la reserva.");
+        toast.error(message);
+      }
     },
   });
 };

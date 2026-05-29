@@ -4,6 +4,7 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -34,5 +35,5 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "build", "dist", "**/*.spec.ts"]
+  "exclude": ["node_modules", "build", "dist"]
 }

@@ -260,7 +260,7 @@ export const LoginPage: React.FC = () => {
             <p className="text-[#A4B5D6] text-sm mb-10 font-light">Ingrese sus credenciales para continuar</p>
 
             {/* Formulario */}
-            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+            <form className="space-y-5" onSubmit={handleSubmit(onSubmit)} noValidate>
 
               {/* Bloqueo */}
               {isLocked && (

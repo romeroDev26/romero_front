@@ -19,11 +19,29 @@ export interface OccupiedSeat {
   invoiceId: number;
 }
 
+// Representación mínima de un asiento del mapa tal como viene del backend en INITIAL_STATE
+export interface SeatMapWsItem {
+  id: number;
+  seat_number: string;
+  status: string;
+  // Campos opcionales que puede traer el backend
+  trip_id?: number;
+  vessel_seat_config_id?: number;
+  notes?: string;
+  seat_type?: {
+    id: number;
+    name: string;
+    code: string;
+    price_multiplier: number;
+  };
+  occupant?: SeatOccupantInfo;
+}
+
 export interface SeatUpdateMessage {
   type: 'SEAT_UPDATE' | 'SEAT_SELECTION' | 'SEAT_RELEASED' | 'INITIAL_STATE' | 'PONG'
         | 'SEAT_TEMP_RESERVE' | 'SEAT_TEMP_RELEASE' | 'SEAT_TEMP_RESERVE_RESPONSE'
         | 'SEAT_TEMP_RESERVED' | 'SEAT_TEMP_RELEASED' | 'SEAT_TEMP_RELEASE_ALL'
-        | 'SEATS_OCCUPIED' | 'SEAT_MAP_UPDATE' | 'SEAT_RESERVED';
+        | 'SEATS_OCCUPIED' | 'SEATS_RELEASED' | 'SEAT_MAP_UPDATE' | 'SEAT_RESERVED';
   tripId: number;
   seatId?: number;
   seatIds?: number[];
@@ -31,6 +49,8 @@ export interface SeatUpdateMessage {
   // Nuevos campos para INITIAL_STATE mejorado
   selecctionSeats?: SelectionSeat[];
   occupiedSeats?: OccupiedSeat[];
+  // NUEVO: Formato oficial del backend para INITIAL_STATE (array completo de asientos)
+  seatMap?: SeatMapWsItem[];
   status?: string;
   userId?: string;
   userName?: string;
@@ -39,13 +59,20 @@ export interface SeatUpdateMessage {
   representativeName?: string;
   timestamp: string;
   reservationType?: 'user' | 'representative' | 'REPRESENTATIVE_TEMP_RESERVATION';
-  reservationCategory?: string; // NUEVO: Campo adicional del backend
-  expiresAt?: string; // NUEVO: Timestamp de expiración
-  sessionId?: string; // NUEVO: ID de sesión de empresa
+  reservationCategory?: string;
+  expiresAt?: string;
+  sessionId?: string;
   ttl?: number;
   success?: boolean;
   error?: string;
-  // NUEVO: Diccionario de occupants indexado por seatId (string) para SEATS_OCCUPIED
+  reason?: string; // NUEVO: Para SEATS_RELEASED (ej. "CANCELLED_RESERVATION", "TIMEOUT")
+  // Campos adicionales para SEAT_RESERVED según backend
+  seatTypeId?: number;
+  reservationId?: number;
+  customerId?: number;
+  quantity?: number;
+  seatNumber?: string;
+  // Diccionario de occupants indexado por seatId (string) para SEATS_OCCUPIED
   occupants?: Record<string, SeatOccupantInfo>;
 }
 

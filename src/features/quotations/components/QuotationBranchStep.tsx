@@ -16,8 +16,8 @@ export const QuotationBranchStep: React.FC<QuotationBranchStepProps> = ({ onBran
 
   return (
     <div className="-mx-6 -mt-6">
-      {/* Cabecera sticky */}
-      <header className="sticky top-0 z-10 bg-dm-bg-primary/80 backdrop-blur-md border-b border-dm-border-primary px-6 py-4 mb-8">
+      {/* Cabecera */}
+      <header className="bg-dm-bg-primary/80 border-b border-dm-border-primary px-6 py-4 mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-primary p-2 rounded-lg text-white">

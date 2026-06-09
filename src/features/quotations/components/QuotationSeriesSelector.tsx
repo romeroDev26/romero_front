@@ -29,7 +29,7 @@ export const QuotationSeriesSelector: React.FC<QuotationSeriesSelectorProps> = (
       <select
         value={selectedSeries}
         onChange={(e) => onSeriesChange(e.target.value)}
-        className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         disabled={seriesLoading || quotationSeries.length === 0}
       >
         <option value="">

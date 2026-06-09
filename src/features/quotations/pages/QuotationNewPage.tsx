@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, parseISO } from 'date-fns';
 import { toast } from '@/utils/sileo-toast';
 import DatePicker from 'react-datepicker';
 import { es } from 'date-fns/locale';
@@ -14,17 +13,15 @@ import {
   ChevronDownIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
-import { Spinner } from '../../../components/common/Spinner';
 import { useCreateQuotation } from '../hooks/useQuotations';
 import { useProductServices } from '../hooks/useProductServices';
-import { QuotationCreate, QuotationItemCreate } from '../types';
-import { BranchOffice, ProductService } from '../../../types';
+import { QuotationCreate, QuotationItemCreate, Quotation } from '../types';
+import { BranchOffice } from '../../../types';
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { useQuotationSeriesByBranch } from '../hooks/useQuotationSeriesByBranch';
 import {
   QuotationSeriesSelector,
   ClientSelector,
-  ServiceSelector,
   QuotationItemsManager,
   QuotationSummary,
   QuotationPreviewModal,
@@ -88,8 +85,6 @@ export const QuotationNewPage: React.FC = () => {
   
   // Estados de la nueva estructura dinámica
   const [selectedClient, setSelectedClient] = useState<LocalClient | null>(null);
-  // Guardar el objeto completo del servicio seleccionado
-  const [selectedService, setSelectedService] = useState<ProductService | null>(null);
   const [items, setItems] = useState<SimpleItem[]>([]);
   const [observations, setObservations] = useState('');
   const [loading, setLoading] = useState(false);
@@ -118,7 +113,7 @@ export const QuotationNewPage: React.FC = () => {
 
   // Estados para el modal de previsualización
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [createdQuotation, setCreatedQuotation] = useState<any>(null);
+  const [createdQuotation, setCreatedQuotation] = useState<Quotation | null>(null);
 
   // Hook para series (incluye currentUser)
   const {
@@ -150,7 +145,7 @@ export const QuotationNewPage: React.FC = () => {
     setLoading(true);
     try {
       // Registrar o actualizar cliente si no existe
-      let clientId = selectedClient.id;
+      const clientId = selectedClient.id;
       if (clientId === 0) {
   // Aquí iría la lógica para registrar el cliente si fuera necesario
         // Aquí deberías llamar a la función para crear el cliente y obtener el nuevo clientId
@@ -160,7 +155,7 @@ export const QuotationNewPage: React.FC = () => {
       
       // Convertir items simplificados al formato que espera el backend
       const quotationItems: QuotationItemCreate[] = items.map(item => ({
-        product_id: selectedService?.id || 0,
+        product_id: item.service_id || 0,
         quantity: item.cantidad,
         unit_price: parseFloat(item.precio_unitario.toFixed(10)),
         unit_code: item.unidad,
@@ -189,7 +184,7 @@ export const QuotationNewPage: React.FC = () => {
         payment_terms: 'Contado',
         payment_method_code: '001',
         notes: observations,
-        internal_notes: `Servicio: ${selectedService?.name || 'No especificado'} | IGV: ${includeIGV ? 'Incluido' : 'No incluido'}${tripNotes}`,
+        internal_notes: `Servicios: ${items.map(i => i.service_name || 'N/A').join(', ')} | IGV: ${includeIGV ? 'Incluido' : 'No incluido'}${tripNotes}`,
         items: quotationItems
       };
 
@@ -228,7 +223,6 @@ export const QuotationNewPage: React.FC = () => {
   const handleNewQuotation = () => {
     // Limpiar formulario
     setSelectedClient(null);
-    setSelectedService(null);
     setItems([]);
     setObservations('');
     
@@ -269,8 +263,8 @@ export const QuotationNewPage: React.FC = () => {
   return (
     <div className="max-w-[1200px] mx-auto">
       <div className="-mx-4 md:-mx-6 -mt-6">
-        {/* Page header — sticky */}
-        <header className="sticky top-0 z-10 bg-dm-bg-primary/90 backdrop-blur-md border-b border-dm-border-primary px-4 md:px-6 py-2.5 md:py-4 mb-4 md:mb-8">
+        {/* Page header */}
+        <header className="bg-dm-bg-primary/90 border-b border-dm-border-primary px-4 md:px-6 py-2.5 md:py-4 mb-4 md:mb-8">
         <div className="flex items-start md:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
             <div className="bg-primary p-1.5 md:p-2 rounded-lg text-white shrink-0">
@@ -324,10 +318,10 @@ export const QuotationNewPage: React.FC = () => {
         )}
 
         <form onSubmit={handleFormSubmit}>
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 lg:gap-8">
 
             {/* ── Columna izquierda ── */}
-            <div className="space-y-8">
+            <div className="space-y-8 min-w-0">
 
               {/* Información Básica */}
               <section className="bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm">
@@ -346,12 +340,6 @@ export const QuotationNewPage: React.FC = () => {
                     seriesError={seriesError}
                     selectedSeriesData={selectedSeriesData}
                     onSeriesChange={handleSeriesChange}
-                  />
-                  <ServiceSelector
-                    selectedService={selectedService}
-                    serviceOptions={services}
-                    onServiceSelect={setSelectedService}
-                    loading={servicesLoading}
                   />
                   <div className="flex flex-col justify-center relative" ref={datePickerRef}>
                     <label className="block text-sm font-medium text-dm-text-secondary mb-2">
@@ -410,7 +398,7 @@ export const QuotationNewPage: React.FC = () => {
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setIncludeIGV(!includeIGV); }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                        includeIGV ? 'bg-primary' : 'bg-dm-bg-secondary'
+                        includeIGV ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
                       }`}
                     >
                       <span
@@ -455,7 +443,8 @@ export const QuotationNewPage: React.FC = () => {
               <QuotationItemsManager
                 items={items}
                 onItemsChange={setItems}
-                selectedService={selectedService}
+                serviceOptions={services}
+                servicesLoading={servicesLoading}
               />
 
               {/* Observaciones */}
@@ -471,7 +460,7 @@ export const QuotationNewPage: React.FC = () => {
                     value={observations}
                     onChange={(e) => setObservations(e.target.value)}
                     rows={4}
-                    className="w-full border border-dm-border-primary rounded-lg px-3 py-2.5 text-sm text-dm-text-secondary placeholder-slate-400 bg-dm-bg-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                    className="w-full border border-dm-border-primary rounded-lg px-3 py-2.5 text-sm text-dm-text-secondary placeholder:text-dm-text-muted bg-dm-bg-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
                     placeholder="Escriba aquí notas adicionales, términos o condiciones..."
                   />
                 </div>
@@ -480,7 +469,7 @@ export const QuotationNewPage: React.FC = () => {
             </div>
 
             {/* ── Columna derecha: Resumen (sticky en desktop) ── */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block h-full">
               <QuotationSummary
                 items={items}
                 includeIGV={includeIGV}

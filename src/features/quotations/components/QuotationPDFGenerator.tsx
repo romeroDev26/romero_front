@@ -172,16 +172,13 @@ export const generateQuotationPDF = (
     pdf.setFontSize(9);
     
     let totalY = contentY;
+    // Subtotal Neto = total con descuento ya aplicado (coherente con la tabla de ítems)
+    const subtotalNeto = parseFloat(quotationData.total_payable) - parseFloat(quotationData.total_igv);
     pdf.text('Subtotal:', totalsX, totalY);
-    pdf.text(`${quotationData.currency_code} ${parseFloat(quotationData.total_taxable).toFixed(2)}`, totalsX + 40, totalY, { align: 'right' });
+    pdf.text(`${quotationData.currency_code} ${subtotalNeto.toFixed(2)}`, totalsX + 40, totalY, { align: 'right' });
     totalY += 6;
-    
-    if (parseFloat(quotationData.total_discount) > 0) {
-      pdf.text('Descuento:', totalsX, totalY);
-      pdf.text(`${quotationData.currency_code} ${parseFloat(quotationData.total_discount).toFixed(2)}`, totalsX + 40, totalY, { align: 'right' });
-      totalY += 6;
-    }
-    
+
+    // IGV (siempre visible, aunque sea 0, para transparencia fiscal)
     pdf.text('IGV (18%):', totalsX, totalY);
     pdf.text(`${quotationData.currency_code} ${parseFloat(quotationData.total_igv).toFixed(2)}`, totalsX + 40, totalY, { align: 'right' });
     totalY += 6;

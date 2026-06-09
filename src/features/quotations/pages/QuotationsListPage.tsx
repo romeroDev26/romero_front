@@ -6,11 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { useNavigate } from 'react-router-dom';
 import {
   PlusIcon,
-  AdjustmentsHorizontalIcon,
-  HashtagIcon,
-  UserCircleIcon,
   DocumentTextIcon,
-  CalendarDaysIcon,
   ChevronDownIcon,
   EyeIcon,
   PencilSquareIcon,
@@ -23,10 +19,9 @@ import {
 import { Spinner } from '../../../components/common/Spinner';
 import {
   useQuotationsList,
-  useUpdateQuotationStatus,
   useDeleteQuotation,
 } from '../hooks/useQuotations';
-import { Quotation, QuotationStatus } from '../types';
+import { QuotationStatus, QuotationsListParams } from '../types';
 
 const statusLabels: Record<QuotationStatus, string> = {
   DRAFT: 'Borrador',
@@ -40,9 +35,9 @@ const statusLabels: Record<QuotationStatus, string> = {
 const statusColors: Record<QuotationStatus, string> = {
   DRAFT: 'bg-dm-bg-secondary text-dm-text-secondary',
   SENT: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
-  ACCEPTED: 'bg-emerald-100 text-emerald-700 dark:text-emerald-300',
+  ACCEPTED: 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300',
   REJECTED: 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300',
-  EXPIRED: 'bg-amber-100 text-amber-700 dark:text-amber-300',
+  EXPIRED: 'bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300',
   CONVERTED: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
 };
 
@@ -64,7 +59,6 @@ export const QuotationsListPage: React.FC = () => {
   const [appliedFilters, setAppliedFilters] = useState({ ...filters });
   const [currentPage, setCurrentPage] = useState(1);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   // Estado para el rango de fechas
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -111,23 +105,22 @@ export const QuotationsListPage: React.FC = () => {
 
   // Construir params para el query - useMemo evita recrear el objeto en cada render
   const queryParams = useMemo(() => {
-    const params: any = {
+    const params: QuotationsListParams = {
       skip: (currentPage - 1) * 15,
       limit: 15,
-      company_id: 1,
     };
 
-    // Agregar filtros solo si tienen valor
-    Object.entries(appliedFilters).forEach(([key, value]) => {
-      if (value) params[key] = value;
-    });
+    if (appliedFilters.series) params.series = appliedFilters.series;
+    if (appliedFilters.client_search) params.client_search = appliedFilters.client_search;
+    if (appliedFilters.status) params.status = appliedFilters.status as QuotationStatus;
+    if (appliedFilters.start_date) params.start_date = appliedFilters.start_date;
+    if (appliedFilters.end_date) params.end_date = appliedFilters.end_date;
 
     return params;
   }, [appliedFilters, currentPage]);
 
   // Obtener datos con React Query - se actualiza automáticamente cuando cambian los params
   const { data, isLoading, error } = useQuotationsList(queryParams);
-  const updateStatusMutation = useUpdateQuotationStatus();
   const deleteMutation = useDeleteQuotation();
 
   const quotations = data?.data || [];
@@ -160,10 +153,6 @@ export const QuotationsListPage: React.FC = () => {
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleStatusChange = async (quotationId: number, status: QuotationStatus) => {
-    updateStatusMutation.mutate({ id: quotationId, data: { status } });
   };
 
   const handleDelete = async (quotationId: number) => {
@@ -230,7 +219,7 @@ export const QuotationsListPage: React.FC = () => {
               onChange={(e) => handleFilterChange('client_search', e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Buscar por cliente..."
-              className="w-full pl-9 pr-4 py-2.5 bg-dm-bg-secondary border-none rounded-xl text-sm focus:ring-2 focus:ring-primary/50"
+              className="w-full pl-9 pr-4 py-2.5 bg-dm-bg-secondary border-none rounded-xl text-sm text-dm-text-primary focus:ring-2 focus:ring-primary/50"
             />
           </div>
         </div>
@@ -301,7 +290,7 @@ export const QuotationsListPage: React.FC = () => {
                 setShowAdvancedFilters(false);
               }}
               disabled={isLoading}
-              className="flex-1 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 disabled:opacity-50"
+              className="flex-1 px-3 py-2 text-sm font-medium text-white dark:text-gray-900 bg-gray-900 dark:bg-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50"
             >
               Buscar
             </button>
@@ -334,7 +323,7 @@ export const QuotationsListPage: React.FC = () => {
             </button>
             <button
               onClick={handleApplyDates}
-              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90"
             >
               Aplicar
             </button>
@@ -353,7 +342,7 @@ export const QuotationsListPage: React.FC = () => {
             </p>
           </div>
           <button
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
             onClick={() => navigate('/sales/quotations/new')}
           >
             <PlusIcon className="h-4 w-4" />
@@ -372,19 +361,19 @@ export const QuotationsListPage: React.FC = () => {
                 value={filters.series}
                 onChange={(e) => handleFilterChange('series', e.target.value)}
                 placeholder="Todas"
-                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
             {/* Cliente */}
-            <div className="min-w-[180px] flex-1">
+            <div className="min-w-[140px] max-w-[200px]">
               <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-dm-text-muted">Cliente</label>
               <input
                 type="text"
                 value={filters.client_search}
                 onChange={(e) => handleFilterChange('client_search', e.target.value)}
                 placeholder="Nombre o RUC..."
-                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -394,7 +383,7 @@ export const QuotationsListPage: React.FC = () => {
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
                 <option value="">Todos</option>
                 {Object.entries(statusLabels).map(([status, label]) => (
@@ -435,7 +424,7 @@ export const QuotationsListPage: React.FC = () => {
                           (startDate && date.toDateString() === startDate.toDateString()) ||
                           (endDate && date.toDateString() === endDate.toDateString());
                         const isInRange = startDate && endDate && date > startDate && date < endDate;
-                        if (isSelected) return 'bg-indigo-600 text-white rounded-full';
+                        if (isSelected) return 'bg-primary text-white rounded-full';
                         if (isInRange) return 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300';
                         return '';
                       }}
@@ -450,7 +439,7 @@ export const QuotationsListPage: React.FC = () => {
                       </button>
                       <button
                         onClick={handleApplyDates}
-                        className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90"
                       >
                         Aplicar
                       </button>
@@ -484,7 +473,7 @@ export const QuotationsListPage: React.FC = () => {
                   <button
                     onClick={handleSearch}
                     disabled={isLoading}
-                    className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-gray-800 disabled:opacity-50"
+                    className="rounded-lg bg-gray-900 dark:bg-white px-4 py-2 text-xs font-semibold text-white dark:text-gray-900 shadow-sm hover:bg-gray-800 dark:hover:bg-gray-100 disabled:opacity-50"
                   >
                     Buscar
                   </button>
@@ -593,7 +582,7 @@ export const QuotationsListPage: React.FC = () => {
             </div>
 
             {/* VISTA DESKTOP: Tabla */}
-            <div className="hidden lg:block bg-dm-bg-primary rounded-xl shadow-sm border border-dm-border-secondary overflow-hidden">
+            <div className="hidden lg:block rounded-xl border border-dm-border-secondary overflow-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="bg-dm-bg-secondary border-b border-dm-border-secondary">
@@ -617,7 +606,7 @@ export const QuotationsListPage: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-dm-border-secondary">
                   {quotations.map((quotation) => (
                     <tr key={quotation.id} className="hover:bg-dm-bg-hover/60 transition-colors">
                       <td className="px-6 py-4 text-sm font-semibold text-dm-text-primary">
@@ -650,7 +639,7 @@ export const QuotationsListPage: React.FC = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => navigate(`/sales/quotations/${quotation.id}`)}
-                            className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:text-indigo-600 dark:text-indigo-400"
+                            className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:text-indigo-600 dark:hover:text-indigo-400"
                             title="Ver detalle"
                           >
                             <EyeIcon className="h-4 w-4" />
@@ -658,7 +647,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status !== 'CONVERTED' && (
                             <button
                               onClick={() => navigate(`/sales/quotations/${quotation.id}/edit`)}
-                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:text-amber-400"
+                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-amber-50 dark:hover:bg-amber-950/30 hover:text-amber-600 dark:hover:text-amber-400"
                               title="Editar"
                             >
                               <PencilSquareIcon className="h-4 w-4" />
@@ -667,7 +656,7 @@ export const QuotationsListPage: React.FC = () => {
                           {quotation.status === 'DRAFT' && (
                             <button
                               onClick={() => handleDelete(quotation.id)}
-                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:text-red-400"
+                              className="rounded-md p-1.5 text-dm-text-muted transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400"
                               title="Eliminar"
                             >
                               <TrashIcon className="h-4 w-4" />
@@ -686,27 +675,97 @@ export const QuotationsListPage: React.FC = () => {
 
       {/* Footer Paginación */}
       {!isLoading && pagination.total > 0 && (
-        <div className="bg-dm-bg-primary border-t border-dm-border-primary px-4 lg:px-6 py-3 flex items-center justify-between text-sm">
-          <span className="text-dm-text-secondary">
+        <div className="bg-dm-bg-primary border-t border-dm-border-primary px-4 lg:px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <span className="text-dm-text-secondary text-xs sm:text-sm">
             Mostrando {startItem}-{endItem} de {pagination.total} cotizaciones
           </span>
           <div className="flex items-center gap-1">
+            {/* Primera página */}
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={pagination.page <= 1 || isLoading}
+              className="p-1.5 rounded-lg border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Primera página"
+            >
+              <ChevronLeftIcon className="h-3.5 w-3.5" />
+              <ChevronLeftIcon className="h-3.5 w-3.5 -ml-2" />
+            </button>
+
+            {/* Anterior */}
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={pagination.page <= 1 || isLoading}
               className="p-1.5 rounded-lg border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Página anterior"
             >
               <ChevronLeftIcon className="h-4 w-4" />
             </button>
-            <span className="text-xs text-dm-text-muted px-2">
-              Página {pagination.page} de {Math.max(1, pagination.total_pages)}
-            </span>
+
+            {/* Números de página */}
+            {(() => {
+              const current = pagination.page;
+              const total = Math.max(1, pagination.total_pages);
+              const pages: (number | string)[] = [];
+
+              if (total <= 7) {
+                for (let i = 1; i <= total; i++) pages.push(i);
+              } else if (current <= 4) {
+                for (let i = 1; i <= 5; i++) pages.push(i);
+                pages.push('...');
+                pages.push(total);
+              } else if (current >= total - 3) {
+                pages.push(1);
+                pages.push('...');
+                for (let i = total - 4; i <= total; i++) pages.push(i);
+              } else {
+                pages.push(1);
+                pages.push('...');
+                pages.push(current - 1);
+                pages.push(current);
+                pages.push(current + 1);
+                pages.push('...');
+                pages.push(total);
+              }
+
+              return pages.map((page, idx) =>
+                page === '...' ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-dm-text-muted text-xs">...</span>
+                ) : (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page as number)}
+                    disabled={isLoading}
+                    className={`min-w-[2rem] h-8 px-2 rounded-lg text-xs font-medium transition-colors ${
+                      current === page
+                        ? 'bg-primary text-white'
+                        : 'border border-dm-border-primary text-dm-text-secondary hover:bg-dm-bg-hover'
+                    } disabled:opacity-40`}
+                  >
+                    {page}
+                  </button>
+                )
+              );
+            })()}
+
+            {/* Siguiente */}
             <button
               onClick={() => setCurrentPage(p => Math.min(pagination.total_pages, p + 1))}
               disabled={pagination.page >= pagination.total_pages || isLoading}
               className="p-1.5 rounded-lg border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Página siguiente"
             >
               <ChevronRightIcon className="h-4 w-4" />
+            </button>
+
+            {/* Última página */}
+            <button
+              onClick={() => setCurrentPage(pagination.total_pages)}
+              disabled={pagination.page >= pagination.total_pages || isLoading}
+              className="p-1.5 rounded-lg border border-dm-border-primary text-dm-text-muted hover:bg-dm-bg-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              title="Última página"
+            >
+              <ChevronRightIcon className="h-3.5 w-3.5" />
+              <ChevronRightIcon className="h-3.5 w-3.5 -ml-2" />
             </button>
           </div>
         </div>

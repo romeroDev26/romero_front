@@ -553,7 +553,7 @@ export const QuotationsListPage: React.FC = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => navigate(`/sales/quotations/${quotation.id}`)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:bg-blue-900/40 rounded-lg text-sm font-medium transition-colors"
+                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 rounded-lg text-sm font-medium transition-colors"
                     >
                       <EyeIcon className="h-4 w-4" />
                       Ver

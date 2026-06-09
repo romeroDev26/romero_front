@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User } from '../../types';
 import { useSidebarScroll } from '../../hooks/useSidebarScroll';
 import { usePermissions } from '../../hooks/usePermissions';
+import { SearchInput } from '../common/SearchInput';
 import { APP_VERSION } from '../../config/version';
 
 import {
@@ -173,6 +174,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
     return saved ? JSON.parse(saved) : {};
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Filtrar grupos basados en permisos
   const filteredNavGroups = useCallback(() => {
     let userRole = '';
@@ -285,8 +288,37 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
     setExpandedMenus(prev => ({ ...prev, [menuKey]: !prev[menuKey] }));
   };
 
+  const isSearching = searchQuery.trim().length > 0;
+
+  const searchedNavGroups = useMemo(() => {
+    if (!isSearching) return filteredNavGroups();
+
+    const query = searchQuery.trim().toLowerCase();
+    const matches = (name: string) => name.toLowerCase().includes(query);
+
+    return filteredNavGroups()
+      .map(group => {
+        const filteredItems = group.items
+          .map(item => {
+            if (item.subitems && item.subitems.length > 0) {
+              const filteredSubitems = item.subitems.filter(sub => matches(sub.name));
+              const itemMatches = matches(item.name);
+              if (itemMatches || filteredSubitems.length > 0) {
+                return { ...item, subitems: itemMatches ? item.subitems : filteredSubitems };
+              }
+              return null;
+            }
+            return matches(item.name) ? item : null;
+          })
+          .filter((item): item is NavItem => item !== null);
+
+        return { ...group, items: filteredItems };
+      })
+      .filter(group => group.items.length > 0);
+  }, [searchQuery, filteredNavGroups, isSearching]);
+
   const renderMenuItem = useCallback((item: NavItem, isSubitem = false, level = 0) => {
-    const isExpanded = item.expandKey ? expandedMenus[item.expandKey] : false;
+    const isExpanded = item.expandKey ? (isSearching ? true : expandedMenus[item.expandKey]) : false;
     const baseClasses = `flex items-center w-full text-left text-sm font-medium cursor-pointer transition-all duration-200 ease-in-out rounded-lg`;
 
     let paddingClasses = 'px-4 py-3';
@@ -368,10 +400,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
         )}
       </NavLink>
     );
-  }, [expandedMenus, pendingCount]);
+  }, [expandedMenus, pendingCount, isSearching]);
 
   const renderExpandableGroup = useCallback((group: NavGroup) => {
-    const isExpanded = group.expandKey ? expandedMenus[group.expandKey] : false;
+    const isExpanded = group.expandKey ? (isSearching ? true : expandedMenus[group.expandKey]) : false;
 
     return (
       <div key={group.title} className="mb-6">
@@ -414,7 +446,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
         </AnimatePresence>
       </div>
     );
-  }, [expandedMenus, renderMenuItem]);
+  }, [expandedMenus, renderMenuItem, isSearching]);
 
   const renderSimpleGroup = useCallback((group: NavGroup, idx: number) => (
     <div key={idx} className="mb-6">
@@ -450,8 +482,28 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
           scrollbarColor: 'var(--border-primary) transparent'
         }}
       >
+        <div className="mb-4">
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Buscar opciones..."
+          />
+          {isSearching && (
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-xs text-dm-text-muted">
+                {searchedNavGroups.reduce((acc, g) => acc + g.items.length + g.items.reduce((a, i) => a + (i.subitems?.length ?? 0), 0), 0)} resultado(s)
+              </span>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="text-xs text-primary hover:text-primary-dark font-medium transition-colors"
+              >
+                Limpiar
+              </button>
+            </div>
+          )}
+        </div>
         <nav className="space-y-2">
-          {filteredNavGroups().map((group, idx) =>
+          {searchedNavGroups.map((group, idx) =>
             group.expandable
               ? renderExpandableGroup(group)
               : renderSimpleGroup(group, idx)

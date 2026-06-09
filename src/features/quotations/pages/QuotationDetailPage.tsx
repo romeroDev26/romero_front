@@ -508,7 +508,7 @@ export const QuotationDetailPage: React.FC = () => {
                   Items de la Cotizacion
                 </h3>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-slate-200">
+                  <table className="min-w-full divide-y divide-dm-border-primary">
                     <thead className="bg-dm-bg-secondary">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">N</th>
@@ -519,7 +519,7 @@ export const QuotationDetailPage: React.FC = () => {
                         <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-dm-text-muted">Subtotal</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-dm-bg-primary divide-y divide-slate-100">
+                    <tbody className="bg-dm-bg-primary divide-y divide-dm-border-secondary">
                       {quotation.items?.map((item, index) => {
                         const subtotal = Number(item.quantity) * Number(item.unit_price) - Number(item.discount || 0);
                         return (

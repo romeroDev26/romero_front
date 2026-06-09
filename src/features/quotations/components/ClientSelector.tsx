@@ -154,8 +154,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       
       setShowClientForm(true);
       
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Error al buscar cliente';
+    } catch (error) {
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Error al buscar cliente';
       toast.error(`Error: ${errorMessage}`);
     } finally {
       setIsSearching(false);
@@ -195,14 +197,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <label className="block text-sm font-medium text-dm-text-secondary mb-2">Cliente *</label>
-      
       {/* Formulario de búsqueda */}
       {!selectedClient && !showClientForm && (
-        <div className="bg-dm-bg-primary p-4 rounded-lg border">
-          <h3 className="font-semibold text-lg text-dm-text-primary mb-4">Datos del Cliente</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-1">
               <label className="block text-sm font-medium text-dm-text-secondary mb-1">Tipo Doc.</label>
               <select
@@ -225,7 +223,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   name="docNumber"
                   value={docNumber}
                   onChange={handleInputChange}
-                  className="w-full p-2 border border-dm-border-primary rounded-l-md"
+                  className="w-full p-2 border border-dm-border-primary rounded-l-md bg-dm-bg-primary text-dm-text-primary"
                   placeholder="Ingrese el número"
                 />
                 <Button
@@ -240,7 +238,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           </div>
           
           <div className="text-xs text-dm-text-muted">
-            {isSearchable 
+            {isSearchable
               ? 'El sistema buscará primero en la base de datos interna, luego en registros públicos'
               : 'Complete el número de documento para buscar'
             }
@@ -250,9 +248,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
       {/* Formulario de datos del cliente - IGUAL QUE SALEFORM */}
       {showClientForm && (
-        <div className="bg-dm-bg-primary p-4 rounded-lg border">
-          <h3 className="font-semibold text-lg text-dm-text-primary mb-4">Completar Datos del Cliente</h3>
-          
+        <div className="space-y-4">
           {/* Mostrar info del documento encontrado */}
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50 rounded-md p-3 mb-4">
             <div className="flex items-center gap-2">
@@ -276,7 +272,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                 name="name"
                 value={clientData.name}
                 onChange={handleClientDataChange}
-                className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder={docType === '6' ? 'Razón Social de la empresa' : 'Nombres y apellidos'}
               />
             </div>
@@ -289,7 +285,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   name="address"
                   value={clientData.address}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Dirección fiscal de la empresa"
                 />
               </div>
@@ -305,7 +301,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   name="countryCode"
                   value={clientData.countryCode}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Seleccionar país de procedencia...</option>
                   <option value="PE">Perú</option>
@@ -351,7 +347,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   name="phone"
                   value={clientData.phone}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Número de teléfono"
                 />
               </div>
@@ -362,13 +358,13 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   name="email"
                   value={clientData.email}
                   onChange={handleClientDataChange}
-                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Correo electrónico"
                 />
               </div>
             </div>
             
-            <div className="flex gap-3 pt-4 border-t">
+            <div className="flex gap-3 pt-4 border-t border-dm-border-primary">
               <Button
                 type="button"
                 onClick={handleConfirmClient}
@@ -379,7 +375,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
               <Button
                 type="button"
                 onClick={handleCancelForm}
-                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white"
+                className="flex-1 bg-dm-bg-secondary hover:bg-dm-bg-hover text-dm-text-secondary border border-dm-border-primary"
               >
                 Cancelar
               </Button>
@@ -390,9 +386,8 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
       {/* Cliente seleccionado con campos EDITABLES como SaleForm */}
       {selectedClient && (
-        <div className="bg-dm-bg-primary p-4 rounded-lg border">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-lg text-dm-text-primary">Datos del Cliente</h3>
+        <div className="space-y-4">
+          <div className="flex justify-end">
             <Button
               type="button"
               onClick={() => {
@@ -447,7 +442,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                     name: e.target.value
                   });
                 }}
-                className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder={selectedClient.doc_type === '6' ? 'Razón Social de la empresa' : 'Nombres y apellidos'}
               />
             </div>
@@ -483,7 +478,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                       phone: e.target.value
                     });
                   }}
-                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Número de teléfono"
                 />
               </div>
@@ -498,7 +493,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                       email: e.target.value
                     });
                   }}
-                  className="w-full p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Correo electrónico"
                 />
               </div>

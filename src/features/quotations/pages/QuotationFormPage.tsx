@@ -105,7 +105,7 @@ export const QuotationFormPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Información básica */}
         <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-4">Información Básica</h3>
+          <h3 className="text-lg font-medium mb-4 text-dm-text-primary">Información Básica</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input
               label="Serie"
@@ -137,7 +137,7 @@ export const QuotationFormPage: React.FC = () => {
               <select
                 value={formData.currency_code}
                 onChange={(e) => setFormData(prev => ({ ...prev, currency_code: e.target.value }))}
-                className="w-full border border-dm-border-primary rounded-md px-3 py-2"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2 bg-dm-bg-primary text-dm-text-primary"
                 required
               >
                 <option value="PEN">Soles (PEN)</option>
@@ -155,7 +155,7 @@ export const QuotationFormPage: React.FC = () => {
 
         {/* Agregar items */}
         <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-4">Agregar Item</h3>
+          <h3 className="text-lg font-medium mb-4 text-dm-text-primary">Agregar Item</h3>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Input
               label="Descripción"
@@ -187,25 +187,25 @@ export const QuotationFormPage: React.FC = () => {
         {/* Lista de items */}
         {formData.items.length > 0 && (
           <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
-            <h3 className="text-lg font-medium mb-4">Items de la Cotización</h3>
+            <h3 className="text-lg font-medium mb-4 text-dm-text-primary">Items de la Cotización</h3>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-dm-border-primary">
                 <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left">Descripción</th>
-                    <th className="px-4 py-2 text-center">Cantidad</th>
-                    <th className="px-4 py-2 text-right">Precio</th>
-                    <th className="px-4 py-2 text-right">Subtotal</th>
-                    <th className="px-4 py-2 text-center">Acciones</th>
+                    <th className="px-4 py-2 text-left text-dm-text-muted text-xs font-semibold uppercase tracking-wider">Descripción</th>
+                    <th className="px-4 py-2 text-center text-dm-text-muted text-xs font-semibold uppercase tracking-wider">Cantidad</th>
+                    <th className="px-4 py-2 text-right text-dm-text-muted text-xs font-semibold uppercase tracking-wider">Precio</th>
+                    <th className="px-4 py-2 text-right text-dm-text-muted text-xs font-semibold uppercase tracking-wider">Subtotal</th>
+                    <th className="px-4 py-2 text-center text-dm-text-muted text-xs font-semibold uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {formData.items.map((item, index) => (
                     <tr key={index}>
-                      <td className="px-4 py-2">{item.item_description}</td>
-                      <td className="px-4 py-2 text-center">{item.quantity}</td>
-                      <td className="px-4 py-2 text-right">{item.unit_price.toFixed(2)}</td>
-                      <td className="px-4 py-2 text-right">
+                      <td className="px-4 py-2 text-dm-text-primary">{item.item_description}</td>
+                      <td className="px-4 py-2 text-center text-dm-text-secondary">{item.quantity}</td>
+                      <td className="px-4 py-2 text-right text-dm-text-secondary">{item.unit_price.toFixed(2)}</td>
+                      <td className="px-4 py-2 text-right text-dm-text-secondary">
                         {(item.quantity * item.unit_price).toFixed(2)}
                       </td>
                       <td className="px-4 py-2 text-center">
@@ -229,7 +229,7 @@ export const QuotationFormPage: React.FC = () => {
 
         {/* Notas */}
         <div className="bg-dm-bg-primary p-6 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-4">Notas</h3>
+          <h3 className="text-lg font-medium mb-4 text-dm-text-primary">Notas</h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-dm-text-secondary mb-1">
@@ -239,7 +239,7 @@ export const QuotationFormPage: React.FC = () => {
                 value={formData.notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                 rows={3}
-                className="w-full border border-dm-border-primary rounded-md px-3 py-2"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2 bg-dm-bg-primary text-dm-text-primary"
                 placeholder="Notas que aparecerán en la cotización"
               />
             </div>
@@ -251,7 +251,7 @@ export const QuotationFormPage: React.FC = () => {
                 value={formData.internal_notes}
                 onChange={(e) => setFormData(prev => ({ ...prev, internal_notes: e.target.value }))}
                 rows={3}
-                className="w-full border border-dm-border-primary rounded-md px-3 py-2"
+                className="w-full border border-dm-border-primary rounded-md px-3 py-2 bg-dm-bg-primary text-dm-text-primary"
                 placeholder="Notas internas (no aparecen en la cotización)"
               />
             </div>

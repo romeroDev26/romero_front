@@ -21,7 +21,7 @@ export const QuotationPDFViewer: React.FC<QuotationPDFViewerProps> = ({
   const [showPdfError, setShowPdfError] = useState(false);
 
   return (
-    <div className="bg-dm-bg-primary rounded-lg shadow-sm border">
+    <div className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary">
       {/* Header del visor PDF */}
       <div className="px-6 py-4 border-b bg-dm-bg-secondary rounded-t-lg">
         <div className="flex items-center justify-between">

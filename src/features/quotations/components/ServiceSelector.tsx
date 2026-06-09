@@ -26,7 +26,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
           if (selected) onServiceSelect(selected);
         }}
         disabled={loading}
-        className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary disabled:cursor-not-allowed"
+        className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm bg-dm-bg-primary text-dm-text-primary focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary disabled:cursor-not-allowed"
       >
         <option value="">
           {loading ? 'Cargando servicios...' : 'Seleccionar servicio...'}

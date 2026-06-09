@@ -40,7 +40,7 @@ const TripCard: React.FC<{ trip: AvailableTripByPort; onSelect: () => void }> = 
           <p className="font-bold text-dm-text-primary truncate">{trip.trip_name}</p>
           <p className="text-xs text-dm-text-muted truncate">{trip.vessel_name}</p>
         </div>
-        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700 dark:text-emerald-300 shrink-0">
+        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase bg-emerald-100 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 shrink-0">
           Disponible
         </span>
       </div>
@@ -103,8 +103,8 @@ export const QuotationTripStep: React.FC<QuotationTripStepProps> = ({
   const trips = useMemo(() => tripsByDate[selectedDate] || [], [tripsByDate, selectedDate]);
 
   return (
-    <div className="w-full overflow-x-hidden bg-dm-bg-secondary">
-      <header className="bg-dm-bg-primary border-b border-dm-border-primary sticky top-0 z-10">
+    <div className="w-full bg-dm-bg-secondary">
+      <header className="bg-dm-bg-primary border-b border-dm-border-primary">
         <div className="flex items-center px-4 py-3 justify-between gap-3">
           <button
             type="button"

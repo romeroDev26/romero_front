@@ -39,9 +39,10 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
     `S/ ${n.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className={className || 'space-y-6'}>
+    <div className={`${className || 'space-y-6'} h-full`}>
       {/* Tarjeta principal resumen */}
-      <div className={`bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm ${stickySidebar ? 'sticky top-28 max-h-[calc(100vh-120px)] overflow-y-auto' : ''} ${compact ? 'p-4' : 'p-6'}`}>
+      <div className={`bg-dm-bg-primary rounded-xl border border-dm-border-primary shadow-sm ${stickySidebar ? 'sticky top-6' : ''} ${compact ? 'p-4' : 'p-6'}`}>
+        <div className={`${stickySidebar ? 'max-h-[calc(100vh-120px)] overflow-y-auto' : ''}`}>
         <h3 className={`font-bold text-dm-text-primary ${compact ? 'text-base mb-4' : 'text-lg mb-6'}`}>Resumen</h3>
 
         {/* Números */}
@@ -103,6 +104,7 @@ export const QuotationSummary: React.FC<QuotationSummaryProps> = ({
             </div>
           </div>
         )}
+        </div>
       </div>
 
     </div>

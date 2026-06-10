@@ -147,9 +147,9 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
           <select
             value={formData.route_id}
             onChange={(e) => handleChange('route_id', parseInt(e.target.value))}
-            className={`w-full rounded-md shadow-sm p-2 border ${
+            className={`w-full rounded-md shadow-sm p-2 border bg-dm-bg-secondary text-dm-text-secondary ${
               errors.route_id ? 'border-red-500' : 'border-dm-border-primary'
-            } focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-dm-bg-secondary disabled:cursor-not-allowed`}
+            } focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-dm-bg-secondary disabled:cursor-not-allowed disabled:text-dm-text-muted`}
             disabled={isLoadingRoutes}
           >
             <option value={0}>Seleccione una ruta</option>
@@ -172,7 +172,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
             <select
               value={formData.day_of_week}
               onChange={(e) => handleChange('day_of_week', parseInt(e.target.value))}
-              className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-dm-bg-secondary disabled:cursor-not-allowed"
+              className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border bg-dm-bg-secondary text-dm-text-secondary focus:border-primary focus:ring focus:ring-primary/20 transition-colors disabled:bg-dm-bg-secondary disabled:cursor-not-allowed disabled:text-dm-text-muted"
             >
               {DAYS_OF_WEEK.map((day) => (
                 <option key={day.value} value={day.value}>
@@ -198,7 +198,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
           <select
             value={formData.vessel_id}
             onChange={(e) => handleChange('vessel_id', parseInt(e.target.value))}
-            className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border focus:border-primary focus:ring focus:ring-primary/20"
+            className="w-full rounded-md border-dm-border-primary shadow-sm p-2 border bg-dm-bg-secondary text-dm-text-secondary focus:border-primary focus:ring focus:ring-primary/20 disabled:text-dm-text-muted"
             disabled={isLoadingVessels}
           >
             <option value={0}>Seleccione una embarcación</option>

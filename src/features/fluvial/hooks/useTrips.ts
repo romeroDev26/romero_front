@@ -8,6 +8,7 @@ import {
   CancelTripData,
   SearchTripsParams
 } from '../../../services/trips.service';
+import { PreviewVesselChangeRequest, PreviewVesselChangeResponse } from '../../../types';
 import { Trip } from '../../../types';
 import { useDebounce } from '../../../hooks/useDebounce';
 
@@ -88,5 +89,15 @@ export const useTripDetails = (tripId: number | null) => {
     queryKey: ['trip', tripId],
     queryFn: () => tripsService.getById(tripId!),
     enabled: !!tripId
+  });
+};
+
+export const usePreviewVesselChange = () => {
+  return useMutation<PreviewVesselChangeResponse, Error, { tripId: number; data: PreviewVesselChangeRequest }>({
+    mutationFn: ({ tripId, data }) => tripsService.previewVesselChange(tripId, data),
+    onError: (error: any) => {
+      const message = error.response?.data?.detail || 'Error al previsualizar el cambio de embarcación';
+      toast.error(message);
+    }
   });
 };

@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { PlusIcon, CalendarIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { toast } from '@/utils/sileo-toast';
 import { useTripsView } from '../hooks/useTripsView';
-import { useTripMutations } from '../hooks/useTrips';
+import { useTripMutations, usePreviewVesselChange } from '../hooks/useTrips';
 import { useScheduledTemplates } from '../hooks/useScheduledTemplates';
 import { authService } from '../../../services/auth.service';
 import { User, ScheduledRouteTemplate } from '../../../types';
@@ -20,8 +20,10 @@ import { TripFormModal } from '../components/schedule/TripFormModal';
 import { TripFilters, TripAdvancedFilters } from '../components/schedule/TripFilters';
 import { CalendarView } from '../components/schedule/CalendarView';
 import { ManifestGenerationModal } from '../components/schedule/ManifestGenerationModal';
+import { VesselChangePreviewModal } from '../components/schedule/VesselChangePreviewModal';
 import { ManifestPreviewModal } from '../../manifests/components/ManifestPreviewModal';
 import { Manifest } from '../../manifests/types/manifest.types';
+import { PreviewVesselChangeResponse } from '../../../types';
 
 type ViewFilterMode = 'upcoming' | 'week' | 'history';
 
@@ -36,11 +38,14 @@ export const ScheduleTripsPage: React.FC = () => {
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
   const [isManifestModalOpen, setIsManifestModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [isVesselPreviewModalOpen, setIsVesselPreviewModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ScheduledRouteTemplate | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<UnifiedTripViewItem | null>(null);
   const [selectedTripForManifest, setSelectedTripForManifest] = useState<UnifiedTripViewItem | null>(null);
   const [createdManifest, setCreatedManifest] = useState<Manifest | null>(null);
   const [initialDateForNewTrip, setInitialDateForNewTrip] = useState<Date | null>(null);
+  const [vesselPreviewData, setVesselPreviewData] = useState<PreviewVesselChangeResponse | null>(null);
+  const [pendingTripUpdate, setPendingTripUpdate] = useState<{ id: number; data: any } | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const [viewFilter, setViewFilter] = useState<ViewFilterMode>('upcoming');
   const [weekDate, setWeekDate] = useState(new Date());
@@ -119,6 +124,7 @@ export const ScheduleTripsPage: React.FC = () => {
 
   const { createTemplate, updateTemplate, deactivateTemplate } = useScheduledTemplates(COMPANY_ID);
   const { createTrip, updateTrip, cancelTrip, isCreating: isCreatingTrip, isUpdating: isUpdatingTrip } = useTripMutations();
+  const { mutateAsync: previewVesselChange, isPending: isPreviewingVesselChange } = usePreviewVesselChange();
 
   const handleCreateTemplate = () => {
     setSelectedTemplate(null);
@@ -190,6 +196,53 @@ export const ScheduleTripsPage: React.FC = () => {
     } catch (error) {
       toast.error('Error al guardar el viaje');
     }
+  };
+
+  const handlePreviewVesselChange = async (tripId: number, newVesselId: number, data: any) => {
+    try {
+      const preview = await previewVesselChange({
+        tripId,
+        data: { new_vessel_id: newVesselId }
+      });
+
+      // Si hay reubicaciones, mostrar modal de confirmación
+      if (preview.will_relocate_seats && preview.total_relocated > 0) {
+        setPendingTripUpdate({ id: tripId, data });
+        setVesselPreviewData(preview);
+        setIsVesselPreviewModalOpen(true);
+        return;
+      }
+
+      // Si no hay reubicaciones, proceder directamente
+      await updateTrip({ id: tripId, data });
+      setIsTripModalOpen(false);
+      refetch();
+      toast.success('Viaje actualizado exitosamente');
+    } catch (error) {
+      // El error ya se maneja en el hook con toast
+    }
+  };
+
+  const handleConfirmVesselChange = async () => {
+    if (!pendingTripUpdate) return;
+
+    try {
+      await updateTrip(pendingTripUpdate);
+      setIsVesselPreviewModalOpen(false);
+      setIsTripModalOpen(false);
+      setPendingTripUpdate(null);
+      setVesselPreviewData(null);
+      refetch();
+      toast.success('Viaje actualizado exitosamente');
+    } catch (error) {
+      toast.error('Error al aplicar el cambio de embarcación');
+    }
+  };
+
+  const handleCloseVesselPreview = () => {
+    setIsVesselPreviewModalOpen(false);
+    setPendingTripUpdate(null);
+    setVesselPreviewData(null);
   };
 
   const handleGenerateManifest = (trip: UnifiedTripViewItem) => {
@@ -426,8 +479,19 @@ export const ScheduleTripsPage: React.FC = () => {
           onClose={() => setIsTripModalOpen(false)}
           trip={selectedTrip}
           onSave={handleSaveTrip}
-          isLoading={isCreatingTrip || isUpdatingTrip}
+          onPreviewVesselChange={handlePreviewVesselChange}
+          isLoading={isCreatingTrip || isUpdatingTrip || isPreviewingVesselChange}
           initialDate={initialDateForNewTrip}
+        />
+      )}
+
+      {isVesselPreviewModalOpen && (
+        <VesselChangePreviewModal
+          isOpen={isVesselPreviewModalOpen}
+          onClose={handleCloseVesselPreview}
+          onConfirm={handleConfirmVesselChange}
+          previewData={vesselPreviewData}
+          isLoading={isUpdatingTrip}
         />
       )}
 

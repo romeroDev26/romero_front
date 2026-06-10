@@ -16,6 +16,7 @@ interface Props {
   onClose: () => void;
   trip: UnifiedTripViewItem | null;
   onSave: (data: any) => void;
+  onPreviewVesselChange?: (tripId: number, newVesselId: number, data: any) => void;
   isLoading?: boolean;
   initialDate?: Date | null;
 }
@@ -33,6 +34,7 @@ export const TripFormModal: React.FC<Props> = ({
   onClose,
   trip,
   onSave,
+  onPreviewVesselChange,
   isLoading = false,
   initialDate,
 }) => {
@@ -57,6 +59,7 @@ export const TripFormModal: React.FC<Props> = ({
   const [errors, setErrors] = useState<any>({});
   const [datePart, setDatePart] = useState('');
   const [timePart, setTimePart] = useState('08:00');
+  const [originalVesselId, setOriginalVesselId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -80,6 +83,7 @@ export const TripFormModal: React.FC<Props> = ({
             : '',
           captain_user_id: tripDetails.captain_user_id || '',
         });
+        setOriginalVesselId(tripDetails.vessel_id || null);
       } else if (!trip) {
         const defaultDate = initialDate ? format(initialDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
         setDatePart(defaultDate);
@@ -144,6 +148,12 @@ export const TripFormModal: React.FC<Props> = ({
       dataToSave.actual_arrival_datetime = formData.actual_arrival_datetime ? new Date(formData.actual_arrival_datetime).toISOString() : undefined;
     } else {
       dataToSave.route_id = formData.route_id;
+    }
+
+    // Si estamos editando y cambió la embarcación, primero previsualizar
+    if (trip && originalVesselId !== null && formData.vessel_id !== originalVesselId && onPreviewVesselChange) {
+      onPreviewVesselChange(trip.trip_id, formData.vessel_id, dataToSave);
+      return;
     }
 
     onSave(dataToSave);

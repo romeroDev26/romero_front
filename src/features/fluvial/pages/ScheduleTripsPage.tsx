@@ -443,20 +443,8 @@ export const ScheduleTripsPage: React.FC = () => {
         ) : (
           <div className="p-4">
             <CalendarView
-              trips={trips as unknown as any[]}
-              onTripClick={(trip) => {
-                const unifiedTrip: UnifiedTripViewItem = {
-                  ...trip,
-                  trip_name: trip.trip_name ?? null,
-                  original_data: trip,
-                  origin_port_name: null,
-                  destination_port_name: null,
-                  total_seats: null,
-                  available_seats: null,
-                  manifest_generated: false
-                };
-                handleEditTrip(unifiedTrip);
-              }}
+              trips={trips}
+              onTripClick={handleEditTrip}
               onDateClick={handleDateClickFromCalendar}
             />
           </div>

@@ -11,12 +11,12 @@ import {
   UsersIcon,
   GlobeAltIcon,
 } from '@heroicons/react/24/outline';
-import { AvailableTrip } from '../../../../types';
+import { UnifiedTripViewItem } from '../../hooks/useTripsView';
 import { Button } from '../../../../components/common/Button';
 
 interface Props {
-  trips: AvailableTrip[];
-  onTripClick: (trip: AvailableTrip) => void;
+  trips: UnifiedTripViewItem[];
+  onTripClick: (trip: UnifiedTripViewItem) => void;
   onDateClick: (date: Date) => void;
 }
 
@@ -47,9 +47,9 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
 };
 
 const TripDetailPopover: React.FC<{
-  trip: AvailableTrip | null;
+  trip: UnifiedTripViewItem | null;
   onClose: () => void;
-  onEdit: (trip: AvailableTrip) => void;
+  onEdit: (trip: UnifiedTripViewItem) => void;
 }> = ({ trip, onClose, onEdit }) => {
   if (!trip) return null;
 
@@ -87,7 +87,7 @@ const TripDetailPopover: React.FC<{
             </div>
             <div>
               <p className="text-xs text-dm-text-muted">Embarcacion</p>
-              <p className="text-sm font-medium text-dm-text-primary">{trip.vessel_name}</p>
+              <p className="text-sm font-medium text-dm-text-primary">{trip.vessel_name || 'No asignada'}</p>
             </div>
           </div>
 
@@ -99,7 +99,7 @@ const TripDetailPopover: React.FC<{
             <div>
               <p className="text-xs text-dm-text-muted">Ruta</p>
               <p className="text-sm font-medium text-dm-text-primary">
-                {trip.origin_city || 'N/A'} <span className="text-dm-text-muted mx-1">→</span> {trip.destination_city || 'N/A'}
+                {trip.origin_port_name || 'N/A'} <span className="text-dm-text-muted mx-1">→</span> {trip.destination_port_name || 'N/A'}
               </p>
             </div>
           </div>
@@ -130,9 +130,9 @@ const TripDetailPopover: React.FC<{
             <div>
               <p className="text-xs text-dm-text-muted">Asientos</p>
               <p className="text-sm font-medium text-dm-text-primary">
-                {trip.total_available_seats} disponibles
+                {trip.available_seats ?? 0} disponibles
                 <span className="text-dm-text-muted font-normal">
-                  {' '}({trip.total_confirmed_seats} confirmados, {trip.total_reserved_seats} reservados)
+                  {' '}({trip.total_confirmed_seats ?? 0} confirmados, {trip.total_reserved_seats ?? 0} reservados)
                 </span>
               </p>
             </div>
@@ -166,7 +166,7 @@ const TripDetailPopover: React.FC<{
 
 export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedTrip, setSelectedTrip] = useState<AvailableTrip | null>(null);
+  const [selectedTrip, setSelectedTrip] = useState<UnifiedTripViewItem | null>(null);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -184,13 +184,13 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(trip);
     return acc;
-  }, {} as Record<string, AvailableTrip[]>);
+  }, {} as Record<string, UnifiedTripViewItem[]>);
 
   const handlePrevMonth = () => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1));
   const handleNextMonth = () => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1));
 
-  const getTripStatusColor = (trip: AvailableTrip) => {
-    switch (trip.sales_status) {
+  const getTripStatusColor = (trip: UnifiedTripViewItem) => {
+    switch (trip.sales_status || trip.status) {
       case 'DISPONIBLE':
         return 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800/50';
       case 'URGENTE':
@@ -204,11 +204,11 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
     }
   };
 
-  const handleTripSelect = (trip: AvailableTrip) => {
+  const handleTripSelect = (trip: UnifiedTripViewItem) => {
     setSelectedTrip(trip);
   };
 
-  const handleEditTrip = (trip: AvailableTrip) => {
+  const handleEditTrip = (trip: UnifiedTripViewItem) => {
     setSelectedTrip(null);
     onTripClick(trip);
   };
@@ -297,7 +297,7 @@ export const CalendarView: React.FC<Props> = ({ trips, onTripClick, onDateClick 
                       <span className="truncate">{trip.vessel_name}</span>
                     </div>
                     <div className="opacity-80 truncate mt-0.5">
-                      {trip.origin_city || 'N/A'} → {trip.destination_city || 'N/A'}
+                      {trip.origin_port_name || 'N/A'} → {trip.destination_port_name || 'N/A'}
                     </div>
                   </div>
                 ))}

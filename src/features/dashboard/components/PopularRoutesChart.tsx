@@ -51,6 +51,8 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
     );
   }
 
+  const totalRoutesCount = Object.keys(routes || {}).length;
+
   // Convertir el diccionario a array y tomar el top 8 ordenados por monto
   const routesArray = Object.entries(routes || {}).map(([name, data]) => ({
     route_name: name,
@@ -85,13 +87,13 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
           Destinos Populares
         </h3>
         <span className="text-xs text-dm-text-muted">
-          Top {popularRoutes.length}
+          Top {popularRoutes.length} de {totalRoutesCount} rutas
         </span>
       </div>
       
       {/* Lista de rutas estilo Tremor */}
       <div className="space-y-4">
-        {popularRoutes.slice(0, 6).map((route, index) => {
+        {popularRoutes.map((route, index) => {
           const percentage = ((route.total_amount / totalRevenue) * 100);
           return (
             <div key={index} className="space-y-2">
@@ -125,7 +127,7 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
         {/* Resumen */}
         <div className="pt-4 mt-4 border-t border-dm-border-primary grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-dm-text-muted mb-1">Total Rutas</p>
+            <p className="text-xs text-dm-text-muted mb-1">Rutas Mostradas</p>
             <p className="text-lg font-semibold text-dm-text-primary">{popularRoutes.length}</p>
           </div>
           <div>

@@ -57,6 +57,8 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
     );
   }
 
+  const totalSellersCount = Object.keys(sellers || {}).length;
+
   // Convertir el diccionario a array y tomar el top 10 ordenados por monto
   const sellersArray = Object.entries(sellers || {}).map(([, data]) => ({
     seller_name: data.nombre,
@@ -87,7 +89,7 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
             Rendimiento de Vendedores
           </h3>
           <p className="text-xs text-dm-text-muted mt-1">
-            Top {top10Sellers.length} por volumen de ventas
+            Top {top10Sellers.length} de {totalSellersCount} vendedores
           </p>
         </div>
         <span className="text-xs text-dm-text-muted bg-dm-bg-secondary px-2.5 py-1 rounded-md">

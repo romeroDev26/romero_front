@@ -1,6 +1,6 @@
 // src/services/trips.service.ts
 import api from '../config/api';
-import { Trip, AvailableTrip, TripStop, Vessel, TripSeatAvailability, SeatMapItem } from '../types';
+import { Trip, AvailableTrip, TripStop, Vessel, TripSeatAvailability, SeatMapItem, PreviewVesselChangeRequest, PreviewVesselChangeResponse } from '../types';
 import { AxiosRequestConfig } from 'axios';
 import { stringify } from 'qs';
 
@@ -151,6 +151,11 @@ class TripsService {
 
   async getSeatMap(tripId: number): Promise<SeatMapItem[]> {
     const response = await api.get<SeatMapItem[]>(`${this.basePath}${tripId}/seat-map`);
+    return response.data;
+  }
+
+  async previewVesselChange(tripId: number, data: PreviewVesselChangeRequest): Promise<PreviewVesselChangeResponse> {
+    const response = await api.post<PreviewVesselChangeResponse>(`${this.basePath}${tripId}/preview-vessel-change`, data);
     return response.data;
   }
 }

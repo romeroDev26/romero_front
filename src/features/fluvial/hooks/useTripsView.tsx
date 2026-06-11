@@ -11,9 +11,14 @@ export interface UnifiedTripViewItem {
   origin_port_name: string | null;
   destination_port_name: string | null;
   departure_datetime: string;
+  estimated_arrival_datetime?: string | null;
   status: string;
+  sales_status?: string | null;
+  route_name?: string | null;
   total_seats: number | null;
   available_seats: number | null;
+  total_confirmed_seats?: number;
+  total_reserved_seats?: number;
   manifest_generated: boolean;
   original_data: any;
 }
@@ -33,16 +38,21 @@ interface UseTripsViewParams {
 // Función de transformación
 const transformTripToUnifiedView = (trip: any): UnifiedTripViewItem => {
   return {
-    trip_id: trip.id,
+    trip_id: trip.id ?? trip.trip_id,
     trip_name: trip.trip_name,
     vessel_name: trip.vessel_name,
-    origin_port_name: trip.origin_port_name,
-    destination_port_name: trip.destination_port_name,
+    origin_port_name: trip.origin_port_name ?? trip.origin_city ?? null,
+    destination_port_name: trip.destination_port_name ?? trip.destination_city ?? null,
     departure_datetime: trip.departure_datetime,
+    estimated_arrival_datetime: trip.estimated_arrival_datetime ?? null,
     status: trip.status,
-    total_seats: trip.total_seats,
-    available_seats: trip.available_seats,
-    manifest_generated: trip.manifest_generated,
+    sales_status: trip.sales_status ?? null,
+    route_name: trip.route_name ?? null,
+    total_seats: trip.total_seats ?? null,
+    available_seats: trip.available_seats ?? null,
+    total_confirmed_seats: trip.total_confirmed_seats ?? 0,
+    total_reserved_seats: trip.total_reserved_seats ?? 0,
+    manifest_generated: trip.manifest_generated ?? false,
     original_data: trip,
   };
 };

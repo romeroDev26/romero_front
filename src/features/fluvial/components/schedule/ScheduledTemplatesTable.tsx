@@ -166,7 +166,7 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
               <Button
                 variant="outline"
                 onClick={() => onDelete(template)}
-                className="flex items-center text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:text-red-300"
+                className="flex items-center text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
               >
                 <TrashIcon className="h-4 w-4 mr-1" /> Desactivar
               </Button>
@@ -192,7 +192,7 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
             {paginatedTemplates.map((template) => (
               <tr key={template.id} className="hover:bg-dm-bg-hover/70 transition-colors">
                 <td className="px-5 py-4 whitespace-nowrap">
@@ -228,7 +228,7 @@ export const ScheduledTemplatesTable: React.FC<Props> = ({
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => onEdit(template)}
-                      className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/30 transition-colors"
+                      className="p-1.5 rounded-md text-dm-text-muted hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors"
                       title="Editar plantilla"
                     >
                       <PencilIcon className="h-4 w-4" />

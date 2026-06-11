@@ -967,6 +967,31 @@ export interface AutoGenerateRemissionGuideItem {
   internal_code: string;
 }
 
+// ========================================
+// PREVIEW DE CAMBIO DE EMBARCACIÓN
+// ========================================
+
+export interface VesselChangeRelocation {
+  passenger_name: string;
+  old_seat: string;
+  old_seat_type: string;
+  new_seat: string;
+  new_seat_type: string;
+  warning: string | null;
+}
+
+export interface PreviewVesselChangeResponse {
+  will_relocate_seats: boolean;
+  total_relocated: number;
+  relocations: VesselChangeRelocation[];
+  insufficient_capacity: boolean;
+  unassigned_passengers: number;
+}
+
+export interface PreviewVesselChangeRequest {
+  new_vessel_id: number;
+}
+
 export interface AutoGenerateRemissionGuide {
   guide_id: number;
   ubl_version: string;

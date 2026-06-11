@@ -78,6 +78,7 @@ export interface DailyBreakdown {
 
 export interface AdjustmentsMetric {
   totalDescuentos: number;
+  pendienteCobro?: number;
 }
 
 export interface ReportMetrics {
@@ -90,7 +91,51 @@ export interface ReportMetrics {
   ajustes: AdjustmentsMetric;
 }
 // ========================================
-// 4. Items - Detalle de Transacciones
+// 4. Accounting - Datos Contables
+// ========================================
+export interface AccountingSales {
+  brutas: number;
+  netas: number;
+  descuentos: number;
+  anuladas: number;
+}
+
+export interface AccountingTaxes {
+  baseImponible: number;
+  igvTotal: number;
+}
+
+export interface AccountingPaymentReconciliation {
+  [key: string]: {
+    cantidad: number;
+    monto: number;
+  };
+}
+
+export interface AccountingSunatStatus {
+  [key: string]: {
+    cantidad: number;
+    monto: number;
+  };
+}
+
+export interface AccountingValidations {
+  cuadraPagosVsVentasNetas: boolean;
+  cuadraBaseMasIGVIgualTotalBruto: boolean;
+}
+
+export interface AccountingData {
+  monedaPrincipal: string;
+  ventas: AccountingSales;
+  impuestos: AccountingTaxes;
+  conciliacionPagos: AccountingPaymentReconciliation;
+  porEstadoSunat: AccountingSunatStatus;
+  validaciones: AccountingValidations;
+  observaciones: string;
+}
+
+// ========================================
+// 5. Items - Detalle de Transacciones (opcional, según backend)
 // ========================================
 export interface SalesItem {
   invoice_id: number;
@@ -148,7 +193,8 @@ export interface DailySalesReportResponse {
   meta: ReportMetadata;
   resumenEjecutivo: ReportSummary;
   categorias: ReportMetrics;
-  transacciones: SalesItem[];
+  accounting: AccountingData;
+  transacciones?: SalesItem[];
 }
 
 // ========================================

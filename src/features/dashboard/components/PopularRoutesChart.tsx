@@ -31,11 +31,13 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 interface PopularRoutesChartProps {
   routes: RouteMetric;
+  totalVentas?: number;
   isLoading?: boolean;
 }
 
 export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({ 
   routes, 
+  totalVentas,
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -73,7 +75,8 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
     );
   }
 
-  const totalRevenue = popularRoutes.reduce((sum, route) => sum + route.total_amount, 0);
+  const computedTotal = popularRoutes.reduce((sum, route) => sum + route.total_amount, 0);
+  const totalRevenue = totalVentas ?? computedTotal;
 
   return (
     <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">

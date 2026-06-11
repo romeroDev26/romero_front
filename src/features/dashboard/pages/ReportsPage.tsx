@@ -245,6 +245,7 @@ export const ReportsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <PaymentMethodsChart 
               paymentMethods={report.categorias.metodosPago}
+              totalVentas={report.resumenEjecutivo.totalVentas}
               isLoading={isLoading} 
             />
             <SunatStatusChart 
@@ -258,6 +259,7 @@ export const ReportsPage: React.FC = () => {
         {report && report.categorias && report.categorias.rutas && (
           <PopularRoutesChart 
             routes={report.categorias.rutas} 
+            totalVentas={report.resumenEjecutivo.totalVentas}
             isLoading={isLoading} 
           />
         )}
@@ -267,6 +269,7 @@ export const ReportsPage: React.FC = () => {
           <div className="mt-8">
             <TopSellersChart 
               sellers={report.categorias.vendedores}
+              totalVentas={report.resumenEjecutivo.totalVentas}
               isLoading={isLoading} 
             />
           </div>

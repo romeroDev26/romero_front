@@ -32,11 +32,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 interface TopSellersChartProps {
   sellers: SellerMetric;
+  totalVentas?: number;
   isLoading?: boolean;
 }
 
 export const TopSellersChart: React.FC<TopSellersChartProps> = ({ 
   sellers,
+  totalVentas,
   isLoading = false 
 }) => {
   const chartTheme = useChartTheme();
@@ -66,7 +68,8 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
     .sort((a, b) => b.net_sales - a.net_sales)
     .slice(0, 10);
 
-  const totalSales = top10Sellers.reduce((sum, seller) => sum + seller.net_sales, 0);
+  const computedTotal = top10Sellers.reduce((sum, seller) => sum + seller.net_sales, 0);
+  const totalSales = totalVentas ?? computedTotal;
 
   // Datos para el gráfico de barras horizontal
   const chartData = top10Sellers.map((seller) => ({

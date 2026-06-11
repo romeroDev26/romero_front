@@ -43,11 +43,13 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 interface PaymentMethodsChartProps {
   paymentMethods: PaymentMethodMetric;
+  totalVentas?: number;
   isLoading?: boolean;
 }
 
 export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({ 
   paymentMethods,
+  totalVentas,
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -70,7 +72,8 @@ export const PaymentMethodsChart: React.FC<PaymentMethodsChartProps> = ({
     color: MODERN_COLORS[index % MODERN_COLORS.length],
   }));
 
-  const total = chartData.reduce((sum, item) => sum + item.value, 0);
+  const computedTotal = chartData.reduce((sum, item) => sum + item.value, 0);
+  const total = totalVentas ?? computedTotal;
 
   return (
     <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">

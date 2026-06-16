@@ -66,7 +66,10 @@ api.interceptors.response.use(
         // Dejar que el caller maneje el 401
         return Promise.reject(error);
       }
+      
+      // Limpiar toda la data local antes de forzar el login
       localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
 

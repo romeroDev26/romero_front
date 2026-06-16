@@ -41,6 +41,20 @@
     --scrollbar-blue-thumb: #93c5fd;
     --scrollbar-blue-thumb-hover: #60a5fa;
     --scrollbar-blue-track: #dbeafe;
+
+    /* AuthKit Design Tokens */
+    --color-midnight-ink: #05060f;
+    --color-graphite-plate: #2f343e;
+    --color-steel-border: #3f4959;
+    --color-fog: #81899b;
+    --color-pebble: #9da7ba;
+    --color-moonlight: #c7d3ea;
+    --color-ice: #d1e4fa;
+    --color-glacier: #d8ecf8;
+    --color-frost-link: #b6d9fc;
+    --color-electric-iris: #2A65E6; /* Acento Azul característico del proyecto */
+    --color-blueprint-glow: #bacff7;
+    --gradient-blueprint-glow: linear-gradient(0deg, #d8ecf8 0%, #98c0ef 100%);
   }
 
   .dark {

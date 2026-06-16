@@ -51,11 +51,27 @@ export const authService = {
   },
   
   logout: async (): Promise<void> => {
-    // Limpieza completa de caché usando el servicio centralizado
-    cacheService.clearAll({
-      // Opciones adicionales si necesitas preservar algo específico
-      preserveKeys: [] // Por defecto, limpia todo
-    });
+    try {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        // 1. Llamar al backend para destruir la sesión y el token
+        await api.post('/auth/logout');
+      }
+    } catch (error) {
+      console.error('Error al cerrar sesión en el servidor:', error);
+    } finally {
+      // 2. Borrar datos locales SIEMPRE, incluso si el servidor falla
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+
+      // Limpieza completa de caché usando el servicio centralizado
+      cacheService.clearAll({
+        preserveKeys: [] // Por defecto, limpia todo
+      });
+
+      // Redirigir de vuelta a la página de login
+      window.location.href = '/login';
+    }
   },
   
   getCurrentUser: (): User | null => {

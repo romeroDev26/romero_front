@@ -32,11 +32,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 interface TopSellersChartProps {
   sellers: SellerMetric;
+  totalVentas?: number;
   isLoading?: boolean;
 }
 
 export const TopSellersChart: React.FC<TopSellersChartProps> = ({ 
   sellers,
+  totalVentas,
   isLoading = false 
 }) => {
   const chartTheme = useChartTheme();
@@ -55,6 +57,8 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
     );
   }
 
+  const totalSellersCount = Object.keys(sellers || {}).length;
+
   // Convertir el diccionario a array y tomar el top 10 ordenados por monto
   const sellersArray = Object.entries(sellers || {}).map(([, data]) => ({
     seller_name: data.nombre,
@@ -66,7 +70,8 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
     .sort((a, b) => b.net_sales - a.net_sales)
     .slice(0, 10);
 
-  const totalSales = top10Sellers.reduce((sum, seller) => sum + seller.net_sales, 0);
+  const computedTotal = top10Sellers.reduce((sum, seller) => sum + seller.net_sales, 0);
+  const totalSales = totalVentas ?? computedTotal;
 
   // Datos para el gráfico de barras horizontal
   const chartData = top10Sellers.map((seller) => ({
@@ -84,7 +89,7 @@ export const TopSellersChart: React.FC<TopSellersChartProps> = ({
             Rendimiento de Vendedores
           </h3>
           <p className="text-xs text-dm-text-muted mt-1">
-            Top {top10Sellers.length} por volumen de ventas
+            Top {top10Sellers.length} de {totalSellersCount} vendedores
           </p>
         </div>
         <span className="text-xs text-dm-text-muted bg-dm-bg-secondary px-2.5 py-1 rounded-md">

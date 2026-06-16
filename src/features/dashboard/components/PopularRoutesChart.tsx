@@ -31,11 +31,13 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 interface PopularRoutesChartProps {
   routes: RouteMetric;
+  totalVentas?: number;
   isLoading?: boolean;
 }
 
 export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({ 
   routes, 
+  totalVentas,
   isLoading = false 
 }) => {
   if (isLoading) {
@@ -48,6 +50,8 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
       </div>
     );
   }
+
+  const totalRoutesCount = Object.keys(routes || {}).length;
 
   // Convertir el diccionario a array y tomar el top 8 ordenados por monto
   const routesArray = Object.entries(routes || {}).map(([name, data]) => ({
@@ -73,7 +77,8 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
     );
   }
 
-  const totalRevenue = popularRoutes.reduce((sum, route) => sum + route.total_amount, 0);
+  const computedTotal = popularRoutes.reduce((sum, route) => sum + route.total_amount, 0);
+  const totalRevenue = totalVentas ?? computedTotal;
 
   return (
     <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-6">
@@ -82,13 +87,13 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
           Destinos Populares
         </h3>
         <span className="text-xs text-dm-text-muted">
-          Top {popularRoutes.length}
+          Top {popularRoutes.length} de {totalRoutesCount} rutas
         </span>
       </div>
       
       {/* Lista de rutas estilo Tremor */}
       <div className="space-y-4">
-        {popularRoutes.slice(0, 6).map((route, index) => {
+        {popularRoutes.map((route, index) => {
           const percentage = ((route.total_amount / totalRevenue) * 100);
           return (
             <div key={index} className="space-y-2">
@@ -122,7 +127,7 @@ export const PopularRoutesChart: React.FC<PopularRoutesChartProps> = ({
         {/* Resumen */}
         <div className="pt-4 mt-4 border-t border-dm-border-primary grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs text-dm-text-muted mb-1">Total Rutas</p>
+            <p className="text-xs text-dm-text-muted mb-1">Rutas Mostradas</p>
             <p className="text-lg font-semibold text-dm-text-primary">{popularRoutes.length}</p>
           </div>
           <div>

@@ -47,15 +47,39 @@ export function useThemeTransition() {
 
       transition.ready
         .then(() => {
+          const maskSizeEnd = endRadius * 3;
+
           document.documentElement.animate(
             {
-              clipPath: [
-                `circle(0px at ${x}px ${y}px)`,
-                `circle(${endRadius}px at ${x}px ${y}px)`,
+              maskImage: [
+                'radial-gradient(circle closest-side, black 70%, transparent 100%)',
+                'radial-gradient(circle closest-side, black 70%, transparent 100%)'
               ],
+              WebkitMaskImage: [
+                'radial-gradient(circle closest-side, black 70%, transparent 100%)',
+                'radial-gradient(circle closest-side, black 70%, transparent 100%)'
+              ],
+              maskRepeat: ['no-repeat', 'no-repeat'],
+              WebkitMaskRepeat: ['no-repeat', 'no-repeat'],
+              maskSize: [
+                '0px 0px',
+                `${maskSizeEnd}px ${maskSizeEnd}px`
+              ],
+              WebkitMaskSize: [
+                '0px 0px',
+                `${maskSizeEnd}px ${maskSizeEnd}px`
+              ],
+              maskPosition: [
+                `${x}px ${y}px`,
+                `${x - maskSizeEnd / 2}px ${y - maskSizeEnd / 2}px`
+              ],
+              WebkitMaskPosition: [
+                `${x}px ${y}px`,
+                `${x - maskSizeEnd / 2}px ${y - maskSizeEnd / 2}px`
+              ]
             },
             {
-              duration: 600,
+              duration: 800,
               easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
               pseudoElement: '::view-transition-new(root)',
             }

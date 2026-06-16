@@ -28,6 +28,7 @@ import { useServiceStatus } from '../../hooks/useServiceStatus';
 import ServiceStatusBanner from '../common/ServiceStatusBanner';
 import { useSystemStatusStore } from '@/stores/systemStatus.store';
 import { useThemeTransition } from '@/hooks/useThemeTransition';
+import { useAutoLogout } from '../../hooks/useAutoLogout';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -100,6 +101,9 @@ const Dashboard: React.FC = () => {
 
   // Inicializar monitoreo proactivo de estado del backend (polling /health)
   useServiceStatus();
+  
+  // Activar auto-logout por inactividad
+  useAutoLogout();
 
   const isSystemDown = useSystemStatusStore((s) => s.isReachable === false);
   const { resolvedTheme, toggleTheme } = useThemeTransition();

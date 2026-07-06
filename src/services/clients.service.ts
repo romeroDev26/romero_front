@@ -26,6 +26,28 @@ export const clientsService = {
   },
 
   /**
+   * Busca clientes por nombre usando búsqueda difusa (fuzzy search / trigramas).
+   * Endpoint: GET /api/v1/clients/?name=...&limit=...&skip=...
+   */
+  searchByName: async (name: string, limit = 10, skip = 0): Promise<Client[]> => {
+    if (!name?.trim()) return [];
+
+    try {
+      const response = await api.get<Client[]>('/clients/', {
+        params: {
+          name: name.trim(),
+          limit,
+          skip,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error buscando clientes por nombre "${name}":`, error);
+      throw error;
+    }
+  },
+
+  /**
    * Busca un cliente por su número de documento.
    * La API devuelve 404 si no lo encuentra.
    * Endpoint actualizado para usar un path parameter.
@@ -37,8 +59,9 @@ export const clientsService = {
       // La URL ahora incluye el número de documento directamente en la ruta
       const response = await api.get<Client>(`/clients/by-document/${docNumber}`);
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error) {
+      const axiosError = error as { response?: { status?: number } };
+      if (axiosError.response?.status === 404) {
         return null; // Cliente no encontrado, es un caso de uso válido
       }
       console.error(`Error buscando cliente por documento ${docNumber}:`, error);

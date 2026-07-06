@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { SunatDocType, DOCUMENT_TYPES } from '../../fluvial/types/sunat.types';
 import { useSunatData } from '../../fluvial/hooks/useSunatData';
+import { ClientSearchAutocomplete } from '../../../components/common/ClientSearchAutocomplete';
+import { Client } from '../../../types';
 import { Search, CheckCircle } from 'lucide-react';
 import { toast } from '@/utils/sileo-toast';
 
@@ -45,6 +47,17 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
   };
 
   // Lógica para búsqueda automática de datos por DNI/RUC
+  const handleClientSelect = (client: Client) => {
+    setRecipient(prev => ({
+      ...prev,
+      name: client.name,
+      docType: client.doc_type,
+      docNumber: client.doc_number,
+      phone: client.phone || prev.phone,
+    }));
+    toast.success(`Destinatario seleccionado: ${client.name}`);
+  };
+
   const handleSearch = async () => {
     if (!recipient.docNumber.trim()) {
       toast.warning('Ingrese un número de documento para buscar.');
@@ -105,6 +118,14 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
       </div>
       {!recipient.isSameAsSender && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <ClientSearchAutocomplete
+              onSelect={handleClientSelect}
+              placeholder="Buscar destinatario por nombre..."
+              disabled={disabled}
+              label="Búsqueda rápida de destinatario"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-dm-text-secondary mb-1">Tipo de documento *</label>
             <select

@@ -5,7 +5,9 @@ import { useSunatData } from '../../hooks/useSunatData';
 import { DOCUMENT_TYPES, SunatDocType } from '../../types/sunat.types';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
+import { ClientSearchAutocomplete } from '../../../../components/common/ClientSearchAutocomplete';
 import CountrySelector from './CountrySelector';
+import { Client } from '../../../../types';
 
 // Tipamos las props que recibirá este componente
 interface PassengerData {
@@ -88,7 +90,22 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
   };
 
   const isSearchable = passengerData.docType === SunatDocType.DNI || passengerData.docType === SunatDocType.RUC;
-  
+
+  const handleClientSelect = (client: Client) => {
+    const isPeruvianDoc = client.doc_type === SunatDocType.DNI || client.doc_type === SunatDocType.RUC;
+    setPassengerData(prev => ({
+      ...prev,
+      docType: client.doc_type,
+      docNumber: client.doc_number,
+      name: client.name,
+      phone: client.phone || prev.phone,
+      email: client.email || prev.email,
+      address: client.address || client.address_line || prev.address,
+      countryCode: isPeruvianDoc ? 'PE' : (client.country_code || prev.countryCode || ''),
+      countryName: isPeruvianDoc ? 'Peru' : (client.country_name || prev.countryName || ''),
+    }));
+  };
+
   // Determinar si se debe mostrar el selector de países (para documentos no peruanos)
   const showCountrySelector = passengerData.docType !== SunatDocType.DNI && passengerData.docType !== SunatDocType.RUC;
 
@@ -102,6 +119,16 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
         <h3 className="text-base font-bold tracking-tight text-dm-text-primary">
           Datos del Pasajero
         </h3>
+      </div>
+
+      {/* Búsqueda inteligente por nombre */}
+      <div className="rounded-lg border border-dm-border-primary bg-dm-bg-secondary/50 p-3">
+        <ClientSearchAutocomplete
+          onSelect={handleClientSelect}
+          placeholder="Buscar cliente por nombre..."
+          disabled={disabled}
+          label="Búsqueda rápida de cliente"
+        />
       </div>
 
       {/* Tipo Doc + Número */}

@@ -8,8 +8,10 @@ import { Search } from 'lucide-react';
 
 import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
+import { ClientSearchAutocomplete } from '../../../components/common/ClientSearchAutocomplete';
 import { useProductsServicesData } from '../../fluvial/hooks/useProductsServicesData';
 import { useSunatData } from '../../fluvial/hooks/useSunatData';
+import { Client } from '../../../types';
 import { CargoItemData } from '../types/cargo-ui.types';
 import { DOCUMENT_TYPES, SunatDocType } from '../../fluvial/types/sunat.types';
 
@@ -157,6 +159,14 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
       ...data,
       id: existingItem?.id || crypto.randomUUID(),
     });
+  };
+
+  const handleClientSelect = (client: Client) => {
+    setValue('recipient.name', client.name, { shouldValidate: true });
+    setValue('recipient.docType', client.doc_type, { shouldValidate: true });
+    setValue('recipient.docNumber', client.doc_number, { shouldValidate: true });
+    setValue('recipient.phone', client.phone || '', { shouldValidate: true });
+    toast.success(`Destinatario seleccionado: ${client.name}`);
   };
 
   const handleRecipientSearch = async () => {
@@ -557,6 +567,12 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
                   border: `1px solid ${COLORS.lightPearl}`,
                 }}
               >
+                <ClientSearchAutocomplete
+                  onSelect={handleClientSelect}
+                  placeholder="Buscar destinatario por nombre..."
+                  disabled={isFormLocked}
+                  label="Búsqueda rápida de destinatario"
+                />
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <div className="sm:col-span-1">
                     <label

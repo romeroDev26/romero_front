@@ -191,8 +191,8 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     }
 
     // Validar CE (Carné de extranjería)
-    if (formData.document_type === SunatDocType.CARNET_EXTRANJERIA && formData.document_number.length !== 12) {
-      toast.error('El Carné de Extranjería debe tener 12 caracteres');
+    if (formData.document_type === SunatDocType.CARNET_EXTRANJERIA && (formData.document_number.length < 8 || formData.document_number.length > 12)) {
+      toast.error('El Carné de Extranjería debe tener entre 8 y 12 caracteres');
       return;
     }
 

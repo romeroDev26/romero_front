@@ -2,7 +2,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { authService } from '../services/auth.service';
 
-const INACTIVITY_LIMIT_MS = 15 * 60 * 1000; // 15 minutos por defecto
+const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 minutos por defecto
 const THROTTLE_MS = 1000; // Solo registrar actividad cada 1 segundo (Optimización de Rendimiento)
 
 export function useAutoLogout() {

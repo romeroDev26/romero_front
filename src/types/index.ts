@@ -567,6 +567,20 @@ export interface ProductService {
 // FACTURACIÓN
 // ========================================
 
+// Interfaces mínimas para entidades embebidas en el detalle de una venta
+export interface InvoiceSeller {
+  id?: string;
+  full_name?: string;
+  email?: string;
+}
+
+export interface InvoiceCompany {
+  id?: number;
+  ruc?: string;
+  business_name?: string;
+  trade_name?: string;
+}
+
 export interface Invoice {
   id: number;
   company_id: number;
@@ -609,7 +623,13 @@ export interface Invoice {
   pdf_sticker_100x100_file_path?: string | null;
   related_gre_series_number?: string;
   payment_terms?: string;
+  payment_terms_description?: string | null;
   payment_method_code?: string;
+  payment_operation_code?: string | null;
+  payment_amount_1?: number | null;
+  payment_method_code_2?: string | null;
+  payment_operation_code_2?: string | null;
+  payment_amount_2?: number | null;
   detraccion_code?: string;
   detraccion_percentage?: number;
   detraccion_amount?: number;
@@ -619,6 +639,13 @@ export interface Invoice {
   created_at: string;
   updated_at: string;
   items?: InvoiceItem[];
+  // Entidades embebidas (devueltas por el backend en el detalle)
+  seller?: InvoiceSeller | null;
+  company?: InvoiceCompany | null;
+  // Datos de viaje en la raíz (ventas de transporte)
+  boarding_time?: string | null;
+  trip_departure_date?: string | null;
+  trip_departure_time?: string | null;
   // Campos de sucursal (devueltos por el backend)
   branch_office_name?: string | null;
   branch_office_address?: string | null;
@@ -663,6 +690,14 @@ export interface InvoiceItem {
   recipient_doc_type?: string;
   recipient_doc_number?: string;
   recipient_phone?: string;
+  // Campos planos devueltos por el backend en el detalle (pasajes / encomiendas)
+  route_name?: string | null;
+  vehicle_name?: string | null;
+  seat_number?: string | null;
+  parcel_number?: string | null;
+  product_name?: string | null;
+  boarding_port_name?: string | null;
+  disembarking_port_name?: string | null;
 }
 
 // ========================================

@@ -20,10 +20,10 @@ export const invoiceToSplitPaymentData = (invoice: Invoice): SplitPaymentData =>
     isSplitPayment: hasSecondPayment,
     paymentMethod1: invoice.payment_method_code || 'EFE',
     operationCode1: invoice.payment_operation_code || '',
-    amount1: invoice.payment_amount_1 ?? Number(invoice.total_payable),
+    amount1: invoice.payment_amount_1 != null ? Number(invoice.payment_amount_1) : Number(invoice.total_payable),
     paymentMethod2: invoice.payment_method_code_2 || 'YAP',
     operationCode2: invoice.payment_operation_code_2 || '',
-    amount2: invoice.payment_amount_2 ?? 0,
+    amount2: invoice.payment_amount_2 != null ? Number(invoice.payment_amount_2) : 0,
   };
 };
 

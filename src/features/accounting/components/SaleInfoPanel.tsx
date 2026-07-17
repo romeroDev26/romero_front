@@ -206,7 +206,7 @@ export const SaleInfoPanel: React.FC<SaleInfoPanelProps> = ({
                   </div>
                 </div>
                 <span className="text-sm font-semibold text-dm-text-primary flex-shrink-0">
-                  {currencySymbol} {row.amount.toFixed(2)}
+                  {currencySymbol} {Number(row.amount).toFixed(2)}
                 </span>
               </div>
             );

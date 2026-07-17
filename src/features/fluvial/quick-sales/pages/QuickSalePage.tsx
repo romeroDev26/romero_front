@@ -805,7 +805,6 @@ export const QuickSalePage: React.FC = () => {
           onSuccess={handleTicketSuccess}
           initialPhoneNumber={passengerData.phone || ''}
           onClearForm={resetForm}
-          showOnly80mm={true}
         />
       )}
     </div>

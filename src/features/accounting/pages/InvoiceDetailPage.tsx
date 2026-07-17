@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/utils/sileo-toast';
-import { format } from 'date-fns';
 import { 
   ArrowLeftIcon, 
   DocumentTextIcon, 
@@ -28,8 +27,13 @@ import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets
 import { usePermissions } from '../../../hooks/usePermissions';
 import { getCurrencySymbol } from '../../../utils/currency';
 import { EditSeatModal } from '../components/EditSeatModal';
+import { EditPaymentMethodsModal } from '../components/EditPaymentMethodsModal';
+import { SaleInfoPanel } from '../components/SaleInfoPanel';
 import SellerCancellationRequestModal from '../components/SellerCancellationRequestModal';
 import { authService } from '../../../services/auth.service';
+import { invoiceToSplitPaymentData, getInvoicePaymentSummary } from '../../../utils/invoicePaymentMapper';
+import { getSaleKind } from '../../../utils/getSaleKind';
+import { formatIssueDate } from '../../../utils/formatDateTime';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,6 +42,7 @@ export const InvoiceDetailPage: React.FC = () => {
   const [showPdfError, setShowPdfError] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showEditSeatModal, setShowEditSeatModal] = useState(false);
+  const [showEditPaymentModal, setShowEditPaymentModal] = useState(false);
   const [showRequestCancellationModal, setShowRequestCancellationModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'ticket80mm' | 'a4' | 'sticker100x100'>('ticket80mm');
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -280,15 +285,10 @@ export const InvoiceDetailPage: React.FC = () => {
   const hasAnyPdf = hasTicketPdf || hasA4Pdf ||
                     (invoice.pdf_file_path && invoice.pdf_file_path.trim() !== '');
 
-  // Detectar si es una encomienda/cargo
-  const isCargoInvoice = Boolean(
-    invoice.items?.some((item: any) =>
-      item.parcel_number != null ||
-      item.product_name?.toLowerCase().includes('encomienda') ||
-      item.item_description?.toLowerCase().includes('encomienda')
-    ) || hasStickerPdf
-  );
-  
+  // Detectar si es una encomienda/cargo (heurística centralizada en getSaleKind;
+  // el chequeo de sticker PDF se mantiene aquí para conservar el mismo resultado)
+  const isCargoInvoice = getSaleKind(invoice) === 'encomienda' || hasStickerPdf;
+
   // Usar invoice.updated_at del backend como cache buster principal
   const backendTimestamp = invoice.updated_at ? new Date(invoice.updated_at).getTime() : 0;
   const cacheBuster = `${backendTimestamp}_${dataUpdatedAt}`;
@@ -304,18 +304,6 @@ export const InvoiceDetailPage: React.FC = () => {
   const hasCurrentPdf = activeTab === 'ticket80mm' ? hasTicketPdf
     : activeTab === 'a4' ? hasA4Pdf
     : hasStickerPdf;
-
-  // Formatea la fecha de emisión tal como viene del backend (YYYY-MM-DD)
-  const formatIssueDate = (dateStr?: string): string => {
-    if (!dateStr) return '';
-    const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m) return `${m[3]}/${m[2]}/${m[1]}`;
-    try {
-      return format(new Date(dateStr), 'dd/MM/yyyy');
-    } catch (e) {
-      return dateStr;
-    }
-  };
 
   return (
     <div className="min-h-screen bg-dm-bg-secondary">
@@ -348,6 +336,10 @@ export const InvoiceDetailPage: React.FC = () => {
                   <span className="text-sm text-dm-text-muted">•</span>
                   <span className="text-sm text-dm-text-primary font-medium">
                     {getCurrencySymbol(invoice.currency_code)} {Number(invoice.total_payable).toFixed(2)}
+                  </span>
+                  <span className="text-sm text-dm-text-muted">•</span>
+                  <span className="text-sm text-dm-text-secondary">
+                    {getInvoicePaymentSummary(invoice)}
                   </span>
                 </div>
               </div>
@@ -428,7 +420,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   Editar
                 </Button>
               )}
-              
+
               {currentUser?.role_name?.toLowerCase() === 'sales' && (
                 <Button
                   variant="danger"
@@ -472,6 +464,18 @@ export const InvoiceDetailPage: React.FC = () => {
 
       {/* Contenido principal */}
       <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-4">
+          {/* Columna izquierda: panel de información de la venta */}
+          <div>
+            <SaleInfoPanel
+              invoice={invoice}
+              onEditPayment={() => setShowEditPaymentModal(true)}
+              canEditPayment={hasPermission('accounting', 'invoices', 'sales')}
+            />
+          </div>
+
+          {/* Columna derecha: preview del ticket (movida tal cual, sin cambios de lógica) */}
+          <div>
         {/* Sección principal del visor:
              - Siempre se muestra para facturas que no son 100% encomienda
              - También se muestra si hay cualquier PDF disponible */}
@@ -479,12 +483,15 @@ export const InvoiceDetailPage: React.FC = () => {
           <div className="bg-dm-bg-primary rounded-lg shadow-sm border border-dm-border-primary">
             {/* Header del visor PDF */}
             <div className="px-6 py-4 border-b border-dm-border-primary bg-dm-bg-secondary rounded-t-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center space-x-2 flex-shrink-0">
                   <DocumentTextIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   <h2 className="font-semibold text-dm-text-primary">Ticket de Venta</h2>
                 </div>
-                <div className="text-sm text-dm-text-muted">
+                <div
+                  className="text-sm text-dm-text-muted min-w-0 truncate"
+                  title={invoice.client?.name ?? undefined}
+                >
                   Cliente: {invoice.client?.name}
                 </div>
               </div>
@@ -605,7 +612,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     <iframe
                       ref={pdfIframeRef}
                       key={`${activeTab}-${cacheBuster}`}
-                      src={`${currentPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                      src={`${currentPdfUrl}#toolbar=1&navpanes=0&scrollbar=1`}
                       className="w-full h-full border-0 min-h-[350px] md:min-h-[600px]"
                       title={`Ticket ${
                         activeTab === 'ticket80mm' ? '80mm' : 'A4'
@@ -673,6 +680,8 @@ export const InvoiceDetailPage: React.FC = () => {
             </div>
           </div>
         )}
+          </div>
+        </div>
       </div>
 
       {/* Modal de WhatsApp */}
@@ -713,6 +722,23 @@ export const InvoiceDetailPage: React.FC = () => {
           invoiceSeries={invoice.series}
           invoiceNumber={invoice.number}
           invoiceId={invoiceId}
+        />
+      )}
+
+      {/* Modal de Editar Métodos de Pago */}
+      {showEditPaymentModal && invoice && (
+        <EditPaymentMethodsModal
+          isOpen={showEditPaymentModal}
+          onClose={() => setShowEditPaymentModal(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
+          }}
+          invoiceId={invoiceId}
+          invoiceSeries={invoice.series}
+          invoiceNumber={invoice.number}
+          totalPayable={Number(invoice.total_payable)}
+          currencyCode={invoice.currency_code}
+          initialPaymentData={invoiceToSplitPaymentData(invoice)}
         />
       )}
     </div>

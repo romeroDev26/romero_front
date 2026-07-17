@@ -26,6 +26,7 @@ import {
   detectVesselTypeFromName,
 } from "../utils/vesselSeatMapFallbacks";
 import { useSaleBusinessLogic } from "./useSaleBusinessLogic";
+import { invoicesService } from "../../../../../services/invoices.service";
 
 import { ServiceCategory, SeatMapItem, User } from "../../../../../types";
 import { SunatDocType, SunatTaxCategory } from "../../../types/sunat.types";
@@ -926,6 +927,24 @@ export function useSaleForm({
     manualPrice,
   ]);
 
+  // Tras crear la venta, obtener el detalle completo (GET por ID) para que el
+  // modal post-venta reciba el mismo shape que el detalle (campos de pago incl.).
+  // Si la consulta falla, degrada con la respuesta del create (el preview sigue
+  // funcionando) sin bloquear la venta ya emitida.
+  const openTicketPreviewWithFullData = useCallback(async (createdData: unknown) => {
+    const data = createdData as BackendInvoiceData | BackendCompanyInvoiceData;
+    const createdId = 'invoice' in data ? data.invoice.id : data.id;
+    try {
+      const fullInvoice = await invoicesService.getById(createdId);
+      setTicketBackendData(fullInvoice as unknown as BackendInvoiceData);
+    } catch (error) {
+      console.error('[TicketPreview] No se pudo obtener el detalle completo de la venta; usando la respuesta del create.', error);
+      setTicketBackendData(data);
+    } finally {
+      setShowTicketPreview(true);
+    }
+  }, []);
+
   // Handler principal de venta usando el hook de logica de negocio
   const handleConfirmSale = useCallback(async () => {
     try {
@@ -944,9 +963,8 @@ export function useSaleForm({
           representatives,
           branch.name,
           (invoiceData) => {
-            // Callback de exito: mostrar modal de preview de ticket con datos reales
-            setTicketBackendData(invoiceData);
-            setShowTicketPreview(true);
+            // Callback de exito: obtener el detalle completo y abrir el preview
+            void openTicketPreviewWithFullData(invoiceData);
           },
           seatMap,
           confirmPurchase,
@@ -992,8 +1010,7 @@ export function useSaleForm({
         isConfirmingMode,
         reservationToConfirm,
         (invoiceData) => {
-          setTicketBackendData(invoiceData);
-          setShowTicketPreview(true);
+          void openTicketPreviewWithFullData(invoiceData);
         },
         itemDescription,
         confirmPurchase,

@@ -72,6 +72,18 @@ export interface InvoiceCreateData {
   is_credit_sale?: boolean;
 }
 
+// Interfaz para actualizar métodos de pago de una factura ya emitida.
+// Solo control interno: no regenera vouchers ni toca SUNAT.
+export interface PaymentMethodUpdate {
+  method: string;
+  amount: number;
+  operation_number?: string | null;
+}
+
+export interface UpdatePaymentMethodsPayload {
+  payment_methods: PaymentMethodUpdate[];
+}
+
 // Esta interfaz define la forma de un ítem de factura que viene del backend
 // cuando lo pedimos para una guía de remisión.
 export interface ItemForGuide {
@@ -146,6 +158,16 @@ class InvoicesService {
   // NUEVO MÉTODO: Para obtener una factura por su ID
   async getById(invoiceId: number): Promise<Invoice> {
     const response = await api.get<Invoice>(`${this.basePath}${invoiceId}`);
+    return response.data;
+  }
+
+  /**
+   * Actualiza los métodos de pago de una factura ya emitida.
+   * Solo control interno: no regenera vouchers ni afecta SUNAT.
+   * Endpoint: PATCH /api/v1/sunat/invoices/{invoice_id}/payment-methods
+   */
+  async updatePaymentMethods(invoiceId: number, payload: UpdatePaymentMethodsPayload): Promise<{ message: string }> {
+    const response = await api.patch<{ message: string }>(`${this.basePath}${invoiceId}/payment-methods`, payload);
     return response.data;
   }
 

@@ -29,6 +29,7 @@ import { SunatDocType, SunatInvoiceType } from '../../fluvial/types/sunat.types'
 import { AvailableTripByPort } from '../../../services/trips.service';
 import { useTripDetails } from '../../fluvial/hooks/useTripDetails';
 import { TicketPreviewModal } from '../../fluvial/components/sales-point/TicketPreviewModal';
+import { invoicesService } from '../../../services/invoices.service';
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
 
 const CARGO_SALE_DRAFT_KEY = 'cargoSaleWizardDraft_v1';
@@ -388,11 +389,20 @@ export const CargoSalePage: React.FC = () => {
         invoiceData: invoicePayload,
         tripId: selectedTrip.id
       });
-      
-      // Mostrar modal de ticket con los datos de la factura creada
-      setTicketBackendData(createdInvoice as unknown as BackendInvoiceData);
-      setShowTicketPreview(true);
-      setIsProcessingSale(false);
+
+      // Obtener el detalle completo (GET por ID) para que el modal post-venta
+      // reciba el mismo shape que el detalle (campos de pago incl.).
+      // Si falla, degrada con la respuesta del create (el preview sigue funcionando).
+      try {
+        const fullInvoice = await invoicesService.getById(createdInvoice.id);
+        setTicketBackendData(fullInvoice as unknown as BackendInvoiceData);
+      } catch (fetchError) {
+        console.error('[TicketPreview] No se pudo obtener el detalle completo de la venta; usando la respuesta del create.', fetchError);
+        setTicketBackendData(createdInvoice as unknown as BackendInvoiceData);
+      } finally {
+        setShowTicketPreview(true);
+        setIsProcessingSale(false);
+      }
       
     } catch (error: any) {
       console.error('Error creando venta de encomienda:', error);

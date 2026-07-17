@@ -10,6 +10,12 @@ import { BackendInvoiceData, BackendCompanyInvoiceData } from './tickets/types/b
 import { WhatsAppSendModal } from './WhatsAppSendModal';
 import { invoicesService } from '../../../../services/invoices.service';
 import { toast } from '@/utils/sileo-toast';
+import { getSaleKind } from '../../../../utils/getSaleKind';
+import { SaleInfoPanel } from '../../../accounting/components/SaleInfoPanel';
+import { EditPaymentMethodsModal } from '../../../accounting/components/EditPaymentMethodsModal';
+import { Invoice } from '../../../../types';
+import { usePermissions } from '../../../../hooks/usePermissions';
+import { invoiceToSplitPaymentData } from '../../../../utils/invoicePaymentMapper';
 
 interface TicketPreviewModalProps {
   isOpen: boolean;
@@ -49,15 +55,35 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   const invoiceId = 'invoice' in backendData ? backendData.invoice.id : backendData.id;
   const invoiceData = 'invoice' in backendData ? backendData.invoice : backendData;
 
-  // Detectar si es una factura de encomienda (cargo)
-  const isCargoInvoice = Boolean(
-    invoiceData.items?.some(item =>
-      item.parcel_number != null ||
-      item.product_name?.toLowerCase().includes('encomienda') ||
-      item.item_description?.toLowerCase().includes('encomienda')
-    ) ||
-    (invoiceData as any).pdf_sticker_100x100_file_path
-  );
+  // Detectar si es una factura de encomienda (cargo) — heurística centralizada
+  // en getSaleKind; el chequeo de sticker PDF se mantiene para conservar el
+  // mismo resultado que la heurística original.
+  const isCargoInvoice =
+    getSaleKind(invoiceData) === 'encomienda' ||
+    Boolean(invoiceData.pdf_sticker_100x100_file_path);
+
+  // Datos vivos para el panel de resumen: se sincronizan con backendData al
+  // abrir y se refrescan tras editar el método de pago (control interno).
+  const [panelInvoice, setPanelInvoice] = useState<Invoice>(invoiceData as unknown as Invoice);
+  const [showEditPaymentModal, setShowEditPaymentModal] = useState(false);
+  const { hasPermission } = usePermissions();
+
+  useEffect(() => {
+    if (isOpen) {
+      setPanelInvoice(invoiceData as unknown as Invoice);
+    }
+  }, [isOpen, invoiceData]);
+
+  // Tras guardar la edición de pago: refrescar el detalle para el panel sin
+  // cerrar el TicketPreviewModal. El toast de éxito lo emite el modal de edición.
+  const handlePaymentUpdated = async () => {
+    try {
+      const refreshed = await invoicesService.getById(invoiceId);
+      setPanelInvoice(refreshed);
+    } catch (error) {
+      console.error('[TicketPreview] No se pudo refrescar el detalle tras editar el pago.', error);
+    }
+  };
 
   // Generar PDFs en el backend cuando se abre el modal
   useEffect(() => {
@@ -251,13 +277,28 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
+    <>
+    <Modal
+      isOpen={isOpen}
       onClose={handleClose}
       title="Previsualización del Ticket"
-      maxWidth="2xl"
+      maxWidth="5xl"
     >
       <div className="p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Columna izquierda: resumen de la venta (control interno).
+              Scroll propio si es muy largo; el preview queda siempre visible. */}
+          <div className="lg:max-h-[80vh] lg:overflow-y-auto lg:pr-1">
+            <SaleInfoPanel
+              invoice={panelInvoice}
+              onEditPayment={() => setShowEditPaymentModal(true)}
+              canEditPayment={hasPermission('accounting', 'invoices', 'sales')}
+              showEmission={false}
+            />
+          </div>
+
+          {/* Columna derecha: preview del ticket (siempre visible) */}
+          <div>
         {/* Mostrar numero de Encomienda si existe */}
         {invoiceData.items && 
          invoiceData.items.length > 0 && 
@@ -318,7 +359,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
 
         {/* Vista previa del PDF */}
         <div className="mb-4">
-          <div className="border border-dm-border-primary rounded-lg overflow-hidden bg-dm-bg-secondary" style={{ height: '500px' }}>
+          <div className="border border-dm-border-primary rounded-lg overflow-hidden bg-dm-bg-secondary h-[500px] lg:h-[63vh]">
             {(isGenerating || (activeFormat === 'sticker100x100' && isGeneratingSticker)) ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
@@ -372,8 +413,26 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           </div>
         </div>
 
+        {/* Boton de regenerar (solo si hay error) */}
+        {((!generationSuccess && !isGenerating) ||
+          (activeFormat === 'sticker100x100' && !previewUrlSticker100x100 && !isGeneratingSticker)) && (
+          <div className="mb-4">
+            <Button
+              onClick={activeFormat === 'sticker100x100' ? generateSticker100x100FromBackend : handleRegeneratePdfs}
+              variant="outline"
+              className="w-full"
+              disabled={isGeneratingSticker}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {activeFormat === 'sticker100x100' ? 'Generar Sticker 100x100' : 'Regenerar Tickets'}
+            </Button>
+          </div>
+        )}
+          </div>
+        </div>
+
         {/* Botones de accion */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
           <Button
             onClick={() => {
               handleDownloadTicket().then(() => {
@@ -420,20 +479,22 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
           </Button>
         </div>
 
-        {/* Boton de regenerar (solo si hay error) */}
-        {((!generationSuccess && !isGenerating) ||
-          (activeFormat === 'sticker100x100' && !previewUrlSticker100x100 && !isGeneratingSticker)) && (
-          <div className="mb-4">
-            <Button
-              onClick={activeFormat === 'sticker100x100' ? generateSticker100x100FromBackend : handleRegeneratePdfs}
-              variant="outline"
-              className="w-full"
-              disabled={isGeneratingSticker}
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              {activeFormat === 'sticker100x100' ? 'Generar Sticker 100x100' : 'Regenerar Tickets'}
-            </Button>
-          </div>
+        {/* Modal de edición de métodos de pago (control interno).
+            Anidado dentro del Dialog de preview para que Headless UI v2 lo
+            reconozca como dialogo anidado y gestione correctamente el foco,
+            el inert y el cierre con Escape sin cerrar el preview. */}
+        {showEditPaymentModal && (
+          <EditPaymentMethodsModal
+            isOpen={showEditPaymentModal}
+            onClose={() => setShowEditPaymentModal(false)}
+            onSuccess={() => { void handlePaymentUpdated(); }}
+            invoiceId={invoiceId}
+            invoiceSeries={panelInvoice.series}
+            invoiceNumber={panelInvoice.number}
+            totalPayable={Number(panelInvoice.total_payable)}
+            currencyCode={panelInvoice.currency_code}
+            initialPaymentData={invoiceToSplitPaymentData(panelInvoice)}
+          />
         )}
 
         {/* Modal de WhatsApp */}
@@ -448,5 +509,6 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
         />
       </div>
     </Modal>
+    </>
   );
 };

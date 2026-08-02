@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useCountries } from '../../hooks/useCountries';
-import { Country } from '../../../../services/countries.service';
+import { Country } from '../../../../constants/countries';
 
 interface CountrySelectorProps {
-  value: string; // Código del país seleccionado (cca2)
+  value: string; // Código del país seleccionado (code)
   onChange: (countryCode: string, countryName: string) => void;
   placeholder?: string;
   disabled?: boolean;
@@ -33,7 +33,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
   }, [getCountryByCode, value]);
 
   const handleCountrySelect = (country: Country) => {
-    onChange(country.cca2, country.name.common);
+    onChange(country.code, country.name);
     setIsOpen(false);
     setSearchTerm('');
   };
@@ -48,7 +48,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
     return (
       <div className={`relative ${className}`}>
         <div className="w-full p-2 border border-red-300 rounded-md bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-sm">
-          Error al cargar países. Verifique su conexión.
+          Error al cargar países.
         </div>
       </div>
     );
@@ -72,12 +72,12 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
           ) : selectedCountry ? (
             <>
               <img 
-                src={selectedCountry.flags.svg} 
-                alt={`Bandera de ${selectedCountry.name.common}`}
+                src={selectedCountry.flagUrl} 
+                alt={`Bandera de ${selectedCountry.name}`}
                 className="w-5 h-3 object-cover rounded"
               />
-              <span className="text-dm-text-primary">{selectedCountry.name.common}</span>
-              <span className="text-dm-text-muted text-sm">({selectedCountry.cca2})</span>
+              <span className="text-dm-text-primary">{selectedCountry.name}</span>
+              <span className="text-dm-text-muted text-sm">({selectedCountry.code})</span>
             </>
           ) : (
             <span className="text-dm-text-muted">{placeholder}</span>
@@ -111,23 +111,23 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
             {filteredCountries.length > 0 ? (
               filteredCountries.map(country => (
                 <div
-                  key={country.cca3}
+                  key={country.code}
                   className="p-2 hover:bg-dm-bg-hover cursor-pointer flex items-center gap-2 border-b border-dm-border-secondary last:border-b-0"
                   onClick={() => handleCountrySelect(country)}
                 >
                   <img 
-                    src={country.flags.svg} 
-                    alt={`Bandera de ${country.name.common}`}
+                    src={country.flagUrl} 
+                    alt={`Bandera de ${country.name}`}
                     className="w-5 h-3 object-cover rounded"
                   />
                   <div className="flex-1">
                     <div className="text-sm font-medium text-dm-text-primary">
-                      {country.name.common}
+                      {country.name}
                     </div>
                     <div className="text-xs text-dm-text-muted">
-                      {country.cca2} • {country.cca3}
-                      {country.idd.root && (
-                        <span> • Tel: {country.idd.root}{country.idd.suffixes?.[0] || ''}</span>
+                      {country.code}
+                      {country.phoneCode && (
+                        <span> • Tel: {country.phoneCode}</span>
                       )}
                     </div>
                   </div>

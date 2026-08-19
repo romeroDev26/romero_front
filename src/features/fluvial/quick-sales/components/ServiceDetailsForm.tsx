@@ -119,18 +119,14 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
           <label className="block text-sm font-medium text-dm-text-secondary mb-2">
             Descripción Adicional (Opcional)
           </label>
-          <input
-            type="text"
+          <textarea
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
             placeholder="Información adicional sobre la venta..."
-            maxLength={100}
+            rows={4}
             disabled={disabled}
-            className="w-full px-4 py-2 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-dm-bg-secondary"
+            className="w-full px-4 py-2 border border-dm-border-primary rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-dm-bg-secondary resize-y"
           />
-          <p className="text-xs text-dm-text-muted mt-1">
-            {description.length}/100 caracteres
-          </p>
         </div>
 
         {/* Switch IGV */}

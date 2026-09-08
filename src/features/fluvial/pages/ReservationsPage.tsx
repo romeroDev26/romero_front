@@ -158,8 +158,9 @@ export const ReservationsPage: React.FC = () => {
     {
       key: 'details',
       header: 'Viaje / Asiento',
+      className: 'whitespace-normal',
       accessor: (item) => (
-        <div className="space-y-0.5">
+        <div className="max-w-[190px] space-y-0.5">
           <div className="text-sm font-bold text-primary">{item.trip_name || `Viaje #${item.trip_id}`}</div>
           <div className="text-[13px] font-medium text-dm-text-primary">
             Asiento {item.seat_number}
@@ -174,8 +175,9 @@ export const ReservationsPage: React.FC = () => {
     {
       key: 'customer',
       header: 'Cliente',
+      className: 'whitespace-normal',
       accessor: (item) => (
-        <div className="space-y-0.5">
+        <div className="max-w-[190px] space-y-0.5">
           <div className="flex items-center gap-1.5 text-sm font-medium text-dm-text-primary">
             <User className="h-3.5 w-3.5 shrink-0 text-dm-text-muted" />
             {item.customer_name}
@@ -202,13 +204,14 @@ export const ReservationsPage: React.FC = () => {
     {
       key: 'special_notes',
       header: 'Notas',
+      className: 'whitespace-normal',
       accessor: (item) =>
         item.special_notes?.trim() ? (
           <button
             type="button"
             onClick={() => setDetailReservation(item)}
             title="Ver nota completa"
-            className="flex max-w-[220px] items-start gap-1.5 text-left text-[13px] text-dm-text-primary hover:text-primary"
+            className="flex max-w-[160px] items-start gap-1.5 text-left text-[13px] text-dm-text-primary hover:text-primary"
           >
             <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
             <span className="line-clamp-2 break-words">{item.special_notes}</span>
@@ -220,20 +223,17 @@ export const ReservationsPage: React.FC = () => {
     {
       key: 'status',
       header: 'Estado',
-      accessor: (item) => <ReservationStatusBadge status={item.status} />,
-    },
-    {
-      key: 'expires_at',
-      header: 'Expira',
-      accessor: (item) =>
-        item.expires_at ? (
-          <div className="flex items-center gap-1.5 text-[13px] text-dm-text-secondary">
-            <Clock className="h-3.5 w-3.5 shrink-0 text-dm-text-muted" />
-            {format(new Date(item.expires_at), 'dd MMM yyyy, hh:mm a', { locale: es })}
-          </div>
-        ) : (
-          <span className="text-[13px] text-dm-text-muted">N/A</span>
-        ),
+      accessor: (item) => (
+        <div className="space-y-1">
+          <ReservationStatusBadge status={item.status} />
+          {item.expires_at && (
+            <div className="flex items-center gap-1 text-[11px] text-dm-text-muted" title="Fecha de expiración">
+              <Clock className="h-3 w-3 shrink-0" />
+              {format(new Date(item.expires_at), 'dd/MM/yy HH:mm')}
+            </div>
+          )}
+        </div>
+      ),
     },
   ];
 

@@ -1,6 +1,6 @@
 // src/features/fluvial/components/sales-point/reservation-confirmation/ReservationConfirmationHandler.tsx
 import React, { useEffect, useMemo } from 'react';
-import { Clock, AlertCircle, CheckCircle, User } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle, User, StickyNote } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from '@/utils/sileo-toast';
@@ -52,7 +52,8 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
     status: reservation.status,
     boardingStopId: reservation.boarding_stop_id,
     disembarkingStopId: reservation.disembarking_stop_id,
-    tripSeatId: reservation.trip_seat_id
+    tripSeatId: reservation.trip_seat_id,
+    specialNotes: reservation.special_notes || ""
   }), [
     reservation.id,
     reservation.customer_name,
@@ -68,7 +69,8 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
     reservation.status,
     reservation.boarding_stop_id,
     reservation.disembarking_stop_id,
-    reservation.trip_seat_id
+    reservation.trip_seat_id,
+    reservation.special_notes
   ]);
 
   // Verificar si la reserva es válida y aún está activa
@@ -250,6 +252,19 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
           </div>
         </div>
       </div>
+
+      {/* Notas especiales de la reserva */}
+      {reservationData.specialNotes.trim() && (
+        <div className="mt-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded p-3 text-sm text-amber-800 dark:text-amber-300">
+          <div className="flex items-center gap-2">
+            <StickyNote className="h-4 w-4" />
+            <span className="font-medium">Notas especiales de la reserva</span>
+          </div>
+          <div className="mt-1 whitespace-pre-wrap break-words">
+            {reservationData.specialNotes}
+          </div>
+        </div>
+      )}
 
       {/* Alertas y notificaciones */}
       {!isReservationValid && (

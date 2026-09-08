@@ -23,10 +23,29 @@ class MockWebSocket {
   onmessage: ((ev: MessageEvent) => void) | null = null;
   onerror: ((ev?: Event) => void) | null = null;
   sentMessages: any[] = [];
+  listeners: Record<string, Array<(ev?: any) => void>> = {};
 
   constructor(url: string) {
     this.url = url;
     MockWebSocket.instances.push(this);
+  }
+
+  addEventListener(type: string, handler: (ev?: any) => void, options?: { once?: boolean }) {
+    const wrapped = options?.once
+      ? (ev?: any) => {
+          this.removeEventListener(type, wrapped);
+          handler(ev);
+        }
+      : handler;
+    this.listeners[type] = [...(this.listeners[type] || []), wrapped];
+  }
+
+  removeEventListener(type: string, handler: (ev?: any) => void) {
+    this.listeners[type] = (this.listeners[type] || []).filter((h) => h !== handler);
+  }
+
+  private emit(type: string, ev?: any) {
+    [...(this.listeners[type] || [])].forEach((handler) => handler(ev));
   }
 
   send(data: string) {
@@ -35,14 +54,17 @@ class MockWebSocket {
 
   close(code = 1000, reason = '') {
     this.readyState = MockWebSocket.CLOSED;
+    const event = { code, reason, wasClean: code === 1000 } as CloseEvent;
     if (this.onclose) {
-      this.onclose({ code, reason, wasClean: code === 1000 } as CloseEvent);
+      this.onclose(event);
     }
+    this.emit('close', event);
   }
 
   simulateOpen() {
     this.readyState = MockWebSocket.OPEN;
     if (this.onopen) this.onopen();
+    this.emit('open');
   }
 
   simulateMessage(data: any) {
@@ -308,9 +330,31 @@ describe('useWebSocketConnection', () => {
     await waitFor(() => expect(MockWebSocket.instances.length).toBe(1));
 
     const ws = MockWebSocket.last();
+    act(() => ws.simulateOpen());
     const closeSpy = vi.spyOn(ws, 'close');
 
     unmount();
+
+    expect(closeSpy).toHaveBeenCalledWith(1000, 'Component unmounting');
+  });
+
+  it('defers closing a still-connecting socket until it opens', async () => {
+    const { result, unmount } = renderHook(() => useWebSocketConnection(config, onMessage));
+
+    act(() => result.current.forceReconnect());
+    act(() => vi.advanceTimersByTime(200));
+    await waitFor(() => expect(MockWebSocket.instances.length).toBe(1));
+
+    // Socket aún en CONNECTING: nunca llamamos simulateOpen()
+    const ws = MockWebSocket.last();
+    const closeSpy = vi.spyOn(ws, 'close');
+
+    unmount();
+
+    // Cerrar durante el handshake es lo que produce el warning en el navegador
+    expect(closeSpy).not.toHaveBeenCalled();
+
+    act(() => ws.simulateOpen());
 
     expect(closeSpy).toHaveBeenCalledWith(1000, 'Component unmounting');
   });

@@ -121,7 +121,25 @@ export const ReservationModal: React.FC<ReservationModalProps> = ({
         <Input label="Teléfono de Contacto" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} required />
         <Input label="Email (Opcional)" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} />
         <Input label="Fecha de Expiración (Opcional)" type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
-        <Input label="Notas Especiales (Opcional)" type="text" value={specialNotes} onChange={(e) => setSpecialNotes(e.target.value)} />
+        <div className="w-full mb-4">
+          <label className="block text-sm font-medium text-dm-text-secondary mb-1">
+            Notas Especiales (Opcional)
+          </label>
+          <textarea
+            value={specialNotes}
+            onChange={(e) => {
+              if (e.target.value.length <= 500) {
+                setSpecialNotes(e.target.value);
+              }
+            }}
+            rows={3}
+            placeholder="Ej. FALTA PAGAR, BOLETO AGENCIA, cliente recoge en oficina..."
+            className="block w-full rounded-md border-dm-border-primary shadow-sm p-2 border bg-dm-bg-primary text-dm-text-primary placeholder:text-dm-text-muted focus:border-primary focus:ring focus:ring-primary/20 transition resize-y min-h-[80px]"
+          />
+          <p className="mt-1 text-[10px] text-dm-text-muted">
+            {specialNotes.length}/500 caracteres · Se mostrará en Gestionar Reservas y al confirmar la venta.
+          </p>
+        </div>
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
           <Button type="submit" isLoading={isPending}>Confirmar Reserva</Button>

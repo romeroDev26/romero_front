@@ -3,44 +3,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CalendarCheck, Check, Ban, MapPin, Clock, User, CreditCard } from 'lucide-react';
+import { CalendarCheck, Check, Ban, MapPin, Clock, User, CreditCard, StickyNote, Eye } from 'lucide-react';
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { useSearchReservations, useUpdateReservation } from '../hooks/useReservations';
 import { SeatReservation, BranchOffice } from '../../../types';
 import { Input } from '../../../components/common/Input';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { BranchSelector } from '../components/sales-point/BranchSelector';
-
-// ------------------------------------------------------------------
-// Helpers visuales
-// ------------------------------------------------------------------
-const STATUS_CONFIG: Record<string, { label: string; classes: string }> = {
-  RESERVED: {
-    label: 'Reservado',
-    classes: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-900/40',
-  },
-  CONFIRMED: {
-    label: 'Confirmado',
-    classes: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-100',
-  },
-  CANCELLED: {
-    label: 'Cancelado',
-    classes: 'bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 border border-red-100',
-  },
-  EXPIRED: {
-    label: 'Expirado',
-    classes: 'bg-dm-bg-secondary text-dm-text-secondary border border-dm-border-primary',
-  },
-};
-
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-  const config = STATUS_CONFIG[status] || STATUS_CONFIG.EXPIRED;
-  return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${config.classes}`}>
-      {config.label}
-    </span>
-  );
-};
+import { ReservationStatusBadge } from '../components/reservations/ReservationStatusBadge';
+import { ReservationDetailModal } from '../components/reservations/ReservationDetailModal';
 
 // ------------------------------------------------------------------
 // Filtros
@@ -122,6 +93,7 @@ const ReservationFilters = ({
 export const ReservationsPage: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<BranchOffice | null>(null);
   const [filters, setFilters] = useState({});
+  const [detailReservation, setDetailReservation] = useState<SeatReservation | null>(null);
   const navigate = useNavigate();
 
   const handleBranchSelect = (branch: BranchOffice) => {
@@ -143,17 +115,22 @@ export const ReservationsPage: React.FC = () => {
 
   const { mutate: updateReservation } = useUpdateReservation();
 
+  const cancelReservation = (reservation: SeatReservation) => {
+    updateReservation({
+      reservationId: reservation.id,
+      tripId: reservation.trip_id,
+      data: { status: 'CANCELLED' },
+    });
+  };
+
   const handleCancelReservation = (reservation: SeatReservation) => {
-    if (
-      window.confirm(
-        `¿Está seguro de que desea CANCELAR la reserva del asiento ${reservation.seat_number} para ${reservation.customer_name}?`
-      )
-    ) {
-      updateReservation({
-        reservationId: reservation.id,
-        tripId: reservation.trip_id,
-        data: { status: 'CANCELLED' },
-      });
+    const notes = reservation.special_notes?.trim();
+    const message = `¿Está seguro de que desea CANCELAR la reserva del asiento ${reservation.seat_number} para ${reservation.customer_name}?${
+      notes ? `\n\nNota de la reserva: ${notes}` : ''
+    }`;
+
+    if (window.confirm(message)) {
+      cancelReservation(reservation);
     }
   };
 
@@ -164,6 +141,17 @@ export const ReservationsPage: React.FC = () => {
         reservationToConfirm: reservation,
       },
     });
+  };
+
+  // Desde el modal la decisión ya se tomó con todo el detalle a la vista
+  const handleCancelFromDetail = (reservation: SeatReservation) => {
+    setDetailReservation(null);
+    cancelReservation(reservation);
+  };
+
+  const handleConfirmFromDetail = (reservation: SeatReservation) => {
+    setDetailReservation(null);
+    handleConfirmReservation(reservation);
   };
 
   const columns: Column<SeatReservation>[] = [
@@ -212,9 +200,27 @@ export const ReservationsPage: React.FC = () => {
       ),
     },
     {
+      key: 'special_notes',
+      header: 'Notas',
+      accessor: (item) =>
+        item.special_notes?.trim() ? (
+          <button
+            type="button"
+            onClick={() => setDetailReservation(item)}
+            title="Ver nota completa"
+            className="flex max-w-[220px] items-start gap-1.5 text-left text-[13px] text-dm-text-primary hover:text-primary"
+          >
+            <StickyNote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+            <span className="line-clamp-2 break-words">{item.special_notes}</span>
+          </button>
+        ) : (
+          <span className="text-[13px] text-dm-text-muted">—</span>
+        ),
+    },
+    {
       key: 'status',
       header: 'Estado',
-      accessor: (item) => <StatusBadge status={item.status} />,
+      accessor: (item) => <ReservationStatusBadge status={item.status} />,
     },
     {
       key: 'expires_at',
@@ -273,6 +279,13 @@ export const ReservationsPage: React.FC = () => {
           showActions={true}
           customActions={(item) => (
             <div className="flex items-center justify-end gap-2">
+              <button
+                onClick={() => setDetailReservation(item)}
+                title="Ver detalle"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-dm-text-muted transition-colors hover:bg-dm-bg-secondary hover:text-primary"
+              >
+                <Eye className="h-4 w-4" strokeWidth={2} />
+              </button>
               {item.status === 'RESERVED' && (
                 <>
                   <button
@@ -330,7 +343,7 @@ export const ReservationsPage: React.FC = () => {
                     Asiento {reservation.seat_number}
                   </div>
                 </div>
-                <StatusBadge status={reservation.status} />
+                <ReservationStatusBadge status={reservation.status} />
               </div>
 
               {/* Info */}
@@ -385,11 +398,35 @@ export const ReservationsPage: React.FC = () => {
                     </div>
                   </div>
                 )}
+
+                <div>
+                  <div className="text-[10px] font-medium uppercase tracking-wider text-dm-text-muted">
+                    Notas
+                  </div>
+                  {reservation.special_notes?.trim() ? (
+                    <div className="flex items-start gap-1 text-xs font-medium text-dm-text-primary">
+                      <StickyNote className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
+                      <span className="break-words">{reservation.special_notes}</span>
+                    </div>
+                  ) : (
+                    <div className="text-xs text-dm-text-muted">Sin notas</div>
+                  )}
+                </div>
               </div>
 
               {/* Acciones */}
+              <div className="flex gap-2 pt-3 border-t border-dm-border-secondary">
+                <button
+                  onClick={() => setDetailReservation(reservation)}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-dm-border-primary bg-dm-bg-secondary py-2 text-xs font-medium text-dm-text-secondary transition-colors hover:text-primary"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  Ver detalle
+                </button>
+              </div>
+
               {reservation.status === 'RESERVED' && (
-                <div className="flex gap-2 pt-3 border-t border-dm-border-secondary">
+                <div className="flex gap-2 pt-3">
                   <button
                     onClick={() => handleConfirmReservation(reservation)}
                     className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100"
@@ -409,6 +446,14 @@ export const ReservationsPage: React.FC = () => {
             </div>
           ))}
       </div>
+
+      <ReservationDetailModal
+        reservation={detailReservation}
+        isOpen={!!detailReservation}
+        onClose={() => setDetailReservation(null)}
+        onConfirmSale={handleConfirmFromDetail}
+        onCancelReservation={handleCancelFromDetail}
+      />
     </div>
   );
 };

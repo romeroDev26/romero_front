@@ -15,6 +15,33 @@ interface UseWebSocketConnectionReturn {
   heartbeatInterval: number;
 }
 
+/**
+ * Descarta un WebSocket que ya no vamos a usar (reconexión, cambio de viaje o unmount).
+ *
+ * - Desengancha los handlers: un socket viejo que cierra tarde ya no debe apagar el
+ *   heartbeat ni marcar 'disconnected' sobre la conexión que lo reemplazó.
+ * - Si todavía está en CONNECTING, espera al 'open' para cerrar. Cerrar en pleno
+ *   handshake es lo que genera el warning "WebSocket is closed before the connection
+ *   is established" en la consola.
+ */
+const discardSocket = (ws: WebSocket | null, code: number, reason: string) => {
+  if (!ws) return;
+
+  ws.onopen = null;
+  ws.onmessage = null;
+  ws.onerror = null;
+  ws.onclose = null;
+
+  if (ws.readyState === WebSocket.CONNECTING) {
+    ws.addEventListener('open', () => ws.close(code, reason), { once: true });
+    return;
+  }
+
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.close(code, reason);
+  }
+};
+
 export const useWebSocketConnection = (
   config: WebSocketConfig,
   onMessage: (message: SeatUpdateMessage) => void
@@ -48,12 +75,8 @@ export const useWebSocketConnection = (
       reconnectTimeoutRef.current = null;
     }
     
-    if (wsRef.current) {
-      if (wsRef.current.readyState === WebSocket.CONNECTING || wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.close(1000, 'Reconnecting');
-      }
-      wsRef.current = null;
-    }
+    discardSocket(wsRef.current, 1000, 'Reconnecting');
+    wsRef.current = null;
 
     try {
       const baseUrl = getWebSocketUrl();
@@ -304,8 +327,10 @@ export const useWebSocketConnection = (
         reconnectTimeoutRef.current = null;
       }
       if (wsRef.current) {
-        wsRef.current.close(1000, 'Component unmounting');
+        discardSocket(wsRef.current, 1000, 'Component unmounting');
         wsRef.current = null;
+        // El onclose ya no corre (lo desenganchamos), así que reflejamos el estado aquí
+        setConnectionStatus('disconnected');
       }
     };
   }, [enabled, tripId, userId, userName]); // Removida connectWebSocket de dependencias

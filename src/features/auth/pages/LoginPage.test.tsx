@@ -23,14 +23,14 @@ vi.mock('react-router-dom', async () => {
 
 vi.mock('../../../services/auth.service', () => ({
   authService: {
-    login: (...args: any[]) => mockLogin(...args),
+    login: (...args: unknown[]) => mockLogin(...args),
   },
 }));
 
 vi.mock('@/utils/sileo-toast', () => ({
   authNotify: {
-    success: (...args: any[]) => mockNotifySuccess(...args),
-    error: (...args: any[]) => mockNotifyError(...args),
+    success: (...args: unknown[]) => mockNotifySuccess(...args),
+    error: (...args: unknown[]) => mockNotifyError(...args),
   },
 }));
 
@@ -38,7 +38,7 @@ vi.mock('@/hooks/useLockoutCountdown', () => ({
   useLockoutCountdown: () => ({
     isLocked: false,
     formattedTime: '00:00',
-    lockFromSeconds: (...args: any[]) => mockLockFromSeconds(...args),
+    lockFromSeconds: (...args: unknown[]) => mockLockFromSeconds(...args),
     clearLock: () => mockClearLock(),
   }),
 }));
@@ -69,8 +69,8 @@ describe('LoginPage', () => {
   it('renders login form with email, password and submit button', () => {
     setup();
 
-    expect(screen.getByPlaceholderText(/correo electrónico/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/contraseña/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/correo electrónico/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /iniciar sesión/i })).toBeInTheDocument();
     expect(screen.getByText(/bienvenido/i)).toBeInTheDocument();
   });
@@ -78,8 +78,8 @@ describe('LoginPage', () => {
   it('shows validation error for invalid email on submit', async () => {
     const { user } = setup();
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'not-an-email');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), 'password123');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'not-an-email');
+    await user.type(screen.getByLabelText(/contraseña/i), 'password123');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
@@ -90,8 +90,8 @@ describe('LoginPage', () => {
   it('shows validation error for short password on submit', async () => {
     const { user } = setup();
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'user@example.com');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), '123');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'user@example.com');
+    await user.type(screen.getByLabelText(/contraseña/i), '123');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
@@ -102,7 +102,7 @@ describe('LoginPage', () => {
   it('toggles password visibility', async () => {
     const { user } = setup();
 
-    const passwordInput = screen.getByPlaceholderText(/contraseña/i) as HTMLInputElement;
+    const passwordInput = screen.getByLabelText(/contraseña/i) as HTMLInputElement;
     expect(passwordInput.type).toBe('password');
 
     // El botón del ojo está justo al lado del input de contraseña
@@ -121,8 +121,8 @@ describe('LoginPage', () => {
     const { user } = setup();
     mockLogin.mockResolvedValueOnce({});
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'admin@romero.com');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), 'password123');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'admin@romero.com');
+    await user.type(screen.getByLabelText(/contraseña/i), 'password123');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
@@ -145,8 +145,8 @@ describe('LoginPage', () => {
     const { user } = setup();
     mockLogin.mockResolvedValueOnce({});
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'user@romero.com');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), 'password123');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'user@romero.com');
+    await user.type(screen.getByLabelText(/contraseña/i), 'password123');
 
     // Click en el switch de Recordarme (el botón circular junto al texto "Recordarme")
     const rememberLabel = screen.getByText(/recordarme/i);
@@ -166,8 +166,8 @@ describe('LoginPage', () => {
       response: { status: 401, data: {} },
     });
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'bad@user.com');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), 'wrongpass');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'bad@user.com');
+    await user.type(screen.getByLabelText(/contraseña/i), 'wrongpass');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
@@ -194,8 +194,8 @@ describe('LoginPage', () => {
       },
     });
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'locked@user.com');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), 'password123');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'locked@user.com');
+    await user.type(screen.getByLabelText(/contraseña/i), 'password123');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
@@ -215,8 +215,8 @@ describe('LoginPage', () => {
       message: 'Network Error',
     });
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'user@romero.com');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), 'password123');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'user@romero.com');
+    await user.type(screen.getByLabelText(/contraseña/i), 'password123');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
@@ -234,12 +234,12 @@ describe('LoginPage', () => {
     let resolveLogin: (value?: unknown) => void;
     mockLogin.mockImplementationOnce(() => new Promise((resolve) => { resolveLogin = resolve; }));
 
-    await user.type(screen.getByPlaceholderText(/correo electrónico/i), 'admin@romero.com');
-    await user.type(screen.getByPlaceholderText(/contraseña/i), 'password123');
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'admin@romero.com');
+    await user.type(screen.getByLabelText(/contraseña/i), 'password123');
     await user.click(screen.getByRole('button', { name: /iniciar sesión/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /iniciando sesión/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /autenticando/i })).toBeDisabled();
     });
 
     resolveLogin!();

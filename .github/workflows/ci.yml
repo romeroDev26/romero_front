@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, 'feature/**']
+  push:
+    branches: [main, 'feature/**']
+
+# Cancela ejecuciones previas de la misma rama/PR para no gastar minutos de runner
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, typecheck, tests y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Necesitamos el historial para diffear contra la rama base del PR
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # ── Lint incremental ────────────────────────────────────────────────
+      # El repo arrastra ~815 errores de lint heredados (mayormente
+      # no-explicit-any y no-unused-vars), asi que un `eslint .` bloqueante
+      # dejaria todos los PRs en rojo. En su lugar solo exigimos limpieza en
+      # los archivos que el PR modifica: el codigo nuevo entra sin errores y
+      # la deuda se paga a medida que se tocan los archivos viejos.
+      - name: Lint de archivos modificados
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE="origin/${{ github.base_ref }}"
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}" || git fetch --no-tags origin "${{ github.base_ref }}"
+
+          # Solo archivos existentes (excluye los borrados por el PR).
+          # -z / xargs -0 para soportar rutas con espacios sin depender del IFS.
+          git diff --name-only --diff-filter=ACMR -z "$BASE"...HEAD \
+            -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.cjs' '*.mjs' > changed.z
+
+          if [ ! -s changed.z ]; then
+            echo "Este PR no modifica archivos JS/TS. Nada que lintear."
+            exit 0
+          fi
+
+          echo "Lintando los archivos modificados por el PR:"
+          tr '\0' '\n' < changed.z | sed 's/^/  - /'
+          echo ""
+
+          xargs -0 npx eslint --max-warnings=0 < changed.z
+
+      # Panorama completo de la deuda, informativo: nunca tumba el build.
+      - name: Lint completo (informativo)
+        continue-on-error: true
+        run: |
+          npx eslint . -f stylish > eslint-full.txt 2>&1 || true
+          TOTAL=$(grep -cE '^\s+[0-9]+:[0-9]+' eslint-full.txt || echo 0)
+
+          {
+            echo "### Deuda de lint en todo el repo"
+            echo ""
+            echo "Problemas detectados: **$TOTAL**"
+            echo ""
+            echo "No bloquea el CI. El gate real corre solo sobre los archivos que toca cada PR."
+            echo ""
+            echo "<details><summary>Ver reporte completo</summary>"
+            echo ""
+            echo '```'
+            tail -c 60000 eslint-full.txt
+            echo '```'
+            echo ""
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Gates bloqueantes ───────────────────────────────────────────────
+      - name: Typecheck
+        run: npx tsc -b --force
+
+      - name: Tests
+        run: npm run test
+
+      # El build toma las variables del `.env` versionado en el repo.
+      # Cuando saquen `.env` del control de versiones (recomendado: ya esta en
+      # .gitignore pero sigue trackeado), definan VITE_API_URL como repository
+      # variable y pasenla aqui con `env:`.
+      - name: Build
+        run: npm run build

@@ -17,6 +17,18 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>
 
+/** Forma del error que puede devolver authService.login (error HTTP de axios o fallo de red). */
+interface AuthRequestError {
+  message?: string
+  request?: unknown
+  response?: {
+    status?: number
+    data?: {
+      detail?: string | { message?: string; retry_after_seconds?: number | string }
+    }
+  }
+}
+
 const REMEMBER_KEY = 'tr_remembered_email'
 
 export const LoginForm: React.FC = () => {
@@ -28,7 +40,7 @@ export const LoginForm: React.FC = () => {
   const { isLocked, formattedTime, lockFromSeconds, clearLock } = useLockoutCountdown()
   const navigate = useNavigate()
 
-  const extractLockoutInfo = (err: any): { message: string; retryAfter: number } | null => {
+  const extractLockoutInfo = (err: AuthRequestError): { message: string; retryAfter: number } | null => {
     if (err.response?.status !== 429) return null
     const detail = err.response?.data?.detail
     if (detail && typeof detail === 'object') {
@@ -72,7 +84,8 @@ export const LoginForm: React.FC = () => {
       authNotify.success('Inicio de sesión exitoso', 'Redirigiendo al panel de control...')
       clearLock()
       navigate('/')
-    } catch (err: any) {
+    } catch (caught: unknown) {
+      const err = caught as AuthRequestError
       const lockoutInfo = extractLockoutInfo(err)
       if (lockoutInfo) {
         lockFromSeconds(lockoutInfo.retryAfter)
@@ -86,7 +99,10 @@ export const LoginForm: React.FC = () => {
           authNotify.error(msg, 'Verifique su email y contraseña e intente de nuevo.')
         } else {
           const status = err.response.status
-          const detail = err.response?.data?.detail || 'Error en el servidor'
+          const rawDetail = err.response?.data?.detail
+          // El backend puede devolver `detail` como string o como objeto {message, ...}
+          const detail =
+            (typeof rawDetail === 'string' ? rawDetail : rawDetail?.message) || 'Error en el servidor'
           const msg = `Error ${status}: ${detail}`
           setLoginError(msg)
           authNotify.error('Error del servidor', detail)
@@ -141,7 +157,7 @@ export const LoginForm: React.FC = () => {
 
       {/* Input Correo */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
+        <label htmlFor="email" className="text-[13px] font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
           Correo electrónico
         </label>
         <div className="relative">
@@ -149,6 +165,7 @@ export const LoginForm: React.FC = () => {
             <AtSign className="h-4 w-4 text-gray-400 dark:text-gray-500 transition-colors duration-300" />
           </div>
           <input
+            id="email"
             type="email"
             autoComplete="email"
             className="block w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-[#131B2F] border border-gray-200 dark:border-gray-800 rounded-xl text-[14px] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"
@@ -163,7 +180,7 @@ export const LoginForm: React.FC = () => {
 
       {/* Input Contraseña */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-[13px] font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
+        <label htmlFor="password" className="text-[13px] font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300">
           Contraseña
         </label>
         <div className="relative">
@@ -171,6 +188,7 @@ export const LoginForm: React.FC = () => {
             <Lock className="h-4 w-4 text-gray-400 dark:text-gray-500 transition-colors duration-300" />
           </div>
           <input
+            id="password"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             className="block w-full pl-10 pr-10 py-3 bg-gray-50 dark:bg-[#131B2F] border border-gray-200 dark:border-gray-800 rounded-xl text-[14px] placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-300"

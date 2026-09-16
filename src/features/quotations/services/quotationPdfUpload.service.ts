@@ -1,6 +1,7 @@
 // src/features/quotations/services/quotationPdfUpload.service.ts
 
 import api from '../../../config/api';
+import { asApiError } from '../../../utils/errorHandler';
 
 export interface QuotationPDFUploadResult {
   success: boolean;
@@ -29,10 +30,11 @@ export const quotationPdfUploadService = {
         success: true,
         pdf_url: pdfURL
       };
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       return {
         success: false,
-        error: error.message || 'Error desconocido al subir PDF'
+        error: apiError.message || 'Error desconocido al subir PDF'
       };
     }
   },
@@ -80,7 +82,7 @@ export const quotationPdfUploadService = {
       } else {
         throw new Error('La respuesta del servidor no contiene la URL del PDF');
       }
-    } catch (error: any) {
+    } catch (error) {
       throw error;
     }
   },

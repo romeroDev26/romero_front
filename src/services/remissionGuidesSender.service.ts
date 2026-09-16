@@ -2,6 +2,7 @@
 
 import api from '../config/api';
 import { RemissionGuideRemitente, RemissionGuidesByBranchOfficeResponse } from '../types';
+import { asApiError, detailToString } from '../utils/errorHandler';
 
 // Tipos para el servicio
 export interface ListSenderGuidesParams {
@@ -143,11 +144,12 @@ class RemissionGuidesSenderService {
           'Content-Type': 'multipart/form-data',
         }
       });
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error uploading remission guide sender PDF:', error);
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
         'Error al subir el PDF de la guía de remisión del remitente'
       );
     }

@@ -5,6 +5,7 @@ import {
   ReceivablesQueryParams,
   ReceivablesResponse,
 } from '../types/receivables.types';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 export const receivablesService = {
   /**
@@ -60,8 +61,9 @@ export const receivablesService = {
         },
         filters_applied: backendData.filters_applied
       };
-    } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Error al obtener las encomiendas por cobrar');
+    } catch (error) {
+      const apiError = asApiError(error);
+      throw new Error(detailToString(apiError.response?.data?.detail) || 'Error al obtener las encomiendas por cobrar');
     }
   },
 
@@ -73,8 +75,9 @@ export const receivablesService = {
     try {
       const response = await api.post(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
       return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.detail || 'Error al marcar como pagada');
+    } catch (error) {
+      const apiError = asApiError(error);
+      throw new Error(detailToString(apiError.response?.data?.detail) || 'Error al marcar como pagada');
     }
   }
 };

@@ -1,6 +1,7 @@
 // src/services/fareService.ts
 import api from '../config/api';
 import { Fare, ServiceCategory, FareType } from '../types';
+import { asApiError } from '../utils/errorHandler';
 
 export interface CreateFareData {
   company_id: number;
@@ -86,8 +87,9 @@ class FareService {
     try {
       const response = await api.get(`/config/fares/find`, { params });
       return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error) {
+      const apiError = asApiError(error);
+      if (apiError.response?.status === 404) {
         return null;
       }
       throw error;

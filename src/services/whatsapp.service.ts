@@ -1,5 +1,6 @@
 // src/services/whatsapp.service.ts
 import api from '../config/api';
+import { asApiError, detailToString } from '../utils/errorHandler';
 
 export interface WhatsAppSendDocumentRequest {
   number: string;
@@ -79,14 +80,15 @@ ${businessName || 'Nuestra Empresa'}`;
         success: true,
         message: 'Cotización enviada exitosamente por WhatsApp'
       };
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error enviando cotización por WhatsApp:', error);
       
       return {
         success: false,
-        error: error.response?.data?.detail?.[0]?.msg || 
-               error.response?.data?.message || 
-               error.message || 
+        error: detailToString(apiError.response?.data?.detail) || 
+               apiError.response?.data?.message || 
+               apiError.message || 
                'Error desconocido al enviar cotización'
       };
     }
@@ -140,14 +142,15 @@ ${businessName || 'Nuestra Empresa'}`;
         success: true,
         message: 'Comprobante enviado exitosamente por WhatsApp'
       };
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error enviando comprobante por WhatsApp:', error);
       
       return {
         success: false,
-        error: error.response?.data?.detail?.[0]?.msg || 
-               error.response?.data?.message || 
-               error.message || 
+        error: detailToString(apiError.response?.data?.detail) || 
+               apiError.response?.data?.message || 
+               apiError.message || 
                'Error desconocido al enviar comprobante'
       };
     }
@@ -203,12 +206,13 @@ El equipo de ${businessName || 'Nuestra Empresa'}`;
         success: true,
         message: 'Documento enviado exitosamente por WhatsApp'
       };
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error enviando documento por WhatsApp:', error);
       
       return {
         success: false,
-        error: error.response?.data?.message || error.message || 'Error desconocido al enviar documento'
+        error: apiError.response?.data?.message || apiError.message || 'Error desconocido al enviar documento'
       };
     }
   }

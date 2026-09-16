@@ -6,6 +6,7 @@ import {
   Trip,
   DailyManifestViewResponse
 } from '../types/manifest.types';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 export const manifestService = {
   // Función helper para parsear fechas de diferentes formatos
@@ -84,11 +85,12 @@ export const manifestService = {
       const manifests = response.data || [];
       // Enriquecer con información del usuario
       return await manifestService.enrichManifestsWithUserData(manifests);
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error fetching manifests by branch office:', error);
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
         'Error al obtener los manifiestos de la sucursal'
       );
     }
@@ -107,15 +109,16 @@ export const manifestService = {
         },
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error fetching daily manifest view:', error);
       // Loguear el cuerpo completo del error para diagnóstico (especialmente útil para 422 de FastAPI)
-      if (error.response?.data) {
-        console.error('Detalle del error 422:', JSON.stringify(error.response.data, null, 2));
+      if (apiError.response?.data) {
+        console.error('Detalle del error 422:', JSON.stringify(apiError.response.data, null, 2));
       }
       throw new Error(
-        error.response?.data?.message ||
-        error.response?.data?.detail ||
+        apiError.response?.data?.message ||
+        detailToString(apiError.response?.data?.detail) ||
         'Error al obtener la vista diaria de manifiestos'
       );
     }
@@ -135,11 +138,12 @@ export const manifestService = {
       const manifests = response.data.results || response.data;
       // Enriquecer con información del usuario
       return await manifestService.enrichManifestsWithUserData(manifests);
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error fetching manifests:', error);
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
         'Error al obtener los manifiestos'
       );
     }
@@ -161,7 +165,7 @@ export const manifestService = {
         try {
           const response2 = await api.get(`/dispatch/manifests/${id}/`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
           manifest = response2.data;
-        } catch (err2: any) {
+        } catch (err2) {
           throw err2;
         }
       }
@@ -169,11 +173,12 @@ export const manifestService = {
       // Enriquecer con información del usuario
       const enrichedManifests = await manifestService.enrichManifestsWithUserData([manifest]);
       return enrichedManifests[0];
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error fetching manifest:', error);
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
         'Error al obtener el manifiesto'
       );
     }
@@ -199,21 +204,25 @@ export const manifestService = {
         data: manifestData,
         message: 'Manifiesto creado/regenerado exitosamente'
       };
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Manejo específico de errores de validación (422)
-      if (error.response?.status === 422) {
-        const validationErrors = error.response.data?.detail || [];
-        const errorMessages = validationErrors.map((err: any) => err.msg).join(', ');
+      if (apiError.response?.status === 422) {
+        // En un 422 el backend manda detail como array de errores de validacion.
+        const detail = apiError.response.data?.detail;
+        const errorMessages = Array.isArray(detail)
+          ? detail.map((err) => err.msg).filter(Boolean).join(', ')
+          : detailToString(detail);
         throw new Error(errorMessages || 'Error de validación en los datos del manifiesto');
       }
       // Manejo específico de conflicto (409) - mantener el error original para que createOrRegenerateManifest pueda detectarlo
-      if (error.response?.status === 409) {
+      if (apiError.response?.status === 409) {
         throw error; // Preservar el error original con status 409 (compatibilidad)
       }
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail ||
-        error.response?.data?.non_field_errors?.[0] ||
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) ||
+        apiError.response?.data?.non_field_errors?.[0] ||
         'Error al crear el manifiesto'
       );
     }
@@ -238,19 +247,23 @@ export const manifestService = {
         data: manifestData,
         message: 'Manifiesto regenerado exitosamente'
       };
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error regenerating manifest:', error);
       
       // Manejo específico de errores de validación (422)
-      if (error.response?.status === 422) {
-        const validationErrors = error.response.data?.detail || [];
-        const errorMessages = validationErrors.map((err: any) => err.msg).join(', ');
+      if (apiError.response?.status === 422) {
+        // En un 422 el backend manda detail como array de errores de validacion.
+        const detail = apiError.response.data?.detail;
+        const errorMessages = Array.isArray(detail)
+          ? detail.map((err) => err.msg).filter(Boolean).join(', ')
+          : detailToString(detail);
         throw new Error(errorMessages || 'Error de validación en los datos del manifiesto');
       }
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail ||
-        error.response?.data?.non_field_errors?.[0] ||
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) ||
+        apiError.response?.data?.non_field_errors?.[0] ||
         'Error al regenerar el manifiesto'
       );
     }
@@ -265,21 +278,23 @@ export const manifestService = {
         ...result,
         isRegeneration: false
       };
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Si el error indica que ya existe un manifiesto (status 409), intentamos regenerarlo
-      if (error.response?.status === 409) {
+      if (apiError.response?.status === 409) {
         try {
           const result = await manifestService.regenerateManifest(data);
           return {
             ...result,
             isRegeneration: true
           };
-        } catch (regenerateError: any) {
+        } catch (regenerateError) {
+          const regenerateApiError = asApiError(regenerateError);
           console.error('Error en regeneración:', regenerateError);
           throw new Error(
-            regenerateError.response?.data?.message || 
-            regenerateError.response?.data?.detail || 
-            regenerateError.message ||
+            regenerateApiError.response?.data?.message || 
+            detailToString(regenerateApiError.response?.data?.detail) || 
+            regenerateApiError.message ||
             'Error al regenerar el manifiesto'
           );
         }
@@ -299,9 +314,10 @@ export const manifestService = {
         }
       });
       return response.data || null;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Si no encuentra el manifiesto, devuelve null
-      if (error.response?.status === 404) {
+      if (apiError.response?.status === 404) {
         return null;
       }
       console.error('Error checking existing manifest:', error);
@@ -320,11 +336,12 @@ export const manifestService = {
         }
       });
       return response.data.results || response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error fetching available trips:', error);
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
         'Error al obtener los viajes disponibles'
       );
     }
@@ -342,11 +359,12 @@ export const manifestService = {
           'Content-Type': 'multipart/form-data',
         },
       });
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error uploading manifest PDF:', error);
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
         'Error al subir el PDF del manifiesto'
       );
     }
@@ -359,10 +377,11 @@ export const manifestService = {
         responseType: 'blob'
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error generating manifest PDF:', error);
       throw new Error(
-        error.response?.data?.message || 
+        apiError.response?.data?.message || 
         'Error al generar el PDF del manifiesto'
       );
     }
@@ -374,11 +393,12 @@ export const manifestService = {
       await api.patch(`/dispatch/manifests/${manifestId}/cancel/`, {
         reason: reason
       });
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error cancelling manifest:', error);
       throw new Error(
-        error.response?.data?.message || 
-        error.response?.data?.detail || 
+        apiError.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
         'Error al cancelar el manifiesto'
       );
     }
@@ -396,10 +416,11 @@ export const manifestService = {
     try {
       const response = await api.get('/dispatch/manifests/stats/');
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error fetching manifest stats:', error);
       throw new Error(
-        error.response?.data?.message || 
+        apiError.response?.data?.message || 
         'Error al obtener las estadísticas'
       );
     }
@@ -432,11 +453,12 @@ export const manifestService = {
         message: 'Listo para generar manifiesto de carga'
       };
       
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Si hay error obteniendo manifiestos existentes, es probable que sea el primer intento
       // Permitir la generación y que el error se maneje correctamente en el flujo principal
       
-      if (error.message === 'ENDPOINT_NOT_AVAILABLE') {
+      if (apiError.message === 'ENDPOINT_NOT_AVAILABLE') {
         return {
           canGenerate: true,
           message: 'Sistema listo para generar manifiesto'

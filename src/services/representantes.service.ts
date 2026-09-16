@@ -1,5 +1,6 @@
 // src/services/representantes.service.ts
 import api from '../config/api';
+import { asApiError, detailToString } from '../utils/errorHandler';
 
 // NUEVOS TIPOS SEGÚN ESPECIFICACIÓN BACKEND
 export interface CompanyInvoiceWithRepresentatives {
@@ -132,15 +133,16 @@ class RepresentantesService {
       // ← CORREGIDO: Endpoint con prefijo /sunat según especificación
       const response = await api.post('/sunat/invoices/company-with-representatives-extended', data);
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Manejar errores específicos según la especificación
-      if (error.response?.status === 400) {
-        throw new Error(error.response.data.detail || 'Error de validación');
-      } else if (error.response?.status === 404) {
+      if (apiError.response?.status === 400) {
+        throw new Error(detailToString(apiError.response.data?.detail) || 'Error de validación');
+      } else if (apiError.response?.status === 404) {
         throw new Error('Viaje o paradas no encontradas');
-      } else if (error.response?.status === 422) {
-        throw new Error('Error de datos: ' + error.response.data.detail);
-      } else if (error.response?.status === 500) {
+      } else if (apiError.response?.status === 422) {
+        throw new Error('Error de datos: ' + detailToString(apiError.response.data?.detail));
+      } else if (apiError.response?.status === 500) {
         throw new Error('Error interno del servidor');
       }
       throw error;

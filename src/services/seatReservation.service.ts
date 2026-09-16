@@ -1,5 +1,6 @@
 // src/services/seatReservation.service.ts
 import api from '../config/api';
+import { asApiError } from '../utils/errorHandler';
 
 export interface TempSeatReservation {
   trip_id: number;
@@ -24,9 +25,10 @@ class SeatReservationService {
         duration_minutes: data.duration_minutes || 10 // 10 minutos por defecto
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error creando reserva temporal:', error);
-      throw new Error(error.response?.data?.message || 'Error al reservar asiento temporalmente');
+      throw new Error(apiError.response?.data?.message || 'Error al reservar asiento temporalmente');
     }
   }
 
@@ -34,7 +36,7 @@ class SeatReservationService {
   async releaseTempReservation(tripId: number, seatNumber: string): Promise<void> {
     try {
       await api.delete(`/operations/seats/temp-reserve/${tripId}/${seatNumber}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error liberando reserva temporal:', error);
       // No lanzamos error aquí para no interrumpir el flujo
     }
@@ -47,9 +49,10 @@ class SeatReservationService {
         trip_id: tripId,
         seat_numbers: seatNumbers
       });
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error confirmando reservas:', error);
-      throw new Error(error.response?.data?.message || 'Error al confirmar reservas de asientos');
+      throw new Error(apiError.response?.data?.message || 'Error al confirmar reservas de asientos');
     }
   }
 
@@ -57,7 +60,7 @@ class SeatReservationService {
   async releaseAllTempReservations(tripId: number, reservedFor: string): Promise<void> {
     try {
       await api.delete(`/operations/seats/temp-reserve-all/${tripId}/${reservedFor}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error liberando todas las reservas temporales:', error);
     }
   }
@@ -68,7 +71,7 @@ class SeatReservationService {
       await api.patch(`/operations/seats/temp-reserve/${tripId}/${seatNumber}/extend`, {
         additional_minutes: additionalMinutes
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error extendiendo reserva temporal:', error);
       throw new Error('Error al extender tiempo de reserva');
     }

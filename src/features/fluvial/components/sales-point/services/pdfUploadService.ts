@@ -1,6 +1,7 @@
 // src/features/fluvial/components/sales-point/services/pdfUploadService.ts
 
 import api from '../../../../../config/api';
+import { asApiError } from '../../../../../utils/errorHandler';
 
 export interface UploadResult {
   success: boolean;
@@ -50,11 +51,12 @@ export const pdfUploadService = {
         pdf_ticket_url: pdfTicketURL
       };
 
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error uploading PDFs:', error);
       return {
         success: false,
-        error: error.message || 'Error al subir los PDFs'
+        error: apiError.message || 'Error al subir los PDFs'
       };
     }
   },

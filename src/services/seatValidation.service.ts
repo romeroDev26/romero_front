@@ -1,5 +1,6 @@
 // src/services/seatValidation.service.ts
 import api from '../config/api';
+import { asApiError } from '../utils/errorHandler';
 
 export interface SeatValidationResponse {
   isAvailable: boolean;
@@ -9,6 +10,16 @@ export interface SeatValidationResponse {
     occupiedAt: string;
     invoiceNumber?: string;
   };
+}
+
+/**
+ * Cuerpo que devuelve el backend en un 409 al validar un asiento: ademas del
+ * mensaje trae el detalle de quien lo ocupa. Es especifico de este endpoint,
+ * asi que no vive en el ApiError compartido.
+ */
+interface SeatConflictErrorData {
+  message?: string;
+  conflictDetails?: SeatValidationResponse['conflictDetails'];
 }
 
 export interface ValidateSeatRequest {
@@ -30,16 +41,18 @@ class SeatValidationService {
         request
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error validando disponibilidad del asiento:', error);
       
       // Si hay error del servidor, interpretamos la respuesta
-      if (error.response?.status === 409) {
+      if (apiError.response?.status === 409) {
         // Conflicto - asiento ya ocupado
+        const conflictData = apiError.response.data as SeatConflictErrorData | undefined;
         return {
           isAvailable: false,
-          reason: error.response.data?.message || 'El asiento seleccionado ya no está disponible',
-          conflictDetails: error.response.data?.conflictDetails
+          reason: conflictData?.message || 'El asiento seleccionado ya no está disponible',
+          conflictDetails: conflictData?.conflictDetails
         };
       }
       
@@ -61,7 +74,7 @@ class SeatValidationService {
         success: validation.isAvailable,
         expiresAt: validation.isAvailable ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : undefined
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error en reserva temporal (usando validación):', error);
       return { success: false };
     }
@@ -81,7 +94,7 @@ class SeatValidationService {
         }
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error liberando reserva temporal:', error);
       return { success: false };
     }

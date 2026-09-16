@@ -5,6 +5,7 @@ import {
   PaymentConfirmationData,
   PaymentConfirmationResponse
 } from '../types/payment.types';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 /**
  * Servicio dedicado a operaciones de pago de encomiendas
@@ -62,10 +63,11 @@ export const paymentService = {
       const response = await api.post<PaymentConfirmationResponse>(fullUrl);
       
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       throw new Error(
-        error.response?.data?.detail || 
-        error.response?.data?.message || 
+        detailToString(apiError.response?.data?.detail) || 
+        apiError.response?.data?.message || 
         'Error al confirmar el pago'
       );
     }

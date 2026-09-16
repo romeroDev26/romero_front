@@ -159,6 +159,8 @@ export const QuotationDetailPage: React.FC = () => {
             setPdfUrl(url);
           }
         } catch (error) {
+          // No bloquea la vista: la cotizacion se muestra igual sin el PDF.
+          console.error('No se pudo verificar el PDF de la cotizacion:', error);
         }
       }
     };
@@ -222,9 +224,9 @@ export const QuotationDetailPage: React.FC = () => {
       if (updatedQuotation.pdf_file_path && updatedQuotation.pdf_file_path.trim() !== '') {
         setPdfExists(true);
         setPdfUrl(updatedQuotation.pdf_file_path);
-      } else {
       }
     } catch (error) {
+      console.error('No se pudo refrescar la cotizacion:', error);
     }
   };
 

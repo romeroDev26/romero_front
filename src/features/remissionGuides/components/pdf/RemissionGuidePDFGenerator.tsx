@@ -418,7 +418,7 @@ export const generateMultipleRemissionGuidePDFs = (
   // Para mantener compatibilidad con consumidores sin async, generamos en serie
   const gen = async () => {
     for (const guide of guidesData) {
-      // eslint-disable-next-line no-await-in-loop
+       
       const { pdf, blob } = await generateRemissionGuidePDF(guide);
       pdfs.push(pdf);
       blobs.push(blob);
@@ -505,7 +505,7 @@ export const MultipleRemissionGuidePDFGenerator: React.FC<MultipleRemissionGuide
         const pdfs: jsPDF[] = [];
         const blobs: Blob[] = [];
         for (const guide of guidesData) {
-          // eslint-disable-next-line no-await-in-loop
+           
           const { pdf, blob } = await generateRemissionGuidePDF(guide);
           pdfs.push(pdf);
           blobs.push(blob);
@@ -529,7 +529,7 @@ export const MultipleRemissionGuidePDFGenerator: React.FC<MultipleRemissionGuide
   const handleDownloadAllPDFs = () => {
     (async () => {
       for (const guide of guidesData) {
-        // eslint-disable-next-line no-await-in-loop
+         
         const { pdf } = await generateRemissionGuidePDF(guide);
         pdf.save(`guia-remision-${guide.document_number}.pdf`);
       }

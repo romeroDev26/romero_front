@@ -48,8 +48,8 @@ interface UseWebSocketNotificationsOptions {
 // Singleton para evitar múltiples conexiones WebSocket
 let globalWs: WebSocket | null = null;
 let globalPingInterval: NodeJS.Timeout | null = null;
-let connectionListeners: Set<(connected: boolean) => void> = new Set();
-let messageHandlers: Map<string, Set<(data: any) => void>> = new Map();
+const connectionListeners: Set<(connected: boolean) => void> = new Set();
+const messageHandlers: Map<string, Set<(data: any) => void>> = new Map();
 
 export const useWebSocketNotifications = (options: UseWebSocketNotificationsOptions = {}) => {
   const {

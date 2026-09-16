@@ -397,7 +397,7 @@ export function useRouteMap(isOpen: boolean, route?: RouteWithStops) {
   const updateStop = useCallback(
     (index: number, field: keyof RouteStop, value: any) => {
       const newStops = [...stops];
-      let updatedStop: Partial<RouteStop> = { ...newStops[index] };
+      const updatedStop: Partial<RouteStop> = { ...newStops[index] };
       if (field === 'estimated_duration_from_origin' && typeof value === 'object') {
         const totalHours = (value.hours || 0) + (value.minutes || 0) / 60;
         updatedStop.estimated_duration_from_origin = routeHelpers.hoursToISOString(totalHours);

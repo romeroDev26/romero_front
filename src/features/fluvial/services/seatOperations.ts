@@ -118,7 +118,7 @@ export class SeatOperations {
 
   private trackRepresentativeReservation(seatId: number, representativeIndex: number, representativeName: string) {
     const storageKey = `representative-seats-${this.userId}-${this.tripId}`;
-    let reservations = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
+    const reservations = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
     
     reservations[representativeIndex] = {
       seatId,

@@ -34,6 +34,9 @@ export const DebitNoteAnnulPage: React.FC = () => {
 
   const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>("");
 
+  // location.state puede venir vacio si se entra a la ruta directamente.
+  const hasDebitNote = Boolean(debitNote);
+
   const { mutate: annulDebitNote, isPending } = useAnnulDebitNote();
 
   // Hook de usuario actual
@@ -82,12 +85,16 @@ export const DebitNoteAnnulPage: React.FC = () => {
     localStorage.setItem("lastUsedCreditNoteSeries", seriesCode);
   };
 
+  // El efecto va siempre en el mismo orden de hooks: la condicion vive dentro,
+  // no alrededor de la llamada (react-hooks/rules-of-hooks).
+  React.useEffect(() => {
+    if (hasDebitNote) return;
+    console.error('DebitNoteAnnulPage - No se recibió debitNote en location.state');
+    toast.error("No se ha especificado una nota de débito válida para anular.");
+    navigate('/accounting/debit-notes');
+  }, [hasDebitNote, navigate]);
+
   if (!debitNote) {
-    React.useEffect(() => {
-      console.error('DebitNoteAnnulPage - No se recibió debitNote en location.state');
-      toast.error("No se ha especificado una nota de débito válida para anular.");
-      navigate('/accounting/debit-notes');
-    }, [navigate]);
     return (
       <div className="space-y-6">
         <div className="bg-dm-bg-primary rounded-[12px] border border-dm-border-primary p-4">

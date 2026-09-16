@@ -82,7 +82,7 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 									</span>
 								</div>
 								<div className="text-sm text-dm-text-muted">
-									{selectedInvoiceDetail.client?.name}  {new Intl.NumberFormat('es-PE', {
+									{selectedInvoiceDetail.client?.name} • {new Intl.NumberFormat('es-PE', {
 										style: 'currency',
 										currency: 'PEN'
 										}).format(selectedInvoiceDetail.total_payable)}

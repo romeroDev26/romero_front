@@ -247,7 +247,7 @@ export const useWhatsAppEventPolling = (
 
       // Procesar según el tipo de evento
       switch (event.type) {
-        case 'connection.update':
+        case 'connection.update': {
           const state = event.data?.state as 'open' | 'close' | 'connecting' | undefined;
           if (state) {
             setConnectionState(state);
@@ -261,14 +261,16 @@ export const useWhatsAppEventPolling = (
             }
           }
           break;
+        }
 
-        case 'qrcode.updated':
+        case 'qrcode.updated': {
           const qrCode = event.data?.qrcode;
           if (qrCode && qrCode !== lastQRCode) {
             setLastQRCode(qrCode);
             callbacks?.onQRCodeUpdated?.(qrCode);
           }
           break;
+        }
       }
     }
     

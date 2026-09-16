@@ -233,8 +233,8 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         </div>
       </div>
 
-      {/* Seguridad */}
-      {(isCreate || true) && (
+      {/* Seguridad: visible tanto al crear como al editar */}
+      {(
         <div className="mb-6">
           <h3 className="text-sm font-semibold text-dm-text-secondary mb-4 pb-2 border-b border-dm-border-primary">
             Seguridad

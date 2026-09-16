@@ -41,6 +41,9 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
 
   const [selectedDebitNoteSeries, setSelectedDebitNoteSeries] = useState<string>("");
 
+  // location.state puede venir vacio si se entra a la ruta directamente.
+  const hasValidInvoice = Boolean(affectedInvoice && affectedInvoice.client);
+
   const { mutate: createDebitNote, isPending } = useCreateDebitNote();
 
   // Hook de usuario actual
@@ -92,11 +95,15 @@ export const DebitNoteAnnulFormPage: React.FC = () => {
     localStorage.setItem("lastUsedDebitNoteSeries", seriesCode);
   };
 
+  // El efecto va siempre en el mismo orden de hooks: la condicion vive dentro,
+  // no alrededor de la llamada (react-hooks/rules-of-hooks).
+  React.useEffect(() => {
+    if (hasValidInvoice) return;
+    toast.error("No se ha especificado una factura válida para crear nota de débito.");
+    navigate('/accounting/debit-notes/new'); // Redirigir a selección de factura
+  }, [hasValidInvoice, navigate]);
+
   if (!affectedInvoice || !affectedInvoice.client) {
-    React.useEffect(() => {
-      toast.error("No se ha especificado una factura válida para crear nota de débito.");
-      navigate('/accounting/debit-notes/new'); // Redirigir a selección de factura
-    }, [navigate]);
     return null;
   }
   

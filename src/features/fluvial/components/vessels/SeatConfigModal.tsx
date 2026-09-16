@@ -92,7 +92,7 @@ export const SeatConfigModal: React.FC<SeatConfigModalProps> = ({ isOpen, onClos
 
   const handleChange = (index: number, field: keyof ConfigRowState, value: string) => {
     const newConfigs = [...configs];
-    let parsedValue = field !== 'notes' ? parseInt(value) || 0 : value;
+    const parsedValue = field !== 'notes' ? parseInt(value) || 0 : value;
     newConfigs[index] = { ...newConfigs[index], [field]: parsedValue };
     if (field === 'total_seats' && globalColumns > 0) {
       const seats = typeof parsedValue === 'number' ? parsedValue : parseInt(parsedValue) || 0;

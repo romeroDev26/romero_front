@@ -206,13 +206,6 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
-  const isLoadingInitial = loadingAssignments;
-  const isLoadingEdit = loadingSeatMap;
-  const currentSeatLabel = currentAssignment?.current_seat_label || currentAssignment?.seat_number || 'N/A';
-  const hasPendingChanges = pendingChanges.size > 0;
-
   // IDs de trip_seat ya elegidos como destino pendiente por OTRAS asignaciones (no la que se edita ahora)
   // Se usan para bloquear visualmente esos asientos en el mapa
   const blockedSeatIds = useMemo(() => {
@@ -224,6 +217,13 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
     }
     return ids;
   }, [pendingChanges, currentAssignment?.id]);
+
+  if (!isOpen) return null;
+
+  const isLoadingInitial = loadingAssignments;
+  const isLoadingEdit = loadingSeatMap;
+  const currentSeatLabel = currentAssignment?.current_seat_label || currentAssignment?.seat_number || 'N/A';
+  const hasPendingChanges = pendingChanges.size > 0;
 
   // ----------------------------------------------------------------
   // Vista: Listado de asignaciones (solo cuando hay múltiples)

@@ -173,7 +173,7 @@ export const ClientsListPage: React.FC = () => {
   useEffect(() => {
     // Si los filtros cambian, volver a la primera página
     setCurrentPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [searchTerm, filterDocType, filterActive, filterCountry, clients?.length]);
 
   useEffect(() => {

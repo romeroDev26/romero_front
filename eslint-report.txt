@@ -1,0 +1,1294 @@
+npm notice run transportes-romero-frontend@1.1.0 npx
+npm notice run 'eslint' . -f stylish
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/App.tsx
+  79:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/components/common/DataTable.tsx
+   17:11  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  151:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  152:21  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  153:22  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  155:31  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/components/common/LocationSelector.tsx
+   77:6   warning  React Hook useEffect has a missing dependency: 'loadDepartments'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   87:6   warning  React Hook useEffect has a missing dependency: 'loadProvinces'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+   96:6   warning  React Hook useEffect has a missing dependency: 'loadDistricts'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+  103:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  140:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  174:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  195:21  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/components/common/SearchableSelect.tsx
+  89:6  warning  React Hook useCallback has a missing dependency: 'handleSelect'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/components/common/SplitPaymentForm.tsx
+  16:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/components/layout/Dashboard.tsx
+  130:41  error  'error' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  136:23  error  Unexpected any. Specify a different type          @typescript-eslint/no-explicit-any
+  299:11  error  'isConnected' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/components/layout/Sidebar.tsx
+   15:67  error    'ShieldCheckIcon' is defined but never used                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   24:9   error    Unexpected any. Specify a different type                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   38:10  error    Unexpected any. Specify a different type                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  263:42  error    Unexpected any. Specify a different type                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  281:6   warning  React Hook useEffect has a missing dependency: 'expandedMenus'. Either include it or remove the dependency array                                                                                                                             react-hooks/exhaustive-deps
+  403:6   warning  React Hook useCallback has a missing dependency: 'onCloseMobile'. Either include it or remove the dependency array. If 'onCloseMobile' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/config/env.test.ts
+   4:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  16:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  34:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/components/EditSeatModal.tsx
+  102:22  error  Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  131:21  error  Unexpected any. Specify a different type                                                                                                                                                   @typescript-eslint/no-explicit-any
+  218:26  error  React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/components/InvoiceSelectorModal.tsx
+   21:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   38:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/components/RequestCancellationModal.tsx
+  14:10  error  'Spinner' is defined but never used       @typescript-eslint/no-unused-vars
+  51:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/components/SellerCancellationRequestModal.tsx
+  43:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/components/AffectedDocumentSection.tsx
+   8:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   9:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/components/ClientInfoSection.tsx
+  11:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  17:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/components/CreditNoteItemsSection.tsx
+  11:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  13:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/components/CreditNoteReasonSection.tsx
+  21:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  22:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  23:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/components/CreditNoteSidebar.tsx
+   11:9   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   12:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   53:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  125:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  200:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/components/InvoiceSelector.tsx
+   14:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   15:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   40:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:47  error  Irregular whitespace not allowed          no-irregular-whitespace
+   85:49  error  Irregular whitespace not allowed          no-irregular-whitespace
+  228:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/pages/CreditNoteAnnulFormPage.tsx
+  104:5   error    React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  109:8   warning  React Hook React.useEffect has a missing dependency: 'isDebitNote'. Either include it or remove the dependency array                                                                               react-hooks/exhaustive-deps
+  130:24  error    Unexpected any. Specify a different type                                                                                                                                                           @typescript-eslint/no-explicit-any
+  163:24  error    Unexpected any. Specify a different type                                                                                                                                                           @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/pages/CreditNoteDetailPage.tsx
+   45:6    warning  React Hook useEffect has a missing dependency: 'creditNote'. Either include it or remove the dependency array                             react-hooks/exhaustive-deps
+   49:32   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+   55:6    warning  React Hook useEffect has a missing dependency: 'creditNote'. Either include it or remove the dependency array                             react-hooks/exhaustive-deps
+   56:5    warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+   56:20   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+   57:5    warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+   57:20   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+   98:21   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+   99:21   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  103:21   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  104:21   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  108:21   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  109:21   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  166:22   error    'fallbackError' is defined but never used                                                                                                 @typescript-eslint/no-unused-vars
+  236:64   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  237:69   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  452:31   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  454:62   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  462:29   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  468:50   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  474:54   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  481:40   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  483:44   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  488:39   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  493:34   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  494:34   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  499:41   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  512:41   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  531:46   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  532:46   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  566:61   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  568:37   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  570:49   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  603:28   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  603:58   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  607:33   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  611:39   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  611:74   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  612:39   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  613:102  error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  618:33   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  621:85   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  761:28   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  769:31   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+  775:70   error    Unexpected any. Specify a different type                                                                                                  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/pages/CreditNoteFullFormPage.tsx
+   59:63  error    Unexpected any. Specify a different type                                                                                @typescript-eslint/no-explicit-any
+   64:69  error    Unexpected any. Specify a different type                                                                                @typescript-eslint/no-explicit-any
+  127:41  error    Unexpected any. Specify a different type                                                                                @typescript-eslint/no-explicit-any
+  137:5   warning  React Hook useEffect has a missing dependency: 'handleInvoiceSelect'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  179:46  error    Unexpected any. Specify a different type                                                                                @typescript-eslint/no-explicit-any
+  192:54  error    Unexpected any. Specify a different type                                                                                @typescript-eslint/no-explicit-any
+  202:57  error    Unexpected any. Specify a different type                                                                                @typescript-eslint/no-explicit-any
+  209:40  error    Unexpected any. Specify a different type                                                                                @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/pages/CreditNoteNewPage.tsx
+  34:5  warning  React Hook useEffect has a missing dependency: 'handleSelectInvoice'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/credit-notes/pages/CreditNotesListPage.tsx
+   52:63  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  133:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:80  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  354:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  357:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  386:94  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/debit-notes/hooks/useDebitNotes.ts
+  37:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  92:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/debit-notes/pages/DebitNoteAnnulFormPage.tsx
+  96:5  error  React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/debit-notes/pages/DebitNoteAnnulPage.tsx
+  86:5  error  React Hook "React.useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/debit-notes/pages/DebitNoteDetailPage.tsx
+   54:9    error  'getSunatStatusText' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   96:9    error  'formatDateTime' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  120:16   error  'error' is defined but never used                        @typescript-eslint/no-unused-vars
+  127:22   error  'fallbackError' is defined but never used                @typescript-eslint/no-unused-vars
+  383:28   error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  384:30   error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  384:90   error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  389:38   error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  401:38   error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  417:80   error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  417:139  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  443:51   error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/debit-notes/pages/DebitNoteFormPage.tsx
+   88:44  error    Unexpected any. Specify a different type                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  111:16  error    'error' is defined but never used                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  122:46  error    Unexpected any. Specify a different type                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  147:14  error    'error' is defined but never used                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  258:9   warning  The 'watchedItems' logical expression could make the dependencies of useMemo Hook (at line 283) change on every render. To fix this, wrap the initialization of 'watchedItems' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  258:65  error    Unexpected any. Specify a different type                                                                                                                                                                  @typescript-eslint/no-explicit-any
+  411:19  error    '_data' is defined but never used                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  415:17  error    '_error' is defined but never used                                                                                                                                                                        @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/debit-notes/pages/DebitNoteNewPage.tsx
+  33:6  warning  React Hook useEffect has a missing dependency: 'handleSelectInvoice'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/debit-notes/pages/DebitNotesListPage.tsx
+  46:73  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/hooks/useCreditNotes.ts
+   43:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   61:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/hooks/useDebitNotes.ts
+  40:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/hooks/useSunatVoids.ts
+  55:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  82:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/hooks/useVoidDocuments.ts
+  49:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  83:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/pages/InvoiceDetailPage.tsx
+    3:35  error  'useEffect' is defined but never used                              @typescript-eslint/no-unused-vars
+    3:46  error  'useCallback' is defined but never used                            @typescript-eslint/no-unused-vars
+  140:24  error  'fallbackError' is defined but never used                          @typescript-eslint/no-unused-vars
+  147:18  error  'fallbackError' is defined but never used                          @typescript-eslint/no-unused-vars
+  191:9   error  'handleGenerateSticker100x100' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/pages/InvoicesListPage.tsx
+  65:76  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/accounting/services/creditNotes.service.ts
+   89:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   90:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/auth/hooks/useAuth.ts
+  13:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/cargo/components/CargoItemForm.tsx
+  223:21  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  223:33  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  238:25  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  244:25  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  250:18  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  259:20  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  259:32  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  271:30  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  277:28  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+  294:9   error  'sectionClass' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/cargo/pages/CargoSalePage.tsx
+  408:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/clients/pages/ClientFormPage.tsx
+   13:3   error  'ShieldCheckIcon' is defined but never used             @typescript-eslint/no-unused-vars
+   21:3   error  'GlobeAltIcon' is defined but never used                @typescript-eslint/no-unused-vars
+   65:7   error  'getDocTypeDisplay' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  138:22  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  143:44  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  164:22  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  169:44  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/clients/pages/ClientsListPage.tsx
+  107:22  error    Unexpected any. Specify a different type                                                        @typescript-eslint/no-explicit-any
+  176:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/BranchSalesLineChart.tsx
+   56:52  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+   59:40  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+   60:9   error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+   60:17  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+   62:53  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+   73:27  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+  106:9   warning  The 'chartData' logical expression could make the dependencies of useMemo Hook (at line 120) change on every render. To fix this, wrap the initialization of 'chartData' in its own useMemo() Hook     react-hooks/exhaustive-deps
+  106:9   warning  The 'chartData' logical expression could make the dependencies of useMemo Hook (at line 128) change on every render. To fix this, wrap the initialization of 'chartData' in its own useMemo() Hook     react-hooks/exhaustive-deps
+  111:9   warning  The 'branchNamesRaw' conditional could make the dependencies of useMemo Hook (at line 120) change on every render. To fix this, wrap the initialization of 'branchNamesRaw' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  111:9   warning  The 'branchNamesRaw' conditional could make the dependencies of useMemo Hook (at line 128) change on every render. To fix this, wrap the initialization of 'branchNamesRaw' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  116:72  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+  125:77  error    Unexpected any. Specify a different type                                                                                                                                                               @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/DashboardStatCard.tsx
+  16:7  error  'toneBgSoft' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/MonthlySalesChart.tsx
+  15:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/PaymentMethodsChart.tsx
+   8:3   error  'Legend' is defined but never used                 @typescript-eslint/no-unused-vars
+  11:32  error  'getPaymentMethodColor' is defined but never used  @typescript-eslint/no-unused-vars
+  17:45  error  Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/PopularRoutesChart.tsx
+   3:3   error  'BarChart' is defined but never used                @typescript-eslint/no-unused-vars
+   4:3   error  'Bar' is defined but never used                     @typescript-eslint/no-unused-vars
+   5:3   error  'XAxis' is defined but never used                   @typescript-eslint/no-unused-vars
+   6:3   error  'YAxis' is defined but never used                   @typescript-eslint/no-unused-vars
+   7:3   error  'CartesianGrid' is defined but never used           @typescript-eslint/no-unused-vars
+   8:3   error  'Tooltip' is defined but never used                 @typescript-eslint/no-unused-vars
+   9:3   error  'ResponsiveContainer' is defined but never used     @typescript-eslint/no-unused-vars
+  14:7   error  'CustomTooltip' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  14:45  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/SellerRanking.tsx
+  67:7  error  'getPercentageColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/SunatStatusChart.tsx
+   3:3   error  'PieChart' is defined but never used                @typescript-eslint/no-unused-vars
+   4:3   error  'Pie' is defined but never used                     @typescript-eslint/no-unused-vars
+   5:3   error  'Cell' is defined but never used                    @typescript-eslint/no-unused-vars
+   6:3   error  'ResponsiveContainer' is defined but never used     @typescript-eslint/no-unused-vars
+   7:3   error  'Tooltip' is defined but never used                 @typescript-eslint/no-unused-vars
+  13:7   error  'STATUS_COLORS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  21:7   error  'CustomTooltip' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  21:45  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+  73:31  error  Unexpected any. Specify a different type            @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/TopSellersChart.tsx
+  15:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/dashboard/components/UserSalesChart.tsx
+  31:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/finance/components/payment/PaidTicketModal.tsx
+  15:10  error  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+  72:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/finance/hooks/usePaymentConfirmation.ts
+   71:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  116:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/finance/pages/ReceivablesPage.tsx
+  25:10  error  'companyId' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  46:5   error  'changePageSize' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  92:9   error  'clearStatusFilter' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/finance/services/payment.service.ts
+  65:21  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  77:27  error  '_invoiceItemId' is defined but never used  @typescript-eslint/no-unused-vars
+  77:60  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  85:28  error  '_invoiceItemId' is defined but never used  @typescript-eslint/no-unused-vars
+  85:52  error  '_file' is defined but never used           @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/finance/services/receivables.service.ts
+  34:66  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  51:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  72:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  76:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/ProductServiceFormModal.tsx
+  89:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/routes/AddStopModal.tsx
+    9:10  error  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+  159:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/routes/RouteListView.tsx
+  23:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/routes/RouteMapModal.tsx
+  6:3  error  'PlusIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/routes/RouteMapView.tsx
+  200:19  error  'labelColor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/CountrySelector.tsx
+  21:11  error  'countries' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/SaleForm.tsx
+  95:7  error  'reserveSeat' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  96:7  error  'releaseSeat' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/SeatAndFareSelector.tsx
+   39:39  error    Unexpected any. Specify a different type                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+  104:6   warning  React Hook useEffect has missing dependencies: 'activeSeatSelections', 'confirmPurchase', 'releaseSeatForRepresentative', 'seatMap', and 'selectSeatForRepresentative'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  155:6   warning  React Hook useEffect has missing dependencies: 'reservationToConfirm' and 'selectedSeat'. Either include them or remove the dependency array                                                                                react-hooks/exhaustive-deps
+  170:6   warning  React Hook useMemo has missing dependencies: 'representativeSelectedSeatIds' and 'selectedSeat'. Either include them or remove the dependency array                                                                         react-hooks/exhaustive-deps
+  179:6   warning  React Hook useMemo has a missing dependency: 'tripDetails.stops'. Either include it or remove the dependency array                                                                                                          react-hooks/exhaustive-deps
+  241:6   warning  React Hook useCallback has a missing dependency: 'isCompanyMode'. Either include it or remove the dependency array                                                                                                          react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/TicketPreviewModal.tsx
+   97:6   warning  React Hook useEffect has missing dependencies: 'generateBothPdfsFromBackend', 'generateOnly80mmPdfFromBackend', and 'previewUrl80mm'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  173:43  error    Unexpected any. Specify a different type                                                                                                                                                  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/WhatsAppSendModal.tsx
+   83:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  126:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/core/types.ts
+  104:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/hooks/useSaleBusinessLogic.test.ts
+   14:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   15:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   20:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   21:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:8   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  120:80  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  183:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/hooks/useSaleBusinessLogic.ts
+   18:23  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   19:18  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   20:25  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   21:22  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   22:44  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   23:26  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   24:16  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   25:16  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   26:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   27:18  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   49:16  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   66:30  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   67:15  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+   76:20  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  151:18  error    'e' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  175:28  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  214:33  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  236:29  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  289:54  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  295:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  327:6   warning  React Hook useCallback has missing dependencies: 'currentUser?.id' and 'seatValidation'. Either include them or remove the dependency array. Outer scope values like 'saleValidationService' aren't valid dependencies because mutating them doesn't re-render the component         react-hooks/exhaustive-deps
+  347:27  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  348:30  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  501:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                             @typescript-eslint/no-explicit-any
+  526:6   warning  React Hook useCallback has unnecessary dependencies: 'saleValidationService' and 'tripDetails'. Either exclude them or remove the dependency array. Outer scope values like 'saleValidationService' aren't valid dependencies because mutating them doesn't re-render the component  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/hooks/useSaleForm.test.tsx
+   15:22   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   16:24   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   17:21   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   29:24   error  'queryFn' is defined but never used       @typescript-eslint/no-unused-vars
+   29:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:45   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:45   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  243:72   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  258:27   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  259:31   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:57   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:69   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  279:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  279:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  287:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  299:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  299:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  313:93   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  320:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  320:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  352:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  352:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  361:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  361:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  371:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  380:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  380:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  403:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  403:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  413:61   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  421:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  421:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  427:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  428:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  441:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  441:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  445:72   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  446:128  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  462:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  462:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  474:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  498:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  498:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  508:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  508:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  519:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  519:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  533:72   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  541:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  541:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  555:72   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  566:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  566:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  593:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  593:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  605:53   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  616:47   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  616:74   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  620:62   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/hooks/useSaleForm.ts
+    73:14  error    Unexpected any. Specify a different type                                                                                                                                                                      @typescript-eslint/no-explicit-any
+   161:89  error    'updateReservationSeatId' is assigned a value but never used                                                                                                                                                  @typescript-eslint/no-unused-vars
+   196:16  error    'error' is defined but never used                                                                                                                                                                             @typescript-eslint/no-unused-vars
+   238:6   warning  React Hook useEffect has a missing dependency: 'tripDetails.stops'. Either include it or remove the dependency array                                                                                          react-hooks/exhaustive-deps
+   353:6   warning  React Hook useEffect has a missing dependency: 'queryClient'. Either include it or remove the dependency array                                                                                                react-hooks/exhaustive-deps
+   364:6   warning  React Hook useMemo has an unnecessary dependency: 'trip.id'. Either exclude it or remove the dependency array                                                                                                 react-hooks/exhaustive-deps
+   393:6   warning  React Hook useEffect has a missing dependency: 'passengerService'. Either include it or remove the dependency array                                                                                           react-hooks/exhaustive-deps
+   439:6   warning  React Hook useEffect has missing dependencies: 'availableBoletaSeries' and 'availableFacturaSeries'. Either include them or remove the dependency array                                                       react-hooks/exhaustive-deps
+   481:6   warning  React Hook useMemo has a missing dependency: 'selectedSeat'. Either include it or remove the dependency array                                                                                                 react-hooks/exhaustive-deps
+   547:6   warning  React Hook useMemo has missing dependencies: 'passengerData' and 'representatives'. Either include them or remove the dependency array                                                                        react-hooks/exhaustive-deps
+   759:39  error    Unexpected any. Specify a different type                                                                                                                                                                      @typescript-eslint/no-explicit-any
+   769:39  error    Unexpected any. Specify a different type                                                                                                                                                                      @typescript-eslint/no-explicit-any
+   872:6   warning  React Hook useEffect has missing dependencies: 'reservationToConfirm', 'seatMap', and 'tripDetails'. Either include them or remove the dependency array                                                       react-hooks/exhaustive-deps
+   889:6   warning  React Hook React.useEffect has missing dependencies: 'seatMap' and 'selectedSeat'. Either include them or remove the dependency array                                                                         react-hooks/exhaustive-deps
+   905:6   warning  React Hook useMemo has missing dependencies: 'representatives' and 'seatMap'. Either include them or remove the dependency array                                                                              react-hooks/exhaustive-deps
+   908:9   error    'findSeatIdBySeatNumber' is assigned a value but never used                                                                                                                                                   @typescript-eslint/no-unused-vars
+   911:6   warning  React Hook useCallback has a missing dependency: 'seatMap'. Either include it or remove the dependency array                                                                                                  react-hooks/exhaustive-deps
+  1032:14  error    'error' is defined but never used                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  1038:6   warning  React Hook useCallback has missing dependencies: 'openTicketPreviewWithFullData', 'passengerData', 'reservationToConfirm', 'seatMap', and 'selectedSeat'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  1094:6   warning  React Hook useMemo has a missing dependency: 'selectedSeat'. Either include it or remove the dependency array                                                                                                 react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/hooks/useSaleFormState.test.ts
+  29:86  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/hooks/useSaleFormState.ts
+  7:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/representatives/AddRepresentativeForm.tsx
+   35:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   78:16  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  111:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  135:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/representatives/RepresentativesManager.tsx
+  30:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/reservation-confirmation/ReservationConfirmationHandler.tsx
+   13:16  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   92:6   warning  React Hook useMemo has a missing dependency: 'reservation'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/exhaustive-deps
+   99:6   warning  React Hook useMemo has a missing dependency: 'seatMap'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  150:6   warning  React Hook useEffect has missing dependencies: 'onBoardingStopChange', 'onConfirmingModeChange', 'onDisembarkingStopChange', 'onPassengerDataChange', 'onSelectedSeatChange', 'reservation', 'reservationData.boardingStopId', 'reservationData.customerDocNumber', 'reservationData.customerDocType', 'reservationData.customerEmail', 'reservationData.customerName', 'reservationData.customerPhone', 'reservationData.disembarkingStopId', 'reservationData.id', 'reservedSeat', and 'tripDetails'. Either include them or remove the dependency array. If 'onPassengerDataChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  160:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  165:47  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  173:14  error    'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/services/invoiceCreationService.test.ts
+   37:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  170:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  191:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  212:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  234:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  256:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  279:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  303:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  357:53  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/services/invoiceCreationService.ts
+   60:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:16  error  'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/services/pdfUploadService.ts
+   53:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/services/saleValidationService.test.ts
+   15:74  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   79:85  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  169:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/services/saleValidationService.ts
+   17:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/tickets/types/backend.types.ts
+   92:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  102:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/utils/pdfUtils.ts
+   49:12  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   64:12  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   85:27  error  Unnecessary escape character: \.          no-useless-escape
+  167:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/sales-point/vessel-detection/vesselDetectionService.ts
+  21:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  59:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/schedule/ManifestGenerationModal.tsx
+   19:38  error    Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+   19:53  error    Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+   56:18  error    'error' is defined but never used                                                                                                                                   @typescript-eslint/no-unused-vars
+   68:6   warning  React Hook useEffect has missing dependencies: 'cargoValidationStatus.isValidated' and 'validateCargoManifest'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   74:21  error    Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  107:21  error    Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/schedule/ScheduledTemplateFormModal.tsx
+  14:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  48:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  79:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  82:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  87:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/schedule/TripFilters.tsx
+  72:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/schedule/TripFormModal.tsx
+   17:10  error  'Input' is defined but never used         @typescript-eslint/no-unused-vars
+   31:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   32:71  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  157:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  162:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/seat-map/SeatMapRealtime.tsx
+  128:6  warning  React Hook React.useEffect has a missing dependency: 'seatMap'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/seat-map/SeatRealtime.test.tsx
+  18:76  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/seat-map/SeatRealtime.tsx
+  88:7  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/components/vessels/SeatConfigModal.tsx
+  67:6  warning  React Hook useEffect has a missing dependency: 'getEmptyRow'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  95:9  error    'parsedValue' is never reassigned. Use 'const' instead                                                          prefer-const
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/contexts/WebSocketContext.tsx
+   12:26  error    Unexpected any. Specify a different type                                                                                                                       @typescript-eslint/no-explicit-any
+   66:7   warning  React Hook useMemo has a missing dependency: 'connection'. Either include it or remove the dependency array                                                    react-hooks/exhaustive-deps
+   88:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                 react-refresh/only-export-components
+   97:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                 react-refresh/only-export-components
+  100:17  error    Unexpected any. Specify a different type                                                                                                                       @typescript-eslint/no-explicit-any
+  107:6   warning  React Hook React.useEffect has a missing dependency: 'callback'. Either include it or remove the dependency array                                              react-hooks/exhaustive-deps
+  107:32  warning  React Hook React.useEffect has a spread element in its dependency array. This means we can't statically verify whether you've passed the correct dependencies  react-hooks/exhaustive-deps
+  111:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                 react-refresh/only-export-components
+  123:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                 react-refresh/only-export-components
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useInvoices.ts
+  32:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/usePassengerService.ts
+  25:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useProductsServicesData.ts
+    4:10  error  'ProductService' is defined but never used  @typescript-eslint/no-unused-vars
+   85:52  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  106:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  128:52  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  155:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  179:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useRepresentantes.ts
+  10:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  63:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useReservations.test.tsx
+   17:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   51:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:90  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   94:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  129:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  136:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  150:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  168:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  184:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useReservations.ts
+  48:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  73:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useRouteMap.ts
+    2:10  error  'toast' is defined but never used                       @typescript-eslint/no-unused-vars
+  398:52  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  400:11  error  'updatedStop' is never reassigned. Use 'const' instead  prefer-const
+  408:25  error  Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  435:36  error  'port' is defined but never used                        @typescript-eslint/no-unused-vars
+  435:42  error  'id' is defined but never used                          @typescript-eslint/no-unused-vars
+  435:46  error  'route_id' is defined but never used                    @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useScheduledTemplates.ts
+  35:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  49:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  62:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useSeatAssignments.ts
+  22:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useSeatMapRealtime.ts
+   92:56  error    Unexpected any. Specify a different type                                                                                                                                                                      @typescript-eslint/no-explicit-any
+  164:9   warning  The 'seatOperations' object construction makes the dependencies of useCallback Hook (at line 284) change on every render. To fix this, wrap the initialization of 'seatOperations' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  164:9   warning  The 'seatOperations' object construction makes the dependencies of useCallback Hook (at line 298) change on every render. To fix this, wrap the initialization of 'seatOperations' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  164:9   warning  The 'seatOperations' object construction makes the dependencies of useCallback Hook (at line 307) change on every render. To fix this, wrap the initialization of 'seatOperations' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  164:9   warning  The 'seatOperations' object construction makes the dependencies of useCallback Hook (at line 311) change on every render. To fix this, wrap the initialization of 'seatOperations' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  164:9   warning  The 'seatOperations' object construction makes the dependencies of useCallback Hook (at line 335) change on every render. To fix this, wrap the initialization of 'seatOperations' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  164:9   warning  The 'seatOperations' object construction makes the dependencies of useCallback Hook (at line 349) change on every render. To fix this, wrap the initialization of 'seatOperations' in its own useMemo() Hook  react-hooks/exhaustive-deps
+  377:6   warning  React Hook useCallback has missing dependencies: 'initialSeatMap?.length' and 'seatMap.length'. Either include them or remove the dependency array                                                            react-hooks/exhaustive-deps
+  393:39  error    '_timeoutMs' is defined but never used                                                                                                                                                                        @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useSeatReservations.test.ts
+  10:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useSeatReservations.ts
+   50:21  error    Unexpected any. Specify a different type                                                                                               @typescript-eslint/no-explicit-any
+   69:6   warning  React Hook useCallback has an unnecessary dependency: 'tripId'. Either exclude it or remove the dependency array                       react-hooks/exhaustive-deps
+   88:6   warning  React Hook useCallback has unnecessary dependencies: 'reservedSeats' and 'tripId'. Either exclude them or remove the dependency array  react-hooks/exhaustive-deps
+  102:6   warning  React Hook useCallback has an unnecessary dependency: 'tripId'. Either exclude it or remove the dependency array                       react-hooks/exhaustive-deps
+  105:49  error    '_additionalMinutes' is assigned a value but never used                                                                                @typescript-eslint/no-unused-vars
+  109:6   warning  React Hook useCallback has unnecessary dependencies: 'reservedSeats' and 'tripId'. Either exclude them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useSeatTypesData.ts
+   49:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useSunatData.ts
+  12:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  29:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useTrips.ts
+  44:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  98:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useTripsView.tsx
+   4:41  error  'addDays' is defined but never used       @typescript-eslint/no-unused-vars
+  23:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useVesselsData.ts
+   49:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   65:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   80:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useVesselsRoutesData.ts
+   52:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   68:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   84:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  101:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  139:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  177:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useWebSocketConnection.test.ts
+   25:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   26:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   33:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   35:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   43:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   47:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   70:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  322:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/hooks/useWebSocketConnection.ts
+   10:26  error    Unexpected any. Specify a different type                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  235:14  error    'error' is defined but never used                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  249:6   warning  React Hook useCallback has missing dependencies: 'heartbeatInterval' and 'onMessage'. Either include them or remove the dependency array. If 'onMessage' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+  251:45  error    Unexpected any. Specify a different type                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  336:6   warning  React Hook useEffect has a missing dependency: 'connectWebSocket'. Either include it or remove the dependency array                                                                                                                                            react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/pages/DocumentSeriesPage.tsx
+  276:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/pages/FaresByRoutePage.tsx
+  128:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/pages/ProductsServicesPage.tsx
+  92:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/pages/ReservationsPage.tsx
+  10:10  error  'Input' is defined but never used         @typescript-eslint/no-unused-vars
+  23:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/pages/ScheduleTripsPage.tsx
+   48:82  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  145:37  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  147:15  error  'company_id' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  179:16  error  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  187:39  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  196:14  error  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  201:87  error  Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  221:14  error  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  237:14  error  'error' is defined but never used                @typescript-eslint/no-unused-vars
+  257:54  error  '_type' is defined but never used                @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/pages/SeatTypesPage.tsx
+  101:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  285:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/pages/SeriesAndOfficesPage.tsx
+  106:24  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  106:40  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+  131:6   warning  React Hook React.useEffect has a missing dependency: 'isEditing'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  567:31  error    Unexpected any. Specify a different type                                                                            @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/quick-sales/components/RouteSection.tsx
+  3:27  error  'useRef' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/quick-sales/components/ServiceDetailsForm.tsx
+   4:20  error  'AlertTriangle' is defined but never used           @typescript-eslint/no-unused-vars
+  63:9   error  'finalPrice' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  64:9   error  'isCustomPrice' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/quick-sales/pages/QuickSalePage.tsx
+   12:3   error    'ArrowLeft' is defined but never used                                                                                                                    @typescript-eslint/no-unused-vars
+   43:9   error    'navigate' is assigned a value but never used                                                                                                            @typescript-eslint/no-unused-vars
+  150:6   warning  React Hook useEffect has missing dependencies: 'availableBoletaSeries' and 'availableFacturaSeries'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  218:6   warning  React Hook useMemo has an unnecessary dependency: 'recipient'. Either exclude it or remove the dependency array                                          react-hooks/exhaustive-deps
+  321:29  error    Unexpected any. Specify a different type                                                                                                                 @typescript-eslint/no-explicit-any
+  372:21  error    Unexpected any. Specify a different type                                                                                                                 @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/services/seatOperations.test.ts
+    5:30  error  '_msg' is defined but never used          @typescript-eslint/no-unused-vars
+    5:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   20:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  142:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/services/seatOperations.ts
+   22:34  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+   29:28  error  Unexpected any. Specify a different type                 @typescript-eslint/no-explicit-any
+  121:9   error  'reservations' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/services/websocketMessageHandler.test.ts
+  433:67  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/fluvial/services/websocketMessageHandler.ts
+  220:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/inventory/pages/InventoryDashboardPage.tsx
+   3:10  error  'useQuery' is defined but never used       @typescript-eslint/no-unused-vars
+   8:3   error  'ArrowDownIcon' is defined but never used  @typescript-eslint/no-unused-vars
+  11:3   error  'ClockIcon' is defined but never used      @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/inventory/pages/InventoryMovementFormPage.tsx
+    7:10  error  'useQuery' is defined but never used                         @typescript-eslint/no-unused-vars
+   14:10  error  'Input' is defined but never used                            @typescript-eslint/no-unused-vars
+  106:9   error  'getMovementTypeDisplay' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/components/DateNavigator.tsx
+  58:6  warning  React Hook useEffect has a missing dependency: 'calendarMonth'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/components/ManifestPDFGenerator.tsx
+  44:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/components/ManifestPreviewModal.tsx
+  52:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/components/TripManifestCard.tsx
+  43:9  error  'hasPassenger' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  44:9  error  'hasCargo' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/hooks/useManifestsPage.ts
+  104:24  error  'setSearchParams' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  151:23  error  Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/hooks/useTripManifests.ts
+   68:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   91:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  137:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/pages/ManifestsPage.tsx
+  10:10  error  'Button' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/services/manifest.service.ts
+   29:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   55:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  138:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  159:16  error  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  159:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  161:9   error  Unnecessary try/catch wrapper             no-useless-catch
+  164:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  202:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  206:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  241:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  247:58  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  268:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  277:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  302:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  323:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  345:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  362:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  377:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  399:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  435:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/manifests/services/manifestPdfGeneration.service.ts
+   10:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   49:12  error  'e' is defined but never used             @typescript-eslint/no-unused-vars
+  235:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  244:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  244:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  266:15  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  266:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  269:50  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  331:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  379:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  388:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  389:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  451:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  508:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  508:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  509:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  589:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  641:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  657:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/components/QuotationPDFGenerator.tsx
+  110:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  166:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/components/QuotationPDFViewer.tsx
+  57:26  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/components/QuotationPreviewModal.tsx
+  41:6  warning  React Hook useEffect has a missing dependency: 'generatePDFPreview'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/components/QuotationWhatsAppModal.tsx
+  92:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/hooks/useQuotationPDFGeneration.ts
+   66:14  error  'logoError' is defined but never used     @typescript-eslint/no-unused-vars
+  213:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  318:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  416:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  458:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  458:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  484:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  484:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  498:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  512:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/hooks/useQuotations.ts
+   11:3   error  'PaginationMeta' is defined but never used  @typescript-eslint/no-unused-vars
+   44:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   61:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   78:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   89:63  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+   95:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  112:22  error  Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/pages/QuotationDetailPage.tsx
+  113:20  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  161:18  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  161:25  error  Empty block statement              no-empty
+  209:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  225:14  error  Empty block statement              no-empty
+  227:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  227:21  error  Empty block statement              no-empty
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/services/quotationPdfUpload.service.ts
+   32:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   52:5   error  Unnecessary try/catch wrapper             no-useless-catch
+   83:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  124:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  144:14  error  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/quotations/services/quotations.service.ts
+  126:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/components/FormStepContent.tsx
+  208:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  208:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/components/RemissionGuideSenderPreviewModal.tsx
+  20:36  error    Unexpected any. Specify a different type                                                                                                           @typescript-eslint/no-explicit-any
+  42:6   warning  React Hook useEffect has missing dependencies: 'generatePDFForPreview', 'guide', and 'pdfUrl'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/components/pdf/RemissionGuidePDFGenerator.tsx
+   19:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+   49:12  error    'err' is defined but never used                                                                                                 @typescript-eslint/no-unused-vars
+  234:44  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  324:22  error    Unexpected any. Specify a different type                                                                                        @typescript-eslint/no-explicit-any
+  411:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  421:7   warning  Unused eslint-disable directive (no problems were reported from 'no-await-in-loop')
+  508:11  warning  Unused eslint-disable directive (no problems were reported from 'no-await-in-loop')
+  532:9   warning  Unused eslint-disable directive (no problems were reported from 'no-await-in-loop')
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/hooks/useRemissionGuidePDFGeneration.ts
+    9:8   error    Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+   41:22  error    Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+   44:19  error    Unexpected any. Specify a different type                                             @typescript-eslint/no-explicit-any
+   48:9   warning  Unused eslint-disable directive (no problems were reported from 'no-await-in-loop')
+   94:9   warning  Unused eslint-disable directive (no problems were reported from 'no-await-in-loop')
+  144:9   warning  Unused eslint-disable directive (no problems were reported from 'no-await-in-loop')
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/hooks/useRemissionGuideSenderPDFGeneration.ts
+   10:8   error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   21:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   47:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   76:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  176:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/hooks/useRemissionGuides.ts
+   72:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   91:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  196:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  201:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  220:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  240:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  295:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  320:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  335:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  336:38  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/pages/RemissionGuidesListPage.tsx
+   14:3   error    'EyeIcon' is defined but never used                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+   28:52  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+   38:9   warning  The 'transportistaGuides' logical expression could make the dependencies of useMemo Hook (at line 237) change on every render. To fix this, wrap the initialization of 'transportistaGuides' in its own useMemo() Hook  react-hooks/exhaustive-deps
+   39:9   warning  The 'remitenteGuides' logical expression could make the dependencies of useMemo Hook (at line 245) change on every render. To fix this, wrap the initialization of 'remitenteGuides' in its own useMemo() Hook          react-hooks/exhaustive-deps
+   50:33  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+   55:20  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+   57:20  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  107:24  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  108:27  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  109:26  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  121:24  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  122:27  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  123:26  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  195:23  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  207:23  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  471:32  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  477:32  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  569:32  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+  575:32  error    Unexpected any. Specify a different type                                                                                                                                                                                @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/remissionGuides/utils/guideConversion.ts
+   10:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   34:84  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  248:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  262:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/settings/components/UserForm.tsx
+   53:6   error  'CreateUserFormData' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+   58:6   error  'UpdateUserFormData' is defined but never used                                                                       @typescript-eslint/no-unused-vars
+   79:15  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   80:5   error  Use "@ts-expect-error" instead of "@ts-ignore", as "@ts-ignore" will do nothing if the following line is error-free  @typescript-eslint/ban-ts-comment
+  104:37  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  144:21  error  Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  237:9   error  Unexpected constant truthiness on the left-hand side of a `&&` expression                                            no-constant-binary-expression
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/settings/components/users/PasswordResetForm.tsx
+  59:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/settings/components/users/UserFilters.tsx
+  6:10  error  'toast' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/settings/pages/CompanySettingsPage.tsx
+   57:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:75  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:14  error  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  144:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  179:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:14  error  'err' is defined but never used           @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/settings/pages/RolesPage.tsx
+  48:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  68:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/settings/pages/WhatsAppConfigPage.tsx
+    5:3   error  'ChatBubbleLeftRightIcon' is defined but never used  @typescript-eslint/no-unused-vars
+   55:10  error  'isCheckingAll' is assigned a value but never used   @typescript-eslint/no-unused-vars
+   92:20  error  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  122:14  error  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+  281:9   error  'getStatusBadge' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/supervisor/pages/CancellationRequestsPage.tsx
+    6:3   error  'BellAlertIcon' is defined but never used  @typescript-eslint/no-unused-vars
+   99:19  error  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  120:19  error  Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/features/suppliers/pages/SupplierFormPage.tsx
+   7:10  error    'useQuery' is defined but never used                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  11:10  error    'Input' is defined but never used                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+  12:19  error    'Supplier' is defined but never used                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  40:7   error    'getDocTypeDisplay' is assigned a value but never used                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  64:9   warning  The 'supplier' conditional could make the dependencies of useEffect Hook (at line 109) change on every render. Move it inside the useEffect callback. Alternatively, wrap the initialization of 'supplier' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useBranchOffices.ts
+  25:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useCancellationRequests.ts
+  35:19  error    Unexpected any. Specify a different type                                                                                                                                  @typescript-eslint/no-explicit-any
+  52:19  error    Unexpected any. Specify a different type                                                                                                                                  @typescript-eslint/no-explicit-any
+  76:6   warning  React Hook useCallback has missing dependencies: 'fetchAllRequests', 'fetchPendingCount', and 'fetchPendingRequests'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useCitiesPortsData.ts
+   28:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   45:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   60:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  127:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useDocumentSeries.ts
+  26:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useFaresByRoute.ts
+  40:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useLocation.ts
+  15:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useWebSocketNotifications.test.ts
+   12:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   13:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   14:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   36:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   59:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  301:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useWebSocketNotifications.ts
+   32:77  error  Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+   51:5   error  'connectionListeners' is never reassigned. Use 'const' instead  prefer-const
+   52:5   error  'messageHandlers' is never reassigned. Use 'const' instead      prefer-const
+   52:45  error  Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  155:36  error  Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/hooks/useWhatsAppConfig.ts
+   33:22  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   47:22  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+   83:22  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  103:22  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  124:22  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  144:22  error  Unexpected any. Specify a different type      @typescript-eslint/no-explicit-any
+  251:11  error  Unexpected lexical declaration in case block  no-case-declarations
+  266:11  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/auth.service.ts
+  19:5   error  Unnecessary try/catch wrapper          no-useless-catch
+  44:16  error  'userError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/cache.service.ts
+  25:16  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/companies.service.ts
+  60:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/fareService.ts
+  89:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/geonames.service.ts
+   91:72  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  117:59  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  163:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  190:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  213:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  237:62  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/invoices.service.ts
+  140:40  error  '_' is defined but never used             @typescript-eslint/no-unused-vars
+  177:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  178:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  228:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  266:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/products-services.service.ts
+  91:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/remissionGuides.service.ts
+  192:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/remissionGuidesSender.service.ts
+   93:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   99:47  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  146:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/reports.service.ts
+    8:5   error  Unnecessary try/catch wrapper             no-useless-catch
+   57:5   error  Unnecessary try/catch wrapper             no-useless-catch
+   77:5   error  Unnecessary try/catch wrapper             no-useless-catch
+  134:35  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:27  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/representantes.service.ts
+  135:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/routes.service.ts
+   46:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+   65:13  error  'estimated_duration_hours' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   72:13  error  'estimated_duration_hours' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  163:16  error  'e' is defined but never used                                     @typescript-eslint/no-unused-vars
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/seatReservation.service.ts
+  27:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  37:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  71:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/seatValidation.service.ts
+  33:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  64:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  84:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/trips.service.ts
+  135:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/userStatistics.service.ts
+   47:5  error  Unnecessary try/catch wrapper  no-useless-catch
+  108:5  error  Unnecessary try/catch wrapper  no-useless-catch
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/whatsapp.service.ts
+   82:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  143:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  206:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  257:23  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/services/whatsappConfig.service.ts
+  53:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/types/exports.ts
+  83:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  99:36  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/types/index.ts
+  266:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  713:12  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  714:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  715:10  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  725:22  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/types/sellerDetailedReport.ts
+  294:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/utils/errorHandler.ts
+   6:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/wilmeredquen/Developer/clients/transportes-romero-frontend/src/utils/exportToExcel.ts
+  54:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  82:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 898 problems (809 errors, 89 warnings)
+  5 errors and 7 warnings potentially fixable with the `--fix` option.
+

@@ -45,7 +45,7 @@ export const useRemissionGuidePDFGeneration = () => {
       const blobs: Blob[] = [];
       // Generar en serie para controlar memoria y requests
       for (const guide of guidesData) {
-        // eslint-disable-next-line no-await-in-loop
+         
         const res = await generateRemissionGuidePDF(guide);
         pdfs.push(res.pdf);
         blobs.push(res.blob);
@@ -91,7 +91,7 @@ export const useRemissionGuidePDFGeneration = () => {
       // Generar y descargar en serie para evitar bloqueos y uso excesivo de memoria
       for (let i = 0; i < guidesData.length; i++) {
         const guide = guidesData[i];
-        // eslint-disable-next-line no-await-in-loop
+         
         const { pdf } = await generateRemissionGuidePDF(guide);
         // Programar el guardado con pequeño delay para no colapsar el navegador
         setTimeout(() => pdf.save(`guia-remision-${guide.document_number}.pdf`), i * 200);
@@ -141,7 +141,7 @@ export const useRemissionGuidePDFGeneration = () => {
       // Generar cada PDF en serie y abrir su vista previa
       for (let i = 0; i < guidesData.length; i++) {
         const guide = guidesData[i];
-        // eslint-disable-next-line no-await-in-loop
+         
         const { blob } = await generateRemissionGuidePDF(guide);
         if (!(blob instanceof Blob)) {
           console.warn(`Guía ${guide.guide_id} no generó un blob válido`);

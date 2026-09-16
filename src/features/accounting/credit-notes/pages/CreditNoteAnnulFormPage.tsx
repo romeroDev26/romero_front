@@ -50,6 +50,9 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
   const [selectedCreditNoteSeries, setSelectedCreditNoteSeries] = useState<string>('');
   const [showRequestModal, setShowRequestModal] = useState(false);
 
+  // location.state puede venir vacio si se entra a la ruta directamente.
+  const hasValidInvoice = Boolean(affectedInvoice && affectedInvoice.client);
+
   const { mutate: createCreditNote, isPending } = useCreateCreditNoteByAnnulment();
   const queryClient = useQueryClient();
 
@@ -100,13 +103,17 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
     localStorage.setItem('lastUsedCreditNoteSeries', seriesCode);
   };
 
+  // El efecto va siempre en el mismo orden de hooks: la condicion vive dentro,
+  // no alrededor de la llamada (react-hooks/rules-of-hooks).
+  React.useEffect(() => {
+    if (hasValidInvoice) return;
+    toast.error(
+      `No se ha especificado ${isDebitNote ? 'una nota de débito' : 'una factura'} válida para anular.`
+    );
+    navigate('/accounting/credit-notes/new');
+  }, [hasValidInvoice, isDebitNote, navigate]);
+
   if (!affectedInvoice || !affectedInvoice.client) {
-    React.useEffect(() => {
-      toast.error(
-        `No se ha especificado ${isDebitNote ? 'una nota de débito' : 'una factura'} válida para anular.`
-      );
-      navigate('/accounting/credit-notes/new');
-    }, [navigate]);
     return null;
   }
 

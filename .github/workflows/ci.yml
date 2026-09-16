@@ -62,27 +62,90 @@ jobs:
           xargs -0 npx eslint --max-warnings=0 < changed.z
 
       # Panorama completo de la deuda, informativo: nunca tumba el build.
+      # Reporte completo de la deuda de lint. Nunca tumba el build: existe para
+      # tener el inventario de errores a mano e irlos resolviendo en la rama de
+      # demo antes de mergear a main (produccion).
       - name: Lint completo (informativo)
         continue-on-error: true
         run: |
-          npx eslint . -f stylish > eslint-full.txt 2>&1 || true
-          TOTAL=$(grep -cE '^\s+[0-9]+:[0-9]+' eslint-full.txt || echo 0)
+          # Los formatos van a archivo aparte: el stylish es para leer, el JSON
+          # para procesar. `|| true` porque eslint sale con 1 si hay errores.
+          npx eslint . -f stylish > eslint-report.txt 2>&1 || true
+          npx eslint . -f json   > eslint-report.json 2>/dev/null || true
 
-          {
-            echo "### Deuda de lint en todo el repo"
-            echo ""
-            echo "Problemas detectados: **$TOTAL**"
-            echo ""
-            echo "No bloquea el CI. El gate real corre solo sobre los archivos que toca cada PR."
-            echo ""
-            echo "<details><summary>Ver reporte completo</summary>"
-            echo ""
-            echo '```'
-            tail -c 60000 eslint-full.txt
-            echo '```'
-            echo ""
-            echo "</details>"
-          } >> "$GITHUB_STEP_SUMMARY"
+          # El desglose por regla y por archivo se calcula del JSON, que es
+          # estructurado, en vez de raspar el texto del stylish.
+          node --input-type=module <<'NODE' >> "$GITHUB_STEP_SUMMARY"
+          import { readFileSync } from 'node:fs'
+
+          let results = []
+          try {
+            results = JSON.parse(readFileSync('eslint-report.json', 'utf8'))
+          } catch {
+            console.log('### Deuda de lint\n\nNo se pudo leer el reporte JSON de ESLint.')
+            process.exit(0)
+          }
+
+          const root = process.cwd() + '/'
+          const byRule = new Map()
+          const byFile = []
+          let errors = 0
+          let warnings = 0
+
+          for (const file of results) {
+            if (!file.messages.length) continue
+            let fe = 0
+            let fw = 0
+            for (const m of file.messages) {
+              const isError = m.severity === 2
+              isError ? errors++ : warnings++
+              isError ? fe++ : fw++
+              const key = `${m.ruleId ?? '(sin regla)'}|${isError ? 'error' : 'warning'}`
+              byRule.set(key, (byRule.get(key) ?? 0) + 1)
+            }
+            byFile.push({ path: file.filePath.replace(root, ''), fe, fw })
+          }
+
+          const out = []
+          out.push('### Deuda de lint en todo el repo')
+          out.push('')
+          out.push(`**${errors} errores** y **${warnings} warnings** en ${byFile.length} archivos.`)
+          out.push('')
+          out.push('Este paso no bloquea el CI. El reporte completo esta en el artifact')
+          out.push('`eslint-report` de este run (stylish + JSON).')
+          out.push('')
+
+          out.push('#### Por regla')
+          out.push('')
+          out.push('| Regla | Severidad | Cantidad |')
+          out.push('| --- | --- | --- |')
+          for (const [key, count] of [...byRule].sort((a, b) => b[1] - a[1])) {
+            const [rule, sev] = key.split('|')
+            out.push(`| \`${rule}\` | ${sev} | ${count} |`)
+          }
+          out.push('')
+
+          out.push('#### Archivos con mas errores')
+          out.push('')
+          out.push('| Archivo | Errores | Warnings |')
+          out.push('| --- | --- | --- |')
+          for (const f of byFile.sort((a, b) => b.fe - a.fe || b.fw - a.fw).slice(0, 25)) {
+            out.push(`| \`${f.path}\` | ${f.fe} | ${f.fw} |`)
+          }
+
+          console.log(out.join('\n'))
+          NODE
+
+      - name: Publicar reporte de lint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: |
+            eslint-report.txt
+            eslint-report.json
+          retention-days: 30
+          if-no-files-found: warn
 
       # ── Gates bloqueantes ───────────────────────────────────────────────
       - name: Typecheck

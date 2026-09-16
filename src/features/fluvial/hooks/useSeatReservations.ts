@@ -4,6 +4,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { toast } from '@/utils/sileo-toast';
+import { asApiError } from '../../../utils/errorHandler';
 
 interface SeatReservation {
   seatNumber: string;
@@ -47,8 +48,9 @@ export const useSeatReservations = (tripId: number) => {
       ]);
 
       return true;
-    } catch (error: any) {
-      toast.error(error.message || 'Error al reservar asiento');
+    } catch (error) {
+      const apiError = asApiError(error);
+      toast.error(apiError.message || 'Error al reservar asiento');
       return false;
     } finally {
       setIsReserving(false);

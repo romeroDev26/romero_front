@@ -12,6 +12,7 @@ import { whatsappService, WhatsAppSendResponse } from '../../../../services/what
 import { BackendInvoiceData } from './tickets/types/backend.types';
 import { Invoice } from '../../../../types';
 import { useWhatsAppInstanceWithFallback } from '../../../../hooks/useWhatsAppInstance';
+import { asApiError } from '../../../../utils/errorHandler';
 
 type WhatsAppSendModalInvoice = BackendInvoiceData | Invoice;
 
@@ -123,10 +124,11 @@ El equipo de ${businessName}`;
         }, 2000);
       }
 
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       setSendResult({
         success: false,
-        error: error.message || 'Error desconocido al procesar el envío'
+        error: apiError.message || 'Error desconocido al procesar el envío'
       });
     } finally {
       setIsSending(false);

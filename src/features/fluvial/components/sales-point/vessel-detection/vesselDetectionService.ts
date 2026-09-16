@@ -5,6 +5,7 @@
 import api from '../../../../../config/api';
 import { VesselDetectionResult } from './types';
 import { vesselDetectionConfig } from './config';
+import { asApiError } from '../../../../../utils/errorHandler';
 
 export class VesselDetectionService {
   
@@ -56,9 +57,10 @@ export class VesselDetectionService {
           confidence: 'high'
         };
       }
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Si es un error 404 o similar, no es concluyente
-      if (error.response?.status === 404) {
+      if (apiError.response?.status === 404) {
         throw error; // Reenviar para que se use el fallback
       }
       throw error;

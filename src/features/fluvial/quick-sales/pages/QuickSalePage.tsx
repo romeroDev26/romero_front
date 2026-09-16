@@ -36,6 +36,7 @@ import { PassengerData, initialPassengerData } from '../../components/sales-poin
 import { RecipientForm, RecipientData as RecipientFormData } from '../../../cargo/components/RecipientForm';
 import { SunatDocType, SunatInvoiceType } from '../../types/sunat.types';
 import { BranchOffice, CreateClientData } from '../../../../types';
+import { asApiError, detailToString } from '../../../../utils/errorHandler';
 
 export const QuickSalePage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -366,11 +367,12 @@ export const QuickSalePage: React.FC = () => {
       setTicketBackendData(fullInvoiceData as unknown as BackendInvoiceData);
       setShowTicketPreview(true);
       
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error al crear factura:', error);
       toast.error(
-        error.response?.data?.detail || 
-        error.message || 
+        detailToString(apiError.response?.data?.detail) || 
+        apiError.message || 
         'Error al procesar la venta'
       );
     }

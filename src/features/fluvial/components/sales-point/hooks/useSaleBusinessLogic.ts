@@ -12,6 +12,7 @@ import { saleValidationService } from "../services/saleValidationService";
 import { invoiceCreationService } from "../services/invoiceCreationService";
 import { SeatMapItem } from "../../../../../types";
 import { productsServicesService } from "../../../../../services/products-services.service";
+import { asApiError, detailToString } from '../../../../../utils/errorHandler';
 
 interface UseSaleBusinessLogicProps {
   // Dependencias de hooks externos
@@ -292,7 +293,8 @@ export const useSaleBusinessLogic = ({
       
       onSuccess(result);
 
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Liberar reservas de representantes en caso de error
       if (seatMap && seatMap.length > 0) {
         representatives.forEach(rep => {
@@ -309,9 +311,9 @@ export const useSaleBusinessLogic = ({
         });
       }
 
-      const status = error.response?.status;
+      const status = apiError.response?.status;
       if (status === 400 || status === 422 || status === 409) {
-        const detail = error.response?.data?.detail;
+        const detail = detailToString(apiError.response?.data?.detail);
         saleNotify.error(
           'No se puede completar la venta',
           detail || 'El asiento seleccionado se encuentra reservado por otro usuario o no está disponible.'
@@ -321,7 +323,8 @@ export const useSaleBusinessLogic = ({
 
       saleNotify.error(
         'Error en la venta',
-        error.response?.data?.detail || 'Ocurrió un error inesperado. Intente de nuevo.'
+        detailToString(apiError.response?.data?.detail) ||
+          'Ocurrió un error inesperado. Intente de nuevo.'
       );
     }
   }, [createCompanyInvoiceWithRepresentatives, passengerService, saleValidationService]);
@@ -498,7 +501,8 @@ export const useSaleBusinessLogic = ({
 
       onSuccess(createdInvoice);
 
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       // Liberar reserva en caso de error
       if (selectedSeat) {
         await seatValidation.releaseSeatReservation({
@@ -508,9 +512,9 @@ export const useSaleBusinessLogic = ({
         });
       }
       
-      const status = error.response?.status;
+      const status = apiError.response?.status;
       if (status === 400 || status === 422 || status === 409) {
-        const detail = error.response?.data?.detail;
+        const detail = detailToString(apiError.response?.data?.detail);
         saleNotify.error(
           'Asiento no disponible',
           detail || 'El asiento seleccionado acaba de ser vendido o reservado por otro vendedor. Seleccione otro.'
@@ -520,7 +524,8 @@ export const useSaleBusinessLogic = ({
 
       saleNotify.error(
         'Error en la venta',
-        error.response?.data?.detail || 'Ocurrió un error inesperado. Intente de nuevo.'
+        detailToString(apiError.response?.data?.detail) ||
+          'Ocurrió un error inesperado. Intente de nuevo.'
       );
     }
   }, [

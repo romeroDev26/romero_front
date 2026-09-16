@@ -10,6 +10,7 @@ import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
 import { manifestService } from '../../../manifests/services/manifest.service';
 import { UnifiedTripViewItem } from '../../hooks/useTripsView';
+import { asApiError, detailToString } from '../../../../utils/errorHandler';
 
 interface ManifestGenerationModalProps {
   isOpen: boolean;
@@ -71,7 +72,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
   const validateCargoManifest = async (): Promise<{ canGenerate: boolean; message: string; itemCount?: number }> => {
     try {
       return await manifestService.validateCargoManifest(trip.trip_id);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error en validación de manifiesto de carga:', error);
       return { 
         canGenerate: false, 
@@ -104,28 +105,32 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
       }
       onClose();
       resetForm();
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error al generar manifiesto:', error);
       
       // Manejo específico para diferentes tipos de error
-      if (error.response?.status === 403) {
+      if (apiError.response?.status === 403) {
         // Error 403 - Sin permisos
-        const errorMessage = error.response.data?.detail || 'No tienes permisos para generar manifiestos';
+        const errorMessage =
+          detailToString(apiError.response.data?.detail) ||
+          'No tienes permisos para generar manifiestos';
         toast.error(errorMessage);
-      } else if (error.response?.status === 401) {
+      } else if (apiError.response?.status === 401) {
         // Error 401 puede indicar falta de datos en lugar de problema de autenticación
         if (selectedType === 'CARGO') {
           toast.error('No se puede generar el manifiesto de carga: no hay carga registrada para este viaje');
         } else {
           toast.error('No se puede generar el manifiesto de pasajeros: no hay pasajeros registrados para este viaje');
         }
-      } else if (error.response?.status === 400 || error.response?.status === 422) {
+      } else if (apiError.response?.status === 400 || apiError.response?.status === 422) {
         // Errores de validación o datos insuficientes
-        const errorMessage = error.response.data?.message || error.response.data?.detail;
+        const errorMessage =
+          apiError.response.data?.message || detailToString(apiError.response.data?.detail);
         toast.error(errorMessage || `No hay datos suficientes para generar el manifiesto de ${selectedType === 'CARGO' ? 'carga' : 'pasajeros'}`);
       } else {
         // Otros errores
-        toast.error(error.message || 'Error al generar el manifiesto');
+        toast.error(apiError.message || 'Error al generar el manifiesto');
       }
     } finally {
       setIsGenerating(false);

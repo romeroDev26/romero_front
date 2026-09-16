@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { productsServicesService } from '../../../services/products-services.service';
 import { ProductService } from '../../../types';
+import { asApiError } from '../../../utils/errorHandler';
 
 // ID o código interno del servicio de pasajes.
 // Es mejor usar un código interno si lo tienes, ya que es más descriptivo que un ID.
@@ -22,8 +23,9 @@ export const usePassengerService = () => {
         // Usamos el servicio existente para buscar por ID.
         const service = await productsServicesService.getById(PASSENGER_SERVICE_ID);
         return service;
-      } catch (error: any) {
-        if (error.response?.status === 404) {
+      } catch (error) {
+        const apiError = asApiError(error);
+        if (apiError.response?.status === 404) {
           console.error(`Error crítico: El servicio de pasajes con ID ${PASSENGER_SERVICE_ID} no fue encontrado.`);
           // Devolvemos null si no se encuentra, para manejar el error en la UI.
           return null;

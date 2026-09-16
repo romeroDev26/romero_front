@@ -14,6 +14,7 @@ import { routeHelpers } from '../../../services/routes.service';
 import { RouteSegmentFare, CreateFareData, UpdateFareData } from '../../../services/fareService';
 import { ServiceCategory } from '../../../types';
 import { toast } from '@/utils/sileo-toast';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 const SERVICE_CATEGORIES: { value: ServiceCategory; label: string }[] = [
   { value: 'PASAJES', label: 'Express' },
@@ -125,8 +126,9 @@ export const FaresByRoutePage: React.FC = () => {
         toast.success('Tarifa creada exitosamente');
       }
       setEditingFare(null);
-    } catch (error: any) {
-      const message = error.response?.data?.detail || 'Error al guardar la tarifa';
+    } catch (error) {
+      const apiError = asApiError(error);
+      const message = detailToString(apiError.response?.data?.detail) || 'Error al guardar la tarifa';
       toast.error(message);
     }
   };

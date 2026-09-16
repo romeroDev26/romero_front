@@ -7,6 +7,7 @@ import { Input } from '../../../../../components/common/Input';
 import { SunatDocType } from '../../../types/sunat.types';
 import api from '../../../../../config/api';
 import { REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS } from '../core/types';
+import { asApiError } from '../../../../../utils/errorHandler';
 
 interface Representative {
   document_type: string;
@@ -108,10 +109,11 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
         }));
         toast.success('Datos encontrados automáticamente');
       }
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       setDniError('No se pudieron obtener los datos del DNI');
       // Mostrar mensaje apropiado según el tipo de error
-      if (error?.response?.status === 401) {
+      if (apiError.response?.status === 401) {
         toast.warning('No se pudo realizar la consulta automática del DNI. Puede ingresar los datos manualmente para continuar.');
       } else {
         toast.warning('No se encontraron datos para este DNI. Ingrese el nombre manualmente.');

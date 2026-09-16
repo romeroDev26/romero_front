@@ -27,6 +27,7 @@ import { LocationSelector } from '../../../components/common/LocationSelector';
 import { clientsService, CreateClientData } from '../../../services/clients.service';
 import { DocType } from '../../../types';
 import { useLocation } from '../../../hooks/useLocation';
+import { asApiError, detailToString, getErrorMessage } from '../../../utils/errorHandler';
 
 const clientSchema = z.object({
   doc_type: z.enum(['1', '4', '6', '7', '0'], {
@@ -121,10 +122,11 @@ export const ClientFormPage: React.FC = () => {
       toast.success('Cliente creado correctamente');
       navigate('/clients');
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      const apiError = asApiError(error);
       console.error('Error creando cliente:', error);
-      if (error.response?.status === 422) {
-        const detail = error.response.data?.detail;
+      if (apiError.response?.status === 422) {
+        const detail = detailToString(apiError.response.data?.detail);
         if (Array.isArray(detail)) {
           const message = detail.map((err: any) => err.msg).join(', ');
           toast.error(message);
@@ -132,7 +134,7 @@ export const ClientFormPage: React.FC = () => {
           toast.error('Error de validación en los datos');
         }
       } else {
-        toast.error(error.response?.data?.detail || 'Error al crear cliente');
+        toast.error(getErrorMessage(error, 'Error al crear cliente'));
       }
     }
   });
@@ -147,20 +149,21 @@ export const ClientFormPage: React.FC = () => {
       toast.success('Cliente actualizado correctamente');
       navigate('/clients');
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      const apiError = asApiError(error);
       console.error('Error actualizando cliente:', error);
-      if (error.response?.status === 422) {
-        const detail = error.response.data?.detail;
+      if (apiError.response?.status === 422) {
+        const detail = detailToString(apiError.response.data?.detail);
         if (Array.isArray(detail)) {
           const message = detail.map((err: any) => err.msg).join(', ');
           toast.error(message);
         } else {
           toast.error('Error de validación en los datos');
         }
-      } else if (error.response?.status === 404) {
+      } else if (apiError.response?.status === 404) {
         toast.error('Cliente no encontrado');
       } else {
-        toast.error(error.response?.data?.detail || 'Error al actualizar cliente');
+        toast.error(getErrorMessage(error, 'Error al actualizar cliente'));
       }
     }
   });

@@ -11,6 +11,7 @@ import {
 import { PreviewVesselChangeRequest, PreviewVesselChangeResponse } from '../../../types';
 import { Trip } from '../../../types';
 import { useDebounce } from '../../../hooks/useDebounce';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 export const useTrips = (filters: { tripName?: string, status?: string[] }) => {
   const debouncedFilters = useDebounce(filters, 500);
@@ -41,8 +42,8 @@ export const useTripMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['tripsView'] });
       toast.success('Viaje creado exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al crear el viaje';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al crear el viaje');
       toast.error(message);
     }
   });
@@ -55,8 +56,8 @@ export const useTripMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['trip'] });
       toast.success('Viaje actualizado exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar el viaje';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar el viaje');
       toast.error(message);
     }
   });
@@ -68,8 +69,8 @@ export const useTripMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['tripsView'] });
       toast.success('Viaje cancelado exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al cancelar el viaje';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al cancelar el viaje');
       toast.error(message);
     }
   });
@@ -95,8 +96,8 @@ export const useTripDetails = (tripId: number | null) => {
 export const usePreviewVesselChange = () => {
   return useMutation<PreviewVesselChangeResponse, Error, { tripId: number; data: PreviewVesselChangeRequest }>({
     mutationFn: ({ tripId, data }) => tripsService.previewVesselChange(tripId, data),
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al previsualizar el cambio de embarcación';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al previsualizar el cambio de embarcación');
       toast.error(message);
     }
   });

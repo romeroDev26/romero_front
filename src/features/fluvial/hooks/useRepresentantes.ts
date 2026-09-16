@@ -5,6 +5,7 @@ import {
   representantesService, 
   CompanyInvoiceWithRepresentatives
 } from '../../../services/representantes.service';
+import { asApiError } from '../../../utils/errorHandler';
 
 // Función local para manejar errores de API
 const getErrorMessage = (error: any): string => {
@@ -60,15 +61,16 @@ export function useRepresentantes() {
       queryClient.invalidateQueries({ queryKey: ['seatAssignments'] });
     },
     
-    onError: (error: any) => {
+    onError: (error) => {
+      const apiError = asApiError(error);
       const friendlyMessage = getErrorMessage(error);
       saleNotify.error('Error en factura empresarial', friendlyMessage);
       
       // Log detallado del error para debugging
       console.error('Error creando factura empresarial:', {
         error: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
+        response: apiError.response?.data,
+        status: apiError.response?.status,
         timestamp: new Date().toISOString()
       });
     }

@@ -30,7 +30,7 @@ export const useCreateWhatsAppInstance = () => {
         toast.success(result.message || 'Instancia creada exitosamente.');
       }
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al crear la instancia de WhatsApp.');
       toast.error(message);
     },
@@ -44,7 +44,7 @@ export const useGetQRCode = () => {
   return useMutation({
     mutationFn: (instanceName: string) => 
       whatsappConfigService.getQRCode(instanceName),
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al obtener el código QR.');
       toast.error(message);
     },
@@ -80,7 +80,7 @@ export const useCheckConnectionStatus = () => {
         toast.success('WhatsApp conectado correctamente.');
       }
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al verificar el estado.');
       toast.error(message);
     },
@@ -100,7 +100,7 @@ export const useLogoutInstance = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success('Sesión de WhatsApp cerrada correctamente.');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al cerrar la sesión.');
       toast.error(message);
     },
@@ -121,7 +121,7 @@ export const useDeleteWhatsAppInstance = () => {
       queryClient.invalidateQueries({ queryKey: ['branchOffices'] });
       toast.success(result.message || 'Instancia eliminada correctamente.');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al eliminar la instancia.');
       toast.error(message);
     },
@@ -141,7 +141,7 @@ export const useRestartInstance = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success('Instancia reiniciada correctamente.');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al reiniciar la instancia.');
       toast.error(message);
     },

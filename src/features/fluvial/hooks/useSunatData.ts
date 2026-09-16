@@ -2,6 +2,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { externalQueryService, DniResponse, RucResponse } from '../../../services/external.service';
 import { toast } from '@/utils/sileo-toast';
+import { asApiError } from '../../../utils/errorHandler';
 
 export const useSunatData = () => {
   const queryDniMutation = useMutation<DniResponse, Error, string>({
@@ -9,9 +10,10 @@ export const useSunatData = () => {
     onSuccess: () => {
       // Toast eliminado para evitar múltiples mensajes durante el flujo de venta
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      const apiError = asApiError(error);
       // Manejar específicamente errores 401 sin cerrar sesión
-      if (error?.response?.status === 401) {
+      if (apiError.response?.status === 401) {
         toast.warning('No se pudo realizar la consulta automática del DNI. Puede ingresar los datos manualmente para continuar.', {
           autoClose: 5000,
         });
@@ -26,9 +28,10 @@ export const useSunatData = () => {
      onSuccess: () => {
       // Toast eliminado para evitar múltiples mensajes durante el flujo de venta
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      const apiError = asApiError(error);
       // Manejar específicamente errores 401 sin cerrar sesión
-      if (error?.response?.status === 401) {
+      if (apiError.response?.status === 401) {
         toast.warning('No se pudo realizar la consulta automática del RUC. Puede ingresar los datos manualmente para continuar.', {
           autoClose: 5000,
         });

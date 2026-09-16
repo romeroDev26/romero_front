@@ -8,6 +8,7 @@ import {
   ProductServiceFilters 
 } from '../../../services/products-services.service';
 import { ProductServiceFormData } from '../types/products-services-ui.types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Keys para React Query
 export const PRODUCTS_SERVICES_QUERY_KEYS = {
@@ -102,9 +103,9 @@ export const useCreateProductService = () => {
       
       toast.success(`${newItem.item_type === 'SERVICE' ? 'Servicio' : 'Producto'} "${newItem.name}" creado exitosamente`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error('Error al crear producto/servicio:', error);
-      const message = error.response?.data?.detail || 'Error al crear el elemento';
+      const message = getErrorMessage(error, 'Error al crear el elemento');
       toast.error(message);
     },
   });
@@ -151,9 +152,9 @@ export const useUpdateProductService = () => {
       
       toast.success(`${updatedItem.item_type === 'SERVICE' ? 'Servicio' : 'Producto'} "${updatedItem.name}" actualizado exitosamente`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error('Error al actualizar producto/servicio:', error);
-      const message = error.response?.data?.detail || 'Error al actualizar el elemento';
+      const message = getErrorMessage(error, 'Error al actualizar el elemento');
       toast.error(message);
     },
   });
@@ -175,9 +176,9 @@ export const useDeleteProductService = () => {
       
       toast.success(`${deletedItem.item_type === 'SERVICE' ? 'Servicio' : 'Producto'} "${deletedItem.name}" desactivado exitosamente`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error('Error al eliminar producto/servicio:', error);
-      const message = error.response?.data?.detail || 'Error al desactivar el elemento';
+      const message = getErrorMessage(error, 'Error al desactivar el elemento');
       toast.error(message);
     },
   });

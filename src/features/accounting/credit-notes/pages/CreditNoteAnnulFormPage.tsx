@@ -26,6 +26,7 @@ import { Invoice, User } from '../../../../types';
 import { useAccountingDocumentSeriesForBranch } from '../../../../hooks/useAccountingDocumentSeries';
 import { authService } from '../../../../services/auth.service';
 import RequestCancellationModal from '../../components/RequestCancellationModal';
+import { asApiError, detailToString } from '../../../../utils/errorHandler';
 
 const CREDIT_NOTE_REASONS = [
   { code: '01', description: 'Anulación de la operación' },
@@ -134,9 +135,10 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
         await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
         navigate('/accounting/credit-notes');
       },
-      onError: (error: any) => {
-        if (error?.response?.status === 403) {
-          const errorDetail = error?.response?.data?.detail || '';
+      onError: (error) => {
+        const apiError = asApiError(error);
+        if (apiError.response?.status === 403) {
+          const errorDetail = detailToString(apiError.response?.data?.detail) || '';
           if (
             errorDetail.includes('Viaje ya salió') ||
             errorDetail.includes('Solicita aprobación')
@@ -167,9 +169,10 @@ export const CreditNoteAnnulFormPage: React.FC = () => {
         await queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
         navigate('/accounting/credit-notes');
       },
-      onError: (error: any) => {
-        if (error?.response?.status === 403) {
-          const errorDetail = error?.response?.data?.detail || '';
+      onError: (error) => {
+        const apiError = asApiError(error);
+        if (apiError.response?.status === 403) {
+          const errorDetail = detailToString(apiError.response?.data?.detail) || '';
           if (
             errorDetail.includes('Viaje ya salió') ||
             errorDetail.includes('Solicita aprobación')

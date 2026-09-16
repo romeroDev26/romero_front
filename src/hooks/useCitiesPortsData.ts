@@ -25,7 +25,7 @@ export const useCreateCity = () => {
       queryClient.invalidateQueries({ queryKey: ['cities'] });
       toast.success(`Ciudad "${newCity.name}" creada exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al crear la ciudad. Verifique que el nombre y código no existan.');
       toast.error(message);
     },
@@ -42,7 +42,7 @@ export const useUpdateCity = () => {
       queryClient.setQueryData(['city', updatedCity.id], updatedCity);
       toast.success(`Ciudad "${updatedCity.name}" actualizada exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al actualizar la ciudad.');
       toast.error(message);
     },
@@ -57,7 +57,7 @@ export const useDeactivateCity = () => {
       queryClient.invalidateQueries({ queryKey: ['cities'] });
       toast.success(`Ciudad "${deactivatedCity.name}" desactivada exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al desactivar la ciudad.');
       toast.error(message);
     },
@@ -92,7 +92,7 @@ export const useCreatePort = () => {
       queryClient.invalidateQueries({ queryKey: ['ports'] });
       toast.success(`Puerto "${newPort.name}" creado exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al crear el puerto. Verifique que el nombre no exista.');
       toast.error(message);
     },
@@ -109,7 +109,7 @@ export const useUpdatePort = () => {
       queryClient.setQueryData(['port', updatedPort.id], updatedPort);
       toast.success(`Puerto "${updatedPort.name}" actualizado exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al actualizar el puerto.');
       toast.error(message);
     },
@@ -124,7 +124,7 @@ export const useDeactivatePort = () => {
       queryClient.invalidateQueries({ queryKey: ['ports'] });
       toast.success(`Puerto "${deactivatedPort.name}" desactivado exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al desactivar el puerto.');
       toast.error(message);
     },

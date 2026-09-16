@@ -23,7 +23,7 @@ export const useCreateDocumentSeries = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success(`Serie "${newSeries.series_code}" creada exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al crear la serie. Verifique que la combinación no exista.');
       toast.error(message);
     },
@@ -38,7 +38,7 @@ export const useUpdateDocumentSeries = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success(`Serie "${updatedSeries.series_code}" actualizada exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al actualizar la serie.');
       toast.error(message);
     },
@@ -53,7 +53,7 @@ export const useDeactivateDocumentSeries = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.warning(`Serie "${deactivatedSeries.series_code}" ha sido desactivada.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al desactivar la serie.');
       toast.error(message);
     },

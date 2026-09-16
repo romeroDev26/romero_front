@@ -11,7 +11,7 @@ import { Input } from '../../../components/common/Input';
 import { rolesService, CreateRoleData, UpdateRoleData } from '../../../services/roles.service';
 import { Role } from '../../../types';
 import { usePermissions } from '../../../hooks/usePermissions';
-import { getErrorMessage } from '../../../utils/errorHandler';
+import { asApiError, getErrorMessage } from '../../../utils/errorHandler';
 
 export const RolesPage: React.FC = () => {
   const queryClient = useQueryClient();
@@ -45,8 +45,9 @@ export const RolesPage: React.FC = () => {
       setIsCreateModalOpen(false);
       resetForm();
     },
-    onError: (error: any) => {
-      if (error.response?.status === 409) {
+    onError: (error) => {
+      const apiError = asApiError(error);
+      if (apiError.response?.status === 409) {
         setRoleNameError('Ya existe un rol con este nombre');
       } else {
         const message = getErrorMessage(error, 'Error al crear rol');
@@ -65,8 +66,9 @@ export const RolesPage: React.FC = () => {
       setIsEditModalOpen(false);
       resetForm();
     },
-    onError: (error: any) => {
-      if (error.response?.status === 409) {
+    onError: (error) => {
+      const apiError = asApiError(error);
+      if (apiError.response?.status === 409) {
         setRoleNameError('Ya existe un rol con este nombre');
       } else {
         const message = getErrorMessage(error, 'Error al actualizar rol');
@@ -83,8 +85,9 @@ export const RolesPage: React.FC = () => {
       toast.success('Rol desactivado correctamente');
       setIsDeleteModalOpen(false);
     },
-    onError: (error: any) => {
-      if (error.response?.status === 409) {
+    onError: (error) => {
+      const apiError = asApiError(error);
+      if (apiError.response?.status === 409) {
         toast.error('No se puede desactivar el rol porque está asignado a usuarios activos');
       } else {
         const message = getErrorMessage(error, 'Error al desactivar rol');

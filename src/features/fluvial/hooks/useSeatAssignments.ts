@@ -19,7 +19,7 @@ export const useCreateSeatAssignment = () => {
       // Invalidamos el mapa de asientos para que se actualice y muestre el asiento como 'CONFIRMED'
       queryClient.invalidateQueries({ queryKey: ['seatMap', newAssignment.trip_id] });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       // Este error es crítico, porque la factura ya se creó.
       // Se debe notificar al usuario para que contacte a soporte.
       console.error("Error crítico: La factura se creó pero la asignación del asiento falló.", error);

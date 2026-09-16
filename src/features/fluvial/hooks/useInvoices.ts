@@ -29,10 +29,11 @@ export const useCreateInvoice = () => {
             queryClient.invalidateQueries({ queryKey: ['tripsView'] });
             queryClient.invalidateQueries({ queryKey: ['tripDetails', variables.tripId] });
         },
-        onError: (error: any) => {
-            const message = error.response?.data?.detail || "Error al crear el comprobante.";
+        onError: (error) => {
+            const message = getErrorMessage(error, "Error al crear el comprobante.");
             toast.error(message);
         }
     });
     
 };
+import { getErrorMessage } from '../../../utils/errorHandler';

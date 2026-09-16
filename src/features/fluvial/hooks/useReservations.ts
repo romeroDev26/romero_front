@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/utils/sileo-toast';
 import { reservationsService, ReservationCreateData, ReservationUpdateData, ReservationSearchParams } from '../../../services/reservations.service';
 import { SeatReservation } from '../../../types';
-import { getErrorMessage } from '../../../utils/errorHandler';
+import { asApiError, getErrorMessage } from '../../../utils/errorHandler';
 
 // Hook para buscar reservas
 export const useSearchReservations = (filters: Omit<ReservationSearchParams, 'company_id'>) => {
@@ -45,9 +45,10 @@ export const useCreateReservation = () => {
       // Invalidamos la lista de reservas del viaje
       queryClient.invalidateQueries({ queryKey: ['reservations', newReservation.trip_id] });
     },
-    onError: (error: any) => {
-      if (error?.response?.status === 409) {
-        const detail = error.response?.data?.detail;
+    onError: (error) => {
+      const apiError = asApiError(error);
+      if (apiError.response?.status === 409) {
+        const detail = getErrorMessage(error);
         toast.error(detail || "El asiento ya no está disponible. Seleccione otro asiento.");
       } else {
         const message = getErrorMessage(error, "Error al crear la reserva.");
@@ -70,9 +71,10 @@ export const useUpdateReservation = () => {
       queryClient.invalidateQueries({ queryKey: ['seatMap', variables.tripId] });
       queryClient.invalidateQueries({ queryKey: ['reservations'] }); // Invalidar la lista general también
     },
-    onError: (error: any) => {
-      if (error?.response?.status === 409) {
-        const detail = error.response?.data?.detail;
+    onError: (error) => {
+      const apiError = asApiError(error);
+      if (apiError.response?.status === 409) {
+        const detail = getErrorMessage(error);
         toast.error(detail || "No se puede modificar esta reserva porque ya fue vendida o está bloqueada.");
       } else {
         const message = getErrorMessage(error, "Error al actualizar la reserva.");

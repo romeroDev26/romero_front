@@ -7,6 +7,7 @@ import type {
   VoidDocumentCreateData,
   VoidDocumentsListParams
 } from '../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Hook para listar comunicaciones de baja
 export const useVoidDocuments = (companyId: number, params?: Omit<VoidDocumentsListParams, 'company_id'>) => {
@@ -46,8 +47,8 @@ export const useCreateVoidDocument = () => {
         queryClient.invalidateQueries({ queryKey: ['voidDocumentSunatStatus', data.id] });
       }, 5000); // Esperar 5 segundos antes de la primera consulta
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al crear la comunicación de baja';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al crear la comunicación de baja');
       toast.error(message);
     },
   });
@@ -80,8 +81,8 @@ export const useRefreshPendingVoids = () => {
       queryClient.invalidateQueries({ queryKey: ['voidDocumentSunatStatus'] });
       toast.success('Estados de anulaciones actualizados');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar estados';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar estados');
       toast.error(message);
     },
   });

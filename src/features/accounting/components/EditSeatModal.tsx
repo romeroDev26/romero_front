@@ -10,6 +10,7 @@ import { SeatMap } from '../../fluvial/components/seat-map/SeatMap';
 import { SeatMapLegend } from '../../fluvial/components/seat-map/SeatMapLegend';
 import { SeatMapItem } from '../../../types';
 import { Spinner } from '../../../components/common/Spinner';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 // Vista activa dentro del modal
 type ModalView = 'list' | 'edit';
@@ -99,8 +100,9 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
       onSuccess();
       onClose();
     },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.detail || error?.message || 'Error al reasignar el asiento';
+    onError: (error) => {
+      const apiError = asApiError(error);
+      const errorMessage = detailToString(apiError.response?.data?.detail) || error?.message || 'Error al reasignar el asiento';
       toast.error(errorMessage);
     },
   });

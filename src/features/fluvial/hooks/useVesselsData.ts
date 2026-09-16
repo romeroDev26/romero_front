@@ -7,6 +7,7 @@ import {
   VesselUpdateData,
   SeatConfigurationCreateData,
 } from '../../../services/vessels.service';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Helper para obtener el company_id. Idealmente vendría de un contexto de autenticación.
 const getCurrentCompanyId = (): number => {
@@ -46,8 +47,8 @@ export const useCreateVessel = () => {
       queryClient.invalidateQueries({ queryKey: ['vessels'] });
       toast.success(`Embarcación "${newVessel.name}" creada.`);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al crear la embarcación');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al crear la embarcación'));
     },
   });
 };
@@ -62,8 +63,8 @@ export const useUpdateVessel = () => {
       queryClient.invalidateQueries({ queryKey: ['vessel', updatedVessel.id] });
       toast.success(`Embarcación "${updatedVessel.name}" actualizada.`);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al actualizar la embarcación');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al actualizar la embarcación'));
     },
   });
 };
@@ -77,8 +78,8 @@ export const useDeleteVessel = () => {
       queryClient.invalidateQueries({ queryKey: ['vessel', deletedVessel.id] });
       toast.success(`Embarcación "${deletedVessel.name}" desactivada.`);
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al desactivar la embarcación');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al desactivar la embarcación'));
     },
   });
 };
@@ -97,8 +98,8 @@ export const useAddSeatConfiguration = () => {
       queryClient.invalidateQueries({ queryKey: ['vessels'] });
       toast.success('Configuración de asientos actualizada.');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al configurar asientos');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al configurar asientos'));
     },
   });
 };
@@ -111,8 +112,8 @@ export const useDeleteSeatConfiguration = () => {
       queryClient.invalidateQueries({ queryKey: ['vessels', 'vessel'] });
       toast.success('Configuración de asientos eliminada.');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al eliminar la configuración');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al eliminar la configuración'));
     },
   });
 };

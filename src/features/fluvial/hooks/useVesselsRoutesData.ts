@@ -14,6 +14,7 @@ import {
   SeatTypeUpdateData
 } from '../../../services/seat-types.service';
 import { SeatType } from '../../../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // ========================================
 // HOOKS PARA RUTAS
@@ -49,8 +50,8 @@ export const useCreateRoute = () => {
       queryClient.setQueryData(['route', newRoute.id], newRoute);
       toast.success(`Ruta ${newRoute.name} creada exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al crear la ruta';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al crear la ruta');
       toast.error(message);
     },
   });
@@ -65,8 +66,8 @@ export const useUpdateRoute = () => {
       queryClient.setQueryData(['route', updatedRoute.id], updatedRoute);
       toast.success(`Ruta ${updatedRoute.name} actualizada exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar la ruta';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar la ruta');
       toast.error(message);
     },
   });
@@ -81,8 +82,8 @@ export const useDeleteRoute = () => {
       queryClient.invalidateQueries({ queryKey: ['route', deletedId] });
       toast.success(`Ruta desactivada exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al desactivar la ruta';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al desactivar la ruta');
       toast.error(message);
     },
   });
@@ -98,8 +99,8 @@ export const useUpdateRouteStops = () => {
       queryClient.invalidateQueries({ queryKey: ['routes'] });
       toast.success('Paradas de la ruta actualizadas exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar las paradas';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar las paradas');
       toast.error(message);
     },
   });
@@ -136,8 +137,8 @@ export const useCreateSeatType = () => {
       });
       toast.success(`Tipo de asiento ${newSeatType.name} creado exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al crear el tipo de asiento';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al crear el tipo de asiento');
       toast.error(message);
     },
   });
@@ -156,8 +157,8 @@ export const useUpdateSeatType = () => {
       queryClient.invalidateQueries({ queryKey: ['seatType', updatedSeatType.id] });
       toast.success(`Tipo de asiento ${updatedSeatType.name} actualizado exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar el tipo de asiento';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar el tipo de asiento');
       toast.error(message);
     },
   });
@@ -174,8 +175,8 @@ export const useDeleteSeatType = () => {
       });
       toast.success(`Tipo de asiento ${deletedSeatType.name} desactivado exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al desactivar el tipo de asiento';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al desactivar el tipo de asiento');
       toast.error(message);
     },
   });

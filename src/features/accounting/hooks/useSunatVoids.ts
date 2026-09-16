@@ -5,6 +5,7 @@ import { toast } from '@/utils/sileo-toast';
 import { sunatBatchesService } from '../services/sunatBatches.service';
 import { invoicesService } from '../../../services/invoices.service';
 import { VoidCreateData, VoidableInvoice, VoidDocument } from '../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // NUEVO HOOK: Para obtener las facturas que se pueden dar de baja
 export const useVoidableInvoices = (companyId: number | null) => {
@@ -52,8 +53,8 @@ export const useCreateSunatVoid = () => {
       // Invalidar también las facturas anulables para actualizar la lista
       queryClient.invalidateQueries({ queryKey: ['voidableInvoices'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al crear la comunicación de baja');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al crear la comunicación de baja'));
     },
   });
 };
@@ -79,8 +80,8 @@ export const useCheckVoidStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['sunatVoids'] });
       queryClient.invalidateQueries({ queryKey: ['sunatVoid', data.id] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al consultar el estado de la comunicación de baja');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al consultar el estado de la comunicación de baja'));
     },
   });
 };

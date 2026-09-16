@@ -8,6 +8,7 @@ import {
   CreditNoteAnnulData 
 } from '../types';
 import { toast } from '@/utils/sileo-toast';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Hook para listar notas de crédito
 export const useCreditNotes = (params: CreditNotesListParams) => {
@@ -40,8 +41,8 @@ export const useCreateCreditNote = () => {
       toast.success(`Nota de Crédito ${identifier} generada correctamente. Se está enviando a SUNAT.`);
       queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al crear la nota de crédito');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al crear la nota de crédito'));
     },
   });
 };
@@ -58,8 +59,8 @@ export const useCreateCreditNoteByAnnulment = () => {
       toast.success(`Nota de Crédito ${identifier} por anulación creada correctamente.`);
       queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al crear la nota de crédito por anulación');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al crear la nota de crédito por anulación'));
     },
   });
 };
@@ -119,8 +120,8 @@ export const useGenerateCreditNotePdf = () => {
       await queryClient.invalidateQueries({ queryKey: ['creditNote', id] });
       toast.success(size === 'a4' ? 'PDF A4 listo' : 'PDF ticket 80 mm listo');
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al generar el PDF de la nota de crédito');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al generar el PDF de la nota de crédito'));
     },
   });
 };

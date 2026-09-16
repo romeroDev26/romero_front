@@ -68,7 +68,7 @@ export const usePaymentConfirmation = () => {
         queryClient.invalidateQueries({ queryKey: ['invoice'] });
       }, 1000); // 1 segundo de delay
     },
-    onError: (error: any) => {
+    onError: (error) => {
       // Mostrar mensaje de error
       toast.error(error.message || 'Error al confirmar el pago');
     },

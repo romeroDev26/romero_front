@@ -22,7 +22,7 @@ export const useCreateBranchOffice = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success(`Sucursal "${newOffice.name}" creada exitosamente.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al crear la sucursal.');
       toast.error(message);
     },
@@ -37,7 +37,7 @@ export const useUpdateBranchOffice = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.success(`Sucursal "${updatedOffice.name}" actualizada.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al actualizar la sucursal.');
       toast.error(message);
     },
@@ -52,7 +52,7 @@ export const useDeactivateBranchOffice = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
       toast.warning(`Sucursal "${deactivatedOffice.name}" ha sido desactivada.`);
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al desactivar. Verifique que no sea la principal o no tenga usuarios asignados.');
       toast.error(message);
     },

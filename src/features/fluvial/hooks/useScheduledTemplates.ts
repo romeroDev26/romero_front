@@ -32,7 +32,7 @@ export const useScheduledTemplates = (companyId?: number) => {
       queryClient.invalidateQueries({ queryKey });
       toast.success('Plantilla creada exitosamente');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al crear la plantilla');
       toast.error(message);
     }
@@ -46,7 +46,7 @@ export const useScheduledTemplates = (companyId?: number) => {
       queryClient.invalidateQueries({ queryKey });
       toast.success('Plantilla actualizada exitosamente');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al actualizar la plantilla');
       toast.error(message);
     }
@@ -59,7 +59,7 @@ export const useScheduledTemplates = (companyId?: number) => {
       queryClient.invalidateQueries({ queryKey });
       toast.success('Plantilla desactivada exitosamente');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       const message = getErrorMessage(error, 'Error al desactivar la plantilla');
       toast.error(message);
     }

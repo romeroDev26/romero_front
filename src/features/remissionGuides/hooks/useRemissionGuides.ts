@@ -15,6 +15,7 @@ import {
   ListSenderGuidesParams
 } from '../../../services/remissionGuidesSender.service';
 import { RemissionGuidesByBranchOfficeResponse } from '../../../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Hook para listar guías de remisión
 export const useRemissionGuides = (params: ListGuidesParams & { enabled?: boolean }) => {
@@ -69,8 +70,8 @@ export const useCreateRemissionGuide = () => {
       toast.success('Guía de remisión creada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['remissionGuides'] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al crear la guía de remisión';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al crear la guía de remisión');
       toast.error(errorMessage);
     },
   });
@@ -88,8 +89,8 @@ export const useUpdateRemissionGuide = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuides'] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuide', data.id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al actualizar la guía de remisión';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al actualizar la guía de remisión');
       toast.error(errorMessage);
     },
   });
@@ -108,8 +109,8 @@ export const useProcessSunatGuide = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuide', data.guide_id] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSunatStatus', data.guide_id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al procesar la guía en SUNAT';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al procesar la guía en SUNAT');
       toast.error(errorMessage);
     },
   });
@@ -138,8 +139,8 @@ export const useCheckTicketStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuide', data.guide_id] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSunatStatus', data.guide_id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al consultar el estado del ticket';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al consultar el estado del ticket');
       toast.error(errorMessage);
     },
   });
@@ -198,8 +199,8 @@ export const useCreateRemissionGuideSender = () => {
       toast.success('Guía de remisión del remitente creada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['remissionGuidesSender'] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al crear la guía de remisión del remitente';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al crear la guía de remisión del remitente');
       toast.error(errorMessage);
     },
   });
@@ -217,8 +218,8 @@ export const useUpdateRemissionGuideSender = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuidesSender'] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSender', data.id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al actualizar la guía de remisión del remitente';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al actualizar la guía de remisión del remitente');
       toast.error(errorMessage);
     },
   });
@@ -237,8 +238,8 @@ export const useProcessSunatGuideSender = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSender', data.guide_id] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSenderSunatStatus', data.guide_id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al procesar la guía del remitente en SUNAT';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al procesar la guía del remitente en SUNAT');
       toast.error(errorMessage);
     },
   });
@@ -267,8 +268,8 @@ export const useCheckTicketStatusSender = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSender', data.guide_id] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSenderSunatStatus', data.guide_id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al consultar el estado del ticket del remitente';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al consultar el estado del ticket del remitente');
       toast.error(errorMessage);
     },
   });
@@ -292,8 +293,8 @@ export const useProcessCdr = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuide', data.guide_id] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSunatStatus', data.guide_id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al procesar el CDR';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al procesar el CDR');
       toast.error(errorMessage);
     },
   });
@@ -317,8 +318,8 @@ export const useProcessCdrSender = () => {
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSender', data.guide_id] });
       queryClient.invalidateQueries({ queryKey: ['remissionGuideSenderSunatStatus', data.guide_id] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Error al procesar el CDR del remitente';
+    onError: (error) => {
+      const errorMessage = getErrorMessage(error, 'Error al procesar el CDR del remitente');
       toast.error(errorMessage);
     },
   });

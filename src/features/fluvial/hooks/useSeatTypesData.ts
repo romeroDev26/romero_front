@@ -7,6 +7,7 @@ import {
   SeatTypeUpdateData
 } from '../../../services/seat-types.service';
 import { SeatType } from '../../../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // ========================================
 // HOOKS PARA TIPOS DE ASIENTO
@@ -46,8 +47,8 @@ export const useCreateSeatType = () => {
 
       toast.success(`Tipo de asiento ${newSeatType.name} creado exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al crear el tipo de asiento';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al crear el tipo de asiento');
       toast.error(message);
     },
   });
@@ -73,8 +74,8 @@ export const useUpdateSeatType = () => {
 
       toast.success(`Tipo de asiento ${updatedSeatType.name} actualizado exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar el tipo de asiento';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar el tipo de asiento');
       toast.error(message);
     },
   });
@@ -94,8 +95,8 @@ export const useDeleteSeatType = () => {
 
       toast.success(`Tipo de asiento ${deletedSeatType.name} desactivado exitosamente`);
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al desactivar el tipo de asiento';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al desactivar el tipo de asiento');
       toast.error(message);
     },
   });
@@ -118,8 +119,8 @@ export const useUpdateSeatTypeOrder = () => {
       queryClient.invalidateQueries({ queryKey: ['seatTypes'] });
       toast.success('Orden actualizado exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || 'Error al actualizar el orden';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar el orden');
       toast.error(message);
     },
   });

@@ -9,6 +9,7 @@ import {
   QuotationStatusUpdate,
   ConvertToInvoiceData
 } from '../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Tipos para las respuestas
 interface QuotationsListResponse {
@@ -40,8 +41,8 @@ export const useCreateQuotation = () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
       toast.success('Cotización creada exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || error.message || 'Error al crear cotización';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al crear cotización');
       toast.error(message);
     },
   });
@@ -57,8 +58,8 @@ export const useUpdateQuotationStatus = () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
       toast.success('Estado actualizado exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || error.message || 'Error al actualizar estado';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al actualizar estado');
       toast.error(message);
     },
   });
@@ -74,8 +75,8 @@ export const useDeleteQuotation = () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
       toast.success('Cotización eliminada exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || error.message || 'Error al eliminar cotización';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al eliminar cotización');
       toast.error(message);
     },
   });
@@ -91,8 +92,8 @@ export const useSendQuotationByEmail = () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
       toast.success('Cotización enviada por email exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || error.message || 'Error al enviar por email';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al enviar por email');
       toast.error(message);
     },
   });
@@ -108,8 +109,8 @@ export const useConvertQuotationToInvoice = () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });
       toast.success('Cotización convertida a factura exitosamente');
     },
-    onError: (error: any) => {
-      const message = error.response?.data?.detail || error.message || 'Error al convertir a factura';
+    onError: (error) => {
+      const message = getErrorMessage(error, 'Error al convertir a factura');
       toast.error(message);
     },
   });

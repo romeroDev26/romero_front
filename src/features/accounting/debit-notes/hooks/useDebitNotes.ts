@@ -8,6 +8,7 @@ import {
   DebitNoteAnnulData,
 } from '../../types';
 import { toast } from '@/utils/sileo-toast';
+import { getErrorMessage } from '../../../../utils/errorHandler';
 
 // Hook para listar notas de débito
 export const useDebitNotes = (params: DebitNotesListParams) => {
@@ -38,8 +39,8 @@ export const useCreateDebitNote = () => {
       toast.success(`Nota de Débito ${data.identifier || 'generada'} correctamente. Se está enviando a SUNAT.`);
       queryClient.invalidateQueries({ queryKey: ['debitNotes'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al crear la nota de débito');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al crear la nota de débito'));
     },
   });
 };
@@ -89,12 +90,8 @@ export const useAnnulDebitNote = () => {
       queryClient.invalidateQueries({ queryKey: ['debitNotes'] });
       queryClient.invalidateQueries({ queryKey: ['creditNotes'] });
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail?.[0]?.msg || 
-                          error.response?.data?.detail || 
-                          error.response?.data?.message || 
-                          'Error al anular la nota de débito';
-      toast.error(errorMessage);
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al anular la nota de débito'));
     },
   });
 };

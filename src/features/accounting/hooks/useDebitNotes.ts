@@ -7,6 +7,7 @@ import {
   DebitNoteCreateData,
 } from '../types';
 import { toast } from '@/utils/sileo-toast';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 // Hook para listar notas de débito
 export const useDebitNotes = (params: DebitNotesListParams) => {
@@ -37,8 +38,8 @@ export const useCreateDebitNote = () => {
       toast.success(`Nota de Débito ${data.identifier} generada correctamente. Se está enviando a SUNAT.`);
       queryClient.invalidateQueries({ queryKey: ['debitNotes'] });
     },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Error al crear la nota de débito');
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'Error al crear la nota de débito'));
     },
   });
 };

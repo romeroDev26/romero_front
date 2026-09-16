@@ -17,6 +17,7 @@ import { Spinner } from '../../../components/common/Spinner';
 import { Modal } from '../../../components/common/Modal';
 import { clientsService } from '../../../services/clients.service';
 import { Client, DocType } from '../../../types';
+import { asApiError, getErrorMessage } from '../../../utils/errorHandler';
 
 // Función helper para obtener el texto del tipo de documento
 const getDocTypeDisplay = (type: string): string => {
@@ -104,14 +105,15 @@ export const ClientsListPage: React.FC = () => {
       setIsDeleteModalOpen(false);
       setSelectedClient(null);
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      const apiError = asApiError(error);
       console.error('Error eliminando cliente:', error);
-      if (error.response?.status === 403) {
+      if (apiError.response?.status === 403) {
         toast.error('No tienes permisos para eliminar clientes');
-      } else if (error.response?.status === 404) {
+      } else if (apiError.response?.status === 404) {
         toast.error('Cliente no encontrado');
       } else {
-        toast.error(error.response?.data?.detail || 'Error al eliminar cliente');
+        toast.error(getErrorMessage(error, 'Error al eliminar cliente'));
       }
     }
   });

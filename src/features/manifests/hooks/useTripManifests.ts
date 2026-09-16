@@ -5,6 +5,7 @@ import { toast } from '@/utils/sileo-toast';
 import { manifestService } from '../services/manifest.service';
 import { generatePassengerManifestPDF } from '../services/manifestPdfGeneration.service';
 import { Manifest, ManifestFormData } from '../types/manifest.types';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 export function useTripManifests() {
   const { tripId } = useParams<{ tripId: string }>();
@@ -88,17 +89,18 @@ export function useTripManifests() {
         await generateAndUploadPDF(result.data);
       }
     },
-    onError: (error: any) => {
+    onError: (error) => {
+      const apiError = asApiError(error);
       console.error('Error al generar manifiesto:', error);
 
-      if (error.response?.status === 403) {
-        toast.error(error.response.data?.detail || 'No tienes permisos para generar manifiestos');
-      } else if (error.response?.status === 401) {
+      if (apiError.response?.status === 403) {
+        toast.error(detailToString(apiError.response.data?.detail) || 'No tienes permisos para generar manifiestos');
+      } else if (apiError.response?.status === 401) {
         toast.error('No se puede generar el manifiesto: no hay datos registrados para este viaje');
-      } else if (error.response?.status === 400 || error.response?.status === 422) {
+      } else if (apiError.response?.status === 400 || apiError.response?.status === 422) {
         const msg =
-          error.response.data?.message ||
-          error.response.data?.detail ||
+          apiError.response.data?.message ||
+          detailToString(apiError.response.data?.detail) ||
           'No hay datos suficientes para generar el manifiesto';
         toast.error(msg);
       } else {
@@ -134,7 +136,7 @@ export function useTripManifests() {
       queryClient.invalidateQueries({ queryKey: ['trip-manifests', tripId] });
       queryClient.invalidateQueries({ queryKey: ['manifests'] });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       console.error('Error al regenerar PDF:', error);
       toast.error(error.message || 'Error al regenerar el PDF');
     },

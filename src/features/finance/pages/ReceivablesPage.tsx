@@ -22,7 +22,7 @@ import { PaidTicketModal } from '../components/payment/PaidTicketModal';
 import { ViewTicketModal } from '../components/payment/ViewTicketModal';
 
 const ReceivablesPage: React.FC = () => {
-  const [companyId, setCompanyId] = React.useState<number | undefined>();
+  const [, setCompanyId] = React.useState<number | undefined>();
 
   useEffect(() => {
     const user = authService.getCurrentUser();
@@ -43,7 +43,6 @@ const ReceivablesPage: React.FC = () => {
     updateFilters,
     clearFilters,
     goToPage,
-    changePageSize,
     refresh,
   } = useReceivables();
 
@@ -87,10 +86,6 @@ const ReceivablesPage: React.FC = () => {
     clearFilters();
     setDateRange([null, null]);
     setShowDatePicker(false);
-  };
-
-  const clearStatusFilter = () => {
-    updateFilters({ payment_status: null });
   };
 
   const [viewTicketItem, setViewTicketItem] = useState<{

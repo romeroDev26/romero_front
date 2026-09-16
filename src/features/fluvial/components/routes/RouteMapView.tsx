@@ -197,7 +197,6 @@ export const RouteMapView: React.FC<RouteMapViewProps> = ({
 
             const strokeColor = isFirst ? '#1F4690' : isLast ? '#4d4d4d' : '#828282';
             const strokeWidth = fixed ? 3 : 2;
-            const labelColor = isFirst ? '#1F4690' : isLast ? '#4d4d4d' : '#828282';
             const labelText = isFirst ? 'ORIGEN' : isLast ? 'DESTINO' : '';
 
             return (

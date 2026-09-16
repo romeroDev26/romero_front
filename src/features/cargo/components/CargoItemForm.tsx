@@ -291,8 +291,6 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
 
   const labelClass = `block text-sm font-medium mb-1.5 ${FONT.inter}`;
 
-  const sectionClass = `rounded-lg border border-[${COLORS.lightPearl}] bg-dm-bg-primary p-5 space-y-5`;
-
   return (
     <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">

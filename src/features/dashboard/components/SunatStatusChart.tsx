@@ -3,42 +3,6 @@ import React from 'react';
 import { SunatStatusMetric } from '../../../types/reports';
 import { CheckCircleIcon, XCircleIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
-// Colores modernos para cada estado
-const STATUS_COLORS = {
-  ACCEPTED: '#10b981',
-  REJECTED: '#ef4444',
-  PENDING: '#f59e0b',
-  ERROR: '#f97316',
-};
-
-// Tooltip personalizado elegante
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div className="bg-dm-bg-primary px-4 py-3 shadow-lg rounded-lg border border-dm-border-secondary">
-        <p className="text-sm font-medium text-dm-text-primary mb-2">{data.label}</p>
-        <div className="flex items-center gap-2 text-sm">
-          <div 
-            className="w-3 h-3 rounded-full" 
-            style={{ backgroundColor: data.fill }}
-          />
-          <span className="text-dm-text-secondary">Documentos:</span>
-          <span className="font-semibold text-dm-text-primary">{data.count}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm mt-1">
-          <div className="w-3 h-3 rounded-full bg-dm-text-muted" />
-          <span className="text-dm-text-secondary">Monto:</span>
-          <span className="font-semibold text-dm-text-primary">
-            S/ {data.amount.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-          </span>
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
 interface SunatStatusChartProps {
   sunatStatus: SunatStatusMetric;
   isLoading?: boolean;

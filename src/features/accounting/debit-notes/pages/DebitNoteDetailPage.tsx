@@ -51,16 +51,6 @@ export const DebitNoteDetailPage: React.FC = () => {
     }
   };
 
-  const getSunatStatusText = (status: string) => {
-    const texts: Record<string, string> = {
-      PENDING: 'Pendiente',
-      SENT: 'Enviado',
-      ACCEPTED: 'Aceptado',
-      REJECTED: 'Rechazado',
-    };
-    return texts[status] || 'Error';
-  };
-
   const getStatusMessage = (status: string) => {
     const messages: Record<string, string> = {
       PENDING: 'El documento está pendiente de envío a SUNAT',
@@ -90,21 +80,6 @@ export const DebitNoteDetailPage: React.FC = () => {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    const dateOnlyMatch = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    const dateObj = dateOnlyMatch
-      ? new Date(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3]))
-      : new Date(dateString);
-
-    return dateObj.toLocaleString('es-PE', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     });
   };
 

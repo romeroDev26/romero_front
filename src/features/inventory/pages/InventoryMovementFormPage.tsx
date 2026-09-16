@@ -101,19 +101,6 @@ export const InventoryMovementFormPage: React.FC = () => {
     setMovementType(selectedMovementType);
   }, [selectedMovementType]);
   
-  const getMovementTypeDisplay = (type: string) => {
-    switch (type) {
-      case 'PURCHASE_ENTRY': return 'Entrada por Compra';
-      case 'SALE_EXIT': return 'Salida por Venta';
-      case 'INITIAL_STOCK': return 'Carga Inicial';
-      case 'ADJUSTMENT_IN': return 'Ajuste de Entrada';
-      case 'ADJUSTMENT_OUT': return 'Ajuste de Salida';
-      case 'TRANSFER_IN': return 'Entrada por Transferencia';
-      case 'TRANSFER_OUT': return 'Salida por Transferencia';
-      default: return type;
-    }
-  };
-  
   const onSubmit = (data: MovementFormData) => {
     // En un proyecto real, llamarías a una API
     // inventoryService.createMovement(data);

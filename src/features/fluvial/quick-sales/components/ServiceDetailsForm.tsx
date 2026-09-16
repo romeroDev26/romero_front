@@ -60,9 +60,6 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
     );
   }
 
-  const finalPrice = customPrice ? parseFloat(customPrice) : Number(selectedProduct.sale_price);
-  const isCustomPrice = customPrice.trim() !== '';
-
   return (
     <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
       <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">

@@ -43,24 +43,6 @@ const updateUserSchema = z.object({
   path: ["confirm_password"],
 });
 
-type BaseUserFormData = {
-  email: string;
-  full_name: string;
-  role_id: number;
-  is_active: boolean;
-};
-
-type CreateUserFormData = BaseUserFormData & {
-  password: string;
-  confirm_password: string;
-};
-
-type UpdateUserFormData = BaseUserFormData & {
-  supervisor_id?: string | null;
-  password?: string;
-  confirm_password?: string;
-};
-
 interface UserFormProps {
   initialData?: User;
   onClose: (shouldRefresh?: boolean) => void;

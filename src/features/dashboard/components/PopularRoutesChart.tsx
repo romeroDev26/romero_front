@@ -2,25 +2,6 @@ import React from 'react';
 
 import { RouteMetric } from '../../../types/reports';
 
-// Tooltip personalizado elegante
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-dm-bg-primary px-4 py-3 shadow-lg rounded-lg border border-dm-border-secondary">
-        <p className="text-sm font-medium text-dm-text-primary mb-2">{payload[0].payload.fullName}</p>
-        <div className="flex items-center gap-2 text-sm">
-          <div className="w-3 h-3 rounded-full bg-emerald-500" />
-          <span className="text-dm-text-secondary">Ingresos:</span>
-          <span className="font-semibold text-dm-text-primary">
-            S/ {Number(payload[0].value).toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-          </span>
-        </div>
-      </div>
-    );
-  }
-  return null;
-};
-
 interface PopularRoutesChartProps {
   routes: RouteMetric;
   totalVentas?: number;

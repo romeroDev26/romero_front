@@ -18,7 +18,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
   disabled = false,
   className = ""
 }) => {
-  const { countries, loading, error, searchCountries, getCountryByCode } = useCountries();
+  const { loading, error, searchCountries, getCountryByCode } = useCountries();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 

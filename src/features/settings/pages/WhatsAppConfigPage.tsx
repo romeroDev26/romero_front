@@ -8,9 +8,6 @@ import {
   ArrowPathIcon,
   PlusIcon,
   PhoneIcon,
-  ExclamationTriangleIcon,
-  SignalIcon,
-  SignalSlashIcon,
   ShieldCheckIcon,
   ArrowsRightLeftIcon,
   LinkSlashIcon,
@@ -51,7 +48,9 @@ export const WhatsAppConfigPage: React.FC = () => {
   const [isChangingPhone, setIsChangingPhone] = useState(false);
   const [connectionStates, setConnectionStates] = useState<Record<string, ConnectionState>>({});
   const [checkingInstances, setCheckingInstances] = useState<Set<string>>(new Set());
-  const [isCheckingAll, setIsCheckingAll] = useState(false);
+  // TODO: no hay indicador visual de "verificando todo"; el estado se
+  // escribe pero nunca se lee. Falta conectarlo a un spinner en la UI.
+  const [, setIsCheckingAll] = useState(false);
 
   // Queries y mutations
   const { data: branchOffices = [], isLoading: loadingBranches, refetch: refetchBranches } = useBranchOffices(companyId);
@@ -274,39 +273,6 @@ export const WhatsAppConfigPage: React.FC = () => {
       toast.error('Error al cambiar de teléfono. Intenta nuevamente.');
     } finally {
       setIsChangingPhone(false);
-    }
-  };
-
-  const getStatusBadge = (state: ConnectionState | undefined) => {
-    switch (state) {
-      case 'open':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
-            <SignalIcon className="w-3 h-3 mr-1" />
-            Conectado
-          </span>
-        );
-      case 'connecting':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300">
-            <ArrowPathIcon className="w-3 h-3 mr-1 animate-spin" />
-            Conectando
-          </span>
-        );
-      case 'close':
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300">
-            <SignalSlashIcon className="w-3 h-3 mr-1" />
-            Desconectado
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-dm-bg-secondary text-dm-text-primary">
-            <ExclamationTriangleIcon className="w-3 h-3 mr-1" />
-            Sin verificar
-          </span>
-        );
     }
   };
 

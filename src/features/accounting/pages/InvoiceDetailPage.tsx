@@ -188,6 +188,13 @@ export const InvoiceDetailPage: React.FC = () => {
   /**
    * Genera o regenera el sticker de encomienda 100x100mm
    */
+  // FUNCIONALIDAD SIN CONECTAR: nada en el JSX llama a este handler, asi que
+  // hoy el sticker 100x100 solo se puede ver o descargar si ya existe, no
+  // generar. El endpoint (invoicesService.generateSticker100x100), el tab
+  // 'sticker100x100' y el estado isGeneratingSticker ya estan listos: falta el
+  // boton que lo dispare, como los que tienen handleRegenerateCurrentPdf y
+  // handleRegeneratePdfs. No se elimina para no perder la implementacion.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleGenerateSticker100x100 = async () => {
     if (!invoice || isGeneratingSticker) return;
 

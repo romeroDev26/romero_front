@@ -1,7 +1,6 @@
 // src/features/fluvial/quick-sales/pages/QuickSalePage.tsx
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from '@/utils/sileo-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -39,7 +38,6 @@ import { SunatDocType, SunatInvoiceType } from '../../types/sunat.types';
 import { BranchOffice, CreateClientData } from '../../../../types';
 
 export const QuickSalePage: React.FC = () => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Estado de sucursal

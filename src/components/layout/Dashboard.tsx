@@ -127,7 +127,7 @@ const Dashboard: React.FC = () => {
     }
   }, [sidebarHidden]);
 
-  const { data: currentUser, isLoading, error } = useQuery<User>({
+  const { data: currentUser, isLoading } = useQuery<User>({
     queryKey: ['currentUser'],
     queryFn: async (): Promise<User> => {
       try {
@@ -296,7 +296,9 @@ const Dashboard: React.FC = () => {
   // WebSocket para notificaciones en tiempo real (para todos los usuarios)
   // Los vendedores recibirán notificaciones cuando sus solicitudes sean resueltas
   // Los supervisores recibirán notificaciones y se actualizará el contador
-  const { isConnected } = useWebSocketNotifications({
+  // El hook se invoca por sus efectos (suscripcion a notificaciones);
+  // no se consume su valor de retorno.
+  useWebSocketNotifications({
     enabled: !!currentUser,
     onCancellationRequestCreated: handleCancellationRequestCreated,
     onCancellationRequestResolved: handleCancellationRequestResolved

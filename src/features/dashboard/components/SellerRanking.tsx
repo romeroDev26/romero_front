@@ -64,13 +64,6 @@ const getProgressBarColors = (position: number) => {
   return 'bg-gradient-to-r from-blue-500 to-blue-600';
 };
 
-const getPercentageColor = (position: number) => {
-  if (position === 1) return 'text-yellow-600 dark:text-yellow-400';
-  if (position === 2) return 'text-dm-text-secondary';
-  if (position === 3) return 'text-orange-600 dark:text-orange-400';
-  return 'text-blue-600 dark:text-blue-400';
-};
-
 const getTopCardStyles = (position: number) => {
   if (position === 1) {
     return 'bg-amber-50 dark:bg-amber-950/40 border-l-2 border-amber-400';

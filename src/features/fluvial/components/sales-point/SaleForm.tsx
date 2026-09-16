@@ -92,8 +92,6 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
       getCurrencySymbol,
       showSeatMap,
       isReserving,
-      reserveSeat,
-      releaseSeat,
       getReservedSeatNumbers,
       handleSeatReserveForRepresentative,
       handleSeatReleaseForRepresentative,

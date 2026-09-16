@@ -13,16 +13,6 @@ const toneIconClass: Record<DashboardStatTone, string> = {
   cyan: 'from-cyan-500 to-cyan-600',
 };
 
-const toneBgSoft: Record<DashboardStatTone, string> = {
-  indigo: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400',
-  rose: 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400',
-  emerald: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
-  amber: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
-  blue: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
-  violet: 'bg-violet-50 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400',
-  cyan: 'bg-cyan-50 dark:bg-cyan-950/30 text-cyan-600 dark:text-cyan-400',
-};
-
 export interface TrendData {
   porcentaje: number;
   tendencia: 'up' | 'down' | 'neutral';

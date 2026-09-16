@@ -34,18 +34,6 @@ const supplierSchema = z.object({
 
 type SupplierFormData = z.infer<typeof supplierSchema>;
 
-// Función helper para obtener el texto del tipo de documento
-const getDocTypeDisplay = (type: DocType): string => {
-  switch (type) {
-    case '1': return 'DNI';
-    case '4': return 'Carnet de Extranjería';
-    case '6': return 'RUC';
-    case '7': return 'Pasaporte';
-    case '0': return 'Otros';
-    default: return 'Desconocido';
-  }
-};
-
 export const SupplierFormPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();

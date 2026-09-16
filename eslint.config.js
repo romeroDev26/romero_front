@@ -30,6 +30,9 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
+          // `const { omitida, ...resto } = obj` es la forma idiomatica de
+          // excluir una clave: la variable existe solo para no ir en el resto.
+          ignoreRestSiblings: true,
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           caughtErrorsIgnorePattern: '^_',

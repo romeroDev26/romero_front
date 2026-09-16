@@ -158,7 +158,7 @@ export function useSaleForm({
   // Hooks de servicios
   const { createCompanyInvoiceWithRepresentatives, isCreating } =
     useRepresentantes();
-  const { reserveSeat, releaseSeat, getReservedSeatNumbers, isReserving, reservedSeats, updateReservationSeatId, releaseAllReservations } =
+  const { reserveSeat, releaseSeat, getReservedSeatNumbers, isReserving, reservedSeats, releaseAllReservations } =
     useSeatReservations(trip.id);
 
   // Hook de usuario actual
@@ -903,12 +903,6 @@ export function useSaleForm({
 
     return seatIds;
   }, [representatives.length, seatMap.length]); // Ya optimizado con longitudes
-
-  // Funcion para encontrar el seatId a partir del seat_number - Memoizada
-  const findSeatIdBySeatNumber = useCallback((seatNumber: string): number | null => {
-    const seat = seatMap.find((seat) => seat.seat_number === seatNumber);
-    return seat ? seat.id : null;
-  }, [seatMap.length]); // Ya optimizado con longitud
 
   // NUEVO: Handler para abrir el modal de confirmación
   const handleOpenConfirmModal = useCallback(() => {

@@ -40,8 +40,6 @@ export const TripManifestCard: React.FC<TripManifestCardProps> = ({
   onNavigateToTrip,
 }) => {
   const status = getTripStatusLabel(trip.status);
-  const hasPassenger = !!trip.passengerManifest;
-  const hasCargo = !!trip.cargoManifest;
 
   return (
     <div className="bg-dm-bg-primary rounded-2xl border border-dm-border-primary overflow-hidden hover:shadow-md transition-shadow">

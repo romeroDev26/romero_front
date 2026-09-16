@@ -59,18 +59,6 @@ type UpdateClientData = CreateClientData;
 
 type ClientFormData = z.infer<typeof clientSchema>;
 
-// Función helper para obtener el texto del tipo de documento
-const getDocTypeDisplay = (type: DocType): string => {
-  switch (type) {
-    case '1': return 'DNI';
-    case '4': return 'Carnet de Extranjería';
-    case '6': return 'RUC';
-    case '7': return 'Pasaporte';
-    case '0': return 'Otros';
-    default: return 'Desconocido';
-  }
-};
-
 // Opciones de tipo de documento para el select
 const DOC_TYPE_OPTIONS: { value: DocType; label: string }[] = [
   { value: '6', label: 'RUC' },

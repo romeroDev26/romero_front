@@ -101,7 +101,7 @@ export const useManifestsPage = () => {
   });
   const [showBranchSelector, setShowBranchSelector] = useState(false);
   const branchSelectorRef = useRef<HTMLDivElement>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const initialDateParam = searchParams.get('date');
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     if (initialDateParam) {

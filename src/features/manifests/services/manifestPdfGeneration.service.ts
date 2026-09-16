@@ -7,13 +7,12 @@ import { getDocumentCompanyInfo } from "../../../utils/documentCompanyInfo";
 export const generatePassengerManifestPDF = async (
   manifestData: Manifest
 ): Promise<{ pdf: jsPDF; blob: Blob }> => {
-  const rawManifest = manifestData as any;
-  const passengerItems = Array.isArray(rawManifest.data) && rawManifest.data.length > 0
-    ? rawManifest.data
+  const passengerItems = Array.isArray(manifestData.data) && manifestData.data.length > 0
+    ? manifestData.data
     : (manifestData.items || []);
   const cargoItems = manifestData.items && manifestData.items.length > 0
     ? manifestData.items
-    : (Array.isArray(rawManifest.data) ? rawManifest.data : []);
+    : (Array.isArray(manifestData.data) ? manifestData.data : []);
 
   // OrientaciÃ³n: horizontal para ambos tipos (pasajeros y carga)
   const orientation = "l"; // Siempre horizontal
@@ -102,7 +101,7 @@ export const generatePassengerManifestPDF = async (
   currentY += Math.max(logoH, boxH) + 8;
 
   // InformaciÃ³n de viaje en la parte inferior del header
-  const departureDateTime = manifestData.departure_datetime || rawManifest.trip_info?.departure_datetime;
+  const departureDateTime = manifestData.departure_datetime || manifestData.trip_info?.departure_datetime;
   const depInfo = departureDateTime
     ? new Date(departureDateTime)
     : null;
@@ -135,13 +134,13 @@ export const generatePassengerManifestPDF = async (
     pdf.setFont("helvetica", "bold");
     pdf.text("ORIGEN:", col2X, currentY);
     pdf.setFont("helvetica", "normal");
-    const originPort = manifestData.origin_port_name || rawManifest.trip_info?.origin_port_name || "N/A";
+    const originPort = manifestData.origin_port_name || manifestData.trip_info?.origin_port_name || "N/A";
     pdf.text(originPort, col2X + 20, currentY);
 
     pdf.setFont("helvetica", "bold");
     pdf.text("PLACA:", col3X, currentY);
     pdf.setFont("helvetica", "normal");
-    const vesselPlate = manifestData.vessel_registration_number || rawManifest.trip_info?.vehicle_license_plate || "N/A";
+    const vesselPlate = manifestData.vessel_registration_number || manifestData.trip_info?.vehicle_license_plate || "N/A";
     pdf.text(vesselPlate, col3X + 17, currentY);
 
     currentY += 6;
@@ -155,10 +154,10 @@ export const generatePassengerManifestPDF = async (
     pdf.setFont("helvetica", "bold");
     pdf.text("DESTINO:", col2X, currentY);
     pdf.setFont("helvetica", "normal");
-    const destinationPort = manifestData.destination_port_name || rawManifest.trip_info?.destination_port_name || "N/A";
+    const destinationPort = manifestData.destination_port_name || manifestData.trip_info?.destination_port_name || "N/A";
     pdf.text(destinationPort, col2X + 22, currentY);
 
-    const vehicleName = manifestData.trip_info?.vehicle_model || rawManifest.trip_info?.vehicle_model || "N/A";
+    const vehicleName = manifestData.trip_info?.vehicle_model || manifestData.trip_info?.vehicle_model || "N/A";
     pdf.setFont("helvetica", "bold");
     pdf.text("Embarcacion:", col3X - 5, currentY);
     pdf.setFont("helvetica", "normal");
@@ -187,13 +186,13 @@ export const generatePassengerManifestPDF = async (
     pdf.setFont("helvetica", "bold");
     pdf.text("ORIGEN:", col2X, currentY);
     pdf.setFont("helvetica", "normal");
-    const originPort = manifestData.origin_port_name || rawManifest.trip_info?.origin_port_name || "N/A";
+    const originPort = manifestData.origin_port_name || manifestData.trip_info?.origin_port_name || "N/A";
     pdf.text(originPort, col2X + 20, currentY);
 
     pdf.setFont("helvetica", "bold");
     pdf.text("PLACA:", col3X, currentY);
     pdf.setFont("helvetica", "normal");
-    const vesselPlate = manifestData.vessel_registration_number || rawManifest.trip_info?.vehicle_license_plate || "N/A";
+    const vesselPlate = manifestData.vessel_registration_number || manifestData.trip_info?.vehicle_license_plate || "N/A";
     pdf.text(vesselPlate, col3X + 17, currentY);
 
     currentY += 6;
@@ -207,10 +206,10 @@ export const generatePassengerManifestPDF = async (
     pdf.setFont("helvetica", "bold");
     pdf.text("DESTINO:", col2X, currentY);
     pdf.setFont("helvetica", "normal");
-    const destinationPort = manifestData.destination_port_name || rawManifest.trip_info?.destination_port_name || "N/A";
+    const destinationPort = manifestData.destination_port_name || manifestData.trip_info?.destination_port_name || "N/A";
     pdf.text(destinationPort, col2X + 22, currentY);
 
-    const vehicleName = manifestData.trip_info?.vehicle_model || rawManifest.trip_info?.vehicle_model || "N/A";
+    const vehicleName = manifestData.trip_info?.vehicle_model || manifestData.trip_info?.vehicle_model || "N/A";
     pdf.setFont("helvetica", "bold");
     pdf.text("Embarcacion:", col3X - 5, currentY);
     pdf.setFont("helvetica", "normal");
@@ -232,7 +231,7 @@ export const generatePassengerManifestPDF = async (
   // TABLAS
   if (manifestData.manifest_type === "CARGO") {
     // Reutilizar la lÃ³gica existente para cargo (agrupado o plano)
-    const grouped = (manifestData as any).cargo_grouped_by_stops;
+    const grouped = manifestData.cargo_grouped_by_stops;
     if (grouped && Array.isArray(grouped.groups) && grouped.groups.length > 0) {
       let globalItemNumber = 1; // NumeraciÃ³n continua entre grupos
       const pageHeight = pdf.internal.pageSize.height;
@@ -241,7 +240,7 @@ export const generatePassengerManifestPDF = async (
 
       // Ordenar grupos por disembarking_stop_order ascendente
       const sortedGroups = [...grouped.groups].sort(
-        (a: any, b: any) => (a.disembarking_stop_order ?? 0) - (b.disembarking_stop_order ?? 0)
+        (a, b) => (a.disembarking_stop_order ?? 0) - (b.disembarking_stop_order ?? 0)
       );
 
       for (const group of sortedGroups) {
@@ -263,10 +262,10 @@ export const generatePassengerManifestPDF = async (
 
         // Ordenar ítems del grupo por parcel_number (ascendente)
         const sortedItems = [...(group.items || [])].sort(
-          (a: any, b: any) => (a.parcel_number ?? 0) - (b.parcel_number ?? 0)
+          (a, b) => (a.parcel_number ?? 0) - (b.parcel_number ?? 0)
         );
 
-        const tableData = sortedItems.map((item: any) => {
+        const tableData = sortedItems.map((item) => {
           // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
           let contactos = "";
           const remitentePhone = item.remitente_phone && item.remitente_phone.trim() !== "" ? item.remitente_phone : null;
@@ -385,8 +384,8 @@ export const generatePassengerManifestPDF = async (
       }
     } else if (cargoItems && cargoItems.length > 0) {
       const tableData = [...cargoItems]
-        .sort((a: any, b: any) => (a.item_order ?? 0) - (b.item_order ?? 0))
-        .map((item: any, idx: number) => {
+        .sort((a, b) => (a.item_order ?? 0) - (b.item_order ?? 0))
+        .map((item, idx) => {
           // Formatear contactos: R: (remitente) D: (destinatario) con salto de línea
           let contactos = "";
           const remitentePhone = item.remitente_phone && item.remitente_phone.trim() !== "" ? item.remitente_phone : null;
@@ -505,8 +504,8 @@ export const generatePassengerManifestPDF = async (
     // PASAJEROS: construir tabla centrada y con estilo similar a carga
     if (passengerItems && passengerItems.length > 0) {
       const tableData = passengerItems
-        .sort((a: any, b: any) => a.item_order - b.item_order)
-        .map((item: any, idx: number) => {
+        .sort((a, b) => a.item_order - b.item_order)
+        .map((item, idx) => {
           const rawSeller =
             item.seller_name ??
             item?.seller?.name ??

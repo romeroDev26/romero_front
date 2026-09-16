@@ -45,6 +45,25 @@ export interface ManifestItem {
   amount?: number;
   payment_status?: string;
   parcel_number?: number;
+
+  // ── Nombres heredados ────────────────────────────────────────────────────
+  // El endpoint que devuelve los items en `data` (en vez de en `items`) usa
+  // estos nombres para los mismos datos. El generador de PDF lee ambos con
+  // fallback, asi que se declaran como opcionales en lugar de recurrir a any.
+  /** Alias heredado de passenger_name. */
+  full_name?: string;
+  /** Alias heredado de passenger_doc_number. */
+  document_number?: string;
+  /** Alias heredado de passenger_doc_type. */
+  document_type?: string;
+  /** Alias heredado de passenger_phone. */
+  phone?: string;
+  /** Alias heredado de boarding_port_name. */
+  boarding_port?: string;
+  /** Alias heredado de disembarking_port_name. */
+  destination_port?: string;
+  /** Vendedor como objeto anidado, en vez de seller_name plano. */
+  seller?: { name?: string };
 }
 
 export interface TripInfo {
@@ -58,6 +77,22 @@ export interface TripInfo {
   vehicle_model: string;
   vehicle_capacity: number;
   branch_office_name: string;
+}
+
+/**
+ * Grupo de encomiendas por tramo. El backend agrupa asi los manifiestos de
+ * CARGO para que el PDF pueda imprimir un subtotal y un titulo por tramo.
+ */
+export interface CargoStopGroup {
+  origin_port_name?: string;
+  destination_port_name?: string;
+  /** Orden del punto de desembarque; se usa para ordenar los grupos. */
+  disembarking_stop_order?: number;
+  items?: ManifestItem[];
+}
+
+export interface CargoGroupedByStops {
+  groups?: CargoStopGroup[];
 }
 
 export interface Manifest {
@@ -88,6 +123,13 @@ export interface Manifest {
   company?: Company;
   items: ManifestItem[];
   trip_info?: TripInfo; // Información detallada del viaje
+  /**
+   * Algunos endpoints devuelven los items del manifiesto en `data` en lugar de
+   * en `items`; el generador de PDF acepta ambas formas.
+   */
+  data?: ManifestItem[];
+  /** Presente solo en manifiestos de CARGO agrupados por tramo. */
+  cargo_grouped_by_stops?: CargoGroupedByStops;
 }
 
 export interface ManifestPassenger {

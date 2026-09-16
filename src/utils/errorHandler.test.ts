@@ -31,6 +31,43 @@ describe('getErrorMessage', () => {
     const error = { response: { status: 500, data: { message: 'Mensaje alternativo' } } };
     expect(getErrorMessage(error)).toBe('Mensaje alternativo');
   });
+
+  // El backend no siempre manda `detail` como string. Antes se devolvia tal
+  // cual, asi que un objeto o un array terminaba renderizado como
+  // "[object Object]" en el toast que ve el usuario.
+  it('extracts the message when a 403 sends detail as an object', () => {
+    const error = {
+      response: { status: 403, data: { detail: { message: 'Permiso denegado' } } },
+    };
+    expect(getErrorMessage(error)).toBe('Permiso denegado');
+  });
+
+  it('extracts the first message when a 409 sends detail as an array', () => {
+    const error = {
+      response: { status: 409, data: { detail: [{ msg: 'Serie ya utilizada' }] } },
+    };
+    expect(getErrorMessage(error)).toBe('Serie ya utilizada');
+  });
+
+  it('never returns a non-string, whatever shape detail has', () => {
+    const shapes = [
+      { detail: { message: 'ok' } },
+      { detail: [{ msg: 'ok' }] },
+      { detail: 'ok' },
+      { detail: {} },
+      { detail: [] },
+    ];
+    for (const data of shapes) {
+      for (const status of [403, 409, 422, 500]) {
+        expect(typeof getErrorMessage({ response: { status, data } })).toBe('string');
+      }
+    }
+  });
+
+  it('falls back when the thrown value is not an object', () => {
+    expect(getErrorMessage('fallo de red', 'Fallback')).toBe('Fallback');
+    expect(getErrorMessage(new Error('boom'), 'Fallback')).toBe('Fallback');
+  });
 });
 
 describe('isPermissionError', () => {

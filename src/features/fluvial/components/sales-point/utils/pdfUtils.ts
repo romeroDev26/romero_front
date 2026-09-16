@@ -46,7 +46,7 @@ export const getDocumentTypeName = (code: string): string => {
 export const formatDate = (dateString: string): string => {
   try {
     return format(parseISO(dateString), 'dd/MM/yyyy', { locale: es });
-  } catch (error) {
+  } catch {
     return dateString;
   }
 };
@@ -61,7 +61,7 @@ export const formatTime = (timeString: string): string => {
       return format(parseISO(`2000-01-01T${timeString}`), 'HH:mm');
     }
     return timeString;
-  } catch (error) {
+  } catch {
     return timeString;
   }
 };

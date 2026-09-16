@@ -117,14 +117,14 @@ export const DebitNoteDetailPage: React.FC = () => {
         } else {
           throw new Error('No se puede acceder al contenido del iframe');
         }
-      } catch (error) {
+      } catch {
         const pdfUrl = activeTab === 'ticket80mm' ? debitNote?.pdf_ticket_file_path : (activeTab === 'a4' ? debitNote?.pdf_a4_file_path : debitNote?.pdf_file_path);
         const printWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');
         if (printWindow) {
           printWindow.onload = () => {
             try {
               printWindow.print();
-            } catch (fallbackError) {
+            } catch {
               // noop
             }
           };

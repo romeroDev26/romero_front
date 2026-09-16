@@ -163,7 +163,7 @@ export const CreditNoteDetailPage: React.FC = () => {
           printWindow.onload = () => {
             try {
               printWindow.print();
-            } catch (fallbackError) {
+            } catch {
               toast.info('Haz clic en "Imprimir" en la ventana que se abrió');
             }
           };

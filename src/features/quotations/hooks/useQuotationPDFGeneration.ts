@@ -63,7 +63,7 @@ const generateQuotationPDFWithLogo = async (quotationData: Quotation): Promise<{
       pdf.text(infoLines, contentStartX, currentY + 6);
 
       currentY += Math.max(logoHeight, infoLines.length * 4 + 8);
-    } catch (logoError) {
+    } catch {
       // Fallback sin logo
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(12);
@@ -455,7 +455,7 @@ export const useQuotationPDFGeneration = () => {
           URL.revokeObjectURL(url);
         }, 10000);
       }
-    } catch (error: any) {
+    } catch {
       toast.error('Error al generar vista previa');
     }
   };
@@ -481,7 +481,7 @@ export const useQuotationPDFGeneration = () => {
         URL.revokeObjectURL(url);
       }, 1000);
       
-    } catch (error: any) {
+    } catch {
       toast.error('Error al descargar el PDF');
     }
   };
@@ -495,7 +495,7 @@ export const useQuotationPDFGeneration = () => {
   ): Promise<boolean> => {
     try {
       return await quotationPdfUploadService.verifyPDFUpload(quotationId, authToken);
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -509,7 +509,7 @@ export const useQuotationPDFGeneration = () => {
   ): Promise<string | null> => {
     try {
       return await quotationPdfUploadService.getQuotationPDFUrl(quotationId, authToken);
-    } catch (error) {
+    } catch {
       return null;
     }
   };

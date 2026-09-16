@@ -46,7 +46,7 @@ export const generatePassengerManifestPDF = async (
     } else {
       drawLogoPlaceholder(pdf, logoX, logoY, logoW, logoH);
     }
-  } catch (e) {
+  } catch {
     drawLogoPlaceholder(pdf, logoX, logoY, logoW, logoH);
   }
 

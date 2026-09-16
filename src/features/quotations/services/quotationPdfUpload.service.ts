@@ -121,7 +121,7 @@ export const quotationPdfUploadService = {
 
       // Verificar si la cotización tiene una URL de PDF
       return !!(response.data && response.data.pdf_file_path);
-    } catch (error) {
+    } catch {
       return false;
     }
   },
@@ -141,7 +141,7 @@ export const quotationPdfUploadService = {
       });
 
       return response.data?.pdf_file_path || null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }

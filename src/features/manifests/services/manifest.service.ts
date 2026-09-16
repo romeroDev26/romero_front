@@ -26,7 +26,7 @@ export const manifestService = {
       }
       
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
@@ -156,7 +156,7 @@ export const manifestService = {
       try {
         const response = await api.get(`/dispatch/manifests/${id}`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
         manifest = response.data;
-      } catch (err: any) {
+      } catch {
         // Si falla, reintentar con slash final como fallback
         try {
           const response2 = await api.get(`/dispatch/manifests/${id}/`, { headers: { 'X-Skip-Auth-Redirect': '1' } });

@@ -137,14 +137,14 @@ export const InvoiceDetailPage: React.FC = () => {
             printWindow.onload = () => {
               try {
                 printWindow.print();
-              } catch (fallbackError) {
+              } catch {
                 toast.info('Haz clic en "Imprimir" en la ventana que se abrió');
               }
             };
           } else {
             toast.error('El navegador bloqueó la ventana emergente');
           }
-        } catch (fallbackError) {
+        } catch {
           toast.error('Error al abrir el PDF para imprimir');
         }
       }

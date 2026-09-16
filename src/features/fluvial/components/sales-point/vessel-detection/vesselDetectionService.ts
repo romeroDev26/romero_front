@@ -18,7 +18,7 @@ export class VesselDetectionService {
       if (apiResult) {
         return apiResult;
       }
-    } catch (error) {
+    } catch {
       // Error en detección via API, continuar con métodos de respaldo
     }
 

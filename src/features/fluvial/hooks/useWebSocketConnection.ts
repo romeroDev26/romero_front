@@ -232,7 +232,7 @@ export const useWebSocketConnection = (
         // Error handling se maneja en onclose
       };
 
-    } catch (error) {
+    } catch {
       setConnectionStatus('disconnected');
       
       if (reconnectAttemptsRef.current < maxReconnectAttempts && isWebSocketAvailable) {

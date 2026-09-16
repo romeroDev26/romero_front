@@ -54,7 +54,7 @@ export const QuotationPDFViewer: React.FC<QuotationPDFViewerProps> = ({
                   if (!iframe.contentWindow) {
                     setShowPdfError(true);
                   }
-                } catch (error) {
+                } catch {
                   setShowPdfError(true);
                 }
               }}

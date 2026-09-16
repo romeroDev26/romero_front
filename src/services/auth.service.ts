@@ -41,7 +41,7 @@ export const authService = {
           ...response.data,
           user: userResponse.data
         };
-      } catch (userError) {
+      } catch {
         // Continuamos con el token aunque no se pueda obtener datos del usuario
         return response.data;
       }

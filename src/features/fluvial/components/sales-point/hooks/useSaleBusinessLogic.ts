@@ -148,7 +148,7 @@ export const useSaleBusinessLogic = ({
         try {
           const prod = await productsServicesService.getById(7);
           extraProductName = prod?.name || '';
-        } catch (e) {
+        } catch {
           // Si falla la consulta, usamos la descripción provista o un texto por defecto
           extraProductName = '';
         }

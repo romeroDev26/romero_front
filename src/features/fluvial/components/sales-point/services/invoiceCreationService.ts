@@ -100,7 +100,7 @@ export const invoiceCreationService = {
       try {
         const prod = await productsServicesService.getById(7);
         extraProductName = prod?.name || '';
-      } catch (e) {
+      } catch {
         extraProductName = '';
       }
 

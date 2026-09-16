@@ -109,7 +109,7 @@ export const CompanySettingsPage: React.FC = () => {
       await uploadService(COMPANY_ID, file, options.password);
       toast.success(options.successMsg);
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
-    } catch (err) {
+    } catch {
       toast.error(options.errorMsg);
     }
   };
@@ -179,7 +179,7 @@ export const CompanySettingsPage: React.FC = () => {
       setCompany((prev: any) => (prev ? { ...prev, logo_url: result.logo_url } : prev));
       toast.success('Logo actualizado');
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
-    } catch (err) {
+    } catch {
       toast.error('Error al subir logo');
     } finally {
       setIsUploadingLogo(false);

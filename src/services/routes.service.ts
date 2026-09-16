@@ -160,7 +160,7 @@ export const routeHelpers = {
       try {
         const user = JSON.parse(userInfo);
         return user.company_id || 1;
-      } catch (e) {
+      } catch {
         return 1;
       }
     }

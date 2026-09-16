@@ -53,7 +53,7 @@ export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = (
             message: result.message,
             itemCount: result.itemCount
           });
-        } catch (error) {
+        } catch {
           console.warn('Error en validación inicial, usando valores por defecto');
           // En caso de error en la validación, asumir que se puede generar
           // El error real se manejará al intentar crear el manifiesto

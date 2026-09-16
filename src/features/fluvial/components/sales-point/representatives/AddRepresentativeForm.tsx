@@ -75,7 +75,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
           return []; // Sin asientos configurados -> devolver array vacío
         }
         return response.data as SeatMapItem[];
-      } catch (error) {
+      } catch {
         return [];
       }
     },

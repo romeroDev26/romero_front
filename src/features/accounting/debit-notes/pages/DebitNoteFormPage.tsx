@@ -108,7 +108,7 @@ export const DebitNoteFormPage: React.FC = () => {
         } else {
           sessionStorage.removeItem("debitNoteAffectedInvoice"); // Limpiar datos inválidos
         }
-      } catch (error) {
+      } catch {
         sessionStorage.removeItem("debitNoteAffectedInvoice"); // Limpiar datos corruptos
       }
     }
@@ -144,7 +144,7 @@ export const DebitNoteFormPage: React.FC = () => {
           sessionStorage.removeItem("debitNoteAffectedInvoice");
         }
       }
-    } catch (error) {
+    } catch {
       sessionStorage.removeItem("debitNoteAffectedInvoice");
     }
   };

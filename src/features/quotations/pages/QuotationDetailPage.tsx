@@ -110,7 +110,7 @@ export const QuotationDetailPage: React.FC = () => {
             }
             
             return false;
-          } catch (error) {
+          } catch {
             return false;
           }
         };
@@ -208,7 +208,7 @@ export const QuotationDetailPage: React.FC = () => {
         const updatedQuotation = await quotationsService.getById(quotation.id);
         setQuotation(updatedQuotation);
       }
-    } catch (error) {
+    } catch {
       toast.error('Error al generar PDF');
     }
   };

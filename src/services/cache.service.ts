@@ -22,7 +22,7 @@ export const cacheService = {
     if (shouldClearQueryClient) {
       try {
         queryClient.clear();
-      } catch (error) {
+      } catch {
         // Silenciosamente manejar error de limpieza
       }
     }

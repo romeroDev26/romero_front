@@ -46,7 +46,7 @@ export const generateRemissionGuidePDF = async (
     if (!hasLogo) {
       throw new Error('No se pudo renderizar el logo');
     }
-  } catch (err) {
+  } catch {
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(11);
     pdf.setTextColor(0, 0, 0);

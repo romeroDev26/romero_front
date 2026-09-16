@@ -98,7 +98,7 @@ const SeatTypeFormModal: React.FC<SeatTypeFormProps> = ({ isOpen, onClose, seatT
         await createSeatType.mutateAsync(formData);
       }
       onClose();
-    } catch (error) {
+    } catch {
       // Los errores ya se manejan en los hooks
     }
   };
@@ -282,7 +282,7 @@ export const SeatTypesPage: React.FC = () => {
         id: seatType.id, 
         data: { is_active: !seatType.is_active } 
       });
-    } catch (error) {
+    } catch {
       // Error ya manejado en el hook
     }
   };

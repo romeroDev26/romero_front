@@ -49,7 +49,7 @@ export const ManifestPreviewModal: React.FC<ManifestPreviewModalProps> = ({
         URL.revokeObjectURL(pdfUrl);
       }
       setPdfUrl(url);
-    } catch (error) {
+    } catch {
       // El toast ya se maneja en el hook
     }
   };

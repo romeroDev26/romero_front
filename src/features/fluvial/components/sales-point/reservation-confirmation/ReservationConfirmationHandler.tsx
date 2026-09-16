@@ -170,7 +170,7 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
   const formatReservedDate = () => {
     try {
       return format(parseISO(reservationData.reservedAt), "dd 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale: es });
-    } catch (error) {
+    } catch {
       return reservationData.reservedAt;
     }
   };

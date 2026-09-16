@@ -113,7 +113,7 @@ export const usePaymentConfirmation = () => {
         ...paymentData
       });
       return true;
-    } catch (error) {
+    } catch {
       // Error ya manejado por el mutation
       return false;
     }

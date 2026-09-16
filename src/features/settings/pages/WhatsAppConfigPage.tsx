@@ -88,7 +88,7 @@ export const WhatsAppConfigPage: React.FC = () => {
           try {
             const status = await whatsappConfigService.getConnectionStatus(branch.whatsapp_instance_name);
             newStates[branch.whatsapp_instance_name] = status.connection_state;
-          } catch (error) {
+          } catch {
             newStates[branch.whatsapp_instance_name] = 'unknown';
           }
         }
@@ -118,7 +118,7 @@ export const WhatsAppConfigPage: React.FC = () => {
       } else {
         toast.info(`${instanceName}: ${status.message}`);
       }
-    } catch (error) {
+    } catch {
       setConnectionStates(prev => ({
         ...prev,
         [instanceName]: 'unknown'

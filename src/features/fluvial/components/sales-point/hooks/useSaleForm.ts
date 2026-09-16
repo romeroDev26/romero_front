@@ -193,7 +193,7 @@ export function useSaleForm({
         } else {
           throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
-      } catch (error) {
+      } catch {
         // RESPALDO: Intentar detectar por nombre de embarcación y listas conocidas
         if (trip.vessel_name) {
           // Primero verificar listas conocidas
@@ -1029,7 +1029,7 @@ export function useSaleForm({
         } : { isSplitPayment: false, pagoYapeId: splitPaymentData.pagoYapeId },
         boletaInfants.length > 0 ? boletaInfants : undefined
       );
-    } catch (error) {
+    } catch {
       // Los errores ya son manejados por toast en los hooks internos
     } finally {
       // Asegura cerrar el overlay incluso si los hooks internos capturan errores sin relanzarlos

@@ -176,7 +176,7 @@ export const ScheduleTripsPage: React.FC = () => {
       try {
         await cancelTrip({ id: trip.trip_id, data: { reason } });
         refetch();
-      } catch (error) {
+      } catch {
         toast.error('Error al cancelar el viaje');
       }
     } else if (reason !== null) {
@@ -193,7 +193,7 @@ export const ScheduleTripsPage: React.FC = () => {
       }
       setIsTripModalOpen(false);
       refetch();
-    } catch (error) {
+    } catch {
       toast.error('Error al guardar el viaje');
     }
   };
@@ -218,7 +218,7 @@ export const ScheduleTripsPage: React.FC = () => {
       setIsTripModalOpen(false);
       refetch();
       toast.success('Viaje actualizado exitosamente');
-    } catch (error) {
+    } catch {
       // El error ya se maneja en el hook con toast
     }
   };
@@ -234,7 +234,7 @@ export const ScheduleTripsPage: React.FC = () => {
       setVesselPreviewData(null);
       refetch();
       toast.success('Viaje actualizado exitosamente');
-    } catch (error) {
+    } catch {
       toast.error('Error al aplicar el cambio de embarcación');
     }
   };

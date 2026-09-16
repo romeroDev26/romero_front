@@ -6,7 +6,6 @@ import {
   CheckIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
-import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
 import { SearchableSelect } from '../../../../components/common/SearchableSelect';
 import { Port, RouteStop } from '../../../../types';

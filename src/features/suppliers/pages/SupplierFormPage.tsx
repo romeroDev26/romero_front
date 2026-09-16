@@ -4,12 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
 
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';
-import { Input } from '../../../components/common/Input';
-import { DocType, Supplier } from '../../../types';
+import { DocType } from '../../../types';
 
 // Este servicio tendría que ser implementado
 // import { suppliersService } from '../../../services/suppliers.service';

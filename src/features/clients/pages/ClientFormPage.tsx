@@ -10,7 +10,6 @@ import {
   ArrowLeftIcon,
   UserCircleIcon,
   MapPinIcon,
-  ShieldCheckIcon,
   DocumentTextIcon,
   EnvelopeIcon,
   PhoneIcon,
@@ -18,7 +17,6 @@ import {
   BuildingOffice2Icon,
   HashtagIcon,
   HomeIcon,
-  GlobeAltIcon,
   CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline';

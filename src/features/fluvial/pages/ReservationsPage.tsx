@@ -7,7 +7,6 @@ import { CalendarCheck, Check, Ban, MapPin, Clock, User, CreditCard, StickyNote,
 import { DataTable, Column } from '../../../components/common/DataTable';
 import { useSearchReservations, useUpdateReservation } from '../hooks/useReservations';
 import { SeatReservation, BranchOffice } from '../../../types';
-import { Input } from '../../../components/common/Input';
 import { useDebounce } from '../../../hooks/useDebounce';
 import { BranchSelector } from '../components/sales-point/BranchSelector';
 import { ReservationStatusBadge } from '../components/reservations/ReservationStatusBadge';

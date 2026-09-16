@@ -14,7 +14,6 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { Modal } from '../../../../components/common/Modal';
-import { Input } from '../../../../components/common/Input';
 import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { useVessels } from '../../hooks/useVesselsData';

@@ -7,7 +7,6 @@ import {
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { Ship } from 'lucide-react';
-import { Button } from '../../../components/common/Button';
 import { Spinner } from '../../../components/common/Spinner';
 import { useManifestsPage } from '../hooks/useManifestsPage';
 import { DateNavigator } from '../components/DateNavigator';

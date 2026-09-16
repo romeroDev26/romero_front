@@ -1,14 +1,11 @@
 // src/features/inventory/pages/InventoryDashboardPage.tsx
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { 
   CubeIcon, 
   ArrowUpIcon, 
-  ArrowDownIcon, 
   ExclamationTriangleIcon,
-  BuildingOfficeIcon,
-  ClockIcon
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
 import { Spinner } from '../../../components/common/Spinner';
 import { Button } from '../../../components/common/Button';

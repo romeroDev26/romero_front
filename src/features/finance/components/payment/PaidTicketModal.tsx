@@ -12,7 +12,6 @@ import {
   Hash,
 } from 'lucide-react';
 import { Modal } from '../../../../components/common/Modal';
-import { Button } from '../../../../components/common/Button';
 import { Spinner } from '../../../../components/common/Spinner';
 import { PaymentTicketData } from '../../types/payment.types';
 import { invoicesService } from '../../../../services/invoices.service';

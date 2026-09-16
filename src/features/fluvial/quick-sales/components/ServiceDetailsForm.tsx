@@ -1,7 +1,7 @@
 // src/features/fluvial/quick-sales/components/ServiceDetailsForm.tsx
 
 import React, { useEffect, useState } from 'react';
-import { Settings, AlertTriangle } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { ProductService } from '../../../../types';
 
 interface ServiceDetailsFormProps {

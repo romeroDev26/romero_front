@@ -11,7 +11,6 @@ import {
   MapPinIcon,
   BuildingOfficeIcon,
   ChevronDownIcon,
-  EyeIcon,
 } from '@heroicons/react/24/outline';
 import { format, parseISO } from 'date-fns';
 import { DataTable, Column } from '../../../components/common/DataTable';

@@ -11,7 +11,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from '@/utils/sileo-toast';
 import { cancellationRequestsService } from '../services/cancellationRequests.service';
-import { Spinner } from '../../../components/common/Spinner';
 
 interface RequestCancellationModalProps {
   invoiceId: number;

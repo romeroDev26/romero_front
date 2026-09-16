@@ -4,11 +4,10 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  Tooltip,
-  Legend
+  Tooltip
 } from 'recharts';
 import { PaymentMethodMetric } from '../../../types/reports';
-import { getPaymentMethodName, getPaymentMethodColor } from '../../../utils/paymentMethods';
+import { getPaymentMethodName } from '../../../utils/paymentMethods';
 
 // Colores modernos elegantes
 const MODERN_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6'];

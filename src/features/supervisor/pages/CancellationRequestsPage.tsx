@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from '@/utils/sileo-toast';
 import {
-  BellAlertIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,

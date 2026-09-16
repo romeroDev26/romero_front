@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from '@/utils/sileo-toast';
 import {
-  ChatBubbleLeftRightIcon,
   BuildingOffice2Icon,
   QrCodeIcon,
   CheckCircleIcon,

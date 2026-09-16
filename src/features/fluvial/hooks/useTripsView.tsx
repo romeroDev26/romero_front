@@ -1,7 +1,7 @@
 // src/features/fluvial/hooks/useTripsView.tsx
 import { useQuery } from '@tanstack/react-query';
 import { tripsService, SearchTripsParams } from '../../../services/trips.service';
-import { format, startOfWeek, subYears, addDays } from 'date-fns';
+import { format, startOfWeek, subYears } from 'date-fns';
 
 // Interfaz de visualización estándar para cualquier tipo de viaje
 export interface UnifiedTripViewItem {

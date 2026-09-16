@@ -9,7 +9,6 @@ import {
   User,
   FileText,
   AlertTriangle,
-  ArrowLeft,
   CheckCircle
 } from 'lucide-react';
 

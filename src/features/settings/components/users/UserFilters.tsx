@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import { rolesService } from '../../../../services/roles.service';
 import { Role } from '../../../../types';
-import { toast } from '@/utils/sileo-toast';
 
 interface UserFiltersProps {
   searchTerm: string;

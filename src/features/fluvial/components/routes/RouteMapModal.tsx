@@ -3,7 +3,6 @@ import {
   PlusCircleIcon,
   MapIcon,
   ListBulletIcon,
-  PlusIcon,
 } from '@heroicons/react/24/outline';
 import { Modal } from '../../../../components/common/Modal';
 import { AddStopModal } from './AddStopModal';

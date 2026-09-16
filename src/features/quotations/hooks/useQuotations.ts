@@ -7,8 +7,7 @@ import {
   QuotationsListParams, 
   QuotationCreate,
   QuotationStatusUpdate,
-  ConvertToInvoiceData,
-  PaginationMeta
+  ConvertToInvoiceData
 } from '../types';
 
 // Tipos para las respuestas

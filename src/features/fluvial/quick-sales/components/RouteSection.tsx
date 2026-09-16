@@ -1,6 +1,6 @@
 // src/features/fluvial/quick-sales/components/RouteSection.tsx
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText } from 'lucide-react';
 
 interface RouteSectionProps {

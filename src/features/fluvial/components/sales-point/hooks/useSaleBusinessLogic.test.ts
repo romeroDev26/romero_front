@@ -29,6 +29,18 @@ vi.mock('../../../../../services/products-services.service', () => ({
 }));
 
 describe('useSaleBusinessLogic', () => {
+  // SeatType completo: enrichSeatWithType lo propaga al asiento, asi que debe
+  // ser un SeatType real y no un objeto parcial.
+  const vipSeatType = {
+    id: 1,
+    name: 'VIP',
+    code: 'VIP',
+    price_multiplier: 1.5,
+    is_active: true,
+    display_order: 1,
+    created_at: '2026-01-01T00:00:00Z',
+  };
+
   const createMocks = () => ({
     findOrCreateClient: vi.fn().mockResolvedValue({ id: 100, name: 'Cliente' }),
     createInvoice: vi.fn().mockResolvedValue({
@@ -49,11 +61,22 @@ describe('useSaleBusinessLogic', () => {
     },
     currentUser: { id: 'user-123' },
     tripDetails: { id: 1 },
-    passengerService: { id: 1, name: 'Servicio' },
+    // ProductService completo: el hook lo pasa a saleValidationService y a
+    // invoiceCreationService, que si leen estos campos.
+    passengerService: {
+      id: 1,
+      name: 'Servicio',
+      item_type: 'SERVICE' as const,
+      unit_code: 'NIU',
+      sale_price: 50,
+      currency_code: 'PEN',
+      tax_category_code: 'S',
+      is_active: true,
+      created_at: '2026-01-01T00:00:00Z',
+      updated_at: '2026-01-01T00:00:00Z',
+    },
     vesselDetails: {
-      seat_configurations: [
-        { id: 10, seat_type: { id: 1, name: 'VIP' } },
-      ],
+      seat_configurations: [{ id: 10, seat_type: vipSeatType }],
     },
   });
 
@@ -75,7 +98,7 @@ describe('useSaleBusinessLogic', () => {
     seat_number: 'A1',
     status: 'AVAILABLE',
     vessel_seat_config_id: 10,
-    seat_type: { id: 1, name: 'VIP' },
+    seat_type: vipSeatType,
   } as any;
 
   describe('enrichSeatWithType', () => {
@@ -86,7 +109,7 @@ describe('useSaleBusinessLogic', () => {
         ...baseSeat,
         seat_type: undefined,
       });
-      expect(enriched.seat_type).toEqual({ id: 1, name: 'VIP' });
+      expect(enriched.seat_type).toEqual(vipSeatType);
     });
 
     it('returns seat unchanged if no vessel config', () => {

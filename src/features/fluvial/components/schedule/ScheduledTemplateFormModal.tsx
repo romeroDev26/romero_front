@@ -45,7 +45,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
     generate_weeks_ahead: 4 as number | string,
   });
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isEditing = !!template;
 
@@ -79,12 +79,12 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
   const handleChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev: any) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
   const validate = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
     if (!formData.template_name.trim()) {
       newErrors.template_name = 'El nombre es requerido';
     }

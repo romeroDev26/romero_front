@@ -99,7 +99,7 @@ export const TripFormModal: React.FC<Props> = ({
     captain_user_id: '',
   });
 
-  const [errors, setErrors] = useState<any>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [datePart, setDatePart] = useState('');
   const [timePart, setTimePart] = useState('08:00');
   const [originalVesselId, setOriginalVesselId] = useState<number | null>(null);
@@ -158,7 +158,7 @@ export const TripFormModal: React.FC<Props> = ({
   };
 
   const validate = () => {
-    const newErrors: any = {};
+    const newErrors: Record<string, string> = {};
     if (!trip && (!formData.route_id || formData.route_id === 0)) {
       newErrors.route_id = 'Debe seleccionar una ruta.';
     }

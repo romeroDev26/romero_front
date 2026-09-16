@@ -13,19 +13,65 @@ import { invoiceCreationService } from "../services/invoiceCreationService";
 import { SeatMapItem } from "../../../../../types";
 import { productsServicesService } from "../../../../../services/products-services.service";
 import { asApiError, detailToString } from '../../../../../utils/errorHandler';
+import type { Invoice, User } from "../../../../../types";
+import type {
+  CompanyInvoiceResponse,
+  CompanyInvoiceWithRepresentatives,
+} from "../../../../../services/representantes.service";
+import type { useClientManager } from "../../../hooks/useClientManager";
+import type { useCreateInvoice } from "../../../hooks/useInvoices";
+import type { useCreateSeatAssignment } from "../../../hooks/useSeatAssignments";
+import type { useUpdateReservation } from "../../../hooks/useReservations";
+import type { useRepresentantes } from "../../../hooks/useRepresentantes";
+import type { VesselSeatConfiguration } from "../../../../../types";
+import type { usePassengerService } from "../../../hooks/usePassengerService";
+import type { seatValidationService } from "../../../../../services/seatValidation.service";
+
+// Las dependencias se inyectan desde useSaleForm. En lugar de redeclarar sus
+// tipos a mano (que se desincronizan en silencio), se derivan de los hooks y
+// servicios que realmente las producen: si cambia el origen, esto cambia solo.
+type ClientManager = ReturnType<typeof useClientManager>;
+type InvoiceMutation = ReturnType<typeof useCreateInvoice>;
+type SeatAssignmentMutation = ReturnType<typeof useCreateSeatAssignment>;
+type ReservationMutation = ReturnType<typeof useUpdateReservation>;
+type RepresentantesHook = ReturnType<typeof useRepresentantes>;
 
 interface UseSaleBusinessLogicProps {
   // Dependencias de hooks externos
-  findOrCreateClient: any;
-  createInvoice: any;
-  createSeatAssignment: any;
-  updateReservation: any;
-  createCompanyInvoiceWithRepresentatives: any;
-  seatValidationService: any;
-  currentUser: any;
-  tripDetails: any;
-  passengerService: any;
-  vesselDetails: any;
+  findOrCreateClient: ClientManager['findOrCreateClient'];
+  createInvoice: InvoiceMutation['mutateAsync'];
+  createSeatAssignment: SeatAssignmentMutation['mutateAsync'];
+  updateReservation: ReservationMutation['mutateAsync'];
+  createCompanyInvoiceWithRepresentatives: RepresentantesHook['createCompanyInvoiceWithRepresentatives'];
+  /**
+   * Solo los dos metodos que este hook invoca, no el servicio completo: asi la
+   * dependencia es la minima real y los tests pueden mockear solo eso.
+   */
+  seatValidationService: Pick<
+    typeof seatValidationService,
+    'validateSeatAvailability' | 'releaseSeatReservation'
+  >;
+  /** Solo se lee el id; declararlo asi evita exigir un User completo. */
+  currentUser: Pick<User, 'id'> | undefined;
+  /**
+   * No se leen sus campos: entra solo en el array de dependencias de los
+   * useCallback, para recrearlos cuando cambia el viaje. Por eso `unknown` en
+   * lugar de exigir la forma completa de la respuesta.
+   */
+  tripDetails: unknown;
+  passengerService: ReturnType<typeof usePassengerService>['data'];
+  /**
+   * De la embarcacion solo se usan las configuraciones de asiento, y de cada
+   * una solo su id y su seat_type, para enriquecer el asiento con su tipo.
+   */
+  vesselDetails:
+    | {
+        seat_configurations?: Array<
+          Pick<VesselSeatConfiguration, 'id' | 'seat_type'>
+        >;
+      }
+    | null
+    | undefined;
 }
 
 export const useSaleBusinessLogic = ({
@@ -47,7 +93,7 @@ export const useSaleBusinessLogic = ({
     }
 
     const seatConfig = vesselDetails.seat_configurations.find(
-      (config: any) => config.id === seat.vessel_seat_config_id
+      (config) => config.id === seat.vessel_seat_config_id
     );
 
     if (seatConfig && seatConfig.seat_type) {
@@ -64,8 +110,9 @@ export const useSaleBusinessLogic = ({
     passengerData: PassengerData,
     representatives: Representative[],
     branchName: string,
-    onSuccess: (invoiceData: any) => void,
-    seatMap?: any[],
+    onSuccess: (invoiceData: CompanyInvoiceResponse) => void,
+    /** Solo se buscan asientos por seat_number para leer su id. */
+    seatMap?: Array<Pick<SeatMapItem, 'id' | 'seat_number'>>,
     confirmPurchaseCallback?: (seatIds: number[]) => boolean,
     basePrice?: number,
     seatMultiplier?: number,
@@ -74,7 +121,8 @@ export const useSaleBusinessLogic = ({
     discount?: number,
     isIgvGravado?: boolean,
     series?: string,
-    selectedSeat?: any,
+    /** Solo se leen id y seat_number para el item de transporte. */
+    selectedSeat?: Pick<SeatMapItem, 'id' | 'seat_number'> | null,
     selectedPaymentMethod?: string,
     paymentOperationCode?: string,
     currencyCode?: 'PEN' | 'USD',
@@ -108,17 +156,11 @@ export const useSaleBusinessLogic = ({
 
     try {
       // ← ACTUALIZADO: Construir items_config como array según especificación del backend
-      const itemsConfig: Array<{
-        product_id: number;
-        quantity: number;
-        unit_price: number;
-        discount: number;
-        tax_category_code: string;
-        item_description: string;
-        unit_code: string;
-        trip_seat_id?: number;
-        seat_number?: string;
-      }> = [];
+      // Derivado del payload en lugar de redeclarado: este tipo estaba
+      // duplicado a mano y ya se habia desincronizado en trip_seat_id.
+      const itemsConfig: NonNullable<
+        CompanyInvoiceWithRepresentatives['items_config']
+      > = [];
       
       // ITEM 1: Servicio principal de transporte
       if (basePrice !== undefined && basePrice > 0) {
@@ -173,7 +215,9 @@ export const useSaleBusinessLogic = ({
       }
       
       // ← NUEVO: Construir invoice_config según especificación del backend
-      const invoiceConfig: any = {};
+      const invoiceConfig: NonNullable<
+        CompanyInvoiceWithRepresentatives['invoice_config']
+      > = {};
       
       // Tipo de documento (01=Factura para RUC)
       invoiceConfig.document_type_code = "01";
@@ -212,7 +256,7 @@ export const useSaleBusinessLogic = ({
       
       // Recopilar todos los infantes de todos los representantes
       // JSON segun especificacion exacta del backend
-      const companyInvoiceData: any = {
+      const companyInvoiceData: CompanyInvoiceWithRepresentatives = {
         company_data: {
           client_doc_type: passengerData.docType,
           client_doc_number: passengerData.docNumber,
@@ -234,7 +278,7 @@ export const useSaleBusinessLogic = ({
             }
           }
           
-          const repPayload: any = {
+          const repPayload: CompanyInvoiceWithRepresentatives['representatives'][number] = {
             passenger_name: rep.name,
             passenger_doc_type: rep.document_type,
             passenger_doc_number: rep.document_number,
@@ -287,7 +331,7 @@ export const useSaleBusinessLogic = ({
       }
       
       toast.success(
-        `Factura empresarial creada con ${(result as any).representatives.length} representantes`,
+        `Factura empresarial creada con ${result.representatives.length} representantes`,
         { autoClose: 5000 }
       );
       
@@ -347,8 +391,9 @@ export const useSaleBusinessLogic = ({
     discount: number,
     isIgvGravado: boolean,
     isConfirmingMode: boolean,
-    reservationToConfirm: any,
-    onSuccess: (invoiceData: any) => void,
+    /** Solo se leen id y trip_id para marcar la reserva como confirmada. */
+    reservationToConfirm: { id: number; trip_id: number } | null | undefined,
+    onSuccess: (invoiceData: Invoice) => void,
     itemDescription?: string,
     confirmPurchaseCallback?: (seatIds: number[]) => boolean,
     selectedPaymentMethod?: string,

@@ -26,10 +26,10 @@ export interface CompanyInvoiceWithRepresentatives {
     passenger_doc_number: string;
     passenger_phone?: string;
     passenger_email?: string; // ← AGREGADO: Campo email
-    seat_number?: string; // "Elección libre" o número específico
+    seat_number?: string | null; // "Elección libre" o número específico
     item_description?: string; // ← NUEVO: Texto libre (máx. 453; backend concatena servicio fijo, total SUNAT 500)
     special_notes?: string; // ← AGREGADO: Campo notas especiales
-    trip_seat_id?: number; // ← NUEVO: ID del asiento en la embarcación
+    trip_seat_id?: number | null; // ← NUEVO: ID del asiento en la embarcación
     infants?: Array<{
       full_name: string;
       birth_date: string; // YYYY-MM-DD
@@ -53,6 +53,14 @@ export interface CompanyInvoiceWithRepresentatives {
     // ← NUEVOS CAMPOS DE PAGO
     payment_method_code?: string; // Código interno: EFE, TRF, YAP, PLN, TDB, TCR, DEP, OTR
     payment_operation_code?: string; // Código de operación (hasta 50 caracteres)
+    // Pago dividido: el segundo metodo y el reparto de montos entre ambos.
+    // useSaleBusinessLogic ya los enviaba; faltaban en el tipo.
+    payment_amount_1?: number;
+    payment_method_code_2?: string;
+    payment_operation_code_2?: string;
+    payment_amount_2?: number;
+    /** Id del pago validado por Yape asistido, cuando aplica. */
+    pago_yape_id?: string | null;
   };
   
   // Serie de documento (opcional, requerida para Facturas)
@@ -67,9 +75,11 @@ export interface CompanyInvoiceWithRepresentatives {
     tax_category_code: string; // "10"=Gravado, "20"=Exonerado, "30"=Inafecto
     item_description: string; // Descripción del servicio
     unit_code: string; // "NIU"=Unidad, "ZZ"=Servicio, "KGM"=Kilogramo
-    // Campos para asientos
-    trip_seat_id?: number; // ID del asiento en la embarcación
-    seat_number?: string; // Número del asiento seleccionado por el vendedor
+    // Campos para asientos. Admiten null porque useSaleBusinessLogic envia
+    // null explicito cuando no hay asiento (no omite la clave), y cambiarlo a
+    // undefined alteraria el JSON que recibe el backend.
+    trip_seat_id?: number | null; // ID del asiento en la embarcación
+    seat_number?: string | null; // Número del asiento seleccionado por el vendedor
   }>;
   
   // Configuración adicional (OPCIONAL)
@@ -131,7 +141,10 @@ class RepresentantesService {
   ): Promise<CompanyInvoiceResponse> {
     try {
       // ← CORREGIDO: Endpoint con prefijo /sunat según especificación
-      const response = await api.post('/sunat/invoices/company-with-representatives-extended', data);
+      const response = await api.post<CompanyInvoiceResponse>(
+        '/sunat/invoices/company-with-representatives-extended',
+        data
+      );
       return response.data;
     } catch (error) {
       const apiError = asApiError(error);

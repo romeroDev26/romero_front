@@ -73,7 +73,7 @@ export const manifestService = {
     }
   ): Promise<Manifest[]> => {
     try {
-      const params: Record<string, any> = {
+      const params: Record<string, string | number> = {
         skip: filters?.skip || 0,
         limit: filters?.limit || 100,
         ...(filters?.status && { status: filters.status }),

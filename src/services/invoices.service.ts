@@ -225,7 +225,7 @@ class InvoicesService {
     let fallbackUrl: string | null | undefined;
     switch (size) {
       case '80mm':    fallbackUrl = updatedInvoice.pdf_ticket_file_path; break;
-      case '58mm':    fallbackUrl = (updatedInvoice as any).pdf_ticket58_file_path; break;
+      case '58mm':    fallbackUrl = updatedInvoice.pdf_ticket58_file_path; break;
       case 'a4':      fallbackUrl = updatedInvoice.pdf_a4_file_path; break;
       case '100x100': fallbackUrl = updatedInvoice.pdf_sticker_100x100_file_path; break;
     }
@@ -263,7 +263,7 @@ class InvoicesService {
         pdfUrl = invoice.pdf_ticket_file_path;
         break;
       case '58mm':
-        pdfUrl = (invoice as any).pdf_ticket58_file_path;
+        pdfUrl = invoice.pdf_ticket58_file_path;
         break;
       case 'a4':
         pdfUrl = invoice.pdf_a4_file_path;

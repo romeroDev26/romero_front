@@ -107,7 +107,7 @@ export const generateQuotationPDF = (
       theme: 'grid',
     });
 
-    let contentY = (pdf as any).lastAutoTable.finalY || currentY + 50;
+    let contentY = pdf.lastAutoTable?.finalY || currentY + 50;
     contentY += 10;
 
     // ============ OBSERVACIONES ============
@@ -163,7 +163,7 @@ export const generateQuotationPDF = (
       theme: 'grid',
     });
 
-    contentY = (pdf as any).lastAutoTable.finalY + 15;
+    contentY = (pdf.lastAutoTable?.finalY ?? contentY) + 15;
 
     // ============ TOTALES AL FINAL DEL DOCUMENTO ============
     const totalsX = pageWidth - margin - 70;

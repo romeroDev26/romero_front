@@ -88,7 +88,7 @@ class ProductsServicesService {
   // PATCH /.../{id} (Actualizar)
   async update(id: number, data: ProductServiceUpdateRequest): Promise<ProductService> {
     // Solo enviar campos que realmente se quieren actualizar
-    const payload: any = {};
+    const payload: Partial<ProductServiceUpdateRequest> = {};
     
     if (data.internal_code !== undefined) payload.internal_code = data.internal_code;
     if (data.name !== undefined) payload.name = data.name;

@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import autoTable, { type Styles } from "jspdf-autotable";
 import { Manifest } from "../types/manifest.types";
 import { drawLogoInPdf, drawLogoPlaceholder } from "../../../utils/pdfLogo";
 import { getDocumentCompanyInfo } from "../../../utils/documentCompanyInfo";
@@ -328,7 +328,7 @@ export const generatePassengerManifestPDF = async (
         // Centrar la tabla
         const leftMargin = (pageWidth - totalTableWidth) / 2;
 
-        const columnStyles: any = {
+        const columnStyles: Record<string, Partial<Styles>> = {
           0: { halign: "center", cellWidth: adjustedColWidths[0] },
           1: { halign: "left", cellWidth: adjustedColWidths[1] },
           2: { halign: "left", cellWidth: adjustedColWidths[2] },
@@ -376,7 +376,7 @@ export const generatePassengerManifestPDF = async (
           theme: "grid",
         });
 
-        const finalY = (pdf as any).lastAutoTable?.finalY || currentY + 8;
+        const finalY = pdf.lastAutoTable?.finalY || currentY + 8;
         const groupItemCount = group.items?.length || 0; // Contar elementos en lugar de sumar pesos
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(9);
@@ -448,7 +448,7 @@ export const generatePassengerManifestPDF = async (
       // Centrar la tabla
       const leftMargin = (pageWidth - totalTableWidth) / 2;
 
-      const columnStyles2: any = {
+      const columnStyles2: Record<string, Partial<Styles>> = {
         0: { halign: "center", cellWidth: adjustedColWidths[0] },
         1: { halign: "left", cellWidth: adjustedColWidths[1] },
         2: { halign: "left", cellWidth: adjustedColWidths[2] },
@@ -586,7 +586,7 @@ export const generatePassengerManifestPDF = async (
       }
       // Centrar la tabla incluso si eso significa reducir el leftMargin por debajo del margen habitual
       const leftMargin = (pageWidth - totalTableWidth) / 2;
-      const passengerColumnStyles: any = {
+      const passengerColumnStyles: Record<string, Partial<Styles>> = {
         0: { halign: "center", cellWidth: adjustedColWidths[0] },
         1: { halign: "left", cellWidth: adjustedColWidths[1] },
         2: {
@@ -638,7 +638,7 @@ export const generatePassengerManifestPDF = async (
           lineWidth: 0.1,
         },
       });
-      const lastY = (pdf as any).lastAutoTable?.finalY || currentY;
+      const lastY = pdf.lastAutoTable?.finalY || currentY;
       currentY = lastY + 8;
     } else {
       pdf.setFont("helvetica", "normal");
@@ -654,7 +654,7 @@ export const generatePassengerManifestPDF = async (
 
   // OBSERVACIONES
   if (manifestData.observations) {
-    const finalY = (pdf as any).lastAutoTable?.finalY || currentY + 20;
+    const finalY = pdf.lastAutoTable?.finalY || currentY + 20;
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(9);
     pdf.text("Observaciones:", margin, finalY + 8);

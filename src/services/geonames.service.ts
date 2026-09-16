@@ -17,6 +17,8 @@ export interface Country {
 
 export interface AdministrativeArea {
   geonameId: number;
+  /** Codigo de tipo de lugar de GeoNames (ADM1, ADM2, PPL...). */
+  fcode?: string;
   name: string;
   asciiName: string;
   countryCode: string;
@@ -28,8 +30,34 @@ export interface AdministrativeArea {
   lng: string;
 }
 
+/**
+ * Lugar tal como lo devuelve /getJSON. GeoNames manda muchos mas campos segun
+ * el lugar, asi que se declaran los que el proyecto usa y se deja el resto
+ * abierto en lugar de fingir que la lista esta completa.
+ */
+export interface GeoNamesPlace {
+  geonameId: number;
+  name?: string;
+  asciiName?: string;
+  countryCode?: string;
+  countryName?: string;
+  fcode?: string;
+  population?: number;
+  lat?: string;
+  lng?: string;
+  [key: string]: unknown;
+}
+
+/** Envoltorio comun de las respuestas de GeoNames que devuelven listados. */
+interface GeoNamesListResponse<T> {
+  geonames: T[];
+  totalResultsCount?: number;
+}
+
 export interface City {
   geonameId: number;
+  /** Codigo de tipo de lugar de GeoNames (ADM1, ADM2, PPL...). */
+  fcode?: string;
   name: string;
   asciiName: string;
   countryCode: string;
@@ -80,7 +108,7 @@ export const geonamesService = {
         throw new Error('País no encontrado');
       }
 
-      const response = await geonamesApi.get('/childrenJSON', {
+      const response = await geonamesApi.get<GeoNamesListResponse<AdministrativeArea>>('/childrenJSON', {
         params: {
           geonameId: country.geonameId,
           username: GEONAMES_USERNAME,
@@ -88,7 +116,7 @@ export const geonamesService = {
       });
       
       // Filtrar solo áreas administrativas (estados/provincias)
-      const administrativeAreas = response.data.geonames.filter((item: any) => 
+      const administrativeAreas = response.data.geonames.filter((item) => 
         item.fcode === 'ADM1' || item.fcode === 'ADMD'
       );
       
@@ -105,7 +133,7 @@ export const geonamesService = {
   // Obtener ciudades de una provincia/estado
   getCities: async (stateGeonameId: number): Promise<City[]> => {
     try {
-      const response = await geonamesApi.get('/childrenJSON', {
+      const response = await geonamesApi.get<GeoNamesListResponse<City>>('/childrenJSON', {
         params: {
           geonameId: stateGeonameId,
           username: GEONAMES_USERNAME,
@@ -114,7 +142,7 @@ export const geonamesService = {
       });
       
       // Filtrar ciudades y lugares poblados
-      const cities = response.data.geonames.filter((item: any) => 
+      const cities = response.data.geonames.filter((item) => 
         item.fcode === 'PPL' || 
         item.fcode === 'PPLA' || 
         item.fcode === 'PPLA2' || 
@@ -138,7 +166,7 @@ export const geonamesService = {
   // Buscar lugares por texto (útil para autocompletado)
   searchPlaces: async (query: string, countryCode?: string, maxRows: number = 10): Promise<City[]> => {
     try {
-      const params: any = {
+      const params: Record<string, string | number> = {
         q: query,
         username: GEONAMES_USERNAME,
         maxRows,
@@ -150,7 +178,7 @@ export const geonamesService = {
         params.country = countryCode;
       }
 
-      const response = await geonamesApi.get('/searchJSON', { params });
+      const response = await geonamesApi.get<GeoNamesListResponse<City>>('/searchJSON', { params });
       
       return response.data.geonames || [];
     } catch (error) {
@@ -160,9 +188,9 @@ export const geonamesService = {
   },
 
   // Obtener información detallada de un lugar por geonameId
-  getPlaceDetails: async (geonameId: number): Promise<any> => {
+  getPlaceDetails: async (geonameId: number): Promise<GeoNamesPlace> => {
     try {
-      const response = await geonamesApi.get('/getJSON', {
+      const response = await geonamesApi.get<GeoNamesPlace>('/getJSON', {
         params: {
           geonameId,
           username: GEONAMES_USERNAME,
@@ -180,14 +208,14 @@ export const geonamesService = {
   getPeruDepartments: async (): Promise<AdministrativeArea[]> => {
     try {
       // ID de Perú en GeoNames: 3932488
-      const response = await geonamesApi.get('/childrenJSON', {
+      const response = await geonamesApi.get<GeoNamesListResponse<AdministrativeArea>>('/childrenJSON', {
         params: {
           geonameId: 3932488,
           username: GEONAMES_USERNAME,
         },
       });
       
-      const departments = response.data.geonames.filter((item: any) => 
+      const departments = response.data.geonames.filter((item) => 
         item.fcode === 'ADM1'
       );
       
@@ -203,14 +231,14 @@ export const geonamesService = {
   // Obtener provincias de un departamento peruano
   getPeruProvinces: async (departmentGeonameId: number): Promise<AdministrativeArea[]> => {
     try {
-      const response = await geonamesApi.get('/childrenJSON', {
+      const response = await geonamesApi.get<GeoNamesListResponse<AdministrativeArea>>('/childrenJSON', {
         params: {
           geonameId: departmentGeonameId,
           username: GEONAMES_USERNAME,
         },
       });
       
-      const provinces = response.data.geonames.filter((item: any) => 
+      const provinces = response.data.geonames.filter((item) => 
         item.fcode === 'ADM2'
       );
       
@@ -226,7 +254,7 @@ export const geonamesService = {
   // Obtener distritos de una provincia peruana
   getPeruDistricts: async (provinceGeonameId: number): Promise<City[]> => {
     try {
-      const response = await geonamesApi.get('/childrenJSON', {
+      const response = await geonamesApi.get<GeoNamesListResponse<City>>('/childrenJSON', {
         params: {
           geonameId: provinceGeonameId,
           username: GEONAMES_USERNAME,
@@ -234,7 +262,7 @@ export const geonamesService = {
         },
       });
       
-      const districts = response.data.geonames.filter((item: any) => 
+      const districts = response.data.geonames.filter((item) => 
         item.fcode === 'ADM3' || item.fcode === 'PPL' || item.fcode === 'PPLA'
       );
       

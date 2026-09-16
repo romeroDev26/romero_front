@@ -321,7 +321,7 @@ export const generateRemissionGuidePDF = async (
     }
   });
 
-  currentY = (pdf as any).lastAutoTable.finalY + 6; // Reducido de 8 a 6
+  currentY = (pdf.lastAutoTable?.finalY ?? currentY) + 6; // Reducido de 8 a 6
 
   // ============ FOOTER CON QR Y DATOS DE GENERACIÓN (CON CONTROL DE PAGINACIÓN) ============
   const footerHeight = 25; // Reducido aún más de 35 a 25

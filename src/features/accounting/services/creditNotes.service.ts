@@ -86,8 +86,8 @@ class CreditNotesService {
     // Fallback: obtener URL directamente de la nota de crédito actualizada
     const updatedNote = await this.getById(id);
     const fallbackUrl = size === 'a4'
-      ? (updatedNote as any).pdf_a4_file_path
-      : (updatedNote as any).pdf_ticket_file_path;
+      ? updatedNote.pdf_a4_file_path
+      : updatedNote.pdf_ticket_file_path;
     if (fallbackUrl) return fallbackUrl;
 
     throw new Error(`No se pudo obtener la URL del PDF ${size} para la NC ${id}`);

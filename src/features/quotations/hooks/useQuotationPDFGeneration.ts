@@ -210,7 +210,7 @@ const generateQuotationPDFWithLogo = async (quotationData: Quotation): Promise<{
       theme: 'grid',
     });
 
-    let contentY = (pdf as any).lastAutoTable.finalY || currentY + 50;
+    let contentY = pdf.lastAutoTable?.finalY || currentY + 50;
     contentY += 10;
 
     // ============ TOTALES (ALINEADOS AL EXTREMO DERECHO) ============
@@ -315,7 +315,7 @@ const generateQuotationPDFWithLogo = async (quotationData: Quotation): Promise<{
       theme: 'grid',
     });
 
-    totalY = (pdf as any).lastAutoTable.finalY + 10;
+    totalY = (pdf.lastAutoTable?.finalY ?? totalY) + 10;
     
     // ============ FOOTER ============
     // Asegurar que haya suficiente espacio para el footer

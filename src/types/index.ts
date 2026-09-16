@@ -620,6 +620,7 @@ export interface Invoice {
   pdf_file_path?: string;
   pdf_a4_file_path?: string;
   pdf_ticket_file_path?: string;
+  pdf_ticket58_file_path?: string | null;
   pdf_sticker_100x100_file_path?: string | null;
   related_gre_series_number?: string;
   payment_terms?: string;

@@ -132,7 +132,7 @@ class TripsService {
     onDate: string,
     endDate?: string
   ): Promise<AvailableTripByPort[]> {
-    const params: any = {
+    const params: Record<string, string | number> = {
       company_id: companyId,
       port_id: portId,
       on_date: onDate,

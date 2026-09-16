@@ -5,6 +5,7 @@ import { Button } from '../../../../../components/common/Button';
 import { AddRepresentativeForm } from './AddRepresentativeForm';
 import { InfantManager } from '../infants';
 import { Infant } from '../core/types';
+import type { SeatMapItem } from '../../../../../types';
 
 interface Representative {
   document_type: string;
@@ -27,8 +28,8 @@ interface RepresentativesManagerProps {
   existingDocuments: string[];
   tripId: number;
   usedSeatNumbers: string[];
-  selectedSeatForRepresentative: any;
-  onSeatSelectForRepresentative: (seat: any) => void;
+  selectedSeatForRepresentative: SeatMapItem | null;
+  onSeatSelectForRepresentative: (seat: SeatMapItem | null) => void;
   onSeatReserve: (seatNumber: string, representativeIndex: number) => Promise<boolean>;
   onSeatRelease: (representativeIndex: number) => void;
   getReservedSeatNumbers: () => string[];

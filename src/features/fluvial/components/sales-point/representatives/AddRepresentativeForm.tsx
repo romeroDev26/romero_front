@@ -8,6 +8,7 @@ import { SunatDocType } from '../../../types/sunat.types';
 import api from '../../../../../config/api';
 import { REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS } from '../core/types';
 import { asApiError } from '../../../../../utils/errorHandler';
+import type { SeatMapItem } from '../../../../../types';
 
 interface Representative {
   document_type: string;
@@ -19,22 +20,14 @@ interface Representative {
   item_description?: string; // ← NUEVO: Descripción opcional por representante
 }
 
-interface SeatMapItem {
-  seat_number: string;
-  seat_type_name: string;
-  is_available: boolean;
-  is_reserved?: boolean;
-  reserved_until?: string;
-}
-
 interface AddRepresentativeFormProps {
   onAdd: (representative: Representative) => void;
   onCancel: () => void;
   existingDocuments: string[];
   tripId: number;
   usedSeatNumbers: string[];
-  selectedSeat: any; // Asiento seleccionado desde el mapa visual
-  onSeatSelect: (seat: any) => void; // Función para seleccionar asiento
+  selectedSeat: SeatMapItem | null; // Asiento seleccionado desde el mapa visual
+  onSeatSelect: (seat: SeatMapItem | null) => void; // null = deseleccionar
   representativeIndex: number; // Nuevo: índice del representante
   onSeatReserve?: (seatNumber: string, representativeIndex: number) => Promise<boolean>; // Nueva función para reservar
   onSeatRelease?: (representativeIndex: number) => void; // Nueva función para liberar
@@ -85,7 +78,9 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
 
   // Filtrar asientos disponibles
   const availableSeats = Array.isArray(seatMap)
-    ? seatMap.filter(seat => seat.is_available && !usedSeatNumbers.includes(seat.seat_number))
+    ? seatMap.filter(
+        (seat) => seat.status === 'AVAILABLE' && !usedSeatNumbers.includes(seat.seat_number)
+      )
     : [];
 
   const hasSeats = Array.isArray(seatMap) && seatMap.length > 0;
@@ -134,7 +129,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
   };
 
   // Nueva función: Manejar selección de asiento con reserva
-  const handleSeatSelection = async (seat: any) => {
+  const handleSeatSelection = async (seat: SeatMapItem | null) => {
     if (!seat) {
       // Liberar asiento actual si existe
       if (selectedSeat && onSeatRelease) {
@@ -366,7 +361,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
                         Asiento Seleccionado: {selectedSeat.seat_number}
                       </div>
                       <div className="text-sm text-dm-text-muted">
-                        Tipo: {selectedSeat.seat_type_name}
+                        Tipo: {selectedSeat.seat_type?.name ?? 'N/A'}
                       </div>
                     </div>
                     <Button

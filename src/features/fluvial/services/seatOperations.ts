@@ -18,15 +18,24 @@ export interface SeatOperationMessage {
   maxGroupReservations?: number;
 }
 
+/**
+ * Mensaje saliente por el WebSocket. Las operaciones de asiento usan
+ * SeatOperationMessage; el heartbeat manda un PING con su propio payload. Se
+ * exige `type` y se deja el resto abierto en lugar de usar `any`.
+ */
+export type OutgoingWebSocketMessage =
+  | SeatOperationMessage
+  | { type: string; [key: string]: unknown };
+
 export class SeatOperations {
-  private sendMessage: (message: any) => boolean;
+  private sendMessage: (message: OutgoingWebSocketMessage) => boolean;
   private userId: string;
   private userName: string;
   private companyName?: string;
   private tripId: number; // NUEVO: Agregar tripId
 
   constructor(
-    sendMessage: (message: any) => boolean,
+    sendMessage: (message: OutgoingWebSocketMessage) => boolean,
     userId: string,
     userName: string,
     tripId: number, // NUEVO: Agregar tripId al constructor

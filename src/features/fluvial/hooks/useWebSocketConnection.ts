@@ -2,12 +2,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { ConnectionStatus, WebSocketConfig, SeatUpdateMessage } from '../types/websocket.types';
 import { getWebSocketUrl, API_PREFIX } from '../../../config/env';
+import type { OutgoingWebSocketMessage } from '../services/seatOperations';
 
 interface UseWebSocketConnectionReturn {
   connectionStatus: ConnectionStatus;
   isWebSocketAvailable: boolean;
   reconnectAttempts: number;
-  sendMessage: (message: any) => boolean;
+  sendMessage: (message: OutgoingWebSocketMessage) => boolean;
   forceReconnect: () => void;
   pingConnection: () => void;
   testConnection: (testUrl?: string) => void;
@@ -248,7 +249,7 @@ export const useWebSocketConnection = (
     }
   }, [tripId, userId, userName, enabled, maxReconnectAttempts, isWebSocketAvailable]); // Removida heartbeatInterval
 
-  const sendMessage = useCallback((message: any) => {
+  const sendMessage = useCallback((message: OutgoingWebSocketMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN && isWebSocketAvailable) {
       wsRef.current.send(JSON.stringify(message));
       return true;

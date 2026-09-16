@@ -101,7 +101,7 @@ export interface SaleFormState {
   showRepresentatives: boolean;
   maxPassengers: number;
   showAddForm: boolean;
-  selectedSeatForRepresentative: any;
+  selectedSeatForRepresentative: SeatMapItem | null;
 }
 
 export const initialPassengerData: PassengerData = {

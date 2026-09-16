@@ -46,6 +46,7 @@ import { seatValidationService } from "../../../../../services/seatValidation.se
 import { authService } from "../../../../../services/auth.service";
 import api from "../../../../../config/api";
 import { useReservationConfirmation } from "../reservation-confirmation";
+import type { SeatSelection } from '../../../types/websocket.types';
 
 export function useSaleForm({
   trip,
@@ -756,7 +757,7 @@ export function useSaleForm({
     selectSeatForRepresentative: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
     releaseSeatForRepresentative: (seatId: number, representativeIndex?: number) => boolean;
     confirmPurchase: (seatIds?: number[]) => boolean;
-    activeSeatSelections: Map<number, any>;
+    activeSeatSelections: Map<number, SeatSelection>;
     seatMap: SeatMapItem[];
     isWebSocketConnected: boolean;
   } | null>(null);
@@ -766,7 +767,7 @@ export function useSaleForm({
     selectSeatForRepresentative: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
     releaseSeatForRepresentative: (seatId: number, representativeIndex?: number) => boolean;
     confirmPurchase: (seatIds?: number[]) => boolean;
-    activeSeatSelections: Map<number, any>;
+    activeSeatSelections: Map<number, SeatSelection>;
     seatMap: SeatMapItem[];
     isWebSocketConnected: boolean;
   }) => {

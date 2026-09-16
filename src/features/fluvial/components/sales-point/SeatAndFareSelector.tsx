@@ -10,6 +10,7 @@ import { useSeatMapRealtime } from '../../hooks/useSeatMapRealtime';
 import { SeatMapItem, TripStop, SeatReservation } from '../../../../types';
 import { SeatMapRealtime } from '../seat-map/SeatMapRealtime';
 import { getSeatZoneName } from '../../utils/seatUtils';
+import type { SeatSelection } from '../../types/websocket.types';
 
 interface SeatAndFareSelectorProps {
   tripId: number;
@@ -36,7 +37,7 @@ interface SeatAndFareSelectorProps {
     selectSeatForRepresentative: (seatId: number, representativeIndex: number, representativeName: string) => boolean;
     releaseSeatForRepresentative: (seatId: number, representativeIndex?: number) => boolean;
     confirmPurchase: (seatIds?: number[]) => boolean;
-    activeSeatSelections: Map<number, any>;
+    activeSeatSelections: Map<number, SeatSelection>;
     seatMap: SeatMapItem[];
     isWebSocketConnected: boolean;
   }) => void;

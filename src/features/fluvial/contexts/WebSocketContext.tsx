@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useCallback, useMemo, useRef } from 'react';
 import { useWebSocketConnection } from '../hooks/useWebSocketConnection';
 import { WebSocketConfig, SeatUpdateMessage, ConnectionStatus } from '../types/websocket.types';
+import type { OutgoingWebSocketMessage } from '../services/seatOperations';
 
 interface WebSocketContextValue {
   connectionStatus: ConnectionStatus;
@@ -9,7 +10,7 @@ interface WebSocketContextValue {
   reconnectAttempts: number;
   latency: number;
   heartbeatInterval: number;
-  sendMessage: (message: any) => boolean;
+  sendMessage: (message: OutgoingWebSocketMessage) => boolean;
   forceReconnect: () => void;
   pingConnection: () => void;
   testConnection: (testUrl?: string) => void;

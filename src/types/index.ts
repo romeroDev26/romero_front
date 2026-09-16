@@ -586,6 +586,11 @@ export interface Invoice {
   company_id: number;
   client_id: number;
   client?: Client;
+  /**
+   * El endpoint de listado devuelve el nombre del cliente aplanado, sin el
+   * objeto client completo. Opcional porque el detalle si trae `client`.
+   */
+  client_name?: string;
   sales_order_id?: number;
   document_type_code: string;
   series: string;

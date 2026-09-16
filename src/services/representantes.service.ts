@@ -153,9 +153,12 @@ class RepresentantesService {
 export const representantesService = new RepresentantesService();
 
 // UTILIDAD: Manejo de errores según especificación
-export const handleApiError = (error: any) => {
-  const status = error.response?.status;
-  const detail = error.response?.data?.detail;
+export const handleApiError = (error: unknown) => {
+  const apiError = asApiError(error);
+  const status = apiError.response?.status;
+  // detail puede venir como objeto o array; se normaliza para poder buscar
+  // texto dentro con includes().
+  const detail = detailToString(apiError.response?.data?.detail);
   
   switch (status) {
     case 400:

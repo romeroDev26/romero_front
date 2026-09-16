@@ -2,6 +2,8 @@
 
 import api from '../../../config/api';
 import {
+  ReceivablesBackendResponse,
+  PaymentConfirmationResponse,
   ReceivablesQueryParams,
   ReceivablesResponse,
 } from '../types/receivables.types';
@@ -28,12 +30,14 @@ export const receivablesService = {
       queryParams.append('page', params.current_page.toString());
       queryParams.append('page_size', params.page_size.toString());
 
-      const response = await api.get(`/dispatch/manifests/cash-on-delivery?${queryParams.toString()}`);
+      const response = await api.get<ReceivablesBackendResponse>(
+        `/dispatch/manifests/cash-on-delivery?${queryParams.toString()}`
+      );
 
       // Transformar la respuesta del backend: extraer parcels de cada invoice y agregar info de PDF e invoice
       const backendData = response.data;
-      const allParcels = backendData.invoices?.flatMap((invoice: any) => 
-        invoice.parcels.map((parcel: any) => ({
+      const allParcels = backendData.invoices?.flatMap((invoice) => 
+        invoice.parcels.map((parcel) => ({
           ...parcel,
           // Agregar campos desde el nivel de invoice
           invoice_id: invoice.invoice_id,
@@ -48,8 +52,8 @@ export const receivablesService = {
       ) || [];
 
       // Calcular paid_parcels y unpaid_parcels desde los parcels transformados
-      const paid_parcels = allParcels.filter((p: any) => p.payment_status === 'PAGADO').length;
-      const unpaid_parcels = allParcels.filter((p: any) => p.payment_status === 'NO PAGADO').length;
+      const paid_parcels = allParcels.filter((p) => p.payment_status === 'PAGADO').length;
+      const unpaid_parcels = allParcels.filter((p) => p.payment_status === 'NO PAGADO').length;
 
       return {
         parcels: allParcels,
@@ -71,9 +75,11 @@ export const receivablesService = {
    * @deprecated Usar paymentService.confirmPayment() en su lugar
    * Marca una encomienda como pagada (sin detalles adicionales)
    */
-  async markAsPaid(invoiceItemId: number): Promise<any> {
+  async markAsPaid(invoiceItemId: number): Promise<PaymentConfirmationResponse> {
     try {
-      const response = await api.post(`/dispatch/manifests/confirm-payment/${invoiceItemId}`);
+      const response = await api.post<PaymentConfirmationResponse>(
+        `/dispatch/manifests/confirm-payment/${invoiceItemId}`
+      );
       return response.data;
     } catch (error) {
       const apiError = asApiError(error);

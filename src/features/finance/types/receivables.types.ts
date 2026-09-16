@@ -69,6 +69,37 @@ export interface ReceivablesResponse {
   filters_applied: ReceivablesFilters;
 }
 
+/**
+ * Campos que en la respuesta del backend viven en el nivel de la factura y el
+ * servicio copia a cada encomienda al aplanar la estructura.
+ */
+type InvoiceLevelFields =
+  | 'invoice_id'
+  | 'invoice_series'
+  | 'invoice_number'
+  | 'issue_date'
+  | 'is_credit_sale'
+  | 'pdf_ticket_file_path'
+  | 'pdf_ticket58_file_path';
+
+/**
+ * Forma cruda de /dispatch/manifests/cash-on-delivery: las encomiendas vienen
+ * anidadas dentro de cada factura, no en una lista plana. El servicio las
+ * aplana y calcula paid_parcels / unpaid_parcels antes de devolver un
+ * ReceivablesResponse.
+ */
+export interface ReceivablesBackendInvoice extends Pick<ReceivablesItem, InvoiceLevelFields> {
+  parcels: Array<Omit<ReceivablesItem, InvoiceLevelFields>>;
+}
+
+export interface ReceivablesBackendResponse {
+  invoices?: ReceivablesBackendInvoice[];
+  pagination: ReceivablesPagination;
+  /** El backend no manda paid_parcels ni unpaid_parcels: los calcula el front. */
+  summary: Omit<ReceivablesSummary, 'paid_parcels' | 'unpaid_parcels'>;
+  filters_applied: ReceivablesFilters;
+}
+
 export interface ReceivablesState {
   items: ReceivablesItem[];
   loading: boolean;

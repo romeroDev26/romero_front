@@ -76,7 +76,7 @@ export const paymentService = {
   /**
    * Obtiene el historial de pagos de una encomienda (futuro)
    */
-  async getPaymentHistory(_invoiceItemId: number): Promise<any[]> {
+  async getPaymentHistory(_invoiceItemId: number): Promise<unknown[]> {
     // Implementacion futura
     throw new Error('No implementado aun');
   },

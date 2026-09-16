@@ -6,6 +6,7 @@ import {
   Trip,
   DailyManifestViewResponse
 } from '../types/manifest.types';
+import type { User } from '../../../types';
 import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 export const manifestService = {
@@ -53,7 +54,7 @@ export const manifestService = {
             updated_at: manifest.updated_at,
             first_name: '',
             company_id: 0
-          } as any
+          } satisfies User
         };
       }
 

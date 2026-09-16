@@ -91,13 +91,21 @@ class RemissionGuidesSenderService {
   }
 
   // Crea una nueva guía del remitente
+  // TODO(tipos): el payload real que envia FormStepContentSender es PLANO
+  // (sender_doc_type, origin_ubigeo, shipment_start_date, total_gross_weight)
+  // mientras RemissionGuideRemitenteCreateData en remissionGuides.service.ts
+  // declara una forma ANIDADA (sender, origin_address, transfer_start_date,
+  // gross_total_weight). Uno de los dos esta desactualizado; hay que confirmar
+  // contra el backend antes de tipar esto.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async create(data: any): Promise<RemissionGuideRemitente> {
     const response = await api.post<RemissionGuideRemitente>(this.basePath, data);
     return response.data;
   }
 
   // Actualiza una guía del remitente existente
-  async update(guideId: number, data: Partial<any>): Promise<RemissionGuideRemitente> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async update(guideId: number, data: any): Promise<RemissionGuideRemitente> {
     const response = await api.put<RemissionGuideRemitente>(`${this.basePath}${guideId}`, data);
     return response.data;
   }

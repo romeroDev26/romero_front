@@ -1,7 +1,7 @@
 // src/features/accounting/services/creditNotes.service.ts
 
 import api from '../../../config/api';
-import { CreditNote } from '../../../types';
+import { CreditNote, Invoice } from '../../../types';
 import { pdfTasksService, GeneratePdfResponse } from '../../../services/pdfTasks.service';
 import { 
   CreditNoteCreateData, 
@@ -108,7 +108,7 @@ class CreditNotesService {
   async getVoidableInvoices(companyId: number): Promise<VoidableInvoice[]> {
     // En lugar de usar un endpoint específico, usamos el listado de facturas
     // filtradas por estado ACCEPTED (que son las que se pueden anular)
-    const response = await api.get('/sunat/invoices/', {
+    const response = await api.get<Invoice[] | { invoices?: Invoice[] }>('/sunat/invoices/', {
       params: {
         company_id: companyId,
         sunat_status: 'ACCEPTED', // Solo facturas aceptadas por SUNAT
@@ -117,9 +117,11 @@ class CreditNotesService {
     });
 
     // Convertir las facturas al formato esperado por VoidableInvoice
-    const invoices = response.data?.invoices || response.data || [];
-    
-    const mappedInvoices = invoices.map((invoice: any) => {
+    const invoices = Array.isArray(response.data)
+      ? response.data
+      : response.data?.invoices || [];
+
+    const mappedInvoices = invoices.map((invoice) => {
       // Intentar obtener client_id de múltiples fuentes
       let clientId = 0;
       let clientName = 'N/A';

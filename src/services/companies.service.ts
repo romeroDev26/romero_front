@@ -57,7 +57,11 @@ class CompaniesService {
   /**
    * Sube el logo de la empresa (y opcionalmente datos) usando PATCH y FormData, siguiendo la guía del backend.
    */
-  async uploadLogo(id: number, file: File | undefined, companyData: any): Promise<{ logo_url: string }> {
+  async uploadLogo(
+    id: number,
+    file: File | undefined,
+    companyData: Record<string, unknown>
+  ): Promise<{ logo_url: string }> {
     const formData = new FormData();
     // Agregar cada campo individualmente (no como JSON)
     Object.entries(companyData).forEach(([key, value]) => {

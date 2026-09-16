@@ -1,6 +1,7 @@
 import axios from 'axios';
 import api from '../config/api';
 import { Invoice } from '../types';
+import type { VoidableInvoice } from '../features/accounting/types';
 import { pdfTasksService, GeneratePdfResponse } from './pdfTasks.service';
 
 /** GET a URLs públicas (CDN) sin cabecera Authorization: evita preflight/CORS innecesarios del cliente `api`. */
@@ -174,8 +175,9 @@ class InvoicesService {
 
   // NUEVO MÉTODO: Para obtener la lista de facturas anulables
   // Usa el mismo endpoint de listado pero filtrado por estado ACCEPTED
-  async getVoidableInvoices(companyId: number): Promise<any[]> {
-    const response = await api.get<any>(this.basePath, {
+  async getVoidableInvoices(companyId: number): Promise<VoidableInvoice[]> {
+    // El endpoint de listado responde o el array directo o envuelto en {invoices}
+    const response = await api.get<VoidableInvoice[] | { invoices?: VoidableInvoice[] }>(this.basePath, {
       params: { 
         company_id: companyId,
         sunat_status: 'ACCEPTED', // Solo facturas aceptadas por SUNAT
@@ -183,7 +185,8 @@ class InvoicesService {
       }
     });
     // Extraer el array de facturas del formato de respuesta
-    return response.data?.invoices || response.data || [];
+    if (Array.isArray(response.data)) return response.data;
+    return response.data?.invoices || [];
   }
 
   /**

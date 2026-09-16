@@ -50,7 +50,8 @@ export interface WhatsAppEvent {
   data: {
     state?: 'open' | 'close' | 'connecting';
     qrcode?: string;
-    [key: string]: any;
+    /** El resto del payload varia segun el tipo de evento del webhook. */
+    [key: string]: unknown;
   };
   timestamp: string;
 }

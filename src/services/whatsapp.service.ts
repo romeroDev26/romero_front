@@ -1,4 +1,5 @@
 // src/services/whatsapp.service.ts
+import type jsPDF from 'jspdf';
 import api from '../config/api';
 import { asApiError, detailToString } from '../utils/errorHandler';
 
@@ -258,7 +259,7 @@ El equipo de ${businessName || 'Nuestra Empresa'}`;
    * Convierte un documento jsPDF a base64
    * @param doc Documento jsPDF
    */
-  pdfDocToBase64(doc: any): string {
+  pdfDocToBase64(doc: jsPDF): string {
     return doc.output('dataurlstring').split(',')[1];
   }
 }

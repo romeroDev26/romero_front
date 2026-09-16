@@ -131,14 +131,14 @@ export interface DailySalesSummary {
   total_discount: string;
   total_tax: string;
   payment_methods_summary: Record<string, string>;
-  sellers_summary: Record<string, any>;
+  sellers_summary: Record<string, unknown>;
 }
 
 export interface DailySalesReport {
   report_type: string;
   generated_at: string;
   generated_by: string;
-  filters: Record<string, any>;
+  filters: Record<string, unknown>;
   items: DailySalesItem[];
   summary: DailySalesSummary;
 }

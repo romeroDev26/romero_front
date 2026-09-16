@@ -123,7 +123,10 @@ export const quotationsService = {
    * Marcar cotización como enviada por email
    * POST /quotations/{quotation_id}/send-email
    */
-  sendByEmail: async (quotationId: number, emailData: any = {}): Promise<string> => {
+  sendByEmail: async (
+    quotationId: number,
+    emailData: Record<string, unknown> = {}
+  ): Promise<string> => {
     const response = await api.post<string>(`/quotations/${quotationId}/send-email`, emailData);
     return response.data;
   },

@@ -41,6 +41,7 @@ export interface InvoiceCreationData {
   payment_method_code_2?: string;
   payment_operation_code_2?: string;
   payment_amount_2?: number;
+  pago_yape_id?: string;
 }
 
 export const invoiceCreationService = {
@@ -144,6 +145,7 @@ export const invoiceCreationService = {
       paymentMethodCode2?: string;
       paymentOperationCode2?: string;
       paymentAmount2?: number;
+      pagoYapeId?: string | null;
     },
     infants?: Infant[]
   ): InvoiceCreationData => {
@@ -175,7 +177,10 @@ export const invoiceCreationService = {
       basePayload.payment_amount_2 = splitPaymentData.paymentAmount2;
     }
 
-    // Agregar infantes si existen (solo aplica para boletas)
+    if (splitPaymentData?.pagoYapeId) {
+      basePayload.pago_yape_id = splitPaymentData.pagoYapeId;
+    }
+
     if (infants && infants.length > 0) {
       basePayload.infants = infants;
     }

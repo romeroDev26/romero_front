@@ -620,6 +620,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                         disabled={isProcessingSale}
                         onPaymentDataChange={handleSplitPaymentChange}
                         onValidationChange={handleSplitPaymentValidationChange}
+                        customerName={passengerData.name}
                       />
                     </section>
 

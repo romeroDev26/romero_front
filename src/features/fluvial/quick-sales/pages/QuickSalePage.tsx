@@ -313,6 +313,7 @@ export const QuickSalePage: React.FC = () => {
         ...(!isContraentrega && {
           payment_method_code: splitPaymentData.paymentMethod1,
           payment_operation_code: splitPaymentData.operationCode1 || undefined,
+          pago_yape_id: splitPaymentData.pagoYapeId || undefined,
         }),
         
         items: [
@@ -676,6 +677,7 @@ export const QuickSalePage: React.FC = () => {
                   disabled={isProcessing}
                   onPaymentDataChange={handleSplitPaymentChange}
                   onValidationChange={handleSplitPaymentValidationChange}
+                  customerName={passengerData.name}
                 />
               </div>
             )}

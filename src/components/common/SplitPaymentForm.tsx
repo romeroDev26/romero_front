@@ -7,6 +7,8 @@ import {
   canEnableSplitPayment,
   requiresOperationCode as checkRequiresOperationCode 
 } from '../../utils/splitPaymentValidation';
+import { YapeAssistPanel } from './YapeAssistPanel';
+import { useYapeAssist } from '../../hooks/useYapeAssist';
 
 /**
  * Opciones estandar de metodos de pago
@@ -25,14 +27,13 @@ export const PAYMENT_METHOD_OPTIONS = [
  */
 export interface SplitPaymentData {
   isSplitPayment: boolean;
-  // Pago 1 (principal)
   paymentMethod1: string;
   operationCode1: string;
   amount1: number;
-  // Pago 2 (secundario)
   paymentMethod2: string;
   operationCode2: string;
   amount2: number;
+  pagoYapeId?: string | null;
 }
 
 interface SplitPaymentFormProps {
@@ -40,12 +41,10 @@ interface SplitPaymentFormProps {
   currencySymbol?: string;
   disabled?: boolean;
   onPaymentDataChange: (data: SplitPaymentData) => void;
-  // Callback para notificar el estado de validacion al padre
   onValidationChange?: (isValid: boolean) => void;
-  // Props para modo controlado (opcional)
   initialData?: Partial<SplitPaymentData>;
-  /** UI alineada al mock de billing (POS fluvial) */
   variant?: 'default' | 'billing';
+  customerName?: string;
 }
 
 /**
@@ -60,6 +59,7 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
   onValidationChange,
   initialData,
   variant = 'default',
+  customerName = '',
 }) => {
   const isBilling = variant === 'billing';
 
@@ -121,6 +121,19 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
     }, totalAmount);
   }, [isSplitPayment, paymentMethod1, operationCode1, amount1, paymentMethod2, operationCode2, amount2, totalAmount]);
 
+  const yapeAssist = useYapeAssist({
+    enabled: !disabled && canEnable,
+    customerName,
+    isSplitPayment,
+    paymentMethod1,
+    paymentMethod2,
+    amount1,
+    amount2,
+    totalAmount,
+    operationCode1,
+    operationCode2,
+  });
+
   // Notificar estado de validacion al padre
   useEffect(() => {
     if (onValidationChange) {
@@ -138,8 +151,9 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
       paymentMethod2,
       operationCode2,
       amount2: isSplitPayment ? amount2 : 0,
+      pagoYapeId: yapeAssist.selectedPagoId,
     });
-  }, [isSplitPayment, paymentMethod1, operationCode1, amount1, paymentMethod2, operationCode2, amount2, totalAmount, onPaymentDataChange]);
+  }, [isSplitPayment, paymentMethod1, operationCode1, amount1, paymentMethod2, operationCode2, amount2, totalAmount, onPaymentDataChange, yapeAssist.selectedPagoId]);
 
   useEffect(() => {
     notifyChange();
@@ -344,6 +358,18 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                   {operationCode1.length}/20 caracteres
                 </div>
               </div>
+            )}
+            {yapeAssist.hasDigital && (
+              <YapeAssistPanel
+                loading={yapeAssist.loading}
+                montoDigital={yapeAssist.montoDigital}
+                customerName={customerName}
+                assist={yapeAssist.assist}
+                codigoInfo={yapeAssist.codigoInfo}
+                selectedPagoId={yapeAssist.selectedPagoId}
+                onRefresh={yapeAssist.consultar}
+                onSelectPago={yapeAssist.elegirPago}
+              />
             )}
           </div>
         </div>
@@ -622,6 +648,19 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
             </div>
           )}
         </div>
+      )}
+
+      {isSplitPayment && yapeAssist.hasDigital && (
+        <YapeAssistPanel
+          loading={yapeAssist.loading}
+          montoDigital={yapeAssist.montoDigital}
+          customerName={customerName}
+          assist={yapeAssist.assist}
+          codigoInfo={yapeAssist.codigoInfo}
+          selectedPagoId={yapeAssist.selectedPagoId}
+          onRefresh={yapeAssist.consultar}
+          onSelectPago={yapeAssist.elegirPago}
+        />
       )}
 
       {/* Resumen de totales (solo en pago dividido) */}

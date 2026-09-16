@@ -84,6 +84,7 @@ export const useSaleBusinessLogic = ({
       paymentMethodCode2?: string;
       paymentOperationCode2?: string;
       paymentAmount2?: number;
+      pagoYapeId?: string | null;
     },
   ) => {
     // Validación previa
@@ -203,6 +204,9 @@ export const useSaleBusinessLogic = ({
         invoiceConfig.payment_method_code_2 = splitPaymentData.paymentMethodCode2;
         invoiceConfig.payment_operation_code_2 = splitPaymentData.paymentOperationCode2 || undefined;
         invoiceConfig.payment_amount_2 = splitPaymentData.paymentAmount2;
+      }
+      if (splitPaymentData?.pagoYapeId) {
+        invoiceConfig.pago_yape_id = splitPaymentData.pagoYapeId;
       }
       
       // Recopilar todos los infantes de todos los representantes
@@ -354,6 +358,7 @@ export const useSaleBusinessLogic = ({
       paymentMethodCode2?: string;
       paymentOperationCode2?: string;
       paymentAmount2?: number;
+      pagoYapeId?: string | null;
     },
     infants?: Infant[],
   ) => {

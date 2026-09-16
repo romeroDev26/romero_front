@@ -28,8 +28,14 @@ interface CancellationRequestResolvedData {
 }
 
 interface WebSocketMessage {
-  type: 'PING' | 'PONG' | 'CANCELLATION_REQUEST_CREATED' | 'CANCELLATION_REQUEST_RESOLVED';
+  type: 'PING' | 'PONG' | 'CANCELLATION_REQUEST_CREATED' | 'CANCELLATION_REQUEST_RESOLVED' | 'PAGO_DIGITAL_RECIBIDO' | string;
   data?: CancellationRequestCreatedData | CancellationRequestResolvedData | any;
+  pago?: {
+    monto?: number;
+    nombre_emisor?: string;
+    canal?: string;
+  };
+  invoice_id?: number | null;
   timestamp?: string;
 }
 
@@ -145,8 +151,27 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
           }
           break;
 
+        case 'PAGO_DIGITAL_RECIBIDO': {
+          const pago = (message as any).pago || message.data?.pago;
+          if (pago) {
+            const canal = pago.canal || 'YAPE';
+            const monto = Number(pago.monto || 0).toFixed(2);
+            const nombre = pago.nombre_emisor || 'cliente';
+            toast.info(`${canal} S/ ${monto} de ${nombre}`, {
+              position: 'top-right',
+              autoClose: 5000,
+            });
+            window.dispatchEvent(new CustomEvent('pago-digital-recibido', { detail: pago }));
+            const handlers = messageHandlers.get('PAGO_DIGITAL_RECIBIDO');
+            if (handlers) {
+              handlers.forEach((handler) => handler(pago));
+            }
+          }
+          break;
+        }
+
         default:
-          console.warn('[WebSocket] Mensaje desconocido:', message);
+          break;
       }
     } catch (error) {
       console.error('[WebSocket] Error al procesar mensaje:', error);

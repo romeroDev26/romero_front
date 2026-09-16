@@ -68,6 +68,7 @@ export interface InvoiceCreateData {
   payment_method_code_2?: string; // Codigo del segundo metodo de pago
   payment_operation_code_2?: string; // Codigo de operacion del segundo pago
   payment_amount_2?: number; // Monto del segundo pago
+  pago_yape_id?: string;
   // Campo para contraentrega
   is_credit_sale?: boolean;
 }

@@ -359,6 +359,7 @@ export const CargoSalePage: React.FC = () => {
         ...(!isContraentrega && {
           payment_method_code: splitPaymentData.paymentMethod1,
           payment_operation_code: splitPaymentData.operationCode1 || undefined,
+          pago_yape_id: splitPaymentData.pagoYapeId || undefined,
         }),
         // Campos para pago dividido: solo enviar si NO es contraentrega y es pago dividido
         ...(!isContraentrega && splitPaymentData.isSplitPayment && {
@@ -877,6 +878,7 @@ export const CargoSalePage: React.FC = () => {
                         currencySymbol="S/"
                         disabled={isProcessingClient || isCreatingInvoice}
                         onPaymentDataChange={handleSplitPaymentChange}
+                        customerName={remitter.name}
                       />
                     )}
 

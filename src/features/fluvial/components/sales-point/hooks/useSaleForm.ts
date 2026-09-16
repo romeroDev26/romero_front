@@ -986,7 +986,8 @@ export function useSaleForm({
             paymentMethodCode2: splitPaymentData.paymentMethod2,
             paymentOperationCode2: splitPaymentData.operationCode2,
             paymentAmount2: splitPaymentData.amount2,
-          } : undefined
+            pagoYapeId: splitPaymentData.pagoYapeId,
+          } : { isSplitPayment: false, pagoYapeId: splitPaymentData.pagoYapeId }
         );
         return;
       }
@@ -1024,7 +1025,8 @@ export function useSaleForm({
           paymentMethodCode2: splitPaymentData.paymentMethod2,
           paymentOperationCode2: splitPaymentData.operationCode2,
           paymentAmount2: splitPaymentData.amount2,
-        } : undefined,
+          pagoYapeId: splitPaymentData.pagoYapeId,
+        } : { isSplitPayment: false, pagoYapeId: splitPaymentData.pagoYapeId },
         boletaInfants.length > 0 ? boletaInfants : undefined
       );
     } catch (error) {

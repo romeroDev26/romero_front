@@ -213,6 +213,8 @@ export const LoginForm: React.FC = () => {
       <div className="flex items-center mt-2">
         <button
           type="button"
+          aria-label="Recordarme en este dispositivo"
+          aria-pressed={rememberMeChecked}
           onClick={() => {
             if (isLocked) return
             const el = document.getElementById('rememberMe') as HTMLInputElement | null
@@ -235,13 +237,12 @@ export const LoginForm: React.FC = () => {
           disabled={isLocked}
           {...register('rememberMe')}
         />
-        <span className="ml-3 text-[13px] text-gray-600 dark:text-gray-400 transition-colors duration-300 cursor-pointer" onClick={() => {
-            if (isLocked) return
-            const el = document.getElementById('rememberMe') as HTMLInputElement | null
-            if (el) el.click()
-          }}>
+        <label
+          htmlFor="rememberMe"
+          className="ml-3 text-[13px] text-gray-600 dark:text-gray-400 transition-colors duration-300 cursor-pointer"
+        >
           Recordarme en este dispositivo
-        </span>
+        </label>
       </div>
 
       {/* Botón Login */}

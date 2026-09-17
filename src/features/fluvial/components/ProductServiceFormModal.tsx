@@ -86,7 +86,7 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    let finalValue: any = value;
+    let finalValue: string | number | boolean = value;
 
     if (type === 'checkbox') {
       finalValue = (e.target as HTMLInputElement).checked;

@@ -3,6 +3,7 @@
 import { PassengerData, Representative } from "../core/types";
 import { SeatMapItem } from "../../../../../types";
 import { SunatDocType } from "../../../types/sunat.types";
+import type { ProductService } from '../../../../../types';
 
 export interface SaleValidationResult {
   isValid: boolean;
@@ -14,7 +15,11 @@ export const saleValidationService = {
     selectedBoardingStopId: number | null,
     selectedDisembarkingStopId: number | null,
     passengerData: PassengerData,
-    passengerService: any
+    /**
+     * Solo se comprueba que exista el servicio de pasaje configurado, de ahi
+     * que baste con identificarlo y no haga falta el ProductService entero.
+     */
+    passengerService: Pick<ProductService, 'id'> | null | undefined
   ): SaleValidationResult => {
     const errors: string[] = [];
 
@@ -97,7 +102,7 @@ export const saleValidationService = {
     representatives: Representative[],
     selectedSeat: SeatMapItem | null,
     showSeatMap: boolean,
-    passengerService: any,
+    passengerService: Pick<ProductService, 'id'> | null | undefined,
     selectedBoletaSeries: string,
     selectedFacturaSeries: string
   ): SaleValidationResult => {

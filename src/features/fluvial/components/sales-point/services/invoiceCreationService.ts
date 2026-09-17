@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { PassengerData, Representative, Infant } from "../core/types";
 import { SunatInvoiceType, SunatTaxCategory } from "../../../types/sunat.types";
 import { productsServicesService } from '../../../../../services/products-services.service';
+import type { SeatMapItem } from '../../../../../types';
 
 export interface InvoiceItemData {
   product_id: number;
@@ -17,8 +18,10 @@ export interface InvoiceItemData {
   boarding_trip_stop_id: number;
   disembarking_trip_stop_id: number;
   // Campos para asientos
-  trip_seat_id?: number; // ID del asiento en la embarcación
-  seat_number?: string; // Número del asiento seleccionado por el vendedor
+  // Admiten null porque el servicio manda null explicito cuando no hay asiento
+  // (no omite la clave), y pasar a undefined cambiaria el JSON del backend.
+  trip_seat_id?: number | null; // ID del asiento en la embarcación
+  seat_number?: string | null; // Número del asiento seleccionado por el vendedor
 }
 
 export interface InvoiceCreationData {
@@ -57,7 +60,8 @@ export const invoiceCreationService = {
     tripId: number,
     selectedBoardingStopId: number,
     selectedDisembarkingStopId: number,
-    selectedSeat?: any, // Asiento seleccionado para obtener seat_number y trip_seat_id
+    // Solo se leen id y seat_number para el item de transporte
+  selectedSeat?: Pick<SeatMapItem, 'id' | 'seat_number'> | null,
     itemDescription?: string // ← Descripción opcional del usuario
   ): Promise<InvoiceItemData[]> => {
     const items: InvoiceItemData[] = [];

@@ -10,6 +10,29 @@ export interface UploadResult {
   error?: string;
 }
 
+/** Archivo almacenado tal como lo devuelve /files/search. */
+export interface StoredFile {
+  type: string;
+  url?: string;
+  name?: string;
+  size?: number;
+}
+
+/** Respuesta de /files/search agrupada por documento. */
+interface FileSearchResponse {
+  success: boolean;
+  data: {
+    files: Array<{ files: StoredFile[] }>;
+  };
+}
+
+/** Respuesta del PATCH de rutas de PDF; el backend confirma las guardadas. */
+interface UpdatePdfPathsResponse {
+  pdf_a4_file_path?: string;
+  pdf_ticket_file_path?: string;
+  pdf_file_path?: string;
+}
+
 export const pdfUploadService = {
   /**
    * Sube los PDFs de una factura al backend
@@ -112,8 +135,11 @@ export const pdfUploadService = {
       pdf_file_path?: string;
     }, 
     authToken: string
-  ): Promise<any> => {
-    const response = await api.patch(`/invoices/${invoiceId}/pdf-paths`, pdfPaths, {
+  ): Promise<UpdatePdfPathsResponse> => {
+    const response = await api.patch<UpdatePdfPathsResponse>(
+      `/invoices/${invoiceId}/pdf-paths`,
+      pdfPaths,
+      {
       headers: {
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json'
@@ -130,9 +156,11 @@ export const pdfUploadService = {
   /**
    * Verifica que los PDFs se subieron correctamente
    */
-  verifyPDFUpload: async (invoiceId: number, authToken: string): Promise<any[]> => {
+  verifyPDFUpload: async (invoiceId: number, authToken: string): Promise<StoredFile[]> => {
     try {
-      const response = await api.get(`/files/search?section=invoices&document_id=${invoiceId}`, {
+      const response = await api.get<FileSearchResponse>(
+        `/files/search?section=invoices&document_id=${invoiceId}`,
+        {
         headers: {
           'Authorization': `Bearer ${authToken}`
         }
@@ -142,7 +170,7 @@ export const pdfUploadService = {
       
       if (result.success && result.data.files.length > 0) {
         const invoice = result.data.files[0];
-        const pdfFiles = invoice.files.filter((f: any) => f.type.includes('pdf'));
+        const pdfFiles = invoice.files.filter((f) => f.type.includes('pdf'));
         
         console.log('PDFs encontrados:', pdfFiles);
         return pdfFiles;

@@ -7,10 +7,12 @@ import { toast } from '@/utils/sileo-toast';
 import { SeatReservation, SeatMapItem } from '../../../../../types';
 import { PassengerData } from '../core/types';
 import { SunatDocType } from '../../../types/sunat.types';
+import type { TripDetailsResponse } from '../../../../../services/trips.service';
 
 export interface ReservationConfirmationHandlerProps {
   reservation: SeatReservation;
-  tripDetails: any; // Trip type
+  /** Solo se leen id y stops, para resolver los nombres de las paradas. */
+  tripDetails: Pick<TripDetailsResponse, 'id' | 'stops'> | null | undefined;
   seatMap: SeatMapItem[];
   onPassengerDataChange: (data: PassengerData) => void;
   onBoardingStopChange: (stopId: number) => void;
@@ -157,12 +159,12 @@ export const ReservationConfirmationHandler: React.FC<ReservationConfirmationHan
 
   // Obtener nombre del puerto de embarque y desembarque
   const getBoardingPortName = () => {
-    const stop = tripDetails?.stops?.find((s: any) => s.id === reservationData.boardingStopId);
+    const stop = tripDetails?.stops?.find((s) => s.id === reservationData.boardingStopId);
     return stop?.port?.name || 'Puerto no encontrado';
   };
 
   const getDisembarkingPortName = () => {
-    const stop = tripDetails?.stops?.find((s: any) => s.id === reservationData.disembarkingStopId);
+    const stop = tripDetails?.stops?.find((s) => s.id === reservationData.disembarkingStopId);
     return stop?.port?.name || 'Puerto no encontrado';
   };
 

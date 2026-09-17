@@ -26,6 +26,7 @@ import { Manifest } from '../../manifests/types/manifest.types';
 import { PreviewVesselChangeResponse } from '../../../types';
 import type { TripFormPayload } from '../components/schedule/TripFormModal';
 import type { CreateTripData } from '../../../services/trips.service';
+import type { CreateScheduledTemplateData } from '../../../services/scheduled-templates.service';
 
 type ViewFilterMode = 'upcoming' | 'week' | 'history';
 
@@ -47,7 +48,7 @@ export const ScheduleTripsPage: React.FC = () => {
   const [createdManifest, setCreatedManifest] = useState<Manifest | null>(null);
   const [initialDateForNewTrip, setInitialDateForNewTrip] = useState<Date | null>(null);
   const [vesselPreviewData, setVesselPreviewData] = useState<PreviewVesselChangeResponse | null>(null);
-  const [pendingTripUpdate, setPendingTripUpdate] = useState<{ id: number; data: any } | null>(null);
+  const [pendingTripUpdate, setPendingTripUpdate] = useState<{ id: number; data: TripFormPayload } | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const [viewFilter, setViewFilter] = useState<ViewFilterMode>('upcoming');
   const [weekDate, setWeekDate] = useState(new Date());
@@ -144,10 +145,10 @@ export const ScheduleTripsPage: React.FC = () => {
     }
   };
 
-  const handleSaveTemplate = (data: any) => {
+  const handleSaveTemplate = (data: Omit<CreateScheduledTemplateData, 'company_id'>) => {
     if (selectedTemplate) {
-      const { company_id, ...updateData } = data;
-      updateTemplate({ id: selectedTemplate.id, data: updateData });
+      // El modal no envia company_id, asi que no hay nada que excluir aqui.
+      updateTemplate({ id: selectedTemplate.id, data });
     } else {
       createTemplate({ ...data, company_id: COMPANY_ID });
     }
@@ -203,7 +204,11 @@ export const ScheduleTripsPage: React.FC = () => {
     }
   };
 
-  const handlePreviewVesselChange = async (tripId: number, newVesselId: number, data: any) => {
+  const handlePreviewVesselChange = async (
+    tripId: number,
+    newVesselId: number,
+    data: TripFormPayload
+  ) => {
     try {
       const preview = await previewVesselChange({
         tripId,

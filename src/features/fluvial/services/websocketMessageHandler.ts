@@ -217,7 +217,7 @@ export class WebSocketMessageHandler {
   private handleTempReserved(message: SeatUpdateMessage): void {
     const isRepresentativeReservation = message.reservationType === 'REPRESENTATIVE_TEMP_RESERVATION' ||
                                        message.reservationType === 'representative' ||
-                                       (message as any).reservationCategory === 'representative';
+                                       message.reservationCategory === 'representative';
 
     // Extraer userId base para comparar correctamente
     // Los representantes tienen userId como "user123-company-session-rep-0", 

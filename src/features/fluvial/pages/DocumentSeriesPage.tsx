@@ -273,13 +273,22 @@ export const DocumentSeriesPage: React.FC = () => {
     setShowModal(false);
   };
 
-  const handleSubmit = (data: any) => {
+  // El modal es uno solo para sucursales y series, asi que emite el payload de
+  // una u otra segun la pestana activa. TypeScript no puede deducir cual es a
+  // partir de activeTab, de ahi los dos estrechamientos de abajo.
+  const handleSubmit = (
+    data:
+      | BranchOfficeCreateData
+      | BranchOfficeUpdateData
+      | DocumentSeriesCreateData
+      | DocumentSeriesUpdateData
+  ) => {
     if (activeTab === 'offices') {
-      if (editingItem) updateOfficeMutation.mutate({ id: editingItem.id, data }, { onSuccess: handleCloseModal });
-      else createOfficeMutation.mutate(data, { onSuccess: handleCloseModal });
+      if (editingItem) updateOfficeMutation.mutate({ id: editingItem.id, data: data as BranchOfficeCreateData }, { onSuccess: handleCloseModal });
+      else createOfficeMutation.mutate(data as BranchOfficeCreateData, { onSuccess: handleCloseModal });
     } else {
-      if (editingItem) updateSeriesMutation.mutate({ id: editingItem.id, data }, { onSuccess: handleCloseModal });
-      else createSeriesMutation.mutate({ ...data, company_id: companyId }, { onSuccess: handleCloseModal });
+      if (editingItem) updateSeriesMutation.mutate({ id: editingItem.id, data: data as DocumentSeriesCreateData }, { onSuccess: handleCloseModal });
+      else createSeriesMutation.mutate({ ...(data as DocumentSeriesCreateData), company_id: companyId }, { onSuccess: handleCloseModal });
     }
   };
 

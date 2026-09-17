@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { tripsService, SearchTripsParams } from '../../../services/trips.service';
 import { format, startOfWeek, subYears } from 'date-fns';
+import type { AvailableTrip, Trip } from '../../../types';
 
 // Interfaz de visualización estándar para cualquier tipo de viaje
 export interface UnifiedTripViewItem {
@@ -20,7 +21,7 @@ export interface UnifiedTripViewItem {
   total_confirmed_seats?: number;
   total_reserved_seats?: number;
   manifest_generated: boolean;
-  original_data: any;
+  original_data: RawTripForView;
 }
 
 interface UseTripsViewParams {
@@ -35,17 +36,42 @@ interface UseTripsViewParams {
   };
 }
 
+/**
+ * Forma cruda de un viaje antes de normalizarlo para la vista. Los endpoints
+ * no coinciden: 'upcoming' devuelve AvailableTrip y 'week'/'history' devuelven
+ * Trip, con nombres distintos para los mismos datos (id vs trip_id,
+ * origin_city vs origin_port_name). Por eso todo es opcional y el transform
+ * lee ambos con fallback.
+ */
+type RawTripForView = Partial<AvailableTrip & Trip> & {
+  // Campos que devuelven los endpoints de viajes y que ninguno de los dos
+  // tipos declara todavia. Se listan aqui, opcionales, en lugar de dejar el
+  // transform sobre `any`.
+  origin_port_name?: string | null;
+  destination_port_name?: string | null;
+  origin_city?: string | null;
+  destination_city?: string | null;
+  sales_status?: string | null;
+  route_name?: string | null;
+  manifest_generated?: boolean;
+  total_confirmed_seats?: number;
+  total_reserved_seats?: number;
+  estimated_arrival_datetime?: string | null;
+  total_seats?: number | null;
+  available_seats?: number | null;
+};
+
 // Función de transformación
-const transformTripToUnifiedView = (trip: any): UnifiedTripViewItem => {
+const transformTripToUnifiedView = (trip: RawTripForView): UnifiedTripViewItem => {
   return {
-    trip_id: trip.id ?? trip.trip_id,
-    trip_name: trip.trip_name,
-    vessel_name: trip.vessel_name,
+    trip_id: trip.id ?? trip.trip_id ?? 0,
+    trip_name: trip.trip_name ?? null,
+    vessel_name: trip.vessel_name ?? null,
     origin_port_name: trip.origin_port_name ?? trip.origin_city ?? null,
     destination_port_name: trip.destination_port_name ?? trip.destination_city ?? null,
-    departure_datetime: trip.departure_datetime,
+    departure_datetime: trip.departure_datetime ?? '',
     estimated_arrival_datetime: trip.estimated_arrival_datetime ?? null,
-    status: trip.status,
+    status: trip.status ?? '',
     sales_status: trip.sales_status ?? null,
     route_name: trip.route_name ?? null,
     total_seats: trip.total_seats ?? null,
@@ -74,7 +100,7 @@ export const useTripsView = ({
         }]
       : ['tripsView', viewMode, weekDate, companyId];
   const queryFn = async (): Promise<UnifiedTripViewItem[]> => {
-    let rawTrips: any[] = [];
+    let rawTrips: RawTripForView[] = [];
 
     switch (viewMode) {
       case 'upcoming': {

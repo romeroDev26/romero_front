@@ -6,12 +6,13 @@ import { Button } from '../../../../components/common/Button';
 import { useVessels } from '../../hooks/useVesselsData';
 import { useRoutes } from '../../hooks/useVesselsRoutesData';
 import { ScheduledRouteTemplate } from '../../../../types';
+import type { CreateScheduledTemplateData } from '../../../../services/scheduled-templates.service';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   template: ScheduledRouteTemplate | null;
-  onSave: (data: any) => void;
+  onSave: (data: Omit<CreateScheduledTemplateData, 'company_id'>) => void;
   isLoading?: boolean;
 }
 
@@ -76,7 +77,7 @@ export const ScheduledTemplateFormModal: React.FC<Props> = ({
     setErrors({});
   }, [template]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | boolean | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }));

@@ -5,13 +5,18 @@ import {
   representantesService, 
   CompanyInvoiceWithRepresentatives
 } from '../../../services/representantes.service';
-import { asApiError } from '../../../utils/errorHandler';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
-// Función local para manejar errores de API
-const getErrorMessage = (error: any): string => {
-  const detail = error.response?.data?.detail || error.message;
-  
-  switch (error.response?.status) {
+/**
+ * Traduce los errores del endpoint de facturas empresariales a mensajes de
+ * dominio. No reemplaza a getErrorMessage de utils: alli se extrae el mensaje
+ * del backend, aqui se decide que decirle al vendedor segun el caso.
+ */
+const getRepresentanteErrorMessage = (error: unknown): string => {
+  const apiError = asApiError(error);
+  const detail = detailToString(apiError.response?.data?.detail) || apiError.message;
+
+  switch (apiError.response?.status) {
     case 400:
       if (detail?.includes('representante')) {
         return 'Error en los datos del representante. Verifique la información.';
@@ -47,7 +52,7 @@ export function useRepresentantes() {
     mutationFn: (data: CompanyInvoiceWithRepresentatives) => 
       representantesService.createCompanyInvoiceWithRepresentatives(data),
     
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       const { invoice, representatives } = data;
       
       saleNotify.success(
@@ -63,7 +68,7 @@ export function useRepresentantes() {
     
     onError: (error) => {
       const apiError = asApiError(error);
-      const friendlyMessage = getErrorMessage(error);
+      const friendlyMessage = getRepresentanteErrorMessage(error);
       saleNotify.error('Error en factura empresarial', friendlyMessage);
       
       // Log detallado del error para debugging

@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { SaleFormState, initialPassengerData, Representative } from "../core/types";
 import { SunatDocType } from "../../../types/sunat.types";
 
-export const useSaleFormState = (reservationToConfirm?: any) => {
+/** Solo se usa su presencia, para entrar en modo confirmacion de reserva. */
+export const useSaleFormState = (reservationToConfirm?: unknown) => {
   const [state, setState] = useState<SaleFormState>({
     selectedBoardingStopId: null,
     selectedDisembarkingStopId: null,

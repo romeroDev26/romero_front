@@ -170,7 +170,7 @@ export const TicketPreviewModal: React.FC<TicketPreviewModalProps> = ({
       setIsGeneratingSticker(true);
 
       // Primero verificar si ya existe la URL en la invoice actual
-      const existingUrl = (invoiceData as any).pdf_sticker_100x100_file_path;
+      const existingUrl = invoiceData.pdf_sticker_100x100_file_path;
       if (existingUrl) {
         setPreviewUrlSticker100x100(existingUrl);
         return;

@@ -7,6 +7,14 @@ import {
 import { RouteWithStops, RouteStopCreateData } from '../../../services/routes.service';
 import { RouteStop } from '../../../types';
 
+/**
+ * Valor que acepta updateStop: el del campo correspondiente de RouteStop, o el
+ * objeto {hours, minutes} con el que la UI edita la duracion estimada.
+ */
+export type RouteStopFieldValue =
+  | RouteStop[keyof RouteStop]
+  | { hours?: number; minutes?: number };
+
 export function useRouteMap(isOpen: boolean, route?: RouteWithStops) {
   const updateRouteStops = useUpdateRouteStops();
   const { data: ports = [] } = usePortsData();
@@ -394,17 +402,20 @@ export function useRouteMap(isOpen: boolean, route?: RouteWithStops) {
   );
 
   const updateStop = useCallback(
-    (index: number, field: keyof RouteStop, value: any) => {
+    (index: number, field: keyof RouteStop, value: RouteStopFieldValue) => {
       const newStops = [...stops];
       const updatedStop: Partial<RouteStop> = { ...newStops[index] };
-      if (field === 'estimated_duration_from_origin' && typeof value === 'object') {
-        const totalHours = (value.hours || 0) + (value.minutes || 0) / 60;
+      if (field === 'estimated_duration_from_origin' && typeof value === 'object' && value !== null) {
+        const duration = value as { hours?: number; minutes?: number };
+        const totalHours = (duration.hours || 0) + (duration.minutes || 0) / 60;
         updatedStop.estimated_duration_from_origin = routeHelpers.hoursToISOString(totalHours);
       } else if (field === 'port_id') {
-        updatedStop.port_id = value;
+        updatedStop.port_id = value as number;
         updatedStop.port = ports.find((p) => p.id === value);
       } else {
-        (updatedStop as any)[field] = value;
+        // Asignacion por clave dinamica: el tipo de `value` ya lo valida la
+        // firma de updateStop, aqui solo falta el puente del indexado.
+        (updatedStop as Record<string, unknown>)[field] = value;
       }
       newStops[index] = updatedStop;
       setStops(newStops);

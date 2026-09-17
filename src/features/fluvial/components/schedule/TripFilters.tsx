@@ -69,7 +69,7 @@ export const TripFilters: React.FC<TripFiltersProps> = ({
 
   const weekRangeLabel = `${format(weekStart, "d 'de' MMMM", { locale: es })} — ${format(weekEnd, "d 'de' MMMM, yyyy", { locale: es })}`;
 
-  const cityOptions = cities.map((city: any) => ({ value: city.id, label: city.name }));
+  const cityOptions = cities.map((city) => ({ value: city.id, label: city.name }));
 
   const inputBaseClass =
     'w-full px-3 py-2.5 border border-dm-border-primary rounded-lg bg-dm-bg-secondary focus:bg-dm-bg-primary focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm text-dm-text-secondary placeholder-gray-400 dark:placeholder-gray-500';

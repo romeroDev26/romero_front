@@ -71,7 +71,7 @@ export function useSaleForm({
   // Infantes del pasajero principal (boleta)
   const [boletaInfants, setBoletaInfants] = useState<Infant[]>([]);
   const [selectedSeatForRepresentative, setSelectedSeatForRepresentative] =
-    useState<any>(null);
+    useState<SeatMapItem | null>(null);
 
   // Estados para selección de paradas y asiento
   const [selectedBoardingStopId, setSelectedBoardingStopId] = useState<number | null>(null);

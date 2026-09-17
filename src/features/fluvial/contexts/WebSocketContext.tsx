@@ -98,7 +98,7 @@ export const useWebSocket = () => {
 export const useWebSocketSubscription = (
   subscriberId: string,
   callback: (message: SeatUpdateMessage) => void,
-  dependencies: any[] = []
+  dependencies: React.DependencyList = []
 ) => {
   const { subscribe } = useWebSocket();
   

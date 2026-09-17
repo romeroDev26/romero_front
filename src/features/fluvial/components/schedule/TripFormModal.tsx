@@ -37,7 +37,11 @@ interface Props {
   onClose: () => void;
   trip: UnifiedTripViewItem | null;
   onSave: (data: TripFormPayload) => void;
-  onPreviewVesselChange?: (tripId: number, newVesselId: number, data: any) => void;
+  onPreviewVesselChange?: (
+    tripId: number,
+    newVesselId: number,
+    data: TripFormPayload
+  ) => void;
   isLoading?: boolean;
   initialDate?: Date | null;
 }
@@ -64,8 +68,11 @@ const labelClass = 'block text-xs font-semibold text-dm-text-muted uppercase tra
 const openPicker = (ref: React.RefObject<HTMLInputElement | null>) => {
   const input = ref.current;
   if (!input) return;
-  if ('showPicker' in input && typeof (input as any).showPicker === 'function') {
-    try { (input as any).showPicker(); } catch { input.focus(); }
+  // showPicker existe en los navegadores actuales pero no esta en los tipos
+  // del DOM que usa el proyecto, de ahi el estrechamiento puntual.
+  const withPicker = input as HTMLInputElement & { showPicker?: () => void };
+  if (typeof withPicker.showPicker === 'function') {
+    try { withPicker.showPicker(); } catch { input.focus(); }
   } else {
     input.focus();
   }
@@ -159,10 +166,10 @@ export const TripFormModal: React.FC<Props> = ({
     }
   }, [isOpen, trip, tripDetails, initialDate]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | boolean | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev: any) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 

@@ -10,6 +10,7 @@ import {
 import { RouteTimeline } from './RouteTimeline';
 import { RouteStop } from '../../../../types';
 import { Port } from '../../../../types';
+import type { RouteStopFieldValue } from '../../hooks/useRouteMap';
 
 interface RouteListViewProps {
   stops: Partial<RouteStop>[];
@@ -20,7 +21,7 @@ interface RouteListViewProps {
   onDragOver: (e: React.DragEvent, index: number) => void;
   onDrop: (e: React.DragEvent, index: number) => void;
   onStopClick: (stop: Partial<RouteStop>) => void;
-  onUpdateStop: (index: number, field: keyof RouteStop, value: any) => void;
+  onUpdateStop: (index: number, field: keyof RouteStop, value: RouteStopFieldValue) => void;
   onRemoveStop: (index: number) => void;
   isStopFixed: (index: number) => boolean;
   parseDurationForUI: (isoString?: string) => { hours: number; minutes: number };

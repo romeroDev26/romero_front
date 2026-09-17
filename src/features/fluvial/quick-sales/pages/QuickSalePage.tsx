@@ -25,7 +25,7 @@ import { useProducts } from '../hooks/useProducts';
 import { useRouteHistory } from '../hooks/useRouteHistory';
 import { initialQuickSaleFormData } from '../types/quickSale.types';
 
-import { mobileInvoicesService, MobileInvoiceCreateData } from '../../../../services/mobileInvoices.service';
+import { mobileInvoicesService, MobileInvoiceCreateData, MobileInvoiceItem } from '../../../../services/mobileInvoices.service';
 import { invoicesService } from '../../../../services/invoices.service';
 import { useDocumentSeriesForBranch } from '../../hooks/useDocumentSeriesForBranch';
 import { useClientManager } from '../../hooks/useClientManager';
@@ -316,7 +316,7 @@ export const QuickSalePage: React.FC = () => {
         
         items: [
           (() => {
-            const baseItem: any = {
+            const baseItem: MobileInvoiceItem = {
               product_id: formData.selectedProduct.id,
               quantity: formData.quantity,
               unit_price: unitPrice,

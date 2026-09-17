@@ -19,7 +19,10 @@ const ReservationFilters = ({
   onFilterChange,
   selectedBranch,
 }: {
-  onFilterChange: (filters: any) => void;
+  onFilterChange: (filters: {
+    status?: string[];
+    customer_doc_number?: string;
+  }) => void;
   selectedBranch: BranchOffice | null;
 }) => {
   const [status, setStatus] = useState('');

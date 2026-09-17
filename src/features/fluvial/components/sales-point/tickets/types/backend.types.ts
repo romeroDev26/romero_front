@@ -1,3 +1,4 @@
+import type { CompanyInvoiceResponse } from '../../../../../../services/representantes.service';
 // src/features/fluvial/components/sales-point/tickets/types/backend.types.ts
 
 /**
@@ -89,8 +90,8 @@ export interface BackendInvoiceData {
   updated_at: string;
   
   // Solo para ventas con RUC/empresa
-  representatives?: any[]; // Lista de representantes (pasajeros)
-  summary?: any; // Resumen de la venta de empresa
+  representatives?: CompanyInvoiceResponse['representatives']; // Lista de representantes (pasajeros)
+  summary?: CompanyInvoiceResponse['summary']; // Resumen de la venta de empresa
 }
 
 /**
@@ -99,8 +100,8 @@ export interface BackendInvoiceData {
  */
 export interface BackendCompanyInvoiceData {
   invoice: BackendInvoiceData; // La factura principal
-  representatives: any[]; // Lista de representantes
-  summary: any; // Resumen de la venta
+  representatives: CompanyInvoiceResponse['representatives']; // Lista de representantes
+  summary: CompanyInvoiceResponse['summary']; // Resumen de la venta
 }
 
 export interface BackendInvoiceItem {

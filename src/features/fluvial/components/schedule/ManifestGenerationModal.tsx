@@ -11,13 +11,17 @@ import { Modal } from '../../../../components/common/Modal';
 import { manifestService } from '../../../manifests/services/manifest.service';
 import { UnifiedTripViewItem } from '../../hooks/useTripsView';
 import { asApiError, detailToString } from '../../../../utils/errorHandler';
+import type { ManifestResponse } from '../../../manifests/types/manifest.types';
 
 interface ManifestGenerationModalProps {
   isOpen: boolean;
   onClose: () => void;
   trip: UnifiedTripViewItem;
   onManifestGenerated?: () => void;
-  onManifestCreated?: (manifestData: any, tripInfo: any) => void;
+  onManifestCreated?: (
+    manifestData: ManifestResponse['data'],
+    manifestType: 'PASSENGER' | 'CARGO'
+  ) => void;
 }
 
 export const ManifestGenerationModal: React.FC<ManifestGenerationModalProps> = ({

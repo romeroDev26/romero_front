@@ -81,7 +81,7 @@ El equipo de ${businessName}`;
       let pdfType: 'a4' | 'ticket' | 'legacy' = preferredPdfType;
       
       // Si backendData tiene información de archivos PDF, validar disponibilidad
-      const invoiceData = backendData as any;
+      const invoiceData = backendData;
       
       // Si el tipo preferido no está disponible, hacer fallback
       if (pdfType === 'ticket' && !invoiceData.pdf_ticket_file_path) {

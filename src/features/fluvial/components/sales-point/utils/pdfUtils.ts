@@ -2,6 +2,7 @@
 
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import type { BackendInvoiceData } from '../tickets/types/backend.types';
 
 /**
  * Formatea una cantidad de dinero en soles peruanos
@@ -164,7 +165,15 @@ export const generateQRCode = (data: string): string => {
 /**
  * Calcula totales de la factura
  */
-export const calculateTotals = (invoice: any) => {
+// NOTA: hoy nadie llama a esta funcion. Se conserva porque es la unica que
+// centraliza el calculo de totales para los tickets; si sigue sin usarse,
+// conviene borrarla.
+export const calculateTotals = (
+  invoice: Pick<
+    BackendInvoiceData,
+    'total_taxable' | 'total_exonerated' | 'total_igv' | 'total_global_discount' | 'total_payable'
+  >
+) => {
   const subtotal = safeParseFloat(invoice.total_taxable) + safeParseFloat(invoice.total_exonerated);
   const igv = safeParseFloat(invoice.total_igv);
   const descuento = safeParseFloat(invoice.total_global_discount);

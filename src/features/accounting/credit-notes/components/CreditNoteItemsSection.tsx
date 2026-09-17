@@ -1,17 +1,18 @@
 // src/features/accounting/credit-notes/components/CreditNoteItemsSection.tsx
 
 import React, { useState } from 'react';
-import { Control, FieldErrors, UseFormSetValue, useFieldArray } from 'react-hook-form';
+import { Control, FieldErrors, UseFormSetValue, useFieldArray, UseFormWatch } from 'react-hook-form';
 import { PlusIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
 import { ProductService } from '../../../../types';
+import type { CreditNoteFormData } from '../creditNoteSchema';
 
 interface CreditNoteItemsSectionProps {
-	control: Control<any>;
-	errors: FieldErrors<any>;
-	setValue: UseFormSetValue<any>;
-	watch: (name: string) => any;
+	control: Control<CreditNoteFormData>;
+	errors: FieldErrors<CreditNoteFormData>;
+	setValue: UseFormSetValue<CreditNoteFormData>;
+	watch: UseFormWatch<CreditNoteFormData>;
 	products: ProductService[];
 	loadingProducts: boolean;
 }

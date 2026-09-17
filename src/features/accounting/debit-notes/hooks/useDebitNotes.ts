@@ -35,7 +35,7 @@ export const useCreateDebitNote = () => {
   
   return useMutation({
     mutationFn: (data: DebitNoteCreateData) => debitNotesService.create(data),
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       toast.success(`Nota de Débito ${data.identifier || 'generada'} correctamente. Se está enviando a SUNAT.`);
       queryClient.invalidateQueries({ queryKey: ['debitNotes'] });
     },
@@ -85,7 +85,7 @@ export const useAnnulDebitNote = () => {
   
   return useMutation({
     mutationFn: (data: DebitNoteAnnulData) => debitNotesService.annul(data),
-    onSuccess: (data: any) => {
+    onSuccess: (data) => {
       toast.success(`Nota de Crédito ${data.series}-${String(data.number).padStart(8, '0')} generada para anular la nota de débito.`);
       queryClient.invalidateQueries({ queryKey: ['debitNotes'] });
       queryClient.invalidateQueries({ queryKey: ['creditNotes'] });

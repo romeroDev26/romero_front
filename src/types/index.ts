@@ -810,6 +810,18 @@ export interface DebitNote {
   company?: Company;
   client_id: number;
   client?: Client;
+  /**
+   * Factura o boleta afectada por la nota de debito. La devuelve el endpoint de
+   * detalle; DebitNoteDetailPage ya la consumia con `as any`.
+   */
+  affected_invoice?: {
+    id?: number;
+    issue_date?: string;
+    total_payable?: number | string;
+    sunat_status?: string;
+    pdf_a4_file_path?: string;
+    pdf_ticket_file_path?: string;
+  };
   ubl_version?: string;
   document_type_code: string;
   series: string;
@@ -852,6 +864,9 @@ export interface DebitNoteItem {
   item_order: number;
   product_id: number;
   product?: ProductService;
+  /** Descripcion y nombre aplanados, cuando no viene el objeto product. */
+  item_description?: string;
+  product_name?: string;
   quantity: number;
   unit_code: string;
   unit_price: number;

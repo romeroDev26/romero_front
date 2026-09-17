@@ -28,40 +28,23 @@ import {
 } from '../components';
 import { Controller } from 'react-hook-form';
 
-// Esquema de validación según estructura del backend
-const creditNoteSchema = z.object({
-	client_id: z.number().min(1, "Debe seleccionar un cliente."),
-	series: z.string().min(1, "La serie es requerida."),
-	currency_code: z.string().min(1, "La moneda es requerida."),
-	affected_document_type_code: z.string().min(1, "Tipo de documento afectado requerido."),
-	affected_document_series_number: z.string().min(1, "Serie y número del documento afectado requeridos."),
-	credit_note_type_code: z.string().min(1, "Debe seleccionar un motivo."),
-	reason: z.string().min(10, "La descripción debe tener al menos 10 caracteres."),
-	items: z.array(z.object({
-		product_id: z.number().min(1, "Debe seleccionar un producto."),
-		quantity: z.number().min(0.01, "La cantidad debe ser mayor a 0."),
-		unit_code: z.string().min(1, "El código de unidad es requerido."),
-		unit_price: z.number().min(0, "El precio unitario no puede ser negativo."),
-		discount: z.number().min(0, "El descuento no puede ser negativo.").optional(),
-		price_with_tax: z.number().min(0, "El precio con impuesto no puede ser negativo."),
-		price_type_code: z.string().min(1, "El código de precio es requerido."),
-		tax_category_code: z.string().min(1, "La categoría del impuesto es requerida."),
-		description: z.string().min(1, "La descripción es requerida."),
-	})).min(1, "Debe agregar al menos un item."),
-	igv_applicable: z.boolean().optional(),
-});
-
-type CreditNoteFormData = z.infer<typeof creditNoteSchema>;
+import { creditNoteSchema, type CreditNoteFormData } from '../creditNoteSchema';
+import type { Invoice } from '../../../../types';
 
 export const CreditNoteFullFormPage: React.FC = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { affectedInvoice, selectedType } = (location.state as any) || {};
+	// Lo que envia la pantalla anterior al navegar hacia el formulario
+	const { affectedInvoice, selectedType } =
+		(location.state as {
+			affectedInvoice?: Invoice;
+			selectedType?: string;
+		}) || {};
 	const { mutate: createCreditNote, isPending } = useCreateCreditNote();
 	const queryClient = useQueryClient();
   
 	// Estados locales
-	const [selectedInvoiceDetail, setSelectedInvoiceDetail] = useState<any>(null);
+	const [selectedInvoiceDetail, setSelectedInvoiceDetail] = useState<Invoice | null>(null);
   
 	// Hook de usuario actual
 	const { data: currentUser } = useQuery<User>({
@@ -124,7 +107,7 @@ export const CreditNoteFullFormPage: React.FC = () => {
 	});
 
 	// Si venimos desde la selección rápida, cargar la factura completa y prellenar
-	const { data: invoiceData } = useQuery<any>({
+	const { data: invoiceData } = useQuery<Invoice | null>({
 		queryKey: ['invoice', affectedInvoice?.id],
 		queryFn: async () => affectedInvoice && affectedInvoice.id ? await invoicesService.getById(affectedInvoice.id) : null,
 		enabled: !!affectedInvoice?.id,
@@ -176,7 +159,7 @@ export const CreditNoteFullFormPage: React.FC = () => {
 	}, [watch('client_id')]);
 
 	// Función para manejar la selección de factura
-	const handleInvoiceSelect = (invoiceDetail: any) => {
+	const handleInvoiceSelect = (invoiceDetail: Invoice) => {
 		try {
 			setSelectedInvoiceDetail(invoiceDetail);
 			
@@ -189,7 +172,7 @@ export const CreditNoteFullFormPage: React.FC = () => {
 			setValue('currency_code', invoiceDetail.currency_code);
 			// If invoice series matches one of the available credit note series, preselect it
 			if (invoiceDetail.series && availableCreditNoteSeries && availableCreditNoteSeries.length > 0) {
-				const match = availableCreditNoteSeries.find((s: any) => s.series_code === invoiceDetail.series);
+				const match = availableCreditNoteSeries.find((s) => s.series_code === invoiceDetail.series);
 				if (match) setValue('series', invoiceDetail.series);
 			}
 			
@@ -199,21 +182,21 @@ export const CreditNoteFullFormPage: React.FC = () => {
 				remove();
 				
 				// Determine if IGV applies: any item with igv_percentage > 0 or tax_category_code === '10'
-				const igvApplicable = invoiceDetail.items.some((it: any) => {
-					const igvPerc = parseFloat(it.igv_percentage || '0');
+				const igvApplicable = invoiceDetail.items.some((it) => {
+					const igvPerc = parseFloat(String(it.igv_percentage ?? '0'));
 					return igvPerc > 0 || it.tax_category_code === '10';
 				});
 				setValue('igv_applicable', igvApplicable);
 
 				// Agregar items de la factura, respetando tax_category_code
-				invoiceDetail.items.forEach((item: any, index: number) => {
-					const inferredTax = item.tax_category_code || (parseFloat(item.igv_percentage || '0') > 0 ? '10' : '20');
+				invoiceDetail.items.forEach((item, index) => {
+					const inferredTax = item.tax_category_code || (parseFloat(String(item.igv_percentage ?? '0')) > 0 ? '10' : '20');
 					const itemData = {
 						product_id: item.product_id || 0,
-						quantity: parseFloat(item.quantity) || 1,
+						quantity: parseFloat(String(item.quantity)) || 1,
 						unit_code: item.unit_code || 'NIU',
-						unit_price: parseFloat(item.unit_price) || 0,
-						price_with_tax: parseFloat(item.price_with_tax) || 0,
+						unit_price: parseFloat(String(item.unit_price)) || 0,
+						price_with_tax: parseFloat(String(item.price_with_tax)) || 0,
 						price_type_code: item.price_type_code || '01',
 						tax_category_code: inferredTax,
 						description: item.item_description || item.product_name || '',

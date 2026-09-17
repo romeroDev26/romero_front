@@ -3,13 +3,15 @@
 import React from 'react';
 import { Controller, Control, FieldErrors } from 'react-hook-form';
 import { InvoiceSelector } from './InvoiceSelector';
+import type { CreditNoteFormData } from '../creditNoteSchema';
+import type { Invoice } from '../../../../types';
 
 interface AffectedDocumentSectionProps {
-	control: Control<any>;
-	errors: FieldErrors<any>;
+	control: Control<CreditNoteFormData>;
+	errors: FieldErrors<CreditNoteFormData>;
 	companyId: number;
-	selectedInvoiceDetail: any;
-	onInvoiceSelect: (invoiceDetail: any) => void;
+	selectedInvoiceDetail: Invoice | null;
+	onInvoiceSelect: (invoiceDetail: Invoice) => void;
 	/** Si true, al seleccionar una factura se navegará a la página de anulación */
 	redirectToAnnulOnSelect?: boolean;
 }

@@ -62,7 +62,7 @@ export const InvoicesListPage: React.FC = () => {
     };
 
     if (debouncedClientSearch) baseFilters.client_search = debouncedClientSearch;
-    if (sunatStatusFilter) baseFilters.sunat_status = sunatStatusFilter as any;
+    if (sunatStatusFilter) baseFilters.sunat_status = sunatStatusFilter as typeof baseFilters.sunat_status;
     
     if (startDate) baseFilters.start_date = format(startDate, 'yyyy-MM-dd');
     if (endDate) baseFilters.end_date = format(endDate, 'yyyy-MM-dd');

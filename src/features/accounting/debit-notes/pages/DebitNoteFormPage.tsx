@@ -28,6 +28,7 @@ import { useServicesData } from "../../../fluvial/hooks/useProductsServicesData"
 import { useAccountingDocumentSeriesForBranch } from "../../../../hooks/useAccountingDocumentSeries";
 import { authService } from "../../../../services/auth.service";
 import { User } from "../../../../types";
+import type { Invoice } from '../../../../types';
 
 // Catálogo de motivos de nota de débito (SUNAT catálogo 10)
 const DEBIT_NOTE_REASONS = [
@@ -85,7 +86,7 @@ export const DebitNoteFormPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { affectedInvoice: initialAffectedInvoice } =
-    (location.state as { affectedInvoice?: any }) || {};
+    (location.state as { affectedInvoice?: Invoice }) || {};
 
   // Intentar obtener desde sessionStorage si no viene en el state
   const getAffectedInvoice = () => {
@@ -119,7 +120,7 @@ export const DebitNoteFormPage: React.FC = () => {
   const finalAffectedInvoice = getAffectedInvoice();
 
   // Función para obtener client_id válido de múltiples fuentes
-  const getValidClientId = (affectedInvoice: any) => {
+  const getValidClientId = (affectedInvoice: Invoice | undefined) => {
     // Prioridad: client_id directo > client.id > 0 como fallback
     if (affectedInvoice?.client_id && affectedInvoice.client_id !== 0) {
       return affectedInvoice.client_id;
@@ -255,7 +256,7 @@ export const DebitNoteFormPage: React.FC = () => {
   }, []); // Solo ejecutar una vez al montar el componente
 
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
-  const watchedItems = (useWatch({ control, name: "items" }) as any[]) || [];
+  const watchedItems = useWatch({ control, name: "items" }) || [];
 
   const { data: availableServices = [], isLoading: isLoadingServices } =
     useServicesData({ is_active: true });

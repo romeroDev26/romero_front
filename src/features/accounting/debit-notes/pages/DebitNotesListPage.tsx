@@ -43,7 +43,10 @@ export const DebitNotesListPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [debitNotes, refetch]);
 
-  const handleFilterChange = (field: keyof DebitNotesListParams, value: any) => {
+  const handleFilterChange = <K extends keyof DebitNotesListParams>(
+    field: K,
+    value: DebitNotesListParams[K]
+  ) => {
     setFilters(prev => ({ ...prev, [field]: value, skip: 0 }));
   };
 

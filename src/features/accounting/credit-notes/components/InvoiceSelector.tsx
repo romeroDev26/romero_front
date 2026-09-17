@@ -8,11 +8,13 @@ import { Button } from '../../../../components/common/Button';
 import { useVoidableInvoices } from '../../hooks/useCreditNotes';
 import { invoicesService } from '../../../../services/invoices.service';
 import { toast } from '@/utils/sileo-toast';
+import type { Invoice } from '../../../../types';
+import type { VoidableInvoice } from '../../types';
 
 interface InvoiceSelectorProps {
 	companyId: number;
-	selectedInvoiceDetail: any;
-	onInvoiceSelect: (invoiceDetail: any) => void;
+	selectedInvoiceDetail: Invoice | null;
+	onInvoiceSelect: (invoiceDetail: Invoice) => void;
 	disabled?: boolean;
 	/**
 	 * Si es true, al seleccionar una factura se cerrará el modal y se navegará
@@ -30,14 +32,16 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 	, redirectToAnnulOnSelect = false
 }) => {
 	const [showModal, setShowModal] = useState(false);
-	const [confirmInvoice, setConfirmInvoice] = useState<any | null>(null);
+	const [confirmInvoice, setConfirmInvoice] = useState<Invoice | null>(null);
 	const [search, setSearch] = useState('');
 	const [loadingDetail, setLoadingDetail] = useState(false);
 	const navigate = useNavigate();
 
 	const { data: voidableInvoices = [], isLoading } = useVoidableInvoices(companyId);
 
-	const selectInvoice = async (invoice: any) => {
+	// La lista entrega VoidableInvoice (solo se usa su id); el detalle completo
+	// se pide despues con getById.
+	const selectInvoice = async (invoice: VoidableInvoice) => {
 		try {
 			setLoadingDetail(true);
 			const invoiceDetail = await invoicesService.getById(invoice.id);
@@ -213,9 +217,9 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 						<div>
 							<div className="font-medium">{confirmInvoice.series}-{String(confirmInvoice.number).padStart(8, '0')}</div>
 							<div className="text-sm text-dm-text-secondary">Cliente: {confirmInvoice.client?.name}</div>
-							<div className="text-sm text-dm-text-secondary">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || confirmInvoice.client?.doc || ''}</div>
-							{(confirmInvoice.client?.address || confirmInvoice.client_address) && (
-								<div className="text-sm text-dm-text-secondary">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
+							<div className="text-sm text-dm-text-secondary">Doc: {confirmInvoice.client?.doc_number || ''}</div>
+							{confirmInvoice.client?.address && (
+								<div className="text-sm text-dm-text-secondary">Dirección: {confirmInvoice.client?.address}</div>
 							)}
 							<div className="text-sm text-dm-text-secondary">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
 						</div>
@@ -225,8 +229,8 @@ export const InvoiceSelector: React.FC<InvoiceSelectorProps> = ({
 							<div className="mt-2 border-t pt-2">
 								<div className="text-sm font-medium text-dm-text-secondary mb-1">Servicios / Ítems incluidos</div>
 								<ul className="text-sm text-dm-text-secondary list-disc pl-5 space-y-1">
-									{confirmInvoice.items.slice(0,5).map((it: any, idx: number) => (
-										<li key={idx}>{it.item_description || it.product_name || it.description || 'Servicio'} — {it.quantity || it.qty || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
+									{confirmInvoice.items.slice(0,5).map((it, idx) => (
+										<li key={idx}>{it.item_description || it.product_name || 'Servicio'} — {it.quantity || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
 									))}
 									{confirmInvoice.items.length > 5 && <li className="text-xs text-dm-text-muted">+{confirmInvoice.items.length - 5} más</li>}
 								</ul>

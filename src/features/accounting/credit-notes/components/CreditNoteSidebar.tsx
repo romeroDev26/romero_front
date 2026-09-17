@@ -5,11 +5,12 @@ import { UseFormSetValue } from 'react-hook-form';
 import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
 import { toast } from '@/utils/sileo-toast';
+import type { CreditNoteFormData } from '../creditNoteSchema';
 
 interface CreditNoteSidebarProps {
 	creditNoteTypeCode: string;
-	items: any[];
-	setValue: UseFormSetValue<any>;
+	items: CreditNoteFormData['items'];
+	setValue: UseFormSetValue<CreditNoteFormData>;
 }
 
 export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
@@ -26,19 +27,19 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 	const applyDecreaseProportionally = () => {
 		if (!Array.isArray(items) || items.length === 0) return;
 
-		const totalOriginal = items.reduce((acc: number, it: any) => acc + (parseFloat(it.unit_price || 0) * (parseFloat(it.quantity || 0) || 1)), 0);
+		const totalOriginal = items.reduce((acc: number, it) => acc + ((it.unit_price || 0) * ((it.quantity || 0) || 1)), 0);
 		if (decreaseAmount <= 0 || decreaseAmount > totalOriginal) {
 			toast.error('El monto de disminución debe ser mayor a 0 y menor o igual al total original');
 			return;
 		}
 
 		// Aplicar disminución proporcionalmente por item
-		items.forEach((it: any, idx: number) => {
-			const itemTotal = (parseFloat(it.unit_price || 0) * (parseFloat(it.quantity || 0) || 1));
+		items.forEach((it, idx) => {
+			const itemTotal = ((it.unit_price || 0) * ((it.quantity || 0) || 1));
 			const proportion = itemTotal / totalOriginal;
 			const reductionForItem = decreaseAmount * proportion;
-			const reductionPerUnit = reductionForItem / (parseFloat(it.quantity || 0) || 1);
-			const newUnitPrice = Math.max(0, (parseFloat(it.unit_price || 0) - reductionPerUnit));
+			const reductionPerUnit = reductionForItem / ((it.quantity || 0) || 1);
+			const newUnitPrice = Math.max(0, ((it.unit_price || 0) - reductionPerUnit));
 			setValue(`items.${idx}.unit_price`, parseFloat(newUnitPrice.toFixed(10)));
 			// recalcular price_with_tax
 			setValue(`items.${idx}.price_with_tax`, parseFloat((newUnitPrice * 1.18).toFixed(10)));
@@ -50,15 +51,15 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 	const applyGlobalDiscount = () => {
 		if (!Array.isArray(items) || items.length === 0) return;
 
-		const totalOriginal = items.reduce((acc: number, it: any) => acc + (parseFloat(it.unit_price || 0) * (parseFloat(it.quantity || 0) || 1)), 0);
+		const totalOriginal = items.reduce((acc: number, it) => acc + ((it.unit_price || 0) * ((it.quantity || 0) || 1)), 0);
 		if (globalDiscountAmount <= 0 || globalDiscountAmount > totalOriginal) {
 			toast.error('El monto del descuento debe ser mayor a 0 y menor o igual al total original');
 			return;
 		}
 
 		// Distribuir proporcionalmente
-		items.forEach((it: any, idx: number) => {
-			const itemTotal = (parseFloat(it.unit_price || 0) * (parseFloat(it.quantity || 0) || 1));
+		items.forEach((it, idx) => {
+			const itemTotal = ((it.unit_price || 0) * ((it.quantity || 0) || 1));
 			const proportion = itemTotal / totalOriginal;
 			const discountForItem = globalDiscountAmount * proportion;
 
@@ -67,8 +68,8 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 				setValue(`items.${idx}.discount`, parseFloat(discountForItem.toFixed(10)));
 			} else {
 				// reducir unit_price proporcionalmente
-				const reductionPerUnit = discountForItem / (parseFloat(it.quantity || 0) || 1);
-				const newUnitPrice = Math.max(0, (parseFloat(it.unit_price || 0) - reductionPerUnit));
+				const reductionPerUnit = discountForItem / ((it.quantity || 0) || 1);
+				const newUnitPrice = Math.max(0, ((it.unit_price || 0) - reductionPerUnit));
 				setValue(`items.${idx}.unit_price`, parseFloat(newUnitPrice.toFixed(10)));
 				setValue(`items.${idx}.price_with_tax`, parseFloat((newUnitPrice * 1.18).toFixed(10)));
 			}
@@ -122,7 +123,10 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 								<div className="flex items-center space-x-2">
 									<select 
 										value={discountMode} 
-										onChange={(e) => setDiscountMode(e.target.value as any)} 
+										onChange={(e) =>
+											// El select solo ofrece estas dos opciones; el DOM lo tipa como string.
+											setDiscountMode(e.target.value as 'field' | 'unit_price')
+										} 
 										className="p-2 border rounded-md"
 									>
 										<option value="field">Usar campo discount por ítem</option>
@@ -197,7 +201,7 @@ export const CreditNoteSidebar: React.FC<CreditNoteSidebarProps> = ({
 
 					{decreaseMode === 'per_item' && (
 						<div className="space-y-3 max-h-64 overflow-y-auto">
-							{items && items.map((it: any, idx: number) => (
+							{items && items.map((it, idx) => (
 								<div key={idx} className="flex items-center space-x-2 border-b pb-2">
 									<div className="flex-1">
 										<div className="text-sm font-medium">{it.description || `Item ${idx + 1}`}</div>

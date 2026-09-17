@@ -13,12 +13,16 @@ import { invoicesService } from '../../../services/invoices.service';
 // Importamos el hook desde su nueva ubicación
 import { useVoidableInvoices } from '../hooks/useSunatVoids';
 import { VoidableInvoice } from '../types';
+import type { Invoice } from '../../../types';
+import type { VoidDocumentItem } from '../types';
 
 interface InvoiceSelectorModalProps {
   isOpen: boolean;
   onClose: () => void;
   companyId: number | null;
-  onSubmit: (items: any[]) => void; // El modal solo devuelve los ítems, no la razón
+  // El modal solo devuelve los identificadores de los documentos elegidos,
+  // no la razon de la baja: la agrega quien lo consume.
+  onSubmit: (items: Omit<VoidDocumentItem, 'reason'>[]) => void; // El modal solo devuelve los ítems, no la razón
   isSubmitting: boolean;
   /** Si true, al hacer click en una factura navegamos a la página de anulación */
   redirectToAnnulOnSelect?: boolean;
@@ -35,7 +39,7 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
   const { data: voidableInvoices = [], isLoading } = useVoidableInvoices(companyId);
   const [selectedInvoices, setSelectedInvoices] = useState<Set<number>>(new Set());
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [confirmInvoice, setConfirmInvoice] = useState<any | null>(null);
+  const [confirmInvoice, setConfirmInvoice] = useState<Invoice | null>(null);
   const navigate = useNavigate();
 
   const handleToggleSelection = (invoiceId: number) => {
@@ -158,9 +162,9 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
             <div>
               <div className="font-medium">{confirmInvoice.series}-{String(confirmInvoice.number).padStart(8, '0')}</div>
               <div className="text-sm text-dm-text-secondary">Cliente: {confirmInvoice.client?.name || confirmInvoice.client_name}</div>
-              <div className="text-sm text-dm-text-secondary">Doc: {confirmInvoice.client?.doc_number || confirmInvoice.client?.document_number || ''}</div>
-              {(confirmInvoice.client?.address || confirmInvoice.client_address) && (
-                <div className="text-sm text-dm-text-secondary">Dirección: {confirmInvoice.client?.address || confirmInvoice.client_address}</div>
+              <div className="text-sm text-dm-text-secondary">Doc: {confirmInvoice.client?.doc_number || ''}</div>
+              {confirmInvoice.client?.address && (
+                <div className="text-sm text-dm-text-secondary">Dirección: {confirmInvoice.client?.address}</div>
               )}
               <div className="text-sm text-dm-text-secondary">Total: {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(confirmInvoice.total_payable)}</div>
             </div>
@@ -169,8 +173,8 @@ export const InvoiceSelectorModal: React.FC<InvoiceSelectorModalProps> = ({
               <div className="mt-2 border-t pt-2">
                 <div className="text-sm font-medium text-dm-text-secondary mb-1">Servicios / Ítems incluidos</div>
                 <ul className="text-sm text-dm-text-secondary list-disc pl-5 space-y-1">
-                  {confirmInvoice.items.slice(0,5).map((it: any, idx: number) => (
-                    <li key={idx}>{it.item_description || it.product_name || it.description || 'Servicio'} — {it.quantity || it.qty || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
+                  {confirmInvoice.items.slice(0,5).map((it, idx) => (
+                    <li key={idx}>{it.item_description || it.product_name || 'Servicio'} — {it.quantity || ''} x {new Intl.NumberFormat('es-PE',{style: 'currency', currency: 'PEN'}).format(it.unit_price || it.price_with_tax || 0)}</li>
                   ))}
                   {confirmInvoice.items.length > 5 && <li className="text-xs text-dm-text-muted">+{confirmInvoice.items.length - 5} más</li>}
                 </ul>

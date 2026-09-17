@@ -49,7 +49,7 @@ export const CreditNotesListPage: React.FC = () => {
     };
 
     if (debouncedSeries) newFilters.series = debouncedSeries;
-    if (sunatStatus) newFilters.sunat_status = sunatStatus as any;
+    if (sunatStatus) newFilters.sunat_status = sunatStatus as typeof newFilters.sunat_status;
     if (issueDate) newFilters.issue_date = issueDate;
 
     setFilters(newFilters);
@@ -130,10 +130,10 @@ export const CreditNotesListPage: React.FC = () => {
       accessor: (note) => (
         <div>
           <div className="text-[14px] font-medium text-dm-text-primary">
-            {note.client?.name || (note as any).client_name || 'N/A'}
+            {note.client?.name || note.client_name || 'N/A'}
           </div>
           <div className="text-[12px] text-dm-text-muted">
-            {note.client?.doc_number || (note as any).client_document || ''}
+            {note.client?.doc_number || note.client_document || ''}
           </div>
         </div>
       ),
@@ -169,7 +169,7 @@ export const CreditNotesListPage: React.FC = () => {
       header: 'Fecha',
       accessor: (note) => (
         <span className="text-[13px] text-dm-text-secondary">
-          {note.issue_date ? formatDate(note.issue_date) : formatDate((note as any).created_at)}
+          {note.issue_date ? formatDate(note.issue_date) : formatDate(note.created_at)}
         </span>
       ),
     },
@@ -351,10 +351,10 @@ export const CreditNotesListPage: React.FC = () => {
                           {note.series}-{String(note.number).padStart(8, '0')}
                         </span>
                         <h3 className="text-[15px] font-medium text-dm-text-primary mt-0.5">
-                          {note.client?.name || (note as any).client_name || 'N/A'}
+                          {note.client?.name || note.client_name || 'N/A'}
                         </h3>
                         <p className="text-[13px] text-dm-text-muted mt-0.5">
-                          {(note as any).client_document || note.client?.doc_number || ''}
+                          {note.client_document || note.client?.doc_number || ''}
                         </p>
                       </div>
                       <SunatStatusBadge status={note.sunat_status} />
@@ -383,7 +383,7 @@ export const CreditNotesListPage: React.FC = () => {
                   <div className="px-4 py-3 border-t border-dm-border-secondary bg-dm-bg-secondary">
                     <div className="flex items-center justify-between">
                       <span className="text-[12px] text-dm-text-muted">
-                        {note.issue_date ? formatDate(note.issue_date) : formatDate((note as any).created_at)}
+                        {note.issue_date ? formatDate(note.issue_date) : formatDate(note.created_at)}
                       </span>
                       <div className="flex items-center gap-1">
                         <Link

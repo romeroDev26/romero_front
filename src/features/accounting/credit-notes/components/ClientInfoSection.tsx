@@ -6,15 +6,17 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { Button } from '../../../../components/common/Button';
 import { Modal } from '../../../../components/common/Modal';
 import { Client } from '../../../../types';
+import type { CreditNoteFormData } from '../creditNoteSchema';
+import type { DocumentSeries } from '../../../../types';
 
 interface ClientInfoSectionProps {
-	control: Control<any>;
-	setValue: UseFormSetValue<any>;
-	errors: FieldErrors<any>;
+	control: Control<CreditNoteFormData>;
+	setValue: UseFormSetValue<CreditNoteFormData>;
+	errors: FieldErrors<CreditNoteFormData>;
 	clients: Client[];
 	selectedClient?: Client;
 	loadingClients: boolean;
-	availableSeries: any[];
+	availableSeries: DocumentSeries[];
 	loadingSeries: boolean;
 }
 

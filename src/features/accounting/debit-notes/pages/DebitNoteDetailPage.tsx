@@ -62,7 +62,8 @@ export const DebitNoteDetailPage: React.FC = () => {
     return messages[status] || 'Estado desconocido';
   };
 
-  const formatCurrency = (amount: number) => {
+  // El cuerpo ya contemplaba string y ausencia de valor; la firma no lo decia.
+  const formatCurrency = (amount: number | string | null | undefined) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0);
     return new Intl.NumberFormat('es-PE', {
       style: 'currency',
@@ -355,13 +356,13 @@ export const DebitNoteDetailPage: React.FC = () => {
             </div>
 
             {/* Documento Afectado */}
-            {(debitNote as any).affected_invoice && (
-              ((debitNote as any).affected_invoice.pdf_ticket_file_path || (debitNote as any).affected_invoice.pdf_a4_file_path) && (
+            {debitNote.affected_invoice && (
+              (debitNote.affected_invoice.pdf_ticket_file_path || debitNote.affected_invoice.pdf_a4_file_path) && (
                 <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary/80 shadow-sm overflow-hidden">
                   <div className="px-4 lg:px-5 py-4 border-b border-dm-border-primary flex items-center justify-between gap-2">
                     <h2 className="text-xs font-semibold uppercase tracking-wide text-dm-text-muted">Documento afectado</h2>
                     <div className="flex gap-2 overflow-x-auto">
-                      {(debitNote as any).affected_invoice.pdf_ticket_file_path && (
+                      {debitNote.affected_invoice.pdf_ticket_file_path && (
                         <button
                           onClick={() => setAffectedActiveTab('ticket80mm')}
                           className={`rounded-full px-3 py-1 text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 ${
@@ -373,7 +374,7 @@ export const DebitNoteDetailPage: React.FC = () => {
                           Ticket
                         </button>
                       )}
-                      {(debitNote as any).affected_invoice.pdf_a4_file_path && (
+                      {debitNote.affected_invoice.pdf_a4_file_path && (
                         <button
                           onClick={() => setAffectedActiveTab('a4')}
                           className={`rounded-full px-3 py-1 text-[12px] font-medium transition-colors whitespace-nowrap shrink-0 ${
@@ -389,7 +390,7 @@ export const DebitNoteDetailPage: React.FC = () => {
                   </div>
                   <div className="bg-dm-bg-secondary">
                     <iframe
-                      src={(affectedActiveTab === 'ticket80mm' ? (debitNote as any).affected_invoice.pdf_ticket_file_path : (debitNote as any).affected_invoice.pdf_a4_file_path) || ''}
+                      src={(affectedActiveTab === 'ticket80mm' ? debitNote.affected_invoice.pdf_ticket_file_path : debitNote.affected_invoice.pdf_a4_file_path) || ''}
                       className="w-full min-h-[300px] sm:min-h-[400px] h-[40vh] sm:h-[50vh] max-h-[600px]"
                       title="Documento afectado"
                     />
@@ -415,7 +416,7 @@ export const DebitNoteDetailPage: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-dm-bg-primary divide-y divide-dm-border-primary">
-                      {debitNote.items.map((item: any, index: number) => (
+                      {debitNote.items.map((item, index) => (
                         <tr key={index} className="hover:bg-dm-bg-hover">
                           <td className="px-4 py-4">
                             <div className="text-sm text-dm-text-primary">

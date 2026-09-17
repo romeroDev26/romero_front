@@ -1,7 +1,8 @@
 // src/features/accounting/credit-notes/components/CreditNoteReasonSection.tsx
 
 import React from 'react';
-import { Controller, Control, FieldErrors } from 'react-hook-form';
+import { Controller, Control, FieldErrors, UseFormWatch } from 'react-hook-form';
+import type { CreditNoteFormData } from '../creditNoteSchema';
 
 // Catálogo 09 de SUNAT para motivos de Nota de Crédito
 const CREDIT_NOTE_REASONS = [
@@ -18,9 +19,9 @@ const CREDIT_NOTE_REASONS = [
 ];
 
 interface CreditNoteReasonSectionProps {
-	control: Control<any>;
-	errors: FieldErrors<any>;
-	watch: (name: string) => any;
+	control: Control<CreditNoteFormData>;
+	errors: FieldErrors<CreditNoteFormData>;
+	watch: UseFormWatch<CreditNoteFormData>;
 }
 
 export const CreditNoteReasonSection: React.FC<CreditNoteReasonSectionProps> = ({

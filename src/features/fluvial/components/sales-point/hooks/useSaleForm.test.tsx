@@ -3,6 +3,8 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSaleForm } from './useSaleForm';
 import { SunatDocType, SunatTaxCategory } from '../../../types/sunat.types';
+import type { AvailableTripByPort } from '../../../../../services/trips.service';
+import type { BranchOffice } from '../../../../../types';
 
 // ─── Mocks ───
 
@@ -12,9 +14,9 @@ const mockToastInfo = vi.fn();
 
 vi.mock('@/utils/sileo-toast', () => ({
   toast: {
-    error: (...args: any[]) => mockToastError(...args),
-    success: (...args: any[]) => mockToastSuccess(...args),
-    info: (...args: any[]) => mockToastInfo(...args),
+    error: (...args: unknown[]) => mockToastError(...args),
+    success: (...args: unknown[]) => mockToastSuccess(...args),
+    info: (...args: unknown[]) => mockToastInfo(...args),
     warning: vi.fn(),
   },
 }));
@@ -207,15 +209,26 @@ const createWrapper = () => {
   );
 };
 
-const baseTrip = {
+// Fixtures completos segun el contrato de SaleFormProps. Tenerlos tipados
+// evita repetir `as any` en cada renderHook y, si el contrato cambia, el test
+// lo avisa en lugar de seguir pasando un objeto incompleto.
+const baseTrip: AvailableTripByPort = {
   id: 1,
+  trip_name: 'Viaje de prueba',
+  status: 'SCHEDULED',
   vessel_name: 'Test Vessel',
-  vessel_id: 10,
+  estimated_departure_time: '10:00',
 };
 
-const baseBranch = {
+const baseBranch: BranchOffice = {
   id: 1,
+  company_id: 1,
   name: 'Sucursal Central',
+  country_code: 'PE',
+  is_main_office: true,
+  is_active: true,
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
   port_id: 1,
 };
 
@@ -240,7 +253,7 @@ describe('useSaleForm', () => {
 
   it('initializes with default state', () => {
     const { result } = renderHook(
-      () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+      () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
       { wrapper: createWrapper() }
     );
 
@@ -255,8 +268,8 @@ describe('useSaleForm', () => {
   it('sets isConfirmingMode when reservationToConfirm is provided', () => {
     const { result } = renderHook(
       () => useSaleForm({
-        trip: baseTrip as any,
-        branch: baseBranch as any,
+        trip: baseTrip,
+        branch: baseBranch,
         onBack: vi.fn(),
         onSaleSuccess: vi.fn(),
         reservationToConfirm: { id: 99, trip_id: 1 } as any,
@@ -276,7 +289,7 @@ describe('useSaleForm', () => {
   describe('areActionsEnabled logic', () => {
     it('is false when stops are not selected', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       expect(result.current.areActionsEnabled).toBe(false);
@@ -284,7 +297,7 @@ describe('useSaleForm', () => {
 
     it('is false when passenger data is incomplete', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -296,7 +309,7 @@ describe('useSaleForm', () => {
 
     it('is true for complete regular sale with seat', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -317,7 +330,7 @@ describe('useSaleForm', () => {
 
     it('requires representatives for RUC sale', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -349,7 +362,7 @@ describe('useSaleForm', () => {
   describe('price handlers', () => {
     it('handleManualPriceChange sets valid price', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => result.current.handleManualPriceChange(250));
@@ -358,7 +371,7 @@ describe('useSaleForm', () => {
 
     it('handleManualPriceChange rejects negative price', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => result.current.handleManualPriceChange(-10));
@@ -368,7 +381,7 @@ describe('useSaleForm', () => {
 
     it('handleManualPriceChange rejects price over 10000', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => result.current.handleManualPriceChange(15000));
@@ -377,7 +390,7 @@ describe('useSaleForm', () => {
 
     it('handleDiscountChange rejects invalid discount', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -400,7 +413,7 @@ describe('useSaleForm', () => {
   describe('representative handlers', () => {
     it('handleAddRepresentative adds to list', async () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       const rep = {
@@ -418,7 +431,7 @@ describe('useSaleForm', () => {
 
     it('handleRemoveRepresentative removes by index', async () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       const rep1 = { document_type: '1', document_number: '11111111', name: 'R1', phone: null };
@@ -438,7 +451,7 @@ describe('useSaleForm', () => {
   describe('docType change effects', () => {
     it('clears seat and infants when switching to RUC', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -459,7 +472,7 @@ describe('useSaleForm', () => {
 
     it('clears representatives when switching from RUC to DNI', async () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -495,7 +508,7 @@ describe('useSaleForm', () => {
   describe('document series', () => {
     it('caches boleta series in localStorage', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => result.current.handleBoletaSeriesChange('B002'));
@@ -505,7 +518,7 @@ describe('useSaleForm', () => {
 
     it('caches factura series in localStorage', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => result.current.handleFacturaSeriesChange('F001'));
@@ -516,7 +529,7 @@ describe('useSaleForm', () => {
   describe('sale confirmation flow', () => {
     it('handleOpenConfirmModal opens modal when valid', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -538,7 +551,7 @@ describe('useSaleForm', () => {
 
     it('handleConfirmSale calls handleRegularSale for non-RUC', async () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -563,7 +576,7 @@ describe('useSaleForm', () => {
 
     it('handleConfirmSale calls handleCompanyInvoice for RUC', async () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -590,7 +603,7 @@ describe('useSaleForm', () => {
   describe('cleanup functions', () => {
     it('clearFormAfterSale resets passenger data and selections', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {
@@ -613,7 +626,7 @@ describe('useSaleForm', () => {
 
     it('clearStateForVesselChange resets representatives and modals', () => {
       const { result } = renderHook(
-        () => useSaleForm({ trip: baseTrip as any, branch: baseBranch as any, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
       act(() => {

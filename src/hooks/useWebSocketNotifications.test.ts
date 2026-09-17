@@ -9,9 +9,9 @@ const mockToastWarning = vi.fn();
 
 vi.mock('@/utils/sileo-toast', () => ({
   toast: {
-    info: (...args: any[]) => mockToastInfo(...args),
-    success: (...args: any[]) => mockToastSuccess(...args),
-    warning: (...args: any[]) => mockToastWarning(...args),
+    info: (...args: unknown[]) => mockToastInfo(...args),
+    success: (...args: unknown[]) => mockToastSuccess(...args),
+    warning: (...args: unknown[]) => mockToastWarning(...args),
   },
 }));
 

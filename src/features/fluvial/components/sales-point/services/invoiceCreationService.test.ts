@@ -138,7 +138,18 @@ describe('invoiceCreationService', () => {
     });
 
     it('creates extra cost item when extraCost > 0', async () => {
-      (productsServicesService.getById as any).mockResolvedValue({ name: 'Equipaje Extra' });
+      vi.mocked(productsServicesService.getById).mockResolvedValue({
+        id: 7,
+        name: 'Equipaje Extra',
+        item_type: 'SERVICE',
+        unit_code: 'ZZ',
+        sale_price: 10,
+        currency_code: 'PEN',
+        tax_category_code: '10',
+        is_active: true,
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+      });
 
       const items = await invoiceCreationService.createInvoiceItems(
         passengerData,
@@ -167,7 +178,7 @@ describe('invoiceCreationService', () => {
     });
 
     it('uses default description when extra cost product fetch fails', async () => {
-      (productsServicesService.getById as any).mockRejectedValue(new Error('Not found'));
+      vi.mocked(productsServicesService.getById).mockRejectedValue(new Error('Not found'));
 
       const items = await invoiceCreationService.createInvoiceItems(
         passengerData,
@@ -188,7 +199,7 @@ describe('invoiceCreationService', () => {
     });
 
     it('uses default description when no extraCostDescription provided', async () => {
-      (productsServicesService.getById as any).mockResolvedValue(null);
+      vi.mocked(productsServicesService.getById).mockResolvedValue(null);
 
       const items = await invoiceCreationService.createInvoiceItems(
         passengerData,
@@ -209,7 +220,7 @@ describe('invoiceCreationService', () => {
     });
 
     it('does not include trip_seat_id for extra cost item', async () => {
-      (productsServicesService.getById as any).mockResolvedValue(null);
+      vi.mocked(productsServicesService.getById).mockResolvedValue(null);
 
       const items = await invoiceCreationService.createInvoiceItems(
         passengerData,
@@ -231,7 +242,7 @@ describe('invoiceCreationService', () => {
     });
 
     it('applies IGV to extra cost when isIgvGravado is true', async () => {
-      (productsServicesService.getById as any).mockResolvedValue(null);
+      vi.mocked(productsServicesService.getById).mockResolvedValue(null);
 
       const items = await invoiceCreationService.createInvoiceItems(
         passengerData,

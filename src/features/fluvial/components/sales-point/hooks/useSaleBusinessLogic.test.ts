@@ -11,14 +11,14 @@ const mockSaleNotifySuccess = vi.fn();
 
 vi.mock('@/utils/sileo-toast', () => ({
   toast: {
-    error: (...args: any[]) => mockToastError(...args),
-    success: (...args: any[]) => mockToastSuccess(...args),
+    error: (...args: unknown[]) => mockToastError(...args),
+    success: (...args: unknown[]) => mockToastSuccess(...args),
     info: vi.fn(),
     warning: vi.fn(),
   },
   saleNotify: {
-    error: (...args: any[]) => mockSaleNotifyError(...args),
-    success: (...args: any[]) => mockSaleNotifySuccess(...args),
+    error: (...args: unknown[]) => mockSaleNotifyError(...args),
+    success: (...args: unknown[]) => mockSaleNotifySuccess(...args),
   },
 }));
 

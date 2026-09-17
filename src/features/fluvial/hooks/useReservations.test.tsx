@@ -8,13 +8,15 @@ import {
   useUpdateReservation,
 } from './useReservations';
 import { reservationsService } from '../../../services/reservations.service';
+import type { SeatReservation } from '../../../types';
+import type { ReservationCreateData } from '../../../services/reservations.service';
 
 // ─── Mocks ───
 const mockToastError = vi.fn();
 
 vi.mock('@/utils/sileo-toast', () => ({
   toast: {
-    error: (...args: any[]) => mockToastError(...args),
+    error: (...args: unknown[]) => mockToastError(...args),
     success: vi.fn(),
     info: vi.fn(),
     warning: vi.fn(),
@@ -39,6 +41,44 @@ const createWrapper = () => {
   );
 };
 
+
+/**
+ * Fabrica de reservas para los tests: completa los campos obligatorios de
+ * SeatReservation y deja sobrescribir solo los que importan en cada caso. Asi
+ * el test no necesita `as any` ni repetir veinte campos.
+ */
+const makeReservation = (
+  overrides: Partial<SeatReservation> = {}
+): SeatReservation => ({
+  id: 1,
+  trip_id: 1,
+  trip_seat_id: 1,
+  seat_type_id: 1,
+  boarding_stop_id: 1,
+  disembarking_stop_id: 2,
+  customer_name: 'Cliente de prueba',
+  customer_doc_type: '1',
+  customer_doc_number: '12345678',
+  total_price: 100,
+  advance_amount: 0,
+  remaining_amount: 100,
+  currency_code: 'PEN',
+  status: 'PENDING' as SeatReservation['status'],
+  reserved_at: '2026-01-01T00:00:00Z',
+  reserved_by: 'user-1',
+  created_at: '2026-01-01T00:00:00Z',
+  updated_at: '2026-01-01T00:00:00Z',
+  ...overrides,
+});
+
+
+/**
+ * Payload minimo para las pruebas de creacion. Estas verifican que lo recibido
+ * llegue TAL CUAL al servicio, asi que el objeto tiene que quedar parcial a
+ * proposito: completarlo invalidaria la asercion.
+ */
+const minimalCreateData = { trip_id: 5 } as ReservationCreateData;
+
 describe('useReservations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -48,7 +88,7 @@ describe('useReservations', () => {
     it('returns empty array when branch_office_id is missing', async () => {
       const wrapper = createWrapper();
       const { result } = renderHook(
-        () => useSearchReservations({ start_date: '2024-01-01' } as any),
+        () => useSearchReservations({ start_date: '2024-01-01' }),
         { wrapper }
       );
 
@@ -59,13 +99,13 @@ describe('useReservations', () => {
 
     it('fetches reservations when branch_office_id is provided', async () => {
       const mockData = [
-        { id: 1, customer_name: 'John', status: 'CONFIRMED' },
+        makeReservation({ id: 1, customer_name: 'John', status: 'CONFIRMED' }),
       ];
-      (reservationsService.search as any).mockResolvedValue(mockData);
+      vi.mocked(reservationsService.search).mockResolvedValue(mockData);
 
       const wrapper = createWrapper();
       const { result } = renderHook(
-        () => useSearchReservations({ branch_office_id: 1, start_date: '2024-01-01' } as any),
+        () => useSearchReservations({ branch_office_id: 1, start_date: '2024-01-01' }),
         { wrapper }
       );
 
@@ -90,8 +130,8 @@ describe('useReservations', () => {
     });
 
     it('fetches reservations by tripId', async () => {
-      const mockData = [{ id: 2, trip_id: 42 }];
-      (reservationsService.getByTrip as any).mockResolvedValue(mockData);
+      const mockData = [makeReservation(makeReservation({ id: 2, trip_id: 42 }))];
+      vi.mocked(reservationsService.getByTrip).mockResolvedValue(mockData);
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useReservationsByTrip(42), { wrapper });
@@ -104,13 +144,13 @@ describe('useReservations', () => {
 
   describe('useCreateReservation', () => {
     it('creates reservation and invalidates queries on success', async () => {
-      const newReservation = { id: 10, trip_id: 5 };
-      (reservationsService.create as any).mockResolvedValue(newReservation);
+      const newReservation = makeReservation({ id: 10, trip_id: 5 });
+      vi.mocked(reservationsService.create).mockResolvedValue(newReservation);
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useCreateReservation(), { wrapper });
 
-      await result.current.mutateAsync({ trip_id: 5 } as any);
+      await result.current.mutateAsync(minimalCreateData);
 
       expect(reservationsService.create).toHaveBeenCalledWith({ trip_id: 5 });
       // Query invalidation happens internally; we verify no error toast
@@ -121,24 +161,24 @@ describe('useReservations', () => {
       const error = {
         response: { status: 409, data: { detail: 'Asiento no disponible' } },
       };
-      (reservationsService.create as any).mockRejectedValue(error);
+      vi.mocked(reservationsService.create).mockRejectedValue(error);
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useCreateReservation(), { wrapper });
 
-      await result.current.mutateAsync({ trip_id: 5 } as any).catch(() => {});
+      await result.current.mutateAsync(minimalCreateData).catch(() => {});
 
       expect(mockToastError).toHaveBeenCalledWith('Asiento no disponible');
     });
 
     it('shows generic error toast on other errors', async () => {
       const error = { response: { status: 500, data: {} } };
-      (reservationsService.create as any).mockRejectedValue(error);
+      vi.mocked(reservationsService.create).mockRejectedValue(error);
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useCreateReservation(), { wrapper });
 
-      await result.current.mutateAsync({ trip_id: 5 } as any).catch(() => {});
+      await result.current.mutateAsync(minimalCreateData).catch(() => {});
 
       expect(mockToastError).toHaveBeenCalledWith('Error al crear la reserva.');
     });
@@ -146,8 +186,8 @@ describe('useReservations', () => {
 
   describe('useUpdateReservation', () => {
     it('updates reservation and invalidates queries on success', async () => {
-      const updated = { id: 3, status: 'CONFIRMED' };
-      (reservationsService.update as any).mockResolvedValue(updated);
+      const updated = makeReservation({ id: 3, status: 'CONFIRMED' });
+      vi.mocked(reservationsService.update).mockResolvedValue(updated);
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useUpdateReservation(), { wrapper });
@@ -165,7 +205,7 @@ describe('useReservations', () => {
       const error = {
         response: { status: 409, data: { detail: 'Ya fue vendida' } },
       };
-      (reservationsService.update as any).mockRejectedValue(error);
+      vi.mocked(reservationsService.update).mockRejectedValue(error);
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useUpdateReservation(), { wrapper });
@@ -181,7 +221,7 @@ describe('useReservations', () => {
 
     it('shows generic error on update failure', async () => {
       const error = new Error('Network');
-      (reservationsService.update as any).mockRejectedValue(error);
+      vi.mocked(reservationsService.update).mockRejectedValue(error);
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useUpdateReservation(), { wrapper });

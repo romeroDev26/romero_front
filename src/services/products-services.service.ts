@@ -66,8 +66,11 @@ class ProductsServicesService {
   }
 
   // GET /.../{id} (Obtener uno)
-  async getById(id: number): Promise<ProductService> {
-    const response = await api.get(`${this.basePath}/${id}`);
+  // El consumidor (useSaleBusinessLogic) ya lee el resultado con `prod?.name`,
+  // asi que contempla que el endpoint no devuelva nada. Se declara asi en vez
+  // de prometer un ProductService que la llamada no verificaba.
+  async getById(id: number): Promise<ProductService | null> {
+    const response = await api.get<ProductService | null>(`${this.basePath}/${id}`);
     return response.data;
   }
 

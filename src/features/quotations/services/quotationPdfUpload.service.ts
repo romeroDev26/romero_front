@@ -51,39 +51,35 @@ export const quotationPdfUploadService = {
     quotationId: number;
     authToken?: string;
   }): Promise<string> => {
-    try {
-      // Convertir el blob a base64
-      const base64Content = await quotationPdfUploadService.blobToBase64(file);
-      
-      // Crear nombre de archivo descriptivo
-      const fileName = `cotizacion_${quotationId}_${Date.now()}.pdf`;
-      
-      // Preparar el payload según la API
-      const payload = {
-        quotation_id: quotationId,
-        content: base64Content,
-        filename: fileName
-      };
+    // Convertir el blob a base64
+    const base64Content = await quotationPdfUploadService.blobToBase64(file);
+    
+    // Crear nombre de archivo descriptivo
+    const fileName = `cotizacion_${quotationId}_${Date.now()}.pdf`;
+    
+    // Preparar el payload según la API
+    const payload = {
+      quotation_id: quotationId,
+      content: base64Content,
+      filename: fileName
+    };
 
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
 
-      if (authToken) {
-        headers.Authorization = `Bearer ${authToken}`;
-      }
+    if (authToken) {
+      headers.Authorization = `Bearer ${authToken}`;
+    }
 
-      const response = await api.post('/quotations/upload-pdf-base64', payload, {
-        headers,
-      });
+    const response = await api.post('/quotations/upload-pdf-base64', payload, {
+      headers,
+    });
 
-      if (response.data && response.data.pdf_file_path) {
-        return response.data.pdf_file_path;
-      } else {
-        throw new Error('La respuesta del servidor no contiene la URL del PDF');
-      }
-    } catch (error) {
-      throw error;
+    if (response.data && response.data.pdf_file_path) {
+      return response.data.pdf_file_path;
+    } else {
+      throw new Error('La respuesta del servidor no contiene la URL del PDF');
     }
   },
 

@@ -83,7 +83,7 @@ export const sanitizeText = (text: string): string => {
     .toUpperCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
-    .replace(/[^A-Z0-9\s\-\.]/g, ' ') // Solo letras, números, espacios, guiones y puntos
+    .replace(/[^A-Z0-9\s\-.]/g, ' ') // Solo letras, números, espacios, guiones y puntos
     .replace(/\s+/g, ' ') // Múltiples espacios a uno solo
     .trim();
 };

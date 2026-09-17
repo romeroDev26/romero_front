@@ -291,4 +291,4 @@ export interface SellerDetailedReportFilters {
 // ========================================
 // DEPRECATED - Para compatibilidad temporal
 // ========================================
-export interface SellerDetailedInvoice extends DetailedInvoice {}
+

@@ -43,7 +43,12 @@ export interface RouteListParams {
 }
 
 // Para compatibilidad con tu código. `Route` ya incluye `stops`.
-export interface RouteWithStops extends Route {}
+/**
+ * Alias con nombre propio para una ruta que trae sus paradas. Hoy no agrega
+ * campos sobre Route, pero se conserva porque expresa la intencion en las
+ * firmas que lo usan.
+ */
+export type RouteWithStops = Route;
 
 // ========================================
 // SERVICIO DE RUTAS

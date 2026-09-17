@@ -5,29 +5,25 @@ import { TripSalesFilters, TripSalesReportResponse, TripsListFilters, TripsListR
 
 export const reportsService = {
   getDailySales: async (filters: DailySalesFilters): Promise<DailySalesReportResponse> => {
-    try {
-      const params = new URLSearchParams();
+    const params = new URLSearchParams();
 
-      // Parámetros requeridos
-      params.append('start_date', filters.start_date);
-      params.append('end_date', filters.end_date);
+    // Parámetros requeridos
+    params.append('start_date', filters.start_date);
+    params.append('end_date', filters.end_date);
 
-      // Parámetros opcionales
-      if (filters.user_id !== undefined) {
-        params.append('user_id', filters.user_id.toString());
-      }
-      if (filters.branch_office_id !== undefined) {
-        params.append('branch_office_id', filters.branch_office_id.toString());
-      }
-      if (filters.payment_method) {
-        params.append('payment_method', filters.payment_method);
-      }
-
-      const response = await api.get<DailySalesReportResponse>(`/admin/reports/daily-sales?${params.toString()}`);
-      return response.data;
-    } catch (error) {
-      throw error;
+    // Parámetros opcionales
+    if (filters.user_id !== undefined) {
+      params.append('user_id', filters.user_id.toString());
     }
+    if (filters.branch_office_id !== undefined) {
+      params.append('branch_office_id', filters.branch_office_id.toString());
+    }
+    if (filters.payment_method) {
+      params.append('payment_method', filters.payment_method);
+    }
+
+    const response = await api.get<DailySalesReportResponse>(`/admin/reports/daily-sales?${params.toString()}`);
+    return response.data;
   },
 
   getDailySalesLast30Days: async (): Promise<DailySalesReportResponse> => {
@@ -54,36 +50,28 @@ export const reportsService = {
 
   // Reporte de ventas por viaje
   getTripSales: async (filters: TripSalesFilters): Promise<TripSalesReportResponse> => {
-    try {
-      const params = new URLSearchParams();
-      params.append('trip_id', filters.trip_id.toString());
+    const params = new URLSearchParams();
+    params.append('trip_id', filters.trip_id.toString());
 
-      if (filters.compare_start_date) {
-        params.append('compare_start_date', filters.compare_start_date);
-      }
-      if (filters.compare_end_date) {
-        params.append('compare_end_date', filters.compare_end_date);
-      }
-
-      const response = await api.get<TripSalesReportResponse>(`/admin/reports/trip-sales?${params.toString()}`);
-      return response.data;
-    } catch (error) {
-      throw error;
+    if (filters.compare_start_date) {
+      params.append('compare_start_date', filters.compare_start_date);
     }
+    if (filters.compare_end_date) {
+      params.append('compare_end_date', filters.compare_end_date);
+    }
+
+    const response = await api.get<TripSalesReportResponse>(`/admin/reports/trip-sales?${params.toString()}`);
+    return response.data;
   },
 
   // Lista de viajes con detalles por período
   getTripsList: async (filters: TripsListFilters): Promise<TripsListResponse> => {
-    try {
-      const params = new URLSearchParams();
-      params.append('start_date', filters.start_date);
-      params.append('end_date', filters.end_date);
+    const params = new URLSearchParams();
+    params.append('start_date', filters.start_date);
+    params.append('end_date', filters.end_date);
 
-      const response = await api.get<TripsListResponse>(`/admin/reports/trips?${params.toString()}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get<TripsListResponse>(`/admin/reports/trips?${params.toString()}`);
+    return response.data;
   },
 };
 

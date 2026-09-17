@@ -163,12 +163,8 @@ export const manifestService = {
         manifest = response.data;
       } catch {
         // Si falla, reintentar con slash final como fallback
-        try {
-          const response2 = await api.get(`/dispatch/manifests/${id}/`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
-          manifest = response2.data;
-        } catch (err2) {
-          throw err2;
-        }
+        const response2 = await api.get(`/dispatch/manifests/${id}/`, { headers: { 'X-Skip-Auth-Redirect': '1' } });
+        manifest = response2.data;
       }
       
       // Enriquecer con información del usuario

@@ -44,19 +44,15 @@ export const userStatisticsService = {
    * Obtiene estadísticas de ventas para un usuario específico
    */
   getUserStatistics: async (filters: UserStatisticsFilters): Promise<UserStatisticsResponse> => {
-    try {
-      const params = new URLSearchParams();
-      params.append('period', filters.period);
-      params.append('date', filters.date);
+    const params = new URLSearchParams();
+    params.append('period', filters.period);
+    params.append('date', filters.date);
 
-      const response = await api.get<UserStatisticsResponse>(
-        `/users/${filters.user_id}/sales-stats?${params.toString()}`
-      );
-      
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get<UserStatisticsResponse>(
+      `/users/${filters.user_id}/sales-stats?${params.toString()}`
+    );
+    
+    return response.data;
   },
 
   /**
@@ -105,21 +101,17 @@ export const userStatisticsService = {
     startDate: string,
     endDate: string
   ): Promise<UserStatisticsResponse[]> => {
-    try {
-      // Usar el nuevo endpoint optimizado del backend
-      const params = new URLSearchParams();
-      params.append('period', period);
-      params.append('start_date', startDate);
-      params.append('end_date', endDate);
+    // Usar el nuevo endpoint optimizado del backend
+    const params = new URLSearchParams();
+    params.append('period', period);
+    params.append('start_date', startDate);
+    params.append('end_date', endDate);
 
-      const response = await api.get<UserStatisticsResponse[]>(
-        `/users/${userId}/sales-stats-range?${params.toString()}`
-      );
-      
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.get<UserStatisticsResponse[]>(
+      `/users/${userId}/sales-stats-range?${params.toString()}`
+    );
+    
+    return response.data;
   },
 
   /**

@@ -21,6 +21,7 @@ import { RemissionGuideActions } from '../components/RemissionGuideActions';
 import { RemissionGuidePDFButton } from '../components/RemissionGuidePDFButton';
 import { useRemissionGuide } from '../hooks/useRemissionGuides';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
+import { readGuideAddress } from '../../../types';
 
 export const RemissionGuideDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -207,8 +208,8 @@ export const RemissionGuideDetailPage: React.FC = () => {
                         <MapPinIcon className="h-4 w-4 mr-2 text-green-600 dark:text-green-400" />
                         Dirección de Origen
                       </h3>
-                      <p className="text-sm text-dm-text-primary">{guide.origin_address.address}</p>
-                      <p className="text-xs text-dm-text-muted mt-1">Ubigeo: {guide.origin_address.ubigeo_code}</p>
+                      <p className="text-sm text-dm-text-primary">{readGuideAddress(guide.origin_address).address}</p>
+                      <p className="text-xs text-dm-text-muted mt-1">Ubigeo: {readGuideAddress(guide.origin_address).ubigeo_code}</p>
                     </div>
                     
                     <div>
@@ -216,8 +217,8 @@ export const RemissionGuideDetailPage: React.FC = () => {
                         <MapPinIcon className="h-4 w-4 mr-2 text-red-600 dark:text-red-400" />
                         Dirección de Destino
                       </h3>
-                      <p className="text-sm text-dm-text-primary">{guide.destination_address.address}</p>
-                      <p className="text-xs text-dm-text-muted mt-1">Ubigeo: {guide.destination_address.ubigeo_code}</p>
+                      <p className="text-sm text-dm-text-primary">{readGuideAddress(guide.destination_address).address}</p>
+                      <p className="text-xs text-dm-text-muted mt-1">Ubigeo: {readGuideAddress(guide.destination_address).ubigeo_code}</p>
                     </div>
                   </div>
                 </div>

@@ -21,10 +21,12 @@ import { useDebounce } from '../../../hooks/useDebounce';
 import { useBranchOfficesData } from '../../fluvial/hooks/useBranchOfficesData';
 import { useRemissionGuidesByBranchOffice } from '../hooks/useRemissionGuides';
 import { RemissionGuideTransportista, RemissionGuideRemitente } from '../../../types';
+import { readGuideAddress } from '../../../types';
+import type { BranchOffice, RemissionGuide } from '../../../types';
 
 export const RemissionGuidesListPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeBranch, setActiveBranch] = useState<any>(null);
+  const [activeBranch, setActiveBranch] = useState<BranchOffice | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -46,14 +48,14 @@ export const RemissionGuidesListPage: React.FC = () => {
     }
   }, [branches]);
 
-  const filterGuides = (guides: any[]) => {
+  const filterGuides = (guides: RemissionGuide[]) => {
     let filtered = guides;
 
     if (debouncedSearchTerm) {
       filtered = filtered.filter(guide =>
-        ((guide as any).recipient_name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        (guide.recipient_name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
         `${guide.series}-${guide.number}`.includes(debouncedSearchTerm) ||
-        ((guide as any).vessel_name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+        (guide.vessel_name || '').toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
     }
 
@@ -103,9 +105,9 @@ export const RemissionGuidesListPage: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <UserIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
           <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
-            {((item as any).recipient_name || '').length > 25
-              ? ((item as any).recipient_name || '').substring(0, 25) + '...'
-              : (item as any).recipient_name || ''}
+            {(item.recipient_name || '').length > 25
+              ? (item.recipient_name || '').substring(0, 25) + '...'
+              : item.recipient_name || ''}
           </span>
         </div>
       ),
@@ -117,9 +119,9 @@ export const RemissionGuidesListPage: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <MapPinIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
           <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
-            {((item as any).destination_address || '').length > 25
-              ? ((item as any).destination_address || '').substring(0, 25) + '...'
-              : (item as any).destination_address || ''}
+            {(readGuideAddress(item.destination_address).address || '').length > 25
+              ? (readGuideAddress(item.destination_address).address || '').substring(0, 25) + '...'
+              : readGuideAddress(item.destination_address).address || ''}
           </span>
         </div>
       ),
@@ -191,7 +193,7 @@ export const RemissionGuidesListPage: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <UserIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
           <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
-            {(item as any).recipient_name || ''}
+            {item.recipient_name || ''}
           </span>
         </div>
       ),
@@ -203,7 +205,7 @@ export const RemissionGuidesListPage: React.FC = () => {
         <div className="flex items-center gap-2 min-w-0">
           <MapPinIcon className="w-4 h-4 text-dm-text-muted shrink-0" strokeWidth={1.5} />
           <span className="text-[14px] text-dm-text-primary truncate max-w-[200px]">
-            {(item as any).destination_address || ''}
+            {readGuideAddress(item.destination_address).address || ''}
           </span>
         </div>
       ),
@@ -467,13 +469,13 @@ export const RemissionGuidesListPage: React.FC = () => {
                 <div className="flex justify-between text-[13px]">
                   <span className="text-dm-text-muted">Destinatario</span>
                   <span className="text-dm-text-primary text-right truncate max-w-[55%]">
-                    {(guide as any).recipient_name || '—'}
+                    {guide.recipient_name || '—'}
                   </span>
                 </div>
                 <div className="flex justify-between text-[13px]">
                   <span className="text-dm-text-muted">Destino</span>
                   <span className="text-dm-text-primary text-right truncate max-w-[55%]">
-                    {(guide as any).destination_address || '—'}
+                    {readGuideAddress(guide.destination_address).address || '—'}
                   </span>
                 </div>
                 <div className="flex justify-between text-[13px]">
@@ -565,13 +567,13 @@ export const RemissionGuidesListPage: React.FC = () => {
                 <div className="flex justify-between text-[13px]">
                   <span className="text-dm-text-muted">Destinatario</span>
                   <span className="text-dm-text-primary text-right truncate max-w-[55%]">
-                    {(guide as any).recipient_name || '—'}
+                    {guide.recipient_name || '—'}
                   </span>
                 </div>
                 <div className="flex justify-between text-[13px]">
                   <span className="text-dm-text-muted">Destino</span>
                   <span className="text-dm-text-primary text-right truncate max-w-[55%]">
-                    {(guide as any).destination_address || '—'}
+                    {readGuideAddress(guide.destination_address).address || '—'}
                   </span>
                 </div>
               </div>

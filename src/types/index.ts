@@ -894,6 +894,22 @@ export interface RemissionGuideAddress {
   address: string;
 }
 
+/**
+ * Una direccion de guia puede llegar como objeto o como string plano, segun el
+ * endpoint: el de creacion usa RemissionGuideAddress y el de listado devuelve
+ * solo el texto, con el ubigeo en un campo aparte. guideConversion ya
+ * contemplaba ambas formas con cadenas de fallback.
+ */
+export type RemissionGuideAddressLike = RemissionGuideAddress | string;
+
+/** Normaliza una direccion de guia venga en la forma que venga. */
+export const readGuideAddress = (
+  value: RemissionGuideAddressLike | undefined | null
+): RemissionGuideAddress =>
+  typeof value === 'string'
+    ? { address: value, ubigeo_code: '' }
+    : value ?? { address: '', ubigeo_code: '' };
+
 export interface RemissionGuideParty {
   document_type_code: string;
   document_number: string;
@@ -917,7 +933,55 @@ export interface RemissionGuideItem {
 }
 
 // Guía del Transportista (Tipo 31)
-export interface RemissionGuideTransportista {
+/**
+ * Campos que el backend devuelve APLANADOS para las guias de remision, en
+ * lugar de los objetos anidados (sender / receiver / origin_address /
+ * destination_address) que declaran los tipos de creacion. La lista, la
+ * conversion y los generadores de PDF ya los consumian con `as any` y con
+ * cadenas de fallback entre ambas formas.
+ *
+ * PENDIENTE: confirmar con el backend cual de las dos formas es el contrato
+ * real y eliminar la que sobre.
+ */
+export interface RemissionGuideFlatFields {
+  sender_name?: string;
+  sender_doc_type?: string;
+  sender_doc_number?: string;
+  recipient_name?: string;
+  recipient_doc_type?: string;
+  recipient_doc_number?: string;
+  origin_ubigeo?: string;
+  destination_ubigeo?: string;
+  vessel_name?: string;
+  vessel_plate?: string;
+  /** Peso total; el backend lo nombra asi, no gross_total_weight. */
+  total_gross_weight?: number | string;
+  weight_unit_code?: string;
+  company_ruc?: string;
+  company_business_name?: string;
+  company_trade_name?: string;
+  company_address?: string;
+  company_phone?: string;
+  company_email?: string;
+  created_by_name?: string;
+  issue_time?: string;
+  qr_code_data?: string;
+  zip_hash?: string;
+  sunat_reception_date?: string;
+  related_doc_type?: string;
+  related_doc_number?: string;
+  vehicle_plate?: string;
+  trip_id?: number;
+  trip?: Trip;
+  disembarking_trip_stop?: TripStop;
+  pdf_a4_file_path?: string;
+  pdf_ticket_file_path?: string;
+  guide_type?: 'transportista' | 'remitente';
+  /** Serie-numero ya formateado por el backend. */
+  document_number?: string;
+}
+
+export interface RemissionGuideTransportista extends RemissionGuideFlatFields {
   id: number;
   company_id: number;
   company?: Company;
@@ -936,8 +1000,8 @@ export interface RemissionGuideTransportista {
   transport_mode_code: string;
   sender: RemissionGuideParty;
   receiver: RemissionGuideParty;
-  origin_address: RemissionGuideAddress;
-  destination_address: RemissionGuideAddress;
+  origin_address: RemissionGuideAddressLike;
+  destination_address: RemissionGuideAddressLike;
   boarding_trip_stop_id?: number;
   boarding_trip_stop?: TripStop;
   disembarking_trip_stop_id?: number;
@@ -950,6 +1014,8 @@ export interface RemissionGuideTransportista {
   driver_license?: string;
   related_doc_type?: string;
   related_doc_number?: string;
+  related_doc_ruc?: string;
+  related_doc_description?: string;
   sunat_status: SunatDocumentStatus;
   sunat_ticket?: string;
   sunat_response_code?: string;
@@ -968,7 +1034,7 @@ export interface RemissionGuideTransportista {
 }
 
 // Guía del Remitente (Tipo 09)
-export interface RemissionGuideRemitente {
+export interface RemissionGuideRemitente extends RemissionGuideFlatFields {
   id: number;
   company_id: number;
   company?: Company;
@@ -985,8 +1051,8 @@ export interface RemissionGuideRemitente {
   transport_mode_code: string;
   sender: RemissionGuideParty;
   receiver: RemissionGuideParty;
-  origin_address: RemissionGuideAddress;
-  destination_address: RemissionGuideAddress;
+  origin_address: RemissionGuideAddressLike;
+  destination_address: RemissionGuideAddressLike;
   vessel_id?: number;
   vessel?: Vessel;
   driver_doc_type: string;
@@ -1133,6 +1199,9 @@ export interface AutoGenerateRemissionGuide {
   created_by_email: string;
   created_at: string;
   updated_at: string;
+  /** Documento relacionado; los usa el generador de PDF. */
+  related_doc_ruc?: string;
+  related_doc_description?: string;
 }
 
 export interface AutoGenerateRemissionGuidesResponse {

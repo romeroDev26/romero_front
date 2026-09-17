@@ -5,9 +5,11 @@ import { toast } from '@/utils/sileo-toast';
 import { generateRemissionGuidePDF } from '../components/pdf/RemissionGuidePDFGenerator';
 import { convertSenderGuideToAutoGenerate } from '../utils/guideConversion';
 import { remissionGuidesSenderService } from '../../../services/remissionGuidesSender.service';
+import type jsPDF from 'jspdf';
+import type { RemissionGuideRemitente } from '../../../types';
 
 export interface RemissionGuideSenderPDFResult {
-  pdf: any; // jsPDF instance
+  pdf: jsPDF;
   blob: Blob;
 }
 
@@ -18,7 +20,7 @@ export const useRemissionGuideSenderPDFGeneration = () => {
    * Genera PDF para una sola guía de remisión del remitente
    */
   const generateSinglePDF = async (
-    guideData: any
+    guideData: RemissionGuideRemitente
   ): Promise<RemissionGuideSenderPDFResult | null> => {
     setIsGenerating(true);
     try {
@@ -44,7 +46,7 @@ export const useRemissionGuideSenderPDFGeneration = () => {
    * Genera múltiples PDFs para guías del remitente
    */
   const generateMultiplePDFs = async (
-    guidesData: any[]
+    guidesData: RemissionGuideRemitente[]
   ): Promise<RemissionGuideSenderPDFResult[] | null> => {
     setIsGenerating(true);
     try {
@@ -73,7 +75,7 @@ export const useRemissionGuideSenderPDFGeneration = () => {
    * Descarga un PDF individual y opcionalmente lo sube al backend
    */
   const downloadSinglePDF = async (
-    guideData: any,
+    guideData: RemissionGuideRemitente,
     uploadToBackend: boolean = true
   ): Promise<void> => {
     setIsGenerating(true);
@@ -119,7 +121,7 @@ export const useRemissionGuideSenderPDFGeneration = () => {
    * Descarga múltiples PDFs con delay entre cada uno
    */
   const downloadMultiplePDFs = async (
-    guidesData: any[],
+    guidesData: RemissionGuideRemitente[],
     uploadToBackend: boolean = true
   ): Promise<void> => {
     setIsGenerating(true);
@@ -173,7 +175,7 @@ export const useRemissionGuideSenderPDFGeneration = () => {
    * Previsualiza un PDF en nueva ventana y opcionalmente lo sube al backend
    */
   const previewSinglePDF = async (
-    guideData: any,
+    guideData: RemissionGuideRemitente,
     uploadToBackend: boolean = true
   ): Promise<void> => {
     setIsGenerating(true);

@@ -1,5 +1,6 @@
 // src/features/remissionGuides/components/RemissionGuideSenderPreviewModal.tsx
 
+import { readGuideAddress } from '../../../types';
 import React, { useState, useEffect } from 'react';
 import { 
   XMarkIcon,
@@ -17,7 +18,9 @@ import { toast } from '@/utils/sileo-toast';
 interface RemissionGuideSenderPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  guide: RemissionGuideRemitente | any; // Permitir any para datos del backend con estructura diferente
+  // Los campos aplanados del backend ya estan en el tipo, asi que no hace
+  // falta abrirlo con `| any`.
+  guide: RemissionGuideRemitente; // Permitir any para datos del backend con estructura diferente
 }
 
 export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPreviewModalProps> = ({
@@ -149,8 +152,8 @@ export const RemissionGuideSenderPreviewModal: React.FC<RemissionGuideSenderPrev
                   </p>
                   <p className="text-green-700 dark:text-green-300 mt-1">
                     Destinatario: {guide.receiver?.business_name || guide.recipient_name || 'N/A'} | 
-                    Origen: {guide.origin_address?.address || guide.origin_address || 'N/A'} → 
-                    Destino: {guide.destination_address?.address || guide.destination_address || 'N/A'}
+                    Origen: {readGuideAddress(guide.origin_address).address || 'N/A'} → 
+                    Destino: {readGuideAddress(guide.destination_address).address || 'N/A'}
                   </p>
                 </div>
               </div>

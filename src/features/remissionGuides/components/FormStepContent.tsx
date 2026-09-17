@@ -26,6 +26,7 @@ import { remissionGuideTransportistaSchema, RemissionGuideTransportistaFormData 
 import { useDocumentSeries } from '../../../hooks/useDocumentSeries';
 import { AutoGenerateRemissionGuidesResponse } from '../../../types';
 import { RemissionGuidePreviewModal } from './RemissionGuidePreviewModal';
+import { asApiError, detailToString, type ApiErrorDetail } from '../../../utils/errorHandler';
 
 // Hook personalizado para series de guías de remisión del transportista
 const useRemissionGuideSeries = (branchId: number | null) => {
@@ -205,7 +206,12 @@ export const FormStepContent: React.FC<FormStepContentProps> = ({
     } catch (error) {
       console.error('Error al generar guías automáticamente:', error);
       // Mostrar mensaje específico del backend si está disponible
-      const errorMessage = (error as any)?.detail || (error as any)?.response?.data?.detail || "Error al generar las guías de remisión. Intente nuevamente.";
+      // getErrorMessage cubre detail como string, objeto o array, y el detail
+      // suelto que este endpoint devuelve en la raiz.
+      const errorMessage =
+        detailToString(asApiError(error).response?.data?.detail) ||
+        detailToString((error as { detail?: ApiErrorDetail })?.detail) ||
+        "Error al generar las guías de remisión. Intente nuevamente.";
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

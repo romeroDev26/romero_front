@@ -1,13 +1,15 @@
 // src/features/remissionGuides/utils/guideConversion.ts
 
-import { RemissionGuideTransportista, AutoGenerateRemissionGuide, AutoGenerateRemissionGuideItem } from '../../../types';
+import { readGuideAddress } from '../../../types';
+import { RemissionGuideTransportista, RemissionGuideRemitente, AutoGenerateRemissionGuide, AutoGenerateRemissionGuideItem } from '../../../types';
 
 /**
  * Convierte una RemissionGuideRemitente (estructura del log.md) a AutoGenerateRemissionGuide
  * para poder usar el generador de PDFs
  */
 export const convertSenderGuideToAutoGenerate = (
-  guide: any // Usamos any porque los datos vienen en estructura plana desde el backend
+  // La forma plana del backend esta declarada en RemissionGuideFlatFields
+  guide: RemissionGuideTransportista // Usamos any porque los datos vienen en estructura plana desde el backend
 ): AutoGenerateRemissionGuide | null => {
   try {
     // Verificar que tenemos una guía válida
@@ -31,7 +33,7 @@ export const convertSenderGuideToAutoGenerate = (
     }
 
     // Convertir items desde la estructura del remitente
-    const packageItems: AutoGenerateRemissionGuideItem[] = guide.items?.map((item: any, index: number) => ({
+    const packageItems: AutoGenerateRemissionGuideItem[] = guide.items?.map((item, index: number) => ({
       id: item.id || index + 1,
       item_order: index + 1,
       quantity: item.quantity || 1,
@@ -67,17 +69,17 @@ export const convertSenderGuideToAutoGenerate = (
       recipient_doc_type: guide.recipient_doc_type || guide.receiver?.document_type_code || '6',
       recipient_doc_number: guide.recipient_doc_number || guide.receiver?.document_number || '',
       recipient_name: recipientName,
-      origin_ubigeo: guide.origin_ubigeo || guide.origin_address?.ubigeo || '',
-      origin_address: guide.origin_address?.address || guide.origin_address || '',
-      destination_ubigeo: guide.destination_ubigeo || guide.destination_address?.ubigeo || '',
-      destination_address: guide.destination_address?.address || guide.destination_address || '',
+      origin_ubigeo: guide.origin_ubigeo || readGuideAddress(guide.origin_address).ubigeo_code || '',
+      origin_address: readGuideAddress(guide.origin_address).address || '',
+      destination_ubigeo: guide.destination_ubigeo || readGuideAddress(guide.destination_address).ubigeo_code || '',
+      destination_address: readGuideAddress(guide.destination_address).address || '',
       destination_port_name: 'Puerto de destino', // No disponible en estructura del remitente
       transport_mode_code: guide.transport_mode_code,
-      total_gross_weight: guide.total_gross_weight || 1,
+      total_gross_weight: Number(guide.total_gross_weight) || 1,
       weight_unit_code: guide.weight_unit_code || 'KGM',
       number_of_packages: guide.number_of_packages || 1,
       total_packages: guide.number_of_packages || 1,
-      total_weight: guide.total_gross_weight || 1,
+      total_weight: Number(guide.total_gross_weight) || 1,
       shipment_start_date: guide.transfer_start_date || guide.issue_date,
       driver_doc_type: guide.driver_doc_type,
       driver_doc_number: guide.driver_doc_number,
@@ -180,10 +182,10 @@ export const convertToAutoGenerateGuide = (
       recipient_doc_type: guide.receiver.document_type_code,
       recipient_doc_number: guide.receiver.document_number,
       recipient_name: guide.receiver.business_name,
-      origin_ubigeo: guide.origin_address.ubigeo_code,
-      origin_address: guide.origin_address.address,
-      destination_ubigeo: guide.destination_address.ubigeo_code,
-      destination_address: guide.destination_address.address,
+      origin_ubigeo: readGuideAddress(guide.origin_address).ubigeo_code,
+      origin_address: readGuideAddress(guide.origin_address).address,
+      destination_ubigeo: readGuideAddress(guide.destination_address).ubigeo_code,
+      destination_address: readGuideAddress(guide.destination_address).address,
       destination_port_name: guide.disembarking_trip_stop?.port?.name || 'Puerto de destino',
       transport_mode_code: guide.transport_mode_code,
       total_gross_weight: guide.gross_total_weight || 1,
@@ -245,7 +247,7 @@ export const convertToAutoGenerateGuide = (
 /**
  * Verifica si una guía del remitente puede ser convertida para generar PDF
  */
-export const canGenerateSenderPDF = (guide: any): boolean => {
+export const canGenerateSenderPDF = (guide: RemissionGuideRemitente): boolean => {
   return !!(
     guide.sender_name &&
     guide.recipient_name &&
@@ -259,7 +261,7 @@ export const canGenerateSenderPDF = (guide: any): boolean => {
 /**
  * Obtiene el nombre de archivo sugerido para el PDF del remitente
  */
-export const getSenderPDFFileName = (guide: any): string => {
+export const getSenderPDFFileName = (guide: RemissionGuideRemitente): string => {
   const docNumber = guide.document_number || `${guide.series}-${guide.number.toString().padStart(8, '0')}`;
   return `guia-remision-remitente-${docNumber}.pdf`;
 };

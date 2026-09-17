@@ -230,8 +230,9 @@ export const generateRemissionGuidePDF = async (
     
     const tipoDoc = tiposDoc[guideData.related_doc_type as keyof typeof tiposDoc] || guideData.related_doc_type;
     
-    // Convertimos a any para acceder a las propiedades no definidas en el tipo pero que existen en el JSON
-    const guideDataExtended = guideData as any;
+    // related_doc_ruc y related_doc_description son parte de la forma plana que
+    // devuelve el backend, ya declarada en RemissionGuideFlatFields.
+    const guideDataExtended = guideData;
     
     addTwoColumnSection(
       'DATOS DEL COMPROBANTE RELACIONADO',

@@ -68,6 +68,60 @@ export interface ProcessCdrResponse {
   cdr_processed: boolean;
 }
 
+/**
+ * Payload plano que espera el endpoint de guias del remitente.
+ *
+ * Se declara a partir de lo que realmente envia FormStepContentSender, que es
+ * la forma que el backend acepta hoy. No coincide con
+ * RemissionGuideRemitenteCreateData de remissionGuides.service.ts, que declara
+ * una estructura anidada (sender, origin_address, transfer_start_date); esa
+ * parece ser la que quedo desactualizada.
+ *
+ * PENDIENTE: confirmar con el backend cual es el contrato vigente y eliminar el
+ * tipo que sobre.
+ */
+export interface RemissionGuideSenderCreatePayload {
+  company_id: number;
+  document_type_code: string;
+  series: string;
+  issue_date: string;
+  shipment_start_date: string;
+  observation?: string;
+  total_gross_weight: number;
+  weight_unit_code: string;
+  number_of_packages: number;
+  sender_doc_type: string;
+  sender_doc_number: string;
+  sender_name: string;
+  recipient_doc_type: string;
+  recipient_doc_number: string;
+  recipient_name: string;
+  origin_ubigeo: string;
+  origin_address: string;
+  destination_ubigeo: string;
+  destination_address: string;
+  transfer_reason_code: string;
+  transporter_doc_type?: string;
+  transporter_doc_number?: string;
+  transporter_name?: string;
+  transport_mode_code: string;
+  vehicle_plate?: string;
+  driver_doc_type?: string;
+  driver_doc_number?: string;
+  driver_name?: string;
+  driver_license?: string;
+  related_doc_type?: string;
+  related_doc_number?: string;
+  related_doc_ruc?: string;
+  related_doc_description?: string;
+  items: Array<{
+    quantity: number;
+    unit_code: string;
+    description: string;
+    internal_code?: string;
+  }>;
+}
+
 class RemissionGuidesSenderService {
   private readonly basePath = '/sunat/remission-guides-sender/';
 
@@ -91,21 +145,16 @@ class RemissionGuidesSenderService {
   }
 
   // Crea una nueva guía del remitente
-  // TODO(tipos): el payload real que envia FormStepContentSender es PLANO
-  // (sender_doc_type, origin_ubigeo, shipment_start_date, total_gross_weight)
-  // mientras RemissionGuideRemitenteCreateData en remissionGuides.service.ts
-  // declara una forma ANIDADA (sender, origin_address, transfer_start_date,
-  // gross_total_weight). Uno de los dos esta desactualizado; hay que confirmar
-  // contra el backend antes de tipar esto.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async create(data: any): Promise<RemissionGuideRemitente> {
+  async create(data: RemissionGuideSenderCreatePayload): Promise<RemissionGuideRemitente> {
     const response = await api.post<RemissionGuideRemitente>(this.basePath, data);
     return response.data;
   }
 
   // Actualiza una guía del remitente existente
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async update(guideId: number, data: any): Promise<RemissionGuideRemitente> {
+  async update(
+    guideId: number,
+    data: Partial<RemissionGuideSenderCreatePayload>
+  ): Promise<RemissionGuideRemitente> {
     const response = await api.put<RemissionGuideRemitente>(`${this.basePath}${guideId}`, data);
     return response.data;
   }

@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { toast } from '@/utils/sileo-toast';
 import { generateRemissionGuidePDF } from '../components/pdf/RemissionGuidePDFGenerator';
 import { AutoGenerateRemissionGuide } from '../../../types';
+import type jsPDF from 'jspdf';
 
 export interface RemissionGuidePDFResult {
-  pdf: any; // jsPDF instance
+  pdf: jsPDF;
   blob: Blob;
 }
 
@@ -38,10 +39,10 @@ export const useRemissionGuidePDFGeneration = () => {
    */
   const generateMultiplePDFs = async (
     guidesData: AutoGenerateRemissionGuide[]
-  ): Promise<{ pdfs: any[]; blobs: Blob[] } | null> => {
+  ): Promise<{ pdfs: jsPDF[]; blobs: Blob[] } | null> => {
     setIsGenerating(true);
     try {
-      const pdfs: any[] = [];
+      const pdfs: jsPDF[] = [];
       const blobs: Blob[] = [];
       // Generar en serie para controlar memoria y requests
       for (const guide of guidesData) {

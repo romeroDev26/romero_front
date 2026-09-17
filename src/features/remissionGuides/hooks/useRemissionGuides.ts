@@ -16,6 +16,7 @@ import {
 } from '../../../services/remissionGuidesSender.service';
 import { RemissionGuidesByBranchOfficeResponse } from '../../../types';
 import { getErrorMessage } from '../../../utils/errorHandler';
+import type { RemissionGuideSenderCreatePayload } from '../../../services/remissionGuidesSender.service';
 
 // Hook para listar guías de remisión
 export const useRemissionGuides = (params: ListGuidesParams & { enabled?: boolean }) => {
@@ -194,7 +195,8 @@ export const useCreateRemissionGuideSender = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (data: any) => remissionGuidesSenderService.create(data),
+    mutationFn: (data: RemissionGuideSenderCreatePayload) =>
+      remissionGuidesSenderService.create(data),
     onSuccess: () => {
       toast.success('Guía de remisión del remitente creada exitosamente');
       queryClient.invalidateQueries({ queryKey: ['remissionGuidesSender'] });
@@ -211,7 +213,7 @@ export const useUpdateRemissionGuideSender = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ guideId, data }: { guideId: number; data: Partial<any> }) => 
+    mutationFn: ({ guideId, data }: { guideId: number; data: Partial<RemissionGuideSenderCreatePayload> }) => 
       remissionGuidesSenderService.update(guideId, data),
     onSuccess: (data) => {
       toast.success('Guía de remisión del remitente actualizada exitosamente');
@@ -333,8 +335,8 @@ export const useRemissionGuidesByBranchOffice = (branchOfficeId: number | null) 
     enabled: !!branchOfficeId,
     staleTime: 1000 * 60 * 5, // 5 minutos
     select: (data: RemissionGuidesByBranchOfficeResponse) => ({
-      transportista: data.filter((guide: any) => guide.guide_type === 'transportista'),
-      remitente: data.filter((guide: any) => guide.guide_type === 'remitente')
+      transportista: data.filter((guide) => guide.guide_type === 'transportista'),
+      remitente: data.filter((guide) => guide.guide_type === 'remitente')
     })
   });
 };

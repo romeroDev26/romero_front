@@ -19,15 +19,24 @@ import { Spinner } from '../../../../components/common/Spinner';
 import { useVessels } from '../../hooks/useVesselsData';
 import { useRoutes } from '../../hooks/useVesselsRoutesData';
 import { useTripDetails } from '../../hooks/useTrips';
+import type { CreateTripData, UpdateTripData } from '../../../../services/trips.service';
 import { useCaptains } from '../../hooks/useUsersData';
 import { format, set } from 'date-fns';
 import { UnifiedTripViewItem } from '../../hooks/useTripsView';
+
+/**
+ * Payload que emite el formulario de viaje: al crear lleva los campos de
+ * CreateTripData (sin company_id, que agrega la pagina) y al editar los de
+ * UpdateTripData.
+ */
+export type TripFormPayload = Partial<Omit<CreateTripData, 'company_id'>> &
+  UpdateTripData;
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   trip: UnifiedTripViewItem | null;
-  onSave: (data: any) => void;
+  onSave: (data: TripFormPayload) => void;
   onPreviewVesselChange?: (tripId: number, newVesselId: number, data: any) => void;
   isLoading?: boolean;
   initialDate?: Date | null;
@@ -178,7 +187,10 @@ export const TripFormModal: React.FC<Props> = ({
 
     const combinedDateTime = `${datePart}T${timePart}:00`;
 
-    const dataToSave: any = {
+    // El modal manda los campos de creacion o los de actualizacion segun si
+    // hay `trip`. Se expresa como interseccion parcial para que cada campo
+    // conserve su tipo sin fingir que ambos juegos van siempre juntos.
+    const dataToSave: TripFormPayload = {
       vessel_id: formData.vessel_id,
       departure_datetime: combinedDateTime,
       can_sell_tickets: formData.can_sell_tickets,

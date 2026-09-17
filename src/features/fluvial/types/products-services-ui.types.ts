@@ -1,6 +1,8 @@
 // src/features/fluvial/types/products-services-ui.types.ts
 // Solo tipos específicos para UI y formularios (no duplicar los tipos principales)
 
+import type { ServiceCategory } from '../../../types';
+
 export type CurrencyCode = 'PEN' | 'USD' | 'EUR';
 
 export type UnitCode =
@@ -19,7 +21,7 @@ export interface ProductServiceFormData {
  name: string;
  description?: string;
  item_type: 'PRODUCT' | 'SERVICE';
- service_category: string;
+ service_category: ServiceCategory | '';
  unit_code: UnitCode;
  purchase_price: number;
  sale_price: number;
@@ -34,7 +36,7 @@ export interface ProductServiceFilters {
  search?: string;
  item_type?: 'PRODUCT' | 'SERVICE' | '';
  is_active?: boolean;
- service_category?: string;
+ service_category?: ServiceCategory | '';
 }
 
 // Opciones predefinidas para formularios

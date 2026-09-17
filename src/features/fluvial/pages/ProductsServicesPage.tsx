@@ -89,7 +89,10 @@ export const ProductsServicesPage: React.FC = () => {
     setSearchQuery(value);
   };
 
-  const handleFilterChange = (key: keyof ProductServiceFilters, value: any) => {
+  const handleFilterChange = <K extends keyof ProductServiceFilters>(
+    key: K,
+    value: ProductServiceFilters[K]
+  ) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
@@ -245,7 +248,11 @@ export const ProductsServicesPage: React.FC = () => {
               </label>
               <select
                 value={filters.item_type}
-                onChange={(e) => handleFilterChange('item_type', e.target.value)}
+                onChange={(e) =>
+                  // El select solo ofrece ITEM_TYPE_OPTIONS y "", pero el DOM lo
+                  // tipa como string; el estrechamiento va aqui, en la frontera.
+                  handleFilterChange('item_type', e.target.value as ProductServiceFilters['item_type'])
+                }
                 className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm"
               >
                 <option value="">Todos</option>
@@ -263,7 +270,10 @@ export const ProductsServicesPage: React.FC = () => {
               </label>
               <select
                 value={filters.service_category}
-                onChange={(e) => handleFilterChange('service_category', e.target.value)}
+                onChange={(e) => handleFilterChange(
+                    'service_category',
+                    e.target.value as ProductServiceFilters['service_category']
+                  )}
                 className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm"
               >
                 <option value="">Todas</option>

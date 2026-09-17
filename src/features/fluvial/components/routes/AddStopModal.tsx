@@ -155,7 +155,10 @@ export const AddStopModal: React.FC<AddStopModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof StopFormData, value: any) => {
+  const handleInputChange = <K extends keyof StopFormData>(
+    field: K,
+    value: StopFormData[K]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[field]) {

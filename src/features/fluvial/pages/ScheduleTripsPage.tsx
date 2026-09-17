@@ -24,6 +24,8 @@ import { VesselChangePreviewModal } from '../components/schedule/VesselChangePre
 import { ManifestPreviewModal } from '../../manifests/components/ManifestPreviewModal';
 import { Manifest } from '../../manifests/types/manifest.types';
 import { PreviewVesselChangeResponse } from '../../../types';
+import type { TripFormPayload } from '../components/schedule/TripFormModal';
+import type { CreateTripData } from '../../../services/trips.service';
 
 type ViewFilterMode = 'upcoming' | 'week' | 'history';
 
@@ -184,12 +186,15 @@ export const ScheduleTripsPage: React.FC = () => {
     }
   };
 
-  const handleSaveTrip = async (data: any) => {
+  const handleSaveTrip = async (data: TripFormPayload) => {
     try {
       if (selectedTrip) {
         await updateTrip({ id: selectedTrip.trip_id, data });
       } else {
-        await createTrip({ ...data, company_id: COMPANY_ID });
+        // validate() del modal garantiza route_id, vessel_id y
+        // departure_datetime al crear; el tipo del payload no puede
+        // expresar esa garantia, de ahi el cast puntual.
+        await createTrip({ ...data, company_id: COMPANY_ID } as CreateTripData);
       }
       setIsTripModalOpen(false);
       refetch();

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { XMarkIcon, PaperAirplaneIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { toast } from '@/utils/sileo-toast';
 import { cancellationRequestsService } from '../services/cancellationRequests.service';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 interface SellerCancellationRequestModalProps {
   invoiceId: number;
@@ -40,8 +41,9 @@ const SellerCancellationRequestModal: React.FC<SellerCancellationRequestModalPro
       toast.success('Solicitud enviada correctamente. Espera la aprobación del supervisor.');
       onSuccess();
       onClose();
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.detail || err?.message || 'Error al enviar solicitud';
+    } catch (err) {
+      const apiError = asApiError(err);
+      const errorMessage = detailToString(apiError.response?.data?.detail) || apiError.message || 'Error al enviar solicitud';
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);

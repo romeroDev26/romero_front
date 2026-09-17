@@ -20,6 +20,7 @@ import {
   useCreditNoteSunatStatus,
   useGenerateCreditNotePdf,
 } from '../hooks/useCreditNotes';
+import type { SunatStatusResponse } from '../../types';
 
 type PdfFormatTab = 'ticket80mm' | 'a4';
 
@@ -46,18 +47,19 @@ export const CreditNoteDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (!creditNote) return;
-    const inv = (creditNote as any).affected_invoice;
+    const inv = creditNote.affected_invoice;
     if (!inv) return;
     const t = Boolean(inv.pdf_ticket_file_path?.trim());
     const a4 = Boolean(inv.pdf_a4_file_path?.trim());
     if (t && !a4) setAffectedPdfTab('ticket80mm');
     else if (!t && a4) setAffectedPdfTab('a4');
   }, [
-    (creditNote as any)?.affected_invoice?.pdf_ticket_file_path,
-    (creditNote as any)?.affected_invoice?.pdf_a4_file_path,
+    creditNote?.affected_invoice?.pdf_ticket_file_path,
+    creditNote?.affected_invoice?.pdf_a4_file_path,
   ]);
 
-  const getSunatStatusIcon = (status: string) => {
+  // Admite undefined: si el estado aun no llego, cae en su rama por defecto.
+  const getSunatStatusIcon = (status: string | undefined) => {
     switch (status) {
       case 'ACCEPTED':
         return <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />;
@@ -71,7 +73,8 @@ export const CreditNoteDetailPage: React.FC = () => {
     }
   };
 
-  const getSunatStatusColor = (status: string) => {
+  // Admite undefined: si el estado aun no llego, cae en su rama por defecto.
+  const getSunatStatusColor = (status: string | undefined) => {
     const colors = {
       PENDING: 'bg-yellow-50 dark:bg-yellow-950/30 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300',
       SENT: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800/50 text-blue-800 dark:text-blue-300',
@@ -82,7 +85,8 @@ export const CreditNoteDetailPage: React.FC = () => {
     return colors[status as keyof typeof colors] || colors.ERROR;
   };
 
-  const getStatusMessage = (status: string) => {
+  // Admite undefined: si el estado aun no llego, cae en su rama por defecto.
+  const getStatusMessage = (status: string | undefined) => {
     const messages = {
       PENDING: 'El documento está pendiente de envío a SUNAT',
       SENT: 'El documento ha sido enviado a SUNAT y está siendo procesado',
@@ -93,20 +97,27 @@ export const CreditNoteDetailPage: React.FC = () => {
     return messages[status as keyof typeof messages] || 'Estado desconocido';
   };
 
-  // Resolver estado SUNAT usando posibles formas de respuesta del backend
+  // Resolver estado SUNAT usando posibles formas de respuesta del backend.
+  // El servicio declara SunatStatusResponse plano, pero este codigo tambien
+  // contempla una variante envuelta en state.data. Se declara en lugar de
+  // borrarla, para no perder la defensa si el backend devuelve esa forma.
+  const wrappedStatus = sunatStatus as
+    | (SunatStatusResponse & { state?: { data?: Partial<SunatStatusResponse> } })
+    | undefined;
+
   const resolvedSunatStatus =
-    (sunatStatus as any)?.sunat_status ??
-    (sunatStatus as any)?.state?.data?.sunat_status ??
+    wrappedStatus?.sunat_status ??
+    wrappedStatus?.state?.data?.sunat_status ??
     creditNote?.sunat_status;
 
   const resolvedSunatResponseDescription =
-    (sunatStatus as any)?.sunat_response_description ??
-    (sunatStatus as any)?.state?.data?.sunat_response_description ??
+    wrappedStatus?.sunat_response_description ??
+    wrappedStatus?.state?.data?.sunat_response_description ??
     creditNote?.sunat_response_description;
 
   const resolvedSunatTicket =
-    (sunatStatus as any)?.sunat_ticket ??
-    (sunatStatus as any)?.state?.data?.sunat_ticket;
+    wrappedStatus?.sunat_ticket ??
+    wrappedStatus?.state?.data?.sunat_ticket;
 
   const formatCurrency = (amount: number | string) => {
     const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -116,7 +127,10 @@ export const CreditNoteDetailPage: React.FC = () => {
     }).format(numAmount);
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
+    // Sin fecha se devuelve un guion: antes llegaba undefined a new Date() y la
+    // UI mostraba "Invalid Date".
+    if (!dateString) return '—';
     // Manejar fechas en formato YYYY-MM-DD sin zona horaria creando fecha en local
     const dateOnlyMatch = String(dateString).match(/^(\d{4})-(\d{2})-(\d{2})$/);
     const dateObj = dateOnlyMatch
@@ -233,8 +247,8 @@ export const CreditNoteDetailPage: React.FC = () => {
     ncPdfTab === 'ticket80mm' ? creditNote.pdf_ticket_file_path : creditNote.pdf_a4_file_path;
   const ncPdfSrc = ncPdfBase ? `${ncPdfBase}?v=${pdfCacheBuster}` : '';
 
-  const clientName = creditNote.client?.name || (creditNote as any).client_name || '—';
-  const clientDoc = creditNote.client?.doc_number || (creditNote as any).client_document;
+  const clientName = creditNote.client?.name || creditNote.client_name || '—';
+  const clientDoc = creditNote.client?.doc_number || creditNote.client_document;
 
   return (
     <div className="min-h-screen bg-dm-bg-secondary">
@@ -449,9 +463,9 @@ export const CreditNoteDetailPage: React.FC = () => {
                   <span className="font-mono text-dm-text-secondary">{creditNote.affected_document_series_number || '—'}</span>
                 </p>
               </div>
-              {(creditNote as any).affected_invoice?.id && (
+              {creditNote.affected_invoice?.id && (
                 <Link
-                  to={`/accounting/invoices/${(creditNote as any).affected_invoice.id}`}
+                  to={`/accounting/invoices/${creditNote.affected_invoice.id}`}
                   className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:text-blue-300 shrink-0"
                 >
                   Abrir en contabilidad →
@@ -459,44 +473,44 @@ export const CreditNoteDetailPage: React.FC = () => {
               )}
             </div>
 
-            {(creditNote as any).affected_invoice && (
+            {creditNote.affected_invoice && (
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-dm-text-secondary">
                   <span>
                     Emisión{' '}
                     <span className="font-medium text-dm-text-primary">
-                      {formatDate((creditNote as any).affected_invoice.issue_date)}
+                      {formatDate(creditNote.affected_invoice.issue_date)}
                     </span>
                   </span>
                   <span>
                     Total doc.{' '}
                     <span className="font-semibold text-dm-text-primary">
-                      {formatCurrency((creditNote as any).affected_invoice.total_payable || '0')}
+                      {formatCurrency(creditNote.affected_invoice.total_payable || '0')}
                     </span>
                   </span>
                   <span className="inline-flex items-center gap-2">
                     SUNAT
                     <span
                       className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                        (creditNote as any).affected_invoice.sunat_status === 'ACCEPTED'
+                        creditNote.affected_invoice.sunat_status === 'ACCEPTED'
                           ? 'bg-emerald-100 text-emerald-800 dark:text-emerald-300'
-                          : (creditNote as any).affected_invoice.sunat_status === 'REJECTED'
+                          : creditNote.affected_invoice.sunat_status === 'REJECTED'
                             ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300'
                             : 'bg-amber-100 text-amber-800 dark:text-amber-300'
                       }`}
                     >
-                      {(creditNote as any).affected_invoice.sunat_status || '—'}
+                      {creditNote.affected_invoice.sunat_status || '—'}
                     </span>
                   </span>
                 </div>
 
-                {((creditNote as any).affected_invoice.pdf_ticket_file_path ||
-                  (creditNote as any).affected_invoice.pdf_a4_file_path) && (
+                {(creditNote.affected_invoice.pdf_ticket_file_path ||
+                  creditNote.affected_invoice.pdf_a4_file_path) && (
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="text-xs font-medium text-dm-text-muted">Vista previa del documento original</span>
                       <div className="flex rounded-lg border border-dm-border-primary p-0.5 bg-dm-bg-secondary overflow-x-auto">
-                        {(creditNote as any).affected_invoice.pdf_ticket_file_path && (
+                        {creditNote.affected_invoice.pdf_ticket_file_path && (
                           <button
                             type="button"
                             onClick={() => setAffectedPdfTab('ticket80mm')}
@@ -509,7 +523,7 @@ export const CreditNoteDetailPage: React.FC = () => {
                             80&nbsp;mm
                           </button>
                         )}
-                        {(creditNote as any).affected_invoice.pdf_a4_file_path && (
+                        {creditNote.affected_invoice.pdf_a4_file_path && (
                           <button
                             type="button"
                             onClick={() => setAffectedPdfTab('a4')}
@@ -528,8 +542,8 @@ export const CreditNoteDetailPage: React.FC = () => {
                       <iframe
                         src={
                           (affectedPdfTab === 'ticket80mm'
-                            ? (creditNote as any).affected_invoice.pdf_ticket_file_path
-                            : (creditNote as any).affected_invoice.pdf_a4_file_path) || ''
+                            ? creditNote.affected_invoice.pdf_ticket_file_path
+                            : creditNote.affected_invoice.pdf_a4_file_path) || ''
                         }
                         className="w-full h-80 sm:h-96"
                         title="Documento afectado"
@@ -563,11 +577,11 @@ export const CreditNoteDetailPage: React.FC = () => {
                       <tr key={item.id || index} className="hover:bg-dm-bg-hover">
                         <td className="px-4 py-4">
                           <div className="text-sm text-dm-text-primary">
-                            {item.product?.name || (item as any).item_description || 'Producto sin nombre'}
+                            {item.product?.name || item.item_description || 'Producto sin nombre'}
                           </div>
-                          {(item as any).product_internal_code && (
+                          {item.product_internal_code && (
                             <div className="text-xs text-dm-text-muted">
-                              Código: {(item as any).product_internal_code}
+                              Código: {item.product_internal_code}
                             </div>
                           )}
                         </td>
@@ -600,25 +614,25 @@ export const CreditNoteDetailPage: React.FC = () => {
             </div>
           )}
 
-          {((creditNote as any).seller || (creditNote as any).branch_office) && (
+          {(creditNote.seller || creditNote.branch_office) && (
             <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary/80 shadow-sm p-5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-dm-text-muted mb-3">Punto de venta</h2>
               <dl className="space-y-2 text-sm">
-                {(creditNote as any).seller && (
+                {creditNote.seller && (
                   <div className="flex justify-between gap-4">
                     <dt className="text-dm-text-muted shrink-0">Vendedor</dt>
                     <dd className="text-dm-text-primary text-right">
-                      {(creditNote as any).seller.name || (creditNote as any).seller.full_name || '—'}
-                      {(creditNote as any).seller.code && (
-                        <span className="text-dm-text-muted font-mono text-xs ml-1">({(creditNote as any).seller.code})</span>
+                      {creditNote.seller.name || creditNote.seller.full_name || '—'}
+                      {creditNote.seller.code && (
+                        <span className="text-dm-text-muted font-mono text-xs ml-1">({creditNote.seller.code})</span>
                       )}
                     </dd>
                   </div>
                 )}
-                {(creditNote as any).branch_office && (
+                {creditNote.branch_office && (
                   <div className="flex justify-between gap-4">
                     <dt className="text-dm-text-muted shrink-0">Sucursal</dt>
-                    <dd className="text-dm-text-primary text-right">{(creditNote as any).branch_office.name || '—'}</dd>
+                    <dd className="text-dm-text-primary text-right">{creditNote.branch_office.name || '—'}</dd>
                   </div>
                 )}
               </dl>
@@ -758,7 +772,7 @@ export const CreditNoteDetailPage: React.FC = () => {
             creditNote.pdf_a4_file_path ||
             creditNote.pdf_ticket_file_path ||
             creditNote.qr_code_data ||
-            (creditNote as any).affected_invoice?.qr_code_data) && (
+            creditNote.affected_invoice?.qr_code_data) && (
             <div className="bg-dm-bg-primary rounded-xl border border-dm-border-primary/80 shadow-sm p-5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-dm-text-muted mb-2">Archivos y QR</h2>
               <p className="text-xs text-dm-text-muted mb-4">
@@ -766,13 +780,13 @@ export const CreditNoteDetailPage: React.FC = () => {
               </p>
 
               {/* QR Code de la Factura Afectada */}
-              {(creditNote as any).affected_invoice?.qr_code_data && (
+              {creditNote.affected_invoice?.qr_code_data && (
                 <div className="mb-6 pb-6 border-b border-dm-border-primary">
                   <h3 className="text-sm font-medium text-dm-text-secondary mb-3">QR del Documento Afectado</h3>
                   <div className="flex justify-center p-4 bg-dm-bg-secondary rounded-lg">
                     <div className="text-center">
                       <img 
-                        src={`data:image/png;base64,${(creditNote as any).affected_invoice.qr_code_data}`} 
+                        src={`data:image/png;base64,${creditNote.affected_invoice.qr_code_data}`} 
                         alt="Código QR del documento afectado" 
                         className="w-40 h-40 mx-auto border border-dm-border-primary rounded-lg"
                       />

@@ -716,9 +716,9 @@ export interface CreditNote {
   company?: Company;
   client_id: number;
   client?: Client;
-  seller?: any; // Información del vendedor
-  branch_office?: any; // Información de la sucursal
-  trip?: any; // Información del viaje
+  seller?: { name?: string; full_name?: string; code?: string }; // Información del vendedor
+  branch_office?: { name?: string }; // Información de la sucursal
+  trip?: { id?: number; trip_name?: string }; // Información del viaje
   ubl_version?: string;
   document_type_code: string;
   series: string;
@@ -728,7 +728,16 @@ export interface CreditNote {
   currency_code: string;
   affected_document_type_code: string;
   affected_document_series_number: string;
-  affected_invoice?: any; // Información completa de la factura afectada
+  /** Factura o boleta afectada; el detalle devuelve estos campos. */
+  affected_invoice?: {
+    id?: number;
+    issue_date?: string;
+    total_payable?: number | string;
+    sunat_status?: string;
+    qr_code_data?: string;
+    pdf_a4_file_path?: string;
+    pdf_ticket_file_path?: string;
+  }; // Información completa de la factura afectada
   credit_note_type_code: string;
   reason: string;
   total_taxable: number;
@@ -758,6 +767,9 @@ export interface CreditNote {
   created_at: string;
   updated_at: string;
   items?: CreditNoteItem[];
+
+  client_name?: string;
+  client_document?: string;
 }
 
 export interface CreditNoteItem {
@@ -766,6 +778,10 @@ export interface CreditNoteItem {
   item_order: number;
   product_id: number;
   product?: ProductService;
+  /** Descripcion aplanada del item, cuando no viene el objeto product. */
+  item_description?: string;
+  /** Codigo interno del producto, aplanado por el endpoint de detalle. */
+  product_internal_code?: string;
   quantity: number;
   unit_code: string;
   unit_price: number;

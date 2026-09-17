@@ -130,8 +130,9 @@ export const EditSeatModal: React.FC<EditSeatModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ['seatMap', tripId] });
       onSuccess();
       onClose();
-    } catch (error: any) {
-      const msg = error?.response?.data?.detail || error?.message || 'Error al guardar los cambios de asientos';
+    } catch (error) {
+      const apiError = asApiError(error);
+      const msg = detailToString(apiError.response?.data?.detail) || apiError.message || 'Error al guardar los cambios de asientos';
       toast.error(msg);
     } finally {
       setIsSavingAll(false);

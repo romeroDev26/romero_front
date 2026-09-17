@@ -11,6 +11,7 @@ import { RoleSelector } from './users/RoleSelector';
 import { SupervisorSelector } from './users/SupervisorSelector';
 import { User } from '../../../types';
 import { usersService, CreateUserData, UpdateUserData } from '../../../services/users.service';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 // Esquema de validación para creación de usuario
 const createUserSchema = z.object({
@@ -28,6 +29,10 @@ const createUserSchema = z.object({
 });
 
 // Esquema de validación para actualización de usuario
+/**
+ * El formulario alterna entre el esquema de creacion y el de actualizacion
+ * segun isCreate, asi que los valores son la union de ambos.
+ */
 const updateUserSchema = z.object({
   email: z.string().email('Email inválido'),
   full_name: z.string().min(3, 'Nombre completo es requerido'),
@@ -42,6 +47,10 @@ const updateUserSchema = z.object({
   message: "Las contraseñas no coinciden",
   path: ["confirm_password"],
 });
+
+/** Valores del formulario: la union de ambos esquemas. */
+type UserFormValues = z.infer<typeof createUserSchema> &
+  Partial<z.infer<typeof updateUserSchema>>;
 
 interface UserFormProps {
   initialData?: User;
@@ -58,9 +67,13 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
     formState: { errors }, 
     setValue, 
     watch 
-  } = useForm<any>({
-    // @ts-ignore - Resolver dinámico entre create y update schemas
-    resolver: zodResolver(isCreate ? createUserSchema : updateUserSchema),
+  } = useForm<UserFormValues>({
+    // El esquema se elige en tiempo de ejecucion segun isCreate, y zodResolver
+    // no puede inferir esa union: el estrechamiento va aqui, con el tipo del
+    // formulario ya declarado, en lugar de dejar useForm<any>.
+    resolver: zodResolver(
+      (isCreate ? createUserSchema : updateUserSchema) as z.ZodType<UserFormValues>
+    ),
     defaultValues: {
       email: initialData?.email || '',
       full_name: initialData?.full_name || '',
@@ -83,7 +96,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
     setValue('supervisor_id', value || undefined, { shouldValidate: true });
   };
 
-  const onSubmit = async (formData: any) => {
+  const onSubmit = async (formData: UserFormValues) => {
     setIsSubmitting(true);
     
     try {
@@ -123,12 +136,13 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
         toast.success('Usuario actualizado correctamente');
         onClose(true);
       }
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error al guardar usuario:', error);
       
-      if (error.response?.status === 422) {
+      if (apiError.response?.status === 422) {
         // Error de validación
-        const detail = error.response.data?.detail;
+        const detail = detailToString(apiError.response.data?.detail);
         if (Array.isArray(detail)) {
           const message = detail.map(err => err.msg).join(', ');
           toast.error(message);
@@ -138,7 +152,7 @@ export const UserForm: React.FC<UserFormProps> = ({ initialData, onClose, isCrea
           toast.error('Error de validación');
         }
       } else {
-        toast.error(error.response?.data?.detail || 'Ocurrió un error al guardar el usuario');
+        toast.error(detailToString(apiError.response?.data?.detail) || 'Ocurrió un error al guardar el usuario');
       }
     } finally {
       setIsSubmitting(false);

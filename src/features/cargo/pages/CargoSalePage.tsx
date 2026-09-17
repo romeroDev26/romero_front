@@ -31,6 +31,7 @@ import { useTripDetails } from '../../fluvial/hooks/useTripDetails';
 import { TicketPreviewModal } from '../../fluvial/components/sales-point/TicketPreviewModal';
 import { invoicesService } from '../../../services/invoices.service';
 import { BackendInvoiceData } from '../../fluvial/components/sales-point/tickets/types/backend.types';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 const CARGO_SALE_DRAFT_KEY = 'cargoSaleWizardDraft_v1';
 
@@ -405,9 +406,10 @@ export const CargoSalePage: React.FC = () => {
         setIsProcessingSale(false);
       }
       
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error creando venta de encomienda:', error);
-      toast.error(error.response?.data?.detail || 'Error al crear la venta');
+      toast.error(detailToString(apiError.response?.data?.detail) || 'Error al crear la venta');
       setIsProcessingSale(false);
     }
   };

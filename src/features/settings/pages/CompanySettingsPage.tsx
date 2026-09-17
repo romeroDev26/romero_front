@@ -20,6 +20,8 @@ import {
   ArrowDownTrayIcon,
   BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
+import type { Company } from '../../../types';
+import { getErrorMessage } from '../../../utils/errorHandler';
 
 const COMPANY_ID = 1;
 
@@ -54,7 +56,7 @@ export const CompanySettingsPage: React.FC = () => {
   const [showCertPassword, setShowCertPassword] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
-  const [company, setCompany] = useState<any>(null);
+  const [company, setCompany] = useState<Company | null>(null);
   const { data, isLoading, error } = useQuery({
     queryKey: ['company', COMPANY_ID],
     queryFn: () => companiesService.getById(COMPANY_ID),
@@ -93,7 +95,11 @@ export const CompanySettingsPage: React.FC = () => {
 
   const handleFileUpload = async (
     file: File | undefined,
-    uploadService: (id: number, file: File, password?: string) => Promise<any>,
+    uploadService: (
+      id: number,
+      file: File,
+      password?: string
+    ) => Promise<{ logo_url?: string; certificate_path?: string }>,
     options: { password?: string; maxSizeMB?: number; successMsg: string; errorMsg: string }
   ) => {
     if (!file) return;
@@ -141,8 +147,8 @@ export const CompanySettingsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
       toast.success('Información de la empresa actualizada exitosamente.');
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.detail || 'Error al actualizar la empresa.');
+    onError: (err) => {
+      toast.error(getErrorMessage(err, 'Error al actualizar la empresa.'));
     },
   });
 
@@ -176,7 +182,7 @@ export const CompanySettingsPage: React.FC = () => {
     try {
       setIsUploadingLogo(true);
       const result = await companiesService.uploadLogo(COMPANY_ID, file, { ...getValues() });
-      setCompany((prev: any) => (prev ? { ...prev, logo_url: result.logo_url } : prev));
+      setCompany((prev) => (prev ? { ...prev, logo_url: result.logo_url } : prev));
       toast.success('Logo actualizado');
       queryClient.invalidateQueries({ queryKey: ['company', COMPANY_ID] });
     } catch {

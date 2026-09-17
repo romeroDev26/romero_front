@@ -250,22 +250,6 @@ export interface Vessel {
   total_rows?: number;
 }
 
-export interface UnifiedTripViewItem {
-  trip_id: number;
-  trip_name?: string | null;
-  route_name?: string | null;
-  origin_city?: string | null;
-  destination_city?: string | null;
-  vessel_name?: string | null;
-  departure_datetime: string;
-  estimated_arrival_datetime?: string | null;
-  status?: string | null;
-  sales_status?: string | null;
-  total_available_seats?: number | null;
-  total_capacity?: number | null; 
-  original_data: any;
-}
-
 export interface SeatType {
   id: number;
   name: string;

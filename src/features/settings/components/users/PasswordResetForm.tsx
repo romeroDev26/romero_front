@@ -8,6 +8,7 @@ import { toast } from '@/utils/sileo-toast';
 import { Button } from '../../../../components/common/Button';
 import { Input } from '../../../../components/common/Input';
 import { usersService } from '../../../../services/users.service';
+import { asApiError, detailToString } from '../../../../utils/errorHandler';
 
 interface PasswordResetFormProps {
   userId: string;
@@ -56,19 +57,20 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
       
       toast.success('Contraseña actualizada exitosamente');
       onClose();
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       console.error('Error al restablecer contraseña:', error);
       
-      if (error.response) {
-        if (error.response.status === 404) {
+      if (apiError.response) {
+        if (apiError.response.status === 404) {
           setApiError('Usuario no encontrado');
           toast.error('Usuario no encontrado');
-        } else if (error.response.status === 403) {
+        } else if (apiError.response.status === 403) {
           setApiError('No tienes permiso para realizar esta acción');
           toast.error('No tienes permiso para realizar esta acción');
-        } else if (error.response.status === 422) {
+        } else if (apiError.response.status === 422) {
           // Error de validación
-          const detail = error.response.data?.detail;
+          const detail = detailToString(apiError.response.data?.detail);
           if (Array.isArray(detail)) {
             const message = detail.map(err => err.msg).join(', ');
             setApiError(message);
@@ -80,9 +82,10 @@ export const PasswordResetForm: React.FC<PasswordResetFormProps> = ({
             setApiError('Error de validación');
             toast.error('Error de validación');
           }
-        } else if (error.response.data?.detail) {
-          setApiError(error.response.data.detail);
-          toast.error(error.response.data.detail);
+        } else if (detailToString(apiError.response.data?.detail)) {
+          const detail = detailToString(apiError.response.data?.detail) ?? '';
+          setApiError(detail);
+          toast.error(detail);
         } else {
           setApiError('Error al actualizar la contraseña');
           toast.error('Error al actualizar la contraseña');

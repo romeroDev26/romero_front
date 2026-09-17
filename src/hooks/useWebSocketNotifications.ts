@@ -29,7 +29,12 @@ interface CancellationRequestResolvedData {
 
 interface WebSocketMessage {
   type: 'PING' | 'PONG' | 'CANCELLATION_REQUEST_CREATED' | 'CANCELLATION_REQUEST_RESOLVED' | 'PAGO_DIGITAL_RECIBIDO' | string;
-  data?: CancellationRequestCreatedData | CancellationRequestResolvedData | any;
+  // Los demas tipos de mensaje traen su propio payload; se deja abierto pero
+  // no con `any`, que anulaba la union de los dos casos conocidos.
+  data?:
+    | CancellationRequestCreatedData
+    | CancellationRequestResolvedData
+    | Record<string, unknown>;
   pago?: {
     monto?: number;
     nombre_emisor?: string;
@@ -49,7 +54,14 @@ interface UseWebSocketNotificationsOptions {
 let globalWs: WebSocket | null = null;
 let globalPingInterval: NodeJS.Timeout | null = null;
 const connectionListeners: Set<(connected: boolean) => void> = new Set();
-const messageHandlers: Map<string, Set<(data: any) => void>> = new Map();
+/**
+ * Handler generico guardado en el registro. Cada tipo de evento trae su propio
+ * payload, asi que el registro es heterogeneo por naturaleza: se guarda con
+ * `unknown` y el estrechamiento ocurre al registrar, donde si se conoce el tipo.
+ */
+type StoredNotificationHandler = (data: unknown) => void;
+
+const messageHandlers: Map<string, Set<StoredNotificationHandler>> = new Map();
 
 export const useWebSocketNotifications = (options: UseWebSocketNotificationsOptions = {}) => {
   const {
@@ -152,7 +164,7 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
           break;
 
         case 'PAGO_DIGITAL_RECIBIDO': {
-          const pago = (message as any).pago || message.data?.pago;
+          const pago = message.pago || (message.data as { pago?: typeof message.pago })?.pago;
           if (pago) {
             const canal = pago.canal || 'YAPE';
             const monto = Number(pago.monto || 0).toFixed(2);
@@ -250,22 +262,30 @@ export const useWebSocketNotifications = (options: UseWebSocketNotificationsOpti
       if (!messageHandlers.has('CANCELLATION_REQUEST_CREATED')) {
         messageHandlers.set('CANCELLATION_REQUEST_CREATED', new Set());
       }
-      messageHandlers.get('CANCELLATION_REQUEST_CREATED')!.add(onCancellationRequestCreated);
+      messageHandlers
+        .get('CANCELLATION_REQUEST_CREATED')!
+        .add(onCancellationRequestCreated as StoredNotificationHandler);
     }
 
     if (onCancellationRequestResolved) {
       if (!messageHandlers.has('CANCELLATION_REQUEST_RESOLVED')) {
         messageHandlers.set('CANCELLATION_REQUEST_RESOLVED', new Set());
       }
-      messageHandlers.get('CANCELLATION_REQUEST_RESOLVED')!.add(onCancellationRequestResolved);
+      messageHandlers
+        .get('CANCELLATION_REQUEST_RESOLVED')!
+        .add(onCancellationRequestResolved as StoredNotificationHandler);
     }
 
     return () => {
       if (onCancellationRequestCreated) {
-        messageHandlers.get('CANCELLATION_REQUEST_CREATED')?.delete(onCancellationRequestCreated);
+        messageHandlers
+          .get('CANCELLATION_REQUEST_CREATED')
+          ?.delete(onCancellationRequestCreated as StoredNotificationHandler);
       }
       if (onCancellationRequestResolved) {
-        messageHandlers.get('CANCELLATION_REQUEST_RESOLVED')?.delete(onCancellationRequestResolved);
+        messageHandlers
+          .get('CANCELLATION_REQUEST_RESOLVED')
+          ?.delete(onCancellationRequestResolved as StoredNotificationHandler);
       }
     };
   }, [onCancellationRequestCreated, onCancellationRequestResolved]);

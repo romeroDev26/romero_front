@@ -28,7 +28,7 @@ export const SunatStatusChart: React.FC<SunatStatusChartProps> = ({
     label: string; 
     color: string; 
     bgColor: string; 
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
   }> = {
     'ACCEPTED': {
       label: 'Aceptados',

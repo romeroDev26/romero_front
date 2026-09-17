@@ -21,7 +21,7 @@ const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
 interface NavItem {
   name: string;
   path: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   iconColor: string;
   isSubmenu?: boolean;
   expandKey?: string;
@@ -35,7 +35,7 @@ interface NavGroup {
   title: string;
   expandable?: boolean;
   expandKey?: string;
-  icon?: any;
+  icon?: React.ComponentType<{ className?: string }>;
   iconColor?: string;
   items: NavItem[];
 }
@@ -260,7 +260,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
               const isSubGroupActive = subGroup.subitems.some((sub: NavItem) => currentPath.startsWith(sub.path));
 
               if (isSubGroupActive) {
-                newExpanded[(subGroup as any).expandKey] = true;
+                newExpanded[subGroup.expandKey] = true;
               }
             }
           });

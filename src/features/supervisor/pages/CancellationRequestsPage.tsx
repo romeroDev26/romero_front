@@ -19,6 +19,7 @@ import {
 import ApprovalModal from '../components/ApprovalModal';
 import RejectionModal from '../components/RejectionModal';
 import { Spinner } from '../../../components/common/Spinner';
+import { asApiError, detailToString } from '../../../utils/errorHandler';
 
 const CancellationRequestsPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<CancellationRequestStatus | 'ALL'>('PENDING');
@@ -95,9 +96,10 @@ const CancellationRequestsPage: React.FC = () => {
       setSelectedRequest(null);
       await Promise.all([fetchPendingRequests(), fetchAllRequests()]);
       window.dispatchEvent(new CustomEvent('cancellation-request-resolved'));
-    } catch (err: any) {
+    } catch (err) {
+      const apiError = asApiError(err);
       const errorMessage =
-        err?.response?.data?.detail || err?.message || 'Error al aprobar solicitud';
+        detailToString(apiError.response?.data?.detail) || apiError.message || 'Error al aprobar solicitud';
       toast.error(errorMessage);
     } finally {
       setActionLoading(false);
@@ -116,9 +118,10 @@ const CancellationRequestsPage: React.FC = () => {
       setSelectedRequest(null);
       await Promise.all([fetchPendingRequests(), fetchAllRequests()]);
       window.dispatchEvent(new CustomEvent('cancellation-request-resolved'));
-    } catch (err: any) {
+    } catch (err) {
+      const apiError = asApiError(err);
       const errorMessage =
-        err?.response?.data?.detail || err?.message || 'Error al rechazar solicitud';
+        detailToString(apiError.response?.data?.detail) || apiError.message || 'Error al rechazar solicitud';
       toast.error(errorMessage);
     } finally {
       setActionLoading(false);

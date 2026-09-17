@@ -148,7 +148,7 @@ export const useManifestsPage = () => {
           date_from: monthRange.start,
           date_to: monthRange.end,
         });
-      } catch (error: any) {
+      } catch (error) {
         // Si el endpoint falla, devolver array vacío para no romper la UI del calendario
         console.error('Error al obtener manifiestos del mes:', error);
         return [];

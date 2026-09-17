@@ -10,6 +10,7 @@ import { MessageCircle, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { whatsappService, WhatsAppSendResponse } from '../../../services/whatsapp.service';
 import { Quotation } from '../types';
 import { useWhatsAppInstanceByName } from '../../../hooks/useWhatsAppInstance';
+import { asApiError } from '../../../utils/errorHandler';
 
 interface QuotationWhatsAppModalProps {
   isOpen: boolean;
@@ -89,10 +90,11 @@ El equipo de ${businessName}`;
         }, 2000);
       }
 
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       setSendResult({
         success: false,
-        error: error.message || 'Error desconocido al procesar el envío'
+        error: apiError.message || 'Error desconocido al procesar el envío'
       });
     } finally {
       setIsSending(false);

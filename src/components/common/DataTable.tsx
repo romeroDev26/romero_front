@@ -14,7 +14,7 @@ interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
   isLoading?: boolean;
-  error?: any;
+  error?: Error | null;
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   keyExtractor: (item: T) => string | number;
@@ -148,11 +148,11 @@ export function DataTable<T>({
   );
 }
 
-export const useConfirmDelete = (
-  onConfirm: (item: any) => void,
-  getMessage: (item: any) => string
+export const useConfirmDelete = <T,>(
+  onConfirm: (item: T) => void,
+  getMessage: (item: T) => string
 ) => {
-  const handleDelete = (item: any) => {
+  const handleDelete = (item: T) => {
     const message = getMessage(item);
     if (window.confirm(message)) {
       onConfirm(item);

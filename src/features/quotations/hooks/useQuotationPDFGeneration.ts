@@ -8,6 +8,7 @@ import { quotationPdfUploadService } from '../services/quotationPdfUpload.servic
 import { Quotation } from '../types';
 import { drawLogoInPdf } from '../../../utils/pdfLogo';
 import { getDocumentCompanyInfo } from '../../../utils/documentCompanyInfo';
+import { asApiError } from '../../../utils/errorHandler';
 
 export interface QuotationPDFResult {
   success: boolean;
@@ -413,11 +414,12 @@ export const useQuotationPDFGeneration = () => {
         };
       }
       
-    } catch (error: any) {
+    } catch (error) {
+      const apiError = asApiError(error);
       setIsGenerating(false);
       setIsUploading(false);
       
-      const errorMessage = error.message || 'Error al generar el PDF';
+      const errorMessage = apiError.message || 'Error al generar el PDF';
       toast.error(errorMessage);
       
       return {

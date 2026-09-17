@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from '@/utils/sileo-toast';
-import Select from 'react-select';
+import Select, { type StylesConfig } from 'react-select';
+import type { ProductService } from '../../../types';
 import { Search } from 'lucide-react';
 
 import { Button } from '../../../components/common/Button';
@@ -51,6 +52,12 @@ const FONT = {
   inter: "'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   heading: "'Saira', 'Montserrat', ui-sans-serif, system-ui, sans-serif",
 };
+
+/** Opcion del selector de servicios de carga. */
+interface ProductOption {
+  value: ProductService;
+  label: string;
+}
 
 export const CargoItemForm: React.FC<CargoItemFormProps> = ({
   onSubmit,
@@ -205,7 +212,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
     }
   };
 
-  const productOptions = useMemo(
+  const productOptions = useMemo<ProductOption[]>(
     () =>
       cargoServices.map((service) => ({
         value: service,
@@ -219,8 +226,10 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
   const isQueryingRecipient = isQueryingDni || isQueryingRuc;
 
   /* ── Estilos react-select alineados con DESIGN.md ── */
-  const selectStyles = {
-    control: (base: any, state: any) => ({
+  // StylesConfig es el tipo de la libreria: tipa `base` y `state` de cada
+  // callback segun el componente interno que se esta personalizando.
+  const selectStyles: StylesConfig<ProductOption, false> = {
+    control: (base, state) => ({
       ...base,
       borderRadius: 8,
       borderColor: state.isFocused ? COLORS.midnight : COLORS.lightPearl,
@@ -235,19 +244,19 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
         borderColor: COLORS.midnight,
       },
     }),
-    placeholder: (base: any) => ({
+    placeholder: (base) => ({
       ...base,
       color: COLORS.silverAsh,
       fontFamily: FONT.inter,
       fontSize: 15,
     }),
-    singleValue: (base: any) => ({
+    singleValue: (base) => ({
       ...base,
       color: COLORS.midnight,
       fontFamily: FONT.inter,
       fontSize: 15,
     }),
-    menu: (base: any) => ({
+    menu: (base) => ({
       ...base,
       borderRadius: 8,
       border: `1px solid ${COLORS.lightPearl}`,
@@ -256,7 +265,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
       fontSize: 15,
       zIndex: 20,
     }),
-    option: (base: any, state: any) => ({
+    option: (base, state) => ({
       ...base,
       backgroundColor: state.isSelected
         ? COLORS.slateMist
@@ -268,13 +277,13 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
       fontSize: 15,
       cursor: 'pointer',
     }),
-    noOptionsMessage: (base: any) => ({
+    noOptionsMessage: (base) => ({
       ...base,
       color: COLORS.silverAsh,
       fontFamily: FONT.inter,
       fontSize: 14,
     }),
-    loadingMessage: (base: any) => ({
+    loadingMessage: (base) => ({
       ...base,
       color: COLORS.silverAsh,
       fontFamily: FONT.inter,

@@ -86,7 +86,7 @@ export const useDeleteQuotation = () => {
 export const useSendQuotationByEmail = () => {
   const queryClient = useQueryClient();
   
-  return useMutation<string, Error, { id: number; emailData?: any }>({
+  return useMutation<string, Error, { id: number; emailData?: Record<string, unknown> }>({
     mutationFn: ({ id, emailData }) => quotationsService.sendByEmail(id, emailData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUOTATIONS_QUERY_KEY] });

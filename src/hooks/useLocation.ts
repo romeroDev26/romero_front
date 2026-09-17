@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 // ...
 import { geonamesService } from '../services/geonames.service';
+import type { ClientFormData } from '../features/clients/pages/ClientFormPage';
 
 interface LocationData {
   country_code?: string;
@@ -12,7 +13,8 @@ interface LocationData {
 }
 
 interface UseLocationProps {
-  setValue: UseFormSetValue<any>;
+  // El unico consumidor es el formulario de clientes.
+  setValue: UseFormSetValue<ClientFormData>;
   initialData?: LocationData;
 }
 

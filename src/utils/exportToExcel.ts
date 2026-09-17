@@ -51,7 +51,8 @@ export const exportSellerStatsToExcel = (
   XLSX.utils.book_append_sheet(workbook, invoicesSheet, 'Facturas');
 
   // Hoja 3: Detalle de Ítems
-  const itemsData: any[] = [];
+  // Filas de la hoja: claves de columna en espanol a valor.
+  const itemsData: Record<string, string | number>[] = [];
   data.invoices.forEach((inv) => {
     inv.items.forEach((item) => {
       itemsData.push({
@@ -79,7 +80,7 @@ export const exportSellerStatsToExcel = (
   XLSX.utils.book_append_sheet(workbook, itemsSheet, 'Detalle Items');
 
   // Hoja 4: Representantes (si hay)
-  const representativesData: any[] = [];
+  const representativesData: Record<string, string | number>[] = [];
   data.invoices.forEach((inv) => {
     if (inv.representatives && inv.representatives.length > 0) {
       inv.representatives.forEach((rep) => {

@@ -10,7 +10,7 @@ export const useAuth = () => {
       try {
         const data = await authService.getProfile();
         return data;
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error al obtener el perfil del usuario:', error);
         throw error;
       }

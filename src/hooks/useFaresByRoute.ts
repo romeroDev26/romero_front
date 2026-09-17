@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import fareService, { RouteGroupedFare, UpdateFareData } from '../services/fareService';
 import { ServiceCategory } from '../types';
+import type { CreateFareData } from '../services/fareService';
 
 interface UseFaresByRouteParams {
   company_id: number;
@@ -37,7 +38,7 @@ export const useFaresByRoute = (params: UseFaresByRouteParams) => {
   });
 
   const createFareMutation = useMutation({
-    mutationFn: (data: any) => fareService.createFare(data),
+    mutationFn: (data: CreateFareData) => fareService.createFare(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fares-by-route'] });
     },

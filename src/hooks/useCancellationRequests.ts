@@ -6,6 +6,7 @@ import {
   CancellationRequestListItem,
   CancellationRequestListParams
 } from '../features/accounting/types/cancellationRequests';
+import { asApiError, detailToString } from '../utils/errorHandler';
 
 interface UseCancellationRequestsOptions {
   params?: CancellationRequestListParams;
@@ -32,8 +33,9 @@ export const useCancellationRequests = (options: UseCancellationRequestsOptions 
       const data = await cancellationRequestsService.getPending(parsedParams);
       setPendingRequests(data);
       setPendingCount(data.length);
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.detail || err?.message || 'Error al cargar solicitudes pendientes';
+    } catch (err) {
+      const apiError = asApiError(err);
+      const errorMessage = detailToString(apiError.response?.data?.detail) || apiError.message || 'Error al cargar solicitudes pendientes';
       setError(errorMessage);
       console.error('Error fetching pending requests:', err);
     } finally {
@@ -49,8 +51,9 @@ export const useCancellationRequests = (options: UseCancellationRequestsOptions 
       const parsedParams = JSON.parse(paramsString);
       const data = await cancellationRequestsService.getAll(parsedParams);
       setAllRequests(data);
-    } catch (err: any) {
-      const errorMessage = err?.response?.data?.detail || err?.message || 'Error al cargar solicitudes';
+    } catch (err) {
+      const apiError = asApiError(err);
+      const errorMessage = detailToString(apiError.response?.data?.detail) || apiError.message || 'Error al cargar solicitudes';
       setError(errorMessage);
       console.error('Error fetching all requests:', err);
     } finally {

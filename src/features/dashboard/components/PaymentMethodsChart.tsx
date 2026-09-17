@@ -4,8 +4,7 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  Tooltip
-} from 'recharts';
+  Tooltip, type TooltipProps } from 'recharts';
 import { PaymentMethodMetric } from '../../../types/reports';
 import { getPaymentMethodName } from '../../../utils/paymentMethods';
 
@@ -13,7 +12,7 @@ import { getPaymentMethodName } from '../../../utils/paymentMethods';
 const MODERN_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6'];
 
 // Tooltip personalizado elegante
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (

@@ -17,6 +17,7 @@ import { PaymentTicketData } from '../../types/payment.types';
 import { invoicesService } from '../../../../services/invoices.service';
 import { WhatsAppSendModal } from '../../../fluvial/components/sales-point/WhatsAppSendModal';
 import { Invoice } from '../../../../types';
+import { asApiError } from '../../../../utils/errorHandler';
 
 interface PaidTicketModalProps {
   isOpen: boolean;
@@ -68,8 +69,9 @@ export const PaidTicketModal: React.FC<PaidTicketModalProps> = ({
       const invoice = await invoicesService.getById(paymentData.invoice_id);
       setInvoiceData(invoice);
       setShowWhatsAppModal(true);
-    } catch (error: any) {
-      setInvoiceError(error?.message || 'No se pudo cargar la factura');
+    } catch (error) {
+      const apiError = asApiError(error);
+      setInvoiceError(apiError.message || 'No se pudo cargar la factura');
     } finally {
       setIsLoadingInvoice(false);
     }

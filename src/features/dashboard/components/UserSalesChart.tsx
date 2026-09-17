@@ -8,10 +8,12 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  type TooltipProps,
 } from 'recharts';
 import { useLast7DaysStatistics, useLast12MonthsStatistics } from '../../../hooks/useUserStatistics';
 import { parseLocalDate } from '../../../utils/dateUtils';
 import { useChartTheme } from '../../../hooks/useChartTheme';
+import type { UserStatisticsResponse } from '../../../services/userStatistics.service';
 
 type ChartPeriod = '7days' | '12months';
 
@@ -28,12 +30,12 @@ interface ChartData {
 }
 
 // Tooltip personalizado elegante
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary px-4 py-3 shadow-lg">
         <p className="mb-2 text-sm font-semibold text-dm-text-primary">{label}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index) => (
           <div key={index} className="flex items-center gap-2 text-sm">
             <div
               className="h-3 w-3 rounded-full"
@@ -69,7 +71,7 @@ const UserSalesChart: React.FC = () => {
   } = useLast12MonthsStatistics({ enabled: period === '12months' });
 
   // Función para formatear datos para el gráfico
-  const formatChartData = (data: any[]): ChartData[] => {
+  const formatChartData = (data: UserStatisticsResponse[]): ChartData[] => {
     if (!data || data.length === 0) return [];
 
     return data.map(item => {

@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  type TooltipProps,
 } from 'recharts';
 import { EvolucionVentasSucursales } from '../../../types/dashboard';
 import { BarChart3 } from 'lucide-react';
@@ -53,13 +54,13 @@ function getBranchColor(branchName: string): string {
   return `hsl(${hue}, 65%, 48%)`;
 }
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (!active || !payload?.length) return null;
 
-  const rows = [...payload].filter((e: any) => Number(e.value) > 0).sort(
-    (a: any, b: any) => Number(b.value) - Number(a.value)
+  const rows = [...payload].filter((e) => Number(e.value) > 0).sort(
+    (a, b) => Number(b.value) - Number(a.value)
   );
-  const total = payload.reduce((acc: number, entry: any) => acc + (Number(entry.value) || 0), 0);
+  const total = payload.reduce((acc: number, entry) => acc + (Number(entry.value) || 0), 0);
 
   if (total <= 0) return null;
 
@@ -70,7 +71,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         Total: S/ {total.toLocaleString('es-PE', { maximumFractionDigits: 0 })}
       </p>
       <div className="max-h-48 space-y-1.5 overflow-y-auto pr-1">
-        {rows.map((entry: any) => (
+        {rows.map((entry) => (
           <div key={entry.name} className="flex items-center justify-between gap-3 text-xs">
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span
@@ -113,7 +114,7 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
   const { branchNamesSorted, totalsByBranch } = useMemo(() => {
     const totals: Record<string, number> = {};
     branchNamesRaw.forEach((b) => {
-      totals[b] = chartData.reduce((acc, row) => acc + (Number((row as any)[b]) || 0), 0);
+      totals[b] = chartData.reduce((acc, row) => acc + (Number((row as Record<string, unknown>)[b]) || 0), 0);
     });
     const sorted = [...branchNamesRaw].sort((a, b) => totals[a] - totals[b]);
     return { branchNamesSorted: sorted, totalsByBranch: totals };
@@ -122,7 +123,7 @@ export const BranchSalesLineChart: React.FC<BranchSalesLineChartProps> = ({
   const totalPeriod = useMemo(() => {
     return chartData.reduce(
       (acc, item) =>
-        acc + branchNamesRaw.reduce((sum, branch) => sum + (Number((item as any)[branch]) || 0), 0),
+        acc + branchNamesRaw.reduce((sum, branch) => sum + (Number((item as Record<string, unknown>)[branch]) || 0), 0),
       0
     );
   }, [chartData, branchNamesRaw]);

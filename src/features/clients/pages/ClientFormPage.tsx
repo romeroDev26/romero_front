@@ -58,7 +58,7 @@ const clientSchema = z.object({
 });
 type UpdateClientData = CreateClientData;
 
-type ClientFormData = z.infer<typeof clientSchema>;
+export type ClientFormData = z.infer<typeof clientSchema>;
 
 // Opciones de tipo de documento para el select
 const DOC_TYPE_OPTIONS: { value: DocType; label: string }[] = [
@@ -128,7 +128,7 @@ export const ClientFormPage: React.FC = () => {
       if (apiError.response?.status === 422) {
         const detail = detailToString(apiError.response.data?.detail);
         if (Array.isArray(detail)) {
-          const message = detail.map((err: any) => err.msg).join(', ');
+          const message = detail.map((err) => err.msg).join(', ');
           toast.error(message);
         } else {
           toast.error('Error de validación en los datos');
@@ -155,7 +155,7 @@ export const ClientFormPage: React.FC = () => {
       if (apiError.response?.status === 422) {
         const detail = detailToString(apiError.response.data?.detail);
         if (Array.isArray(detail)) {
-          const message = detail.map((err: any) => err.msg).join(', ');
+          const message = detail.map((err) => err.msg).join(', ');
           toast.error(message);
         } else {
           toast.error('Error de validación en los datos');

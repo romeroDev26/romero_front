@@ -80,7 +80,7 @@ export interface ExportStatusResponse {
 export interface ExportError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }
 
 // ========================================
@@ -96,7 +96,7 @@ export interface ExportHistoryItem {
   download_url?: string;
   expires_at?: string; // ISO 8601
   created_at: string;  // ISO 8601
-  filters_applied?: Record<string, any>;
+  filters_applied?: Record<string, unknown>;
 }
 
 export interface ExportHistoryResponse {

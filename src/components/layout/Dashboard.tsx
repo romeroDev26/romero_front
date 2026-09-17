@@ -29,6 +29,7 @@ import ServiceStatusBanner from '../common/ServiceStatusBanner';
 import { useSystemStatusStore } from '@/stores/systemStatus.store';
 import { useThemeTransition } from '@/hooks/useThemeTransition';
 import { useAutoLogout } from '../../hooks/useAutoLogout';
+import { asApiError } from '../../utils/errorHandler';
 
 // Ya no necesitamos declarar el timeout global ni las keys de scroll
 const STORAGE_KEY_SIDEBAR_HIDDEN = 'dashboard_sidebar_hidden';
@@ -133,9 +134,10 @@ const Dashboard: React.FC = () => {
       try {
         const data = await authService.getProfile();
         return data;
-      } catch (error: any) {
+      } catch (error) {
+        const apiError = asApiError(error);
         console.error('Error al obtener el perfil del usuario:', error);
-        if (error.response?.status === 401) {
+        if (apiError.response?.status === 401) {
           handleLogout(); // Llama a la función de logout directamente
         } else {
           toast.error('No se pudo cargar la información del usuario');

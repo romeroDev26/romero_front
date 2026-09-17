@@ -8,6 +8,7 @@ import {
   AdministrativeArea, 
   City 
 } from '../../services/geonames.service';
+import { asApiError } from '../../utils/errorHandler';
 
 interface LocationSelectorProps {
   // Valores actuales
@@ -100,8 +101,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
     try {
       const data = await geonamesService.getCountries();
       setCountries(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar países');
+    } catch (error) {
+      const apiError = asApiError(error);
+      toast.error(apiError.message || 'Error al cargar países');
       // Fallback con países básicos
       setCountries([
         { geonameId: 3932488, countryCode: 'PE', countryName: 'Peru', continent: 'SA', capital: 'Lima', languages: 'es', population: 32971854 },
@@ -137,8 +139,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
           setSelectedDepartmentId(foundDept.geonameId);
         }
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar departamentos/estados');
+    } catch (error) {
+      const apiError = asApiError(error);
+      toast.error(apiError.message || 'Error al cargar departamentos/estados');
       setDepartments([]);
     } finally {
       setLoadingDepartments(false);
@@ -171,8 +174,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
           setSelectedProvinceId(foundProv.geonameId);
         }
       }
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar provincias');
+    } catch (error) {
+      const apiError = asApiError(error);
+      toast.error(apiError.message || 'Error al cargar provincias');
       setProvinces([]);
     } finally {
       setLoadingProvinces(false);
@@ -192,8 +196,9 @@ export const LocationSelector: React.FC<LocationSelectorProps> = ({
       }
       
       setDistricts(data);
-    } catch (error: any) {
-      toast.error(error.message || 'Error al cargar distritos/ciudades');
+    } catch (error) {
+      const apiError = asApiError(error);
+      toast.error(apiError.message || 'Error al cargar distritos/ciudades');
       setDistricts([]);
     } finally {
       setLoadingDistricts(false);

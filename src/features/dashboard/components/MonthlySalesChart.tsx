@@ -7,12 +7,13 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  type TooltipProps,
 } from 'recharts';
 import { VentasMensuales } from '../../../types/dashboard';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useChartTheme } from '../../../hooks/useChartTheme';
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 shadow-sm">

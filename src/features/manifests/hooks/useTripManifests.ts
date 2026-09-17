@@ -66,7 +66,7 @@ export function useTripManifests() {
         toast.success('PDF generado y subido correctamente');
         queryClient.invalidateQueries({ queryKey: ['trip-manifests', tripId] });
         queryClient.invalidateQueries({ queryKey: ['manifests'] });
-      } catch (err: any) {
+      } catch (err) {
         console.error('Error al generar/subir PDF:', err);
         toast.error('El manifiesto se creó pero no se pudo generar el PDF automáticamente');
       }

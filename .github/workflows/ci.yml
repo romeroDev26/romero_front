@@ -18,14 +18,16 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      # v5 es la primera version de estas acciones que corre sobre Node 24.
+      # Con las @v4 el runner avisaba "Node 20 is being deprecated" en cada run.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Necesitamos el historial para diffear contra la rama base del PR
           fetch-depth: 0
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -59,7 +61,12 @@ jobs:
           tr '\0' '\n' < changed.z | sed 's/^/  - /'
           echo ""
 
-          xargs -0 npx eslint --max-warnings=0 < changed.z
+          # Bloquea por ERRORES, no por warnings. El proyecto arrastra 68
+          # warnings de react-hooks/exhaustive-deps que requieren revisarse hook
+          # por hook; con --max-warnings=0 cualquier PR que tocara uno de esos
+          # archivos saldria rojo sin haber introducido nada nuevo, que es justo
+          # el modo de falla que este gate incremental busca evitar.
+          xargs -0 npx eslint < changed.z
 
       # Panorama completo de la deuda, informativo: nunca tumba el build.
       # Reporte completo de la deuda de lint. Nunca tumba el build: existe para
@@ -138,7 +145,7 @@ jobs:
 
       - name: Publicar reporte de lint
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: eslint-report
           path: |

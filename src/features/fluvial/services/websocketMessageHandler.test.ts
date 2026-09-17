@@ -430,7 +430,8 @@ describe('WebSocketMessageHandler', () => {
 
   describe('unknown message type', () => {
     it('does nothing for unhandled types', () => {
-      handler.handleMessage(baseMessage({ type: 'UNKNOWN_TYPE' as any }));
+      handler.handleMessage(// Tipo fuera del protocolo a proposito: se verifica que se ignore.
+        baseMessage({ type: 'UNKNOWN_TYPE' as SeatUpdateMessage['type'] }));
       expect(onSeatMapUpdate).not.toHaveBeenCalled();
     });
   });

@@ -22,17 +22,18 @@ class MockWebSocket {
   onclose: ((ev: CloseEvent) => void) | null = null;
   onmessage: ((ev: MessageEvent) => void) | null = null;
   onerror: ((ev?: Event) => void) | null = null;
-  sentMessages: any[] = [];
-  listeners: Record<string, Array<(ev?: any) => void>> = {};
+  /** Mensajes enviados por el codigo bajo prueba, ya parseados. */
+  sentMessages: Array<Record<string, unknown>> = [];
+  listeners: Record<string, Array<(ev?: Event) => void>> = {};
 
   constructor(url: string) {
     this.url = url;
     MockWebSocket.instances.push(this);
   }
 
-  addEventListener(type: string, handler: (ev?: any) => void, options?: { once?: boolean }) {
+  addEventListener(type: string, handler: (ev?: Event) => void, options?: { once?: boolean }) {
     const wrapped = options?.once
-      ? (ev?: any) => {
+      ? (ev?: Event) => {
           this.removeEventListener(type, wrapped);
           handler(ev);
         }
@@ -40,11 +41,11 @@ class MockWebSocket {
     this.listeners[type] = [...(this.listeners[type] || []), wrapped];
   }
 
-  removeEventListener(type: string, handler: (ev?: any) => void) {
+  removeEventListener(type: string, handler: (ev?: Event) => void) {
     this.listeners[type] = (this.listeners[type] || []).filter((h) => h !== handler);
   }
 
-  private emit(type: string, ev?: any) {
+  private emit(type: string, ev?: Event) {
     [...(this.listeners[type] || [])].forEach((handler) => handler(ev));
   }
 
@@ -67,7 +68,7 @@ class MockWebSocket {
     this.emit('open');
   }
 
-  simulateMessage(data: any) {
+  simulateMessage(data: unknown) {
     if (this.onmessage) {
       this.onmessage({ data: JSON.stringify(data) } as MessageEvent);
     }
@@ -319,7 +320,7 @@ describe('useWebSocketConnection', () => {
 
     act(() => result.current.pingConnection());
 
-    expect(ws.sentMessages.some((m: any) => m.type === 'PING')).toBe(true);
+    expect(ws.sentMessages.some((m) => m.type === 'PING')).toBe(true);
   });
 
   it('closes socket and clears timers on unmount', async () => {

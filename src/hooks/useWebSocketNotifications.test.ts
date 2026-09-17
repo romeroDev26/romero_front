@@ -33,7 +33,8 @@ class MockWebSocket {
   onclose: ((ev: CloseEvent) => void) | null = null;
   onmessage: ((ev: MessageEvent) => void) | null = null;
   onerror: ((ev?: Event) => void) | null = null;
-  sentMessages: any[] = [];
+  /** Mensajes enviados por el codigo bajo prueba, ya parseados. */
+  sentMessages: Array<Record<string, unknown>> = [];
 
   constructor(url: string) {
     this.url = url;
@@ -56,7 +57,7 @@ class MockWebSocket {
     if (this.onopen) this.onopen();
   }
 
-  simulateMessage(data: any) {
+  simulateMessage(data: unknown) {
     if (this.onmessage) {
       this.onmessage({ data: JSON.stringify(data) } as MessageEvent);
     }
@@ -298,7 +299,7 @@ describe('useWebSocketNotifications', () => {
     act(() => ws.simulateOpen());
 
     act(() => vi.advanceTimersByTime(31000));
-    expect(ws.sentMessages.some((m: any) => m.type === 'PING')).toBe(true);
+    expect(ws.sentMessages.some((m) => m.type === 'PING')).toBe(true);
   });
 
   it('cleans up connection listener on unmount', async () => {

@@ -1,3 +1,5 @@
+import type { InvoiceItemData } from './invoiceCreationService';
+import { makeInfant, makeRepresentative } from '../../../../../test/factories';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { invoiceCreationService } from './invoiceCreationService';
 import { SunatDocType } from '../../../types/sunat.types';
@@ -34,7 +36,7 @@ describe('invoiceCreationService', () => {
 
     it('returns representatives length for RUC passenger', () => {
       const rucPassenger = { ...passengerData, docType: SunatDocType.RUC };
-      const reps = [{ name: 'R1' }, { name: 'R2' }] as any;
+      const reps = [makeRepresentative({ name: 'R1' }), makeRepresentative({ name: 'R2' })];
       expect(invoiceCreationService.calculateQuantity(rucPassenger, reps)).toBe(2);
     });
 
@@ -264,7 +266,11 @@ describe('invoiceCreationService', () => {
 
     it('calculates RUC quantity correctly', async () => {
       const rucPassenger = { ...passengerData, docType: SunatDocType.RUC };
-      const reps = [{ name: 'R1' }, { name: 'R2' }, { name: 'R3' }] as any;
+      const reps = [
+        makeRepresentative({ name: 'R1' }),
+        makeRepresentative({ name: 'R2' }),
+        makeRepresentative({ name: 'R3' }),
+      ];
 
       const items = await invoiceCreationService.createInvoiceItems(
         rucPassenger,
@@ -287,7 +293,8 @@ describe('invoiceCreationService', () => {
 
   describe('createInvoicePayload', () => {
     it('creates boleta payload correctly', () => {
-      const items = [{ product_id: 1 }] as any;
+      // Item minimo: el test solo verifica que el payload lo propague.
+      const items = [{ product_id: 1 }] as InvoiceItemData[];
       const payload = invoiceCreationService.createInvoicePayload(
         99,
         passengerData,
@@ -311,7 +318,8 @@ describe('invoiceCreationService', () => {
 
     it('creates factura payload for RUC', () => {
       const rucPassenger = { ...passengerData, docType: SunatDocType.RUC };
-      const items = [{ product_id: 1 }] as any;
+      // Item minimo: el test solo verifica que el payload lo propague.
+      const items = [{ product_id: 1 }] as InvoiceItemData[];
       const payload = invoiceCreationService.createInvoicePayload(
         99,
         rucPassenger,
@@ -365,7 +373,7 @@ describe('invoiceCreationService', () => {
     });
 
     it('includes infants when provided', () => {
-      const infants = [{ name: 'Baby', age: 1 }] as any;
+      const infants = [makeInfant({ full_name: 'Baby' })];
       const payload = invoiceCreationService.createInvoicePayload(
         99,
         passengerData,

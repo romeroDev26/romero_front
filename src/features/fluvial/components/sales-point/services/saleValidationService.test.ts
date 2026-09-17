@@ -1,3 +1,4 @@
+import { makeRepresentative, makeSeat } from '../../../../../test/factories';
 import { describe, it, expect } from 'vitest';
 import { saleValidationService } from './saleValidationService';
 import { SunatDocType } from '../../../types/sunat.types';
@@ -12,7 +13,7 @@ describe('saleValidationService', () => {
     email: '',
   };
 
-  const validSeat = { id: 1, seat_number: 'A1', status: 'AVAILABLE' } as any;
+  const validSeat = makeSeat({ id: 1, seat_number: 'A1', status: 'AVAILABLE' });
 
   describe('validateBasicSaleData', () => {
     it('returns valid for complete data', () => {
@@ -76,7 +77,7 @@ describe('saleValidationService', () => {
 
   describe('validateCompanySale', () => {
     it('passes with at least one representative', () => {
-      const result = saleValidationService.validateCompanySale([{ name: 'Rep1' } as any]);
+      const result = saleValidationService.validateCompanySale([makeRepresentative({ name: 'Rep1' })]);
       expect(result.isValid).toBe(true);
     });
 
@@ -166,7 +167,7 @@ describe('saleValidationService', () => {
     it('passes for complete valid company sale', () => {
       const rucPassenger = { ...validPassenger, docType: SunatDocType.RUC };
       const result = saleValidationService.validateCompleteSale(
-        1, 2, rucPassenger, [{ name: 'Rep1' } as any], null, false, { id: 1 }, 'B001', 'F001'
+        1, 2, rucPassenger, [makeRepresentative({ name: 'Rep1' })], null, false, { id: 1 }, 'B001', 'F001'
       );
       expect(result.isValid).toBe(true);
     });

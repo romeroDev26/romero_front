@@ -1,10 +1,12 @@
+import { makeInfant, makeRepresentative, makeSeat } from '../../../../../test/factories';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useSaleForm } from './useSaleForm';
 import { SunatDocType, SunatTaxCategory } from '../../../types/sunat.types';
 import type { AvailableTripByPort } from '../../../../../services/trips.service';
-import type { BranchOffice } from '../../../../../types';
+import type { BranchOffice, SeatMapItem, SeatReservation } from '../../../../../types';
+import type { SeatSelection } from '../../../types/websocket.types';
 
 // ─── Mocks ───
 
@@ -28,11 +30,12 @@ vi.mock('@tanstack/react-query', async () => {
     useQueryClient: () => ({
       invalidateQueries: vi.fn(),
     }),
-    useQuery: vi.fn(({ queryFn, ...options }: any) => {
-      if (options.queryKey?.[0] === 'currentUser') {
+    // Solo se usa queryKey para decidir que devolver; queryFn se descarta.
+    useQuery: vi.fn(({ queryKey }: { queryKey?: unknown[] }) => {
+      if (queryKey?.[0] === 'currentUser') {
         return { data: { id: 'user-123', name: 'Test User' }, isLoading: false };
       }
-      if (options.queryKey?.[0] === 'seatMap') {
+      if (queryKey?.[0] === 'seatMap') {
         return { data: { hasSeats: true }, isLoading: false };
       }
       return { data: null, isLoading: false };
@@ -149,7 +152,7 @@ vi.mock('../../../hooks/useReservations', () => ({
 
 const mockHandleCompanyInvoice = vi.fn().mockResolvedValue(undefined);
 const mockHandleRegularSale = vi.fn().mockResolvedValue(undefined);
-const mockEnrichSeatWithType = vi.fn((seat: any) => seat);
+const mockEnrichSeatWithType = vi.fn((seat: SeatMapItem) => seat);
 const mockProcessReservationForConfirmation = vi.fn().mockReturnValue({
   passengerData: {
     docType: SunatDocType.DNI,
@@ -233,11 +236,11 @@ const baseBranch: BranchOffice = {
 };
 
 const mockWebSocketFunctions = {
-  selectSeatForRepresentative: vi.fn(),
-  releaseSeatForRepresentative: vi.fn(),
-  confirmPurchase: vi.fn(),
-  activeSeatSelections: new Map(),
-  seatMap: [{ id: 5, seat_number: 'B2', status: 'RESERVED' }],
+  selectSeatForRepresentative: vi.fn(() => true),
+  releaseSeatForRepresentative: vi.fn(() => true),
+  confirmPurchase: vi.fn(() => true),
+  activeSeatSelections: new Map<number, SeatSelection>(),
+  seatMap: [makeSeat({ id: 5, seat_number: 'B2', status: 'RESERVED' })],
   isWebSocketConnected: false,
 };
 
@@ -272,14 +275,14 @@ describe('useSaleForm', () => {
         branch: baseBranch,
         onBack: vi.fn(),
         onSaleSuccess: vi.fn(),
-        reservationToConfirm: { id: 99, trip_id: 1 } as any,
+        reservationToConfirm: { id: 99, trip_id: 1 } as SeatReservation,
       }),
       { wrapper: createWrapper() }
     );
 
     // seatMap starts empty; trigger handleWebSocketReady so the effect runs
     act(() => {
-      result.current.handleWebSocketReady(mockWebSocketFunctions as any);
+      result.current.handleWebSocketReady(mockWebSocketFunctions);
     });
 
     expect(result.current.isConfirmingMode).toBe(true);
@@ -323,7 +326,7 @@ describe('useSaleForm', () => {
           phone: '',
           email: '',
         });
-        result.current.setSelectedSeat({ id: 1, seat_number: 'A1', status: 'AVAILABLE' } as any);
+        result.current.setSelectedSeat(makeSeat({ id: 1, seat_number: 'A1', status: 'AVAILABLE' }));
       });
       expect(result.current.areActionsEnabled).toBe(true);
     });
@@ -416,14 +419,9 @@ describe('useSaleForm', () => {
         () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
         { wrapper: createWrapper() }
       );
-      const rep = {
-        document_type: '1',
-        document_number: '11111111',
-        name: 'Rep1',
-        phone: null,
-      };
+      const rep = makeRepresentative({ name: 'Rep1' });
       await act(async () => {
-        await result.current.handleAddRepresentative(rep as any);
+        await result.current.handleAddRepresentative(rep);
       });
       expect(result.current.representatives).toHaveLength(1);
       expect(result.current.representatives[0].name).toBe('Rep1');
@@ -437,8 +435,8 @@ describe('useSaleForm', () => {
       const rep1 = { document_type: '1', document_number: '11111111', name: 'R1', phone: null };
       const rep2 = { document_type: '1', document_number: '22222222', name: 'R2', phone: null };
       await act(async () => {
-        await result.current.handleAddRepresentative(rep1 as any);
-        await result.current.handleAddRepresentative(rep2 as any);
+        await result.current.handleAddRepresentative(rep1);
+        await result.current.handleAddRepresentative(rep2);
       });
       await act(async () => {
         await result.current.handleRemoveRepresentative(0);
@@ -455,8 +453,8 @@ describe('useSaleForm', () => {
         { wrapper: createWrapper() }
       );
       act(() => {
-        result.current.setSelectedSeat({ id: 1, seat_number: 'A1' } as any);
-        result.current.setBoletaInfants([{ full_name: 'Baby', birth_date: '2020-01-01', gender: 'M', relationship: 'SON' }] as any);
+        result.current.setSelectedSeat(makeSeat({ id: 1, seat_number: 'A1' }));
+        result.current.setBoletaInfants([makeInfant({ full_name: 'Baby', birth_date: '2020-01-01' })]);
         result.current.setPassengerData({
           docType: SunatDocType.RUC,
           docNumber: '20123456789',
@@ -484,7 +482,7 @@ describe('useSaleForm', () => {
           phone: '',
           email: '',
         });
-        result.current.setRepresentatives([{ name: 'R1' } as any]);
+        result.current.setRepresentatives([makeRepresentative({ name: 'R1' })]);
       });
       expect(result.current.representatives).toHaveLength(1);
 
@@ -543,7 +541,7 @@ describe('useSaleForm', () => {
           phone: '',
           email: '',
         });
-        result.current.setSelectedSeat({ id: 1, seat_number: 'A1' } as any);
+        result.current.setSelectedSeat(makeSeat({ id: 1, seat_number: 'A1' }));
       });
       act(() => result.current.handleOpenConfirmModal());
       expect(result.current.isConfirmSaleModalOpen).toBe(true);
@@ -565,7 +563,7 @@ describe('useSaleForm', () => {
           phone: '',
           email: '',
         });
-        result.current.setSelectedSeat({ id: 1, seat_number: 'A1' } as any);
+        result.current.setSelectedSeat(makeSeat({ id: 1, seat_number: 'A1' }));
         result.current.setSelectedBoletaSeries('B001');
       });
       await act(async () => {
@@ -615,7 +613,7 @@ describe('useSaleForm', () => {
           phone: '999',
           email: 'a@b.com',
         });
-        result.current.setSelectedSeat({ id: 1 } as any);
+        result.current.setSelectedSeat(makeSeat({ id: 1 }));
         result.current.setExtraCost(50);
       });
       act(() => result.current.clearFormAfterSale());
@@ -630,7 +628,7 @@ describe('useSaleForm', () => {
         { wrapper: createWrapper() }
       );
       act(() => {
-        result.current.setRepresentatives([{ name: 'R1' } as any]);
+        result.current.setRepresentatives([makeRepresentative({ name: 'R1' })]);
         result.current.setShowAddForm(true);
         result.current.setReservationModalOpen(true);
         result.current.setSelectedBoletaSeries('B001');

@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+/**
+ * import.meta.env es de solo lectura en los tipos de Vite. El test necesita
+ * mutarlo para probar distintas configuraciones, asi que se declara una vista
+ * mutable en lugar de repetir `as any` en cada acceso.
+ */
+const mutableEnv = import.meta.env as unknown as Record<string, string>;
+
 describe('env.ts', () => {
-  let originalEnv: any;
+  let originalEnv: Record<string, string>;
 
   beforeEach(() => {
     originalEnv = { ...import.meta.env };
@@ -10,10 +17,10 @@ describe('env.ts', () => {
   afterEach(() => {
     // Restore original env
     Object.keys(import.meta.env).forEach((key) => {
-      delete (import.meta.env as any)[key];
+      delete mutableEnv[key];
     });
     Object.keys(originalEnv).forEach((key) => {
-      (import.meta.env as any)[key] = originalEnv[key];
+      mutableEnv[key] = originalEnv[key];
     });
     vi.resetModules();
   });
@@ -25,13 +32,13 @@ describe('env.ts', () => {
 
   describe('getApiUrl', () => {
     it('returns VITE_API_URL when defined', async () => {
-      (import.meta.env as any).VITE_API_URL = 'https://api.example.com';
+      mutableEnv.VITE_API_URL = 'https://api.example.com';
       const { getApiUrl } = await importFresh();
       expect(getApiUrl()).toBe('https://api.example.com');
     });
 
     it('throws when VITE_API_URL is missing on module import', async () => {
-      delete (import.meta.env as any).VITE_API_URL;
+      delete mutableEnv.VITE_API_URL;
       // ENV object calls getApiUrl() at module load time, so import itself throws
       await expect(import('./env')).rejects.toThrow('VITE_API_URL no está definida');
     });
@@ -62,7 +69,7 @@ describe('env.ts', () => {
 
   describe('getWebSocketUrl', () => {
     it('derives WebSocket URL from VITE_API_URL', async () => {
-      (import.meta.env as any).VITE_API_URL = 'https://api.romero.com';
+      mutableEnv.VITE_API_URL = 'https://api.romero.com';
       const { getWebSocketUrl } = await importFresh();
       expect(getWebSocketUrl()).toBe('wss://api.romero.com');
     });

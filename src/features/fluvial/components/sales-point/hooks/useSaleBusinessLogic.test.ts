@@ -1,6 +1,9 @@
+import { makeRepresentative, makeSeat } from '../../../../../test/factories';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useSaleBusinessLogic } from './useSaleBusinessLogic';
+import type { UseSaleBusinessLogicProps } from './useSaleBusinessLogic';
+import type { SeatMapItem } from '../../../../../types';
 import { SunatDocType } from '../../../types/sunat.types';
 
 // ─── Mocks ───
@@ -41,7 +44,7 @@ describe('useSaleBusinessLogic', () => {
     created_at: '2026-01-01T00:00:00Z',
   };
 
-  const createMocks = () => ({
+  const createMocks = (): UseSaleBusinessLogicProps => ({
     findOrCreateClient: vi.fn().mockResolvedValue({ id: 100, name: 'Cliente' }),
     createInvoice: vi.fn().mockResolvedValue({
       id: 500,
@@ -93,28 +96,28 @@ describe('useSaleBusinessLogic', () => {
     email: 'juan@test.com',
   };
 
-  const baseSeat = {
+  const baseSeat = makeSeat({
     id: 55,
-    seat_number: 'A1',
-    status: 'AVAILABLE',
     vessel_seat_config_id: 10,
     seat_type: vipSeatType,
-  } as any;
+  });
 
   describe('enrichSeatWithType', () => {
     it('enriches seat with type from vessel config', () => {
       const mocks = createMocks();
       const { result } = renderHook(() => useSaleBusinessLogic(mocks));
+      // seat_type ausente a proposito: es justo lo que enrichSeatWithType debe
+      // completar a partir de la configuracion de la embarcacion.
       const enriched = result.current.enrichSeatWithType({
         ...baseSeat,
-        seat_type: undefined,
+        seat_type: undefined as unknown as SeatMapItem['seat_type'],
       });
       expect(enriched.seat_type).toEqual(vipSeatType);
     });
 
     it('returns seat unchanged if no vessel config', () => {
       const mocks = createMocks();
-      (mocks as any).vesselDetails = null;
+      mocks.vesselDetails = null;
       const { result } = renderHook(() => useSaleBusinessLogic(mocks));
       const enriched = result.current.enrichSeatWithType(baseSeat);
       expect(enriched).toEqual(baseSeat);
@@ -140,7 +143,8 @@ describe('useSaleBusinessLogic', () => {
       const { result } = renderHook(() => useSaleBusinessLogic(mocks));
 
       await result.current.handleCompanyInvoiceWithRepresentatives(
-        1, null as any, 2, { ...passengerData, name: '' }, [{ name: 'Rep' } as any], 'Sucursal', vi.fn()
+        // null a proposito: se verifica el rechazo cuando falta la parada
+        1, null as unknown as number, 2, { ...passengerData, name: '' }, [makeRepresentative({ name: 'Rep' })], 'Sucursal', vi.fn()
       );
 
       expect(mockToastError).toHaveBeenCalledWith(expect.stringContaining('Ingrese nombre'));
@@ -175,7 +179,7 @@ describe('useSaleBusinessLogic', () => {
 
     it('releases seats on 409 error', async () => {
       const mocks = createMocks();
-      mocks.createCompanyInvoiceWithRepresentatives.mockRejectedValue({
+      vi.mocked(mocks.createCompanyInvoiceWithRepresentatives).mockRejectedValue({
         response: { status: 409, data: { detail: 'Asiento ocupado' } },
       });
 
@@ -203,7 +207,8 @@ describe('useSaleBusinessLogic', () => {
       const { result } = renderHook(() => useSaleBusinessLogic(mocks));
 
       await result.current.handleRegularSale(
-        1, null as any, 2, baseSeat, passengerData, [], true,
+        // null a proposito: se verifica el rechazo cuando falta la parada
+        1, null as unknown as number, 2, baseSeat, passengerData, [], true,
         '', 'Sucursal', 100, 1, 0, '', 0, false, false, null, vi.fn()
       );
 
@@ -212,7 +217,7 @@ describe('useSaleBusinessLogic', () => {
 
     it('blocks sale when seat is not available', async () => {
       const mocks = createMocks();
-      mocks.seatValidationService.validateSeatAvailability.mockResolvedValue({
+      vi.mocked(mocks.seatValidationService.validateSeatAvailability).mockResolvedValue({
         isAvailable: false,
         reason: 'Asiento ya vendido',
       });
@@ -269,7 +274,7 @@ describe('useSaleBusinessLogic', () => {
 
     it('releases seat on 409 error', async () => {
       const mocks = createMocks();
-      mocks.createInvoice.mockRejectedValue({
+      vi.mocked(mocks.createInvoice).mockRejectedValue({
         response: { status: 409, data: { detail: 'Conflicto' } },
       });
 
@@ -293,7 +298,7 @@ describe('useSaleBusinessLogic', () => {
 
     it('releases seat on generic error', async () => {
       const mocks = createMocks();
-      mocks.createInvoice.mockRejectedValue(new Error('Network'));
+      vi.mocked(mocks.createInvoice).mockRejectedValue(new Error('Network'));
 
       const { result } = renderHook(() => useSaleBusinessLogic(mocks));
 

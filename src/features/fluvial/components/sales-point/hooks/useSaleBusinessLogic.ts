@@ -36,7 +36,7 @@ type SeatAssignmentMutation = ReturnType<typeof useCreateSeatAssignment>;
 type ReservationMutation = ReturnType<typeof useUpdateReservation>;
 type RepresentantesHook = ReturnType<typeof useRepresentantes>;
 
-interface UseSaleBusinessLogicProps {
+export interface UseSaleBusinessLogicProps {
   // Dependencias de hooks externos
   findOrCreateClient: ClientManager['findOrCreateClient'];
   createInvoice: InvoiceMutation['mutateAsync'];

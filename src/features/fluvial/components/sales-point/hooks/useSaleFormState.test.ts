@@ -1,3 +1,4 @@
+import { makeRepresentative } from '../../../../../test/factories';
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSaleFormState } from './useSaleFormState';
@@ -26,7 +27,7 @@ describe('useSaleFormState', () => {
 
   it('addRepresentative appends to list', () => {
     const { result } = renderHook(() => useSaleFormState());
-    const rep = { name: 'Rep1', document_type: '1', document_number: '11111111' } as any;
+    const rep = makeRepresentative({ name: 'Rep1', document_type: '1', document_number: '11111111' });
     act(() => result.current.addRepresentative(rep));
     expect(result.current.state.representatives).toHaveLength(1);
     expect(result.current.state.representatives[0].name).toBe('Rep1');
@@ -35,8 +36,8 @@ describe('useSaleFormState', () => {
 
   it('removeRepresentative filters by index', () => {
     const { result } = renderHook(() => useSaleFormState());
-    const rep1 = { name: 'R1' } as any;
-    const rep2 = { name: 'R2' } as any;
+    const rep1 = makeRepresentative({ name: 'R1' });
+    const rep2 = makeRepresentative({ name: 'R2' });
     act(() => {
       result.current.addRepresentative(rep1);
       result.current.addRepresentative(rep2);

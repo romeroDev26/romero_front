@@ -1,3 +1,4 @@
+import { makeSeatType } from '../../../../test/factories';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SeatRealtime } from './SeatRealtime';
@@ -15,7 +16,7 @@ describe('SeatRealtime', () => {
     seat_number: 'A1',
     status: 'AVAILABLE' as SeatStatus,
     notes: '',
-    seat_type: { id: 1, name: 'VIP', code: 'VIP', price_multiplier: 1 } as any,
+    seat_type: makeSeatType(),
   };
 
   const mockOnClick = vi.fn();

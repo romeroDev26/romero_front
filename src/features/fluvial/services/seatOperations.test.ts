@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { SeatOperations } from './seatOperations';
+import { SeatOperations, type OutgoingWebSocketMessage } from './seatOperations';
 
 describe('SeatOperations', () => {
-  const sendMessage = vi.fn((_msg?: any) => true);
+  // SeatOperations siempre envia un mensaje, asi que el parametro no es opcional.
+  const sendMessage = vi.fn((_msg: OutgoingWebSocketMessage) => true);
   const userId = 'user-123';
   const userName = 'Test User';
   const tripId = 42;
@@ -17,7 +18,7 @@ describe('SeatOperations', () => {
     vi.restoreAllMocks();
   });
 
-  const getLastCall = () => (sendMessage.mock.calls as any[][])[sendMessage.mock.calls.length - 1][0];
+  const getLastCall = () => sendMessage.mock.calls[sendMessage.mock.calls.length - 1][0];
 
   describe('basic operations', () => {
     it('selectSeat sends SEAT_SELECTION with all required fields', () => {
@@ -139,7 +140,7 @@ describe('SeatOperations', () => {
       ops.confirmPurchase([30, 31, 32]);
 
       expect(sendMessage).toHaveBeenCalledTimes(3);
-      const calls = (sendMessage.mock.calls as any[][]).map(c => c[0]);
+      const calls = sendMessage.mock.calls.map((c) => c[0]);
       expect(calls[0]).toMatchObject({ type: 'SEAT_UPDATE', seatId: 30, status: 'SOLD' });
       expect(calls[1]).toMatchObject({ type: 'SEAT_UPDATE', seatId: 31, status: 'SOLD' });
       expect(calls[2]).toMatchObject({ type: 'SEAT_UPDATE', seatId: 32, status: 'SOLD' });

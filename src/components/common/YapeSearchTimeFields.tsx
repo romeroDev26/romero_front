@@ -1,5 +1,14 @@
 import React from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { es } from 'date-fns/locale';
+import { format, parse } from 'date-fns';
 import { todayInLima } from '../../utils/yapeSearchTime';
+
+const DATE_FORMAT = 'yyyy-MM-dd';
+
+const toDate = (value: string): Date | null =>
+  value ? parse(value, DATE_FORMAT, new Date()) : null;
 
 interface YapeSearchTimeFieldsProps {
   date: string;
@@ -22,8 +31,8 @@ export const YapeSearchTimeFields: React.FC<YapeSearchTimeFieldsProps> = ({
     ? 'block text-[11px] font-medium uppercase tracking-wider text-dm-text-muted mb-1 ml-0.5'
     : 'block text-xs font-medium text-dm-text-secondary mb-1';
   const inputClass = compact
-    ? 'w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm text-dm-text-primary disabled:bg-dm-bg-secondary'
-    : 'w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm text-dm-text-primary';
+    ? 'w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm text-dm-text-primary disabled:bg-dm-bg-secondary dark:[color-scheme:dark]'
+    : 'w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary disabled:bg-dm-bg-secondary text-sm text-dm-text-primary dark:[color-scheme:dark]';
   const helpClass = compact ? 'text-[10px] text-dm-text-muted mt-1' : 'text-xs text-dm-text-muted mt-1';
 
   return (
@@ -35,13 +44,22 @@ export const YapeSearchTimeFields: React.FC<YapeSearchTimeFieldsProps> = ({
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className={labelClass}>Fecha del pago (opc.)</label>
-          <input
-            type="date"
-            value={date}
-            max={todayInLima()}
-            onChange={(e) => onDateChange(e.target.value)}
+          {/* Popper fixed, no portal: dentro del Dialog de Headless UI un portal cuenta como clic afuera y cierra el modal */}
+          <DatePicker
+            selected={toDate(date)}
+            onChange={(d: Date | null) => onDateChange(d ? format(d, DATE_FORMAT) : '')}
+            maxDate={toDate(todayInLima()) ?? undefined}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="Hoy"
+            locale={es}
+            isClearable={!disabled && Boolean(date)}
             disabled={disabled}
             className={inputClass}
+            wrapperClassName="w-full"
+            calendarClassName="custom-datepicker text-sm"
+            popperClassName="custom-datepicker-popper z-[60]"
+            popperProps={{ strategy: 'fixed' }}
+            popperPlacement="bottom-start"
           />
         </div>
         <div>

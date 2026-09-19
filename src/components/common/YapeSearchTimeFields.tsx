@@ -38,8 +38,9 @@ export const YapeSearchTimeFields: React.FC<YapeSearchTimeFieldsProps> = ({
   return (
     <div className="mt-2 space-y-2">
       <p className={helpClass}>
-        Sin fecha ni hora buscamos en <strong>todo el día de hoy</strong>. Si quieres precisión (o fue
-        otro día), indica la <strong>hora de la foto</strong> (±3 min) y la fecha si no es hoy.
+        Sin hora solo <strong>auto-coincide por nombre</strong> en pagos de hoy. Si el nombre no
+        coincide, indica la <strong>hora de la foto</strong> (1 min antes, 10 min después) y la fecha
+        si no es hoy para ver candidatos del mismo monto.
       </p>
       <div className="grid grid-cols-2 gap-2">
         <div>

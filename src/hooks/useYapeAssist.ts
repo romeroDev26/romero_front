@@ -6,6 +6,7 @@ import {
   yapePaymentService,
 } from '../services/yapePayment.service';
 import { requiresOperationCode } from '../utils/splitPaymentValidation';
+import { buildHoraVentaISO } from '../utils/yapeSearchTime';
 
 /** Espera inicial: el aviso del celular suele tardar ~3 s. Luego el WebSocket actualiza en vivo. */
 const DIGITAL_WAIT_MS = 3200;
@@ -43,6 +44,8 @@ export function useYapeAssist(params: {
   totalAmount: number;
   operationCode1: string;
   operationCode2: string;
+  paymentReferenceDate?: string;
+  paymentReferenceTime?: string;
 }) {
   const {
     enabled,
@@ -55,6 +58,8 @@ export function useYapeAssist(params: {
     totalAmount,
     operationCode1,
     operationCode2,
+    paymentReferenceDate = '',
+    paymentReferenceTime = '',
   } = params;
 
   const [assist, setAssist] = useState<ValidarYapeAsistidoResponse | null>(null);
@@ -74,6 +79,8 @@ export function useYapeAssist(params: {
   });
 
   const hasDigital = enabled && montoDigital > 0;
+  const horaVenta = buildHoraVentaISO(paymentReferenceDate, paymentReferenceTime);
+  const usesReferenceTime = Boolean(horaVenta);
 
   const consultar = useCallback(async () => {
     if (!hasDigital) {
@@ -86,6 +93,7 @@ export function useYapeAssist(params: {
       const data = await yapePaymentService.validarAsistido({
         monto_yape: montoDigital,
         nombre_cliente: customerName.trim() || 'CLIENTE',
+        hora_venta: horaVenta,
         codigo_operacion: codigo || undefined,
       });
       setAssist(data);
@@ -103,7 +111,7 @@ export function useYapeAssist(params: {
     } finally {
       setLoading(false);
     }
-  }, [hasDigital, montoDigital, customerName, operationCode1, operationCode2]);
+  }, [hasDigital, montoDigital, customerName, operationCode1, operationCode2, horaVenta]);
 
   useEffect(() => {
     if (!hasDigital) {
@@ -112,13 +120,14 @@ export function useYapeAssist(params: {
       return;
     }
     if (timerRef.current) clearTimeout(timerRef.current);
+    const delay = usesReferenceTime ? 400 : DIGITAL_WAIT_MS;
     timerRef.current = setTimeout(() => {
       void consultar();
-    }, DIGITAL_WAIT_MS);
+    }, delay);
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [hasDigital, montoDigital, customerName, consultar]);
+  }, [hasDigital, montoDigital, customerName, consultar, usesReferenceTime, horaVenta]);
 
   useEffect(() => {
     const code = (operationCode1 || operationCode2 || '').trim();
@@ -167,6 +176,8 @@ export function useYapeAssist(params: {
   return {
     hasDigital,
     montoDigital,
+    horaVenta,
+    usesReferenceTime,
     assist,
     codigoInfo,
     loading,

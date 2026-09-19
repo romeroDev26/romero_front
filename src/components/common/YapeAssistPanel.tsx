@@ -20,6 +20,8 @@ interface YapeAssistPanelProps {
   montoDigital: number;
   customerName?: string;
   referenceTimeLabel?: string | null;
+  /** 'sale' = venta POS; 'collection' = cobranza encomienda */
+  context?: 'sale' | 'collection';
   assist: ValidarYapeAsistidoResponse | null;
   codigoInfo: ValidarCodigoOperacionResponse | null;
   selectedPagoId: string | null;
@@ -32,6 +34,7 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
   montoDigital,
   customerName,
   referenceTimeLabel,
+  context = 'sale',
   assist,
   codigoInfo,
   selectedPagoId,
@@ -63,7 +66,7 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
           )}
           <div>
             <p className="text-xs font-semibold text-dm-text-primary">
-              Verificación Yape / Plin (no bloquea la venta)
+              Verificación Yape / Plin (no bloquea {context === 'collection' ? 'el cobro' : 'la venta'})
             </p>
             <p className="mt-0.5 text-[11px] text-dm-text-secondary">
               Buscamos S/ {montoDigital.toFixed(2)}

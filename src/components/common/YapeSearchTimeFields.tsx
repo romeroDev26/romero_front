@@ -38,8 +38,8 @@ export const YapeSearchTimeFields: React.FC<YapeSearchTimeFieldsProps> = ({
   return (
     <div className="mt-2 space-y-2">
       <p className={helpClass}>
-        Si el pago no es de ahora, indica la <strong>hora de la foto del Yape/Plin</strong>. Buscamos
-        ±3 min alrededor de esa hora. Para pagos de ayer u otro día, elige la fecha.
+        Sin fecha ni hora buscamos en <strong>todo el día de hoy</strong>. Si quieres precisión (o fue
+        otro día), indica la <strong>hora de la foto</strong> (±3 min) y la fecha si no es hoy.
       </p>
       <div className="grid grid-cols-2 gap-2">
         <div>

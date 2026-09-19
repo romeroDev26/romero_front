@@ -73,7 +73,7 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
               {customerName?.trim() ? ` · cliente: ${customerName.trim()}` : ''}
               {referenceTimeLabel
                 ? ` · alrededor de ${referenceTimeLabel} (±3 min)`
-                : ' · ventana de los últimos 3 min'}.
+                : ' · pagos de hoy con ese monto'}.
               Si lo pagó un familiar, compara el nombre y la hora con la foto.
             </p>
             {assist?.mensaje && (

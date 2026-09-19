@@ -8,7 +8,9 @@ import {
   requiresOperationCode as checkRequiresOperationCode 
 } from '../../utils/splitPaymentValidation';
 import { YapeAssistPanel } from './YapeAssistPanel';
+import { YapeSearchTimeFields } from './YapeSearchTimeFields';
 import { useYapeAssist } from '../../hooks/useYapeAssist';
+import { formatHoraVentaLabel } from '../../utils/yapeSearchTime';
 
 /**
  * Opciones estandar de metodos de pago
@@ -99,6 +101,8 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
   const [operationCode2, setOperationCode2] = useState(initialData?.operationCode2 ?? '');
   const [amount2, setAmount2] = useState<number>(initialData?.amount2 ?? 0);
   const [amount2Display, setAmount2Display] = useState<string>(String(initialData?.amount2 ?? 0));
+  const [pagoReferenciaFecha, setPagoReferenciaFecha] = useState('');
+  const [pagoReferenciaHora, setPagoReferenciaHora] = useState('');
 
   // Calcular diferencia entre total y suma de pagos
   const totalPaid = amount1 + amount2;
@@ -132,7 +136,11 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
     totalAmount,
     operationCode1,
     operationCode2,
+    paymentReferenceDate: pagoReferenciaFecha,
+    paymentReferenceTime: pagoReferenciaHora,
   });
+
+  const referenceTimeLabel = formatHoraVentaLabel(pagoReferenciaFecha, pagoReferenciaHora);
 
   // Notificar estado de validacion al padre
   useEffect(() => {
@@ -360,10 +368,21 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
               </div>
             )}
             {yapeAssist.hasDigital && (
+              <YapeSearchTimeFields
+                date={pagoReferenciaFecha}
+                time={pagoReferenciaHora}
+                onDateChange={setPagoReferenciaFecha}
+                onTimeChange={setPagoReferenciaHora}
+                disabled={disabled}
+                compact={isBilling}
+              />
+            )}
+            {yapeAssist.hasDigital && (
               <YapeAssistPanel
                 loading={yapeAssist.loading}
                 montoDigital={yapeAssist.montoDigital}
                 customerName={customerName}
+                referenceTimeLabel={referenceTimeLabel}
                 assist={yapeAssist.assist}
                 codigoInfo={yapeAssist.codigoInfo}
                 selectedPagoId={yapeAssist.selectedPagoId}
@@ -651,10 +670,22 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
       )}
 
       {isSplitPayment && yapeAssist.hasDigital && (
+        <YapeSearchTimeFields
+          date={pagoReferenciaFecha}
+          time={pagoReferenciaHora}
+          onDateChange={setPagoReferenciaFecha}
+          onTimeChange={setPagoReferenciaHora}
+          disabled={disabled}
+          compact={isBilling}
+        />
+      )}
+
+      {isSplitPayment && yapeAssist.hasDigital && (
         <YapeAssistPanel
           loading={yapeAssist.loading}
           montoDigital={yapeAssist.montoDigital}
           customerName={customerName}
+          referenceTimeLabel={referenceTimeLabel}
           assist={yapeAssist.assist}
           codigoInfo={yapeAssist.codigoInfo}
           selectedPagoId={yapeAssist.selectedPagoId}

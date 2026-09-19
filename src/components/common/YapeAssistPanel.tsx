@@ -19,6 +19,7 @@ interface YapeAssistPanelProps {
   loading: boolean;
   montoDigital: number;
   customerName?: string;
+  referenceTimeLabel?: string | null;
   assist: ValidarYapeAsistidoResponse | null;
   codigoInfo: ValidarCodigoOperacionResponse | null;
   selectedPagoId: string | null;
@@ -30,6 +31,7 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
   loading,
   montoDigital,
   customerName,
+  referenceTimeLabel,
   assist,
   codigoInfo,
   selectedPagoId,
@@ -65,7 +67,10 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
             </p>
             <p className="mt-0.5 text-[11px] text-dm-text-secondary">
               Buscamos S/ {montoDigital.toFixed(2)}
-              {customerName?.trim() ? ` · cliente: ${customerName.trim()}` : ''}.
+              {customerName?.trim() ? ` · cliente: ${customerName.trim()}` : ''}
+              {referenceTimeLabel
+                ? ` · alrededor de ${referenceTimeLabel} (±3 min)`
+                : ' · ventana de los últimos 3 min'}.
               Si lo pagó un familiar, compara el nombre y la hora con la foto.
             </p>
             {assist?.mensaje && (

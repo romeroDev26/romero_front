@@ -72,8 +72,8 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
               Buscamos S/ {montoDigital.toFixed(2)}
               {customerName?.trim() ? ` · cliente: ${customerName.trim()}` : ''}
               {referenceTimeLabel
-                ? ` · alrededor de ${referenceTimeLabel} (±3 min)`
-                : ' · pagos de hoy con ese monto'}.
+                ? ` · cerca de ${referenceTimeLabel} (1 min antes, 10 min después)`
+                : ' · hoy solo auto-coincide por nombre; sin hora no listamos otros montos'}.
               Si lo pagó un familiar, compara el nombre y la hora con la foto.
             </p>
             {assist?.mensaje && (
@@ -105,7 +105,7 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
       )}
 
       {pagos.length > 0 && (
-        <ul className="mt-2 space-y-1.5">
+        <ul className="mt-2 max-h-44 space-y-1.5 overflow-y-auto pr-1">
           {pagos.map((pago) => {
             const selected = selectedPagoId === pago.id;
             return (

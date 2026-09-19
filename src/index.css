@@ -403,6 +403,21 @@
   border-color: var(--dp-accent);
 }
 
+/* Variante flotante: el calendario cuelga de un campo en vez de ir inline
+   dentro de un panel, así que necesita su propio fondo (el tema base lo
+   deja transparent !important). Usar con popperClassName="custom-datepicker-popper". */
+.custom-datepicker-popper .custom-datepicker {
+  background: var(--bg-primary) !important;
+  border: 1px solid var(--dp-border) !important;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.15), 0 4px 10px -4px rgb(0 0 0 / 0.1);
+  padding: 0.5rem 0.25rem 0.25rem;
+}
+
+.custom-datepicker-popper .react-datepicker__triangle {
+  display: none;
+}
+
 /* ================================================
    Layout horizontal para múltiples meses
    ================================================ */

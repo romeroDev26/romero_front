@@ -269,6 +269,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
               disabled={isLoading}
               totalAmount={totalAmount}
               currencySymbol="S/"
+              customerName={receivableItem.recipient_name || receivableItem.sender_name}
             />
           </div>
 

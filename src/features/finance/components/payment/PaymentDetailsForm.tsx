@@ -3,6 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { SplitIcon } from 'lucide-react';
+import { YapeAssistPanel } from '../../../../components/common/YapeAssistPanel';
+import { YapeSearchTimeFields } from '../../../../components/common/YapeSearchTimeFields';
+import { useYapeAssist } from '../../../../hooks/useYapeAssist';
+import { formatHoraVentaLabel } from '../../../../utils/yapeSearchTime';
 import { PAYMENT_METHOD_OPTIONS, PaymentFormData } from '../../types/payment.types';
 
 interface PaymentDetailsFormProps {
@@ -10,6 +14,7 @@ interface PaymentDetailsFormProps {
   disabled?: boolean;
   totalAmount?: number; // Monto total para validar pago dividido
   currencySymbol?: string;
+  customerName?: string;
 }
 
 /**
@@ -20,7 +25,8 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
   onDataChange,
   disabled = false,
   totalAmount = 0,
-  currencySymbol = 'S/'
+  currencySymbol = 'S/',
+  customerName = '',
 }) => {
   // Estado para activar/desactivar pago dividido
   const [isSplitPayment, setIsSplitPayment] = useState(false);
@@ -40,6 +46,25 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
   // Fecha fija del sistema
   const paymentDate = format(new Date(), "yyyy-MM-dd");
   const [notes, setNotes] = useState("");
+  const [pagoReferenciaFecha, setPagoReferenciaFecha] = useState('');
+  const [pagoReferenciaHora, setPagoReferenciaHora] = useState('');
+
+  const yapeAssist = useYapeAssist({
+    enabled: !disabled && totalAmount > 0,
+    customerName,
+    isSplitPayment,
+    paymentMethod1: paymentMethod,
+    paymentMethod2,
+    amount1,
+    amount2,
+    totalAmount,
+    operationCode1: operationCode,
+    operationCode2,
+    paymentReferenceDate: pagoReferenciaFecha,
+    paymentReferenceTime: pagoReferenciaHora,
+  });
+
+  const referenceTimeLabel = formatHoraVentaLabel(pagoReferenciaFecha, pagoReferenciaHora);
 
   // Monto minimo que debe tener cada parte del pago dividido
   const MIN_SPLIT_AMOUNT = 1;
@@ -304,6 +329,30 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
         )}
       </div>
 
+      {!isSplitPayment && yapeAssist.hasDigital && (
+        <>
+          <YapeSearchTimeFields
+            date={pagoReferenciaFecha}
+            time={pagoReferenciaHora}
+            onDateChange={setPagoReferenciaFecha}
+            onTimeChange={setPagoReferenciaHora}
+            disabled={disabled}
+          />
+          <YapeAssistPanel
+            loading={yapeAssist.loading}
+            montoDigital={yapeAssist.montoDigital}
+            customerName={customerName}
+            referenceTimeLabel={referenceTimeLabel}
+            assist={yapeAssist.assist}
+            codigoInfo={yapeAssist.codigoInfo}
+            selectedPagoId={yapeAssist.selectedPagoId}
+            onRefresh={yapeAssist.consultar}
+            onSelectPago={yapeAssist.elegirPago}
+            context="collection"
+          />
+        </>
+      )}
+
       {/* Pago 2 (Secundario) - Solo visible en pago dividido */}
       {isSplitPayment && (
         <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800/50">
@@ -382,6 +431,30 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
             </div>
           )}
         </div>
+      )}
+
+      {isSplitPayment && yapeAssist.hasDigital && (
+        <>
+          <YapeSearchTimeFields
+            date={pagoReferenciaFecha}
+            time={pagoReferenciaHora}
+            onDateChange={setPagoReferenciaFecha}
+            onTimeChange={setPagoReferenciaHora}
+            disabled={disabled}
+          />
+          <YapeAssistPanel
+            loading={yapeAssist.loading}
+            montoDigital={yapeAssist.montoDigital}
+            customerName={customerName}
+            referenceTimeLabel={referenceTimeLabel}
+            assist={yapeAssist.assist}
+            codigoInfo={yapeAssist.codigoInfo}
+            selectedPagoId={yapeAssist.selectedPagoId}
+            onRefresh={yapeAssist.consultar}
+            onSelectPago={yapeAssist.elegirPago}
+            context="collection"
+          />
+        </>
       )}
 
       {/* Resumen de totales (solo en pago dividido) */}

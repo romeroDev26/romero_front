@@ -1,5 +1,13 @@
 import React from 'react';
+import DatePicker from 'react-datepicker';
+import { es } from 'date-fns/locale';
+import { format, parse } from 'date-fns';
 import { todayInLima } from '../../utils/yapeSearchTime';
+
+const DATE_FORMAT = 'yyyy-MM-dd';
+
+const toDate = (value: string): Date | null =>
+  value ? parse(value, DATE_FORMAT, new Date()) : null;
 
 interface YapeSearchTimeFieldsProps {
   date: string;
@@ -35,13 +43,22 @@ export const YapeSearchTimeFields: React.FC<YapeSearchTimeFieldsProps> = ({
       <div className="grid grid-cols-2 gap-2">
         <div>
           <label className={labelClass}>Fecha del pago (opc.)</label>
-          <input
-            type="date"
-            value={date}
-            max={todayInLima()}
-            onChange={(e) => onDateChange(e.target.value)}
+          {/* Popper fixed, no portal: dentro del Dialog de Headless UI un portal cuenta como clic afuera y cierra el modal */}
+          <DatePicker
+            selected={toDate(date)}
+            onChange={(d: Date | null) => onDateChange(d ? format(d, DATE_FORMAT) : '')}
+            maxDate={toDate(todayInLima()) ?? undefined}
+            dateFormat="dd/MM/yyyy"
+            placeholderText="Hoy"
+            locale={es}
+            isClearable={!disabled && Boolean(date)}
             disabled={disabled}
             className={inputClass}
+            wrapperClassName="w-full"
+            calendarClassName="custom-datepicker text-sm"
+            popperClassName="z-[60]"
+            popperProps={{ strategy: 'fixed' }}
+            popperPlacement="bottom-start"
           />
         </div>
         <div>

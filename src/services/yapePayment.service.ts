@@ -12,6 +12,7 @@ export interface PagoYape {
   monto: number;
   nombre_emisor: string;
   codigo_operacion?: string | null;
+  codigo_seguridad?: string | null;
   fecha_hora: string;
   canal: string;
   estado: string;

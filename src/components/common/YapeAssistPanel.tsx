@@ -84,6 +84,7 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
                 Pago encontrado: {assist.pago.canal} S/ {Number(assist.pago.monto).toFixed(2)} ·{' '}
                 {assist.pago.nombre_emisor} · {formatPagoTime(assist.pago.fecha_hora)}
                 {assist.pago.codigo_operacion ? ` · op. ${assist.pago.codigo_operacion}` : ''}
+                {assist.pago.codigo_seguridad ? ` · seg. ${assist.pago.codigo_seguridad}` : ''}
               </p>
             )}
           </div>
@@ -128,6 +129,7 @@ export const YapeAssistPanel: React.FC<YapeAssistPanelProps> = ({
                   <div className="mt-0.5 text-dm-text-muted">
                     {formatPagoTime(pago.fecha_hora)}
                     {pago.codigo_operacion ? ` · op. ${pago.codigo_operacion}` : ''}
+                    {pago.codigo_seguridad ? ` · seg. ${pago.codigo_seguridad}` : ''}
                   </div>
                 </button>
               </li>

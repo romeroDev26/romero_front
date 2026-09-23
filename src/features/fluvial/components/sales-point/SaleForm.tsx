@@ -222,6 +222,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                   passengerData={passengerData}
                   setPassengerData={setPassengerData}
                   disabled={isConfirmingMode || isProcessingSale}
+                  tripId={trip.id}
                 />
 
                 {!isRuc && passengerData.name.trim() && (

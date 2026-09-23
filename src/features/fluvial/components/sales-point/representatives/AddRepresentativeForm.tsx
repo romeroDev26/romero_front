@@ -9,6 +9,8 @@ import api from '../../../../../config/api';
 import { REPRESENTATIVE_ITEM_DESCRIPTION_MAX_CHARS } from '../core/types';
 import { asApiError } from '../../../../../utils/errorHandler';
 import type { SeatMapItem } from '../../../../../types';
+import { DuplicatePassengerWarning } from '../../../../../components/common/DuplicatePassengerWarning';
+import { useTripPassengerTicketCheck } from '../../../../../hooks/useTripPassengerTicketCheck';
 
 interface Representative {
   document_type: string;
@@ -84,6 +86,13 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     : [];
 
   const hasSeats = Array.isArray(seatMap) && seatMap.length > 0;
+
+  const { loading: checkingDuplicateTicket, matches: duplicateTicketMatches } =
+    useTripPassengerTicketCheck({
+      tripId,
+      docType: formData.document_type,
+      docNumber: formData.document_number,
+    });
 
   // Función para consultar DNI
   const handleDniQuery = async (dni: string) => {
@@ -285,6 +294,10 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
                 Al ingresar 8 dígitos se consultará automáticamente
               </div>
             )}
+            <DuplicatePassengerWarning
+              loading={checkingDuplicateTicket}
+              matches={duplicateTicketMatches}
+            />
           </div>
         </div>
 

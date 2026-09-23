@@ -8,6 +8,8 @@ import { Spinner } from '../../../../components/common/Spinner';
 import { ClientSearchAutocomplete } from '../../../../components/common/ClientSearchAutocomplete';
 import CountrySelector from './CountrySelector';
 import { Client } from '../../../../types';
+import { DuplicatePassengerWarning } from '../../../../components/common/DuplicatePassengerWarning';
+import { useTripPassengerTicketCheck } from '../../../../hooks/useTripPassengerTicketCheck';
 
 // Tipamos las props que recibirá este componente
 interface PassengerData {
@@ -25,9 +27,15 @@ interface PassengerDataFormProps {
   passengerData: PassengerData;
   setPassengerData: React.Dispatch<React.SetStateAction<PassengerData>>;
   disabled?: boolean;
+  tripId?: number;
 }
 
-export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerData, setPassengerData, disabled = false }) => {
+export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({
+  passengerData,
+  setPassengerData,
+  disabled = false,
+  tripId,
+}) => {
   const { queryDni, isQueryingDni, queryRuc, isQueryingRuc } = useSunatData();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -90,6 +98,14 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
   };
 
   const isSearchable = passengerData.docType === SunatDocType.DNI || passengerData.docType === SunatDocType.RUC;
+
+  const { loading: checkingDuplicateTicket, matches: duplicateTicketMatches } =
+    useTripPassengerTicketCheck({
+      tripId,
+      docType: passengerData.docType,
+      docNumber: passengerData.docNumber,
+      enabled: Boolean(tripId) && passengerData.docType !== SunatDocType.RUC,
+    });
 
   const handleClientSelect = (client: Client) => {
     const isPeruvianDoc = client.doc_type === SunatDocType.DNI || client.doc_type === SunatDocType.RUC;
@@ -171,6 +187,12 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({ passengerD
               {isQueryingDni || isQueryingRuc ? <Spinner size="sm"/> : <Search className="h-4 w-4" />}
             </Button>
           </div>
+          {tripId && passengerData.docType !== SunatDocType.RUC && (
+            <DuplicatePassengerWarning
+              loading={checkingDuplicateTicket}
+              matches={duplicateTicketMatches}
+            />
+          )}
         </div>
       </div>
 

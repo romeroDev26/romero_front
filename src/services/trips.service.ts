@@ -66,6 +66,20 @@ export interface TripDetailsResponse extends Trip {
   availability: TripSeatAvailability[]; // El backend lo llama 'availability'
 }
 
+export interface ExistingPassengerTicket {
+  passenger_name: string;
+  seat_number?: string | null;
+  ticket_series?: string | null;
+  ticket_number?: number | null;
+  document_type_code?: string | null;
+}
+
+export interface TripPassengerTicketCheckResult {
+  has_existing_ticket: boolean;
+  matches: ExistingPassengerTicket[];
+  message?: string | null;
+}
+
 class TripsService {
   private basePath = '/operations/trips/';
 
@@ -151,6 +165,23 @@ class TripsService {
 
   async getSeatMap(tripId: number): Promise<SeatMapItem[]> {
     const response = await api.get<SeatMapItem[]>(`${this.basePath}${tripId}/seat-map`);
+    return response.data;
+  }
+
+  async checkPassengerTicket(
+    tripId: number,
+    docNumber: string,
+    docType?: string
+  ): Promise<TripPassengerTicketCheckResult> {
+    const response = await api.get<TripPassengerTicketCheckResult>(
+      `${this.basePath}${tripId}/passenger-ticket-check`,
+      {
+        params: {
+          doc_number: docNumber,
+          ...(docType ? { doc_type: docType } : {}),
+        },
+      }
+    );
     return response.data;
   }
 

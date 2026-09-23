@@ -60,6 +60,7 @@ describe('authService', () => {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
             'X-Skip-Auth-Redirect': '1',
+            'X-Client-Channel': 'main',
           },
         }
       );

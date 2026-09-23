@@ -13,7 +13,7 @@ import {
   UsersIcon, KeyIcon, MapIcon, BuildingOffice2Icon, CalendarDaysIcon, TicketIcon,
   ClipboardDocumentListIcon, CurrencyDollarIcon, AdjustmentsHorizontalIcon,
   ChartPieIcon, CubeIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ShieldCheckIcon,
-  BriefcaseIcon, SparklesIcon
+  BriefcaseIcon, SparklesIcon, BanknotesIcon
 } from '@heroicons/react/24/outline';
 
 const STORAGE_KEY_EXPANDED_MENUS = 'dashboard_expanded_menus';
@@ -29,6 +29,7 @@ interface NavItem {
   adminOnly?: boolean;
   supervisorOnly?: boolean;
   showBadge?: boolean;
+  external?: boolean;
 }
 
 interface NavGroup {
@@ -158,6 +159,14 @@ const navGroups: NavGroup[] = [
       { name: 'Roles', path: '/settings/roles', icon: KeyIcon, iconColor: 'text-dm-text-muted' },
       { name: 'Configuración Empresa', path: '/settings/company', icon: CogIcon, iconColor: 'text-dm-text-muted' },
       { name: 'WhatsApp', path: '/settings/whatsapp', icon: ChatBubbleLeftRightIcon, iconColor: 'text-green-500 dark:text-green-400' },
+      {
+        name: 'Conciliación Bancaria',
+        path: 'https://romero-conciliacion.vercel.app/',
+        icon: BanknotesIcon,
+        iconColor: 'text-sky-500 dark:text-sky-400',
+        adminOnly: true,
+        external: true,
+      },
       { name: 'Novedades', path: '/settings/updates', icon: SparklesIcon, iconColor: 'text-amber-500 dark:text-amber-400' }
     ]
   }
@@ -367,6 +376,24 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
           )}
         </AnimatePresence>
         </div>
+      );
+    }
+
+    if (item.external) {
+      return (
+        <a
+          key={item.path}
+          href={item.path}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => {
+            if (onCloseMobile) onCloseMobile();
+          }}
+          className={`${baseClasses} ${paddingClasses} mb-1 text-dm-text-secondary hover:bg-dm-bg-hover hover:text-dm-text-primary`}
+        >
+          <item.icon className={`w-5 h-5 mr-3 flex-shrink-0 ${item.iconColor || 'text-dm-text-muted'}`} />
+          <span className="flex-1">{item.name}</span>
+        </a>
       );
     }
 

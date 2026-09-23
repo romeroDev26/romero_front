@@ -12,7 +12,7 @@ import {
   CogIcon, XMarkIcon, ArrowRightOnRectangleIcon, ChevronDownIcon,
   UsersIcon, KeyIcon, MapIcon, BuildingOffice2Icon, CalendarDaysIcon, TicketIcon,
   ClipboardDocumentListIcon, CurrencyDollarIcon, AdjustmentsHorizontalIcon,
-  ChartPieIcon, CubeIcon, ChatBubbleLeftRightIcon, BellAlertIcon, ShieldCheckIcon,
+  ChartPieIcon, CubeIcon, ChatBubbleLeftRightIcon, BellAlertIcon,
   BriefcaseIcon, SparklesIcon, BanknotesIcon
 } from '@heroicons/react/24/outline';
 

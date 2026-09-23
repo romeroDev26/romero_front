@@ -5,7 +5,6 @@ import {
   ValidarYapeAsistidoResponse,
   yapePaymentService,
 } from '../services/yapePayment.service';
-import { requiresOperationCode } from '../utils/splitPaymentValidation';
 import { buildHoraVentaISO } from '../utils/yapeSearchTime';
 
 /** Espera inicial: el aviso del celular suele tardar ~3 s. Luego el WebSocket actualiza en vivo. */

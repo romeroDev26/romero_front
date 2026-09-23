@@ -11,8 +11,14 @@ import { buildHoraVentaISO } from '../utils/yapeSearchTime';
 /** Espera inicial: el aviso del celular suele tardar ~3 s. Luego el WebSocket actualiza en vivo. */
 const DIGITAL_WAIT_MS = 3200;
 
+/** Solo Yape: el celular de la empresa captura avisos de la app Yape. */
+export function isYapeAssistMethod(method: string): boolean {
+  return method === 'YAP';
+}
+
+/** @deprecated Usar isYapeAssistMethod */
 export function isDigitalPaymentMethod(method: string): boolean {
-  return requiresOperationCode(method) || method === 'DEP';
+  return isYapeAssistMethod(method);
 }
 
 export function digitalAmountFromPayments(params: {
@@ -25,11 +31,11 @@ export function digitalAmountFromPayments(params: {
 }): number {
   const { isSplitPayment, paymentMethod1, paymentMethod2, amount1, amount2, totalAmount } = params;
   if (!isSplitPayment) {
-    return isDigitalPaymentMethod(paymentMethod1) ? totalAmount : 0;
+    return isYapeAssistMethod(paymentMethod1) ? totalAmount : 0;
   }
   let digital = 0;
-  if (isDigitalPaymentMethod(paymentMethod1)) digital += amount1;
-  if (isDigitalPaymentMethod(paymentMethod2)) digital += amount2;
+  if (isYapeAssistMethod(paymentMethod1)) digital += amount1;
+  if (isYapeAssistMethod(paymentMethod2)) digital += amount2;
   return Math.round(digital * 100) / 100;
 }
 
@@ -104,7 +110,8 @@ export function useYapeAssist(params: {
       setAssist({
         match: false,
         estado_sugerido: 'PENDIENTE_VERIFICAR',
-        mensaje: 'Aún no llega el aviso al celular. Puedes vender igual y cruzar después.',
+        mensaje:
+          'Todavía no llega el aviso de Yape al celular de la empresa. Puedes completar la venta igual y revisar después con la foto.',
         sugeridos: [],
         bloquear_venta: false,
       });

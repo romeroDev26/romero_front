@@ -33,19 +33,16 @@ export const YapeSearchTimeFields: React.FC<YapeSearchTimeFieldsProps> = ({
   const inputClass = compact
     ? 'w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-sm text-dm-text-primary disabled:bg-dm-bg-secondary dark:[color-scheme:dark]'
     : 'w-full p-2 border border-dm-border-primary rounded-md bg-dm-bg-primary disabled:bg-dm-bg-secondary text-sm text-dm-text-primary dark:[color-scheme:dark]';
-  const helpClass = compact ? 'text-[10px] text-dm-text-muted mt-1' : 'text-xs text-dm-text-muted mt-1';
 
   return (
     <div className="mt-2 space-y-2">
-      <p className={helpClass}>
-        Sin hora solo <strong>auto-coincide por nombre</strong> en pagos de hoy. Si el nombre no
-        coincide, indica la <strong>hora de la foto</strong> (1 min antes, 10 min después) y la fecha
-        si no es hoy para ver candidatos del mismo monto.
+      <p className="text-xs leading-relaxed text-dm-text-muted">
+        <strong>Opcional:</strong> si el nombre no coincide, pon la hora que sale en la foto del
+        Yape (1 min antes, 10 min después). Solo si el pago fue otro día, cambia la fecha.
       </p>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className={labelClass}>Fecha del pago (opc.)</label>
-          {/* Popper fixed, no portal: dentro del Dialog de Headless UI un portal cuenta como clic afuera y cierra el modal */}
+          <label className={labelClass}>Fecha del Yape (opc.)</label>
           <DatePicker
             selected={toDate(date)}
             onChange={(d: Date | null) => onDateChange(d ? format(d, DATE_FORMAT) : '')}
@@ -64,7 +61,7 @@ export const YapeSearchTimeFields: React.FC<YapeSearchTimeFieldsProps> = ({
           />
         </div>
         <div>
-          <label className={labelClass}>Hora del pago (opc.)</label>
+          <label className={labelClass}>Hora del Yape (opc.)</label>
           <input
             type="time"
             value={time}

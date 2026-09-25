@@ -14,6 +14,7 @@ import {
 import { reportsService } from '../../../services/reports.service';
 import { TripListItem, TripsCalendarDaySummary } from '../../../types/tripSalesReport';
 import { TripSalesDetailReport } from './TripSalesDetailReport';
+import { OperationsIncomeSummary } from './OperationsIncomeSummary';
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('es-PE', {
@@ -192,6 +193,9 @@ export const TripsCalendarReport: React.FC = () => {
             Selecciona un día para ver los viajes y sus estadísticas
           </p>
         </div>
+        {calendarData?.income_summary && (
+          <OperationsIncomeSummary summary={calendarData.income_summary} />
+        )}
       </div>
 
       {/* Contenido principal */}

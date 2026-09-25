@@ -4,6 +4,7 @@ import { DollarSign, Ship, Users } from 'lucide-react';
 import { reportsService } from '../../../services/reports.service';
 import { VesselReportItem } from '../../../types/tripSalesReport';
 import { DateRangeFilter, DateFilterOption } from './DateRangeFilter';
+import { OperationsIncomeSummary } from './OperationsIncomeSummary';
 
 const formatCurrency = (amount: number): string =>
   new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(amount);
@@ -81,10 +82,16 @@ export const VesselsRangeReport: React.FC = () => {
           />
         </div>
 
+        {data?.income_summary && <OperationsIncomeSummary summary={data.income_summary} />}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 border-b border-dm-border-primary bg-dm-bg-secondary/40">
           <SummaryCard label="Viajes operados" value={String(totals.trip_count)} />
           <SummaryCard label="Pasajeros vendidos" value={String(totals.passengers_count)} />
-          <SummaryCard label="Ingresos totales" value={formatCurrency(totals.total_revenue)} highlight />
+          <SummaryCard
+            label="Ingresos en viajes"
+            value={formatCurrency(totals.total_revenue)}
+            highlight
+          />
         </div>
       </div>
 

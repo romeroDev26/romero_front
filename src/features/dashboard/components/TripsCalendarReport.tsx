@@ -12,7 +12,7 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import { reportsService } from '../../../services/reports.service';
-import { TripListItem } from '../../../types/tripSalesReport';
+import { TripListItem, TripsCalendarDaySummary } from '../../../types/tripSalesReport';
 import { TripSalesDetailReport } from './TripSalesDetailReport';
 
 const formatCurrency = (amount: number): string => {
@@ -43,11 +43,8 @@ const getOccupancyBgColor = (percentage: number): string => {
   return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/50';
 };
 
-interface DayTrips {
-  date: string;
-  trips: TripListItem[];
-  totalRevenue: number;
-  avgOccupancy: number;
+interface DaySummary extends TripsCalendarDaySummary {
+  trips?: TripListItem[];
 }
 
 export const TripsCalendarReport: React.FC = () => {
@@ -71,53 +68,37 @@ export const TripsCalendarReport: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTripId, setSelectedTripId] = useState<number | null>(null);
 
-  // Consultar viajes del mes actual
-  const { data: tripsData, isLoading } = useQuery({
-    queryKey: ['trips-list', dateRange.start_date, dateRange.end_date],
-    queryFn: () => reportsService.getTripsList(dateRange),
-    enabled: true,
-    staleTime: 1000 * 60 * 2, // Cache por 2 minutos
-    gcTime: 1000 * 60 * 5, // Mantener en caché por 5 minutos (antes cacheTime)
+  // Resumen ligero del mes para pintar el calendario
+  const { data: calendarData, isLoading: isCalendarLoading } = useQuery({
+    queryKey: ['trips-calendar', dateRange.start_date, dateRange.end_date],
+    queryFn: () => reportsService.getTripsCalendarSummary(dateRange),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
 
-  // Agrupar viajes por día
-  const tripsByDay = useMemo<Map<string, DayTrips>>(() => {
-    const map = new Map<string, DayTrips>();
-    
-    if (!tripsData?.items) return map;
+  // Detalle solo del día seleccionado
+  const { data: dayTripsData, isLoading: isDayTripsLoading } = useQuery({
+    queryKey: ['trips-list-day', selectedDate],
+    queryFn: () =>
+      reportsService.getTripsList({
+        start_date: selectedDate!,
+        end_date: selectedDate!,
+      }),
+    enabled: Boolean(selectedDate),
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+  });
 
-    tripsData.items.forEach((item) => {
-      // Normalizar fecha: extraer solo YYYY-MM-DD independientemente del formato
-      const dateKey = item.trip.departure_datetime.split(' ')[0].split('T')[0];
-      
-      if (!map.has(dateKey)) {
-        map.set(dateKey, {
-          date: dateKey,
-          trips: [],
-          totalRevenue: 0,
-          avgOccupancy: 0,
-        });
-      }
-      
-      const dayData = map.get(dateKey)!;
-      dayData.trips.push(item);
-      dayData.totalRevenue += item.sales.total_revenue;
+  const tripsByDay = useMemo<Map<string, DaySummary>>(() => {
+    const map = new Map<string, DaySummary>();
+    calendarData?.days.forEach((day) => {
+      map.set(day.date, { ...day });
     });
-
-    // Calcular promedio de ocupación
-    map.forEach((dayData) => {
-      if (dayData.trips.length > 0) {
-        dayData.avgOccupancy = dayData.trips.reduce(
-          (sum, t) => sum + t.sales.occupancy_percentage, 0
-        ) / dayData.trips.length;
-      }
-    });
-
     return map;
-  }, [tripsData]);
+  }, [calendarData]);
 
-  // Obtener viajes del día seleccionado
-  const selectedDayTrips = selectedDate ? tripsByDay.get(selectedDate)?.trips || [] : [];
+  const selectedDayTrips = dayTripsData?.items ?? [];
+  const isLoading = isCalendarLoading || (Boolean(selectedDate) && isDayTripsLoading);
 
   // Generar días del calendario
   const calendarDays = useMemo(() => {
@@ -160,7 +141,7 @@ export const TripsCalendarReport: React.FC = () => {
     const dateKey = date.toISOString().split('T')[0];
     const dayData = tripsByDay.get(dateKey);
     
-    if (dayData && dayData.trips.length > 0) {
+    if (dayData && dayData.trip_count > 0) {
       setSelectedDate(dateKey);
       setSelectedTripId(null);
     }
@@ -254,7 +235,7 @@ export const TripsCalendarReport: React.FC = () => {
 
               const dateKey = date.toISOString().split('T')[0];
               const dayData = tripsByDay.get(dateKey);
-              const hasTrips = dayData && dayData.trips.length > 0;
+              const hasTrips = dayData && dayData.trip_count > 0;
               const isToday = date.toDateString() === new Date().toDateString();
               const isSelected = selectedDate === dateKey;
 
@@ -274,8 +255,8 @@ export const TripsCalendarReport: React.FC = () => {
                       {date.getDate()}
                     </span>
                     {hasTrips && (
-                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${getOccupancyBgColor(dayData.avgOccupancy)}`}>
-                        {dayData.trips.length}
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${getOccupancyBgColor(dayData.avg_occupancy)}`}>
+                        {dayData.trip_count}
                       </span>
                     )}
                   </div>
@@ -284,12 +265,12 @@ export const TripsCalendarReport: React.FC = () => {
                     <div className="mt-1 space-y-1">
                       <div className="flex items-center text-xs text-dm-text-secondary">
                         <CurrencyDollarIcon className="w-3 h-3 mr-1" />
-                        <span className="truncate">{formatCurrency(dayData.totalRevenue)}</span>
+                        <span className="truncate">{formatCurrency(dayData.total_revenue)}</span>
                       </div>
                       <div className="w-full h-1.5 bg-dm-bg-secondary rounded-full overflow-hidden">
                         <div 
-                          className={`h-full ${getOccupancyColor(dayData.avgOccupancy)}`}
-                          style={{ width: `${dayData.avgOccupancy}%` }}
+                          className={`h-full ${getOccupancyColor(dayData.avg_occupancy)}`}
+                          style={{ width: `${dayData.avg_occupancy}%` }}
                         />
                       </div>
                     </div>

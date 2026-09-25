@@ -135,3 +135,18 @@ export interface TripsListResponse {
     end_date: string;
   };
 }
+
+export interface TripsCalendarDaySummary {
+  date: string;
+  trip_count: number;
+  total_revenue: number;
+  avg_occupancy: number;
+}
+
+export interface TripsCalendarSummaryResponse {
+  days: TripsCalendarDaySummary[];
+  period: {
+    start_date: string;
+    end_date: string;
+  };
+}

@@ -5,7 +5,7 @@ import { es } from 'date-fns/locale';
 import { CalendarDaysIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import "react-datepicker/dist/react-datepicker.css";
 
-export type DateFilterOption = 'today' | 'last7days' | 'lastMonth' | 'custom';
+export type DateFilterOption = 'today' | 'last7days' | 'thisMonth' | 'lastMonth' | 'custom';
 
 interface DateRangeFilterProps {
   startDate: Date | null;
@@ -18,7 +18,8 @@ interface DateRangeFilterProps {
 const filterOptions: { value: DateFilterOption; label: string }[] = [
   { value: 'today', label: 'Hoy' },
   { value: 'last7days', label: 'Últimos 7 días' },
-  { value: 'lastMonth', label: 'Último mes' },
+  { value: 'thisMonth', label: 'Este mes' },
+  { value: 'lastMonth', label: 'Últimos 30 días' },
   { value: 'custom', label: 'Rango personalizado' },
 ];
 
@@ -70,9 +71,16 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         setShowCalendar(false);
         break;
       }
+      case 'thisMonth': {
+        const start = new Date(today.getFullYear(), today.getMonth(), 1);
+        const end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        onDateChange(start, end);
+        setShowCalendar(false);
+        break;
+      }
       case 'lastMonth': {
         const start = new Date(today);
-        start.setMonth(today.getMonth() - 1);
+        start.setDate(today.getDate() - 29);
         onDateChange(start, today);
         setShowCalendar(false);
         break;

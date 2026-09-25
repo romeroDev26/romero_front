@@ -1,22 +1,20 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ChevronLeft,
-  ChevronRight,
-  DollarSign,
-  Ship,
-  Users,
-} from 'lucide-react';
+import { DollarSign, Ship, Users } from 'lucide-react';
 import { reportsService } from '../../../services/reports.service';
 import { VesselReportItem } from '../../../types/tripSalesReport';
+import { DateRangeFilter, DateFilterOption } from './DateRangeFilter';
 
 const formatCurrency = (amount: number): string =>
   new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(amount);
 
-const monthNames = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
+function getMonthRange(): { start: Date; end: Date } {
+  const now = new Date();
+  return {
+    start: new Date(now.getFullYear(), now.getMonth(), 1),
+    end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
+  };
+}
 
 function getOccupancyColor(percentage: number): string {
   if (percentage >= 80) return 'text-green-600 dark:text-green-400';
@@ -25,23 +23,23 @@ function getOccupancyColor(percentage: number): string {
 }
 
 export const VesselsRangeReport: React.FC = () => {
-  const [currentMonth, setCurrentMonth] = useState<Date>(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
+  const initialRange = getMonthRange();
+  const [startDate, setStartDate] = useState<Date>(initialRange.start);
+  const [endDate, setEndDate] = useState<Date>(initialRange.end);
+  const [filterOption, setFilterOption] = useState<DateFilterOption>('thisMonth');
 
-  const dateRange = useMemo(() => {
-    const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-    const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-    return {
-      start_date: startOfMonth.toISOString().split('T')[0],
-      end_date: endOfMonth.toISOString().split('T')[0],
-    };
-  }, [currentMonth]);
+  const dateRange = useMemo(
+    () => ({
+      start_date: startDate.toISOString().split('T')[0],
+      end_date: endDate.toISOString().split('T')[0],
+    }),
+    [startDate, endDate],
+  );
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['vessels-report', dateRange.start_date, dateRange.end_date],
     queryFn: () => reportsService.getVesselsList(dateRange),
+    enabled: Boolean(startDate && endDate),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });
@@ -55,12 +53,9 @@ export const VesselsRangeReport: React.FC = () => {
     };
   }, [data]);
 
-  const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  const handleDateChange = (newStartDate: Date | null, newEndDate: Date | null) => {
+    if (newStartDate) setStartDate(newStartDate);
+    if (newEndDate) setEndDate(newEndDate);
   };
 
   return (
@@ -76,24 +71,14 @@ export const VesselsRangeReport: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center justify-between px-6 py-4 bg-dm-bg-secondary border-b border-dm-border-primary">
-          <button
-            onClick={handlePrevMonth}
-            className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
-            type="button"
-          >
-            <ChevronLeft className="w-5 h-5 text-dm-text-secondary" />
-          </button>
-          <h3 className="text-lg font-semibold text-dm-text-primary">
-            {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-          </h3>
-          <button
-            onClick={handleNextMonth}
-            className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
-            type="button"
-          >
-            <ChevronRight className="w-5 h-5 text-dm-text-secondary" />
-          </button>
+        <div className="px-6 py-4 bg-dm-bg-secondary border-b border-dm-border-primary">
+          <DateRangeFilter
+            startDate={startDate}
+            endDate={endDate}
+            onDateChange={handleDateChange}
+            selectedOption={filterOption}
+            onOptionChange={setFilterOption}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6 border-b border-dm-border-primary bg-dm-bg-secondary/40">

@@ -134,6 +134,7 @@ export interface TripsListResponse {
     start_date: string;
     end_date: string;
   };
+  income_summary?: PeriodIncomeSummary;
 }
 
 export interface TripsCalendarDaySummary {
@@ -143,12 +144,20 @@ export interface TripsCalendarDaySummary {
   avg_occupancy: number;
 }
 
+export interface PeriodIncomeSummary {
+  trip_operations_revenue: number;
+  quick_sales_revenue: number;
+  total_sales_in_period: number;
+  other_sales_revenue: number;
+}
+
 export interface TripsCalendarSummaryResponse {
   days: TripsCalendarDaySummary[];
   period: {
     start_date: string;
     end_date: string;
   };
+  income_summary?: PeriodIncomeSummary;
 }
 
 export interface VesselReportItem {
@@ -179,4 +188,5 @@ export interface VesselsListResponse {
     start_date: string;
     end_date: string;
   };
+  income_summary?: PeriodIncomeSummary;
 }

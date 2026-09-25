@@ -1,7 +1,14 @@
 // src/services/reports.service.ts
 import api from '../config/api';
 import { DailySalesFilters, DailySalesReportResponse } from '../types/reports';
-import { TripSalesFilters, TripSalesReportResponse, TripsListFilters, TripsListResponse } from '../types/tripSalesReport';
+import {
+  TripSalesFilters,
+  TripSalesReportResponse,
+  TripsCalendarSummaryResponse,
+  TripsListFilters,
+  TripsListResponse,
+  VesselsListResponse,
+} from '../types/tripSalesReport';
 
 export const reportsService = {
   getDailySales: async (filters: DailySalesFilters): Promise<DailySalesReportResponse> => {
@@ -64,7 +71,37 @@ export const reportsService = {
     return response.data;
   },
 
-  // Lista de viajes con detalles por período
+  getTripsCalendarSummary: async (filters: TripsListFilters): Promise<TripsCalendarSummaryResponse> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('start_date', filters.start_date);
+      params.append('end_date', filters.end_date);
+
+      const response = await api.get<TripsCalendarSummaryResponse>(
+        `/admin/reports/trips/calendar?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getVesselsList: async (filters: TripsListFilters): Promise<VesselsListResponse> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('start_date', filters.start_date);
+      params.append('end_date', filters.end_date);
+
+      const response = await api.get<VesselsListResponse>(
+        `/admin/reports/vessels?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Lista de viajes con detalles por período (idealmente un solo día)
   getTripsList: async (filters: TripsListFilters): Promise<TripsListResponse> => {
     const params = new URLSearchParams();
     params.append('start_date', filters.start_date);

@@ -150,3 +150,33 @@ export interface TripsCalendarSummaryResponse {
     end_date: string;
   };
 }
+
+export interface VesselReportItem {
+  vessel: {
+    vessel_id: number;
+    vessel_name: string;
+  };
+  operations: {
+    trip_count: number;
+    passengers_count: number;
+    avg_occupancy: number;
+    average_ticket: number;
+  };
+  sales: {
+    total_revenue: number;
+    service_breakdown: {
+      PASAJES: ServiceBreakdownItem & { average_ticket?: number };
+      ENCOMIENDAS: ServiceBreakdownItem;
+      CARGA_GENERAL: ServiceBreakdownItem;
+      EXCESO_EQUIPAJE: ServiceBreakdownItem;
+    };
+  };
+}
+
+export interface VesselsListResponse {
+  items: VesselReportItem[];
+  period: {
+    start_date: string;
+    end_date: string;
+  };
+}

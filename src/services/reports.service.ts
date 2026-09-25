@@ -7,6 +7,7 @@ import {
   TripsCalendarSummaryResponse,
   TripsListFilters,
   TripsListResponse,
+  VesselsListResponse,
 } from '../types/tripSalesReport';
 
 export const reportsService = {
@@ -86,6 +87,21 @@ export const reportsService = {
 
       const response = await api.get<TripsCalendarSummaryResponse>(
         `/admin/reports/trips/calendar?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getVesselsList: async (filters: TripsListFilters): Promise<VesselsListResponse> => {
+    try {
+      const params = new URLSearchParams();
+      params.append('start_date', filters.start_date);
+      params.append('end_date', filters.end_date);
+
+      const response = await api.get<VesselsListResponse>(
+        `/admin/reports/vessels?${params.toString()}`
       );
       return response.data;
     } catch (error) {

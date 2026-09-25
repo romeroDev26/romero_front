@@ -13,7 +13,7 @@ import { SunatStatusChart } from '../components/SunatStatusChart';
 import { Modal } from '../../../components/common/Modal';
 import { useExportReport } from '../../../hooks/useExportReport';
 import { DateRangeFilter, DateFilterOption } from '../components/DateRangeFilter';
-import { TripsCalendarReport } from '../components/TripsCalendarReport';
+import { OperationsReportsSection } from '../components/OperationsReportsSection';
 
 export const ReportsPage: React.FC = () => {
   // Inicializar con la fecha de hoy
@@ -286,14 +286,14 @@ export const ReportsPage: React.FC = () => {
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                Ver Reporte de Ventas por Viaje
+                Ver análisis operativo
               </button>
               <p className="text-xs text-dm-text-muted mt-2">
-                Carga el reporte detallado de ventas por viaje con calendario interactivo
+                Calendario por viaje y resumen por embarcación
               </p>
             </div>
           ) : (
-            <TripsCalendarReport />
+            <OperationsReportsSection />
           )}
         </div>
       </div>

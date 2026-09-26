@@ -118,6 +118,7 @@ export const reportsService = {
       const params = new URLSearchParams();
       params.append('start_date', filters.start_date);
       params.append('end_date', filters.end_date);
+      params.append('summary', 'true');
 
       const response = await api.get<VesselsListResponse>(
         `/admin/reports/vessels?${params.toString()}`

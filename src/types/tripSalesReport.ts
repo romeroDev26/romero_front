@@ -238,6 +238,30 @@ export interface VesselTripReportItem {
   documents: VesselAuditDocument[];
 }
 
+/** Cabecera liviana devuelta por GET /vessels?summary=true */
+export interface VesselReportSummaryItem {
+  vessel: {
+    vessel_id: number;
+    vessel_name: string;
+  };
+  operations: {
+    trip_count: number;
+    passengers_count: number;
+    avg_occupancy: number;
+    average_ticket: number;
+  };
+  collection: CollectionSummary;
+  sales: {
+    gross_sales: number;
+    credit_notes_amount: number;
+    net_revenue: number;
+    total_revenue: number;
+    collected_revenue: number;
+    pending_revenue: number;
+  };
+  document_count: number;
+}
+
 export interface VesselReportItem {
   vessel: {
     vessel_id: number;
@@ -304,7 +328,7 @@ export interface VesselsPeriodSummary {
 export interface VesselsListResponse {
   meta?: Record<string, string>;
   summary?: VesselsPeriodSummary;
-  items: VesselReportItem[];
+  items: VesselReportSummaryItem[];
   period: {
     start_date: string;
     end_date: string;

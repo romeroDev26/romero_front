@@ -8,6 +8,7 @@ import {
   VesselNamedBreakdownItem,
   VesselPaymentMethodItem,
   VesselReportItem,
+  VesselReportSummaryItem,
   VesselServiceBreakdownItem,
   VesselTripReportItem,
 } from '../../../types/tripSalesReport';
@@ -64,12 +65,27 @@ export const VesselsRangeReport: React.FC = () => {
   );
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['vessels-report', dateRange.start_date, dateRange.end_date],
+    queryKey: ['vessels-report-summary', dateRange.start_date, dateRange.end_date],
     queryFn: () => reportsService.getVesselsList(dateRange),
     enabled: Boolean(startDate && endDate),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 30,
   });
+
+  const {
+    data: vesselDetail,
+    isLoading: vesselDetailLoading,
+    isFetching: vesselDetailFetching,
+    error: vesselDetailError,
+  } = useQuery({
+    queryKey: ['vessel-reconciliation', expandedVesselId, dateRange.start_date, dateRange.end_date],
+    queryFn: () => reportsService.getVesselReconciliation(expandedVesselId!, dateRange),
+    enabled: expandedVesselId !== null,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
+  });
+
+  const detailBusy = vesselDetailLoading || vesselDetailFetching;
 
   const totals = useMemo(() => {
     if (data?.summary) return data.summary;
@@ -91,6 +107,12 @@ export const VesselsRangeReport: React.FC = () => {
   const handleDateChange = (newStartDate: Date | null, newEndDate: Date | null) => {
     if (newStartDate) setStartDate(newStartDate);
     if (newEndDate) setEndDate(newEndDate);
+    setExpandedVesselId(null);
+  };
+
+  const handleToggleVessel = (vesselId: number) => {
+    if (detailBusy && expandedVesselId !== vesselId) return;
+    setExpandedVesselId((current) => (current === vesselId ? null : vesselId));
   };
 
   return (
@@ -151,14 +173,18 @@ export const VesselsRangeReport: React.FC = () => {
           {data!.items.map((item) => (
             <VesselCard
               key={item.vessel.vessel_id}
-              item={item}
+              summary={item}
               dateRange={dateRange}
               expanded={expandedVesselId === item.vessel.vessel_id}
-              onToggle={() =>
-                setExpandedVesselId((current) =>
-                  current === item.vessel.vessel_id ? null : item.vessel.vessel_id,
-                )
+              detail={expandedVesselId === item.vessel.vessel_id ? vesselDetail : undefined}
+              detailLoading={expandedVesselId === item.vessel.vessel_id && detailBusy}
+              detailError={
+                expandedVesselId === item.vessel.vessel_id && vesselDetailError
+                  ? 'No se pudo cargar el detalle de esta embarcación.'
+                  : null
               }
+              toggleBlocked={detailBusy && expandedVesselId !== item.vessel.vessel_id}
+              onToggle={() => handleToggleVessel(item.vessel.vessel_id)}
             />
           ))}
         </div>
@@ -197,30 +223,38 @@ function SummaryCard({
 }
 
 function VesselCard({
-  item,
+  summary,
   dateRange,
   expanded,
+  detail,
+  detailLoading,
+  detailError,
+  toggleBlocked,
   onToggle,
 }: {
-  item: VesselReportItem;
+  summary: VesselReportSummaryItem;
   dateRange: { start_date: string; end_date: string };
   expanded: boolean;
+  detail?: VesselReportItem;
+  detailLoading: boolean;
+  detailError: string | null;
+  toggleBlocked: boolean;
   onToggle: () => void;
 }) {
-  const breakdown = item.sales.service_breakdown;
   const [exporting, setExporting] = useState(false);
+  const documentCount = summary.document_count ?? detail?.documents?.length ?? 0;
 
   const handleExport = async () => {
     try {
       setExporting(true);
       const blob = await reportsService.exportVesselReconciliationExcel(
-        item.vessel.vessel_id,
+        summary.vessel.vessel_id,
         dateRange,
       );
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `cuadre_${item.vessel.vessel_name}_${dateRange.start_date}.xlsx`;
+      link.download = `cuadre_${summary.vessel.vessel_name}_${dateRange.start_date}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
     } finally {
@@ -233,33 +267,38 @@ function VesselCard({
       <button
         type="button"
         onClick={onToggle}
-        className="w-full text-left p-5 hover:bg-dm-bg-hover/40 transition-colors"
+        disabled={toggleBlocked}
+        className={`w-full text-left p-5 transition-colors ${
+          toggleBlocked
+            ? 'cursor-not-allowed opacity-60'
+            : 'hover:bg-dm-bg-hover/40'
+        }`}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-lg font-bold text-dm-text-primary">{item.vessel.vessel_name}</h3>
+            <h3 className="text-lg font-bold text-dm-text-primary">{summary.vessel.vessel_name}</h3>
             <p className="text-sm text-dm-text-muted mt-1">
-              {item.operations.trip_count} viaje{item.operations.trip_count === 1 ? '' : 's'} ·{' '}
-              {item.documents.length} comprobante{item.documents.length === 1 ? '' : 's'}
+              {summary.operations.trip_count} viaje{summary.operations.trip_count === 1 ? '' : 's'} ·{' '}
+              {documentCount} comprobante{documentCount === 1 ? '' : 's'}
             </p>
           </div>
           <div className="flex items-start gap-3">
             <div className="text-right">
               <p className="text-lg font-bold text-dm-text-primary">
-                {formatCurrency(item.sales.net_revenue ?? item.sales.total_revenue)}
+                {formatCurrency(summary.sales.net_revenue ?? summary.sales.total_revenue)}
               </p>
               <p className="text-xs text-dm-text-muted">
-                Bruto {formatCurrency(item.sales.gross_sales ?? item.sales.total_revenue)}
-                {item.sales.credit_notes_amount < 0 && (
-                  <> · NC {formatCurrency(item.sales.credit_notes_amount)}</>
+                Bruto {formatCurrency(summary.sales.gross_sales ?? summary.sales.total_revenue)}
+                {summary.sales.credit_notes_amount < 0 && (
+                  <> · NC {formatCurrency(summary.sales.credit_notes_amount)}</>
                 )}
               </p>
               <p className="text-xs text-green-600 dark:text-green-400">
-                Cobrado {formatCurrency(item.sales.collected_revenue)}
+                Cobrado {formatCurrency(summary.sales.collected_revenue)}
               </p>
-              {item.sales.pending_revenue > 0 && (
+              {summary.sales.pending_revenue > 0 && (
                 <p className="text-xs text-amber-600 dark:text-amber-400">
-                  Pendiente {formatCurrency(item.sales.pending_revenue)}
+                  Pendiente {formatCurrency(summary.sales.pending_revenue)}
                 </p>
               )}
             </div>
@@ -275,41 +314,58 @@ function VesselCard({
           <Metric
             icon={<Users className="h-4 w-4" />}
             label="Ocupación prom."
-            value={`${item.operations.avg_occupancy.toFixed(1)}%`}
-            valueClass={getOccupancyColor(item.operations.avg_occupancy)}
+            value={`${summary.operations.avg_occupancy.toFixed(1)}%`}
+            valueClass={getOccupancyColor(summary.operations.avg_occupancy)}
           />
           <Metric
             icon={<Users className="h-4 w-4" />}
             label="Pasajeros"
-            value={String(item.operations.passengers_count)}
+            value={String(summary.operations.passengers_count)}
           />
           <Metric
             icon={<DollarSign className="h-4 w-4" />}
             label="Ticket prom."
-            value={formatCurrency(item.operations.average_ticket)}
+            value={formatCurrency(summary.operations.average_ticket)}
           />
         </div>
       </button>
 
       {expanded && (
         <div className="border-t border-dm-border-primary px-5 pb-5 space-y-5">
-          <div className="flex justify-end pt-4">
-            <button
-              type="button"
-              onClick={handleExport}
-              disabled={exporting}
-              className="rounded-lg bg-[#217346] px-4 py-2 text-sm font-medium text-white hover:bg-[#1a5c38] disabled:opacity-60"
-            >
-              {exporting ? 'Exportando...' : 'Exportar cuadre Excel'}
-            </button>
-          </div>
-          <DocumentSummarySection summary={item.document_summary} />
-          <ServiceBreakdownSection breakdown={breakdown} />
-          <PaymentMethodsSection methods={item.payment_methods} />
-          <NamedBreakdownSection title="Vendedores" items={item.sellers} />
-          <NamedBreakdownSection title="Sucursales / series" items={item.branches} />
-          <TripsSection trips={item.trips} />
-          <DocumentsSection documents={item.documents} />
+          {detailLoading && (
+            <div className="flex items-center justify-center gap-3 py-10 text-dm-text-muted">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+              <span>Cargando detalle de la embarcación...</span>
+            </div>
+          )}
+
+          {detailError && !detailLoading && (
+            <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200 mt-4">
+              {detailError}
+            </div>
+          )}
+
+          {detail && !detailLoading && (
+            <>
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="rounded-lg bg-[#217346] px-4 py-2 text-sm font-medium text-white hover:bg-[#1a5c38] disabled:opacity-60"
+                >
+                  {exporting ? 'Exportando...' : 'Exportar cuadre Excel'}
+                </button>
+              </div>
+              <DocumentSummarySection summary={detail.document_summary} />
+              <ServiceBreakdownSection breakdown={detail.sales.service_breakdown} />
+              <PaymentMethodsSection methods={detail.payment_methods} />
+              <NamedBreakdownSection title="Vendedores" items={detail.sellers} />
+              <NamedBreakdownSection title="Sucursales / series" items={detail.branches} />
+              <TripsSection trips={detail.trips} />
+              <DocumentsSection documents={detail.documents} />
+            </>
+          )}
         </div>
       )}
     </div>

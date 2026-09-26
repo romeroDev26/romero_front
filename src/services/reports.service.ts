@@ -7,6 +7,8 @@ import {
   TripsCalendarSummaryResponse,
   TripsListFilters,
   TripsListResponse,
+  PeriodIncomeSummary,
+  VesselReportItem,
   VesselsListResponse,
 } from '../types/tripSalesReport';
 
@@ -84,6 +86,31 @@ export const reportsService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  getVesselReconciliation: async (
+    vesselId: number,
+    filters: TripsListFilters,
+  ): Promise<VesselReportItem & { period: VesselsListResponse['period']; income_summary?: PeriodIncomeSummary }> => {
+    const params = new URLSearchParams();
+    params.append('start_date', filters.start_date);
+    params.append('end_date', filters.end_date);
+    const response = await api.get(`/admin/reports/vessels/${vesselId}?${params.toString()}`);
+    return response.data;
+  },
+
+  exportVesselReconciliationExcel: async (
+    vesselId: number,
+    filters: TripsListFilters,
+  ): Promise<Blob> => {
+    const params = new URLSearchParams();
+    params.append('start_date', filters.start_date);
+    params.append('end_date', filters.end_date);
+    params.append('format', 'excel');
+    const response = await api.get(`/admin/reports/vessels/${vesselId}?${params.toString()}`, {
+      responseType: 'blob',
+    });
+    return response.data;
   },
 
   getVesselsList: async (filters: TripsListFilters): Promise<VesselsListResponse> => {

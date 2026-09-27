@@ -35,12 +35,12 @@ const formatDateTime = (value?: string | null): string => {
   });
 };
 
-function getMonthRange(): { start: Date; end: Date } {
-  const now = new Date();
-  return {
-    start: new Date(now.getFullYear(), now.getMonth(), 1),
-    end: new Date(now.getFullYear(), now.getMonth() + 1, 0),
-  };
+function getLast7DaysRange(): { start: Date; end: Date } {
+  const end = new Date();
+  end.setHours(0, 0, 0, 0);
+  const start = new Date(end);
+  start.setDate(end.getDate() - 6);
+  return { start, end };
 }
 
 function getOccupancyColor(percentage: number): string {
@@ -50,10 +50,10 @@ function getOccupancyColor(percentage: number): string {
 }
 
 export const VesselsRangeReport: React.FC = () => {
-  const initialRange = getMonthRange();
+  const initialRange = getLast7DaysRange();
   const [startDate, setStartDate] = useState<Date>(initialRange.start);
   const [endDate, setEndDate] = useState<Date>(initialRange.end);
-  const [filterOption, setFilterOption] = useState<DateFilterOption>('thisMonth');
+  const [filterOption, setFilterOption] = useState<DateFilterOption>('last7days');
   const [expandedVesselId, setExpandedVesselId] = useState<number | null>(null);
 
   const dateRange = useMemo(

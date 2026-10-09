@@ -11,6 +11,7 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline';
 import { toast } from '@/utils/sileo-toast';
+import UpdateGuide, { safeUpdateLink } from '../components/UpdateGuide';
 import {
   updatesService,
   SystemUpdate,
@@ -22,7 +23,7 @@ type PlatformOption = 'WEB' | 'MOBILE' | 'ALL';
 const PLATFORMS: PlatformOption[] = ['WEB', 'MOBILE', 'ALL'];
 
 const emptyForm = (): SystemUpdatePayload => ({
-  version: '',
+  version: new Date().toLocaleDateString('sv-SE').replace(/-/g, '.'),
   title: '',
   description: '',
   video_url: '',
@@ -113,6 +114,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
       video_url: form.video_url?.trim() || null,
       learn_more_url: form.learn_more_url?.trim() || null,
     };
+    if (form.learn_more_url?.trim() && !safeUpdateLink(form.learn_more_url)) {
+      toast.warning('Usa una ruta del sistema (/accounting/...) o un enlace https://');
+      return;
+    }
     if (editing) {
       updateMutation.mutate(payload);
     } else {
@@ -154,6 +159,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
 
                 {/* Formulario */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                  <p className="text-sm text-dm-text-secondary">Publica con un título y una explicación. No necesitas grabar un video. Escribe pasos con 1. 2. 3. para mostrarlos como una guía.</p>
+                  {!editing && <button type="button" className="text-sm text-primary font-semibold" onClick={() => setForm(prev => ({ ...prev, title: 'Reprograma pasajes desde el sistema', description: 'Ahora puedes cambiar el viaje sin perder el pago del pasajero.\n1. Abre la boleta en Contabilidad → Facturas/Boletas y pulsa Reprogramar pasajes.\n2. Si ya sabe cuándo viajará, elige el nuevo viaje y confirma.\n3. Si aún no tiene fecha, elige Aún no tiene fecha y escribe el motivo. El asiento se libera y el pasajero sale del manifiesto.\n4. Cuando confirme su fecha, abre Reprogramaciones pendientes y asigna el nuevo viaje. Entrega el ticket actualizado.', learn_more_url: '/accounting/reprogramming' }))}>Usar ejemplo: reprogramación de pasajes</button>}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
@@ -215,15 +222,17 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                     <textarea
                       value={form.description}
                       onChange={(e) => set('description', e.target.value)}
-                      rows={3}
-                      placeholder="Describe brevemente la novedad..."
+                      rows={7}
+                      placeholder={'Qué cambió y para qué sirve.\n1. Abre la sección...\n2. Pulsa el botón...\n3. Confirma y revisa el resultado.'}
                       className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
                     />
                   </div>
 
+                  {form.description.trim() && <div className="rounded-xl border border-dm-border-primary p-4"><p className="text-xs font-semibold text-dm-text-muted mb-3">ASÍ LO VERÁ EL USUARIO</p><h3 className="font-bold text-dm-text-primary mb-3">{form.title || 'Título de la novedad'}</h3><UpdateGuide text={form.description} /></div>}
+
                   <div>
                     <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
-                      URL de Video (YouTube o MP4)
+                      Video complementario (opcional)
                     </label>
                     <input
                       type="url"
@@ -239,10 +248,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                       Enlace "Más información" (opcional)
                     </label>
                     <input
-                      type="url"
+                      type="text"
                       value={form.learn_more_url ?? ''}
                       onChange={(e) => set('learn_more_url', e.target.value)}
-                      placeholder="https://docs.tusistema.com/..."
+                      placeholder="/accounting/reprogramming o https://..."
                       className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>

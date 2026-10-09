@@ -136,6 +136,7 @@ const navGroups: NavGroup[] = [
     iconColor: 'text-indigo-500 dark:text-indigo-400',
     items: [
       { name: 'Facturas/Boletas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500 dark:text-indigo-400' },
+      { name: 'Reprogramaciones pendientes', path: '/accounting/reprogramming', icon: DocumentTextIcon, iconColor: 'text-amber-500' },
       { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500 dark:text-indigo-400' },
       { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500 dark:text-indigo-400' }
     ]
@@ -221,6 +222,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
         if (item.name === 'Cotizaciones') return hasPermission('commerce', 'quotations', userRole);
         if (item.name === 'Guías de Remisión') return hasPermission('commerce', 'remission-guides', userRole);
         if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
+        if (item.name === 'Reprogramaciones pendientes') return ['admin', 'supervisor', 'sales', 'seller'].includes(userRole?.toLowerCase() || '');
         if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
         if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);
         return true;

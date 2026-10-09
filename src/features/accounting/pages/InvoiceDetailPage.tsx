@@ -34,12 +34,15 @@ import { authService } from '../../../services/auth.service';
 import { invoiceToSplitPaymentData, getInvoicePaymentSummary } from '../../../utils/invoicePaymentMapper';
 import { getSaleKind } from '../../../utils/getSaleKind';
 import { formatIssueDate } from '../../../utils/formatDateTime';
+import ReprogramTicketModal from '../components/ReprogramTicketModal';
+import { reprogrammingService } from '../../../services/reprogramming.service';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showPdfError, setShowPdfError] = useState(false);
+  const [showReprogramModal, setShowReprogramModal] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showEditSeatModal, setShowEditSeatModal] = useState(false);
   const [showEditPaymentModal, setShowEditPaymentModal] = useState(false);
@@ -52,6 +55,11 @@ export const InvoiceDetailPage: React.FC = () => {
   const currentUser = authService.getCurrentUser();
 
   const invoiceId = Number(id);
+  const reprogramRole = ['admin', 'supervisor', 'sales', 'seller'].includes(currentUser?.role_name?.toLowerCase() || '');
+  const { data: pendingReprogram } = useQuery({
+    queryKey: ['reprogramming', invoiceId], queryFn: () => reprogrammingService.status(invoiceId),
+    enabled: reprogramRole && Number.isFinite(invoiceId), retry: false,
+  });
 
   // Usamos el servicio real para obtener los datos
   const { data: invoice, isLoading, error, dataUpdatedAt } = useQuery({
@@ -406,8 +414,12 @@ export const InvoiceDetailPage: React.FC = () => {
                 </Button>
               )}
 
+              {!isCargoInvoice && reprogramRole && invoice.business_status !== 'CANCELLED' && !['REJECTED', 'VOIDED', 'CANCELLED'].includes(invoice.sunat_status) && (
+                <Button variant="outline" size="sm" onClick={() => setShowReprogramModal(true)}>Reprogramar pasajes</Button>
+              )}
+              {pendingReprogram && <p className="rounded-lg bg-amber-100 text-amber-900 p-3 text-sm">Pendiente de nueva fecha. Estos pasajeros no están en el manifiesto; sus asientos fueron liberados. {pendingReprogram.reason}</p>}
               {/* Botón Editar asiento - solo para boletas/facturas de pasajeros, no encomiendas */}
-              {!isCargoInvoice && (
+              {!isCargoInvoice && !pendingReprogram && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -684,6 +696,7 @@ export const InvoiceDetailPage: React.FC = () => {
         </div>
       </div>
 
+      {showReprogramModal && <ReprogramTicketModal invoiceId={invoiceId} label={`${invoice.series}-${invoice.number}`} open onClose={() => setShowReprogramModal(false)} />}
       {/* Modal de WhatsApp */}
       {showWhatsAppModal && invoice && (
         <WhatsAppSendModal

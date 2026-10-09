@@ -96,6 +96,7 @@ export const usePermissions = () => {
       '/remission-guides': ['admin', 'sales', 'supervisor', 'dispatcher'],
       '/accounting': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR tienen acceso completo
       '/accounting/invoices': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR pueden hacer todo
+      '/accounting/reprogramming': ['admin', 'sales', 'seller', 'supervisor'],
       '/accounting/credit-notes': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR también pueden gestionar notas
       '/accounting/debit-notes': ['admin', 'sales', 'supervisor', 'accountant'], // SALES y SUPERVISOR también pueden gestionar notas
       '/finance': ['admin', 'sales', 'supervisor', 'accountant'],

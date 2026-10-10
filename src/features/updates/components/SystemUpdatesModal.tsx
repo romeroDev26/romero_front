@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import UpdateGuide, { safeUpdateLink } from './UpdateGuide';
 import { Dialog, Transition } from '@headlessui/react';
 import {
   XMarkIcon,
@@ -44,11 +45,7 @@ const isVimeoUrl = (url: string): boolean =>
 const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const videoUpdates = useMemo(
-    () => updates.filter((update) => !!update.video_url?.trim()),
-    [updates]
-  );
-  const total = videoUpdates.length;
+  const total = updates.length;
 
   useEffect(() => {
     if (!total) return;
@@ -58,7 +55,8 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
 
   if (!total) return null;
 
-  const current = videoUpdates[currentIndex];
+  const current = updates[Math.min(currentIndex, total - 1)];
+  const learnMore = safeUpdateLink(current.learn_more_url);
 
   const goPrev = () => setCurrentIndex((i) => Math.max(0, i - 1));
   const goNext = () => setCurrentIndex((i) => Math.min(total - 1, i + 1));
@@ -170,9 +168,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                           {current.title}
                         </Dialog.Title>
 
-                        <p className="mt-4 text-sm text-dm-text-secondary leading-relaxed">
-                          {current.description}
-                        </p>
+                        <p className="mt-4 text-sm text-dm-text-secondary">Conoce qué cambió y cómo usarlo, paso a paso.</p>
                       </div>
 
                       <div className="mt-8 p-4 rounded-xl bg-dm-bg-primary/80 border border-dm-border-primary">
@@ -181,7 +177,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                           Novedad {currentIndex + 1} de {total}
                         </p>
                         <div className="mt-3 flex items-center gap-2">
-                          {videoUpdates.map((_, idx) => (
+                          {updates.map((_, idx) => (
                             <button
                               key={idx}
                               onClick={() => setCurrentIndex(idx)}
@@ -231,9 +227,8 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                       </div>
                     </div>
 
-                    <div className="mt-5 rounded-xl overflow-hidden border border-dm-border-primary shadow-sm bg-black">
-                      {renderVideo(current.video_url as string)}
-                    </div>
+                    <div className="mt-5 max-h-[55vh] overflow-y-auto pr-1"><UpdateGuide text={current.description || ''} /></div>
+                    {current.video_url?.trim() && <details className="mt-5"><summary className="cursor-pointer font-semibold text-primary">Ver video complementario</summary><div className="mt-3 rounded-xl overflow-hidden border border-dm-border-primary bg-black">{renderVideo(current.video_url)}</div></details>}
 
                     <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">
                       {currentIndex < total - 1 ? (
@@ -251,14 +246,15 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                           Entendido
                         </button>
                       )}
-                      {current.learn_more_url && (
+                      {learnMore && (
                         <a
-                          href={current.learn_more_url}
-                          target="_blank"
+                          href={learnMore}
+                          target={learnMore.startsWith('/') ? undefined : '_blank'}
+                          onClick={handleClose}
                           rel="noopener noreferrer"
                           className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 border border-dm-border-primary bg-dm-bg-primary text-dm-text-secondary text-base font-semibold transition-all hover:bg-dm-bg-hover"
                         >
-                          Mas detalles
+                          {learnMore.startsWith('/') ? 'Abrir herramienta' : 'Más detalles'}
                         </a>
                       )}
                     </div>

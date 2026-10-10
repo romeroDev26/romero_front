@@ -20,6 +20,10 @@ describe('Novedades sin video', () => {
     expect(screen.getByText('Otro cambio')).toBeInTheDocument();
     expect(screen.getByText('Ver video complementario')).toBeInTheDocument();
   });
+  it('muestra la imagen del anuncio sin necesitar un video', () => {
+    render(<SystemUpdatesModal isOpen onClose={() => {}} updates={[{ ...announcement, image_url: '/images/updates/reprogramacion-pasajes.png' }]} />);
+    expect(screen.getByRole('img', { name: announcement.title })).toHaveAttribute('src', '/images/updates/reprogramacion-pasajes.png');
+  });
   it('no permite enlaces que ejecuten código o redireccionen como rutas externas', () => {
     expect(safeUpdateLink('javascript:alert(1)')).toBeUndefined();
     expect(safeUpdateLink('//external.test')).toBeUndefined();

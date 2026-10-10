@@ -27,6 +27,7 @@ const emptyForm = (): SystemUpdatePayload => ({
   title: '',
   description: '',
   video_url: '',
+  image_url: '',
   learn_more_url: '',
   release_date: new Date().toISOString().split('T')[0], // hoy por defecto
   platform: 'WEB',
@@ -50,6 +51,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
           title: editing.title,
           description: editing.description,
           video_url: editing.video_url ?? '',
+          image_url: editing.image_url ?? '',
           learn_more_url: editing.learn_more_url ?? '',
           release_date: editing.release_date,
           platform: editing.platform,
@@ -68,6 +70,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
             title: editing.title,
             description: editing.description,
             video_url: editing.video_url ?? '',
+            image_url: editing.image_url ?? '',
             learn_more_url: editing.learn_more_url ?? '',
             release_date: editing.release_date,
             platform: editing.platform,
@@ -112,10 +115,15 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
     const payload: SystemUpdatePayload = {
       ...form,
       video_url: form.video_url?.trim() || null,
+      image_url: form.image_url?.trim() || null,
       learn_more_url: form.learn_more_url?.trim() || null,
     };
     if (form.learn_more_url?.trim() && !safeUpdateLink(form.learn_more_url)) {
       toast.warning('Usa una ruta del sistema (/accounting/...) o un enlace https://');
+      return;
+    }
+    if (form.image_url?.trim() && !safeUpdateLink(form.image_url)) {
+      toast.warning('Usa una ruta de imagen del sistema o un enlace https://');
       return;
     }
     if (editing) {
@@ -160,7 +168,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                 {/* Formulario */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                   <p className="text-sm text-dm-text-secondary">Publica con un título y una explicación. No necesitas grabar un video. Escribe pasos con 1. 2. 3. para mostrarlos como una guía.</p>
-                  {!editing && <button type="button" className="text-sm text-primary font-semibold" onClick={() => setForm(prev => ({ ...prev, title: 'Reprograma pasajes desde el sistema', description: 'Ahora puedes cambiar el viaje sin perder el pago del pasajero.\n1. Abre la boleta en Contabilidad → Facturas/Boletas y pulsa Reprogramar pasajes.\n2. Si ya sabe cuándo viajará, elige el nuevo viaje y confirma.\n3. Si aún no tiene fecha, elige Aún no tiene fecha y escribe el motivo. El asiento se libera y el pasajero sale del manifiesto.\n4. Cuando confirme su fecha, abre Reprogramaciones pendientes y asigna el nuevo viaje. Entrega el ticket actualizado.', learn_more_url: '/accounting/reprogramming' }))}>Usar ejemplo: reprogramación de pasajes</button>}
+                  {!editing && <button type="button" className="text-sm text-primary font-semibold" onClick={() => setForm(prev => ({ ...prev, title: 'Reprograma pasajes desde el sistema', description: 'Ahora puedes cambiar el viaje sin perder el pago del pasajero.\n1. Abre la boleta en Contabilidad → Facturas/Boletas y pulsa Reprogramar pasajes.\n2. Si ya sabe cuándo viajará, elige el nuevo viaje y confirma.\n3. Si aún no tiene fecha, elige Aún no tiene fecha y escribe el motivo. El asiento se libera y el pasajero sale del manifiesto.\n4. Cuando confirme su fecha, abre Reprogramaciones pendientes y asigna el nuevo viaje. Entrega el ticket actualizado.\n5. La reprogramación está sujeta a un cargo aparte según la tarifa autorizada. Emite otra boleta o factura solo por ese servicio; conserva el importe del pasaje original.', learn_more_url: '/accounting/reprogramming', image_url: '/images/updates/reprogramacion-pasajes.png', is_active: false }))}>Usar ejemplo: reprogramación de pasajes</button>}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
@@ -228,7 +236,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                     />
                   </div>
 
-                  {form.description.trim() && <div className="rounded-xl border border-dm-border-primary p-4"><p className="text-xs font-semibold text-dm-text-muted mb-3">ASÍ LO VERÁ EL USUARIO</p><h3 className="font-bold text-dm-text-primary mb-3">{form.title || 'Título de la novedad'}</h3><UpdateGuide text={form.description} /></div>}
+                  <label className="block text-sm text-dm-text-secondary">Imagen (opcional)<input value={form.image_url || ''} onChange={e => set('image_url', e.target.value)} placeholder="/images/updates/reprogramacion-pasajes.png" className="w-full px-3 py-2 border border-dm-border-primary rounded-lg" /></label>
+                  {form.description.trim() && <div className="rounded-xl border border-dm-border-primary p-4"><p className="text-xs font-semibold text-dm-text-muted mb-3">ASÍ LO VERÁ EL USUARIO</p><h3 className="font-bold text-dm-text-primary mb-3">{form.title || 'Título de la novedad'}</h3>{safeUpdateLink(form.image_url) && <img src={safeUpdateLink(form.image_url)} alt="Vista previa de la novedad" className="rounded-xl w-full mb-3" />}<UpdateGuide text={form.description} /></div>}
 
                   <div>
                     <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">

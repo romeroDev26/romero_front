@@ -121,7 +121,7 @@ class TripsService {
   async search(params: SearchTripsParams): Promise<Trip[]> {
     const config: AxiosRequestConfig = {
       params,
-      paramsSerializer: p => stringify(p, { arrayFormat: 'comma', allowDots: true }),
+      paramsSerializer: p => stringify(p, { arrayFormat: 'repeat', allowDots: true }),
     };
     const response = await api.get(`${this.basePath}search`, config);
     // Normalizar respuesta: puede ser un array directo o un objeto paginado { results: [...] }

@@ -227,7 +227,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                       </div>
                     </div>
 
-                    <div className="mt-5 max-h-[55vh] overflow-y-auto pr-1"><UpdateGuide text={current.description || ''} /></div>
+                    <div className="mt-5 max-h-[55vh] overflow-y-auto pr-1">{safeUpdateLink(current.image_url) && <img src={safeUpdateLink(current.image_url)} alt={current.title} className="w-full rounded-xl mb-4" loading="lazy" />}<UpdateGuide text={current.description || ''} /></div>
                     {current.video_url?.trim() && <details className="mt-5"><summary className="cursor-pointer font-semibold text-primary">Ver video complementario</summary><div className="mt-3 rounded-xl overflow-hidden border border-dm-border-primary bg-black">{renderVideo(current.video_url)}</div></details>}
 
                     <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">

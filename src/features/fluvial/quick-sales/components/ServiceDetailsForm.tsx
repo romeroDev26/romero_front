@@ -60,7 +60,7 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
     );
   }
 
-  const isReprogramming = selectedProduct.internal_code === 'REPROGRAMACION';
+  const isReprogramming = ['REPROGRAMACION', 'SRV-REP-001'].includes(selectedProduct.internal_code || '');
   const finalPrice = customPrice ? parseFloat(customPrice) : Number(selectedProduct.sale_price);
   const isCustomPrice = customPrice.trim() !== '';
 

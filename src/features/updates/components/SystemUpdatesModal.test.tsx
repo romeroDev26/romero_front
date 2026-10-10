@@ -7,6 +7,17 @@ import { SystemUpdate } from '../services/updates.service';
 afterEach(cleanup);
 const announcement: SystemUpdate = { id: 1, title: 'Reprograma tu pasaje', description: 'Conserva el pago.\n1. Abre la boleta.\n2. Elige una nueva fecha.', version: '2026.10.09', release_date: '2026-10-09', video_url: null, learn_more_url: '/accounting/reprogramming', platform: 'WEB', is_active: true, is_mandatory: false, created_at: '', updated_at: '' };
 describe('Novedades sin video', () => {
+  it('amplía la imagen y restablece el zoom al cambiar de anuncio', () => {
+    render(<SystemUpdatesModal isOpen onClose={() => {}} updates={[{ ...announcement, image_url: '/one.png' }, { ...announcement, id: 2, image_url: '/two.png' }]} />);
+    expect(screen.getByRole('heading', { name: announcement.title })).toHaveClass('sr-only');
+    fireEvent.click(screen.getByRole('button', { name: 'Ampliar imagen' }));
+    expect(screen.getByRole('button', { name: 'Reducir imagen' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+    expect(screen.getByRole('button', { name: 'Ampliar imagen' })).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(screen.getByRole('button', { name: 'Ampliar imagen' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Reducir imagen' }));
+    expect(screen.getByRole('img', { name: announcement.title })).toHaveClass('object-contain');
+  });
   it('muestra el anuncio, los pasos y acceso directo sin necesitar video', () => {
     render(<SystemUpdatesModal isOpen onClose={() => {}} updates={[announcement]} />);
     expect(screen.getByText('Reprograma tu pasaje')).toBeInTheDocument();

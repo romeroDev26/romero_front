@@ -44,6 +44,8 @@ const isVimeoUrl = (url: string): boolean =>
 
 const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  useEffect(() => { setZoomed(false); }, [currentIndex, isOpen]);
 
   const total = updates.length;
 
@@ -114,20 +116,20 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
   if (announcementImage) return <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
     <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4">
-      <Dialog.Panel onKeyDown={event => { if (event.key === 'ArrowRight') goNext(); if (event.key === 'ArrowLeft') goPrev(); }} className="w-full max-w-[1500px] h-[94dvh] rounded-2xl border border-dm-border-primary bg-dm-bg-primary shadow-2xl flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between gap-3 px-4 py-3 shrink-0">
-          <div className="min-w-0"><Dialog.Title className="font-semibold text-dm-text-primary truncate">{current.title}</Dialog.Title><p className="text-xs text-dm-text-muted">{current.version} · {currentIndex + 1} de {total}</p></div>
-          <button onClick={handleClose} aria-label="Cerrar" className="p-2 rounded-full hover:bg-dm-bg-hover"><XMarkIcon className="w-5 h-5 text-dm-text-secondary" /></button>
+      <Dialog.Panel onKeyDown={event => { if (event.key === 'ArrowRight') goNext(); if (event.key === 'ArrowLeft') goPrev(); }} className="relative w-full max-w-[1500px] h-[94dvh] rounded-2xl bg-slate-950 text-white shadow-2xl flex flex-col overflow-hidden">
+        <Dialog.Title className="sr-only">{current.title}</Dialog.Title>
+        <button onClick={handleClose} aria-label="Cerrar" className="absolute right-3 top-3 z-10 p-2 rounded-full bg-black/70 text-white hover:bg-black"><XMarkIcon className="w-5 h-5" /></button>
+        <div key={`${current.id}-${zoomed}`} className="flex-1 min-h-0 overflow-auto">
+          <button type="button" onClick={() => setZoomed(value => !value)} aria-label={zoomed ? 'Reducir imagen' : 'Ampliar imagen'} aria-pressed={zoomed} className={zoomed ? 'block w-[200%] min-h-full cursor-zoom-out' : 'flex w-full h-full items-center justify-center cursor-zoom-in'}>
+            <img src={announcementImage} alt={current.title} draggable={false} className={zoomed ? 'block w-full max-w-none' : 'w-full h-full object-contain'} />
+          </button>
         </div>
-        <div className="flex-1 min-h-0 bg-black/5 dark:bg-black/30 flex items-center justify-center px-1 sm:px-3">
-          <img src={announcementImage} alt={current.title} className="w-full h-full object-contain" />
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 shrink-0 border-t border-dm-border-primary">
-          <div className="flex items-center gap-2"><button onClick={goPrev} disabled={currentIndex === 0} aria-label="Anterior" className="p-2 rounded-lg border border-dm-border-primary disabled:opacity-30"><ChevronLeftIcon className="w-5 h-5" /></button>
-            <div className="flex flex-wrap gap-2">{updates.map((item, index) => <button key={item.id} aria-label={`Ir a la novedad ${index + 1}`} aria-current={index === currentIndex ? 'true' : undefined} onClick={() => setCurrentIndex(index)} className={`w-2.5 h-2.5 rounded-full ${index === currentIndex ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`} />)}</div>
-            <button onClick={goNext} disabled={currentIndex === total - 1} aria-label="Siguiente" className="p-2 rounded-lg border border-dm-border-primary disabled:opacity-30"><ChevronRightIcon className="w-5 h-5" /></button>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 shrink-0 bg-slate-950">
+          <div className="flex items-center gap-2"><button onClick={goPrev} disabled={currentIndex === 0} aria-label="Anterior" className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-30"><ChevronLeftIcon className="w-5 h-5" /></button>
+            <div className="flex flex-wrap gap-2">{updates.map((item, index) => <button key={item.id} aria-label={`Ir a la novedad ${index + 1}`} aria-current={index === currentIndex ? 'true' : undefined} onClick={() => setCurrentIndex(index)} className={`w-2.5 h-2.5 rounded-full ${index === currentIndex ? 'bg-blue-400' : 'bg-slate-600'}`} />)}</div>
+            <button onClick={goNext} disabled={currentIndex === total - 1} aria-label="Siguiente" className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-30"><ChevronRightIcon className="w-5 h-5" /></button>
           </div>
-          <div className="flex items-center gap-3">{learnMore && <a href={learnMore} target={learnMore.startsWith('/') ? undefined : '_blank'} rel="noopener noreferrer" onClick={handleClose} className="text-sm font-semibold text-primary">{learnMore.startsWith('/') ? 'Abrir herramienta' : 'Más detalles'}</a>}<button onClick={currentIndex < total - 1 ? goNext : handleClose} className="rounded-lg bg-primary text-white px-4 py-2 text-sm font-semibold">{currentIndex < total - 1 ? 'Continuar' : 'Entendido'}</button></div>
+          <div className="flex items-center gap-3">{learnMore && <a href={learnMore} target={learnMore.startsWith('/') ? undefined : '_blank'} rel="noopener noreferrer" onClick={handleClose} className="text-sm font-semibold text-blue-300 hover:text-white">{learnMore.startsWith('/') ? 'Abrir herramienta' : 'Más detalles'}</a>}<button onClick={currentIndex < total - 1 ? goNext : handleClose} className="rounded-lg bg-primary text-white px-4 py-2 text-sm font-semibold">{currentIndex < total - 1 ? 'Continuar' : 'Entendido'}</button></div>
         </div>
       </Dialog.Panel>
     </div>

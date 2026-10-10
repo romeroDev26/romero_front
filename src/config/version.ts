@@ -18,7 +18,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     "version": "1.2.0",
     "date": "2026-10-10",
     "title": "Novedades en una galería de imágenes",
-    "description": "Los anuncios con imagen ocupan casi toda la pantalla y se recorren con flechas. La descripción es opcional; los anuncios de texto y video siguen disponibles.",
+    "description": "Los anuncios con imagen ocupan casi toda la pantalla, sin marcos blancos ni encabezado visible. Se recorren con flechas y puedes pulsar la imagen para ampliar los detalles. La descripción es opcional; los anuncios de texto y video siguen disponibles.",
     "tags": [
       "feature",
       "ui"

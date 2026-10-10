@@ -10,8 +10,10 @@ vi.mock('../../../services/reprogramming.service', () => ({ reprogrammingService
 vi.mock('../../../services/trips.service', () => ({ tripsService: { search: vi.fn(), getById: vi.fn(), getReprogrammingDates: vi.fn() } }));
 vi.mock('../../../services/auth.service', () => ({ authService: { getCurrentUser: vi.fn() } }));
 vi.mock('@/utils/sileo-toast', () => ({ toast: { success: vi.fn() } }));
-afterEach(cleanup);
+afterEach(() => { cleanup(); vi.useRealTimers(); });
 beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-10-10T12:00:00Z'));
   vi.clearAllMocks();
   vi.mocked(authService.getCurrentUser).mockReturnValue({ company_id: 1 } as ReturnType<typeof authService.getCurrentUser>);
   vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue([]);
@@ -41,7 +43,7 @@ describe('Reprogramación desde la web', () => {
     expect(confirm).toBeDisabled();
     fireEvent.click(confirm);
     expect(tripsService.search).not.toHaveBeenCalled();
-    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
+    fireEvent.click(screen.getByRole('button', { name: /^2026-10-10/ }));
     await screen.findByText('No hay viajes disponibles en esa fecha. Elige otro día o deja el pasaje pendiente de nueva fecha.');
     expect(confirm).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Aún no tiene fecha' }));
@@ -52,13 +54,13 @@ describe('Reprogramación desde la web', () => {
   });
   it('permite asignar fecha a un pendiente sin volver a cobrar ni postergar', async () => {
     vi.mocked(reprogrammingService.status).mockResolvedValue({ id: 1, invoice_id: 75447, source_trip_id: 30, reason: 'Fecha por confirmar', created_at: '', series: 'B006', number: 16956, total_payable: '110', sunat_status: 'ERROR' });
-    vi.mocked(tripsService.search).mockResolvedValue([{ id: 31, trip_name: 'Nuevo viaje', departure_datetime: '2099-10-10T22:00:00Z' }] as Awaited<ReturnType<typeof tripsService.search>>);
+    vi.mocked(tripsService.search).mockResolvedValue([{ id: 31, trip_name: 'Nuevo viaje', departure_datetime: '2026-10-10T22:00:00Z' }] as Awaited<ReturnType<typeof tripsService.search>>);
     vi.mocked(tripsService.getById).mockResolvedValue({ id: 31, stops: [] } as unknown as Awaited<ReturnType<typeof tripsService.getById>>);
     vi.mocked(reprogrammingService.schedule).mockResolvedValue({});
     const close = show();
     await screen.findByText('Pendiente de nueva fecha: Fecha por confirmar');
     expect(screen.queryByRole('button', { name: 'Aún no tiene fecha' })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
+    fireEvent.click(screen.getByRole('button', { name: /^2026-10-10/ }));
     fireEvent.click(await screen.findByRole('button', { name: 'Elegir Nuevo viaje' }));
     const confirm = screen.getByRole('button', { name: 'Confirmar reprogramación' });
     await waitFor(() => expect(confirm).toBeEnabled());
@@ -69,31 +71,31 @@ describe('Reprogramación desde la web', () => {
   });
   it('consulta solo la fecha elegida y limpia viaje y puertos al cambiar el día', async () => {
     vi.mocked(tripsService.search).mockResolvedValue([
-      { id: 31, trip_name: 'Viaje del día', departure_datetime: '2099-10-10T22:00:00Z' },
-      { id: 32, trip_name: 'Viaje de otro día', departure_datetime: '2099-10-11T22:00:00Z' },
+      { id: 31, trip_name: 'Viaje del día', departure_datetime: '2026-10-10T22:00:00Z' },
+      { id: 32, trip_name: 'Viaje de otro día', departure_datetime: '2026-10-11T22:00:00Z' },
     ] as Awaited<ReturnType<typeof tripsService.search>>);
     vi.mocked(tripsService.getById).mockResolvedValue({ id: 31, stops: [{ id: 1, port_id: 10, stop_order: 1, port: { name: 'Nauta' } }] } as unknown as Awaited<ReturnType<typeof tripsService.getById>>);
     show();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Aún no tiene fecha' })).toBeEnabled());
     expect(tripsService.search).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: /Elegir Viaje/ })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
+    fireEvent.click(screen.getByRole('button', { name: /^2026-10-10/ }));
     await screen.findByRole('button', { name: 'Elegir Viaje del día' });
-    expect(tripsService.search).toHaveBeenCalledWith(expect.objectContaining({ start_date: '2099-10-10', end_date: '2099-10-10' }));
+    expect(tripsService.search).toHaveBeenCalledWith(expect.objectContaining({ start_date: '2026-10-10', end_date: '2026-10-10' }));
     expect(screen.queryByRole('button', { name: 'Elegir Viaje de otro día' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Elegir Viaje del día' }));
     await screen.findAllByRole('option', { name: 'Nauta' });
     fireEvent.change(screen.getByLabelText('Embarque'), { target: { value: '10' } });
-    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-11' } });
+    fireEvent.click(screen.getByRole('button', { name: /^2026-10-11/ }));
     expect(await screen.findByRole('button', { name: 'Elegir Viaje de otro día' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.queryByLabelText('Embarque')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Confirmar reprogramación' })).toBeDisabled();
-    expect(tripsService.search).toHaveBeenLastCalledWith(expect.objectContaining({ start_date: '2099-10-11', end_date: '2099-10-11' }));
+    expect(tripsService.search).toHaveBeenLastCalledWith(expect.objectContaining({ start_date: '2026-10-11', end_date: '2026-10-11' }));
     expect(reprogrammingService.schedule).not.toHaveBeenCalled();
   });
 
   it('carga solo fechas para los indicadores y reutiliza la caché al volver al mes', async () => {
-    vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue(['2099-10-10']);
+    vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue(['2026-10-10']);
     show();
     await waitFor(() => expect(tripsService.getReprogrammingDates).toHaveBeenCalledOnce());
     expect(tripsService.search).not.toHaveBeenCalled();
@@ -107,11 +109,11 @@ describe('Reprogramación desde la web', () => {
 
   it('consulta indicadores aunque la sesión antigua no incluya empresa y muestra el punto', async () => {
     vi.mocked(authService.getCurrentUser).mockReturnValue({} as ReturnType<typeof authService.getCurrentUser>);
-    vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue(['2099-10-10']);
+    vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue(['2026-10-10']);
     show();
     await waitFor(() => expect(tripsService.getReprogrammingDates).toHaveBeenCalledWith(expect.objectContaining({ company_id: 1 })));
-    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
-    const day = await screen.findByRole('button', { name: '2099-10-10, viajes disponibles' });
+    fireEvent.click(screen.getByRole('button', { name: /^2026-10-10/ }));
+    const day = await screen.findByRole('button', { name: '2026-10-10, viajes disponibles' });
     expect(day.querySelector('[aria-label="Viaje disponible"]')).not.toBeNull();
     expect(day).toHaveAttribute('aria-pressed', 'true');
   });

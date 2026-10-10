@@ -108,7 +108,6 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
             <section className="space-y-3" aria-label="Calendario de reprogramación">
               <h3 className="font-semibold text-dm-text-primary">1. Elige la fecha</h3>
               <TripCalendar compact selectedDate={travelDate} currentMonth={currentMonth} onMonthChange={setCurrentMonth} onDateSelect={chooseDate} availableDates={calendar.data || []} todayDate={today} disabled={busy} isLoading={calendar.isLoading} />
-              <label className="flex items-center gap-3 text-sm text-dm-text-secondary">Fecha del nuevo viaje<input type="date" min={today} value={travelDate} disabled={busy} onChange={e => chooseDate(e.target.value)} className={`${inputClass} !p-2 w-auto min-w-0 flex-1`} /></label>
               {calendar.isError && <p role="alert" className="text-sm text-red-600">No se pudieron cargar los indicadores del calendario. Puedes elegir una fecha igualmente. <button onClick={() => calendar.refetch()} className="underline">Reintentar</button></p>}
             </section>
             <section className="space-y-3" aria-label="Viajes de la fecha elegida">

@@ -35,9 +35,12 @@ describe('Reprogramación desde la web', () => {
   it('no ejecuta cambios si no hay motivo ni viaje seleccionado', async () => {
     show();
     const confirm = screen.getByRole('button', { name: 'Confirmar reprogramación' });
-    await waitFor(() => expect(confirm).toBeEnabled());
+    expect(confirm).toBeDisabled();
     fireEvent.click(confirm);
-    expect(screen.getByText('Elige el nuevo viaje.')).toBeInTheDocument();
+    expect(tripsService.search).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
+    await screen.findByText('No hay viajes disponibles en esa fecha. Elige otro día o deja el pasaje pendiente de nueva fecha.');
+    expect(confirm).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Aún no tiene fecha' }));
     fireEvent.click(screen.getByRole('button', { name: 'Dejar pendiente y liberar asientos' }));
     expect(screen.getByText('Escribe el motivo (al menos 5 caracteres).')).toBeInTheDocument();
@@ -52,6 +55,8 @@ describe('Reprogramación desde la web', () => {
     const close = show();
     await screen.findByText('Pendiente de nueva fecha: Fecha por confirmar');
     expect(screen.queryByRole('button', { name: 'Aún no tiene fecha' })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
+    await screen.findByRole('option', { name: /Nuevo viaje/ });
     fireEvent.change(screen.getByLabelText('Nuevo viaje'), { target: { value: '31' } });
     const confirm = screen.getByRole('button', { name: 'Confirmar reprogramación' });
     await waitFor(() => expect(confirm).toBeEnabled());
@@ -60,4 +65,30 @@ describe('Reprogramación desde la web', () => {
     expect(reprogrammingService.schedule).toHaveBeenCalledWith(75447, { new_trip_id: 31 });
     expect(reprogrammingService.postpone).not.toHaveBeenCalled();
   });
+  it('consulta solo la fecha elegida y limpia viaje y puertos al cambiar el día', async () => {
+    vi.mocked(tripsService.search).mockResolvedValue([
+      { id: 31, trip_name: 'Viaje del día', departure_datetime: '2099-10-10T22:00:00Z' },
+      { id: 32, trip_name: 'Viaje de otro día', departure_datetime: '2099-10-11T22:00:00Z' },
+    ] as Awaited<ReturnType<typeof tripsService.search>>);
+    vi.mocked(tripsService.getById).mockResolvedValue({ id: 31, stops: [{ id: 1, port_id: 10, stop_order: 1, port: { name: 'Nauta' } }] } as unknown as Awaited<ReturnType<typeof tripsService.getById>>);
+    show();
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Aún no tiene fecha' })).toBeEnabled());
+    expect(tripsService.search).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Nuevo viaje')).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
+    await screen.findByRole('option', { name: /Viaje del día/ });
+    expect(tripsService.search).toHaveBeenCalledWith(expect.objectContaining({ start_date: '2099-10-10', end_date: '2099-10-10' }));
+    expect(screen.queryByRole('option', { name: /Viaje de otro día/ })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Nuevo viaje'), { target: { value: '31' } });
+    await screen.findAllByRole('option', { name: 'Nauta' });
+    fireEvent.change(screen.getByLabelText('Embarque'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-11' } });
+    await screen.findByRole('option', { name: /Viaje de otro día/ });
+    expect(screen.getByLabelText('Nuevo viaje')).toHaveValue('');
+    expect(screen.queryByLabelText('Embarque')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Confirmar reprogramación' })).toBeDisabled();
+    expect(tripsService.search).toHaveBeenLastCalledWith(expect.objectContaining({ start_date: '2099-10-11', end_date: '2099-10-11' }));
+    expect(reprogrammingService.schedule).not.toHaveBeenCalled();
+  });
+
 });

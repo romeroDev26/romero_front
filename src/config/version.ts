@@ -14,6 +14,8 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '1.2.0', date: '2026-10-10', title: 'Busqueda y totales de encomiendas por cobrar', description: 'Busca por documento, nombre, ID o comprobante. Todos incluye pendientes y cobros confirmados; los totales corresponden a todos los resultados del filtro.', tags: ['fix', 'improvement'] },
+  { version: '1.2.0', date: '2026-10-10', title: 'Pasajeros y contadores de manifiestos consistentes', description: 'Los pasajeros anulados y pendientes no reaparecen como libres. El detalle consulta el viaje directamente y el contador usa las mismas fuentes que el PDF. Al regenerar se leen los datos actuales.', tags: ['fix'] },
   {
     "version": "1.2.0",
     "date": "2026-10-10",

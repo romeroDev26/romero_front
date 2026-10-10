@@ -123,9 +123,8 @@ export const manifestService = {
 
   // Obtener manifiestos por trip_id
   getManifestsByTripId: async (tripId: number): Promise<Manifest[]> => {
-    // Endpoint problemático - devolver array vacío para evitar errores
-    console.debug(`Endpoint by-trip/${tripId} deshabilitado - devolviendo array vacío`);
-    return [];
+    const response = await api.get(`/dispatch/manifests/by-trip/${tripId}`);
+    return manifestService.enrichManifestsWithUserData(response.data || []);
   },
 
   // Obtener todos los manifiestos

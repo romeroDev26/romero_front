@@ -3,6 +3,7 @@
 export interface ReceivablesFilters {
   branch_office_id?: number | null;
   doc_number?: string | null;
+  search?: string | null;
   payment_status?: 'NO PAGADO' | 'PAGADO' | null;
   start_date?: string | null;
   end_date?: string | null;

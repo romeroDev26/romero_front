@@ -19,25 +19,10 @@ export function useTripManifests() {
     queryKey: ['trip-manifests', tripId],
     queryFn: async () => {
       if (!numericTripId) return [];
-      try {
-        const selectedBranch = localStorage.getItem('selectedSalesBranch');
-        if (!selectedBranch) throw new Error('No hay sucursal seleccionada');
-        const branchData = JSON.parse(selectedBranch);
-
-        const cached = queryClient.getQueryData<Manifest[]>(['manifests', branchData.id]);
-        if (cached && Array.isArray(cached)) {
-          return cached.filter((m) => m.trip_id === numericTripId);
-        }
-
-        const branchManifests = await manifestService.getManifestsByBranchOffice(branchData.id);
-        return branchManifests.filter((m) => m.trip_id === numericTripId);
-      } catch (err) {
-        console.error('Error al obtener manifiestos por viaje:', err);
-        return [];
-      }
+      return manifestService.getManifestsByTripId(numericTripId);
     },
     enabled: !!numericTripId,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
     retry: false,
   });
 
@@ -122,7 +107,8 @@ export function useTripManifests() {
   // Mutación para regenerar el PDF de un manifiesto existente manualmente
   const pdfMutation = useMutation({
     mutationFn: async (manifest: Manifest) => {
-      const { blob } = await generatePassengerManifestPDF(manifest);
+      const freshManifest = await manifestService.getManifestById(manifest.id);
+      const { blob } = await generatePassengerManifestPDF(freshManifest);
       const file = new File([blob], `manifiesto-${manifest.id}.pdf`, {
         type: 'application/pdf',
       });

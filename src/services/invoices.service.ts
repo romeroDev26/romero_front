@@ -62,7 +62,7 @@ export interface InvoiceCreateData {
   items: InvoiceItemCreateData[];
   // Campos de pago principal
   payment_method_code?: string; // Codigo interno: EFE, TRF, YAP, PLN, TDB, TCR, DEP, OTR
-  payment_operation_code?: string; // Codigo de operacion (hasta 50 caracteres)
+  payment_operation_code?: string; // Codigo de operacion (código completo)
   // Campos para pago dividido
   payment_amount_1?: number; // Monto del primer pago
   payment_method_code_2?: string; // Codigo del segundo metodo de pago

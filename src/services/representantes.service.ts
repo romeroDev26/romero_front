@@ -55,7 +55,7 @@ export interface CompanyInvoiceWithRepresentatives {
     detraccion_percentage?: number | null; // ← CORREGIDO: Número o null
     // ← NUEVOS CAMPOS DE PAGO
     payment_method_code?: string; // Código interno: EFE, TRF, YAP, PLN, TDB, TCR, DEP, OTR
-    payment_operation_code?: string; // Código de operación (hasta 50 caracteres)
+    payment_operation_code?: string; // Código de operación (código completo)
   };
   
   // Serie de documento (opcional, requerida para Facturas)

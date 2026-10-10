@@ -353,17 +353,14 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                   type="text"
                   value={operationCode1}
                   onChange={(e) => {
-                    if (e.target.value.length <= 20) {
-                      setOperationCode1(e.target.value);
-                    }
+                    setOperationCode1(e.target.value);
                   }}
                   placeholder="Ingrese el código..."
                   disabled={disabled}
                   className={opInputClass}
-                  maxLength={20}
                 />
                 <div className="text-[10px] text-dm-text-muted mt-1">
-                  {operationCode1.length}/20 caracteres
+                  {operationCode1.length} caracteres · Copia el código completo
                 </div>
               </div>
             )}
@@ -551,17 +548,14 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                 type="text"
                 value={operationCode1}
                 onChange={(e) => {
-                  if (e.target.value.length <= 20) {
-                    setOperationCode1(e.target.value);
-                  }
+                  setOperationCode1(e.target.value);
                 }}
                 placeholder="Ingrese el código..."
                 disabled={disabled}
                 className={isBilling ? opInputClass : 'w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm text-dm-text-primary'}
-                maxLength={20}
               />
               <div className="text-xs text-dm-text-muted mt-1">
-                {operationCode1.length}/20 caracteres
+                {operationCode1.length} caracteres · Copia el código completo
               </div>
             </div>
           )}
@@ -652,17 +646,14 @@ export const SplitPaymentForm: React.FC<SplitPaymentFormProps> = ({
                 type="text"
                 value={operationCode2}
                 onChange={(e) => {
-                  if (e.target.value.length <= 20) {
-                    setOperationCode2(e.target.value);
-                  }
+                  setOperationCode2(e.target.value);
                 }}
                 placeholder="Ingrese el código..."
                 disabled={disabled}
                 className={isBilling ? opInputClass : 'w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm text-dm-text-primary'}
-                maxLength={20}
               />
               <div className="text-xs text-dm-text-muted mt-1">
-                {operationCode2.length}/20 caracteres
+                {operationCode2.length} caracteres · Copia el código completo
               </div>
             </div>
           )}

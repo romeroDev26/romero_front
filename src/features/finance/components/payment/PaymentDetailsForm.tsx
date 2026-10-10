@@ -313,17 +313,14 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
               type="text"
               value={operationCode}
               onChange={(e) => {
-                if (e.target.value.length <= 20) {
-                  setOperationCode(e.target.value);
-                }
+                setOperationCode(e.target.value);
               }}
               placeholder="Ingrese el codigo..."
               disabled={disabled}
               className="w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm"
-              maxLength={20}
             />
             <div className="text-xs text-dm-text-muted mt-1">
-              {operationCode.length}/20 caracteres
+              {operationCode.length} caracteres · Copia el código completo
             </div>
           </div>
         )}
@@ -416,17 +413,14 @@ export const PaymentDetailsForm: React.FC<PaymentDetailsFormProps> = ({
                 type="text"
                 value={operationCode2}
                 onChange={(e) => {
-                  if (e.target.value.length <= 20) {
-                    setOperationCode2(e.target.value);
-                  }
+                  setOperationCode2(e.target.value);
                 }}
                 placeholder="Ingrese el codigo..."
                 disabled={disabled}
                 className="w-full p-2 border border-dm-border-primary rounded-md disabled:bg-dm-bg-secondary text-sm"
-                maxLength={20}
               />
               <div className="text-xs text-dm-text-muted mt-1">
-                {operationCode2.length}/20 caracteres
+                {operationCode2.length} caracteres · Copia el código completo
               </div>
             </div>
           )}

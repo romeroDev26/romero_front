@@ -3,6 +3,7 @@
 export interface ReceivablesFilters {
   branch_office_id?: number | null;
   doc_number?: string | null;
+  search?: string | null;
   payment_status?: 'NO PAGADO' | 'PAGADO' | null;
   start_date?: string | null;
   end_date?: string | null;
@@ -96,7 +97,7 @@ export interface ReceivablesBackendResponse {
   invoices?: ReceivablesBackendInvoice[];
   pagination: ReceivablesPagination;
   /** El backend no manda paid_parcels ni unpaid_parcels: los calcula el front. */
-  summary: Omit<ReceivablesSummary, 'paid_parcels' | 'unpaid_parcels'>;
+  summary: Omit<ReceivablesSummary, 'paid_parcels' | 'unpaid_parcels'> & Partial<Pick<ReceivablesSummary, 'paid_parcels' | 'unpaid_parcels'>>;
   filters_applied: ReceivablesFilters;
 }
 

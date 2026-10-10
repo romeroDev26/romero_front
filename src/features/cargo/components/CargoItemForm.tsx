@@ -107,7 +107,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
 
     const filtered = allServices.filter((service) => {
       const category = service.service_category?.toUpperCase() || '';
-      return category.includes('ENCOMIENDA') || category.includes('CARGA');
+      return !['REPROGRAMACION', 'SRV-REP-001'].includes(service.internal_code || '') && (category.includes('ENCOMIENDA') || category.includes('CARGA'));
     });
 
     const rank = (service: (typeof filtered)[0]) => {

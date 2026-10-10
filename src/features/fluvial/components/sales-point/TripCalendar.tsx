@@ -11,7 +11,11 @@ interface TripCalendarProps {
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
   onDateSelect: (date: string) => void;
-  tripsByDate: Record<string, AvailableTripByPort[]>;
+  tripsByDate?: Record<string, AvailableTripByPort[]>;
+  availableDates?: string[];
+  todayDate?: string;
+  disabled?: boolean;
+  compact?: boolean;
   isLoading: boolean;
 }
 
@@ -20,7 +24,11 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
   currentMonth,
   onMonthChange,
   onDateSelect,
-  tripsByDate,
+  tripsByDate = {},
+  availableDates,
+  todayDate,
+  disabled = false,
+  compact = false,
   isLoading
 }) => {
 
@@ -47,7 +55,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
   };
 
   const handleDateClick = (day: Date) => {
-    if (isBefore(day, today)) return; // No permitir fechas pasadas
+    if (disabled || (todayDate ? format(day, 'yyyy-MM-dd') < todayDate : isBefore(day, today))) return; // No permitir fechas pasadas
     
     const dateKey = format(day, 'yyyy-MM-dd');
     onDateSelect(dateKey);
@@ -56,10 +64,11 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
   const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
   return (
-    <div className="bg-dm-bg-primary rounded-lg border border-dm-border-primary p-4">
+    <div className={`bg-dm-bg-primary rounded-lg border border-dm-border-primary ${compact ? 'p-3' : 'p-4'}`}>
       {/* Header del calendario */}
-      <div className="flex items-center justify-between mb-4">
+      <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-4'}`}>
         <button
+          aria-label="Mes anterior" disabled={disabled}
           onClick={handlePrevMonth}
           className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           type="button"
@@ -67,11 +76,12 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
           <ChevronLeftIcon className="h-5 w-5" />
         </button>
         
-        <h3 className="text-lg font-semibold capitalize text-dm-text-primary">
+        <h3 className={`${compact ? 'text-base' : 'text-lg'} font-semibold capitalize text-dm-text-primary`}>
           {format(currentMonth, 'MMMM yyyy', { locale: es })}
         </h3>
         
         <button
+          aria-label="Mes siguiente" disabled={disabled}
           onClick={handleNextMonth}
           className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           type="button"
@@ -85,7 +95,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
         {weekDays.map((day) => (
           <div
             key={day}
-            className="p-2 text-center text-sm font-medium text-dm-text-secondary"
+            className={`${compact ? 'py-1 text-xs' : 'p-2 text-sm'} text-center font-medium text-dm-text-secondary`}
           >
             {day}
           </div>
@@ -96,22 +106,26 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
       <div className="grid grid-cols-7 gap-1">
         {calendarDays.map((day, index) => {
           if (!day) {
-            return <div key={`empty-${index}`} className="p-2 h-12" />;
+            return <div key={`empty-${index}`} className={compact ? 'h-10' : 'p-2 h-12'} />;
           }
 
           const dateKey = format(day, 'yyyy-MM-dd');
           const dayTrips = tripsByDate[dateKey] || [];
-          const isCurrentDay = isToday(day);
+          const isCurrentDay = todayDate ? dateKey === todayDate : isToday(day);
           const isSelected = selectedDate === dateKey;
-          const isPastDate = isBefore(day, today);
-          const hasTrips = dayTrips.length > 0;
+          const isPastDate = todayDate ? dateKey < todayDate : isBefore(day, today);
+          const hasTrips = availableDates ? availableDates.includes(dateKey) : dayTrips.length > 0;
 
           return (
-            <div
+            <button
+              type="button"
+              aria-label={`${dateKey}${hasTrips ? ', viajes disponibles' : ''}`}
+              aria-pressed={isSelected}
+              disabled={disabled || isPastDate}
               key={dateKey}
               onClick={() => handleDateClick(day)}
               className={`
-                relative p-2 h-12 rounded-lg text-center cursor-pointer transition-all
+                relative ${compact ? 'px-1 pt-1 pb-3 h-10' : 'p-2 h-12'} rounded-lg text-center cursor-pointer transition-all
                 ${isPastDate 
                   ? 'bg-dm-bg-secondary text-dm-text-muted cursor-not-allowed' 
                   : 'hover:bg-blue-50 dark:hover:bg-blue-950/30'
@@ -132,7 +146,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
               
               {/* Indicador de viajes disponibles */}
               {hasTrips && !isPastDate && (
-                <div className={`
+                <span aria-label="Viaje disponible" className={`
                   absolute bottom-1 left-1/2 transform -translate-x-1/2 
                   w-2 h-2 rounded-full
                   ${isSelected ? 'bg-white dark:bg-gray-200' : 'bg-blue-500 dark:bg-blue-400'}
@@ -147,13 +161,13 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
                   </div>
                 </div>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
 
       {/* Leyenda */}
-      <div className="mt-4 flex flex-wrap gap-4 text-xs text-dm-text-secondary">
+      <div className={`${compact ? 'mt-2' : 'mt-4'} flex flex-wrap gap-4 text-xs text-dm-text-secondary`}>
         <div className="flex items-center gap-1">
           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           <span>Viajes disponibles</span>

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import { es } from 'date-fns/locale';
+import { format } from 'date-fns';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useReceivables } from '../hooks/useReceivables';
 import { authService } from '../../../services/auth.service';
@@ -47,6 +48,11 @@ const ReceivablesPage: React.FC = () => {
   } = useReceivables();
 
   const payment = usePaymentConfirmation();
+  const [searchText, setSearchText] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => updateFilters({ search: searchText.trim() || null }), 350);
+    return () => clearTimeout(timer);
+  }, [searchText, updateFilters]);
 
   const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -65,12 +71,7 @@ const ReceivablesPage: React.FC = () => {
   const handleDateRangeChange = (dates: [Date | null, Date | null]) => {
     setDateRange(dates);
     const [start, end] = dates;
-    if (start) {
-      updateFilters({ start_date: start.toISOString().split('T')[0] });
-    }
-    if (end) {
-      updateFilters({ end_date: end.toISOString().split('T')[0] });
-    }
+    updateFilters({ start_date: start ? format(start, 'yyyy-MM-dd') : null, end_date: end ? format(end, 'yyyy-MM-dd') : null });
     if (start && end) {
       setShowDatePicker(false);
     }
@@ -84,6 +85,7 @@ const ReceivablesPage: React.FC = () => {
   /** Limpia filtros del hook y el rango local del calendario (estaban desincronizados). */
   const handleClearAllFilters = () => {
     clearFilters();
+    setSearchText('');
     setDateRange([null, null]);
     setShowDatePicker(false);
   };
@@ -135,7 +137,7 @@ const ReceivablesPage: React.FC = () => {
             </div>
           </div>
           <h2 className="text-xl font-bold tabular-nums text-dm-text-primary sm:text-2xl">
-            {total}
+            {summary.total_parcels}
           </h2>
         </div>
 
@@ -267,7 +269,7 @@ const ReceivablesPage: React.FC = () => {
             </div>
 
             {/* Limpiar filtros */}
-            {(filters.payment_status || filters.start_date || filters.end_date) && (
+            {(searchText || filters.payment_status || filters.start_date || filters.end_date) && (
               <>
                 <div className="h-4 w-px bg-dm-bg-secondary sm:h-5" />
                 <button
@@ -286,9 +288,10 @@ const ReceivablesPage: React.FC = () => {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dm-text-muted" />
             <input
               type="text"
-              placeholder="Buscar por encomienda, remitente o destinatario..."
-              value={filters.doc_number || ''}
-              onChange={(e) => updateFilters({ doc_number: e.target.value || null })}
+              aria-label="Buscar encomiendas"
+              placeholder="DNI/RUC, nombre del destinatario o remitente, ID o comprobante..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
               className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary pl-10 pr-4 py-2.5 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
@@ -473,7 +476,7 @@ const ReceivablesPage: React.FC = () => {
             {/* Pagination */}
             <div className="flex flex-col items-center justify-between gap-3 border-t border-dm-border-primary bg-dm-bg-secondary px-4 py-3 sm:flex-row sm:px-6 sm:py-4">
               <span className="text-[10px] font-medium uppercase tracking-tight text-dm-text-muted sm:text-xs">
-                {Math.min(pagination.current_page * pagination.page_size, total)} de {total}
+                Pagina {pagination.current_page} de {totalPages} - {total} comprobantes
               </span>
               <div className="flex items-center gap-1">
                 <button

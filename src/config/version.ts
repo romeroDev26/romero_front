@@ -1,7 +1,7 @@
 // Single source of truth for frontend version and changelog
 // Update this file with each meaningful deploy
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
 
 export type ChangelogTag = 'feature' | 'improvement' | 'fix' | 'ui';
 
@@ -14,6 +14,209 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '1.2.0', date: '2026-10-10', title: 'Venta empresarial habitual más sencilla', description: 'Los representantes usan el tramo y la tarifa general; solo despliega la opción de tramo propio cuando la necesites. El resumen y la confirmación desglosan cantidades y tarifas por tramo. Los tickets mixtos detallan el tramo de cada pasajero.', tags: ['improvement', 'fix'] },
+  { version: '1.2.0', date: '2026-10-10', title: 'Facturas empresariales con distintos tramos', description: 'Cada representante puede tener su puerto de embarque, desembarque y tarifa autorizada dentro del mismo viaje. El resumen suma las tarifas individuales y el manifiesto muestra el tramo de cada pasajero.', tags: ['feature'] },
+  { version: '1.2.0', date: '2026-10-10', title: 'Aviso de PDF del manifiesto desactualizado', description: 'El detalle compara el PDF guardado con los datos actuales y avisa si hay nuevas ventas, anulaciones o cambios de pasajeros. Regenera los PDF anteriores una vez para activar este control.', tags: ['improvement'] },
+  { version: '1.2.0', date: '2026-10-10', title: 'Busqueda y totales de encomiendas por cobrar', description: 'Busca por documento, nombre, ID o comprobante. Todos incluye pendientes y cobros confirmados; los totales corresponden a todos los resultados del filtro.', tags: ['fix', 'improvement'] },
+  { version: '1.2.0', date: '2026-10-10', title: 'Pasajeros y contadores de manifiestos consistentes', description: 'Los pasajeros anulados y pendientes no reaparecen como libres. El detalle consulta el viaje directamente y el contador usa las mismas fuentes que el PDF. Al regenerar se leen los datos actuales.', tags: ['fix'] },
+  {
+    "version": "1.2.0",
+    "date": "2026-10-10",
+    "title": "Novedades en una galería de imágenes",
+    "description": "Los anuncios con imagen ocupan casi toda la pantalla, sin marcos blancos ni encabezado visible. Se recorren con flechas y puedes pulsar la imagen para ampliar los detalles. La descripción es opcional; los anuncios de texto y video siguen disponibles.",
+    "tags": [
+      "feature",
+      "ui"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-10-10",
+    "title": "Reprogramación de pasajes desde la web",
+    "description": "Desde el detalle del comprobante puedes cambiar la fecha del viaje conservando el pago y el importe. El calendario marca fechas con salidas; las tarjetas permiten elegir viaje y revisar los puertos.",
+    "tags": [
+      "feature",
+      "ui"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-10-10",
+    "title": "Pasajes pendientes de nueva fecha",
+    "description": "Puedes liberar los asientos y retirar pasajeros del manifiesto sin devolver el pago. El acceso Reprogramaciones pendientes permite asignar un viaje cuando confirmen su fecha.",
+    "tags": [
+      "feature"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-10-10",
+    "title": "Cargo por reprogramación en Venta Rápida",
+    "description": "El cargo se registra con otro comprobante, monto autorizado en cada venta y referencia al pasaje original. El servicio exonerado se mantiene fuera de pasajeros y encomiendas.",
+    "tags": [
+      "feature"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-09-27",
+    "title": "Reportes por embarcación y período",
+    "description": "Consulta viajes operados, pasajeros, ventas, notas de crédito, recaudación y pendientes por embarcación. Los detalles permiten revisar ocupación, rutas y vendedores.",
+    "tags": [
+      "feature",
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-09-26",
+    "title": "Consultas de reportes más eficientes",
+    "description": "Se optimizaron las consultas de reportes por viaje y embarcación, con más detalle para analizar las operaciones y sus ventas.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-09-23",
+    "title": "Sesiones entre aplicaciones",
+    "description": "Se mejoró el manejo de sesiones al usar distintas aplicaciones del sistema.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-09-22",
+    "title": "Asistencia para identificar pagos Yape",
+    "description": "La búsqueda asistida permite localizar pagos por fecha y hora, con mejoras de avisos y actualización en tiempo real.",
+    "tags": [
+      "feature",
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-09-19",
+    "title": "Registro de pagos en encomiendas por cobrar",
+    "description": "Se mejoró el formulario de confirmación de pagos y su integración con la búsqueda asistida.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-09-08",
+    "title": "Reservas con notas especiales",
+    "description": "Puedes registrar notas para la reserva y revisarlas al consultar sus detalles y confirmar la venta. La lista de reservas tiene una presentación más clara.",
+    "tags": [
+      "feature",
+      "ui"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-08-19",
+    "title": "Descripción ampliada en Venta Rápida",
+    "description": "El detalle adicional del servicio permite escribir varias líneas para documentar mejor la venta.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-08-02",
+    "title": "País del pasajero en Punto de Venta",
+    "description": "Se agregó un selector de país en el formulario de pasajeros.",
+    "tags": [
+      "feature"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-07-17",
+    "title": "Edición de medios de pago",
+    "description": "Desde el detalle del comprobante y la vista previa del ticket puedes revisar y editar los medios de pago. Se mejoró el formato de importes y la actualización del resumen.",
+    "tags": [
+      "feature",
+      "fix"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-07-16",
+    "title": "Cierre por inactividad ajustado",
+    "description": "Se amplió el límite de inactividad antes del cierre automático de sesión.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-07-12",
+    "title": "Validación de carné de extranjería",
+    "description": "Se corrigió la validación del documento al agregar representantes.",
+    "tags": [
+      "fix"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-07-06",
+    "title": "Búsqueda de clientes y destinatarios",
+    "description": "Se integró la búsqueda con autocompletado para seleccionar clientes y destinatarios con mayor facilidad.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-06-15",
+    "title": "Inicio de sesión adaptable",
+    "description": "La pantalla de ingreso se adapta mejor a distintos tamaños y al cambio de tema; se incorporó el cierre automático por inactividad.",
+    "tags": [
+      "ui",
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-06-11",
+    "title": "Más contexto en gráficos de ventas",
+    "description": "Los gráficos muestran totales de ventas, rutas y vendedores para facilitar la lectura de resultados.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-06-10",
+    "title": "Vista previa de cambio de embarcación",
+    "description": "Al cambiar la embarcación de un viaje puedes revisar previamente la reubicación de pasajeros. También se mejoró la vista de calendario de programación.",
+    "tags": [
+      "feature",
+      "ui"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-06-09",
+    "title": "Búsqueda en el menú lateral",
+    "description": "El menú incorpora una búsqueda para encontrar secciones y se mejoró la selección de clientes.",
+    "tags": [
+      "improvement"
+    ]
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-05-28",
+    "title": "Tema oscuro y estados de carga",
+    "description": "Se amplió el soporte del tema oscuro y se mejoró la presentación de errores, carga de tablas y notificaciones.",
+    "tags": [
+      "ui",
+      "improvement"
+    ]
+  },
   {
     version: '1.1.0',
     date: '2026-05-18',

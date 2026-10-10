@@ -117,6 +117,8 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
       maxWidth="2xl"
     >
       <form onSubmit={handleSubmit} className="space-y-4 p-6">
+        {!isEditMode && <button type="button" className="text-sm font-semibold text-primary" onClick={() => setFormData({ ...INITIAL_FORM_DATA, internal_code: 'SRV-REP-001', name: 'Cargo por reprogramación de pasaje', description: 'Cargo independiente por cambio de viaje. No incluye el precio del pasaje original. Indicar la boleta o factura original en la descripción de la venta.', service_category: 'OTROS', sale_price: 1, tax_category_code: '20', is_active: true })}>Preparar servicio: cargo por reprogramación</button>}
+        {['REPROGRAMACION', 'SRV-REP-001'].includes(formData.internal_code || '') && <p className="rounded-lg bg-amber-100 text-amber-900 p-3 text-sm">Servicio exonerado para Venta Rápida. El precio de catálogo S/ 1 es referencial, como los otros servicios; en cada venta debes ingresar el monto autorizado. Escribe la referencia del comprobante original. No se usa en pasajeros ni encomiendas.</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Código Interno"
@@ -241,11 +243,13 @@ export const ProductServiceFormModal: React.FC<ProductServiceFormModalProps> = (
             </label>
             <select
               id="tax_category_code"
+              required
               name="tax_category_code"
               value={formData.tax_category_code}
               onChange={handleChange}
               className="w-full border border-dm-border-primary rounded-md px-3 py-2 text-sm mt-1 focus:ring-blue-500 focus:border-blue-500"
             >
+              <option value="" disabled>Seleccionar afectación</option>
               {TAX_CATEGORY_CODE_SUNAT_OPTIONS.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}

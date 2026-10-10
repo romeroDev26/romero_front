@@ -57,6 +57,7 @@ const TripManifestsPage = React.lazy(() => import('./features/manifests/pages/Tr
 // Páginas de contabilidad (lazy)
 const InvoicesListPage = React.lazy(() => import('./features/accounting/pages/InvoicesListPage').then(module => ({ default: module.InvoicesListPage })));
 const InvoiceDetailPage = React.lazy(() => import('./features/accounting/pages/InvoiceDetailPage').then(module => ({ default: module.InvoiceDetailPage })));
+const PendingReprogrammingPage = React.lazy(() => import('./features/accounting/pages/PendingReprogrammingPage'));
 const CreditNotesListPage = React.lazy(() => import('./features/accounting/credit-notes/pages/CreditNotesListPage').then(module => ({ default: module.CreditNotesListPage })));
 const CreditNoteNewPage = React.lazy(() => import('./features/accounting/credit-notes/pages/CreditNoteNewPage').then(module => ({ default: module.CreditNoteNewPage })));
 const CreditNoteFullFormPage = React.lazy(() => import('./features/accounting/credit-notes/pages/CreditNoteFullFormPage').then(module => ({ default: module.CreditNoteFullFormPage })));
@@ -235,6 +236,7 @@ function AppContent() {
             
             {/* Contabilidad */}
             <Route path="accounting">
+              <Route path="reprogramming" element={<Suspense fallback={<Spinner />}><PendingReprogrammingPage /></Suspense>} />
               <Route path="invoices" element={
                 <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
                   <InvoicesListPage />

@@ -4,8 +4,9 @@ export interface SystemUpdate {
   id: number;
   version: string;
   title: string;
-  description: string;
+  description: string | null;
   video_url: string | null;
+  image_url?: string | null;
   learn_more_url: string | null;
   release_date: string;
   is_active: boolean;
@@ -20,6 +21,7 @@ export interface SystemUpdatePayload {
   title: string;
   description: string;
   video_url?: string | null;
+  image_url?: string | null;
   learn_more_url?: string | null;
   release_date: string; // formato YYYY-MM-DD
   platform: 'WEB' | 'MOBILE' | 'ALL';

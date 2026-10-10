@@ -4,14 +4,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import ReprogramTicketModal from './ReprogramTicketModal';
 import { reprogrammingService } from '../../../services/reprogramming.service';
 import { tripsService } from '../../../services/trips.service';
+import { authService } from '../../../services/auth.service';
 
 vi.mock('../../../services/reprogramming.service', () => ({ reprogrammingService: { status: vi.fn(), postpone: vi.fn(), schedule: vi.fn() } }));
 vi.mock('../../../services/trips.service', () => ({ tripsService: { search: vi.fn(), getById: vi.fn(), getReprogrammingDates: vi.fn() } }));
-vi.mock('../../../services/auth.service', () => ({ authService: { getCurrentUser: () => ({ company_id: 1 }) } }));
+vi.mock('../../../services/auth.service', () => ({ authService: { getCurrentUser: vi.fn() } }));
 vi.mock('@/utils/sileo-toast', () => ({ toast: { success: vi.fn() } }));
 afterEach(cleanup);
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(authService.getCurrentUser).mockReturnValue({ company_id: 1 } as ReturnType<typeof authService.getCurrentUser>);
   vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue([]);
   vi.mocked(reprogrammingService.status).mockResolvedValue(null);
   vi.mocked(tripsService.search).mockResolvedValue([]);
@@ -101,6 +103,17 @@ describe('Reprogramación desde la web', () => {
     expect(tripsService.getReprogrammingDates).toHaveBeenCalledTimes(2);
     expect(tripsService.search).not.toHaveBeenCalled();
     expect(tripsService.getReprogrammingDates).toHaveBeenCalledWith(expect.objectContaining({ company_id: 1, start_date: expect.stringMatching(/-01$/) }));
+  });
+
+  it('consulta indicadores aunque la sesión antigua no incluya empresa y muestra el punto', async () => {
+    vi.mocked(authService.getCurrentUser).mockReturnValue({} as ReturnType<typeof authService.getCurrentUser>);
+    vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue(['2099-10-10']);
+    show();
+    await waitFor(() => expect(tripsService.getReprogrammingDates).toHaveBeenCalledWith(expect.objectContaining({ company_id: 1 })));
+    fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
+    const day = await screen.findByRole('button', { name: '2099-10-10, viajes disponibles' });
+    expect(day.querySelector('[aria-label="Viaje disponible"]')).not.toBeNull();
+    expect(day).toHaveAttribute('aria-pressed', 'true');
   });
 
 });

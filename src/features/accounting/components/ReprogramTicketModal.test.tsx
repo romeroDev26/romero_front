@@ -6,12 +6,13 @@ import { reprogrammingService } from '../../../services/reprogramming.service';
 import { tripsService } from '../../../services/trips.service';
 
 vi.mock('../../../services/reprogramming.service', () => ({ reprogrammingService: { status: vi.fn(), postpone: vi.fn(), schedule: vi.fn() } }));
-vi.mock('../../../services/trips.service', () => ({ tripsService: { search: vi.fn(), getById: vi.fn() } }));
+vi.mock('../../../services/trips.service', () => ({ tripsService: { search: vi.fn(), getById: vi.fn(), getReprogrammingDates: vi.fn() } }));
 vi.mock('../../../services/auth.service', () => ({ authService: { getCurrentUser: () => ({ company_id: 1 }) } }));
 vi.mock('@/utils/sileo-toast', () => ({ toast: { success: vi.fn() } }));
 afterEach(cleanup);
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue([]);
   vi.mocked(reprogrammingService.status).mockResolvedValue(null);
   vi.mocked(tripsService.search).mockResolvedValue([]);
   vi.mocked(reprogrammingService.postpone).mockResolvedValue({});
@@ -56,8 +57,7 @@ describe('Reprogramación desde la web', () => {
     await screen.findByText('Pendiente de nueva fecha: Fecha por confirmar');
     expect(screen.queryByRole('button', { name: 'Aún no tiene fecha' })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
-    await screen.findByRole('option', { name: /Nuevo viaje/ });
-    fireEvent.change(screen.getByLabelText('Nuevo viaje'), { target: { value: '31' } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Elegir Nuevo viaje' }));
     const confirm = screen.getByRole('button', { name: 'Confirmar reprogramación' });
     await waitFor(() => expect(confirm).toBeEnabled());
     fireEvent.click(confirm);
@@ -74,21 +74,33 @@ describe('Reprogramación desde la web', () => {
     show();
     await waitFor(() => expect(screen.getByRole('button', { name: 'Aún no tiene fecha' })).toBeEnabled());
     expect(tripsService.search).not.toHaveBeenCalled();
-    expect(screen.getByLabelText('Nuevo viaje')).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Elegir Viaje/ })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-10' } });
-    await screen.findByRole('option', { name: /Viaje del día/ });
+    await screen.findByRole('button', { name: 'Elegir Viaje del día' });
     expect(tripsService.search).toHaveBeenCalledWith(expect.objectContaining({ start_date: '2099-10-10', end_date: '2099-10-10' }));
-    expect(screen.queryByRole('option', { name: /Viaje de otro día/ })).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Nuevo viaje'), { target: { value: '31' } });
+    expect(screen.queryByRole('button', { name: 'Elegir Viaje de otro día' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Elegir Viaje del día' }));
     await screen.findAllByRole('option', { name: 'Nauta' });
     fireEvent.change(screen.getByLabelText('Embarque'), { target: { value: '10' } });
     fireEvent.change(screen.getByLabelText('Fecha del nuevo viaje'), { target: { value: '2099-10-11' } });
-    await screen.findByRole('option', { name: /Viaje de otro día/ });
-    expect(screen.getByLabelText('Nuevo viaje')).toHaveValue('');
+    expect(await screen.findByRole('button', { name: 'Elegir Viaje de otro día' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.queryByLabelText('Embarque')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Confirmar reprogramación' })).toBeDisabled();
     expect(tripsService.search).toHaveBeenLastCalledWith(expect.objectContaining({ start_date: '2099-10-11', end_date: '2099-10-11' }));
     expect(reprogrammingService.schedule).not.toHaveBeenCalled();
+  });
+
+  it('carga solo fechas para los indicadores y reutiliza la caché al volver al mes', async () => {
+    vi.mocked(tripsService.getReprogrammingDates).mockResolvedValue(['2099-10-10']);
+    show();
+    await waitFor(() => expect(tripsService.getReprogrammingDates).toHaveBeenCalledOnce());
+    expect(tripsService.search).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Mes siguiente' }));
+    await waitFor(() => expect(tripsService.getReprogrammingDates).toHaveBeenCalledTimes(2));
+    fireEvent.click(screen.getByRole('button', { name: 'Mes anterior' }));
+    expect(tripsService.getReprogrammingDates).toHaveBeenCalledTimes(2);
+    expect(tripsService.search).not.toHaveBeenCalled();
+    expect(tripsService.getReprogrammingDates).toHaveBeenCalledWith(expect.objectContaining({ company_id: 1, start_date: expect.stringMatching(/-01$/) }));
   });
 
 });

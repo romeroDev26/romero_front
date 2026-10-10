@@ -118,6 +118,11 @@ class TripsService {
     return response.data;
   }
 
+  async getReprogrammingDates(params: { company_id: number; start_date: string; end_date: string }): Promise<string[]> {
+    const response = await api.get<string[]>(`${this.basePath}reprogramming-dates`, { params });
+    return response.data;
+  }
+
   async search(params: SearchTripsParams): Promise<Trip[]> {
     const config: AxiosRequestConfig = {
       params,

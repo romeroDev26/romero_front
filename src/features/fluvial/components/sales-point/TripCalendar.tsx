@@ -11,7 +11,10 @@ interface TripCalendarProps {
   currentMonth: Date;
   onMonthChange: (date: Date) => void;
   onDateSelect: (date: string) => void;
-  tripsByDate: Record<string, AvailableTripByPort[]>;
+  tripsByDate?: Record<string, AvailableTripByPort[]>;
+  availableDates?: string[];
+  todayDate?: string;
+  disabled?: boolean;
   isLoading: boolean;
 }
 
@@ -20,7 +23,10 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
   currentMonth,
   onMonthChange,
   onDateSelect,
-  tripsByDate,
+  tripsByDate = {},
+  availableDates,
+  todayDate,
+  disabled = false,
   isLoading
 }) => {
 
@@ -47,7 +53,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
   };
 
   const handleDateClick = (day: Date) => {
-    if (isBefore(day, today)) return; // No permitir fechas pasadas
+    if (disabled || (todayDate ? format(day, 'yyyy-MM-dd') < todayDate : isBefore(day, today))) return; // No permitir fechas pasadas
     
     const dateKey = format(day, 'yyyy-MM-dd');
     onDateSelect(dateKey);
@@ -60,6 +66,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
       {/* Header del calendario */}
       <div className="flex items-center justify-between mb-4">
         <button
+          aria-label="Mes anterior" disabled={disabled}
           onClick={handlePrevMonth}
           className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           type="button"
@@ -72,6 +79,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
         </h3>
         
         <button
+          aria-label="Mes siguiente" disabled={disabled}
           onClick={handleNextMonth}
           className="p-2 hover:bg-dm-bg-hover rounded-lg transition-colors"
           type="button"
@@ -101,13 +109,17 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
 
           const dateKey = format(day, 'yyyy-MM-dd');
           const dayTrips = tripsByDate[dateKey] || [];
-          const isCurrentDay = isToday(day);
+          const isCurrentDay = todayDate ? dateKey === todayDate : isToday(day);
           const isSelected = selectedDate === dateKey;
-          const isPastDate = isBefore(day, today);
-          const hasTrips = dayTrips.length > 0;
+          const isPastDate = todayDate ? dateKey < todayDate : isBefore(day, today);
+          const hasTrips = availableDates ? availableDates.includes(dateKey) : dayTrips.length > 0;
 
           return (
-            <div
+            <button
+              type="button"
+              aria-label={`${dateKey}${hasTrips ? ', viajes disponibles' : ''}`}
+              aria-pressed={isSelected}
+              disabled={disabled || isPastDate}
               key={dateKey}
               onClick={() => handleDateClick(day)}
               className={`
@@ -147,7 +159,7 @@ export const TripCalendar: React.FC<TripCalendarProps> = ({
                   </div>
                 </div>
               )}
-            </div>
+            </button>
           );
         })}
       </div>

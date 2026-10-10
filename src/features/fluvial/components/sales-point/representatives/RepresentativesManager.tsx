@@ -162,9 +162,9 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                         </span>
                       </div>
                       
-                      {rep.boarding_stop_id && (
+                      {tripStops.length > 0 && (
                         <p className="mt-2 text-xs font-medium text-dm-text-primary">
-                          {tripStops.find(s => s.id === rep.boarding_stop_id)?.port?.name} → {tripStops.find(s => s.id === rep.disembarking_stop_id)?.port?.name} · Tarifa: {rep.unit_price?.toFixed(2)}
+                          {tripStops.find(s => s.id === (rep.boarding_stop_id ?? defaultBoardingStopId))?.port?.name ?? 'Embarque por elegir'} → {tripStops.find(s => s.id === (rep.disembarking_stop_id ?? defaultDisembarkingStopId))?.port?.name ?? 'Destino por elegir'} · {rep.unit_price === undefined ? 'Tarifa general' : 'Tarifa propia'}: {(rep.unit_price ?? defaultFare ?? 0) > 0 ? (rep.unit_price ?? defaultFare ?? 0).toFixed(2) : 'por definir'}
                         </p>
                       )}
                       {/* ← NUEVO: Mostrar notas especiales si existen */}

@@ -1,3 +1,4 @@
+import type { PassengerSegmentSummary } from './utils/passengerSegments';
 import React from "react";
 import { Modal } from "../../../../components/common/Modal";
 import { Button } from "../../../../components/common/Button";
@@ -14,6 +15,7 @@ interface ConfirmSaleModalProps {
   saleType: "normal" | "company" | "cargo";
   tripName?: string;
   representativesCount?: number;
+  segmentSummary?: PassengerSegmentSummary[];
 }
 
 export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
@@ -26,6 +28,7 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
   passengerName,
   saleType,
   tripName,
+  segmentSummary = [],
   representativesCount = 0,
 }) => {
   const getSaleTypeLabel = () => {
@@ -94,6 +97,20 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
             </div>
           )}
 
+        {segmentSummary.length > 0 && (
+          <div className="space-y-2 rounded-lg border border-dm-border-primary p-3 text-sm">
+            <p className="font-semibold">Tramos incluidos</p>
+            {segmentSummary.map(group => (
+              <div key={group.key} className="space-y-1 border-t border-dm-border-primary pt-2">
+                <p className="font-medium">{group.origin} → {group.destination}</p>
+                <div className="flex justify-between gap-2 text-dm-text-secondary">
+                  <span>{group.count} × {currencySymbol} {group.fare.toFixed(2)}</span>
+                  <span>{currencySymbol} {group.total.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
           {/* Total destacado */}
           <div className="pt-3 border-t border-dm-border-primary">
             <div className="flex items-center justify-between">

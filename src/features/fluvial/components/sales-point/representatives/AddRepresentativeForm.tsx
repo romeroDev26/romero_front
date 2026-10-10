@@ -73,6 +73,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     item_description: '', // ← NUEVO: Descripción por ítem/representante
   });
   
+  const [customSegment, setCustomSegment] = useState(false);
   const [boardingStopId, setBoardingStopId] = useState(defaultBoardingStopId ?? 0);
   const [disembarkingStopId, setDisembarkingStopId] = useState(defaultDisembarkingStopId ?? 0);
   const [individualFare, setIndividualFare] = useState(String(defaultFare ?? ''));
@@ -231,7 +232,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       ? (selectedSeat ? selectedSeat.seat_number : "Elección libre")
       : "Sin asientos configurados";
 
-    if (tripStops.length && (!boardingStopId || !disembarkingStopId ||
+    if (customSegment && (!boardingStopId || !disembarkingStopId ||
         (boardingOrder ?? Infinity) >= (tripStops.find(stop => stop.id === disembarkingStopId)?.stop_order ?? -1) ||
         !Number.isFinite(Number(individualFare)) || Number(individualFare) <= 0)) {
       toast.error('Revisa el tramo y la tarifa del representante');
@@ -246,7 +247,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       phone: formData.phone.trim() || null, // ← Enviar null si está vacío
       email: formData.email.trim() || undefined, // ← NUEVO: Campo email
       seat_number: seatNumber,
-      ...(tripStops.length ? { boarding_stop_id: boardingStopId, disembarking_stop_id: disembarkingStopId, unit_price: Number(individualFare) } : {}),
+      ...(customSegment ? { boarding_stop_id: boardingStopId, disembarking_stop_id: disembarkingStopId, unit_price: Number(individualFare) } : {}),
       item_description: formData.item_description.trim() || undefined,
     });
 
@@ -276,6 +277,22 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       
       <form onSubmit={handleSubmit} className="space-y-3">
         {tripStops.length > 0 && (
+          <div className="rounded-lg border border-dm-border-primary p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input type="checkbox" checked={customSegment} onChange={e => {
+                setCustomSegment(e.target.checked);
+                if (e.target.checked) {
+                  setBoardingStopId(defaultBoardingStopId ?? 0);
+                  setDisembarkingStopId(defaultDisembarkingStopId ?? 0);
+                  setIndividualFare(defaultFare && defaultFare > 0 ? String(defaultFare) : '');
+                }
+              }} />
+              Usar otro tramo o tarifa para este pasajero
+            </label>
+            {!customSegment && <p className="mt-1 text-xs text-dm-text-secondary">Usará el tramo y la tarifa general de la venta. Puedes elegirlos antes de confirmar.</p>}
+          </div>
+        )}
+        {customSegment && (
           <fieldset className="rounded-lg border border-dm-border-primary bg-dm-bg-secondary p-3">
             <legend className="px-1 text-sm font-semibold">Tramo y tarifa de este pasajero</legend>
             <div className="grid gap-3 sm:grid-cols-3">

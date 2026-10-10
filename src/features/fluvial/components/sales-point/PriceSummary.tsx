@@ -1,3 +1,4 @@
+import type { PassengerSegmentSummary } from './utils/passengerSegments';
 // src/features/fluvial/components/sales-point/PriceSummary.tsx
 import React from "react";
 import { AlertTriangle } from "lucide-react";
@@ -19,6 +20,7 @@ interface PriceSummaryProps {
   finalTotal: number;
   isRuc?: boolean;
   representativesCount?: number;
+  segmentSummary?: PassengerSegmentSummary[];
   passengerSubtotal?: number;
   isManualPriceMode?: boolean;
   manualPrice?: number | null;
@@ -53,6 +55,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   onDiscountChange,
   finalTotal,
   isRuc = false,
+  segmentSummary = [],
   representativesCount = 1,
   passengerSubtotal,
   isManualPriceMode = false,
@@ -140,12 +143,27 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           </div>
         )}
 
+        {segmentSummary.length > 0 && (
+          <div className="space-y-2 rounded-lg border border-dm-border-primary p-3 text-sm">
+            <p className="font-semibold">Tramos incluidos</p>
+            {segmentSummary.map(group => (
+              <div key={group.key} className="space-y-1 border-t border-dm-border-primary pt-2">
+                <p className="font-medium">{group.origin} → {group.destination}</p>
+                <div className="flex justify-between gap-2 text-dm-text-secondary">
+                  <span>{group.count} × {currencySymbol} {group.fare.toFixed(2)}</span>
+                  <span>{currencySymbol} {group.total.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         {!isManualPriceMode && (
           <>
             {isRuc && quantity > 1 ? (
               <div className="space-y-3">
                 <div>
-                  <label className={lbl}>Tarifa predeterminada para nuevos representantes</label>
+                  <label className={lbl}>Tarifa general de la venta</label>
+                  <p className="mb-2 text-xs text-dm-text-secondary">Aplica a los representantes sin tarifa propia. Los tramos personalizados se detallan arriba.</p>
                   <input
                     type="number"
                     value={

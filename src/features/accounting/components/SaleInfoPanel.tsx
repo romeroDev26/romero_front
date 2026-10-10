@@ -103,6 +103,7 @@ export const SaleInfoPanel: React.FC<SaleInfoPanelProps> = ({
   const currencySymbol = getCurrencySymbol(invoice.currency_code);
   const kind = getSaleKind(invoice);
   const firstItem = invoice.items?.[0];
+  const passengerTramos = [...new Set((invoice.items ?? []).filter(item => item.product_id === 1).map(item => item.boarding_port_name && item.disembarking_port_name ? `${item.boarding_port_name} → ${item.disembarking_port_name}` : '').filter(Boolean))];
 
   // --- Pago ---
   const paymentData = invoiceToSplitPaymentData(invoice);
@@ -233,10 +234,10 @@ export const SaleInfoPanel: React.FC<SaleInfoPanelProps> = ({
               icon={Ship}
               label="Embarcación"
               value={firstItem?.vehicle_name
-                ? `${firstItem.vehicle_name}${firstItem.seat_number ? ` · Asiento ${firstItem.seat_number}` : ''}`
+                ? `${firstItem.vehicle_name}${passengerTramos.length <= 1 && firstItem.seat_number ? ` · Asiento ${firstItem.seat_number}` : ''}`
                 : undefined}
             />
-            <InfoRow icon={ArrowLongRightIcon} label="Tramo" value={tramo} />
+            <InfoRow icon={ArrowLongRightIcon} label={passengerTramos.length > 1 ? "Tramos" : "Tramo"} value={passengerTramos.length > 1 ? passengerTramos.join(" · ") : tramo} />
           </div>
         </SectionCard>
       )}

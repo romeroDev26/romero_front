@@ -21,6 +21,10 @@ export interface CompanyInvoiceWithRepresentatives {
   
   // Lista de representantes (OBLIGATORIO)
   representatives: Array<{
+  boarding_stop_id?: number;
+  disembarking_stop_id?: number;
+  unit_price?: number;
+
     passenger_name: string;
     passenger_doc_type: string; // "1"=DNI, "4"=CE, "6"=RUC, "7"=Pasaporte
     passenger_doc_number: string;

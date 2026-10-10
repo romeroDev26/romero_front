@@ -44,6 +44,8 @@ const isVimeoUrl = (url: string): boolean =>
 
 const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  useEffect(() => { setZoomed(false); }, [currentIndex, isOpen]);
 
   const total = updates.length;
 
@@ -109,6 +111,29 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
       />
     );
   };
+
+  const announcementImage = safeUpdateLink(current.image_url);
+  if (announcementImage) return <Dialog open={isOpen} onClose={handleClose} className="relative z-50">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
+    <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4">
+      <Dialog.Panel onKeyDown={event => { if (event.key === 'ArrowRight') goNext(); if (event.key === 'ArrowLeft') goPrev(); }} className="relative w-full max-w-[1500px] h-[94dvh] rounded-2xl bg-slate-950 text-white shadow-2xl flex flex-col overflow-hidden">
+        <Dialog.Title className="sr-only">{current.title}</Dialog.Title>
+        <button onClick={handleClose} aria-label="Cerrar" className="absolute right-3 top-3 z-10 p-2 rounded-full bg-black/70 text-white hover:bg-black"><XMarkIcon className="w-5 h-5" /></button>
+        <div key={`${current.id}-${zoomed}`} className="flex-1 min-h-0 overflow-auto">
+          <button type="button" onClick={() => setZoomed(value => !value)} aria-label={zoomed ? 'Reducir imagen' : 'Ampliar imagen'} aria-pressed={zoomed} className={zoomed ? 'block w-[200%] min-h-full cursor-zoom-out' : 'flex w-full h-full items-center justify-center cursor-zoom-in'}>
+            <img src={announcementImage} alt={current.title} draggable={false} className={zoomed ? 'block w-full max-w-none' : 'w-full h-full object-contain'} />
+          </button>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 shrink-0 bg-slate-950">
+          <div className="flex items-center gap-2"><button onClick={goPrev} disabled={currentIndex === 0} aria-label="Anterior" className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-30"><ChevronLeftIcon className="w-5 h-5" /></button>
+            <div className="flex flex-wrap gap-2">{updates.map((item, index) => <button key={item.id} aria-label={`Ir a la novedad ${index + 1}`} aria-current={index === currentIndex ? 'true' : undefined} onClick={() => setCurrentIndex(index)} className={`w-2.5 h-2.5 rounded-full ${index === currentIndex ? 'bg-blue-400' : 'bg-slate-600'}`} />)}</div>
+            <button onClick={goNext} disabled={currentIndex === total - 1} aria-label="Siguiente" className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-30"><ChevronRightIcon className="w-5 h-5" /></button>
+          </div>
+          <div className="flex items-center gap-3">{learnMore && <a href={learnMore} target={learnMore.startsWith('/') ? undefined : '_blank'} rel="noopener noreferrer" onClick={handleClose} className="text-sm font-semibold text-blue-300 hover:text-white">{learnMore.startsWith('/') ? 'Abrir herramienta' : 'Más detalles'}</a>}<button onClick={currentIndex < total - 1 ? goNext : handleClose} className="rounded-lg bg-primary text-white px-4 py-2 text-sm font-semibold">{currentIndex < total - 1 ? 'Continuar' : 'Entendido'}</button></div>
+        </div>
+      </Dialog.Panel>
+    </div>
+  </Dialog>;
 
   return (
     <Transition show={isOpen} as={React.Fragment}>
@@ -227,7 +252,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                       </div>
                     </div>
 
-                    <div className="mt-5 max-h-[55vh] overflow-y-auto pr-1"><UpdateGuide text={current.description || ''} /></div>
+                    <div className="mt-5 max-h-[55vh] overflow-y-auto pr-1">{safeUpdateLink(current.image_url) && <img src={safeUpdateLink(current.image_url)} alt={current.title} className="w-full rounded-xl mb-4" loading="lazy" />}<UpdateGuide text={current.description || ''} /></div>
                     {current.video_url?.trim() && <details className="mt-5"><summary className="cursor-pointer font-semibold text-primary">Ver video complementario</summary><div className="mt-3 rounded-xl overflow-hidden border border-dm-border-primary bg-black">{renderVideo(current.video_url)}</div></details>}
 
                     <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">

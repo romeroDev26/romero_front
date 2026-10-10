@@ -127,9 +127,8 @@ export const manifestService = {
 
   // Obtener manifiestos por trip_id
   getManifestsByTripId: async (tripId: number): Promise<Manifest[]> => {
-    // Endpoint problemático - devolver array vacío para evitar errores
-    console.debug(`Endpoint by-trip/${tripId} deshabilitado - devolviendo array vacío`);
-    return [];
+    const response = await api.get(`/dispatch/manifests/by-trip/${tripId}`);
+    return manifestService.enrichManifestsWithUserData(response.data || []);
   },
 
   // Obtener todos los manifiestos
@@ -345,11 +344,12 @@ export const manifestService = {
   },
 
   // Subir PDF del manifiesto al backend
-  uploadManifestPDF: async (manifestId: number, pdfFile: File, pdfType: 'a4' | 'ticket'): Promise<void> => {
+  uploadManifestPDF: async (manifestId: number, pdfFile: File, pdfType: 'a4' | 'ticket', contentRevision?: string): Promise<void> => {
     try {
       const formData = new FormData();
       formData.append('pdf_file', pdfFile);
       formData.append('pdf_type', pdfType);
+      if (contentRevision) formData.append('content_revision', contentRevision);
       
       await api.post(`/dispatch/manifests/${manifestId}/upload-pdf`, formData, {
         headers: {

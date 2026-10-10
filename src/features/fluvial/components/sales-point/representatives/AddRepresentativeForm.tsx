@@ -13,6 +13,10 @@ import { DuplicatePassengerWarning } from '../../../../../components/common/Dupl
 import { useTripPassengerTicketCheck } from '../../../../../hooks/useTripPassengerTicketCheck';
 
 interface Representative {
+  boarding_stop_id?: number;
+  disembarking_stop_id?: number;
+  unit_price?: number;
+
   document_type: string;
   document_number: string;
   name: string;
@@ -23,6 +27,11 @@ interface Representative {
 }
 
 interface AddRepresentativeFormProps {
+  tripStops?: Array<{ id: number; stop_order: number; port?: { name: string } }>;
+  defaultBoardingStopId?: number | null;
+  defaultDisembarkingStopId?: number | null;
+  defaultFare?: number;
+
   onAdd: (representative: Representative) => void;
   onCancel: () => void;
   existingDocuments: string[];
@@ -46,6 +55,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
   representativeIndex,
   onSeatReserve,
   onSeatRelease,
+  tripStops = [], defaultBoardingStopId, defaultDisembarkingStopId, defaultFare,
 }) => {
   const [formData, setFormData] = useState({
     document_type: SunatDocType.DNI,
@@ -57,6 +67,12 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
     item_description: '', // ← NUEVO: Descripción por ítem/representante
   });
   
+  const [customSegment, setCustomSegment] = useState(false);
+  const [boardingStopId, setBoardingStopId] = useState(defaultBoardingStopId ?? 0);
+  const [disembarkingStopId, setDisembarkingStopId] = useState(defaultDisembarkingStopId ?? 0);
+  const [individualFare, setIndividualFare] = useState(String(defaultFare ?? ''));
+  const boardingOrder = tripStops.find(stop => stop.id === boardingStopId)?.stop_order;
+
   const [isLoadingDni, setIsLoadingDni] = useState(false);
   const [dniError, setDniError] = useState<string | null>(null);
   const [isReservingSeat, setIsReservingSeat] = useState(false);
@@ -213,6 +229,13 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       ? (selectedSeat ? selectedSeat.seat_number : "Elección libre")
       : "Sin asientos configurados";
 
+    if (customSegment && (!boardingStopId || !disembarkingStopId ||
+        (boardingOrder ?? Infinity) >= (tripStops.find(stop => stop.id === disembarkingStopId)?.stop_order ?? -1) ||
+        !Number.isFinite(Number(individualFare)) || Number(individualFare) <= 0)) {
+      toast.error('Revisa el tramo y la tarifa del representante');
+      return;
+    }
+
     // Agregar representante
     onAdd({
       document_type: formData.document_type,
@@ -221,6 +244,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       phone: formData.phone.trim() || null, // ← Enviar null si está vacío
       email: formData.email.trim() || undefined, // ← NUEVO: Campo email
       seat_number: seatNumber,
+      ...(customSegment ? { boarding_stop_id: boardingStopId, disembarking_stop_id: disembarkingStopId, unit_price: Number(individualFare) } : {}),
       item_description: formData.item_description.trim() || undefined,
     });
 
@@ -249,6 +273,45 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-3">
+        {tripStops.length > 0 && (
+          <div className="rounded-lg border border-dm-border-primary p-3">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input type="checkbox" checked={customSegment} onChange={e => {
+                setCustomSegment(e.target.checked);
+                if (e.target.checked) {
+                  setBoardingStopId(defaultBoardingStopId ?? 0);
+                  setDisembarkingStopId(defaultDisembarkingStopId ?? 0);
+                  setIndividualFare(defaultFare && defaultFare > 0 ? String(defaultFare) : '');
+                }
+              }} />
+              Usar otro tramo o tarifa para este pasajero
+            </label>
+            {!customSegment && <p className="mt-1 text-xs text-dm-text-secondary">Usará el tramo y la tarifa general de la venta. Puedes elegirlos antes de confirmar.</p>}
+          </div>
+        )}
+        {customSegment && (
+          <fieldset className="rounded-lg border border-dm-border-primary bg-dm-bg-secondary p-3">
+            <legend className="px-1 text-sm font-semibold">Tramo y tarifa de este pasajero</legend>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="text-xs">Embarque
+                <select aria-label="Embarque del representante" value={boardingStopId} onChange={e => { setBoardingStopId(Number(e.target.value)); setDisembarkingStopId(0); }} className="mt-1 w-full rounded-md border border-dm-border-primary bg-dm-bg-primary p-2 text-sm">
+                  <option value={0}>Seleccionar puerto</option>
+                  {tripStops.map(stop => <option key={stop.id} value={stop.id}>{stop.port?.name ?? `Parada ${stop.id}`}</option>)}
+                </select>
+              </label>
+              <label className="text-xs">Desembarque
+                <select aria-label="Desembarque del representante" value={disembarkingStopId} onChange={e => setDisembarkingStopId(Number(e.target.value))} className="mt-1 w-full rounded-md border border-dm-border-primary bg-dm-bg-primary p-2 text-sm">
+                  <option value={0}>Seleccionar puerto</option>
+                  {tripStops.filter(stop => stop.stop_order > (boardingOrder ?? Infinity)).map(stop => <option key={stop.id} value={stop.id}>{stop.port?.name ?? `Parada ${stop.id}`}</option>)}
+                </select>
+              </label>
+              <label className="text-xs">Tarifa individual
+                <input aria-label="Tarifa del representante" type="number" min="0.01" step="0.01" value={individualFare} onChange={e => setIndividualFare(e.target.value)} className="mt-1 w-full rounded-md border border-dm-border-primary bg-dm-bg-primary p-2 text-sm" />
+              </label>
+            </div>
+            <p className="mt-2 text-xs text-dm-text-secondary">Puedes combinar distintos tramos del mismo viaje en una factura. Ingresa la tarifa autorizada; el cambio de puerto no la recalcula.</p>
+          </fieldset>
+        )}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-dm-text-muted">

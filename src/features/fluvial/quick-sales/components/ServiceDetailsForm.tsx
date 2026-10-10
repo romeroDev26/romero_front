@@ -60,6 +60,8 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
     );
   }
 
+  const isReprogramming = ['REPROGRAMACION', 'SRV-REP-001'].includes(selectedProduct.internal_code || '');
+
   return (
     <div className="bg-dm-bg-primary p-6 rounded-lg shadow-sm border border-dm-border-primary">
       <h3 className="font-semibold text-lg text-dm-text-primary mb-4 flex items-center">
@@ -68,6 +70,7 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
       </h3>
 
       <div className="space-y-4">
+        {isReprogramming && <p className="rounded-lg bg-amber-100 p-3 text-sm text-amber-900">Ingresa el monto autorizado del cargo. Se cobra con una boleta o factura independiente del pasaje, sin IGV. En la descripción indica la serie y número del comprobante original.</p>}
         {/* Cantidad */}
         <div>
           <label className="block text-sm font-medium text-dm-text-secondary mb-2">
@@ -144,7 +147,7 @@ export const ServiceDetailsForm: React.FC<ServiceDetailsFormProps> = ({
               role="switch"
               aria-checked={isIgvGravado}
               onClick={() => onIgvGravadoChange(!isIgvGravado)}
-              disabled={disabled}
+              disabled={disabled || isReprogramming}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                 isIgvGravado ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
               }`}

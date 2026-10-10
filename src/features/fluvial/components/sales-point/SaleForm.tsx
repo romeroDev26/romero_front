@@ -1,4 +1,5 @@
 // src/features/fluvial/components/sales-point/SaleForm.tsx
+import { summarizePassengerSegments } from './utils/passengerSegments';
 import React, { memo } from "react";
 import {
   ArrowLeft,
@@ -137,6 +138,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
       seatMap,
     } = sf;
 
+    const segmentSummary = isRuc ? summarizePassengerSegments(representatives, tripDetails?.stops ?? [], selectedBoardingStopId, selectedDisembarkingStopId, (isManualPriceMode ? (manualPrice ?? 0) : (editableBasePrice ?? basePrice ?? 0)) * seatMultiplier) : [];
     return (
       <>
         {isProcessingSale && (
@@ -245,6 +247,10 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
               {showRepresentatives && (
                 <>
                   <RepresentativesManager
+                    tripStops={tripDetails?.stops ?? []}
+                    defaultBoardingStopId={selectedBoardingStopId}
+                    defaultDisembarkingStopId={selectedDisembarkingStopId}
+                    defaultFare={(isManualPriceMode ? (manualPrice ?? 0) : (editableBasePrice ?? basePrice ?? 0)) * seatMultiplier}
                     representatives={representatives}
                     onAddRepresentative={handleAddRepresentative}
                     onRemoveRepresentative={handleRemoveRepresentative}
@@ -324,6 +330,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       Tramo y Asiento
                     </h3>
 
+                    {isRuc && <p className="mb-3 text-xs text-dm-text-secondary">Tramo general para los representantes sin tramo propio.</p>}
                     <div className="grid grid-cols-1 gap-3 lg:gap-4 mb-4">
                       <SearchableSelect
                         label="Origen (Embarque)"
@@ -582,6 +589,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                     </section>
 
                     <PriceSummary
+                      segmentSummary={segmentSummary}
                       basePrice={basePrice}
                       seatMultiplier={seatMultiplier}
                       extraCost={extraCost}
@@ -600,6 +608,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       finalTotal={finalTicketPrice}
                       isRuc={isRuc}
                       representativesCount={representatives.length}
+                      passengerSubtotal={isRuc && representatives.length ? representatives.reduce((sum, rep) => sum + (rep.unit_price ?? (isManualPriceMode ? (manualPrice ?? 0) : (editableBasePrice ?? basePrice ?? 0)) * seatMultiplier), 0) : undefined}
                       isManualPriceMode={isManualPriceMode}
                       manualPrice={manualPrice}
                       onManualPriceChange={handleManualPriceChange}
@@ -800,6 +809,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
         )}
 
         <ConfirmSaleModal
+          segmentSummary={segmentSummary}
           isOpen={isConfirmSaleModalOpen}
           onClose={() => setIsConfirmSaleModalOpen(false)}
           onConfirm={handleConfirmSale}

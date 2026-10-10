@@ -551,7 +551,7 @@ export function useSaleForm({
     extraCost,
     passengerData.name, // Ya optimizado
     passengerData.docType,
-    representatives.length, // Ya optimizado
+    representatives, // Tarifas individuales también afectan el total
     isIgvGravado,
     discount,
   ]);

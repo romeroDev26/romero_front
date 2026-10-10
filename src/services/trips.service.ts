@@ -118,10 +118,15 @@ class TripsService {
     return response.data;
   }
 
+  async getReprogrammingDates(params: { company_id: number; start_date: string; end_date: string }): Promise<string[]> {
+    const response = await api.get<string[]>(`${this.basePath}reprogramming-dates`, { params });
+    return response.data;
+  }
+
   async search(params: SearchTripsParams): Promise<Trip[]> {
     const config: AxiosRequestConfig = {
       params,
-      paramsSerializer: p => stringify(p, { arrayFormat: 'comma', allowDots: true }),
+      paramsSerializer: p => stringify(p, { arrayFormat: 'repeat', allowDots: true }),
     };
     const response = await api.get(`${this.basePath}search`, config);
     // Normalizar respuesta: puede ser un array directo o un objeto paginado { results: [...] }

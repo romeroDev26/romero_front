@@ -287,6 +287,9 @@ export const useSaleBusinessLogic = ({
             seat_number: rep.seat_number || "Elección libre",
             special_notes: rep.special_notes || "",
             trip_seat_id: tripSeatId,
+            boarding_stop_id: rep.boarding_stop_id ?? selectedBoardingStopId,
+            disembarking_stop_id: rep.disembarking_stop_id ?? selectedDisembarkingStopId,
+            ...(rep.unit_price !== undefined ? { unit_price: parseFloat((rep.unit_price * (isIgvGravado ? 1.18 : 1)).toFixed(10)) } : {}),
           };
 
           const representativeItemDescription = rep.item_description?.trim();

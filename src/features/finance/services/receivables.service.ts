@@ -21,6 +21,7 @@ export const receivablesService = {
       // Si se envía branch_office_id explícitamente, se incluirá; no usar la sucursal por defecto del usuario
       if (params.branch_office_id) queryParams.append('branch_office_id', params.branch_office_id.toString());
       // Buscar por documento (DNI o RUC) del remitente o destinatario
+      if (params.search?.trim()) queryParams.append('search', params.search.trim());
       if (params.doc_number) queryParams.append('doc_number', params.doc_number);
       if (params.payment_status) queryParams.append('payment_status', params.payment_status);
       if (params.start_date) queryParams.append('start_date', params.start_date);
@@ -51,17 +52,13 @@ export const receivablesService = {
         }))
       ) || [];
 
-      // Calcular paid_parcels y unpaid_parcels desde los parcels transformados
-      const paid_parcels = allParcels.filter((p) => p.payment_status === 'PAGADO').length;
-      const unpaid_parcels = allParcels.filter((p) => p.payment_status === 'NO PAGADO').length;
-
       return {
         parcels: allParcels,
         pagination: backendData.pagination,
         summary: {
           ...backendData.summary,
-          paid_parcels,
-          unpaid_parcels
+          paid_parcels: backendData.summary?.paid_parcels || 0,
+          unpaid_parcels: backendData.summary?.unpaid_parcels || 0
         },
         filters_applied: backendData.filters_applied
       };

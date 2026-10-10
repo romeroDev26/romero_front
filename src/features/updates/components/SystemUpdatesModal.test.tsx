@@ -29,4 +29,22 @@ describe('Novedades sin video', () => {
     expect(safeUpdateLink('//external.test')).toBeUndefined();
     expect(safeUpdateLink('/\\external.test')).toBeUndefined();
   });
+  it('presenta imágenes como galería amplia sin descripción ni columna lateral', () => {
+    render(<SystemUpdatesModal isOpen onClose={() => {}} updates={[{ ...announcement, description: null, image_url: '/images/updates/reprogramacion-pasajes.png' }]} />);
+    expect(screen.getByRole('img', { name: announcement.title })).toHaveClass('object-contain');
+    expect(screen.queryByText('Conoce qué cambió y cómo usarlo, paso a paso.')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entendido' })).toBeInTheDocument();
+  });
+  it('recorre imágenes con las flechas sin repetir el texto incluido en la imagen', () => {
+    render(<SystemUpdatesModal isOpen onClose={() => {}} updates={[
+      { ...announcement, image_url: '/images/one.png' },
+      { ...announcement, id: 2, title: 'Segundo anuncio', image_url: '/images/two.png' },
+    ]} />);
+    expect(screen.queryByText('Abre la boleta.')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Siguiente' }));
+    expect(screen.getByRole('img', { name: 'Segundo anuncio' })).toHaveAttribute('src', '/images/two.png');
+    fireEvent.click(screen.getByRole('button', { name: 'Anterior' }));
+    expect(screen.getByRole('img', { name: announcement.title })).toHaveAttribute('src', '/images/one.png');
+  });
+
 });

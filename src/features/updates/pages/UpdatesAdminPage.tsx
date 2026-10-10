@@ -49,7 +49,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
       ? {
           version: editing.version,
           title: editing.title,
-          description: editing.description,
+          description: editing.description || '',
           video_url: editing.video_url ?? '',
           image_url: editing.image_url ?? '',
           learn_more_url: editing.learn_more_url ?? '',
@@ -68,7 +68,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
         ? {
             version: editing.version,
             title: editing.title,
-            description: editing.description,
+            description: editing.description || '',
             video_url: editing.video_url ?? '',
             image_url: editing.image_url ?? '',
             learn_more_url: editing.learn_more_url ?? '',
@@ -108,8 +108,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.version.trim() || !form.title.trim() || !form.description.trim()) {
-      toast.warning('Versión, título y descripción son obligatorios');
+    if (!form.version.trim() || !form.title.trim()) {
+      toast.warning('Versión y título son obligatorios');
       return;
     }
     const payload: SystemUpdatePayload = {
@@ -225,19 +225,19 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
 
                   <div>
                     <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">
-                      Descripción *
+                      Descripción (opcional)
                     </label>
                     <textarea
                       value={form.description}
                       onChange={(e) => set('description', e.target.value)}
-                      rows={7}
+                      rows={4}
                       placeholder={'Qué cambió y para qué sirve.\n1. Abre la sección...\n2. Pulsa el botón...\n3. Confirma y revisa el resultado.'}
                       className="w-full px-3 py-2 text-sm border border-dm-border-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
                     />
                   </div>
 
                   <label className="block text-sm text-dm-text-secondary">Imagen (opcional)<input value={form.image_url || ''} onChange={e => set('image_url', e.target.value)} placeholder="/images/updates/reprogramacion-pasajes.png" className="w-full px-3 py-2 border border-dm-border-primary rounded-lg" /></label>
-                  {form.description.trim() && <div className="rounded-xl border border-dm-border-primary p-4"><p className="text-xs font-semibold text-dm-text-muted mb-3">ASÍ LO VERÁ EL USUARIO</p><h3 className="font-bold text-dm-text-primary mb-3">{form.title || 'Título de la novedad'}</h3>{safeUpdateLink(form.image_url) && <img src={safeUpdateLink(form.image_url)} alt="Vista previa de la novedad" className="rounded-xl w-full mb-3" />}<UpdateGuide text={form.description} /></div>}
+                  {(form.description.trim() || safeUpdateLink(form.image_url)) && <div className="rounded-xl border border-dm-border-primary p-4"><p className="text-xs font-semibold text-dm-text-muted mb-3">ASÍ LO VERÁ EL USUARIO</p><h3 className="font-bold text-dm-text-primary mb-3">{form.title || 'Título de la novedad'}</h3>{safeUpdateLink(form.image_url) && <img src={safeUpdateLink(form.image_url)} alt="Vista previa de la novedad" className="rounded-xl w-full mb-3" />}{!safeUpdateLink(form.image_url) && <UpdateGuide text={form.description} />}</div>}
 
                   <div>
                     <label className="block text-xs font-semibold text-dm-text-muted mb-1 uppercase tracking-wider">

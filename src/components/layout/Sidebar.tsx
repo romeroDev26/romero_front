@@ -136,15 +136,15 @@ const navGroups: NavGroup[] = [
     iconColor: 'text-indigo-500 dark:text-indigo-400',
     items: [
       { name: 'Facturas/Boletas', path: '/accounting/invoices', icon: DocumentTextIcon, iconColor: 'text-indigo-500 dark:text-indigo-400' },
-      { name: 'Reprogramaciones pendientes', path: '/accounting/reprogramming', icon: DocumentTextIcon, iconColor: 'text-amber-500' },
       { name: 'Notas de Crédito', path: '/accounting/credit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500 dark:text-indigo-400' },
       { name: 'Notas de Débito', path: '/accounting/debit-notes', icon: DocumentTextIcon, iconColor: 'text-indigo-500 dark:text-indigo-400' }
     ]
   },
 
   {
-    title: 'Finanzas',
+    title: 'Gestión de viajes y cobros',
     items: [
+      { name: 'Reprogramaciones pendientes', path: '/accounting/reprogramming', icon: DocumentTextIcon, iconColor: 'text-amber-500' },
       { name: 'Encomiendas por cobrar', path: '/finance/receivables', icon: CreditCardIcon, iconColor: 'text-pink-500 dark:text-pink-400' }
     ]
   },
@@ -206,7 +206,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
       if (group.title === 'Sistema de Transporte Fluvial') return hasPermission('fluvial', undefined, userRole);
       if (group.title === 'Operaciones Comerciales') return hasPermission('commerce', undefined, userRole);
       if (group.title === 'Contabilidad') return hasPermission('accounting', undefined, userRole);
-      if (group.title === 'Finanzas') return hasPermission('finance', undefined, userRole);
+      if (group.title === 'Gestión de viajes y cobros') return hasPermission('finance', undefined, userRole) || ['admin', 'supervisor', 'sales', 'seller'].includes(userRole);
       if (group.title === 'Administración del Sistema') return hasPermission('administration', undefined, userRole);
       return false;
     }).map(group => {
@@ -222,6 +222,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentUser, onLogout, onCloseMobile,
         if (item.name === 'Cotizaciones') return hasPermission('commerce', 'quotations', userRole);
         if (item.name === 'Guías de Remisión') return hasPermission('commerce', 'remission-guides', userRole);
         if (item.name === 'Facturas/Boletas') return hasPermission('accounting', 'invoices', userRole);
+        if (item.name === 'Encomiendas por cobrar') return hasPermission('finance', undefined, userRole);
         if (item.name === 'Reprogramaciones pendientes') return ['admin', 'supervisor', 'sales', 'seller'].includes(userRole?.toLowerCase() || '');
         if (item.name === 'Notas de Crédito') return hasPermission('accounting', 'credit-notes', userRole);
         if (item.name === 'Notas de Débito') return hasPermission('accounting', 'debit-notes', userRole);

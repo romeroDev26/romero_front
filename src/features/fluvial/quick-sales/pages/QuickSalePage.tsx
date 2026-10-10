@@ -486,7 +486,7 @@ export const QuickSalePage: React.FC = () => {
           <ServiceSelector
             products={products || []}
             selectedProduct={formData.selectedProduct}
-            onSelectProduct={(product) => setFormData({ ...formData, selectedProduct: product })}
+            onSelectProduct={(product) => setFormData({ ...formData, selectedProduct: product, customPrice: '', isIgvGravado: product?.internal_code === 'REPROGRAMACION' ? false : formData.isIgvGravado })}
             disabled={isProcessing}
             isLoading={isLoadingProducts}
           />

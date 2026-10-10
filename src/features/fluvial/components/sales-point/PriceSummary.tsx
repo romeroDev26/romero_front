@@ -19,6 +19,7 @@ interface PriceSummaryProps {
   finalTotal: number;
   isRuc?: boolean;
   representativesCount?: number;
+  passengerSubtotal?: number;
   isManualPriceMode?: boolean;
   manualPrice?: number | null;
   onManualPriceChange?: (price: number) => void;
@@ -53,6 +54,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   finalTotal,
   isRuc = false,
   representativesCount = 1,
+  passengerSubtotal,
   isManualPriceMode = false,
   manualPrice = null,
   onManualPriceChange,
@@ -62,7 +64,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
 }) => {
   const quantity = isRuc ? Math.max(1, representativesCount) : 1;
   const ticketPricePerUnit = (basePrice || 0) * seatMultiplier;
-  const baseSubtotal = ticketPricePerUnit * quantity;
+  const baseSubtotal = passengerSubtotal ?? ticketPricePerUnit * quantity;
   const totalBeforeDiscount = baseSubtotal + extraCost;
   const maxDiscountAllowed = totalBeforeDiscount;
   const isIgvDisabled = taxCategoryCodeDefault === null;
@@ -143,7 +145,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
             {isRuc && quantity > 1 ? (
               <div className="space-y-3">
                 <div>
-                  <label className={lbl}>Tarifa por pasajero (editable)</label>
+                  <label className={lbl}>Tarifa predeterminada para nuevos representantes</label>
                   <input
                     type="number"
                     value={

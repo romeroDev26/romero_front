@@ -216,6 +216,16 @@ export const TripManifestsPage: React.FC = () => {
         </div>
       </div>
 
+      {activeManifest && (activeManifest.pdf_needs_refresh || activeManifest.pdf_status === 'MISSING') && (
+        <div role="status" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          <span>{activeManifest.pdf_status === 'MISSING'
+            ? 'El PDF no está disponible. Regénéralo para obtener el manifiesto actual.'
+            : activeManifest.pdf_status === 'UNVERIFIED'
+            ? 'Este PDF fue generado antes del control de cambios. Regénéralo una vez para verificarlo.'
+            : 'El manifiesto cambió después de generar el PDF. Regénéralo antes de imprimir o entregar.'}</span>
+          <button disabled={isGeneratingPDF || isGenerating} onClick={() => regeneratePDF(activeManifest)} className="font-semibold underline disabled:opacity-50">{isGeneratingPDF ? 'Regenerando…' : 'Regenerar PDF'}</button>
+        </div>
+      )}
       {/* ── Body ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* ── Sidebar ── */}

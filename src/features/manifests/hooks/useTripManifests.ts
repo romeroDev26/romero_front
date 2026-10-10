@@ -23,6 +23,7 @@ export function useTripManifests() {
     },
     enabled: !!numericTripId,
     staleTime: 0,
+    refetchInterval: 60000,
     retry: false,
   });
 
@@ -46,7 +47,7 @@ export function useTripManifests() {
         const file = new File([blob], `manifiesto-${manifest.id}.pdf`, {
           type: 'application/pdf',
         });
-        await manifestService.uploadManifestPDF(manifest.id, file, 'a4');
+        await manifestService.uploadManifestPDF(manifest.id, file, 'a4', manifest.content_revision);
         toast.success('PDF generado y subido correctamente');
         queryClient.invalidateQueries({ queryKey: ['trip-manifests', tripId] });
         queryClient.invalidateQueries({ queryKey: ['manifests'] });
@@ -112,7 +113,7 @@ export function useTripManifests() {
       const file = new File([blob], `manifiesto-${manifest.id}.pdf`, {
         type: 'application/pdf',
       });
-      await manifestService.uploadManifestPDF(manifest.id, file, 'a4');
+      await manifestService.uploadManifestPDF(manifest.id, file, 'a4', freshManifest.content_revision);
       return manifest;
     },
     onSuccess: () => {

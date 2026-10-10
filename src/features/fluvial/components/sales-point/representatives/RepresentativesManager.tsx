@@ -7,6 +7,10 @@ import { InfantManager } from '../infants';
 import { Infant } from '../core/types';
 
 interface Representative {
+  boarding_stop_id?: number;
+  disembarking_stop_id?: number;
+  unit_price?: number;
+
   document_type: string;
   document_number: string;
   name: string;
@@ -18,6 +22,11 @@ interface Representative {
 }
 
 interface RepresentativesManagerProps {
+  tripStops?: Array<{ id: number; stop_order: number; port?: { name: string } }>;
+  defaultBoardingStopId?: number | null;
+  defaultDisembarkingStopId?: number | null;
+  defaultFare?: number;
+
   representatives: Representative[];
   onAddRepresentative: (representative: Representative) => void;
   onRemoveRepresentative: (index: number) => void;
@@ -52,6 +61,7 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
   onSeatRelease,
   getReservedSeatNumbers,
   onUpdateRepresentativeInfants,
+  tripStops = [], defaultBoardingStopId, defaultDisembarkingStopId, defaultFare,
 }) => {
   const handleAddRepresentative = (representative: Representative) => {
     onAddRepresentative(representative);
@@ -152,6 +162,11 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
                         </span>
                       </div>
                       
+                      {rep.boarding_stop_id && (
+                        <p className="mt-2 text-xs font-medium text-dm-text-primary">
+                          {tripStops.find(s => s.id === rep.boarding_stop_id)?.port?.name} → {tripStops.find(s => s.id === rep.disembarking_stop_id)?.port?.name} · Tarifa: {rep.unit_price?.toFixed(2)}
+                        </p>
+                      )}
                       {/* ← NUEVO: Mostrar notas especiales si existen */}
                       {rep.item_description && (
                         <div className="mt-2 rounded-md border border-blue-200 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-950/30 p-2">
@@ -218,6 +233,10 @@ export const RepresentativesManager: React.FC<RepresentativesManagerProps> = ({
             </div>
             
             <AddRepresentativeForm
+              tripStops={tripStops}
+              defaultBoardingStopId={defaultBoardingStopId}
+              defaultDisembarkingStopId={defaultDisembarkingStopId}
+              defaultFare={defaultFare}
               onAdd={handleAddRepresentative}
               onCancel={handleCancelAdd}
               existingDocuments={existingDocuments}

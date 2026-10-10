@@ -61,6 +61,10 @@ export interface TripInfo {
 }
 
 export interface Manifest {
+  content_revision?: string;
+  pdf_status?: 'CURRENT' | 'MISSING' | 'INVALIDATED' | 'OUTDATED' | 'UNVERIFIED';
+  pdf_needs_refresh?: boolean;
+  pdf_generated_at?: string;
   id: number;
   trip_id: number;
   manifest_number: string;

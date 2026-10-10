@@ -26,7 +26,9 @@ export const calculatePriceDetails = (
   const quantity = isRuc ? Math.max(1, representatives.length) : 1;
   
   // LÓGICA DEL BACKEND - PASO 1: Precio Unitario Base (sin IGV)
-  const baseSubtotal = (basePrice * seatMultiplier) * quantity;
+  const baseSubtotal = isRuc && representatives.length
+    ? representatives.reduce((sum, rep) => sum + (rep.unit_price ?? basePrice * seatMultiplier), 0)
+    : (basePrice * seatMultiplier) * quantity;
   const totalBeforeDiscount = baseSubtotal + extraCost;
   
   // LÓGICA DEL BACKEND - PASO 2: Aplicar descuentos para obtener el Subtotal Imponible
@@ -57,7 +59,9 @@ export const validateDiscount = (
   // Calcular el máximo descuento posible (precio total antes de descuentos)
   const isRuc = representatives.length > 0;
   const quantity = isRuc ? Math.max(1, representatives.length) : 1;
-  const baseSubtotal = (basePrice * seatMultiplier) * quantity;
+  const baseSubtotal = isRuc && representatives.length
+    ? representatives.reduce((sum, rep) => sum + (rep.unit_price ?? basePrice * seatMultiplier), 0)
+    : (basePrice * seatMultiplier) * quantity;
   const totalBeforeDiscount = baseSubtotal + extraCost;
   
   if (discount > totalBeforeDiscount) {

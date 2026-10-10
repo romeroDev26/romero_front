@@ -54,6 +54,10 @@ export interface Infant {
 // ----------------------------------
 
 export interface Representative {
+  boarding_stop_id?: number;
+  disembarking_stop_id?: number;
+  unit_price?: number;
+
   document_type: string;
   document_number: string;
   name: string;

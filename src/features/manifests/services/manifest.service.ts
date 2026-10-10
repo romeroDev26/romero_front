@@ -330,11 +330,12 @@ export const manifestService = {
   },
 
   // Subir PDF del manifiesto al backend
-  uploadManifestPDF: async (manifestId: number, pdfFile: File, pdfType: 'a4' | 'ticket'): Promise<void> => {
+  uploadManifestPDF: async (manifestId: number, pdfFile: File, pdfType: 'a4' | 'ticket', contentRevision?: string): Promise<void> => {
     try {
       const formData = new FormData();
       formData.append('pdf_file', pdfFile);
       formData.append('pdf_type', pdfType);
+      if (contentRevision) formData.append('content_revision', contentRevision);
       
       await api.post(`/dispatch/manifests/${manifestId}/upload-pdf`, formData, {
         headers: {

@@ -14,6 +14,8 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '1.2.0', date: '2026-10-10', title: 'Códigos de operación completos', description: 'Los pagos simples, divididos y cobros de encomiendas permiten ingresar o pegar el código completo sin cortarlo a 20 caracteres. Se mantienen los avisos de validación y duplicados.', tags: ['fix'] },
+  { version: '1.2.0', date: '2026-10-10', title: 'Resumen de pasajeros por tramo en tickets', description: 'Las facturas con varios tramos muestran la cantidad de pasajeros de cada ruta en Datos del viaje, además del tramo individual en cada línea.', tags: ['improvement'] },
   { version: '1.2.0', date: '2026-10-10', title: 'Venta empresarial habitual más sencilla', description: 'Los representantes usan el tramo y la tarifa general; solo despliega la opción de tramo propio cuando la necesites. El resumen y la confirmación desglosan cantidades y tarifas por tramo. Los tickets mixtos detallan el tramo de cada pasajero.', tags: ['improvement', 'fix'] },
   { version: '1.2.0', date: '2026-10-10', title: 'Facturas empresariales con distintos tramos', description: 'Cada representante puede tener su puerto de embarque, desembarque y tarifa autorizada dentro del mismo viaje. El resumen suma las tarifas individuales y el manifiesto muestra el tramo de cada pasajero.', tags: ['feature'] },
   { version: '1.2.0', date: '2026-10-10', title: 'Aviso de PDF del manifiesto desactualizado', description: 'El detalle compara el PDF guardado con los datos actuales y avisa si hay nuevas ventas, anulaciones o cambios de pasajeros. Regenera los PDF anteriores una vez para activar este control.', tags: ['improvement'] },

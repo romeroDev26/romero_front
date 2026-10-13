@@ -56,7 +56,7 @@ export interface CompanyInvoiceWithRepresentatives {
     detraccion_percentage?: number | null; // ← CORREGIDO: Número o null
     // ← NUEVOS CAMPOS DE PAGO
     payment_method_code?: string; // Código interno: EFE, TRF, YAP, PLN, TDB, TCR, DEP, OTR
-    payment_operation_code?: string; // Código de operación (hasta 50 caracteres)
+    payment_operation_code?: string; // Código de operación (código completo)
     // Pago dividido: el segundo metodo y el reparto de montos entre ambos.
     // useSaleBusinessLogic ya los enviaba; faltaban en el tipo.
     payment_amount_1?: number;

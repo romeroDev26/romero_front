@@ -7,7 +7,7 @@
 export interface PaymentConfirmationData {
   invoice_item_id: number;
   payment_method_code: string;        // EFE, TRF, YAP, PLN, DEP, OTR
-  payment_operation_code?: string;    // Codigo de operacion (max 20 chars)
+  payment_operation_code?: string;    // Codigo de operacion (código completo)
   payment_date: string;               // Fecha/hora ISO format
   notes?: string;                     // Observaciones adicionales
   // Campos para pago dividido

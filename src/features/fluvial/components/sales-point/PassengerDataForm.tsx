@@ -64,7 +64,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({
   };
 
   const handleSearch = async () => {
-    if (!passengerData.docNumber) return;
+    if (!passengerData.docNumber || disabled || isQueryingDni || isQueryingRuc) return;
 
     try {
       if (passengerData.docType === SunatDocType.DNI) {
@@ -175,11 +175,20 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({
               name="docNumber"
               value={passengerData.docNumber || ""}
               onChange={handleInputChange}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (!event.repeat) void handleSearch();
+                }
+              }}
               disabled={disabled}
               placeholder="Ingrese el número"
               className="w-full rounded-l-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
             <Button
+              type="button"
+              aria-label="Buscar por número de documento"
               onClick={handleSearch}
               disabled={!isSearchable || isQueryingDni || isQueryingRuc || disabled}
               className="rounded-l-none rounded-r-lg px-3"

@@ -41,9 +41,6 @@ Estructura principal
 Configuración
 - Variables de entorno en `.env` o en `src/config` según el proyecto.
 
-Contribuciones
-- Haz un fork, crea una rama con tu cambio y abre un Pull Request.
-
 Licencia
 - Contenido y código cerrados; todos los derechos reservados al autor.
 - Este repositorio está cerrado por ahora y la sección queda solo a modo de información.

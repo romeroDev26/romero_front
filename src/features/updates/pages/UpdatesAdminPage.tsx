@@ -287,6 +287,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, editing }) => {
                     </label>
                   </div>
 
+                  <p className="text-xs text-dm-text-muted">Activa: se muestra desde la fecha de lanzamiento. Obligatoria: si la cierran sin pulsar Entendido, se recuerda como máximo una vez cada 24 horas. No bloquea las ventas.</p>
+
                   {/* Acciones */}
                   <div className="flex justify-end gap-2 pt-2 border-t border-dm-border-secondary">
                     <button

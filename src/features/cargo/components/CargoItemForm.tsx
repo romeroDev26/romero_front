@@ -1,3 +1,4 @@
+import { searchDocumentOnEnter } from '../../../utils/documentSearchKeyboard';
 // src/features/cargo/components/CargoItemForm.tsx
 
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -177,6 +178,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
   };
 
   const handleRecipientSearch = async () => {
+    if (isFormLocked || isQueryingDni || isQueryingRuc) return;
     const docType = getValues('recipient.docType');
     const docNumber = getValues('recipient.docNumber');
 
@@ -616,6 +618,7 @@ export const CargoItemForm: React.FC<CargoItemFormProps> = ({
                             ? 'El número de documento es obligatorio'
                             : false,
                         })}
+                        onKeyDown={event => searchDocumentOnEnter(event, handleRecipientSearch, isFormLocked || isQueryingRecipient || !isRecipientSearchable)}
                         placeholder={
                           recipientDocType === SunatDocType.DNI
                             ? '12345678'

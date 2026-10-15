@@ -1,3 +1,4 @@
+import { searchDocumentOnEnter } from '../../../../utils/documentSearchKeyboard';
 // src/features/fluvial/components/sales-point/PassengerDataForm.tsx
 import React from 'react';
 import { Search, User } from 'lucide-react';
@@ -175,13 +176,7 @@ export const PassengerDataForm: React.FC<PassengerDataFormProps> = ({
               name="docNumber"
               value={passengerData.docNumber || ""}
               onChange={handleInputChange}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  if (!event.repeat) void handleSearch();
-                }
-              }}
+              onKeyDown={event => searchDocumentOnEnter(event, handleSearch, disabled || isQueryingDni || isQueryingRuc)}
               disabled={disabled}
               placeholder="Ingrese el número"
               className="w-full rounded-l-lg border border-dm-border-primary bg-dm-bg-secondary py-2.5 px-3.5 text-sm text-dm-text-primary placeholder:text-dm-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"

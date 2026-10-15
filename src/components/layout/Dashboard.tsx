@@ -22,6 +22,8 @@ import Sidebar from './Sidebar';
 import { useWebSocketNotifications } from '../../hooks/useWebSocketNotifications';
 import SellerNotificationsModal from '../common/SellerNotificationsModal';
 import { CancellationRequestListItem } from '../../features/accounting/types/cancellationRequests';
+import type { SystemUpdate } from '../../features/updates/services/updates.service';
+import { updateRevisionKey } from '../../features/updates/services/updateProgress';
 import { useSystemUpdates } from '../../features/updates/hooks/useSystemUpdates';
 import SystemUpdatesModal from '../../features/updates/components/SystemUpdatesModal';
 import { useServiceStatus } from '../../hooks/useServiceStatus';
@@ -162,21 +164,23 @@ const Dashboard: React.FC = () => {
   const lastPendingSyncRef = useRef(0);
 
   // Novedades del sistema
-  const { updates, hasNew, markAsSeen } = useSystemUpdates();
+  const { updates, hasNew, autoUpdates, markViewed, confirmUpdate, dismissUpdates } = useSystemUpdates(currentUser?.id ? String(currentUser.id) : undefined);
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
-
-  // Auto-abrir modal de novedades si hay actualizaciones no vistas
-  const autoOpenedRef = React.useRef(false);
+  const [modalUpdates, setModalUpdates] = useState<SystemUpdate[]>([]);
+  const autoOpenedRef = React.useRef(new Set<string>());
   useEffect(() => {
-    if (!autoOpenedRef.current && hasNew && updates.length > 0) {
-      autoOpenedRef.current = true;
-      setShowUpdatesModal(true);
-    }
-  }, [hasNew, updates]);
+    if (showUpdatesModal || !currentUser?.id) return;
+    const pending = autoUpdates.filter(update => !autoOpenedRef.current.has(`${currentUser.id}:${updateRevisionKey(update)}`));
+    if (!pending.length) return;
+    pending.forEach(update => autoOpenedRef.current.add(`${currentUser.id}:${updateRevisionKey(update)}`));
+    setModalUpdates(pending);
+    setShowUpdatesModal(true);
+  }, [autoUpdates, currentUser?.id, showUpdatesModal]);
 
+  const openUpdates = () => { if (!updates.length) return; setModalUpdates(updates); setShowUpdatesModal(true); };
   const handleCloseUpdates = () => {
+    dismissUpdates(modalUpdates);
     setShowUpdatesModal(false);
-    markAsSeen();
   };
 
   // Estado para vendedores: contador de respuestas y modal
@@ -548,7 +552,7 @@ const Dashboard: React.FC = () => {
 
                     {/* Botón de Novedades (visible para todos) */}
                     <button
-                      onClick={() => { setShowUpdatesModal(true); }}
+                      onClick={openUpdates}
                       className="flex items-center gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-dm-bg-hover transition-colors relative"
                       title="Ver novedades del sistema"
                     >
@@ -659,7 +663,9 @@ const Dashboard: React.FC = () => {
       <SystemUpdatesModal
         isOpen={showUpdatesModal}
         onClose={handleCloseUpdates}
-        updates={updates}
+        updates={modalUpdates}
+        onView={markViewed}
+        onAcknowledge={confirmUpdate}
       />
 
       {/* Modal de respuestas para vendedores */}

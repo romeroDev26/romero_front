@@ -15,6 +15,8 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   updates: SystemUpdate[];
+  onView?: (update: SystemUpdate) => void;
+  onAcknowledge?: (update: SystemUpdate) => void;
 }
 
 const getYouTubeEmbedUrl = (url: string): string | null => {
@@ -42,7 +44,7 @@ const isYouTubeUrl = (url: string): boolean =>
 const isVimeoUrl = (url: string): boolean =>
   url.includes('vimeo.com') || url.includes('player.vimeo.com');
 
-const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
+const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates, onView, onAcknowledge }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   useEffect(() => { setZoomed(false); }, [currentIndex, isOpen]);
@@ -55,9 +57,12 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
     setCurrentIndex((prev) => Math.min(prev, total - 1));
   }, [isOpen, total]);
 
-  if (!total) return null;
-
   const current = updates[Math.min(currentIndex, total - 1)];
+  useEffect(() => {
+    if (isOpen && current) onView?.(current);
+  }, [isOpen, current, onView]);
+
+  if (!total) return null;
   const learnMore = safeUpdateLink(current.learn_more_url);
 
   const goPrev = () => setCurrentIndex((i) => Math.max(0, i - 1));
@@ -66,6 +71,12 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
   const handleClose = () => {
     setCurrentIndex(0);
     onClose();
+  };
+
+  const handleUnderstood = () => {
+    onAcknowledge?.(current);
+    if (currentIndex < total - 1) goNext();
+    else handleClose();
   };
 
   const renderVideo = (videoUrl: string) => {
@@ -129,7 +140,7 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
             <div className="flex flex-wrap gap-2">{updates.map((item, index) => <button key={item.id} aria-label={`Ir a la novedad ${index + 1}`} aria-current={index === currentIndex ? 'true' : undefined} onClick={() => setCurrentIndex(index)} className={`w-2.5 h-2.5 rounded-full ${index === currentIndex ? 'bg-blue-400' : 'bg-slate-600'}`} />)}</div>
             <button onClick={goNext} disabled={currentIndex === total - 1} aria-label="Siguiente" className="p-2 rounded-lg hover:bg-white/10 disabled:opacity-30"><ChevronRightIcon className="w-5 h-5" /></button>
           </div>
-          <div className="flex items-center gap-3">{learnMore && <a href={learnMore} target={learnMore.startsWith('/') ? undefined : '_blank'} rel="noopener noreferrer" onClick={handleClose} className="text-sm font-semibold text-blue-300 hover:text-white">{learnMore.startsWith('/') ? 'Abrir herramienta' : 'Más detalles'}</a>}<button onClick={currentIndex < total - 1 ? goNext : handleClose} className="rounded-lg bg-primary text-white px-4 py-2 text-sm font-semibold">{currentIndex < total - 1 ? 'Continuar' : 'Entendido'}</button></div>
+          <div className="flex items-center gap-3">{learnMore && <a href={learnMore} target={learnMore.startsWith('/') ? undefined : '_blank'} rel="noopener noreferrer" onClick={handleClose} className="text-sm font-semibold text-blue-300 hover:text-white">{learnMore.startsWith('/') ? 'Abrir herramienta' : 'Más detalles'}</a>}<button onClick={handleUnderstood} className="rounded-lg bg-primary text-white px-4 py-2 text-sm font-semibold">{currentIndex < total - 1 ? 'Entendido y siguiente' : 'Entendido'}</button></div>
         </div>
       </Dialog.Panel>
     </div>
@@ -256,21 +267,9 @@ const SystemUpdatesModal: React.FC<Props> = ({ isOpen, onClose, updates }) => {
                     {current.video_url?.trim() && <details className="mt-5"><summary className="cursor-pointer font-semibold text-primary">Ver video complementario</summary><div className="mt-3 rounded-xl overflow-hidden border border-dm-border-primary bg-black">{renderVideo(current.video_url)}</div></details>}
 
                     <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-3">
-                      {currentIndex < total - 1 ? (
-                        <button
-                          onClick={goNext}
-                          className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary text-white text-base font-semibold transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
-                        >
-                          Siguiente
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handleClose}
-                          className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary text-white text-base font-semibold transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
-                        >
-                          Entendido
-                        </button>
-                      )}
+                      <button onClick={handleUnderstood} className="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-12 px-6 bg-primary text-white text-base font-semibold transition-all hover:bg-primary/90 hover:shadow-md active:scale-95">
+                        {currentIndex < total - 1 ? 'Entendido y siguiente' : 'Entendido'}
+                      </button>
                       {learnMore && (
                         <a
                           href={learnMore}

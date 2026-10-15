@@ -1,3 +1,4 @@
+import { searchDocumentOnEnter } from '../../../utils/documentSearchKeyboard';
 // src/features/cargo/components/RecipientForm.tsx
 import React, { useState } from 'react';
 import { SunatDocType, DOCUMENT_TYPES } from '../../fluvial/types/sunat.types';
@@ -59,6 +60,7 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
   };
 
   const handleSearch = async () => {
+    if (disabled || isSearching || isQueryingDni || isQueryingRuc) return;
     if (!recipient.docNumber.trim()) {
       toast.warning('Ingrese un número de documento para buscar.');
       return;
@@ -149,6 +151,7 @@ export const RecipientForm: React.FC<RecipientFormProps> = ({ recipient, setReci
                 name="docNumber"
                 value={recipient.docNumber}
                 onChange={handleInputChange}
+                  onKeyDown={event => searchDocumentOnEnter(event, handleSearch, disabled || isSearching || isQueryingDni || isQueryingRuc)}
                 className="flex-1 p-2 border border-dm-border-primary rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-dm-bg-secondary"
                 placeholder={recipient.docType === SunatDocType.DNI ? '12345678' : '20123456789'}
                 disabled={disabled}

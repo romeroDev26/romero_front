@@ -29,8 +29,6 @@ export interface SystemUpdatePayload {
   is_mandatory: boolean;
 }
 
-const LAST_SEEN_KEY = 'last_seen_update_id';
-
 export const updatesService = {
   /* ── Público ── */
   getLatest: async (platform: 'WEB' | 'MOBILE' | 'ALL' = 'WEB'): Promise<SystemUpdate[]> => {
@@ -61,19 +59,4 @@ export const updatesService = {
     await api.delete(`/system/updates/${id}`);
   },
 
-  /* ── LocalStorage ── */
-  getLastSeenId: (): number => {
-    const stored = localStorage.getItem(LAST_SEEN_KEY);
-    return stored ? parseInt(stored, 10) : 0;
-  },
-
-  saveLastSeenId: (id: number): void => {
-    localStorage.setItem(LAST_SEEN_KEY, String(id));
-  },
-
-  hasUnseenUpdates: (updates: SystemUpdate[]): boolean => {
-    if (!updates.length) return false;
-    const maxId = Math.max(...updates.map((u) => u.id));
-    return maxId > updatesService.getLastSeenId();
-  },
 };

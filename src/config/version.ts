@@ -14,6 +14,7 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  { version: '1.2.0', date: '2026-10-15', title: 'Consulta de documentos con Enter y novedades por usuario', description: 'Enter consulta el documento en ventas, encomiendas y cotizaciones sin enviar el formulario. Las novedades normales se muestran una vez por usuario en el navegador; las obligatorias se recuerdan al volver a entrar después de 24 horas hasta pulsar Entendido, sin bloquear las ventas.', tags: ['improvement', 'fix'] },
   { version: '1.2.0', date: '2026-10-14', title: 'Balance de anulaciones y exportaciones identificadas', description: 'El reporte global por sucursal descuenta las notas de crédito una sola vez y mantiene consistentes los totales por vendedor y conciliación. Las descargas incluyen el rango de fechas y cada hoja del Excel muestra el periodo y la fecha de generación.', tags: ['fix'] },
   { version: '1.2.0', date: '2026-10-10', title: 'Códigos de operación completos', description: 'Los pagos simples, divididos y cobros de encomiendas permiten ingresar o pegar el código completo sin cortarlo a 20 caracteres. Se mantienen los avisos de validación y duplicados.', tags: ['fix'] },
   { version: '1.2.0', date: '2026-10-10', title: 'Resumen de pasajeros por tramo en tickets', description: 'Las facturas con varios tramos muestran la cantidad de pasajeros de cada ruta en Datos del viaje, además del tramo individual en cada línea.', tags: ['improvement'] },

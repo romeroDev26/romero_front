@@ -1,3 +1,4 @@
+import { searchDocumentOnEnter } from '../../../utils/documentSearchKeyboard';
 import React, { useState } from 'react';
 import { Search, User } from 'lucide-react';
 import { toast } from '@/utils/sileo-toast';
@@ -64,6 +65,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   };
 
   const handleSearch = async () => {
+    if (isSearching) return;
     if (!docNumber.trim()) {
       toast.error('Ingrese un número de documento');
       return;
@@ -223,10 +225,13 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
                   name="docNumber"
                   value={docNumber}
                   onChange={handleInputChange}
+                  onKeyDown={event => searchDocumentOnEnter(event, handleSearch, isSearching || !isSearchable)}
                   className="w-full p-2 border border-dm-border-primary rounded-l-md bg-dm-bg-primary text-dm-text-primary"
                   placeholder="Ingrese el número"
                 />
                 <Button
+                  type="button"
+                  aria-label="Buscar por número de documento"
                   onClick={handleSearch}
                   disabled={!isSearchable || isSearching || !docNumber.trim()}
                   className="rounded-l-none"

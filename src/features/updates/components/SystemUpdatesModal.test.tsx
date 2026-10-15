@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import SystemUpdatesModal from './SystemUpdatesModal';
 import { safeUpdateLink } from './UpdateGuide';
@@ -58,4 +58,24 @@ describe('Novedades sin video', () => {
     expect(screen.getByRole('img', { name: announcement.title })).toHaveAttribute('src', '/images/one.png');
   });
 
+});
+
+describe('confirmación individual de novedades', () => {
+  it.each([null, '/one.png'])('la X no confirma; Entendido confirma cada anuncio (imagen %s)', image_url => {
+    const onAcknowledge = vi.fn(), onClose = vi.fn(), onView = vi.fn();
+    const updates = [{ ...announcement, image_url, is_mandatory: true }, { ...announcement, id: 2, image_url, is_mandatory: true }];
+    const { unmount } = render(<SystemUpdatesModal isOpen onClose={onClose} updates={updates} onView={onView} onAcknowledge={onAcknowledge} />);
+    expect(onView).toHaveBeenCalledWith(updates[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }));
+    expect(onClose).toHaveBeenCalledOnce();
+    expect(onAcknowledge).not.toHaveBeenCalled();
+    unmount();
+    render(<SystemUpdatesModal isOpen onClose={onClose} updates={updates} onView={onView} onAcknowledge={onAcknowledge} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Entendido y siguiente' }));
+    expect(onAcknowledge).toHaveBeenLastCalledWith(updates[0]);
+    expect(onView).toHaveBeenLastCalledWith(updates[1]);
+    fireEvent.click(screen.getByRole('button', { name: 'Entendido' }));
+    expect(onAcknowledge).toHaveBeenLastCalledWith(updates[1]);
+    expect(onAcknowledge).toHaveBeenCalledTimes(2);
+  });
 });

@@ -1,5 +1,6 @@
+import { searchDocumentOnEnter } from '../../../../../utils/documentSearchKeyboard';
 // src/features/fluvial/components/sales-point/representatives/AddRepresentativeForm.tsx
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { toast } from '@/utils/sileo-toast';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../../../../../components/common/Button';
@@ -110,9 +111,13 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
       docNumber: formData.document_number,
     });
 
+  const pendingDni = useRef<string | null>(null);
+  const successfulDni = useRef<string | null>(null);
+
   // Función para consultar DNI
   const handleDniQuery = async (dni: string) => {
-    if (dni.length !== 8) return;
+    if (dni.length !== 8 || pendingDni.current || successfulDni.current === dni) return;
+    pendingDni.current = dni;
 
     setIsLoadingDni(true);
     setDniError(null);
@@ -122,6 +127,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
         headers: { 'X-Skip-Auth-Redirect': '1' }
       });
       if (response.data && response.data.nombreCompleto) {
+        successfulDni.current = dni;
         setFormData(prev => ({
           ...prev,
           name: response.data.nombreCompleto,
@@ -139,12 +145,14 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
         toast.warning('No se encontraron datos para este DNI. Ingrese el nombre manualmente.');
       }
     } finally {
+      pendingDni.current = null;
       setIsLoadingDni(false);
     }
   };
 
   // Manejar cambio en número de documento
   const handleDocumentNumberChange = (value: string) => {
+    if (successfulDni.current !== value) successfulDni.current = null;
     setFormData(prev => ({ ...prev, document_number: value }));
     
     // Auto-consultar si es DNI y tiene 8 dígitos
@@ -338,6 +346,7 @@ export const AddRepresentativeForm: React.FC<AddRepresentativeFormProps> = ({
                 type="text"
                 value={formData.document_number}
                 onChange={(e) => handleDocumentNumberChange(e.target.value)}
+                onKeyDown={event => searchDocumentOnEnter(event, () => handleDniQuery(formData.document_number), isLoadingDni || formData.document_type !== SunatDocType.DNI)}
                 placeholder={formData.document_type === SunatDocType.DNI ? "DNI (se consultará automáticamente)" : "Ingrese número"}
                 className="text-sm"
                 maxLength={formData.document_type === SunatDocType.DNI ? 8 : 20}

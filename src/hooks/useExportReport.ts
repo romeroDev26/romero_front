@@ -1,6 +1,7 @@
 // src/hooks/useExportReport.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { exportsService } from '../services/exports.service';
+import { exportFileName } from '../utils/exportFileName';
 import type {
   ExportRequest,
   ExportStatusResponse,
@@ -104,7 +105,7 @@ export const useExportReport = (
       // Si es modo síncrono, descargar directamente
       if (data.sync) {
         const blob = await exportsService.requestExport(data) as Blob;
-        const fileName = data.metadata?.report_title || `reporte.${data.format}`;
+        const fileName = exportFileName(data);
         await exportsService.downloadFileFromBlob(blob, fileName);
         setIsExporting(false);
         if (onSuccess) {

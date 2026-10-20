@@ -251,6 +251,9 @@ export const InvoicesListPage: React.FC = () => {
           <div className="text-[12px] text-dm-text-muted">
             {invoice.series}-{String(invoice.number).padStart(8, '0')}
           </div>
+          {invoice.reprogramming && (
+            <div className="text-[12px] font-semibold text-orange-600">Reprogramado</div>
+          )}
         </div>
       ),
     },

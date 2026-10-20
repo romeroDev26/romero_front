@@ -631,6 +631,16 @@ export interface Invoice {
   items?: InvoiceItem[];
   // Entidades embebidas (devueltas por el backend en el detalle)
   seller?: InvoiceSeller | null;
+  reprogramming?: {
+    status: string;
+    reason?: string | null;
+    passenger_count?: number;
+    requested_by_name?: string | null;
+    completed_by_name?: string | null;
+    reprogrammed_by_name?: string | null;
+    source_trip_name?: string | null;
+    destination_trip_name?: string | null;
+  } | null;
   company?: InvoiceCompany | null;
   // Datos de viaje en la raíz (ventas de transporte)
   boarding_time?: string | null;

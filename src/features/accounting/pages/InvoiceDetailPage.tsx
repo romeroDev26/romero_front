@@ -56,10 +56,6 @@ export const InvoiceDetailPage: React.FC = () => {
 
   const invoiceId = Number(id);
   const reprogramRole = ['admin', 'supervisor', 'sales', 'seller'].includes(currentUser?.role_name?.toLowerCase() || '');
-  const { data: pendingReprogram } = useQuery({
-    queryKey: ['reprogramming', invoiceId], queryFn: () => reprogrammingService.status(invoiceId),
-    enabled: reprogramRole && Number.isFinite(invoiceId), retry: false,
-  });
 
   // Usamos el servicio real para obtener los datos
   const { data: invoice, isLoading, error, dataUpdatedAt } = useQuery({
@@ -67,6 +63,13 @@ export const InvoiceDetailPage: React.FC = () => {
     queryFn: () => invoicesService.getById(invoiceId),
     enabled: !isNaN(invoiceId), // Solo ejecuta si el ID es un número válido
     staleTime: 1000 * 30, // Cache por 30 segundos
+  });
+
+  const { data: pendingReprogram } = useQuery({
+    queryKey: ['reprogramming', invoiceId],
+    queryFn: () => reprogrammingService.status(invoiceId),
+    enabled: reprogramRole && Number.isFinite(invoiceId),
+    retry: false,
   });
 
   // Obtener las solicitudes del vendedor para esta factura
@@ -421,8 +424,18 @@ export const InvoiceDetailPage: React.FC = () => {
                 </Button>
               )}
 
-              {!isCargoInvoice && reprogramRole && invoice.business_status !== 'CANCELLED' && !['REJECTED', 'VOIDED', 'CANCELLED'].includes(invoice.sunat_status) && (
+              {!isCargoInvoice && reprogramRole && !invoice.reprogramming && invoice.business_status !== 'CANCELLED' && !['REJECTED', 'VOIDED', 'CANCELLED'].includes(invoice.sunat_status) && (
                 <Button variant="outline" size="sm" onClick={() => setShowReprogramModal(true)}>Reprogramar pasajes</Button>
+              )}
+              {invoice.reprogramming && (
+                <div className="rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950 max-w-xl">
+                  <p className="font-semibold text-orange-700">Reprogramado</p>
+                  <p>{invoice.reprogramming.status === 'PENDING' ? 'Pendiente de nueva fecha.' : 'Ya tiene nueva fecha.'} {invoice.reprogramming.passenger_count || 0} pasajero(s).</p>
+                  <p>Lo reprogramó: {invoice.reprogramming.reprogrammed_by_name || '—'}</p>
+                  {invoice.reprogramming.reason && <p>Motivo: {invoice.reprogramming.reason}</p>}
+                  {invoice.reprogramming.source_trip_name && <p>Viaje anterior: {invoice.reprogramming.source_trip_name}</p>}
+                  {invoice.reprogramming.destination_trip_name && <p>Viaje nuevo: {invoice.reprogramming.destination_trip_name}</p>}
+                </div>
               )}
               {pendingReprogram && <p className="rounded-lg bg-amber-100 text-amber-900 p-3 text-sm">Pendiente de nueva fecha. Estos pasajeros no están en el manifiesto; sus asientos fueron liberados. {pendingReprogram.reason}</p>}
               {/* Botón Editar asiento - solo para boletas/facturas de pasajeros, no encomiendas */}

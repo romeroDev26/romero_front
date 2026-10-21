@@ -7,6 +7,7 @@ import { reprogrammingService } from '../../../services/reprogramming.service';
 import { authService } from '../../../services/auth.service';
 import { toast } from '@/utils/sileo-toast';
 import axios from 'axios';
+import { axiosErrorDetail } from '../../../utils/axiosErrorDetail';
 import { format, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 import { Ship, CheckCircle2 } from 'lucide-react';
 import { TripCalendar } from '../../fluvial/components/sales-point/TripCalendar';
@@ -36,7 +37,13 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
     queryFn: () => tripsService.getReprogrammingDates({ company_id: companyId, start_date: format(startOfMonth(currentMonth), 'yyyy-MM-dd'), end_date: format(endOfMonth(currentMonth), 'yyyy-MM-dd') }),
     staleTime: 5 * 60 * 1000,
   });
-  const pending = useQuery({ queryKey: ['reprogramming', invoiceId], queryFn: () => reprogrammingService.status(invoiceId), enabled: open });
+  const pending = useQuery({
+    queryKey: ['reprogramming', invoiceId],
+    queryFn: () => reprogrammingService.status(invoiceId),
+    enabled: open,
+    retry: false,
+  });
+  const pendingCheckError = pending.isError ? axiosErrorDetail(pending.error) : '';
   const trips = useQuery({
     queryKey: ['reprogramming-trips', companyId, travelDate], enabled: open && mode === 'schedule' && validDate,
     staleTime: 60 * 1000,
@@ -84,7 +91,7 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
       toast.success(mode === 'pending' ? 'Pasajes pendientes de nueva fecha. Asientos liberados.' : 'Pasajes reprogramados. Se está actualizando el ticket.');
       onClose();
     } catch (e) {
-      const message = axios.isAxiosError(e) && typeof e.response?.data?.detail === 'string' ? e.response.data.detail : 'No se pudo guardar la reprogramación. Inténtalo nuevamente.';
+      const message = axiosErrorDetail(e, 'No se pudo guardar la reprogramación. Inténtalo nuevamente.');
       setError(message);
     } finally { setBusy(false); }
   }
@@ -133,7 +140,12 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
         </>}
         {error && <p role="alert" className="rounded-lg bg-red-50 text-red-700 p-3">{error}</p>}
         <div className="sticky bottom-0 z-10 flex justify-end gap-3 border-t border-dm-border-primary bg-dm-bg-primary pt-3 pb-1"><button disabled={busy} onClick={onClose} className="px-4 py-2 text-dm-text-secondary">Cancelar</button><button disabled={busy || pending.isLoading || pending.isError || (mode === 'schedule' && (!validDate || !tripId || trips.isFetching || trips.isError || detail.isLoading || detail.isError))} onClick={submit} className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50">{busy ? 'Guardando…' : mode === 'pending' ? 'Dejar pendiente y liberar asientos' : 'Confirmar reprogramación'}</button></div>
-        {pending.isError && <p role="alert" className="text-red-600 text-sm">No se pudo comprobar si hay una reprogramación pendiente. <button onClick={() => pending.refetch()}>Reintentar</button></p>}
+        {pending.isError && (
+          <p role="alert" className="text-red-600 text-sm">
+            {pendingCheckError || 'No se pudo comprobar si hay una reprogramación pendiente.'}{' '}
+            <button type="button" className="underline" onClick={() => pending.refetch()}>Reintentar</button>
+          </p>
+        )}
       </Dialog.Panel>
     </div>
   </Dialog>;

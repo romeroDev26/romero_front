@@ -6,6 +6,8 @@ export interface PendingReprogramming {
   source_trip_id: number;
   source_trip_name?: string;
   reason: string;
+  passenger_count?: number;
+  requested_by_name?: string | null;
   created_at: string;
   series: string;
   number: number;

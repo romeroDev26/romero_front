@@ -7,6 +7,18 @@ vi.mock('../services/updates.service', () => ({ updatesService: { getAll: vi.fn(
 vi.mock('@/utils/sileo-toast', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 afterEach(cleanup);
 describe('Novedad con imagen y descripción opcional', () => {
+  it('prepara el cambio de dominio como borrador obligatorio para WEB', async () => {
+    render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><UpdatesAdminPage /></QueryClientProvider>);
+    fireEvent.click(screen.getByRole('button', { name: 'Nueva Novedad' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Usar anuncio: nueva dirección del sistema' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Crear novedad' }));
+    await waitFor(() => expect(updatesService.create).toHaveBeenCalledWith(expect.objectContaining({
+      title: 'Nueva dirección del sistema de ventas',
+      learn_more_url: 'https://ventas.globalromero.com/login',
+      image_url: '/images/updates/nuevo-dominio-ventas.png',
+      is_active: false, is_mandatory: true, platform: 'WEB',
+    })));
+  });
   it('permite guardar título e imagen sin texto adicional', async () => {
     render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}><UpdatesAdminPage /></QueryClientProvider>);
     fireEvent.click(screen.getByRole('button', { name: 'Nueva Novedad' }));

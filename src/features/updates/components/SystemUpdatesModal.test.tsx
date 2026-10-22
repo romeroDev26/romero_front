@@ -7,6 +7,15 @@ import { SystemUpdate } from '../services/updates.service';
 afterEach(cleanup);
 const announcement: SystemUpdate = { id: 1, title: 'Reprograma tu pasaje', description: 'Conserva el pago.\n1. Abre la boleta.\n2. Elige una nueva fecha.', version: '2026.10.09', release_date: '2026-10-09', video_url: null, learn_more_url: '/accounting/reprogramming', platform: 'WEB', is_active: true, is_mandatory: false, created_at: '', updated_at: '' };
 describe('Novedades sin video', () => {
+  it.each([null, '/images/updates/nuevo-dominio-ventas.png'])('abre el nuevo sistema en otra pestaña (imagen %s)', image_url => {
+    render(<SystemUpdatesModal isOpen onClose={() => {}} updates={[{
+      ...announcement, image_url, learn_more_url: 'https://ventas.globalromero.com/login',
+    }]} />);
+    const link = screen.getByRole('link', { name: 'Abrir nuevo sistema' });
+    expect(link).toHaveAttribute('href', 'https://ventas.globalromero.com/login');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
   it('amplía la imagen y restablece el zoom al cambiar de anuncio', () => {
     render(<SystemUpdatesModal isOpen onClose={() => {}} updates={[{ ...announcement, image_url: '/one.png' }, { ...announcement, id: 2, image_url: '/two.png' }]} />);
     expect(screen.getByRole('heading', { name: announcement.title })).toHaveClass('sr-only');

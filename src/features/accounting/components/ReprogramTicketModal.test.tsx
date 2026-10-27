@@ -10,6 +10,13 @@ vi.mock('../../../services/reprogramming.service', () => ({ reprogrammingService
 vi.mock('../../../services/trips.service', () => ({ tripsService: { search: vi.fn(), getById: vi.fn(), getReprogrammingDates: vi.fn() } }));
 vi.mock('../../../services/auth.service', () => ({ authService: { getCurrentUser: vi.fn() } }));
 vi.mock('@/utils/sileo-toast', () => ({ toast: { success: vi.fn() } }));
+const navigate = vi.hoisted(() => vi.fn());
+vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
+
+const routeStops = [
+  { id: 1, port_id: 10, stop_order: 1, port: { name: 'San Lorenzo' } },
+  { id: 2, port_id: 20, stop_order: 2, port: { name: 'Yurimaguas' } },
+];
 afterEach(() => { cleanup(); vi.useRealTimers(); });
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -55,7 +62,7 @@ describe('Reprogramación desde la web', () => {
   it('permite asignar fecha a un pendiente sin volver a cobrar ni postergar', async () => {
     vi.mocked(reprogrammingService.status).mockResolvedValue({ id: 1, invoice_id: 75447, source_trip_id: 30, reason: 'Fecha por confirmar', created_at: '', series: 'B006', number: 16956, total_payable: '110', sunat_status: 'ERROR' });
     vi.mocked(tripsService.search).mockResolvedValue([{ id: 31, trip_name: 'Nuevo viaje', departure_datetime: '2026-10-10T22:00:00Z' }] as Awaited<ReturnType<typeof tripsService.search>>);
-    vi.mocked(tripsService.getById).mockResolvedValue({ id: 31, stops: [] } as unknown as Awaited<ReturnType<typeof tripsService.getById>>);
+    vi.mocked(tripsService.getById).mockResolvedValue({ id: 31, stops: routeStops } as unknown as Awaited<ReturnType<typeof tripsService.getById>>);
     vi.mocked(reprogrammingService.schedule).mockResolvedValue({});
     const close = show();
     await screen.findByText('Pendiente de nueva fecha: Fecha por confirmar');
@@ -64,10 +71,30 @@ describe('Reprogramación desde la web', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Elegir Nuevo viaje' }));
     const confirm = screen.getByRole('button', { name: 'Confirmar reprogramación' });
     await waitFor(() => expect(confirm).toBeEnabled());
+    fireEvent.change(screen.getByLabelText('Embarque'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('Desembarque'), { target: { value: '20' } });
     fireEvent.click(confirm);
     await waitFor(() => expect(close).toHaveBeenCalledOnce());
-    expect(reprogrammingService.schedule).toHaveBeenCalledWith(75447, { new_trip_id: 31 });
+    expect(reprogrammingService.schedule).toHaveBeenCalledWith(75447, { new_trip_id: 31, new_boarding_port_id: 10, new_disembarking_port_id: 20 });
     expect(reprogrammingService.postpone).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith('/accounting/invoices/75447');
+  });
+  it('exige ambos puertos y avisa si están invertidos, sin enviar la reprogramación', async () => {
+    vi.mocked(tripsService.search).mockResolvedValue([{ id: 31, trip_name: 'Viaje inverso', departure_datetime: '2026-10-10T22:00:00Z' }] as Awaited<ReturnType<typeof tripsService.search>>);
+    vi.mocked(tripsService.getById).mockResolvedValue({ id: 31, stops: routeStops } as unknown as Awaited<ReturnType<typeof tripsService.getById>>);
+    show();
+    fireEvent.click(screen.getByRole('button', { name: /^2026-10-10/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Elegir Viaje inverso' }));
+    const confirm = screen.getByRole('button', { name: 'Confirmar reprogramación' });
+    await waitFor(() => expect(confirm).toBeEnabled());
+    fireEvent.click(confirm);
+    expect(screen.getByRole('alert')).toHaveTextContent('Selecciona los puertos');
+    fireEvent.change(screen.getByLabelText('Embarque'), { target: { value: '20' } });
+    fireEvent.change(screen.getByLabelText('Desembarque'), { target: { value: '10' } });
+    fireEvent.click(confirm);
+    expect(screen.getByRole('alert')).toHaveTextContent('Revisa el sentido de la ruta');
+    expect(reprogrammingService.schedule).not.toHaveBeenCalled();
+    expect(navigate).not.toHaveBeenCalled();
   });
   it('consulta solo la fecha elegida y limpia viaje y puertos al cambiar el día', async () => {
     vi.mocked(tripsService.search).mockResolvedValue([

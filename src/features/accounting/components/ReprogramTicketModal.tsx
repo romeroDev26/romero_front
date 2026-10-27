@@ -6,12 +6,12 @@ import { tripsService } from '../../../services/trips.service';
 import { reprogrammingService } from '../../../services/reprogramming.service';
 import { authService } from '../../../services/auth.service';
 import { toast } from '@/utils/sileo-toast';
-import axios from 'axios';
 import { axiosErrorDetail } from '../../../utils/axiosErrorDetail';
 import { format, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 import { Ship, CheckCircle2 } from 'lucide-react';
 import { TripCalendar } from '../../fluvial/components/sales-point/TripCalendar';
 import { tripDateTime } from '../../../utils/tripDateTime';
+import { useNavigate } from 'react-router-dom';
 
 interface Props { invoiceId: number; label: string; open: boolean; onClose: () => void; }
 const inputClass = 'w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary p-3 text-dm-text-primary';
@@ -29,6 +29,7 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const user = authService.getCurrentUser();
   const companyId = user?.company_id || 1;
   const calendar = useQuery({
@@ -54,7 +55,7 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
   const stops = [...(detail.data?.stops || [])].sort((a, b) => a.stop_order - b.stop_order);
   useEffect(() => {
     if (open) { setMode('schedule'); setCurrentMonth(parseISO(today)); setTravelDate(''); setTripId(''); setBoarding(''); setDisembarking(''); setReason(''); setError(''); }
-  }, [open, invoiceId]);
+  }, [open, invoiceId, today]);
 
   function chooseDate(value: string) {
     setTravelDate(value); setTripId(''); setBoarding(''); setDisembarking(''); setError('');
@@ -66,12 +67,18 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
     if (mode === 'pending' && reason.trim().length < 5) { setError('Escribe el motivo (al menos 5 caracteres).'); return; }
     if (mode === 'schedule' && !validDate) { setError('Elige una fecha de viaje desde hoy.'); return; }
     if (mode === 'schedule' && !futureTrips.some(t => String(t.id) === tripId)) { setError('Elige el nuevo viaje.'); return; }
+    if (mode === 'schedule') {
+      const boardStop = stops.find(stop => String(stop.port_id) === boarding);
+      const disembarkStop = stops.find(stop => String(stop.port_id) === disembarking);
+      if (!boardStop || !disembarkStop) { setError('Selecciona los puertos de embarque y desembarque del nuevo viaje.'); return; }
+      if (boardStop.stop_order >= disembarkStop.stop_order) { setError('El embarque debe estar antes del desembarque. Revisa el sentido de la ruta y cambia los puertos.'); return; }
+    }
     setBusy(true);
     try {
       if (mode === 'pending') await reprogrammingService.postpone(invoiceId, reason.trim());
       else await reprogrammingService.schedule(invoiceId, { new_trip_id: Number(tripId),
-        ...(boarding ? { new_boarding_port_id: Number(boarding) } : {}),
-        ...(disembarking ? { new_disembarking_port_id: Number(disembarking) } : {}),
+        new_boarding_port_id: Number(boarding),
+        new_disembarking_port_id: Number(disembarking),
       });
       await Promise.all([
         qc.invalidateQueries({ queryKey: ['invoice', invoiceId] }),
@@ -90,6 +97,7 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
       ]);
       toast.success(mode === 'pending' ? 'Pasajes pendientes de nueva fecha. Asientos liberados.' : 'Pasajes reprogramados. Se está actualizando el ticket.');
       onClose();
+      if (mode === 'schedule') navigate(`/accounting/invoices/${invoiceId}`);
     } catch (e) {
       const message = axiosErrorDetail(e, 'No se pudo guardar la reprogramación. Inténtalo nuevamente.');
       setError(message);
@@ -132,14 +140,16 @@ export default function ReprogramTicketModal({ invoiceId, label, open, onClose }
               </div>
               {validDate && !trips.isFetching && !trips.isError && !futureTrips.length && <p className="rounded-xl bg-dm-bg-secondary p-4 text-sm text-dm-text-muted">No hay viajes disponibles en esa fecha. Elige otro día o deja el pasaje pendiente de nueva fecha.</p>}
               {detail.isError && <p role="alert" className="text-red-600">No se pudieron cargar las paradas. <button onClick={() => detail.refetch()}>Reintentar</button></p>}
-              {tripId && <div className="rounded-xl border border-dm-border-primary p-3 space-y-2"><h4 className="text-sm font-semibold text-dm-text-primary">3. Revisa los puertos</h4><div className="grid grid-cols-2 gap-3">{[{ title: 'Embarque', value: boarding, set: setBoarding }, { title: 'Desembarque', value: disembarking, set: setDisembarking }].map(field => <label key={field.title} className="text-sm text-dm-text-primary">{field.title}<select disabled={busy || detail.isLoading} className={`${inputClass} !p-2`} value={field.value} onChange={e => field.set(e.target.value)}><option value="">Mantener puerto si existe</option>{stops.map(stop => <option key={stop.id} value={stop.port_id}>{stop.port?.name || `Puerto ${stop.port_id}`}</option>)}</select></label>)}</div></div>}
+              {tripId && <div className="rounded-xl border border-dm-border-primary p-3 space-y-2"><h4 className="text-sm font-semibold text-dm-text-primary">3. Revisa los puertos</h4><p id="reprogram-ports-help" className="text-xs text-dm-text-muted">Selecciona ambos puertos, incluso si conservas el mismo tramo. El orden debe seguir el sentido del nuevo viaje.</p><div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{[{ title: 'Embarque', value: boarding, set: setBoarding }, { title: 'Desembarque', value: disembarking, set: setDisembarking }].map(field => <label key={field.title} className="text-sm text-dm-text-primary">{field.title}<select required aria-describedby="reprogram-ports-help" disabled={busy || detail.isLoading} className={`${inputClass} !p-2`} value={field.value} onChange={e => { field.set(e.target.value); setError(''); }}><option value="">Selecciona el puerto</option>{stops.map(stop => <option key={stop.id} value={stop.port_id}>{stop.port?.name || `Puerto ${stop.port_id}`}</option>)}</select></label>)}</div></div>}
             </section>
           </div>
           <p className="rounded-lg p-3 bg-amber-100 text-amber-900 text-sm">Solo otra fecha con el mismo destino o un destino equivalente y la misma tarifa. El importe original no cambia. Verifica los puertos; el cargo de reprogramación se cobra aparte en Venta Rápida.</p>
           <p className="text-sm text-dm-text-muted">Se intentará mantener el número de asiento; si está ocupado, se asignará otro disponible del mismo tipo. Revisa y entrega el ticket actualizado.</p>
         </>}
-        {error && <p role="alert" className="rounded-lg bg-red-50 text-red-700 p-3">{error}</p>}
-        <div className="sticky bottom-0 z-10 flex justify-end gap-3 border-t border-dm-border-primary bg-dm-bg-primary pt-3 pb-1"><button disabled={busy} onClick={onClose} className="px-4 py-2 text-dm-text-secondary">Cancelar</button><button disabled={busy || pending.isLoading || pending.isError || (mode === 'schedule' && (!validDate || !tripId || trips.isFetching || trips.isError || detail.isLoading || detail.isError))} onClick={submit} className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50">{busy ? 'Guardando…' : mode === 'pending' ? 'Dejar pendiente y liberar asientos' : 'Confirmar reprogramación'}</button></div>
+        <div className="sticky bottom-0 z-10 space-y-3 border-t border-dm-border-primary bg-dm-bg-primary pt-3 pb-1">
+          {error && <p role="alert" className="rounded-lg bg-red-50 text-red-700 p-3 text-sm">{error}</p>}
+          <div className="flex justify-end gap-3"><button disabled={busy} onClick={onClose} className="px-4 py-2 text-dm-text-secondary">Cancelar</button><button disabled={busy || pending.isLoading || pending.isError || (mode === 'schedule' && (!validDate || !tripId || trips.isFetching || trips.isError || detail.isLoading || detail.isError))} onClick={submit} className="px-4 py-2 rounded-lg bg-primary text-white disabled:opacity-50">{busy ? 'Guardando…' : mode === 'pending' ? 'Dejar pendiente y liberar asientos' : 'Confirmar reprogramación'}</button></div>
+        </div>
         {pending.isError && (
           <p role="alert" className="text-red-600 text-sm">
             {pendingCheckError || 'No se pudo comprobar si hay una reprogramación pendiente.'}{' '}

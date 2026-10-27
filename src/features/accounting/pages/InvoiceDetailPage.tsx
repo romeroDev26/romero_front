@@ -36,6 +36,8 @@ import { getSaleKind } from '../../../utils/getSaleKind';
 import { formatIssueDate } from '../../../utils/formatDateTime';
 import ReprogramTicketModal from '../components/ReprogramTicketModal';
 import { reprogrammingService } from '../../../services/reprogramming.service';
+import { ReprogrammingNotice } from '../components/ReprogrammingNotice';
+import { useReprogrammedTicketPolling } from '../hooks/useReprogrammedTicketPolling';
 
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,12 +60,14 @@ export const InvoiceDetailPage: React.FC = () => {
   const reprogramRole = ['admin', 'supervisor', 'sales', 'seller'].includes(currentUser?.role_name?.toLowerCase() || '');
 
   // Usamos el servicio real para obtener los datos
-  const { data: invoice, isLoading, error, dataUpdatedAt } = useQuery({
+  const { data: invoice, isLoading, error, dataUpdatedAt, refetch } = useQuery({
     queryKey: ['invoice', invoiceId],
     queryFn: () => invoicesService.getById(invoiceId),
     enabled: !isNaN(invoiceId), // Solo ejecuta si el ID es un número válido
     staleTime: 1000 * 30, // Cache por 30 segundos
   });
+  const waitingForReprogrammedPdfs = useReprogrammedTicketPolling(invoiceId,
+    invoice?.reprogramming?.status === 'COMPLETED' && (!invoice.pdf_ticket_file_path || !invoice.pdf_a4_file_path), refetch);
 
   const { data: pendingReprogram } = useQuery({
     queryKey: ['reprogramming', invoiceId],
@@ -328,8 +332,8 @@ export const InvoiceDetailPage: React.FC = () => {
       {/* Header con información básica */}
       <div className="bg-dm-bg-primary shadow-sm border-b border-dm-border-primary">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
+          <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+            <div className="min-w-0 flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -362,9 +366,9 @@ export const InvoiceDetailPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-4 md:mt-0">
+            <div className="flex flex-wrap items-center gap-2 xl:justify-end">
               {/* Botón Imprimir / Descargar - solo si hay PDF del tab activo */}
-              {(hasTicketPdf || hasA4Pdf) && (
+              {hasCurrentPdf && (
                 <>
                   <Button
                     variant="outline"
@@ -427,17 +431,6 @@ export const InvoiceDetailPage: React.FC = () => {
               {!isCargoInvoice && reprogramRole && !invoice.reprogramming && invoice.business_status !== 'CANCELLED' && !['REJECTED', 'VOIDED', 'CANCELLED'].includes(invoice.sunat_status) && (
                 <Button variant="outline" size="sm" onClick={() => setShowReprogramModal(true)}>Reprogramar pasajes</Button>
               )}
-              {invoice.reprogramming && (
-                <div className="rounded-lg border border-orange-300 bg-orange-50 p-3 text-sm text-orange-950 max-w-xl">
-                  <p className="font-semibold text-orange-700">Reprogramado</p>
-                  <p>{invoice.reprogramming.status === 'PENDING' ? 'Pendiente de nueva fecha.' : 'Ya tiene nueva fecha.'} {invoice.reprogramming.passenger_count || 0} pasajero(s).</p>
-                  <p>Lo reprogramó: {invoice.reprogramming.reprogrammed_by_name || '—'}</p>
-                  {invoice.reprogramming.reason && <p>Motivo: {invoice.reprogramming.reason}</p>}
-                  {invoice.reprogramming.source_trip_name && <p>Viaje anterior: {invoice.reprogramming.source_trip_name}</p>}
-                  {invoice.reprogramming.destination_trip_name && <p>Viaje nuevo: {invoice.reprogramming.destination_trip_name}</p>}
-                </div>
-              )}
-              {pendingReprogram && <p className="rounded-lg bg-amber-100 text-amber-900 p-3 text-sm">Pendiente de nueva fecha. Estos pasajeros no están en el manifiesto; sus asientos fueron liberados. {pendingReprogram.reason}</p>}
               {/* Botón Editar asiento - solo para boletas/facturas de pasajeros, no encomiendas */}
               {!isCargoInvoice && !pendingReprogram && (
                 <Button
@@ -491,6 +484,9 @@ export const InvoiceDetailPage: React.FC = () => {
               </Button>
             </div>
           </div>
+          {(invoice.reprogramming || pendingReprogram) && <ReprogrammingNotice summary={pendingReprogram
+            ? { ...invoice.reprogramming, ...pendingReprogram, status: 'PENDING' }
+            : invoice.reprogramming!} />}
         </div>
       </div>
 
@@ -652,6 +648,12 @@ export const InvoiceDetailPage: React.FC = () => {
                       onError={() => setShowPdfError(true)}
                     />
                   )
+                ) : waitingForReprogrammedPdfs ? (
+                  <div role="status" className="flex flex-col items-center justify-center gap-3 min-h-[300px] md:min-h-[600px] p-6 text-center text-dm-text-secondary">
+                    <Spinner size="md" />
+                    <p>Preparando los tickets actualizados de 80mm y A4…</p>
+                    <p className="text-sm text-dm-text-muted">Aparecerán aquí automáticamente cuando estén listos.</p>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center min-h-[300px] md:min-h-[600px] text-dm-text-muted">
                     <ExclamationTriangleIcon className="h-12 w-12 mb-4 text-amber-400" />

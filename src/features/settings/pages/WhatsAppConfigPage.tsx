@@ -164,7 +164,7 @@ export const WhatsAppConfigPage: React.FC = () => {
   useEffect(() => {
     if (branchOffices.length > 0) {
       checkConnectionStates();
-      const interval = setInterval(checkConnectionStates, 15000); // Cada 15 segundos
+      const interval = setInterval(checkConnectionStates, 60000);
       return () => clearInterval(interval);
     }
   }, [branchOffices, checkConnectionStates]);

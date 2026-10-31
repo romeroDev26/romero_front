@@ -6,6 +6,8 @@ import { authService } from '../services/auth.service';
 import { whatsappConfigService } from '../services/whatsappConfig.service';
 import { BranchOffice } from '../types';
 
+const FALLBACK_WHATSAPP_INSTANCE = 'romero_ventas';
+
 interface WhatsAppInstanceInfo {
   instanceName: string | null;
   branchOfficeName: string | null;
@@ -218,39 +220,48 @@ export const useWhatsAppInstanceWithFallback = (branchOfficeName: string | null)
     [branchOffices]
   );
 
-  // Verificar estado de conexión de todas las instancias
+  // Una sesión a la vez: la sucursal, luego romero_ventas y, si hace falta, otra abierta.
   useEffect(() => {
     const checkConnections = async () => {
       if (branchesWithWhatsApp.length === 0 || isLoading) return;
 
+      const primary = branchOfficeName
+        ? branchesWithWhatsApp.find((b: BranchOffice) => b.name.toLowerCase() === branchOfficeName.toLowerCase())
+        : undefined;
+      const ordered: string[] = [];
+      const push = (name?: string | null) => {
+        if (name && !ordered.includes(name)) ordered.push(name);
+      };
+      push(primary?.whatsapp_instance_name);
+      push(FALLBACK_WHATSAPP_INSTANCE);
+      branchesWithWhatsApp.forEach((b: BranchOffice) => push(b.whatsapp_instance_name));
+
       setIsCheckingConnection(true);
       const newStates: Record<string, { isConnected: boolean; checked: boolean }> = {};
-
-      await Promise.all(
-        branchesWithWhatsApp.map(async (branch: BranchOffice) => {
-          if (branch.whatsapp_instance_name) {
-            try {
-              const status = await whatsappConfigService.getConnectionStatus(branch.whatsapp_instance_name);
-              newStates[branch.whatsapp_instance_name] = {
-                isConnected: status.is_connected && status.connection_state === 'open',
-                checked: true,
-              };
-            } catch {
-              newStates[branch.whatsapp_instance_name] = {
-                isConnected: false,
-                checked: true,
-              };
-            }
+      let foundOpenBackup = false;
+      for (const instanceName of ordered) {
+        try {
+          const status = await whatsappConfigService.getConnectionStatus(instanceName);
+          const isConnected = status.is_connected && status.connection_state === 'open';
+          newStates[instanceName] = { isConnected, checked: true };
+          const isPrimary = instanceName === primary?.whatsapp_instance_name;
+          if (isConnected && isPrimary) break;
+          if (isConnected && !isPrimary) {
+            foundOpenBackup = true;
+            break;
           }
-        })
-      );
+        } catch {
+          newStates[instanceName] = { isConnected: false, checked: true };
+        }
+        if (foundOpenBackup) break;
+      }
 
       setConnectionStates(newStates);
       setIsCheckingConnection(false);
     };
 
     checkConnections();
-  }, [branchesWithWhatsApp, isLoading]);
+  }, [branchesWithWhatsApp, branchOfficeName, isLoading]);
 
   const instanceInfo = useMemo((): WhatsAppInstanceWithConnectionInfo => {
     // Estado de carga inicial
@@ -304,12 +315,20 @@ export const useWhatsAppInstanceWithFallback = (branchOfficeName: string | null)
       ? connectionStates[primaryInstanceName]?.isConnected || false 
       : false;
 
-    // Buscar un fallback (otra sucursal con WhatsApp conectado)
-    const fallbackBranch = branchesWithWhatsApp.find((b: BranchOffice) => {
-      if (!b.whatsapp_instance_name) return false;
-      if (b.id === primaryBranch?.id) return false; // No usar la misma sucursal
-      return connectionStates[b.whatsapp_instance_name]?.isConnected || false;
+    const isOpen = (name: string | null | undefined) =>
+      !!name && !!connectionStates[name]?.isConnected;
+
+    // Primero romero_ventas. Si también está caída, cualquier otra sesión abierta.
+    const ventasBranch = branchesWithWhatsApp.find(
+      (b: BranchOffice) => b.whatsapp_instance_name === FALLBACK_WHATSAPP_INSTANCE && b.id !== primaryBranch?.id
+    );
+    const otherOpenBranch = branchesWithWhatsApp.find((b: BranchOffice) => {
+      if (!b.whatsapp_instance_name || b.id === primaryBranch?.id) return false;
+      if (b.whatsapp_instance_name === FALLBACK_WHATSAPP_INSTANCE) return false;
+      return isOpen(b.whatsapp_instance_name);
     });
+    const fallbackBranch = (ventasBranch && isOpen(ventasBranch.whatsapp_instance_name) ? ventasBranch : undefined)
+      || otherOpenBranch;
 
     const fallbackInstanceName = fallbackBranch?.whatsapp_instance_name || null;
     const fallbackBranchOfficeName = fallbackBranch?.name || null;

@@ -16,6 +16,7 @@ import { Spinner } from '../../../../components/common/Spinner';
 import { SplitPaymentForm, SplitPaymentData } from '../../../../components/common/SplitPaymentForm';
 import { PassengerDataForm } from '../../components/sales-point/PassengerDataForm';
 import { BranchSelector } from '../../components/sales-point/BranchSelector';
+import { CreditSaleOption } from '../../components/sales-point/CreditSaleOption';
 import { ConfirmSaleModal } from '../../components/sales-point/ConfirmSaleModal';
 import { TicketPreviewModal } from '../../components/sales-point/TicketPreviewModal';
 import { BackendInvoiceData } from '../../components/sales-point/tickets/types/backend.types';
@@ -69,7 +70,7 @@ export const QuickSalePage: React.FC = () => {
   const [isSplitPaymentValid, setIsSplitPaymentValid] = useState(true);
   
   // Estado de contraentrega
-  const [isContraentrega, setIsContraentrega] = useState<boolean>(false);
+  const [isCreditSale, setIsCreditSale] = useState<boolean>(false);
   
   // Estado para controlar si se agrega destinatario
   const [showRecipientForm, setShowRecipientForm] = useState<boolean>(false);
@@ -208,7 +209,7 @@ export const QuickSalePage: React.FC = () => {
     if (!selectedSeries) return false;
     
     // Validar pago dividido solo si está activo y NO es contraentrega
-    if (!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid) {
+    if (!isCreditSale && splitPaymentData.isSplitPayment && !isSplitPaymentValid) {
       return false;
     }
     
@@ -222,7 +223,7 @@ export const QuickSalePage: React.FC = () => {
     passengerData.name,
     selectedFacturaSeries,
     selectedBoletaSeries,
-    isContraentrega,
+    isCreditSale,
     splitPaymentData.isSplitPayment,
     isSplitPaymentValid,
     recipient,
@@ -303,12 +304,12 @@ export const QuickSalePage: React.FC = () => {
         document_type_code: isRuc ? SunatInvoiceType.FACTURA : SunatInvoiceType.BOLETA,
         series: isRuc ? selectedFacturaSeries : selectedBoletaSeries,
         
-        is_credit_sale: isContraentrega,
+        is_credit_sale: isCreditSale,
         total_discount: 0,
         notes: notesContent,
         
         // Método de pago: solo enviar si NO es contraentrega
-        ...(!isContraentrega && {
+        ...(!isCreditSale && {
           payment_method_code: splitPaymentData.paymentMethod1,
           payment_operation_code: splitPaymentData.operationCode1 || undefined,
           pago_yape_id: splitPaymentData.pagoYapeId || undefined,
@@ -350,7 +351,7 @@ export const QuickSalePage: React.FC = () => {
       };
 
       // Agregar datos de pago dividido si está activo y NO es contraentrega
-      if (!isContraentrega && splitPaymentData.isSplitPayment) {
+      if (!isCreditSale && splitPaymentData.isSplitPayment) {
         invoiceData.payment_amount_1 = splitPaymentData.amount1;
         invoiceData.payment_method_code_2 = splitPaymentData.paymentMethod2;
         invoiceData.payment_operation_code_2 = splitPaymentData.operationCode2 || undefined;
@@ -399,7 +400,7 @@ export const QuickSalePage: React.FC = () => {
       operationCode2: '',
       amount2: 0,
     });
-    setIsContraentrega(false);
+    setIsCreditSale(false);
     setTicketBackendData(null);
     setShowTicketPreview(false);
   };
@@ -655,17 +656,12 @@ export const QuickSalePage: React.FC = () => {
               )}
             </div>
 
-            {/* Alerta de contraentrega */}
-            {isContraentrega && (
-              <div className="mb-4 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-3">
-                <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium">
-                  Pago pendiente - Se cobrará al entregar
-                </p>
-              </div>
-            )}
+            <div className="mb-4">
+              <CreditSaleOption checked={isCreditSale} disabled={isProcessing} onChange={setIsCreditSale} />
+            </div>
 
             {/* Método de Pago - Solo visible cuando NO es contraentrega */}
-            {!isContraentrega && (
+            {!isCreditSale && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-dm-text-secondary mb-2">
                   Método de Pago
@@ -678,27 +674,6 @@ export const QuickSalePage: React.FC = () => {
                   onValidationChange={handleSplitPaymentValidationChange}
                   customerName={passengerData.name}
                 />
-              </div>
-            )}
-
-            {/* Switch de Contraentrega - Solo visible para Encomienda Fluvial */}
-            {formData.selectedProduct?.name.toLowerCase().includes('encomienda') && (
-              <div className="mb-4 bg-dm-bg-secondary p-4 rounded-lg border border-dm-border-primary">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-dm-text-secondary mb-1">Contraentrega</p>
-                    <p className="text-xs text-dm-text-muted">El pago se realizará al entregar</p>
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={isContraentrega}
-                    onClick={() => setIsContraentrega(!isContraentrega)}
-                    className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${isContraentrega ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'}`}
-                  >
-                    <span className={`inline-block h-6 w-6 transform rounded-full bg-dm-bg-primary shadow-md transition-transform duration-200 ease-in-out ${isContraentrega ? 'translate-x-5' : 'translate-x-0'}`} />
-                  </button>
-                </div>
               </div>
             )}
 
@@ -744,7 +719,7 @@ export const QuickSalePage: React.FC = () => {
                       {requiresClientData && (!passengerData.docNumber.trim() || !passengerData.name.trim()) && (
                         <li>Complete los datos del cliente</li>
                       )}
-                      {!isContraentrega && splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
+                      {!isCreditSale && splitPaymentData.isSplitPayment && !isSplitPaymentValid && (
                         <li>Verifique los montos del pago dividido</li>
                       )}
                     </ul>
@@ -767,7 +742,7 @@ export const QuickSalePage: React.FC = () => {
               ) : (
                 <>
                   <CheckCircle className="h-5 w-5 mr-2" />
-                  Confirmar Venta
+                  {isCreditSale ? 'Emitir al crédito' : 'Confirmar Venta'}
                 </>
               )}
             </Button>
@@ -787,6 +762,7 @@ export const QuickSalePage: React.FC = () => {
       
       {/* Modal de Confirmación de Venta */}
       <ConfirmSaleModal
+        isCreditSale={isCreditSale}
         isOpen={isConfirmSaleModalOpen}
         onClose={() => setIsConfirmSaleModalOpen(false)}
         onConfirm={handleConfirmSale}

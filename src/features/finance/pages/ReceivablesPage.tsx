@@ -21,6 +21,7 @@ import { usePaymentConfirmation } from '../hooks/usePaymentConfirmation';
 import { PaymentConfirmationModal } from '../components/payment/PaymentConfirmationModal';
 import { PaidTicketModal } from '../components/payment/PaidTicketModal';
 import { ViewTicketModal } from '../components/payment/ViewTicketModal';
+import { ReceivableServiceFilter } from '../components/ReceivableServiceFilter';
 
 const ReceivablesPage: React.FC = () => {
   const [, setCompanyId] = React.useState<number | undefined>();
@@ -123,7 +124,7 @@ const ReceivablesPage: React.FC = () => {
           Cuentas por cobrar
         </h1>
         <p className="mt-0.5 text-sm text-dm-text-muted">
-          Pasajes y encomiendas vendidos al crédito. Al cobrar se cancela el comprobante completo.
+          Ventas de pasajes, encomiendas y servicios al crédito. Al cobrar se cancela el comprobante completo.
         </p>
       </header>
 
@@ -189,11 +190,7 @@ const ReceivablesPage: React.FC = () => {
       {/* Search and Filter */}
       <section className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-3 shadow-sm sm:p-4">
         <div className="flex flex-col gap-3">
-          <label className="flex flex-wrap items-center gap-2 text-sm text-dm-text-secondary">Servicio
-            <select value={filters.service_type || 'TODOS'} onChange={event => updateFilters({ service_type: event.target.value as 'TODOS' | 'PASAJES' | 'ENCOMIENDAS' })} className="rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-dm-text-primary">
-              <option value="TODOS">Pasajes y encomiendas</option><option value="PASAJES">Pasajes</option><option value="ENCOMIENDAS">Encomiendas y carga</option>
-            </select>
-          </label>
+          <ReceivableServiceFilter value={filters.service_type || 'TODOS'} onChange={service_type => updateFilters({ service_type })} />
           {/* Chips + Fechas */}
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -349,19 +346,19 @@ const ReceivablesPage: React.FC = () => {
                   {items.map((item) => (
                     <tr key={item.invoice_item_id} className="hover:bg-dm-bg-hover transition-colors">
                       <td className="px-6 py-4 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                        {item.invoice_series}-{item.invoice_number}<span className="block text-xs font-normal text-dm-text-muted">{item.service_type === 'PASAJES' ? 'Pasaje' : 'Encomienda'} · #{item.invoice_item_id}</span>
+                        {item.invoice_series}-{item.invoice_number}<span className="block text-xs font-normal text-dm-text-muted">{item.service_type === 'PASAJES' ? 'Pasaje' : item.service_type === 'ENCOMIENDAS' ? 'Encomienda' : item.service_name || 'Servicio'} · #{item.invoice_item_id}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-dm-text-primary">{item.sender_name}</div>
                         <div className="text-xs text-dm-text-muted">{item.sender_document}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-dm-text-primary">{item.service_type === 'PASAJES' ? item.passenger_name || item.sender_name : item.recipient_name}</div>
+                        <div className="text-sm font-medium text-dm-text-primary">{item.service_type === 'PASAJES' ? item.passenger_name || item.sender_name : item.recipient_name || item.cargo_description}</div>
                         <div className="text-xs text-dm-text-muted">{item.recipient_document}</div>
                       </td>
                       <td className="px-6 py-4">
                         <span className="rounded bg-dm-bg-secondary px-2 py-1 text-[10px] font-bold text-dm-text-secondary">
-                          {item.origin_port} → {item.destination_port}
+                          {item.origin_port && item.destination_port ? `${item.origin_port} → ${item.destination_port}` : 'Sin viaje asociado'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-bold tabular-nums text-dm-text-primary">
@@ -411,7 +408,7 @@ const ReceivablesPage: React.FC = () => {
                   {/* Header: ID + Estado + Acción */}
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold tabular-nums text-indigo-600 dark:text-indigo-400">
-                      {item.invoice_series}-{item.invoice_number}<span className="block text-xs font-normal text-dm-text-muted">{item.service_type === 'PASAJES' ? 'Pasaje' : 'Encomienda'} · #{item.invoice_item_id}</span>
+                      {item.invoice_series}-{item.invoice_number}<span className="block text-xs font-normal text-dm-text-muted">{item.service_type === 'PASAJES' ? 'Pasaje' : item.service_type === 'ENCOMIENDAS' ? 'Encomienda' : item.service_name || 'Servicio'} · #{item.invoice_item_id}</span>
                     </span>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(item.payment_status)}
@@ -454,7 +451,7 @@ const ReceivablesPage: React.FC = () => {
                       <User className="mt-0.5 h-3.5 w-3.5 shrink-0 text-dm-text-muted" />
                       <div className="min-w-0">
                         <p className="text-[10px] font-medium uppercase tracking-wider text-dm-text-muted">Pasajero / Destinatario</p>
-                        <p className="truncate text-sm font-semibold text-dm-text-primary">{item.service_type === 'PASAJES' ? item.passenger_name || item.sender_name : item.recipient_name}</p>
+                        <p className="truncate text-sm font-semibold text-dm-text-primary">{item.service_type === 'PASAJES' ? item.passenger_name || item.sender_name : item.recipient_name || item.cargo_description}</p>
                       </div>
                     </div>
                   </div>
@@ -464,7 +461,7 @@ const ReceivablesPage: React.FC = () => {
                     <div className="flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-dm-text-muted" />
                       <span className="text-xs font-medium text-dm-text-secondary">
-                        {item.origin_port} → {item.destination_port}
+                        {item.origin_port && item.destination_port ? `${item.origin_port} → ${item.destination_port}` : 'Sin viaje asociado'}
                       </span>
                     </div>
                     <span className="text-sm font-bold tabular-nums text-dm-text-primary">

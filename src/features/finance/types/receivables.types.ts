@@ -22,7 +22,8 @@ export interface ReceivablesPagination {
 export interface ReceivablesQueryParams extends ReceivablesFilters, ReceivablesPagination {}
 
 export interface ReceivablesItem {
-  service_type?: 'PASAJES' | 'ENCOMIENDAS';
+  service_type?: 'PASAJES' | 'ENCOMIENDAS' | 'EXCESO_EQUIPAJE' | 'REPROGRAMACION' | 'OTROS';
+  service_name?: string;
   passenger_name?: string;
   collection_amount?: number;
   currency_code?: string;

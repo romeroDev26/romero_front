@@ -196,7 +196,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
               <User className="mt-0.5 h-4 w-4 shrink-0 text-dm-text-muted" />
               <div className="min-w-0">
                 <p className="text-xs font-medium text-dm-text-muted">Pasajero / Destinatario</p>
-                <p className="truncate text-sm font-semibold text-dm-text-primary">{receivableItem.service_type === 'PASAJES' ? receivableItem.passenger_name || receivableItem.sender_name : receivableItem.recipient_name}</p>
+                <p className="truncate text-sm font-semibold text-dm-text-primary">{receivableItem.service_type === 'PASAJES' ? receivableItem.passenger_name || receivableItem.sender_name : receivableItem.recipient_name || receivableItem.cargo_description}</p>
                 <p className="text-xs text-dm-text-muted">{receivableItem.recipient_document}</p>
               </div>
             </div>
@@ -205,7 +205,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
               <div>
                 <p className="text-xs font-medium text-dm-text-muted">Ruta</p>
                 <p className="text-sm font-semibold text-dm-text-primary">
-                  {receivableItem.origin_port} → {receivableItem.destination_port}
+                  {receivableItem.origin_port && receivableItem.destination_port ? `${receivableItem.origin_port} → ${receivableItem.destination_port}` : 'Sin viaje asociado'}
                 </p>
                 <p className="text-xs text-dm-text-muted">Viaje #{receivableItem.trip_id}</p>
               </div>

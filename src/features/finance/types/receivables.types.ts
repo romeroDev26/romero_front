@@ -1,6 +1,7 @@
 // src/features/finance/types/receivables.types.ts
 
 export interface ReceivablesFilters {
+  service_type?: 'TODOS' | 'PASAJES' | 'ENCOMIENDAS';
   branch_office_id?: number | null;
   doc_number?: string | null;
   search?: string | null;
@@ -21,6 +22,10 @@ export interface ReceivablesPagination {
 export interface ReceivablesQueryParams extends ReceivablesFilters, ReceivablesPagination {}
 
 export interface ReceivablesItem {
+  service_type?: 'PASAJES' | 'ENCOMIENDAS';
+  passenger_name?: string;
+  collection_amount?: number;
+  currency_code?: string;
   invoice_item_id: number;
   cargo_description: string;
   cargo_weight_kg: string;
@@ -49,6 +54,7 @@ export interface ReceivablesItem {
 }
 
 export interface ReceivablesSummary {
+  amounts_by_currency?: Record<string, number> | string | null;
   total_parcels: number;
   total_amount: number;
   paid_parcels: number;

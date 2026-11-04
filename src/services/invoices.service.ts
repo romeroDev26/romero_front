@@ -104,6 +104,7 @@ export interface ItemForGuide {
 
 // Interfaz para los parámetros de filtrado del nuevo endpoint
 export interface InvoiceFilters {
+  service_type?: 'PASAJES' | 'ENCOMIENDAS' | 'EXCESO_EQUIPAJE' | 'REPROGRAMACION';
   skip?: number;
   limit?: number;
   company_id?: number;

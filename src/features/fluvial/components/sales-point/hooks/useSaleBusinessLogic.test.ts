@@ -177,6 +177,23 @@ describe('useSaleBusinessLogic', () => {
       expect(onSuccess).toHaveBeenCalled();
     });
 
+    it('emits company invoice on credit without stale payment or Yape data', async () => {
+      const mocks = createMocks();
+      const { result } = renderHook(() => useSaleBusinessLogic(mocks));
+      await result.current.handleCompanyInvoiceWithRepresentatives(
+        1, 1, 2, { ...passengerData, docType: SunatDocType.RUC },
+        [makeRepresentative({ name: 'Rep', seat_number: 'A1' })], 'Sucursal', vi.fn(),
+        [{ id: 55, seat_number: 'A1' }], undefined, 100, 1, 0, '', 0, false, 'F001',
+        { id: 55, seat_number: 'A1' }, 'YAP', 'stale-op', 'PEN',
+        { isSplitPayment: true, isCreditSale: true, paymentAmount1: 50, paymentMethodCode2: 'EFE', paymentAmount2: 50, pagoYapeId: 'stale-yape' },
+      );
+      const payload = vi.mocked(mocks.createCompanyInvoiceWithRepresentatives).mock.calls[0][0];
+      expect(payload.invoice_config).toMatchObject({ is_credit_sale: true, payment_terms_description: 'Crédito' });
+      expect(payload.invoice_config?.payment_method_code).toBeUndefined();
+      expect(payload.invoice_config?.payment_amount_2).toBeUndefined();
+      expect(payload.invoice_config?.pago_yape_id).toBeUndefined();
+    });
+
     it('releases seats on 409 error', async () => {
       const mocks = createMocks();
       vi.mocked(mocks.createCompanyInvoiceWithRepresentatives).mockRejectedValue({
@@ -250,6 +267,21 @@ describe('useSaleBusinessLogic', () => {
       expect(confirmPurchase).toHaveBeenCalledWith([55]);
       expect(mockSaleNotifySuccess).toHaveBeenCalled();
       expect(onSuccess).toHaveBeenCalled();
+    });
+
+    it('emits a boleta on credit and still assigns the passenger seat', async () => {
+      const mocks = createMocks();
+      const { result } = renderHook(() => useSaleBusinessLogic(mocks));
+      await result.current.handleRegularSale(
+        1, 1, 2, baseSeat, passengerData, [], true, 'B001', 'Sucursal',
+        100, 1, 0, '', 0, false, false, null, vi.fn(), undefined, undefined,
+        'YAP', 'stale-operation', 'PEN', { isSplitPayment: true, isCreditSale: true, paymentAmount1: 50, paymentMethodCode2: 'EFE', paymentAmount2: 50 },
+      );
+      const payload = vi.mocked(mocks.createInvoice).mock.calls[0][0].invoiceData;
+      expect(payload).toMatchObject({ is_credit_sale: true, payment_terms_description: 'Crédito' });
+      expect(payload.payment_method_code).toBeUndefined();
+      expect(payload.payment_amount_2).toBeUndefined();
+      expect(mocks.createSeatAssignment).toHaveBeenCalled();
     });
 
     it('confirms existing reservation in confirming mode', async () => {

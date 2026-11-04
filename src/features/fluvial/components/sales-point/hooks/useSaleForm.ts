@@ -102,6 +102,7 @@ export function useSaleForm({
   const [itemDescription, setItemDescription] = useState("");
   
   // Estado para pago dividido
+  const [isCreditSale, setIsCreditSale] = useState(false);
   const [splitPaymentData, setSplitPaymentData] = useState<SplitPaymentData>({
     isSplitPayment: false,
     paymentMethod1: 'EFE',
@@ -257,6 +258,7 @@ export function useSaleForm({
     setItemDescription("");
 
     // Limpiar datos de pago dividido
+    setIsCreditSale(false);
     setSplitPaymentData({
       isSplitPayment: false,
       paymentMethod1: 'EFE',
@@ -310,6 +312,7 @@ export function useSaleForm({
     setSelectedFacturaSeries("");
 
     // Limpiar datos de pago dividido
+    setIsCreditSale(false);
     setSplitPaymentData({
       isSplitPayment: false,
       paymentMethod1: 'EFE',
@@ -975,14 +978,14 @@ export function useSaleForm({
           splitPaymentData.operationCode1,
           selectedCurrency,
           // Datos de pago dividido
-          splitPaymentData.isSplitPayment ? {
+          !isCreditSale && splitPaymentData.isSplitPayment ? {
             isSplitPayment: true,
             paymentAmount1: splitPaymentData.amount1,
             paymentMethodCode2: splitPaymentData.paymentMethod2,
             paymentOperationCode2: splitPaymentData.operationCode2,
             paymentAmount2: splitPaymentData.amount2,
             pagoYapeId: splitPaymentData.pagoYapeId,
-          } : { isSplitPayment: false, pagoYapeId: splitPaymentData.pagoYapeId }
+          } : { isSplitPayment: false, isCreditSale, pagoYapeId: isCreditSale ? undefined : splitPaymentData.pagoYapeId }
         );
         return;
       }
@@ -1014,14 +1017,14 @@ export function useSaleForm({
         splitPaymentData.operationCode1,
         selectedCurrency,
         // Datos de pago dividido
-        splitPaymentData.isSplitPayment ? {
+        !isCreditSale && splitPaymentData.isSplitPayment ? {
           isSplitPayment: true,
           paymentAmount1: splitPaymentData.amount1,
           paymentMethodCode2: splitPaymentData.paymentMethod2,
           paymentOperationCode2: splitPaymentData.operationCode2,
           paymentAmount2: splitPaymentData.amount2,
           pagoYapeId: splitPaymentData.pagoYapeId,
-        } : { isSplitPayment: false, pagoYapeId: splitPaymentData.pagoYapeId },
+        } : { isSplitPayment: false, isCreditSale, pagoYapeId: isCreditSale ? undefined : splitPaymentData.pagoYapeId },
         boletaInfants.length > 0 ? boletaInfants : undefined
       );
     } catch {
@@ -1056,6 +1059,7 @@ export function useSaleForm({
     discount,
     isConfirmingMode,
     reservationToConfirm?.id,
+    isCreditSale,
     splitPaymentData,
     selectedCurrency,
     boletaInfants,
@@ -1076,7 +1080,7 @@ export function useSaleForm({
     const hasFinalPriceGreaterThanZero = finalTicketPrice > 0;
     
     // NUEVO: Validar que el pago dividido cuadre con el total
-    const isSplitPaymentOk = !splitPaymentData.isSplitPayment || isSplitPaymentValid;
+    const isSplitPaymentOk = isCreditSale || !splitPaymentData.isSplitPayment || isSplitPaymentValid;
     
     return !!selectedBoardingStopId &&
       !!selectedDisembarkingStopId &&
@@ -1098,10 +1102,12 @@ export function useSaleForm({
     isManualPriceMode, // NUEVO
     manualPrice, // NUEVO
     finalTicketPrice, // CRÍTICO: Agregar finalTicketPrice como dependencia
+    isCreditSale,
     splitPaymentData.isSplitPayment, // NUEVO: Dependencia del pago dividido
     isSplitPaymentValid, // NUEVO: Dependencia de validación del pago dividido
   ]);
   return {
+    isCreditSale, setIsCreditSale,
     showTicketPreview,
     setShowTicketPreview,
     ticketBackendData,

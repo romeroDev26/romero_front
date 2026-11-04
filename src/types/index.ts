@@ -613,6 +613,7 @@ export interface Invoice {
   pdf_sticker_100x100_file_path?: string | null;
   related_gre_series_number?: string;
   payment_terms?: string;
+  is_credit_sale?: boolean;
   payment_terms_description?: string | null;
   payment_method_code?: string;
   payment_operation_code?: string | null;

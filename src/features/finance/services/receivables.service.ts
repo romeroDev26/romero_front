@@ -27,6 +27,8 @@ export const receivablesService = {
       if (params.start_date) queryParams.append('start_date', params.start_date);
       if (params.end_date) queryParams.append('end_date', params.end_date);
 
+      queryParams.append('service_type', params.service_type || 'TODOS');
+
       // Agregar parámetros de paginación
       queryParams.append('page', params.current_page.toString());
       queryParams.append('page_size', params.page_size.toString());
@@ -57,6 +59,7 @@ export const receivablesService = {
         pagination: backendData.pagination,
         summary: {
           ...backendData.summary,
+          amounts_by_currency: typeof backendData.summary?.amounts_by_currency === "string" ? JSON.parse(backendData.summary.amounts_by_currency) : backendData.summary?.amounts_by_currency,
           paid_parcels: backendData.summary?.paid_parcels || 0,
           unpaid_parcels: backendData.summary?.unpaid_parcels || 0
         },
@@ -64,7 +67,7 @@ export const receivablesService = {
       };
     } catch (error) {
       const apiError = asApiError(error);
-      throw new Error(detailToString(apiError.response?.data?.detail) || 'Error al obtener las encomiendas por cobrar');
+      throw new Error(detailToString(apiError.response?.data?.detail) || 'Error al obtener las cuentas por cobrar');
     }
   },
 

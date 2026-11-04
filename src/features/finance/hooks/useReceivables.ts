@@ -10,6 +10,7 @@ import {
 } from '../types/receivables.types';
 
 const initialFilters: ReceivablesFilters = {
+  service_type: 'TODOS',
   branch_office_id: null,
   doc_number: null,
   payment_status: null,

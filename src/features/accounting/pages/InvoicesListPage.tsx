@@ -32,6 +32,7 @@ export const InvoicesListPage: React.FC = () => {
   
   // Estados para los filtros
   const [clientSearch, setClientSearch] = useState('');
+  const [serviceType, setServiceType] = useState('');
   const [sunatStatusFilter, setSunatStatusFilter] = useState('');
   
   // Filtros de fecha (usando DateRangeFilter)
@@ -62,6 +63,7 @@ export const InvoicesListPage: React.FC = () => {
     };
 
     if (debouncedClientSearch) baseFilters.client_search = debouncedClientSearch;
+    if (serviceType) baseFilters.service_type = serviceType as InvoiceFilters["service_type"];
     if (sunatStatusFilter) baseFilters.sunat_status = sunatStatusFilter as typeof baseFilters.sunat_status;
     
     if (startDate) baseFilters.start_date = format(startDate, 'yyyy-MM-dd');
@@ -71,7 +73,7 @@ export const InvoicesListPage: React.FC = () => {
     if (debouncedDocumentNumber) baseFilters.number = parseInt(debouncedDocumentNumber) || undefined;
 
     return baseFilters;
-  }, [companyId, currentPage, itemsPerPage, debouncedClientSearch, sunatStatusFilter, startDate, endDate, debouncedSeries, debouncedDocumentNumber]);
+  }, [companyId, currentPage, itemsPerPage, debouncedClientSearch, serviceType, sunatStatusFilter, startDate, endDate, debouncedSeries, debouncedDocumentNumber]);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['invoices', filters],
@@ -115,6 +117,7 @@ export const InvoicesListPage: React.FC = () => {
   const handleClearFilters = () => {
     setClientSearch('');
     setSunatStatusFilter('');
+    setServiceType('');
     setSeries('');
     setDocumentNumber('');
     setDateOption('custom');
@@ -339,7 +342,7 @@ export const InvoicesListPage: React.FC = () => {
             />
           </div>
           
-          {(clientSearch || sunatStatusFilter || series || documentNumber || startDate || endDate) && (
+          {(clientSearch || serviceType || sunatStatusFilter || series || documentNumber || startDate || endDate) && (
             <div className="flex justify-end self-end md:self-auto mb-1">
               <Button
                 variant="outline"
@@ -354,7 +357,12 @@ export const InvoicesListPage: React.FC = () => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 pt-4 border-t border-dm-border-primary">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 pt-4 border-t border-dm-border-primary">
+          <label className="text-xs font-semibold text-dm-text-muted">SERVICIO
+            <select value={serviceType} onChange={event => { setServiceType(event.target.value); setCurrentPage(0); }} className="mt-2 w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary p-3 text-sm text-dm-text-primary">
+              <option value="">Todos los servicios</option><option value="PASAJES">Pasajes</option><option value="ENCOMIENDAS">Encomiendas y carga</option><option value="EXCESO_EQUIPAJE">Exceso de equipaje</option><option value="REPROGRAMACION">Cargo por reprogramación</option>
+            </select>
+          </label>
           <div>
             <label className="block text-[11px] font-semibold text-dm-text-muted uppercase tracking-wider mb-2">
               Cliente
@@ -482,7 +490,7 @@ export const InvoicesListPage: React.FC = () => {
             </div>
           )}
           emptyMessage={
-            clientSearch || series || documentNumber || sunatStatusFilter || startDate || endDate || dateOption !== 'custom'
+            clientSearch || series || documentNumber || serviceType || sunatStatusFilter || startDate || endDate || dateOption !== 'custom'
               ? 'No se encontraron facturas con los filtros aplicados'
               : 'No se encontraron facturas'
           }

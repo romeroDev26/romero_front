@@ -1,7 +1,7 @@
 // src/features/finance/components/payment/PaymentConfirmationModal.tsx
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import {
   CheckCircle,
@@ -55,7 +55,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
   const [selectedPdfUrl, setSelectedPdfUrl] = useState<string | null>(null);
   const [selectedPdfType, setSelectedPdfType] = useState<'80mm' | '58mm' | null>(null);
 
-  const totalAmount = receivableItem ? parseFloat(receivableItem.amount) : 0;
+  const totalAmount = receivableItem ? Number(receivableItem.collection_amount ?? receivableItem.amount) : 0;
 
   const handleSelectPDF = useCallback((url: string, type: '80mm' | '58mm') => {
     if (!url) return;
@@ -167,9 +167,9 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
                 <Ship className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
               </div>
               <div>
-                <p className="text-sm font-medium text-dm-text-muted">Encomienda</p>
+                <p className="text-sm font-medium text-dm-text-muted">Comprobante</p>
                 <p className="text-lg font-bold tabular-nums text-dm-text-primary">
-                  #{receivableItem.invoice_item_id}
+                  {receivableItem.invoice_series}-{receivableItem.invoice_number}
                 </p>
               </div>
             </div>
@@ -177,7 +177,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
             <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 px-4 py-3 text-right">
               <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400">Monto a cobrar</p>
               <p className="text-2xl font-bold tabular-nums text-emerald-700 dark:text-emerald-300">
-                S/ {totalAmount.toFixed(2)}
+                {receivableItem.currency_code === 'USD' ? '$' : 'S/'} {totalAmount.toFixed(2)}
               </p>
             </div>
           </div>
@@ -187,7 +187,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
             <div className="flex items-start gap-3 rounded-lg border border-dm-border-secondary bg-dm-bg-secondary/50 p-3">
               <User className="mt-0.5 h-4 w-4 shrink-0 text-dm-text-muted" />
               <div className="min-w-0">
-                <p className="text-xs font-medium text-dm-text-muted">Remitente</p>
+                <p className="text-xs font-medium text-dm-text-muted">Cliente / Remitente</p>
                 <p className="truncate text-sm font-semibold text-dm-text-primary">{receivableItem.sender_name}</p>
                 <p className="text-xs text-dm-text-muted">{receivableItem.sender_document}</p>
               </div>
@@ -195,8 +195,8 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
             <div className="flex items-start gap-3 rounded-lg border border-dm-border-secondary bg-dm-bg-secondary/50 p-3">
               <User className="mt-0.5 h-4 w-4 shrink-0 text-dm-text-muted" />
               <div className="min-w-0">
-                <p className="text-xs font-medium text-dm-text-muted">Destinatario</p>
-                <p className="truncate text-sm font-semibold text-dm-text-primary">{receivableItem.recipient_name}</p>
+                <p className="text-xs font-medium text-dm-text-muted">Pasajero / Destinatario</p>
+                <p className="truncate text-sm font-semibold text-dm-text-primary">{receivableItem.service_type === 'PASAJES' ? receivableItem.passenger_name || receivableItem.sender_name : receivableItem.recipient_name}</p>
                 <p className="text-xs text-dm-text-muted">{receivableItem.recipient_document}</p>
               </div>
             </div>
@@ -215,7 +215,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
               <div>
                 <p className="text-xs font-medium text-dm-text-muted">Fecha de emisión</p>
                 <p className="text-sm font-semibold text-dm-text-primary">
-                  {format(new Date(receivableItem.issue_date), "dd 'de' MMMM 'de' yyyy", { locale: es })}
+                  {format(parseISO(receivableItem.issue_date), "dd 'de' MMMM 'de' yyyy", { locale: es })}
                 </p>
               </div>
             </div>
@@ -268,7 +268,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
               onDataChange={handleFormDataChange}
               disabled={isLoading}
               totalAmount={totalAmount}
-              currencySymbol="S/"
+              currencySymbol={receivableItem.currency_code === 'USD' ? '$' : 'S/'}
               customerName={receivableItem.recipient_name || receivableItem.sender_name}
             />
           </div>
@@ -285,7 +285,7 @@ export const PaymentConfirmationModal: React.FC<PaymentConfirmationModalProps> =
           <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 p-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
             <p className="text-xs text-amber-700 dark:text-amber-300">
-              Al confirmar, se marcará esta encomienda como pagada y se registrará el pago en el sistema.
+              Al confirmar, se cobra el comprobante completo, incluidos todos sus pasajeros o encomiendas. No es un cobro individual por fila.
             </p>
           </div>
 

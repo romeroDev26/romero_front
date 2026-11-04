@@ -129,6 +129,7 @@ export const useSaleBusinessLogic = ({
     // Parametros para pago dividido
     splitPaymentData?: {
       isSplitPayment: boolean;
+      isCreditSale?: boolean;
       paymentAmount1?: number;
       paymentMethodCode2?: string;
       paymentOperationCode2?: string;
@@ -230,7 +231,8 @@ export const useSaleBusinessLogic = ({
       invoiceConfig.exchange_rate = null;
       
       // Términos de pago
-      invoiceConfig.payment_terms_description = "Contado";
+      invoiceConfig.is_credit_sale = !!splitPaymentData?.isCreditSale;
+      invoiceConfig.payment_terms_description = invoiceConfig.is_credit_sale ? "Crédito" : "Contado";
       invoiceConfig.due_date = null;
       
       // Detracción (opcional para transporte)
@@ -238,19 +240,19 @@ export const useSaleBusinessLogic = ({
       invoiceConfig.detraccion_percentage = null;
       
       // Metodo de pago
-      if (selectedPaymentMethod) {
+      if (selectedPaymentMethod && !splitPaymentData?.isCreditSale) {
         invoiceConfig.payment_method_code = selectedPaymentMethod;
         invoiceConfig.payment_operation_code = paymentOperationCode || undefined;
       }
 
       // Datos de pago dividido
-      if (splitPaymentData?.isSplitPayment) {
+      if (splitPaymentData?.isSplitPayment && !splitPaymentData.isCreditSale) {
         invoiceConfig.payment_amount_1 = splitPaymentData.paymentAmount1;
         invoiceConfig.payment_method_code_2 = splitPaymentData.paymentMethodCode2;
         invoiceConfig.payment_operation_code_2 = splitPaymentData.paymentOperationCode2 || undefined;
         invoiceConfig.payment_amount_2 = splitPaymentData.paymentAmount2;
       }
-      if (splitPaymentData?.pagoYapeId) {
+      if (splitPaymentData?.pagoYapeId && !splitPaymentData.isCreditSale) {
         invoiceConfig.pago_yape_id = splitPaymentData.pagoYapeId;
       }
       
@@ -405,6 +407,7 @@ export const useSaleBusinessLogic = ({
     // Parametros para pago dividido
     splitPaymentData?: {
       isSplitPayment: boolean;
+      isCreditSale?: boolean;
       paymentAmount1?: number;
       paymentMethodCode2?: string;
       paymentOperationCode2?: string;

@@ -28,6 +28,7 @@ import {
 } from "./reservation-confirmation";
 import { CurrencySelector } from "./components/CurrencySelector";
 import { SplitPaymentForm } from "../../../../components/common/SplitPaymentForm";
+import { CreditSaleOption } from './CreditSaleOption';
 
 import { SaleFormProps } from "./core/types";
 import { InfantManager } from "./infants";
@@ -79,6 +80,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
       selectedFacturaSeries,
       itemDescription,
       setItemDescription,
+      isCreditSale, setIsCreditSale,
       splitPaymentData,
       isSplitPaymentValid,
       isReservationModalOpen,
@@ -621,7 +623,8 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       <h2 className="text-lg font-bold tracking-tight text-dm-text-primary">
                         Método de Pago
                       </h2>
-                      <SplitPaymentForm
+                      <CreditSaleOption checked={isCreditSale} disabled={isProcessingSale} onChange={setIsCreditSale} />
+                      {!isCreditSale && <SplitPaymentForm
                         variant="billing"
                         totalAmount={finalTicketPrice}
                         currencySymbol={getCurrencySymbol()}
@@ -629,7 +632,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                         onPaymentDataChange={handleSplitPaymentChange}
                         onValidationChange={handleSplitPaymentValidationChange}
                         customerName={passengerData.name}
-                      />
+                      />}
                     </section>
 
                     <div className="space-y-2.5 rounded-xl border border-dm-border-primary/80 bg-dm-bg-primary p-4 shadow-sm lg:space-y-3">
@@ -656,7 +659,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       >
                         <CreditCard className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
                         <span className="hidden sm:inline">
-                          {isConfirmingMode
+                          {isCreditSale ? "Emitir al crédito" : isConfirmingMode
                             ? "Confirmar y Cobrar"
                             : isRuc
                               ? "Crear Factura Empresarial con Representantes"
@@ -755,7 +758,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
                       </div>
                     )}
 
-                    {splitPaymentData.isSplitPayment &&
+                    {!isCreditSale && splitPaymentData.isSplitPayment &&
                       !isSplitPaymentValid && (
                         <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-3 rounded-md border border-red-200 dark:border-red-800/50">
                           <AlertTriangle className="h-4 w-4" />
@@ -809,6 +812,7 @@ export const SaleForm: React.FC<SaleFormProps> = memo(
         )}
 
         <ConfirmSaleModal
+          isCreditSale={isCreditSale}
           segmentSummary={segmentSummary}
           isOpen={isConfirmSaleModalOpen}
           onClose={() => setIsConfirmSaleModalOpen(false)}

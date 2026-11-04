@@ -5,6 +5,7 @@ import { Button } from "../../../../components/common/Button";
 import { AlertTriangle, CreditCard, User, Ship } from "lucide-react";
 
 interface ConfirmSaleModalProps {
+  isCreditSale?: boolean;
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -19,6 +20,7 @@ interface ConfirmSaleModalProps {
 }
 
 export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
+  isCreditSale = false,
   isOpen,
   onClose,
   onConfirm,
@@ -117,7 +119,7 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
               <div className="flex items-center gap-3">
                 <CreditCard className="h-5 w-5 text-dm-text-muted" />
                 <p className="text-sm font-medium text-dm-text-secondary">
-                  Total a cobrar
+                  {isCreditSale ? 'Total pendiente de cobro' : 'Total a cobrar'}
                 </p>
               </div>
               <div className="text-right">
@@ -161,7 +163,7 @@ export const ConfirmSaleModal: React.FC<ConfirmSaleModalProps> = ({
             ¿Está seguro de realizar esta venta?
           </p>
           <p className="text-sm text-dm-text-muted mt-1">
-            Esta acción generará el comprobante correspondiente
+            {isCreditSale ? 'Se emitirá al crédito: no se registra dinero recibido y el ticket mostrará DEBE.' : 'Esta acción generará el comprobante correspondiente'}
           </p>
         </div>
 

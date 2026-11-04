@@ -107,7 +107,7 @@ export const SaleInfoPanel: React.FC<SaleInfoPanelProps> = ({
 
   // --- Pago ---
   const paymentData = invoiceToSplitPaymentData(invoice);
-  const paymentRows = [
+  const paymentRows = invoice.is_credit_sale ? [] : [
     {
       key: 'm1',
       method: paymentData.paymentMethod1,
@@ -165,7 +165,7 @@ export const SaleInfoPanel: React.FC<SaleInfoPanelProps> = ({
         icon={CreditCardIcon}
         iconClassName="text-emerald-600 dark:text-emerald-400"
         className="border-emerald-300 dark:border-emerald-800"
-        action={canEditPayment ? (
+        action={canEditPayment && !invoice.is_credit_sale ? (
           <Button
             variant="outline"
             size="sm"
@@ -217,10 +217,10 @@ export const SaleInfoPanel: React.FC<SaleInfoPanelProps> = ({
         <div className="flex items-center justify-between gap-3 pt-3 mt-2 border-t border-dm-border-primary">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-dm-text-secondary">
             {cuadra && <CheckCircleIcon className="h-4 w-4 text-green-600 dark:text-green-400" />}
-            Total pagado
+            {invoice.is_credit_sale ? 'Pendiente de cobro' : 'Total pagado'}
           </span>
           <span className={`text-base font-bold ${cuadra ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {currencySymbol} {totalPaid.toFixed(2)}
+            {currencySymbol} {(invoice.is_credit_sale ? totalPayable : totalPaid).toFixed(2)}
           </span>
         </div>
       </SectionCard>

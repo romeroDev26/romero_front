@@ -598,6 +598,26 @@ describe('useSaleForm', () => {
     });
   });
 
+  it('sends credit for both boleta and company invoice and resets it after a sale', async () => {
+    for (const docType of [SunatDocType.DNI, SunatDocType.RUC]) {
+      const { result, unmount } = renderHook(
+        () => useSaleForm({ trip: baseTrip, branch: baseBranch, onBack: vi.fn(), onSaleSuccess: vi.fn() }),
+        { wrapper: createWrapper() }
+      );
+      act(() => {
+        result.current.setIsCreditSale(true);
+        result.current.handleSplitPaymentValidationChange(false);
+        result.current.setPassengerData({ docType, docNumber: docType === SunatDocType.RUC ? '20123456789' : '12345678', name: 'Cliente', address: '', phone: '', email: '' });
+      });
+      await act(async () => { await result.current.handleConfirmSale(); });
+      const handler = docType === SunatDocType.RUC ? mockHandleCompanyInvoice : mockHandleRegularSale;
+      expect(handler.mock.lastCall).toContainEqual(expect.objectContaining({ isCreditSale: true, isSplitPayment: false }));
+      act(() => result.current.clearFormAfterSale());
+      expect(result.current.isCreditSale).toBe(false);
+      unmount();
+    }
+  });
+
   describe('cleanup functions', () => {
     it('clearFormAfterSale resets passenger data and selections', () => {
       const { result } = renderHook(

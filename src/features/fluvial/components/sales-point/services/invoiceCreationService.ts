@@ -25,6 +25,8 @@ export interface InvoiceItemData {
 }
 
 export interface InvoiceCreationData {
+  is_credit_sale?: boolean;
+  payment_terms_description?: string;
   client_id: number;
   document_type_code: string;
   series: string;
@@ -145,6 +147,7 @@ export const invoiceCreationService = {
     // Parametros para pago dividido
     splitPaymentData?: {
       isSplitPayment: boolean;
+      isCreditSale?: boolean;
       paymentAmount1?: number;
       paymentMethodCode2?: string;
       paymentOperationCode2?: string;
@@ -166,6 +169,10 @@ export const invoiceCreationService = {
       notes: `Punto de Venta: ${branchName}`,
       items: items,
     };
+
+    basePayload.is_credit_sale = !!splitPaymentData?.isCreditSale;
+    basePayload.payment_terms_description = basePayload.is_credit_sale ? 'Crédito' : 'Contado';
+    if (basePayload.is_credit_sale) return { ...basePayload, ...(infants?.length ? { infants } : {}) };
 
     // Agregar metodo de pago principal si esta disponible
     if (selectedPaymentMethod) {

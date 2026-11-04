@@ -50,6 +50,7 @@ export interface CompanyInvoiceWithRepresentatives {
     currency_code?: string; // "PEN", "USD", "EUR"
     exchange_rate?: number | null; // ← CORREGIDO: Número o null
     issue_time?: string; // HH:MM:SS
+    is_credit_sale?: boolean;
     payment_terms_description?: string; // Términos de pago
     due_date?: string | null; // ← CORREGIDO: String o null
     detraccion_code?: string | null; // ← CORREGIDO: String o null

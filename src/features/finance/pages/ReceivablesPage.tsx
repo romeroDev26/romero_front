@@ -47,6 +47,8 @@ const ReceivablesPage: React.FC = () => {
     refresh,
   } = useReceivables();
 
+  const currencyTotals = typeof summary.amounts_by_currency === 'object' && summary.amounts_by_currency
+    ? Object.entries(summary.amounts_by_currency) : [['PEN', summary.total_amount]];
   const payment = usePaymentConfirmation();
   const [searchText, setSearchText] = useState('');
   useEffect(() => {
@@ -101,7 +103,7 @@ const ReceivablesPage: React.FC = () => {
       return (
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-emerald-100 text-emerald-700 dark:text-emerald-300">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Pagada
+          Pagado
         </span>
       );
     }
@@ -118,10 +120,10 @@ const ReceivablesPage: React.FC = () => {
       {/* Header */}
       <header>
         <h1 className="text-xl font-semibold text-dm-text-primary sm:text-2xl">
-          Encomiendas por Cobrar
+          Cuentas por cobrar
         </h1>
         <p className="mt-0.5 text-sm text-dm-text-muted">
-          Panel ejecutivo para el seguimiento y control de cobros de logística.
+          Pasajes y encomiendas vendidos al crédito. Al cobrar se cancela el comprobante completo.
         </p>
       </header>
 
@@ -158,7 +160,7 @@ const ReceivablesPage: React.FC = () => {
         <div className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-4 shadow-sm sm:p-5">
           <div className="mb-2 flex items-center justify-between sm:mb-3">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-dm-text-muted sm:text-xs">
-              Pagadas
+              Pagados
             </span>
             <div className="rounded-lg bg-emerald-50 dark:bg-emerald-950/30 p-1.5 sm:p-2">
               <CheckCircle className="h-4 w-4 text-emerald-500 sm:h-5 sm:w-5" />
@@ -179,7 +181,7 @@ const ReceivablesPage: React.FC = () => {
             </div>
           </div>
           <h2 className="text-xl font-bold tabular-nums text-dm-text-primary sm:text-2xl">
-            S/ {parseFloat(summary.total_amount.toString()).toFixed(2)}
+            {currencyTotals.map(([currency, amount]) => <span key={currency} className="block">{currency === 'USD' ? '$' : 'S/'} {Number(amount).toFixed(2)}</span>)}
           </h2>
         </div>
       </section>
@@ -187,6 +189,11 @@ const ReceivablesPage: React.FC = () => {
       {/* Search and Filter */}
       <section className="rounded-xl border border-dm-border-primary bg-dm-bg-primary p-3 shadow-sm sm:p-4">
         <div className="flex flex-col gap-3">
+          <label className="flex flex-wrap items-center gap-2 text-sm text-dm-text-secondary">Servicio
+            <select value={filters.service_type || 'TODOS'} onChange={event => updateFilters({ service_type: event.target.value as 'TODOS' | 'PASAJES' | 'ENCOMIENDAS' })} className="rounded-lg border border-dm-border-primary bg-dm-bg-primary px-3 py-2 text-dm-text-primary">
+              <option value="TODOS">Pasajes y encomiendas</option><option value="PASAJES">Pasajes</option><option value="ENCOMIENDAS">Encomiendas y carga</option>
+            </select>
+          </label>
           {/* Chips + Fechas */}
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -217,7 +224,7 @@ const ReceivablesPage: React.FC = () => {
                   : 'bg-dm-bg-secondary text-dm-text-secondary hover:bg-dm-bg-hover'
               }`}
             >
-              Pagadas
+              Pagados
             </button>
 
             <div className="h-4 w-px bg-dm-bg-secondary sm:h-5" />
@@ -288,8 +295,8 @@ const ReceivablesPage: React.FC = () => {
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dm-text-muted" />
             <input
               type="text"
-              aria-label="Buscar encomiendas"
-              placeholder="DNI/RUC, nombre del destinatario o remitente, ID o comprobante..."
+              aria-label="Buscar cuentas por cobrar"
+              placeholder="DNI/RUC, pasajero, cliente, destinatario o comprobante..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className="w-full rounded-lg border border-dm-border-primary bg-dm-bg-primary pl-10 pr-4 py-2.5 text-sm shadow-sm placeholder:text-dm-text-muted focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
@@ -303,7 +310,7 @@ const ReceivablesPage: React.FC = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-            <p className="text-sm text-dm-text-muted">Cargando encomiendas...</p>
+            <p className="text-sm text-dm-text-muted">Cargando cuentas por cobrar...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12">
@@ -319,7 +326,7 @@ const ReceivablesPage: React.FC = () => {
         ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Search className="mb-4 h-12 w-12 text-dm-text-muted" />
-            <p className="text-sm text-dm-text-muted">No se encontraron encomiendas.</p>
+            <p className="text-sm text-dm-text-muted">No se encontraron cuentas por cobrar con estos filtros.</p>
           </div>
         ) : (
           <>
@@ -328,11 +335,11 @@ const ReceivablesPage: React.FC = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-dm-border-primary bg-dm-bg-secondary/50">
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">ID</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Remitente</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Destinatario</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Comprobante</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Cliente / Remitente</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Pasajero / Destinatario</th>
                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Ruta</th>
-                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Monto</th>
+                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Total comprobante</th>
                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Estado</th>
                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted">Fecha</th>
                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-dm-text-muted text-right">Acciones</th>
@@ -342,14 +349,14 @@ const ReceivablesPage: React.FC = () => {
                   {items.map((item) => (
                     <tr key={item.invoice_item_id} className="hover:bg-dm-bg-hover transition-colors">
                       <td className="px-6 py-4 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                        #{item.invoice_item_id}
+                        {item.invoice_series}-{item.invoice_number}<span className="block text-xs font-normal text-dm-text-muted">{item.service_type === 'PASAJES' ? 'Pasaje' : 'Encomienda'} · #{item.invoice_item_id}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-dm-text-primary">{item.sender_name}</div>
                         <div className="text-xs text-dm-text-muted">{item.sender_document}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-dm-text-primary">{item.recipient_name}</div>
+                        <div className="text-sm font-medium text-dm-text-primary">{item.service_type === 'PASAJES' ? item.passenger_name || item.sender_name : item.recipient_name}</div>
                         <div className="text-xs text-dm-text-muted">{item.recipient_document}</div>
                       </td>
                       <td className="px-6 py-4">
@@ -358,7 +365,7 @@ const ReceivablesPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-bold tabular-nums text-dm-text-primary">
-                        S/ {parseFloat(item.amount).toFixed(2)}
+                        {item.currency_code === 'USD' ? '$' : 'S/'} {Number(item.collection_amount ?? item.amount).toFixed(2)}
                       </td>
                       <td className="px-6 py-4">{getStatusBadge(item.payment_status)}</td>
                       <td className="px-6 py-4 text-sm tabular-nums text-dm-text-muted">
@@ -388,7 +395,7 @@ const ReceivablesPage: React.FC = () => {
                             <Eye className="h-4 w-4" />
                           </button>
                         ) : (
-                          <span className="text-sm font-semibold text-dm-text-muted">Pagada</span>
+                          <span className="text-sm font-semibold text-dm-text-muted">Pagado</span>
                         )}
                       </td>
                     </tr>
@@ -404,7 +411,7 @@ const ReceivablesPage: React.FC = () => {
                   {/* Header: ID + Estado + Acción */}
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold tabular-nums text-indigo-600 dark:text-indigo-400">
-                      #{item.invoice_item_id}
+                      {item.invoice_series}-{item.invoice_number}<span className="block text-xs font-normal text-dm-text-muted">{item.service_type === 'PASAJES' ? 'Pasaje' : 'Encomienda'} · #{item.invoice_item_id}</span>
                     </span>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(item.payment_status)}
@@ -439,15 +446,15 @@ const ReceivablesPage: React.FC = () => {
                     <div className="flex items-start gap-2 rounded-lg bg-dm-bg-secondary p-2.5">
                       <User className="mt-0.5 h-3.5 w-3.5 shrink-0 text-dm-text-muted" />
                       <div className="min-w-0">
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-dm-text-muted">Remitente</p>
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-dm-text-muted">Cliente / Remitente</p>
                         <p className="truncate text-sm font-semibold text-dm-text-primary">{item.sender_name}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2 rounded-lg bg-dm-bg-secondary p-2.5">
                       <User className="mt-0.5 h-3.5 w-3.5 shrink-0 text-dm-text-muted" />
                       <div className="min-w-0">
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-dm-text-muted">Destinatario</p>
-                        <p className="truncate text-sm font-semibold text-dm-text-primary">{item.recipient_name}</p>
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-dm-text-muted">Pasajero / Destinatario</p>
+                        <p className="truncate text-sm font-semibold text-dm-text-primary">{item.service_type === 'PASAJES' ? item.passenger_name || item.sender_name : item.recipient_name}</p>
                       </div>
                     </div>
                   </div>
@@ -461,7 +468,7 @@ const ReceivablesPage: React.FC = () => {
                       </span>
                     </div>
                     <span className="text-sm font-bold tabular-nums text-dm-text-primary">
-                      S/ {parseFloat(item.amount).toFixed(2)}
+                      {item.currency_code === 'USD' ? '$' : 'S/'} {Number(item.collection_amount ?? item.amount).toFixed(2)}
                     </span>
                   </div>
 
